@@ -9,7 +9,7 @@ add_action( 'admin_menu', function() {
 		'alpaca-board', // slug
 		'project_board_page', // callback
 		'dashicons-schedule', // icon
-        120 // position
+        101 // position
 	);
 
     add_submenu_page(

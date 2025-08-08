@@ -50,7 +50,8 @@ add_action('wp_footer', function() {
             "os": b.os.name,
             "version": b.os.version,
             "versionName": b.os.versionName
-        }
+        },
+        "referrer": document.referrer,
     };
 </script>
 <?php
