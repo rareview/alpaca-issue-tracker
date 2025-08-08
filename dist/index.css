@@ -1,4 +1,30 @@
+.alpaca-modal {
+  color: #000;
+  background: #fff;
+}
+
+.alpaca-modal .alpaca-grid {
+  margin-bottom: 1.6rem;
+}
+
+.alpaca-modal .alpaca-grid .components-base-control__field {
+  flex-wrap: wrap;
+  align-items: center;
+  display: flex;
+}
+
 .alpaca-modal button {
   margin-right: .5rem;
+}
+
+@media (width >= 825px) {
+  .alpaca-modal .alpaca-grid .components-base-control__label {
+    flex-basis: 25%;
+    padding-top: 8px;
+  }
+
+  .alpaca-modal .alpaca-grid .components-text-control__input {
+    flex-basis: 75%;
+  }
 }
 /*# sourceMappingURL=index.css.map */

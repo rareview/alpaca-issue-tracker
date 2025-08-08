@@ -689,7 +689,7 @@ if (document.querySelector("#wp-admin-bar-alpaca-menu")) render(/*#__PURE__*/ Re
  *
  */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
-const { Button, Modal, TextareaControl, BaseControl } = wp.components;
+const { Button, Modal, TextControl, TextareaControl } = wp.components;
 const { useState } = wp.element;
 const AlpacaModal = ()=>{
     const [isOpen, setOpen] = useState(false);
@@ -711,7 +711,7 @@ const AlpacaModal = ()=>{
     }, "Report an issue"), isOpen && /*#__PURE__*/ React.createElement(Modal, {
         size: "large",
         className: "alpaca-modal",
-        contentLabel: "Report an issue",
+        title: "Report an issue",
         onRequestClose: closeModal,
         __source: {
             fileName: "src/modal.jsx",
@@ -719,12 +719,59 @@ const AlpacaModal = ()=>{
             columnNumber: 9
         },
         __self: undefined
-    }, /*#__PURE__*/ React.createElement(Button, {
+    }, /*#__PURE__*/ React.createElement(TextareaControl, {
+        label: "Lorem ipsum sed adipiscing",
+        placeholder: "Explain the problem",
+        __source: {
+            fileName: "src/modal.jsx",
+            lineNumber: 32,
+            columnNumber: 11
+        },
+        __self: undefined
+    }), /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-grid",
+        __source: {
+            fileName: "src/modal.jsx",
+            lineNumber: 36,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement(TextControl, {
+        label: "Lorem ipsum sed adipiscing",
+        value: 12345,
+        readonly: "readonly",
+        __source: {
+            fileName: "src/modal.jsx",
+            lineNumber: 37,
+            columnNumber: 13
+        },
+        __self: undefined
+    }), /*#__PURE__*/ React.createElement(TextControl, {
+        label: "Lorem ipsum sed adipiscing",
+        value: 12345,
+        readonly: "readonly",
+        __source: {
+            fileName: "src/modal.jsx",
+            lineNumber: 42,
+            columnNumber: 13
+        },
+        __self: undefined
+    }), /*#__PURE__*/ React.createElement(TextControl, {
+        label: "Lorem ipsum sed adipiscing",
+        value: 12345,
+        readonly: "readonly",
+        __source: {
+            fileName: "src/modal.jsx",
+            lineNumber: 47,
+            columnNumber: 13
+        },
+        __self: undefined
+    })), /*#__PURE__*/ React.createElement(Button, {
         variant: "primary",
         onClick: closeModal,
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 32,
+            lineNumber: 53,
             columnNumber: 11
         },
         __self: undefined
@@ -733,7 +780,7 @@ const AlpacaModal = ()=>{
         onClick: closeModal,
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 35,
+            lineNumber: 56,
             columnNumber: 11
         },
         __self: undefined

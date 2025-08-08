@@ -52,7 +52,7 @@ function enqueue_alpaca_scripts() {
 		'alpaca',
 		$plugin_url . 'dist/index.css',
 		array(
-			'wp-components'
+			'wp-components' // needed to style the modal
 		)
 	);
 

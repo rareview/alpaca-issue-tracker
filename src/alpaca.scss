@@ -1,7 +1,33 @@
 /* styles go here */
 
 .alpaca-modal {
+  background: white;
+  color: black;
+
+  .alpaca-grid {
+    margin-bottom: 1.6rem;
+    .components-base-control__field {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+  }
+
   button {
     margin-right: 0.5rem;
+  }
+}
+
+@media (min-width: 825px) {
+  .alpaca-modal {
+    .alpaca-grid {
+      .components-base-control__label {
+        flex-basis: 25%;
+        padding-top: 8px;
+      }
+      .components-text-control__input {
+        flex-basis: 75%;
+      }
+    }
   }
 }

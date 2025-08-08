@@ -4,7 +4,7 @@
  *
  */
 
-const { Button, Modal, TextareaControl, BaseControl } = wp.components;
+const { Button, Modal, TextControl, TextareaControl } = wp.components;
 
 const { useState } = wp.element;
 
@@ -26,9 +26,30 @@ const AlpacaModal = () => {
         <Modal
           size="large"
           className="alpaca-modal"
-          contentLabel="Report an issue"
+          title="Report an issue"
           onRequestClose={closeModal}
         >
+          <TextareaControl
+            label="Lorem ipsum sed adipiscing"
+            placeholder="Explain the problem"
+          />
+          <div className="alpaca-grid">
+            <TextControl
+              label="Lorem ipsum sed adipiscing"
+              value={12345}
+              readonly="readonly"
+            />
+            <TextControl
+              label="Lorem ipsum sed adipiscing"
+              value={12345}
+              readonly="readonly"
+            />
+            <TextControl
+              label="Lorem ipsum sed adipiscing"
+              value={12345}
+              readonly="readonly"
+            />
+          </div>
           <Button variant="primary" onClick={closeModal}>
             Submit
           </Button>
