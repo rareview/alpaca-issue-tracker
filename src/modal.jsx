@@ -28,6 +28,7 @@ const AlpacaModal = () => {
           className="alpaca-modal"
           title="Report an issue"
           onRequestClose={closeModal}
+          isDismissible={false} // hides default Close button
         >
           <TextareaControl
             label="Lorem ipsum sed adipiscing"
@@ -35,12 +36,12 @@ const AlpacaModal = () => {
           />
           <div className="alpaca-grid">
             <TextControl
-              label="Lorem ipsum sed adipiscing"
+              label="Lorem ipsum"
               value={12345}
               readonly="readonly"
             />
             <TextControl
-              label="Lorem ipsum sed adipiscing"
+              label="Lorem ipsum sed"
               value={12345}
               readonly="readonly"
             />

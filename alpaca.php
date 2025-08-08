@@ -23,6 +23,7 @@ add_action('init', function() {
 
 include('inc/adminbar.php');
 include('inc/adminscreens.php');
+include('inc/datadump.php');
 
 add_action( 'admin_enqueue_scripts', function() {
     enqueue_alpaca_scripts();
@@ -59,6 +60,10 @@ function enqueue_alpaca_scripts() {
     wp_enqueue_script(
 		'snapdom',
 		$plugin_url . 'vendor/snapdom.min.js',
+    );
+    wp_enqueue_script(
+		'bowser',
+		$plugin_url . 'vendor/bowser.es5.min.js',
     );
 
 

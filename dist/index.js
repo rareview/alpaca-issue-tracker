@@ -713,6 +713,7 @@ const AlpacaModal = ()=>{
         className: "alpaca-modal",
         title: "Report an issue",
         onRequestClose: closeModal,
+        isDismissible: false,
         __source: {
             fileName: "src/modal.jsx",
             lineNumber: 26,
@@ -724,7 +725,7 @@ const AlpacaModal = ()=>{
         placeholder: "Explain the problem",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 32,
+            lineNumber: 33,
             columnNumber: 11
         },
         __self: undefined
@@ -732,17 +733,27 @@ const AlpacaModal = ()=>{
         className: "alpaca-grid",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 36,
+            lineNumber: 37,
             columnNumber: 11
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement(TextControl, {
-        label: "Lorem ipsum sed adipiscing",
+        label: "Lorem ipsum",
         value: 12345,
         readonly: "readonly",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 37,
+            lineNumber: 38,
+            columnNumber: 13
+        },
+        __self: undefined
+    }), /*#__PURE__*/ React.createElement(TextControl, {
+        label: "Lorem ipsum sed",
+        value: 12345,
+        readonly: "readonly",
+        __source: {
+            fileName: "src/modal.jsx",
+            lineNumber: 43,
             columnNumber: 13
         },
         __self: undefined
@@ -752,17 +763,7 @@ const AlpacaModal = ()=>{
         readonly: "readonly",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 42,
-            columnNumber: 13
-        },
-        __self: undefined
-    }), /*#__PURE__*/ React.createElement(TextControl, {
-        label: "Lorem ipsum sed adipiscing",
-        value: 12345,
-        readonly: "readonly",
-        __source: {
-            fileName: "src/modal.jsx",
-            lineNumber: 47,
+            lineNumber: 48,
             columnNumber: 13
         },
         __self: undefined
@@ -771,7 +772,7 @@ const AlpacaModal = ()=>{
         onClick: closeModal,
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 53,
+            lineNumber: 54,
             columnNumber: 11
         },
         __self: undefined
@@ -780,7 +781,7 @@ const AlpacaModal = ()=>{
         onClick: closeModal,
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 56,
+            lineNumber: 57,
             columnNumber: 11
         },
         __self: undefined
