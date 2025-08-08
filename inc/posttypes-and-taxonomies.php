@@ -20,58 +20,31 @@ add_action( 'init', function() {
         'menu_position'		 => 102,
         'supports'           => array( 'custom-fields','author' ), // skipping 'comments' for now
 		'map_meta_cap' => true, // prevents viewing/editing if false
+		// 'capabilities' => array(
+		// 	'create_posts' => false, // Removes support for the "Add New" function ( use 'do_not_allow' instead of false for multisite set ups )
+		// ),
     ) );
-    register_taxonomy( 'browser', 'issue', array(
-        'public'             => true,
-        'publicly_queryable' => false,
-        'label' => 'Browsers',
-        'hierarchical' => false,
-    ) );
-/*
-    register_taxonomy( 'template', 'bug', array(
-        'public'             => true,
-        'publicly_queryable' => false,
-        'label' => 'Templates',
-        'hierarchical' => false,
-    ) );
-*/
-    register_taxonomy( 'type', 'issue', array(
-        'public'             => true,
-        'publicly_queryable' => false,
-        'label' => 'Post Types',
-        'hierarchical' => false,
-    ) );
-    register_taxonomy( 'query', 'issue', array(
-        'public'             => true,
-        'publicly_queryable' => false,
-        'label' => 'Query Types',
-        'hierarchical' => false,
-    ) );
-    register_taxonomy( 'status', 'issue', array(
-        'public'             => true,
-        'publicly_queryable' => false,
-        'label' => 'Statuses',
-        'hierarchical' => true,
-        'meta_box_cb' => 'status_metabox', // custom metabox, see below
-        ) );
 
-    // $statuses = array(
-	//     "Backlog",
-	//     "To Do",
-	//     "In Progress",
-	//     "Done",
-	//     "Won't fix"
-    // );
-    // foreach( $statuses as $status ) {
-	//     $term = get_term_by( "name", $status, "status" );
-	//     if( $term === false ) {
-	// 	    $term = wp_insert_term(
-	// 		    $status,
-	// 		    "status",
-	// 			array( "slug" =>  sanitize_title( $status ) )
-	// 	    );
-	//     }
-    // }
+    function alpaca_register_taxonomy( $slug, $customargs=array() ) {
+        $defaults = array(
+            'public'             => true,
+            'publicly_queryable' => false,
+            'label' => $slug,
+            'hierarchical' => false,
+        );
+        $args = array_merge( $defaults, $customargs );
+        register_taxonomy( $slug, 'issue', $args );
+    }
+    alpaca_register_taxonomy( 'browser' );
+    // alpaca_register_taxonomy( 'template' );
+    alpaca_register_taxonomy( 'type' );
+    // alpaca_register_taxonomy( 'query' );
+    alpaca_register_taxonomy( 'assignee', array(
+        'public' => false,
+    ) );
+    alpaca_register_taxonomy( 'status', array(  
+        'meta_box_cb' => 'status_metabox', // custom metabox, see below
+    ) );
 
 add_action( 'status_add_form_fields', function() {
     ?>
@@ -120,7 +93,10 @@ add_filter( 'manage_status_custom_column', function( $content, $column_name, $te
     }
     return $content;
 }, 10, 3 );
-
+add_filter( 'manage_edit-status_sortable_columns', function( $sortable_columns ) {
+    $sortable_columns['term_score'] = 'term_score';
+    return $sortable_columns;
+} );
 
 // can't be bothered dealing with Quick Edit options
 add_filter( 'post_row_actions', 'remove_quickedit_actions', 10, 1 );

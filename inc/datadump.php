@@ -1,6 +1,9 @@
 <?php
 
-add_action('wp_footer', function() {
+add_action('wp_footer', 'alpaca_add_datadump', 9999);
+add_action('admin_footer', 'alpaca_add_datadump', 9999);
+
+ function alpaca_add_datadump( ) {
     global $wp_query;
     $theme = wp_get_theme();
     $user = wp_get_current_user();
@@ -44,8 +47,14 @@ add_action('wp_footer', function() {
         "encoded": "<?php echo base64_encode($alpaca_json); ?>",
         "unencoded": <?php echo $alpaca_json; ?>,
         "device": {
-            "browser": { name: b.browser.name, version: b.browser.version, },
+            "browser": {
+                name: b.browser.name,
+                version: b.browser.version,
+                width: window.innerWidth,
+                height: window.innerHeight
+            },
             "vendor": b.platform.vendor,
+            "model": b.platform.model,
             "type": b.platform.type,
             "os": b.os.name,
             "version": b.os.version,
@@ -55,4 +64,4 @@ add_action('wp_footer', function() {
     };
 </script>
 <?php
-}, 9999);
+}

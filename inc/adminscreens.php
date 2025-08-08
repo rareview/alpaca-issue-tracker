@@ -29,3 +29,8 @@ add_action( 'admin_menu', function() {
 	);
 
 });
+
+
+function project_board_page() {
+	return; // just to prevent an error
+}

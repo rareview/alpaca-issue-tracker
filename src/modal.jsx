@@ -24,7 +24,7 @@ const AlpacaModal = () => {
       </a>
       {isOpen && (
         <Modal
-          size="large"
+          size="medium"
           className="alpaca-modal"
           title="Report an issue"
           onRequestClose={closeModal}
@@ -36,20 +36,40 @@ const AlpacaModal = () => {
           />
           <div className="alpaca-grid">
             <TextControl
-              label="Lorem ipsum"
-              value={12345}
+              label="Device"
+              value={
+                alpaca_data.device.vendor +
+                " " +
+                alpaca_data.device.type +
+                " running " +
+                alpaca_data.device.os +
+                " v" +
+                alpaca_data.device.version
+              }
               readonly="readonly"
             />
             <TextControl
-              label="Lorem ipsum sed"
-              value={12345}
+              label="Browser"
+              value={
+                alpaca_data.device.browser.name +
+                " v" +
+                alpaca_data.device.browser.version
+              }
               readonly="readonly"
             />
             <TextControl
-              label="Lorem ipsum sed adipiscing"
-              value={12345}
+              label="Window size"
+              value={
+                alpaca_data.device.browser.width +
+                " × " +
+                alpaca_data.device.browser.height
+              }
               readonly="readonly"
             />
+            <small>
+              Further technical information will also be shared with the
+              development team.
+            </small>
           </div>
           <Button variant="primary" onClick={closeModal}>
             Submit

@@ -709,7 +709,7 @@ const AlpacaModal = ()=>{
         },
         __self: undefined
     }, "Report an issue"), isOpen && /*#__PURE__*/ React.createElement(Modal, {
-        size: "large",
+        size: "medium",
         className: "alpaca-modal",
         title: "Report an issue",
         onRequestClose: closeModal,
@@ -738,8 +738,8 @@ const AlpacaModal = ()=>{
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement(TextControl, {
-        label: "Lorem ipsum",
-        value: 12345,
+        label: "Device",
+        value: alpaca_data.device.vendor + " " + alpaca_data.device.type + " running " + alpaca_data.device.os + " v" + alpaca_data.device.version,
         readonly: "readonly",
         __source: {
             fileName: "src/modal.jsx",
@@ -748,31 +748,38 @@ const AlpacaModal = ()=>{
         },
         __self: undefined
     }), /*#__PURE__*/ React.createElement(TextControl, {
-        label: "Lorem ipsum sed",
-        value: 12345,
+        label: "Browser",
+        value: alpaca_data.device.browser.name + " v" + alpaca_data.device.browser.version,
         readonly: "readonly",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 43,
+            lineNumber: 51,
             columnNumber: 13
         },
         __self: undefined
     }), /*#__PURE__*/ React.createElement(TextControl, {
-        label: "Lorem ipsum sed adipiscing",
-        value: 12345,
+        label: "Window size",
+        value: alpaca_data.device.browser.width + " \xd7 " + alpaca_data.device.browser.height,
         readonly: "readonly",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 48,
+            lineNumber: 60,
             columnNumber: 13
         },
         __self: undefined
-    })), /*#__PURE__*/ React.createElement(Button, {
+    }), /*#__PURE__*/ React.createElement("small", {
+        __source: {
+            fileName: "src/modal.jsx",
+            lineNumber: 69,
+            columnNumber: 13
+        },
+        __self: undefined
+    }, "Further technical information will also be shared with the development team.")), /*#__PURE__*/ React.createElement(Button, {
         variant: "primary",
         onClick: closeModal,
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 54,
+            lineNumber: 74,
             columnNumber: 11
         },
         __self: undefined
@@ -781,7 +788,7 @@ const AlpacaModal = ()=>{
         onClick: closeModal,
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 57,
+            lineNumber: 77,
             columnNumber: 11
         },
         __self: undefined

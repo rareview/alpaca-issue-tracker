@@ -3,6 +3,10 @@
   background: #fff;
 }
 
+.alpaca-modal small {
+  font-size: 12px;
+}
+
 .alpaca-modal .alpaca-grid {
   margin-bottom: 1.6rem;
 }
