@@ -26,7 +26,7 @@ document
     ctx.drawImage(canvas, x, y, width, height, 0, 0, width, height);
 
     // Get the Base64-encoded string from the canvas
-    const base64String = croppedCanvas.toDataURL("image/jpeg");
+    const base64String = croppedCanvas.toDataURL("image/webp", 0.5); // Set compression level
     console.log(base64String);
 
     // Open a new window and display the image using the Base64 string
