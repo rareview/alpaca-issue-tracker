@@ -160,15 +160,15 @@
       });
     }
   }
-})({"1O63a":[function(require,module,exports,__globalThis) {
+})({"6MJrV":[function(require,module,exports,__globalThis) {
 var global = arguments[3];
 var HMR_HOST = null;
-var HMR_PORT = 1234;
-var HMR_SERVER_PORT = 1234;
+var HMR_PORT = 56098;
+var HMR_SERVER_PORT = 56098;
 var HMR_SECURE = false;
 var HMR_ENV_HASH = "d6ea1d42532a7575";
 var HMR_USE_SSE = false;
-module.bundle.HMR_BUNDLE_ID = "890e741a975ef6c8";
+module.bundle.HMR_BUNDLE_ID = "022c1b16b4b6dfad";
 "use strict";
 /* global HMR_HOST, HMR_PORT, HMR_SERVER_PORT, HMR_ENV_HASH, HMR_SECURE, HMR_USE_SSE, chrome, browser, __parcel__import__, __parcel__importScripts__, ServiceWorkerGlobalScope */ /*::
 import type {
@@ -666,11 +666,112 @@ function hmrAccept(bundle /*: ParcelRequire */ , id /*: string */ ) {
     }
 }
 
-},{}],"8lqZg":[function(require,module,exports,__globalThis) {
+},{}],"d8Dch":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 var _alpacaScss = require("./alpaca.scss");
+var _modalJsx = require("./modal.jsx");
+var _modalJsxDefault = parcelHelpers.interopDefault(_modalJsx);
 var _snapdomHandlerJs = require("./snapdom-handler.js");
+const { render } = wp.element;
+if (document.querySelector("#wp-admin-bar-alpaca-menu")) render(/*#__PURE__*/ React.createElement((0, _modalJsxDefault.default), {
+    __source: {
+        fileName: "src/index.jsx",
+        lineNumber: 8,
+        columnNumber: 5
+    },
+    __self: undefined
+}), document.querySelector("#wp-admin-bar-alpaca-report"));
 
-},{"./alpaca.scss":"1ItKB","./snapdom-handler.js":"4FHYR"}],"1ItKB":[function() {},{}],"4FHYR":[function(require,module,exports,__globalThis) {
+},{"./alpaca.scss":"1ItKB","./modal.jsx":"lBZco","./snapdom-handler.js":"4FHYR","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1ItKB":[function() {},{}],"lBZco":[function(require,module,exports,__globalThis) {
+/**
+ * Documentation: https://developer.wordpress.org/block-editor/reference-guides/components/modal/
+ * Storybook: https://wordpress.github.io/gutenberg/?path=/docs/docs-introduction--page
+ *
+ */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+const { Button, Modal, TextareaControl, BaseControl } = wp.components;
+const { useState } = wp.element;
+const AlpacaModal = ()=>{
+    const [isOpen, setOpen] = useState(false);
+    const openModal = ()=>{
+        // do extra things
+        setOpen(true);
+    };
+    const closeModal = ()=>setOpen(false);
+    return /*#__PURE__*/ React.createElement(React.Fragment, null, /*#__PURE__*/ React.createElement("a", {
+        className: "ab-item",
+        href: "#",
+        onClick: openModal,
+        __source: {
+            fileName: "src/modal.jsx",
+            lineNumber: 22,
+            columnNumber: 7
+        },
+        __self: undefined
+    }, "Report an issue"), isOpen && /*#__PURE__*/ React.createElement(Modal, {
+        size: "large",
+        className: "alpaca-modal",
+        contentLabel: "Report an issue",
+        onRequestClose: closeModal,
+        __source: {
+            fileName: "src/modal.jsx",
+            lineNumber: 26,
+            columnNumber: 9
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement(Button, {
+        variant: "primary",
+        onClick: closeModal,
+        __source: {
+            fileName: "src/modal.jsx",
+            lineNumber: 32,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, "Submit"), /*#__PURE__*/ React.createElement(Button, {
+        variant: "secondary",
+        onClick: closeModal,
+        __source: {
+            fileName: "src/modal.jsx",
+            lineNumber: 35,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, "Cancel")));
+};
+exports.default = AlpacaModal;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gkKU3":[function(require,module,exports,__globalThis) {
+exports.interopDefault = function(a) {
+    return a && a.__esModule ? a : {
+        default: a
+    };
+};
+exports.defineInteropFlag = function(a) {
+    Object.defineProperty(a, '__esModule', {
+        value: true
+    });
+};
+exports.exportAll = function(source, dest) {
+    Object.keys(source).forEach(function(key) {
+        if (key === 'default' || key === '__esModule' || Object.prototype.hasOwnProperty.call(dest, key)) return;
+        Object.defineProperty(dest, key, {
+            enumerable: true,
+            get: function() {
+                return source[key];
+            }
+        });
+    });
+    return dest;
+};
+exports.export = function(dest, destName, get) {
+    Object.defineProperty(dest, destName, {
+        enumerable: true,
+        get: get
+    });
+};
+
+},{}],"4FHYR":[function(require,module,exports,__globalThis) {
 document.querySelector("#wp-admin-bar-alpaca-snapdom").addEventListener("click", async (e)=>{
     e.preventDefault();
     // https://github.com/zumerlab/snapdom
@@ -693,12 +794,12 @@ document.querySelector("#wp-admin-bar-alpaca-snapdom").addEventListener("click",
     ctx.drawImage(canvas, x, y, width, height, 0, 0, width, height);
     // Get the Base64-encoded string from the canvas
     const base64String = croppedCanvas.toDataURL("image/webp", 0.5); // Set compression level
-    console.log(base64String);
+    // console.log(base64String);
     // Open a new window and display the image using the Base64 string
     const newWindow = window.open("");
     newWindow.document.body.innerHTML = `<img src="${base64String}" />`;
 });
 
-},{}]},["1O63a","8lqZg"], "8lqZg", "parcelRequire55a0", {})
+},{}]},["6MJrV","d8Dch"], "d8Dch", "parcelRequire55a0", {})
 
 //# sourceMappingURL=index.js.map

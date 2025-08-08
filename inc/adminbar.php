@@ -5,26 +5,32 @@ function alpaca_add_admin_bar_menu( $admin_bar ){
 	//     return;
 	// }
     $admin_bar->add_menu( array(
-        'id'    => 'alpaca-bugs',
+        'id'    => 'alpaca-menu',
 		'parent' => 'top-secondary',
         'title' => '<span class="ab-icon dashicons dashicons-warning"></span><span class="ab-label">Issues</span>',
         'href'  => '#',
         'meta'  => array( 'title' => 'Issues' )
     ));
+
+	/**
+	 * This one is really just a placeholder; it will be replaced by AlpacaModal
+	 */
 	$admin_bar->add_menu(array(
-		'parent' => 'alpaca-bugs',
+		'parent' => 'alpaca-menu',
 		'title' => 'Report an issue',
 		'id' => 'alpaca-report',
 		'href' => '#',
 	));
+
 	$admin_bar->add_menu(array(
-		'parent' => 'alpaca-bugs',
+		'parent' => 'alpaca-menu',
 		'title' => 'View all issues',
 		'id' => 'alpaca-view',
 		'href' => admin_url('edit.php?post_type=bug'),
 	));
+
 	$admin_bar->add_menu(array(
-		'parent' => 'alpaca-bugs',
+		'parent' => 'alpaca-menu',
 		'title' => 'Test snapDOM',
 		'id' => 'alpaca-snapdom',
 		'href' => '#',

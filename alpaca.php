@@ -51,7 +51,10 @@ function enqueue_alpaca_scripts() {
     wp_enqueue_style(
 		'alpaca',
 		$plugin_url . 'dist/index.css',
-    );
+		array(
+			'wp-components'
+		)
+	);
 
     wp_enqueue_script(
 		'snapdom',
