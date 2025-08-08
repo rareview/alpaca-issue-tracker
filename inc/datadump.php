@@ -62,6 +62,12 @@ add_action('admin_footer', 'alpaca_add_datadump', 9999);
         },
         "referrer": document.referrer,
     };
+
+    window.addEventListener('resize', function() {
+        alpaca_data.device.browser.width = window.innerWidth;
+        alpaca_data.device.browser.height = window.innerHeight;
+    });
 </script>
+
 <?php
 }

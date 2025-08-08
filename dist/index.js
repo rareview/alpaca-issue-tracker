@@ -689,7 +689,7 @@ if (document.querySelector("#wp-admin-bar-alpaca-menu")) render(/*#__PURE__*/ Re
  *
  */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
-const { Button, Modal, TextControl, TextareaControl } = wp.components;
+const { Button, Modal, TextControl, TextareaControl, SelectControl, BaseControl } = wp.components;
 const { useState } = wp.element;
 const AlpacaModal = ()=>{
     const [isOpen, setOpen] = useState(false);
@@ -698,13 +698,15 @@ const AlpacaModal = ()=>{
         setOpen(true);
     };
     const closeModal = ()=>setOpen(false);
+    // Sets a default severity value
+    const [selectedValue, setSelectedValue] = useState("b");
     return /*#__PURE__*/ React.createElement(React.Fragment, null, /*#__PURE__*/ React.createElement("a", {
         className: "ab-item",
         href: "#",
         onClick: openModal,
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 22,
+            lineNumber: 32,
             columnNumber: 7
         },
         __self: undefined
@@ -716,16 +718,15 @@ const AlpacaModal = ()=>{
         isDismissible: false,
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 26,
+            lineNumber: 36,
             columnNumber: 9
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement(TextareaControl, {
-        label: "Lorem ipsum sed adipiscing",
         placeholder: "Explain the problem",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 33,
+            lineNumber: 43,
             columnNumber: 11
         },
         __self: undefined
@@ -733,44 +734,108 @@ const AlpacaModal = ()=>{
         className: "alpaca-grid",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 37,
+            lineNumber: 44,
             columnNumber: 11
         },
         __self: undefined
-    }, /*#__PURE__*/ React.createElement(TextControl, {
+    }, /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-row",
+        __source: {
+            fileName: "src/modal.jsx",
+            lineNumber: 45,
+            columnNumber: 13
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-label",
+        __source: {
+            fileName: "src/modal.jsx",
+            lineNumber: 46,
+            columnNumber: 15
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement(BaseControl, {
+        label: "Severity",
+        __source: {
+            fileName: "src/modal.jsx",
+            lineNumber: 47,
+            columnNumber: 17
+        },
+        __self: undefined
+    })), /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-field",
+        __source: {
+            fileName: "src/modal.jsx",
+            lineNumber: 49,
+            columnNumber: 15
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement(SelectControl, {
+        value: selectedValue,
+        onChange: (new_value)=>setSelectedValue(new_value),
+        options: [
+            {
+                disabled: true,
+                label: "Select an Option",
+                value: ""
+            },
+            {
+                label: "Option A",
+                value: "a"
+            },
+            {
+                label: "Option B",
+                value: "b"
+            },
+            {
+                label: "Option C",
+                value: "c"
+            }
+        ],
+        variant: "default",
+        __source: {
+            fileName: "src/modal.jsx",
+            lineNumber: 50,
+            columnNumber: 17
+        },
+        __self: undefined
+    }))), /*#__PURE__*/ React.createElement(TextControl, {
         label: "Device",
+        className: "readonly",
         value: alpaca_data.device.vendor + " " + alpaca_data.device.type + " running " + alpaca_data.device.os + " v" + alpaca_data.device.version,
         readonly: "readonly",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 38,
+            lineNumber: 76,
             columnNumber: 13
         },
         __self: undefined
     }), /*#__PURE__*/ React.createElement(TextControl, {
         label: "Browser",
+        className: "readonly",
         value: alpaca_data.device.browser.name + " v" + alpaca_data.device.browser.version,
         readonly: "readonly",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 51,
+            lineNumber: 90,
             columnNumber: 13
         },
         __self: undefined
     }), /*#__PURE__*/ React.createElement(TextControl, {
         label: "Window size",
+        className: "readonly",
         value: alpaca_data.device.browser.width + " \xd7 " + alpaca_data.device.browser.height,
         readonly: "readonly",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 60,
+            lineNumber: 100,
             columnNumber: 13
         },
         __self: undefined
     }), /*#__PURE__*/ React.createElement("small", {
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 69,
+            lineNumber: 110,
             columnNumber: 13
         },
         __self: undefined
@@ -779,7 +844,7 @@ const AlpacaModal = ()=>{
         onClick: closeModal,
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 74,
+            lineNumber: 115,
             columnNumber: 11
         },
         __self: undefined
@@ -788,7 +853,7 @@ const AlpacaModal = ()=>{
         onClick: closeModal,
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 77,
+            lineNumber: 118,
             columnNumber: 11
         },
         __self: undefined

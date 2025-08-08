@@ -9,7 +9,8 @@
 
   .alpaca-grid {
     margin-bottom: 1.6rem;
-    .components-base-control__field {
+    .components-base-control__field,
+    .alpaca-row {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
@@ -24,12 +25,17 @@
 @media (min-width: 825px) {
   .alpaca-modal {
     .alpaca-grid {
-      .components-base-control__label {
+      .components-base-control__label,
+      .alpaca-label {
         flex-basis: 25%;
         padding-top: 8px;
       }
-      .components-text-control__input {
+      .components-text-control__input,
+      .alpaca-field {
         flex-basis: 75%;
+        .components-select-control {
+          width: 100%;
+        }
       }
     }
   }

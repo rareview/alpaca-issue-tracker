@@ -4,7 +4,14 @@
  *
  */
 
-const { Button, Modal, TextControl, TextareaControl } = wp.components;
+const {
+  Button,
+  Modal,
+  TextControl,
+  TextareaControl,
+  SelectControl,
+  BaseControl,
+} = wp.components;
 
 const { useState } = wp.element;
 
@@ -16,6 +23,9 @@ const AlpacaModal = () => {
     setOpen(true);
   };
   const closeModal = () => setOpen(false);
+
+  // Sets a default severity value
+  const [selectedValue, setSelectedValue] = useState("b");
 
   return (
     <>
@@ -30,13 +40,42 @@ const AlpacaModal = () => {
           onRequestClose={closeModal}
           isDismissible={false} // hides default Close button
         >
-          <TextareaControl
-            label="Lorem ipsum sed adipiscing"
-            placeholder="Explain the problem"
-          />
+          <TextareaControl placeholder="Explain the problem" />
           <div className="alpaca-grid">
+            <div className="alpaca-row">
+              <div className="alpaca-label">
+                <BaseControl label="Severity" />
+              </div>
+              <div className="alpaca-field">
+                <SelectControl
+                  value={selectedValue}
+                  onChange={(new_value) => setSelectedValue(new_value)}
+                  options={[
+                    {
+                      disabled: true,
+                      label: "Select an Option",
+                      value: "",
+                    },
+                    {
+                      label: "Option A",
+                      value: "a",
+                    },
+                    {
+                      label: "Option B",
+                      value: "b",
+                    },
+                    {
+                      label: "Option C",
+                      value: "c",
+                    },
+                  ]}
+                  variant="default"
+                />
+              </div>
+            </div>
             <TextControl
               label="Device"
+              className="readonly"
               value={
                 alpaca_data.device.vendor +
                 " " +
@@ -50,6 +89,7 @@ const AlpacaModal = () => {
             />
             <TextControl
               label="Browser"
+              className="readonly"
               value={
                 alpaca_data.device.browser.name +
                 " v" +
@@ -59,6 +99,7 @@ const AlpacaModal = () => {
             />
             <TextControl
               label="Window size"
+              className="readonly"
               value={
                 alpaca_data.device.browser.width +
                 " × " +
