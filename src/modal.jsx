@@ -10,6 +10,7 @@ const {
   TextControl,
   TextareaControl,
   SelectControl,
+  RangeControl,
   BaseControl,
 } = wp.components;
 
@@ -41,7 +42,42 @@ const AlpacaModal = () => {
           isDismissible={false} // hides default Close button
         >
           <TextareaControl placeholder="Explain the problem" />
+
           <div className="alpaca-grid">
+            <div className="alpaca-row">
+              <div className="alpaca-label">
+                <BaseControl label="Severity" />
+              </div>
+              <div className="alpaca-field">
+                <RangeControl
+                  value={selectedValue}
+                  onChange={(new_value) => setSelectedValue(new_value)}
+                  marks={[
+                    {
+                      label: "Low",
+                      value: 1,
+                    },
+                    {
+                      label: "Med",
+                      value: 2,
+                    },
+                    {
+                      label: "High",
+                      value: 3,
+                    },
+                  ]}
+                  max={3}
+                  min={1}
+                  onBlur={() => {}}
+                  onFocus={() => {}}
+                  onMouseLeave={() => {}}
+                  onMouseMove={() => {}}
+                  step={1}
+                  withInputField={false}
+                />
+              </div>
+            </div>
+
             <div className="alpaca-row">
               <div className="alpaca-label">
                 <BaseControl label="Severity" />
@@ -73,6 +109,12 @@ const AlpacaModal = () => {
                 />
               </div>
             </div>
+            <TextControl
+              label="Current Page"
+              className="readonly"
+              value={window.location.href}
+              readonly="readonly"
+            />
             <TextControl
               label="Device"
               className="readonly"
