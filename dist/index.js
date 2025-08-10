@@ -160,11 +160,11 @@
       });
     }
   }
-})({"6MJrV":[function(require,module,exports,__globalThis) {
+})({"9iTdJ":[function(require,module,exports,__globalThis) {
 var global = arguments[3];
 var HMR_HOST = null;
-var HMR_PORT = 56098;
-var HMR_SERVER_PORT = 56098;
+var HMR_PORT = 1234;
+var HMR_SERVER_PORT = 1234;
 var HMR_SECURE = false;
 var HMR_ENV_HASH = "d6ea1d42532a7575";
 var HMR_USE_SSE = false;
@@ -699,7 +699,7 @@ const AlpacaModal = ()=>{
     };
     const closeModal = ()=>setOpen(false);
     // Sets a default severity value
-    const [selectedValue, setSelectedValue] = useState("b");
+    const [selectedValue, setSelectedValue] = useState("2");
     return /*#__PURE__*/ React.createElement(React.Fragment, null, /*#__PURE__*/ React.createElement("a", {
         className: "ab-item",
         href: "#",
@@ -844,15 +844,15 @@ const AlpacaModal = ()=>{
             },
             {
                 label: "Option A",
-                value: "a"
+                value: "1"
             },
             {
                 label: "Option B",
-                value: "b"
+                value: "2"
             },
             {
                 label: "Option C",
-                value: "c"
+                value: "3"
             }
         ],
         variant: "default",
@@ -971,7 +971,9 @@ document.querySelector("#wp-admin-bar-alpaca-snapdom").addEventListener("click",
     // https://github.com/zumerlab/snapdom
     const canvas = await snapdom.toCanvas(document.body, {
         type: "jpg",
-        // exclude: ["#wpadminbar"],
+        exclude: [
+            "#wpadminbar"
+        ],
         embedFonts: true
     });
     // Calculate the visible area based on scroll position and viewport size
@@ -985,7 +987,9 @@ document.querySelector("#wp-admin-bar-alpaca-snapdom").addEventListener("click",
     croppedCanvas.height = height;
     const ctx = croppedCanvas.getContext("2d");
     // Draw the relevant portion of the original canvas onto the new canvas
-    ctx.drawImage(canvas, x, y, width, height, 0, 0, width, height);
+    // ctx.drawImage(canvas, x, y, width, height, 0, 0, width, height);
+    // might want to exclude admin bar's 32px?
+    ctx.drawImage(canvas, x, y, width, height, 0, -32, width, height);
     // Get the Base64-encoded string from the canvas
     const base64String = croppedCanvas.toDataURL("image/webp", 0.5); // Set compression level
     // console.log(base64String);
@@ -994,6 +998,6 @@ document.querySelector("#wp-admin-bar-alpaca-snapdom").addEventListener("click",
     newWindow.document.body.innerHTML = `<img src="${base64String}" />`;
 });
 
-},{}]},["6MJrV","d8Dch"], "d8Dch", "parcelRequire55a0", {})
+},{}]},["9iTdJ","d8Dch"], "d8Dch", "parcelRequire55a0", {})
 
 //# sourceMappingURL=index.js.map

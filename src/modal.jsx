@@ -26,7 +26,7 @@ const AlpacaModal = () => {
   const closeModal = () => setOpen(false);
 
   // Sets a default severity value
-  const [selectedValue, setSelectedValue] = useState("b");
+  const [selectedValue, setSelectedValue] = useState("2");
 
   return (
     <>
@@ -94,15 +94,15 @@ const AlpacaModal = () => {
                     },
                     {
                       label: "Option A",
-                      value: "a",
+                      value: "1",
                     },
                     {
                       label: "Option B",
-                      value: "b",
+                      value: "2",
                     },
                     {
                       label: "Option C",
-                      value: "c",
+                      value: "3",
                     },
                   ]}
                   variant="default"

@@ -6,7 +6,7 @@ document
     // https://github.com/zumerlab/snapdom
     const canvas = await snapdom.toCanvas(document.body, {
       type: "jpg",
-      // exclude: ["#wpadminbar"],
+      exclude: ["#wpadminbar"],
       embedFonts: true,
     });
 
@@ -23,7 +23,9 @@ document
     const ctx = croppedCanvas.getContext("2d");
 
     // Draw the relevant portion of the original canvas onto the new canvas
-    ctx.drawImage(canvas, x, y, width, height, 0, 0, width, height);
+    // ctx.drawImage(canvas, x, y, width, height, 0, 0, width, height);
+    // might want to exclude admin bar's 32px?
+    ctx.drawImage(canvas, x, y, width, height, 0, -32, width, height);
 
     // Get the Base64-encoded string from the canvas
     const base64String = croppedCanvas.toDataURL("image/webp", 0.5); // Set compression level
