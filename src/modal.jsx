@@ -62,6 +62,7 @@ const AlpacaModal = () => {
       };
 
       const payload = { ...submitted, ...server };
+      console.log(payload);
 
       const response = await fetch(wpApiSettings.root + "issue/v1/submit", {
         method: "POST",
@@ -95,14 +96,20 @@ const AlpacaModal = () => {
           openModal();
         }}
       >
-        Report an issue
+        Report An Issue
       </a>
 
       {isOpen && (
         <Modal
           size="medium"
           className="alpaca-modal"
-          title="Report an issue"
+          title={
+            status === "success"
+              ? "Issue Submitted"
+              : status === "error"
+              ? "Submission Failed"
+              : "Report An Issue"
+          }
           onRequestClose={closeModal}
           isDismissible={false}
         >
@@ -148,12 +155,12 @@ const AlpacaModal = () => {
                   </div>
                 </div>
                 <small>
-                  Further technical information will also be shared with the
+                  Detailed technical information will also be shared with the
                   development team.
                 </small>
               </div>
 
-              <div className="alpaca-actions" style={{ marginTop: "1rem" }}>
+              <div className="alpaca-actions">
                 <Button
                   variant="primary"
                   onClick={submitIssue}

@@ -8,6 +8,7 @@
   }
   p {
     font-size: 0.8rem;
+    margin-top: 0;
     margin-bottom: 1rem;
   }
 
@@ -28,6 +29,16 @@
 
   button {
     margin-right: 0.5rem;
+  }
+}
+
+.wp-admin.post-type-issue {
+  .screenshot {
+    margin: 1rem 0 -1rem 0;
+    img {
+      width: 100%;
+      height: auto;
+    }
   }
 }
 

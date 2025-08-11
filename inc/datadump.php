@@ -4,9 +4,49 @@ add_action('wp_footer', 'alpaca_add_datadump', 9999);
 add_action('admin_footer', 'alpaca_add_datadump', 9999);
 
  function alpaca_add_datadump( ) {
-    global $wp_query;
+    global $wp_query, $post, $template;
     $theme = wp_get_theme();
     $user = wp_get_current_user();
+
+    $type = array();
+    if( is_admin() ) {
+        $type[] = "wp-admin";
+    } elseif( is_customize_preview() ) {
+        $type[] = "customize_preview";
+    } elseif ( is_front_page() ) {
+        $type[] = "front_page";
+    } elseif ( is_home() ) {
+        $type[] = "home";
+    } elseif ( is_singular() ) {
+        $type[] = "singular";
+        $type[] = get_post_type();
+    } elseif ( is_archive() ) {
+        $type[] = "archive";
+        if( is_date() ) {
+            $type[] = "date";
+        } elseif( is_category() || is_tag() || is_tax() ) {
+            $type[] = "taxonomy";
+            $type[] = get_queried_object()->taxonomy;
+            $type[] = get_queried_object()->slug;
+        } elseif( is_post_type_archive() ) {
+            $type[] = "post_type";
+            $type[] = $wp_query->query_vars['post_type'];
+        } elseif( is_author() ) {
+            $type[] = "author";
+        }
+    } elseif ( is_search() ) {
+        $type[] = "search";
+    } elseif ( is_404() ) {
+        $type[] = "404";
+    } else {
+        $type[] = "unidentified";
+    }
+    if( is_preview()) {
+        $type[] = "preview";
+    }
+    if( is_customize_preview() ) {
+        $type[] = "customize_preview";
+    }
 
     $wp_data = array(
         "theme" => array(
@@ -15,6 +55,9 @@ add_action('admin_footer', 'alpaca_add_datadump', 9999);
         ),
         "plugins" => get_option('active_plugins', false),
         "queryVars" => $wp_query->query_vars,
+        "queriedObject" => $wp_query->get_queried_object(),
+        "type" => $type,
+        "template" => basename($template),
         "bodyClasses" => get_body_class(),
     );
 
@@ -45,6 +88,7 @@ add_action('admin_footer', 'alpaca_add_datadump', 9999);
 
     const alpaca_data = {
         "env": "<?php echo base64_encode($alpaca_json); ?>",
+        "raw": <?php echo json_encode($alpaca_data); ?>, // NOT USED: delete when no longer needed
         "device": {
             "browser": {
                 name: b.browser.name,

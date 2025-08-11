@@ -17,14 +17,14 @@ function alpaca_add_admin_bar_menu( $admin_bar ){
 	 */
 	$admin_bar->add_menu(array(
 		'parent' => 'alpaca-menu',
-		'title' => 'Report an issue',
+		'title' => '',
 		'id' => 'alpaca-report',
 		'href' => '#',
 	));
 
 	$admin_bar->add_menu(array(
 		'parent' => 'alpaca-menu',
-		'title' => 'View all issues',
+		'title' => 'View All Issues',
 		'id' => 'alpaca-view',
 		'href' => admin_url('edit.php?post_type=issue'),
 	));

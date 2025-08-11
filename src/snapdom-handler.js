@@ -1,8 +1,16 @@
 const handleSnapdomCapture = async () => {
+  function hide_from_snapdom(selector) {
+    const el = document.querySelector(selector);
+    if (el) {
+      el.dataset.capture = "exclude";
+    }
+  }
+  hide_from_snapdom("#wpadminbar");
+  hide_from_snapdom(".components-modal__screen-overlay");
+
   // https://github.com/zumerlab/snapdom
   const canvas = await snapdom.toCanvas(document.body, {
     type: "webp",
-    exclude: ["#wpadminbar"],
     embedFonts: true,
   });
 

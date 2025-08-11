@@ -37,7 +37,6 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 		    'post_content' =>wp_kses_post(  $json['userinput']['feedback'] )
 	    );
 	    $post_id = wp_insert_post( $post_args );
-		// $post_id = 99;
 
         if ( is_wp_error( $post_id ) || $post_id === 0 ) {
             return new WP_REST_Response(
@@ -49,7 +48,25 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
             );
         }
 
-        // TODO: set terms and meta here (uncomment and fix if needed)
+        // set terms and meta here
+		wp_set_post_terms( $post_id, $json['client']['browser']['name'], 'browser' );
+		wp_set_post_terms( $post_id, $json['client']['os'], 'browser' );
+		wp_set_post_terms( $post_id, $json['wp']['template'], 'template' );
+		foreach( $json['wp']['type'] as $t ) {
+			wp_set_post_terms( $post_id, $t, 'type' );
+		}
+		// consider: active plugins as a taxonomy?
+		update_post_meta( $post_id, 'screenshot', $json['screenshot'] );
+		update_post_meta( $post_id, 'screenwidth', $json['client']['browser']['width'] );
+		update_post_meta( $post_id, 'screenheight', $json['client']['browser']['height'] );
+		update_post_meta( $post_id, 'queriedObject', json_encode( $json['wp']['queriedObject'] ) );
+
+		if( in_array( 'singular', $json['wp']['type'] ) ) {
+			wp_update_post( array(
+				'ID' => $post_id,
+				'post_parent' => $json['wp']['queriedObject']['ID']
+			));
+		}
 
         return new WP_REST_Response(
             array(

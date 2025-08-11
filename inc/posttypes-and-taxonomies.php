@@ -36,8 +36,9 @@ add_action( 'init', function() {
         register_taxonomy( $slug, 'issue', $args );
     }
     alpaca_register_taxonomy( 'browser' );
-    // alpaca_register_taxonomy( 'template' );
+    alpaca_register_taxonomy( 'template' );
     alpaca_register_taxonomy( 'type' );
+    // alpaca_register_taxonomy( 'plugin' );
     // alpaca_register_taxonomy( 'query' );
     alpaca_register_taxonomy( 'assignee', array(
         'public' => false,
@@ -97,26 +98,6 @@ add_filter( 'manage_edit-status_sortable_columns', function( $sortable_columns )
     $sortable_columns['term_score'] = 'term_score';
     return $sortable_columns;
 } );
-
-// can't be bothered dealing with Quick Edit options
-add_filter( 'post_row_actions', 'remove_quickedit_actions', 10, 1 );
-function remove_quickedit_actions( $actions ) {
-    if( in_array( get_post_type(), array(
-		'issue'
-    ) ) ) {
-		unset( $actions['inline hide-if-no-js'] );
-    }
-    return $actions;
-}
-
-function redirect_to_board_on_save( $location ) {
-    if ( 'issue' == get_post_type() ) {
-        if ( isset( $_POST['save'] ) || isset( $_POST['publish'] ) )
-            return admin_url( "edit.php?post_type=issue&page=board.php" );
-    }
-    return $location;
-}
-// add_filter( 'redirect_post_location', 'redirect_to_board_on_save' );
 
 
 /*
