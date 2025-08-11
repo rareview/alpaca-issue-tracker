@@ -21,11 +21,10 @@ add_action('init', function() {
     );
 });
 
-include('inc/adminbar.php');
-include('inc/adminscreens.php');
-include('inc/datadump.php');
-include('inc/restapi.php');
-include('inc/posttypes-and-taxonomies.php');
+$all_includes = glob(__DIR__ . '/inc/*.php');
+foreach ($all_includes as $file) {
+	include_once($file);
+}
 
 add_action( 'admin_enqueue_scripts', function() {
     enqueue_alpaca_scripts();

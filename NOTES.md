@@ -14,3 +14,9 @@ Capturing images:
 - snapDOM is super quick and flexible
 - but I'm seeing a few issues relating to div dimensions
 - probably good enough for now
+
+===
+
+https://github.com/hello-pangea/dnd
+https://dnd.hellopangea.com/?path=/docs/welcome--docs
+https://dnd.hellopangea.com/?path=/story/examples-board--simple
