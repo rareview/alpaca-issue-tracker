@@ -24,11 +24,15 @@ const AlpacaModal = () => {
   };
 
   const submitIssue = async () => {
-    setStatus("submitting");
     setMessage("");
 
     try {
+      // Start the async operation without changing status yet
       const server = JSON.parse(atob(alpaca_data.env));
+
+      // Now set submitting to trigger spinner and disable UI
+      setStatus("submitting");
+
       const screenshot = await handleSnapdomCapture();
 
       const submitted = {
