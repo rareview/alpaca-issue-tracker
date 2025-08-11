@@ -12,6 +12,7 @@ const AlpacaModal = () => {
   const [feedback, setFeedback] = useState("");
 
   const textareaRef = useRef(null);
+  const closeBtnRef = useRef(null);
 
   const openModal = () => {
     setMessage("");
@@ -27,13 +28,21 @@ const AlpacaModal = () => {
 
   // Focus textarea when modal opens
   useEffect(() => {
-    if (isOpen && textareaRef.current) {
-      // Delay focus slightly to ensure Modal is rendered
+    if (isOpen && status === "idle" && textareaRef.current) {
       setTimeout(() => {
         textareaRef.current.focus();
       }, 10);
     }
-  }, [isOpen]);
+  }, [isOpen, status]);
+
+  // Focus close button on success or error
+  useEffect(() => {
+    if ((status === "success" || status === "error") && closeBtnRef.current) {
+      setTimeout(() => {
+        closeBtnRef.current.focus();
+      }, 10);
+    }
+  }, [status]);
 
   const submitIssue = async () => {
     setMessage("");
@@ -100,7 +109,7 @@ const AlpacaModal = () => {
           {status === "success" || status === "error" ? (
             <>
               <p>{message}</p>
-              <Button variant="primary" onClick={closeModal}>
+              <Button variant="primary" onClick={closeModal} ref={closeBtnRef}>
                 Close
               </Button>
             </>
