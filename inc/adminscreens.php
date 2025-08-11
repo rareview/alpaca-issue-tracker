@@ -56,14 +56,20 @@ function redirect_to_board_on_save( $location ) {
 // add_filter( 'redirect_post_location', 'redirect_to_board_on_save' );
 
 function add_metabox_to_issue() {
-	add_meta_box(
-		'alpaca_screenshot_metabox',	// ID
-		esc_html__( 'Screenshot', 'alpaca' ), // Title
-		'alpaca_screenshot_metabox_callback', // Callback function
-		'issue', // Post type
-		'side', // Context
-		'default' // Priority
-	);
+	global $post;
+	if( ! $post || 'issue' !== $post->post_type ) {
+		return;
+	}
+	if( $screenshot = get_post_meta( $post->ID, 'screenshot', true ) ) {
+		add_meta_box(
+			'alpaca_screenshot_metabox',	// ID
+			esc_html__( 'Screenshot', 'alpaca' ), // Title
+			'alpaca_screenshot_metabox_callback', // Callback function
+			'issue', // Post type
+			'side', // Context
+			'high' // Priority
+		);
+	}
 }
 add_action( 'add_meta_boxes', 'add_metabox_to_issue' );
 
@@ -72,6 +78,5 @@ function alpaca_screenshot_metabox_callback( $post ) {
 	?>
 	<div class="screenshot"><img src="<?php echo($screenshot); ?>" alt="Screenshot" /></div>
 	<p><em>Warning: may not be 100% faithful</em></p>
-
 	<?php
 }

@@ -51,7 +51,7 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
         // set terms and meta here
 		wp_set_post_terms( $post_id, $json['client']['browser']['name'], 'browser' );
 		wp_set_post_terms( $post_id, $json['client']['os'], 'browser' );
-		wp_set_post_terms( $post_id, $json['wp']['template'], 'template' );
+		wp_set_post_terms( $post_id, $json['wp']['template'], 'phptemplate' );
 		foreach( $json['wp']['type'] as $t ) {
 			wp_set_post_terms( $post_id, $t, 'type' );
 		}

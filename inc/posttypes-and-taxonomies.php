@@ -36,7 +36,7 @@ add_action( 'init', function() {
         register_taxonomy( $slug, 'issue', $args );
     }
     alpaca_register_taxonomy( 'browser' );
-    alpaca_register_taxonomy( 'template' );
+    alpaca_register_taxonomy( 'phptemplate' );
     alpaca_register_taxonomy( 'type' );
     // alpaca_register_taxonomy( 'plugin' );
     // alpaca_register_taxonomy( 'query' );
