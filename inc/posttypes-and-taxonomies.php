@@ -18,7 +18,7 @@ add_action( 'init', function() {
         ),
         'menu_icon'          => 'dashicons-warning',
         'menu_position'		 => 102,
-        'supports'           => array( 'custom-fields','author' ), // skipping 'comments' for now
+        'supports'           => array( 'editor','custom-fields','author' ), // skipping 'comments' for now
 		'map_meta_cap' => true, // prevents viewing/editing if false
 		// 'capabilities' => array(
 		// 	'create_posts' => false, // Removes support for the "Add New" function ( use 'do_not_allow' instead of false for multisite set ups )

@@ -7,6 +7,11 @@
   font-size: 12px;
 }
 
+.alpaca-modal p {
+  margin-bottom: 1rem;
+  font-size: .8rem;
+}
+
 .alpaca-modal .alpaca-grid {
   margin-bottom: 1.6rem;
 }
