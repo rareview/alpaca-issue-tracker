@@ -33,6 +33,8 @@ const AlpacaModal = () => {
       // Now set submitting to trigger spinner and disable UI
       setStatus("submitting");
 
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       const screenshot = await handleSnapdomCapture();
 
       const submitted = {

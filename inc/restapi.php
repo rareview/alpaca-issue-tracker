@@ -36,8 +36,8 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 		    'post_title' => wp_kses_post( wp_trim_words( $json['userinput']['feedback'], 6 ) ),
 		    'post_content' =>wp_kses_post(  $json['userinput']['feedback'] )
 	    );
-	    $post_id = wp_insert_post( $post_args );
-		// $post_id = 99;
+	    // $post_id = wp_insert_post( $post_args );
+		$post_id = 99;
 
         if ( is_wp_error( $post_id ) || $post_id === 0 ) {
             return new WP_REST_Response(
