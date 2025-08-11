@@ -57,6 +57,7 @@ const AlpacaModal = () => {
           }),
           body: JSON.stringify(payload),
         }).then((response) => {
+          console.log(response);
           closeModal();
         });
       })
