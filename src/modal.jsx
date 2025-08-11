@@ -9,7 +9,6 @@ const {
   Modal,
   TextControl,
   TextareaControl,
-  SelectControl,
   RangeControl,
   BaseControl,
 } = wp.components;
@@ -25,8 +24,30 @@ const AlpacaModal = () => {
   };
   const closeModal = () => setOpen(false);
 
+  const submitIssue = () => {
+    const feedback = document.querySelector("#alpaca-modal-textarea").value;
+
+    const server_json = atob(alpaca_data.env);
+    const server = JSON.parse(server_json);
+
+    const submitted = {
+      userinput: {
+        feedback: feedback,
+        severity: severity,
+      },
+      client: alpaca_data.device,
+      screenshot: img_base64,
+    };
+
+    const payload = Object.assign(submitted, server); // merge server into submitted
+
+    console.log(payload);
+
+    closeModal();
+  };
+
   // Sets a default severity value
-  const [selectedValue, setSelectedValue] = useState("2");
+  const [severity, setSeverity] = useState("2");
 
   return (
     <>
@@ -41,7 +62,11 @@ const AlpacaModal = () => {
           onRequestClose={closeModal}
           isDismissible={false} // hides default Close button
         >
-          <TextareaControl placeholder="Explain the problem" />
+          <TextareaControl
+            placeholder="Explain the problem"
+            onChange={() => {}}
+            id="alpaca-modal-textarea"
+          />
 
           <div className="alpaca-grid">
             <div className="alpaca-row">
@@ -50,8 +75,9 @@ const AlpacaModal = () => {
               </div>
               <div className="alpaca-field">
                 <RangeControl
-                  value={selectedValue}
-                  onChange={(new_value) => setSelectedValue(new_value)}
+                  id="alpaca-modal-severity"
+                  value={severity}
+                  onChange={(s) => setSeverity(s)}
                   marks={[
                     {
                       label: "Low",
@@ -78,83 +104,12 @@ const AlpacaModal = () => {
               </div>
             </div>
 
-            <div className="alpaca-row">
-              <div className="alpaca-label">
-                <BaseControl label="Severity" />
-              </div>
-              <div className="alpaca-field">
-                <SelectControl
-                  value={selectedValue}
-                  onChange={(new_value) => setSelectedValue(new_value)}
-                  options={[
-                    {
-                      disabled: true,
-                      label: "Select an Option",
-                      value: "",
-                    },
-                    {
-                      label: "Option A",
-                      value: "1",
-                    },
-                    {
-                      label: "Option B",
-                      value: "2",
-                    },
-                    {
-                      label: "Option C",
-                      value: "3",
-                    },
-                  ]}
-                  variant="default"
-                />
-              </div>
-            </div>
-            <TextControl
-              label="Current Page"
-              className="readonly"
-              value={window.location.href}
-              readonly="readonly"
-            />
-            <TextControl
-              label="Device"
-              className="readonly"
-              value={
-                alpaca_data.device.vendor +
-                " " +
-                alpaca_data.device.type +
-                " running " +
-                alpaca_data.device.os +
-                " v" +
-                alpaca_data.device.version
-              }
-              readonly="readonly"
-            />
-            <TextControl
-              label="Browser"
-              className="readonly"
-              value={
-                alpaca_data.device.browser.name +
-                " v" +
-                alpaca_data.device.browser.version
-              }
-              readonly="readonly"
-            />
-            <TextControl
-              label="Window size"
-              className="readonly"
-              value={
-                alpaca_data.device.browser.width +
-                " × " +
-                alpaca_data.device.browser.height
-              }
-              readonly="readonly"
-            />
             <small>
               Further technical information will also be shared with the
               development team.
             </small>
           </div>
-          <Button variant="primary" onClick={closeModal}>
+          <Button variant="primary" onClick={submitIssue}>
             Submit
           </Button>
           <Button variant="secondary" onClick={closeModal}>

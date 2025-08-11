@@ -44,8 +44,7 @@ add_action('admin_footer', 'alpaca_add_datadump', 9999);
     const b = bowser.parse(window.navigator.userAgent);
 
     const alpaca_data = {
-        "encoded": "<?php echo base64_encode($alpaca_json); ?>",
-        "unencoded": <?php echo $alpaca_json; ?>,
+        "env": "<?php echo base64_encode($alpaca_json); ?>",
         "device": {
             "browser": {
                 name: b.browser.name,
@@ -60,7 +59,7 @@ add_action('admin_footer', 'alpaca_add_datadump', 9999);
             "version": b.os.version,
             "versionName": b.os.versionName
         },
-        "referrer": document.referrer,
+        // "referrer": document.referrer,
     };
 
     window.addEventListener('resize', function() {
