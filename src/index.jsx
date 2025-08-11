@@ -9,5 +9,3 @@ if (document.querySelector("#wp-admin-bar-alpaca-menu")) {
     document.querySelector("#wp-admin-bar-alpaca-report")
   );
 }
-
-import "./snapdom-handler.js";

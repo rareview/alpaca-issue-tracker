@@ -3,6 +3,7 @@
  * Storybook: https://wordpress.github.io/gutenberg/?path=/docs/docs-introduction--page
  *
  */
+import handleSnapdomCapture from "./snapdom-handler.js";
 
 const {
   Button,
@@ -30,20 +31,38 @@ const AlpacaModal = () => {
     const server_json = atob(alpaca_data.env);
     const server = JSON.parse(server_json);
 
-    const submitted = {
-      userinput: {
-        feedback: feedback,
-        severity: severity,
-      },
-      client: alpaca_data.device,
-      screenshot: img_base64,
-    };
+    handleSnapdomCapture()
+      .then((base64String) => {
+        const screenshot = base64String;
 
-    const payload = Object.assign(submitted, server); // merge server into submitted
+        const submitted = {
+          userinput: {
+            feedback: feedback,
+            severity: severity,
+          },
+          client: alpaca_data.device,
+          screenshot: screenshot,
+        };
 
-    console.log(payload);
+        const payload = Object.assign(submitted, server); // merge server into submitted
+        console.log(payload);
 
-    closeModal();
+        fetch(wpApiSettings.root + "issue/v1/submit", {
+          method: "POST",
+          credentials: "include",
+          headers: new Headers({
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            "X-WP-Nonce": wpApiSettings.nonce,
+          }),
+          body: JSON.stringify(payload),
+        }).then((response) => {
+          closeModal();
+        });
+      })
+      .catch((error) => {
+        console.error("Error capturing screenshot:", error);
+      });
   };
 
   // Sets a default severity value

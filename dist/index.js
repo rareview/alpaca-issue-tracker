@@ -671,7 +671,6 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 var _alpacaScss = require("./alpaca.scss");
 var _modalJsx = require("./modal.jsx");
 var _modalJsxDefault = parcelHelpers.interopDefault(_modalJsx);
-var _snapdomHandlerJs = require("./snapdom-handler.js");
 const { render } = wp.element;
 if (document.querySelector("#wp-admin-bar-alpaca-menu")) render(/*#__PURE__*/ React.createElement((0, _modalJsxDefault.default), {
     __source: {
@@ -682,13 +681,15 @@ if (document.querySelector("#wp-admin-bar-alpaca-menu")) render(/*#__PURE__*/ Re
     __self: undefined
 }), document.querySelector("#wp-admin-bar-alpaca-report"));
 
-},{"./alpaca.scss":"1ItKB","./modal.jsx":"lBZco","./snapdom-handler.js":"4FHYR","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1ItKB":[function() {},{}],"lBZco":[function(require,module,exports,__globalThis) {
+},{"./alpaca.scss":"1ItKB","./modal.jsx":"lBZco","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1ItKB":[function() {},{}],"lBZco":[function(require,module,exports,__globalThis) {
 /**
  * Documentation: https://developer.wordpress.org/block-editor/reference-guides/components/modal/
  * Storybook: https://wordpress.github.io/gutenberg/?path=/docs/docs-introduction--page
  *
  */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
+var _snapdomHandlerJs = require("./snapdom-handler.js");
+var _snapdomHandlerJsDefault = parcelHelpers.interopDefault(_snapdomHandlerJs);
 const { Button, Modal, TextControl, TextareaControl, RangeControl, BaseControl } = wp.components;
 const { useState } = wp.element;
 const AlpacaModal = ()=>{
@@ -702,17 +703,33 @@ const AlpacaModal = ()=>{
         const feedback = document.querySelector("#alpaca-modal-textarea").value;
         const server_json = atob(alpaca_data.env);
         const server = JSON.parse(server_json);
-        const submitted = {
-            userinput: {
-                feedback: feedback,
-                severity: severity
-            },
-            client: alpaca_data.device,
-            screenshot: img_base64
-        };
-        const payload = Object.assign(submitted, server); // merge server into submitted
-        console.log(payload);
-        closeModal();
+        (0, _snapdomHandlerJsDefault.default)().then((base64String)=>{
+            const screenshot = base64String;
+            const submitted = {
+                userinput: {
+                    feedback: feedback,
+                    severity: severity
+                },
+                client: alpaca_data.device,
+                screenshot: screenshot
+            };
+            const payload = Object.assign(submitted, server); // merge server into submitted
+            console.log(payload);
+            fetch(wpApiSettings.root + "issue/v1/submit", {
+                method: "POST",
+                credentials: "include",
+                headers: new Headers({
+                    Accept: "application/json",
+                    "Content-Type": "application/json",
+                    "X-WP-Nonce": wpApiSettings.nonce
+                }),
+                body: JSON.stringify(payload)
+            }).then((response)=>{
+                closeModal();
+            });
+        }).catch((error)=>{
+            console.error("Error capturing screenshot:", error);
+        });
     };
     // Sets a default severity value
     const [severity, setSeverity] = useState("2");
@@ -722,7 +739,7 @@ const AlpacaModal = ()=>{
         onClick: openModal,
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 54,
+            lineNumber: 73,
             columnNumber: 7
         },
         __self: undefined
@@ -734,7 +751,7 @@ const AlpacaModal = ()=>{
         isDismissible: false,
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 58,
+            lineNumber: 77,
             columnNumber: 9
         },
         __self: undefined
@@ -744,7 +761,7 @@ const AlpacaModal = ()=>{
         id: "alpaca-modal-textarea",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 65,
+            lineNumber: 84,
             columnNumber: 11
         },
         __self: undefined
@@ -752,7 +769,7 @@ const AlpacaModal = ()=>{
         className: "alpaca-grid",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 71,
+            lineNumber: 90,
             columnNumber: 11
         },
         __self: undefined
@@ -760,7 +777,7 @@ const AlpacaModal = ()=>{
         className: "alpaca-row",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 72,
+            lineNumber: 91,
             columnNumber: 13
         },
         __self: undefined
@@ -768,7 +785,7 @@ const AlpacaModal = ()=>{
         className: "alpaca-label",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 73,
+            lineNumber: 92,
             columnNumber: 15
         },
         __self: undefined
@@ -776,7 +793,7 @@ const AlpacaModal = ()=>{
         label: "Severity",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 74,
+            lineNumber: 93,
             columnNumber: 17
         },
         __self: undefined
@@ -784,7 +801,7 @@ const AlpacaModal = ()=>{
         className: "alpaca-field",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 76,
+            lineNumber: 95,
             columnNumber: 15
         },
         __self: undefined
@@ -816,14 +833,14 @@ const AlpacaModal = ()=>{
         withInputField: false,
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 77,
+            lineNumber: 96,
             columnNumber: 17
         },
         __self: undefined
     }))), /*#__PURE__*/ React.createElement("small", {
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 107,
+            lineNumber: 126,
             columnNumber: 13
         },
         __self: undefined
@@ -832,7 +849,7 @@ const AlpacaModal = ()=>{
         onClick: submitIssue,
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 112,
+            lineNumber: 131,
             columnNumber: 11
         },
         __self: undefined
@@ -841,7 +858,7 @@ const AlpacaModal = ()=>{
         onClick: closeModal,
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 115,
+            lineNumber: 134,
             columnNumber: 11
         },
         __self: undefined
@@ -849,7 +866,7 @@ const AlpacaModal = ()=>{
 };
 exports.default = AlpacaModal;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gkKU3":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./snapdom-handler.js":"4FHYR"}],"gkKU3":[function(require,module,exports,__globalThis) {
 exports.interopDefault = function(a) {
     return a && a.__esModule ? a : {
         default: a
@@ -880,8 +897,9 @@ exports.export = function(dest, destName, get) {
 };
 
 },{}],"4FHYR":[function(require,module,exports,__globalThis) {
-document.querySelector("#wp-admin-bar-alpaca-snapdom").addEventListener("click", async (e)=>{
-    e.preventDefault();
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+const handleSnapdomCapture = async ()=>{
     // https://github.com/zumerlab/snapdom
     const canvas = await snapdom.toCanvas(document.body, {
         type: "webp",
@@ -907,11 +925,10 @@ document.querySelector("#wp-admin-bar-alpaca-snapdom").addEventListener("click",
     // Get the Base64-encoded string from the canvas
     const base64String = croppedCanvas.toDataURL("image/webp", 0.5); // Set compression level
     // console.log(base64String);
-    // Open a new window and display the image using the Base64 string
-    const newWindow = window.open("");
-    newWindow.document.body.innerHTML = `<img src="${base64String}" />`;
-});
+    return base64String;
+};
+exports.default = handleSnapdomCapture;
 
-},{}]},["9iTdJ","d8Dch"], "d8Dch", "parcelRequire55a0", {})
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["9iTdJ","d8Dch"], "d8Dch", "parcelRequire55a0", {})
 
 //# sourceMappingURL=index.js.map

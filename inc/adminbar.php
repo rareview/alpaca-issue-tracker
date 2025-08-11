@@ -26,15 +26,9 @@ function alpaca_add_admin_bar_menu( $admin_bar ){
 		'parent' => 'alpaca-menu',
 		'title' => 'View all issues',
 		'id' => 'alpaca-view',
-		'href' => admin_url('edit.php?post_type=bug'),
+		'href' => admin_url('edit.php?post_type=issue'),
 	));
 
-	$admin_bar->add_menu(array(
-		'parent' => 'alpaca-menu',
-		'title' => 'Test snapDOM',
-		'id' => 'alpaca-snapdom',
-		'href' => '#',
-	));
 
 }
 
