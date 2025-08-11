@@ -2,7 +2,7 @@ import handleSnapdomCapture from "./snapdom-handler.js";
 
 const { Button, Modal, TextareaControl, RangeControl, BaseControl, Spinner } =
   wp.components;
-const { useState } = wp.element;
+const { useState, useRef, useEffect } = wp.element;
 
 const AlpacaModal = () => {
   const [isOpen, setOpen] = useState(false);
@@ -10,6 +10,8 @@ const AlpacaModal = () => {
   const [status, setStatus] = useState("idle"); // idle, submitting, success, error
   const [message, setMessage] = useState("");
   const [feedback, setFeedback] = useState("");
+
+  const textareaRef = useRef(null);
 
   const openModal = () => {
     setMessage("");
@@ -23,14 +25,21 @@ const AlpacaModal = () => {
     setStatus("idle");
   };
 
+  // Focus textarea when modal opens
+  useEffect(() => {
+    if (isOpen && textareaRef.current) {
+      // Delay focus slightly to ensure Modal is rendered
+      setTimeout(() => {
+        textareaRef.current.focus();
+      }, 10);
+    }
+  }, [isOpen]);
+
   const submitIssue = async () => {
     setMessage("");
 
     try {
-      // Start the async operation without changing status yet
       const server = JSON.parse(atob(alpaca_data.env));
-
-      // Now set submitting to trigger spinner and disable UI
       setStatus("submitting");
 
       await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -103,6 +112,7 @@ const AlpacaModal = () => {
                 value={feedback}
                 onChange={(value) => setFeedback(value)}
                 disabled={status === "submitting"}
+                ref={textareaRef}
               />
 
               <div className="alpaca-grid">
