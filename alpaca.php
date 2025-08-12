@@ -26,14 +26,6 @@ foreach ($all_includes as $file) {
 	include_once($file);
 }
 
-add_action( 'admin_enqueue_scripts', function() {
-    enqueue_alpaca_scripts();
-}, 500);
-
-add_action('wp_enqueue_scripts', function() {
-    enqueue_alpaca_scripts();
-}, 500);
-
 function enqueue_alpaca_scripts() {
 	$plugin_url = plugin_dir_url( __FILE__ );
 
@@ -70,3 +62,12 @@ function enqueue_alpaca_scripts() {
 
 
 }
+
+add_action('wp_enqueue_scripts', function() {
+    enqueue_alpaca_scripts();
+}, 500);
+
+add_action( 'admin_enqueue_scripts', function() {
+    enqueue_alpaca_scripts();
+}, 500);
+

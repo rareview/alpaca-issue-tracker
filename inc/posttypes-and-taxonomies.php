@@ -105,48 +105,29 @@ add_filter( 'manage_edit-status_sortable_columns', function( $sortable_columns )
 	https://wordpress.stackexchange.com/questions/50077/display-a-custom-taxonomy-as-a-dropdown-on-the-edit-posts-page
 */
 function status_metabox( $post ) {
-    ?>
-    <div id="taxonomy-status" class="categorydiv">
-            <?php
+    $current_terms = wp_get_post_terms($post->ID, 'status', array('fields' => 'ids'));
+    $current_term_id = !empty($current_terms) ? $current_terms[0] : 0;
 
-			if( $bcolorder = get_option('bcolorder') ) {
-				$theterms = array();
-				$bcol_array = json_decode($bcolorder);
-				foreach( $bcol_array as $k=>$v ) {
-					$theterms[] = get_term( $v, 'status' );
-				}
-			} else {
-				$theterms = get_terms(array(
-		        	'taxonomy'		=> 'status',
-		        	'hide_empty'	=> false,
-                    'meta_key'   => 'term_score',
-                    'orderby'    => 'meta_value_num',
-                    'order'      => 'ASC',
-    				));
-			}
+    $terms = alpaca_get_statuses();
 
-	        echo '<ul id="statuschecklist" class="categorychecklist">';
-
-	        $currentstatus = wp_list_pluck( get_the_terms( $post,'status' ), 'term_id');
-
-	        foreach($theterms as $term) {
-		        echo PHP_EOL .'<li><label class="selectit">';
-		        echo '<input value="' . $term->term_id . '" ';
-		        echo 'name="tax_input[status][]"';
-                if( $currentstatus ) {
-                    if( $currentstatus[0] == $term->term_id ) {
-                        echo 'checked="checked" ';
-                    }
-                }
-		        echo 'type="radio">' . $term->name;
-		        echo '</label></li>';
-		    }
-
-    		echo '</ul>';
-
-	           ?>
-
-    </div>
-    <?php
+    echo '<div class="statuses_radiolist">';
+    foreach ($terms as $term) {
+        $checked = ($current_term_id == $term->term_id) ? 'checked' : '';
+        echo '<label><input type="radio" name="tax_input[status][]" value="' . esc_attr($term->slug) . '" ' . $checked . '/> ' . esc_html($term->name) . '</label><br>';
+    }
+    echo '</div>';
 }
+
 });
+
+
+function alpaca_get_statuses( $order = 'ASC' ) {
+    $terms = get_terms(array(
+		'taxonomy' => 'status',
+		'hide_empty' => false,
+		'meta_key' => 'term_score',
+		'orderby' => 'meta_value_num',
+		'order' => $order,
+	));
+    return $terms;
+}

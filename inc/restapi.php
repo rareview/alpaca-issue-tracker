@@ -49,8 +49,14 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
             );
         }
 
+        $statuses = alpaca_get_statuses();
+        if ( ! empty( $statuses ) ) {
+            $status_term = reset( $statuses ); // Get the first status term
+            wp_set_post_terms( $post_id, array( $status_term->term_id ), 'status' );
+            // sets issue status to lowest scored term
+            // TODO: allow user to choose the default status
+        }
         
-
         // set terms and meta here
 		wp_set_post_terms( $post_id, $json['client']['browser']['name'], 'browser', true );
 		wp_set_post_terms( $post_id, $json['client']['os'], 'browser', true );
