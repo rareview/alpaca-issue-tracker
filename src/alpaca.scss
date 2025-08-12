@@ -32,12 +32,50 @@
   }
 }
 
-.wp-admin.post-type-issue {
-  .screenshot {
-    margin: 1rem 0 -1rem 0;
-    img {
-      max-width: 100%;
-      height: auto;
+.wp-admin {
+  &.post-type-issue {
+    .screenshot {
+      margin: 1rem 0 -1rem 0;
+      img {
+        max-width: 100%;
+        height: auto;
+      }
+    }
+  }
+
+  #alpaca-board {
+    .alpaca-wrap {
+      display: flex;
+      flex-direction: row;
+      padding: 10px 0;
+    }
+    .alpaca-container {
+      margin: 0 10px 10px 0;
+      padding: 10px;
+      width: 250px;
+      background: yellow;
+      border-radius: 4px;
+      min-height: 300px;
+      display: flex;
+      flex-direction: column;
+    }
+    .alpaca-item,
+    .alpaca-item-dragging {
+      padding: 8px 12px;
+      margin: 4px 0;
+      border: 1px solid #ccc;
+      background-color: white;
+    }
+    .alpaca-item-dragging {
+      border-color: #007cba;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+      cursor: grabbing;
+      transform: rotate(3deg);
+    }
+    .alpaca-item.empty {
+      font-style: italic;
+      background-color: transparent;
+      border-style: dashed;
     }
   }
 }
