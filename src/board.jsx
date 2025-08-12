@@ -3,7 +3,7 @@ import { render } from "react-dom";
 
 import {
   DndContext,
-  closestCenter,
+  closestCorners,
   PointerSensor,
   useSensor,
   useSensors,
@@ -148,7 +148,7 @@ const AlpacaBoard = () => {
       }
 
       const activeContainer = findContainer(active.id);
-      let overContainer = findContainer(over.id);
+      const overContainer = findContainer(over.id);
 
       if (!activeContainer || !overContainer) {
         setActiveId(null);
@@ -158,13 +158,10 @@ const AlpacaBoard = () => {
 
       requestAnimationFrame(() => {
         if (activeContainer === overContainer) {
+          // Logic for sorting within the same container (this is already correct)
           const items = containers[activeContainer];
           const oldIndex = items.findIndex((i) => i.id === active.id);
           let newIndex = items.findIndex((i) => i.id === over.id);
-
-          if (newIndex === -1) {
-            newIndex = items.length - 1;
-          }
 
           if (oldIndex !== newIndex) {
             const newItems = arrayMove(items, oldIndex, newIndex);
@@ -174,13 +171,23 @@ const AlpacaBoard = () => {
             }));
           }
         } else {
+          // Logic for moving between different containers
           const activeItems = [...containers[activeContainer]];
           const overItems = [...containers[overContainer]];
           const activeIndex = activeItems.findIndex((i) => i.id === active.id);
 
-          let overIndex = overItems.findIndex((i) => i.id === over.id);
-          if (overIndex === -1) {
+          // Determine the correct newIndex
+          let overIndex;
+          // If the drop target is a container (like an empty column)
+          // or if it's the last item in the list, place the item at the end.
+          if (
+            over.id === overContainer ||
+            over.id === overItems[overItems.length - 1]?.id
+          ) {
             overIndex = overItems.length;
+          } else {
+            // Otherwise, find the index of the item being dropped on
+            overIndex = overItems.findIndex((i) => i.id === over.id);
           }
 
           const [moved] = activeItems.splice(activeIndex, 1);
@@ -201,7 +208,7 @@ const AlpacaBoard = () => {
     return (
       <DndContext
         sensors={sensors}
-        collisionDetection={closestCenter}
+        collisionDetection={closestCorners}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
