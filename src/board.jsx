@@ -85,7 +85,7 @@ const AlpacaBoard = () => {
 
     return (
       <div className="alpaca-container">
-        <h3>{id.toUpperCase()}</h3>
+        <h2>{id}</h2>
         <SortableContext
           id={id}
           items={hasItems ? items.map((item) => item.id) : [id]}
@@ -118,14 +118,14 @@ const AlpacaBoard = () => {
   // Board component: Manages the overall DndContext and state
   function Board() {
     const [containers, setContainers] = useState({
-      todo: [
+      "To do": [
         { id: "c1", content: "Fix production bug" },
         { id: "c2", content: "Write comprehensive tests" },
         { id: "c5", content: "Refactor old module" },
       ],
-      inprogress: [{ id: "c3", content: "Build new UI feature" }],
-      done: [{ id: "c4", content: "Deploy latest version" }],
-      backlog: [
+      "In Progress": [{ id: "c3", content: "Build new UI feature" }],
+      Done: [{ id: "c4", content: "Deploy latest version" }],
+      Backlog: [
         { id: "c6", content: "Research new tech" },
         { id: "c7", content: "Update documentation" },
       ],

@@ -1117,14 +1117,14 @@ const AlpacaBoard = ()=>{
                 columnNumber: 7
             },
             __self: this
-        }, /*#__PURE__*/ React.createElement("h3", {
+        }, /*#__PURE__*/ React.createElement("h2", {
             __source: {
                 fileName: "src/board.jsx",
                 lineNumber: 88,
                 columnNumber: 9
             },
             __self: this
-        }, id.toUpperCase()), /*#__PURE__*/ React.createElement((0, _sortable.SortableContext), {
+        }, id), /*#__PURE__*/ React.createElement((0, _sortable.SortableContext), {
             id: id,
             items: hasItems ? items.map((item)=>item.id) : [
                 id
@@ -1165,7 +1165,7 @@ const AlpacaBoard = ()=>{
     // Board component: Manages the overall DndContext and state
     function Board() {
         const [containers, setContainers] = (0, _react.useState)({
-            todo: [
+            "To do": [
                 {
                     id: "c1",
                     content: "Fix production bug"
@@ -1179,19 +1179,19 @@ const AlpacaBoard = ()=>{
                     content: "Refactor old module"
                 }
             ],
-            inprogress: [
+            "In Progress": [
                 {
                     id: "c3",
                     content: "Build new UI feature"
                 }
             ],
-            done: [
+            Done: [
                 {
                     id: "c4",
                     content: "Deploy latest version"
                 }
             ],
-            backlog: [
+            Backlog: [
                 {
                     id: "c6",
                     content: "Research new tech"
