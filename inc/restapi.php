@@ -33,7 +33,8 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 		    'post_type' => 'issue',
 		    'post_status' => 'publish',
 		    'post_author' => $json['user']['id'],
-		    'post_title' => wp_kses_post( wp_trim_words( $json['userinput']['feedback'], 6 ) ),
+		    'post_title' => wp_kses_post( wp_trim_words( $json['userinput']['feedback'], 6 ) ), // Original title
+		    'post_name' => hash('fnv164', $getbody), // Unique slug based on the request body
 		    'post_content' =>wp_kses_post(  $json['userinput']['feedback'] )
 	    );
 	    $post_id = wp_insert_post( $post_args );
@@ -47,6 +48,8 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
                 500
             );
         }
+
+        
 
         // set terms and meta here
 		wp_set_post_terms( $post_id, $json['client']['browser']['name'], 'browser', true );
