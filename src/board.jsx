@@ -16,6 +16,7 @@ import {
   arrayMove,
   rectSortingStrategy,
   useSortable,
+  verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 
 const AlpacaBoard = () => {
@@ -33,7 +34,7 @@ const AlpacaBoard = () => {
       transform: transform
         ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
         : undefined,
-      transition,
+      transition: isDragging ? "none" : transition, // disable transition while dragging
       padding: "8px 12px",
       margin: "4px 0",
       border: "1px solid #ccc",
@@ -49,6 +50,8 @@ const AlpacaBoard = () => {
   }
 
   function Container({ id, items }) {
+    const hasItems = items.length > 0;
+
     return (
       <div
         style={{
@@ -65,12 +68,25 @@ const AlpacaBoard = () => {
         <h3>{id.toUpperCase()}</h3>
         <SortableContext
           id={id}
-          items={items.map((item) => item.id)}
-          strategy={rectSortingStrategy}
+          items={hasItems ? items.map((item) => item.id) : [id]} // container id as dummy sortable item
+          strategy={verticalListSortingStrategy}
         >
-          {items.map((item) => (
-            <SortableItem key={item.id} id={item.id} content={item.content} />
-          ))}
+          {hasItems ? (
+            items.map((item) => (
+              <SortableItem key={item.id} id={item.id} content={item.content} />
+            ))
+          ) : (
+            // Render the placeholder as a SortableItem so it can receive drops
+            <SortableItem
+              key={id}
+              id={id}
+              content={
+                <i style={{ color: "#999", fontStyle: "italic" }}>
+                  Drop items here
+                </i>
+              }
+            />
+          )}
         </SortableContext>
       </div>
     );
@@ -84,6 +100,7 @@ const AlpacaBoard = () => {
       ],
       inprogress: [{ id: "c3", content: "Build UI" }],
       done: [{ id: "c4", content: "Deploy" }],
+      backlog: [], // empty container example
     });
 
     const sensors = useSensors(
@@ -102,6 +119,10 @@ const AlpacaBoard = () => {
           return key;
         }
       }
+      // also check if id is a container id (for placeholders)
+      if (containers[id] !== undefined) {
+        return id;
+      }
       return null;
     }
 
@@ -118,7 +139,7 @@ const AlpacaBoard = () => {
       }
 
       const activeContainer = findContainer(active.id);
-      const overContainer = findContainer(over.id);
+      let overContainer = findContainer(over.id);
 
       if (!activeContainer || !overContainer) {
         setActiveId(null);
@@ -126,10 +147,15 @@ const AlpacaBoard = () => {
       }
 
       if (activeContainer === overContainer) {
-        // Reorder in same container
         const items = containers[activeContainer];
         const oldIndex = items.findIndex((i) => i.id === active.id);
-        const newIndex = items.findIndex((i) => i.id === over.id);
+        let newIndex = items.findIndex((i) => i.id === over.id);
+
+        // If dropped on placeholder (over.id === container id), put at end
+        if (newIndex === -1) {
+          newIndex = items.length - 1;
+        }
+
         if (oldIndex !== newIndex) {
           const newItems = arrayMove(items, oldIndex, newIndex);
           setContainers({
@@ -142,14 +168,14 @@ const AlpacaBoard = () => {
         const activeItems = [...containers[activeContainer]];
         const overItems = [...containers[overContainer]];
         const activeIndex = activeItems.findIndex((i) => i.id === active.id);
-        const overIndex = overItems.findIndex((i) => i.id === over.id);
+
+        let overIndex = overItems.findIndex((i) => i.id === over.id);
+        if (overIndex === -1) {
+          overIndex = overItems.length;
+        }
 
         const [moved] = activeItems.splice(activeIndex, 1);
-        overItems.splice(
-          overIndex === -1 ? overItems.length : overIndex,
-          0,
-          moved
-        );
+        overItems.splice(overIndex, 0, moved);
 
         setContainers({
           ...containers,
