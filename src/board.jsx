@@ -22,13 +22,19 @@ import { CSS } from "@dnd-kit/utilities";
 const AlpacaBoard = () => {
   return (
     <>
-      {/* Inline styles for the component */}
       <Board />
     </>
   );
 
   // SortableItem component: Represents a draggable and sortable item
-  function SortableItem({ id, content, className, isDragDisabled = false }) {
+  function SortableItem({
+    id,
+    content,
+    className,
+    isDragDisabled = false,
+    onClick,
+  }) {
+    // Added onClick prop
     const {
       attributes,
       listeners,
@@ -50,14 +56,22 @@ const AlpacaBoard = () => {
       userSelect: isDragDisabled ? "none" : "auto",
     };
 
+    // Handle click event: only trigger if not currently dragging
+    const handleClick = (event) => {
+      if (!isDragging && onClick) {
+        onClick(event, id); // Pass the event and item ID to the onClick handler
+      }
+    };
+
     return (
       <div
-        className={`${className}`} // Apply the CSS class defined above
+        className={`${className}`}
         ref={setNodeRef}
         style={style}
         {...(!isDragDisabled
           ? { ...attributes, ...listeners }
           : { tabIndex: -1 })}
+        onClick={handleClick} // Attach the click handler
       >
         {content}
       </div>
@@ -65,13 +79,12 @@ const AlpacaBoard = () => {
   }
 
   // Container component: Holds a list of sortable items
-  function Container({ id, items }) {
+  function Container({ id, items, onItemClick }) {
+    // Added onItemClick prop
     const hasItems = items.length > 0;
 
     return (
       <div className="alpaca-container">
-        {" "}
-        {/* Apply the CSS class defined above */}
         <h3>{id.toUpperCase()}</h3>
         <SortableContext
           id={id}
@@ -81,17 +94,18 @@ const AlpacaBoard = () => {
           {hasItems ? (
             items.map((item) => (
               <SortableItem
-                className="alpaca-item" // Apply the CSS class defined above
+                className="alpaca-item"
                 key={item.id}
                 id={item.id}
                 content={item.content}
+                onClick={onItemClick} // Pass the click handler down
               />
             ))
           ) : (
             <SortableItem
               key={id}
               id={id}
-              className="alpaca-item empty" // Apply the CSS class defined above for empty state
+              className="alpaca-item empty"
               content={"Drop items here"}
               isDragDisabled={true}
             />
@@ -243,12 +257,22 @@ const AlpacaBoard = () => {
           }));
         }
       }
+      console.log("Drag is finished");
     }
+
+    // NEW: Function to handle item clicks
+    const handleItemClick = (event, itemId) => {
+      console.log(`Item clicked: ${itemId}`);
+      // You can add any action here, e.g., open a modal, show details, etc.
+      // For demonstration, let's find the item and log its content
+      const clickedItem = getItemById(itemId);
+      if (clickedItem) {
+        console.log(`Content: "${clickedItem.content}"`);
+      }
+    };
 
     return (
       <div className="min-h-screen bg-gradient-br flex items-center justify-center py-8">
-        {" "}
-        {/* Apply CSS classes */}
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
@@ -257,20 +281,19 @@ const AlpacaBoard = () => {
           onDragEnd={handleDragEnd}
         >
           <div className="alpaca-wrap">
-            {" "}
-            {/* Apply CSS class */}
             {Object.entries(containers).map(([containerId, items]) => (
-              <Container key={containerId} id={containerId} items={items} />
+              <Container
+                key={containerId}
+                id={containerId}
+                items={items}
+                onItemClick={handleItemClick}
+              />
             ))}
           </div>
 
           <DragOverlay dropAnimation={null}>
             {activeId && draggedItem ? (
-              <div className="alpaca-item-dragging">
-                {" "}
-                {/* Apply CSS class */}
-                {draggedItem.content}
-              </div>
+              <div className="alpaca-item-dragging">{draggedItem.content}</div>
             ) : null}
           </DragOverlay>
         </DndContext>
@@ -278,13 +301,6 @@ const AlpacaBoard = () => {
     );
   }
 
-  // This part assumes a WordPress or similar environment injecting a global `wp` object.
-  // For a standard React setup, you'd typically render the Board component directly to a root element.
-  // const rootElement = document.getElementById("root");
-  // if (rootElement) {
-  //   const root = createRoot(rootElement);
-  //   root.render(<Board />);
-  // }
   wp.domReady(() => {
     const el = document.getElementById("alpaca-board");
     if (el) {
