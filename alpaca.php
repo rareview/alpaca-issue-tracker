@@ -44,7 +44,7 @@ function enqueue_alpaca_scripts() {
 			'wp-element',
 			'wp-api-fetch',
 			'wp-i18n',
-			'wp-components'
+			'wp-components',
 		),
 		'1.00',
 		true

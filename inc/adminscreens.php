@@ -30,7 +30,7 @@ function alpaca_settings_page() {
 	<div class="wrap">
 	<h1><?php echo esc_html__( 'Configure', 'alpaca' ); ?></h1>
 	<hr class="wp-header-end">
-	<p>Settings page content goes here.</p>
+	<div id="alpaca-settings"></div>
 	</div>
 	<?php
 }

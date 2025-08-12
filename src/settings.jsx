@@ -1,5 +1,5 @@
 const AlpacaSettings = () => {
-  return;
+  return <p>I am a component</p>;
 };
 
 export default AlpacaSettings;

@@ -11,3 +11,7 @@ if (document.querySelector("#wp-admin-bar-alpaca-menu")) {
     document.querySelector("#wp-admin-bar-alpaca-report")
   );
 }
+
+if (document.querySelector("#alpaca-settings")) {
+  render(<AlpacaSettings />, document.querySelector("#alpaca-settings"));
+}
