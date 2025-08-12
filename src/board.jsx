@@ -19,6 +19,8 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 
+import { CSS } from "@dnd-kit/utilities";
+
 const AlpacaBoard = () => {
   function SortableItem({ id, content }) {
     const {
@@ -28,18 +30,22 @@ const AlpacaBoard = () => {
       transform,
       transition,
       isDragging,
-    } = useSortable({ id });
+    } = useSortable({
+      id,
+      animateLayoutChanges: () => false, // Disable all layout animations
+    });
 
     const style = {
-      transform: transform
-        ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
-        : undefined,
-      transition: isDragging ? "none" : transition, // disable transition while dragging
+      // Only apply transform when not dragging to prevent snap-back
+      transform: isDragging ? undefined : CSS.Transform.toString(transform),
+      // Only use transition when not dragging
+      transition: isDragging ? "none" : transition,
       padding: "8px 12px",
       margin: "4px 0",
       border: "1px solid #ccc",
-      backgroundColor: isDragging ? "#eee" : "white",
-      cursor: "grab",
+      backgroundColor: "white",
+      cursor: isDragging ? "grabbing" : "grab",
+      visibility: isDragging ? "hidden" : "visible",
     };
 
     return (
@@ -68,7 +74,7 @@ const AlpacaBoard = () => {
         <h3>{id.toUpperCase()}</h3>
         <SortableContext
           id={id}
-          items={hasItems ? items.map((item) => item.id) : [id]} // container id as dummy sortable item
+          items={hasItems ? items.map((item) => item.id) : [id]}
           strategy={verticalListSortingStrategy}
         >
           {hasItems ? (
@@ -76,7 +82,6 @@ const AlpacaBoard = () => {
               <SortableItem key={item.id} id={item.id} content={item.content} />
             ))
           ) : (
-            // Render the placeholder as a SortableItem so it can receive drops
             <SortableItem
               key={id}
               id={id}
@@ -100,7 +105,7 @@ const AlpacaBoard = () => {
       ],
       inprogress: [{ id: "c3", content: "Build UI" }],
       done: [{ id: "c4", content: "Deploy" }],
-      backlog: [], // empty container example
+      backlog: [],
     });
 
     const sensors = useSensors(
@@ -112,6 +117,7 @@ const AlpacaBoard = () => {
     );
 
     const [activeId, setActiveId] = useState(null);
+    const [draggedItem, setDraggedItem] = useState(null);
 
     function findContainer(id) {
       for (const key in containers) {
@@ -119,15 +125,24 @@ const AlpacaBoard = () => {
           return key;
         }
       }
-      // also check if id is a container id (for placeholders)
       if (containers[id] !== undefined) {
         return id;
       }
       return null;
     }
 
+    function getItemById(id) {
+      for (const containerItems of Object.values(containers)) {
+        const item = containerItems.find((item) => item.id === id);
+        if (item) return item;
+      }
+      return null;
+    }
+
     function handleDragStart(event) {
-      setActiveId(event.active.id);
+      const { active } = event;
+      setActiveId(active.id);
+      setDraggedItem(getItemById(active.id));
     }
 
     function handleDragEnd(event) {
@@ -135,6 +150,7 @@ const AlpacaBoard = () => {
 
       if (!over) {
         setActiveId(null);
+        setDraggedItem(null);
         return;
       }
 
@@ -143,47 +159,51 @@ const AlpacaBoard = () => {
 
       if (!activeContainer || !overContainer) {
         setActiveId(null);
+        setDraggedItem(null);
         return;
       }
 
-      if (activeContainer === overContainer) {
-        const items = containers[activeContainer];
-        const oldIndex = items.findIndex((i) => i.id === active.id);
-        let newIndex = items.findIndex((i) => i.id === over.id);
+      // Use requestAnimationFrame to ensure state updates happen after drag end
+      requestAnimationFrame(() => {
+        if (activeContainer === overContainer) {
+          const items = containers[activeContainer];
+          const oldIndex = items.findIndex((i) => i.id === active.id);
+          let newIndex = items.findIndex((i) => i.id === over.id);
 
-        // If dropped on placeholder (over.id === container id), put at end
-        if (newIndex === -1) {
-          newIndex = items.length - 1;
+          if (newIndex === -1) {
+            newIndex = items.length - 1;
+          }
+
+          if (oldIndex !== newIndex) {
+            const newItems = arrayMove(items, oldIndex, newIndex);
+            setContainers((prev) => ({
+              ...prev,
+              [activeContainer]: newItems,
+            }));
+          }
+        } else {
+          const activeItems = [...containers[activeContainer]];
+          const overItems = [...containers[overContainer]];
+          const activeIndex = activeItems.findIndex((i) => i.id === active.id);
+
+          let overIndex = overItems.findIndex((i) => i.id === over.id);
+          if (overIndex === -1) {
+            overIndex = overItems.length;
+          }
+
+          const [moved] = activeItems.splice(activeIndex, 1);
+          overItems.splice(overIndex, 0, moved);
+
+          setContainers((prev) => ({
+            ...prev,
+            [activeContainer]: activeItems,
+            [overContainer]: overItems,
+          }));
         }
 
-        if (oldIndex !== newIndex) {
-          const newItems = arrayMove(items, oldIndex, newIndex);
-          setContainers({
-            ...containers,
-            [activeContainer]: newItems,
-          });
-        }
-      } else {
-        // Move between containers
-        const activeItems = [...containers[activeContainer]];
-        const overItems = [...containers[overContainer]];
-        const activeIndex = activeItems.findIndex((i) => i.id === active.id);
-
-        let overIndex = overItems.findIndex((i) => i.id === over.id);
-        if (overIndex === -1) {
-          overIndex = overItems.length;
-        }
-
-        const [moved] = activeItems.splice(activeIndex, 1);
-        overItems.splice(overIndex, 0, moved);
-
-        setContainers({
-          ...containers,
-          [activeContainer]: activeItems,
-          [overContainer]: overItems,
-        });
-      }
-      setActiveId(null);
+        setActiveId(null);
+        setDraggedItem(null);
+      });
     }
 
     return (
@@ -199,16 +219,21 @@ const AlpacaBoard = () => {
           ))}
         </div>
 
-        <DragOverlay>
-          {activeId ? (
+        <DragOverlay dropAnimation={null}>
+          {activeId && draggedItem ? (
             <div
-              style={{ padding: 8, background: "lightblue", borderRadius: 4 }}
+              style={{
+                padding: "8px 12px",
+                margin: "4px 0",
+                background: "white",
+                borderRadius: 4,
+                border: "2px solid #007cba",
+                boxShadow: "0 5px 15px rgba(0,0,0,0.15)",
+                cursor: "grabbing",
+                transform: "rotate(5deg)",
+              }}
             >
-              {
-                containers[findContainer(activeId)].find(
-                  (i) => i.id === activeId
-                ).content
-              }
+              {draggedItem.content}
             </div>
           ) : null}
         </DragOverlay>
