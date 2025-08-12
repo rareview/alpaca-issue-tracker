@@ -12,9 +12,7 @@ import {
 
 import {
   SortableContext,
-  sortableKeyboardCoordinates,
   arrayMove,
-  rectSortingStrategy,
   useSortable,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
@@ -22,7 +20,7 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 
 const AlpacaBoard = () => {
-  function SortableItem({ id, content }) {
+  function SortableItem({ id, content, className, isDragDisabled = false }) {
     const {
       attributes,
       listeners,
@@ -32,24 +30,27 @@ const AlpacaBoard = () => {
       isDragging,
     } = useSortable({
       id,
-      animateLayoutChanges: () => false, // Disable all layout animations
+      animateLayoutChanges: () => false,
+      disabled: isDragDisabled,
     });
 
     const style = {
-      // Only apply transform when not dragging to prevent snap-back
       transform: isDragging ? undefined : CSS.Transform.toString(transform),
-      // Only use transition when not dragging
       transition: isDragging ? "none" : transition,
-      padding: "8px 12px",
-      margin: "4px 0",
-      border: "1px solid #ccc",
-      backgroundColor: "white",
-      cursor: isDragging ? "grabbing" : "grab",
+      cursor: isDragging ? "grabbing" : isDragDisabled ? "default" : "grab",
       visibility: isDragging ? "hidden" : "visible",
+      userSelect: isDragDisabled ? "none" : "auto",
     };
 
     return (
-      <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      <div
+        className={`${className}`}
+        ref={setNodeRef}
+        style={style}
+        {...(!isDragDisabled
+          ? { ...attributes, ...listeners }
+          : { tabIndex: -1 })}
+      >
         {content}
       </div>
     );
@@ -59,18 +60,7 @@ const AlpacaBoard = () => {
     const hasItems = items.length > 0;
 
     return (
-      <div
-        style={{
-          margin: "0 10px",
-          padding: "10px",
-          width: "250px",
-          background: "#f4f5f7",
-          borderRadius: "4px",
-          minHeight: "300px",
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
+      <div className="alpaca-container">
         <h3>{id.toUpperCase()}</h3>
         <SortableContext
           id={id}
@@ -79,17 +69,20 @@ const AlpacaBoard = () => {
         >
           {hasItems ? (
             items.map((item) => (
-              <SortableItem key={item.id} id={item.id} content={item.content} />
+              <SortableItem
+                className="alpaca-item"
+                key={item.id}
+                id={item.id}
+                content={item.content}
+              />
             ))
           ) : (
             <SortableItem
               key={id}
               id={id}
-              content={
-                <i style={{ color: "#999", fontStyle: "italic" }}>
-                  Drop items here
-                </i>
-              }
+              className="alpaca-item empty"
+              content={"Drop items here"}
+              isDragDisabled={true}
             />
           )}
         </SortableContext>
@@ -163,7 +156,6 @@ const AlpacaBoard = () => {
         return;
       }
 
-      // Use requestAnimationFrame to ensure state updates happen after drag end
       requestAnimationFrame(() => {
         if (activeContainer === overContainer) {
           const items = containers[activeContainer];
@@ -213,7 +205,7 @@ const AlpacaBoard = () => {
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        <div style={{ display: "flex", padding: "10px" }}>
+        <div className="alpaca-wrap">
           {Object.entries(containers).map(([containerId, items]) => (
             <Container key={containerId} id={containerId} items={items} />
           ))}
@@ -221,20 +213,7 @@ const AlpacaBoard = () => {
 
         <DragOverlay dropAnimation={null}>
           {activeId && draggedItem ? (
-            <div
-              style={{
-                padding: "8px 12px",
-                margin: "4px 0",
-                background: "white",
-                borderRadius: 4,
-                border: "2px solid #007cba",
-                boxShadow: "0 5px 15px rgba(0,0,0,0.15)",
-                cursor: "grabbing",
-                transform: "rotate(5deg)",
-              }}
-            >
-              {draggedItem.content}
-            </div>
+            <div className="alpaca-item-dragging">{draggedItem.content}</div>
           ) : null}
         </DragOverlay>
       </DndContext>
