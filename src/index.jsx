@@ -15,3 +15,7 @@ if (document.querySelector("#wp-admin-bar-alpaca-menu")) {
 if (document.querySelector("#alpaca-settings")) {
   render(<AlpacaSettings />, document.querySelector("#alpaca-settings"));
 }
+
+if (document.querySelector("#alpaca-board")) {
+  render(<AlpacaBoard />, document.querySelector("#alpaca-board"));
+}
