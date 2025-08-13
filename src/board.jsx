@@ -1,5 +1,6 @@
-const { useState } = wp.element;
+const { useState, useRef, useEffect } = wp.element;
 const { decodeEntities } = wp.htmlEntities;
+const { Modal, Button } = wp.components;
 
 import {
   DndContext,
@@ -180,6 +181,8 @@ function Board() {
   );
 
   const [activeId, setActiveId] = useState(null);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const triggerRef = useRef(null); // To store the element that opened the modal
   const [draggedItem, setDraggedItem] = useState(null);
 
   function findContainerByItemId(itemId) {
@@ -298,12 +301,28 @@ function Board() {
   }
 
   const handleItemClick = (event, itemId) => {
-    const clickedItem = getItemById(itemId);
-    if (clickedItem) {
-      console.log(`Clicked: "${clickedItem.content}"`);
-    }
+    // Store the trigger element so we can return focus to it when the modal closes.
+    triggerRef.current = event.currentTarget;
+
+    // Immediately blur the clicked item. This prevents the accessibility warning
+    // by ensuring the item doesn't have focus when the modal applies `aria-hidden`
+    // to the rest of the page. The Modal component will then trap focus inside itself.
+    event.currentTarget.blur();
+
+    const item = getItemById(itemId);
+    setSelectedItem(item);
   };
 
+  const closeModal = () => {
+    setSelectedItem(null);
+  };
+
+  // When the modal closes, return focus to the element that opened it.
+  useEffect(() => {
+    if (selectedItem === null && triggerRef.current) {
+      triggerRef.current.focus();
+    }
+  }, [selectedItem]);
   return (
     <DndContext
       sensors={sensors}
@@ -329,6 +348,20 @@ function Board() {
           <div className="alpaca-item-dragging">{draggedItem.content}</div>
         ) : null}
       </DragOverlay>
+
+      {selectedItem && (
+        <Modal title="Issue Details" onRequestClose={closeModal}>
+          <p>
+            <strong>ID:</strong> {selectedItem.id}
+          </p>
+          <p>
+            <strong>Title:</strong> {selectedItem.content}
+          </p>
+          <Button isPrimary onClick={closeModal}>
+            Close
+          </Button>
+        </Modal>
+      )}
     </DndContext>
   );
 }

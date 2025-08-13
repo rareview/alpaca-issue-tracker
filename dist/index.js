@@ -1050,8 +1050,9 @@ parcelHelpers.export(exports, "default", ()=>AlpacaBoard);
 var _core = require("@dnd-kit/core");
 var _sortable = require("@dnd-kit/sortable");
 var _utilities = require("@dnd-kit/utilities");
-const { useState } = wp.element;
+const { useState, useRef, useEffect } = wp.element;
 const { decodeEntities } = wp.htmlEntities;
+const { Modal, Button } = wp.components;
 /**
  * Transform server data into array format for board state.
  * @param {Array} data The data from `alpaca_get_board_data`.
@@ -1125,7 +1126,7 @@ const { decodeEntities } = wp.htmlEntities;
         "data-id": id,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 112,
+            lineNumber: 113,
             columnNumber: 5
         },
         __self: this
@@ -1140,7 +1141,7 @@ const { decodeEntities } = wp.htmlEntities;
         "data-id": id,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 134,
+            lineNumber: 135,
             columnNumber: 5
         },
         __self: this
@@ -1148,7 +1149,7 @@ const { decodeEntities } = wp.htmlEntities;
         className: "alpaca-container-title",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 135,
+            lineNumber: 136,
             columnNumber: 7
         },
         __self: this
@@ -1160,7 +1161,7 @@ const { decodeEntities } = wp.htmlEntities;
         strategy: (0, _sortable.verticalListSortingStrategy),
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 136,
+            lineNumber: 137,
             columnNumber: 7
         },
         __self: this
@@ -1172,7 +1173,7 @@ const { decodeEntities } = wp.htmlEntities;
             onClick: onItemClick,
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 143,
+                lineNumber: 144,
                 columnNumber: 13
             },
             __self: this
@@ -1184,7 +1185,7 @@ const { decodeEntities } = wp.htmlEntities;
         isDragDisabled: true,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 152,
+            lineNumber: 153,
             columnNumber: 11
         },
         __self: this
@@ -1203,6 +1204,8 @@ const { decodeEntities } = wp.htmlEntities;
         }
     }));
     const [activeId, setActiveId] = useState(null);
+    const [selectedItem, setSelectedItem] = useState(null);
+    const triggerRef = useRef(null); // To store the element that opened the modal
     const [draggedItem, setDraggedItem] = useState(null);
     function findContainerByItemId(itemId) {
         return containers.find((c)=>c.items.some((item)=>item.id === itemId));
@@ -1287,9 +1290,24 @@ const { decodeEntities } = wp.htmlEntities;
         });
     }
     const handleItemClick = (event, itemId)=>{
-        const clickedItem = getItemById(itemId);
-        if (clickedItem) console.log(`Clicked: "${clickedItem.content}"`);
+        // Store the trigger element so we can return focus to it when the modal closes.
+        triggerRef.current = event.currentTarget;
+        // Immediately blur the clicked item. This prevents the accessibility warning
+        // by ensuring the item doesn't have focus when the modal applies `aria-hidden`
+        // to the rest of the page. The Modal component will then trap focus inside itself.
+        event.currentTarget.blur();
+        const item = getItemById(itemId);
+        setSelectedItem(item);
     };
+    const closeModal = ()=>{
+        setSelectedItem(null);
+    };
+    // When the modal closes, return focus to the element that opened it.
+    useEffect(()=>{
+        if (selectedItem === null && triggerRef.current) triggerRef.current.focus();
+    }, [
+        selectedItem
+    ]);
     return /*#__PURE__*/ React.createElement((0, _core.DndContext), {
         sensors: sensors,
         collisionDetection: (0, _core.closestCenter),
@@ -1298,7 +1316,7 @@ const { decodeEntities } = wp.htmlEntities;
         onDragEnd: handleDragEnd,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 308,
+            lineNumber: 327,
             columnNumber: 5
         },
         __self: this
@@ -1306,7 +1324,7 @@ const { decodeEntities } = wp.htmlEntities;
         className: "alpaca-wrap",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 315,
+            lineNumber: 334,
             columnNumber: 7
         },
         __self: this
@@ -1318,7 +1336,7 @@ const { decodeEntities } = wp.htmlEntities;
             onItemClick: handleItemClick,
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 317,
+                lineNumber: 336,
                 columnNumber: 11
             },
             __self: this
@@ -1326,7 +1344,7 @@ const { decodeEntities } = wp.htmlEntities;
         dropAnimation: null,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 327,
+            lineNumber: 346,
             columnNumber: 7
         },
         __self: this
@@ -1334,17 +1352,63 @@ const { decodeEntities } = wp.htmlEntities;
         className: "alpaca-item-dragging",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 329,
+            lineNumber: 348,
             columnNumber: 11
         },
         __self: this
-    }, draggedItem.content) : null));
+    }, draggedItem.content) : null), selectedItem && /*#__PURE__*/ React.createElement(Modal, {
+        title: "Issue Details",
+        onRequestClose: closeModal,
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 353,
+            columnNumber: 9
+        },
+        __self: this
+    }, /*#__PURE__*/ React.createElement("p", {
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 354,
+            columnNumber: 11
+        },
+        __self: this
+    }, /*#__PURE__*/ React.createElement("strong", {
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 355,
+            columnNumber: 13
+        },
+        __self: this
+    }, "ID:"), " ", selectedItem.id), /*#__PURE__*/ React.createElement("p", {
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 357,
+            columnNumber: 11
+        },
+        __self: this
+    }, /*#__PURE__*/ React.createElement("strong", {
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 358,
+            columnNumber: 13
+        },
+        __self: this
+    }, "Title:"), " ", selectedItem.content), /*#__PURE__*/ React.createElement(Button, {
+        isPrimary: true,
+        onClick: closeModal,
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 360,
+            columnNumber: 11
+        },
+        __self: this
+    }, "Close")));
 }
 function AlpacaBoard() {
     return /*#__PURE__*/ React.createElement(Board, {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 337,
+            lineNumber: 370,
             columnNumber: 10
         },
         __self: this
