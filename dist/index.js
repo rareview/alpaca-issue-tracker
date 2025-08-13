@@ -1267,6 +1267,24 @@ const { decodeEntities } = wp.htmlEntities;
                     } : c));
         }
         saveBoardOrder();
+        // Send REST API call to update taxonomy term (status)
+        const movedItemId = parseInt(active.id, 10);
+        const newStatusTermId = parseInt(overContainer.id, 10);
+        wp.apiFetch({
+            path: `/issue/v1/update/${movedItemId}`,
+            method: "POST",
+            data: {
+                taxonomies: {
+                    status: [
+                        newStatusTermId
+                    ]
+                }
+            }
+        }).then((res)=>{
+            console.log("Issue updated successfully:", res);
+        }).catch((err)=>{
+            console.error("Error updating issue:", err);
+        });
     }
     const handleItemClick = (event, itemId)=>{
         console.log(`Item clicked: ${itemId}`);
@@ -1281,7 +1299,7 @@ const { decodeEntities } = wp.htmlEntities;
         onDragEnd: handleDragEnd,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 290,
+            lineNumber: 310,
             columnNumber: 5
         },
         __self: this
@@ -1289,7 +1307,7 @@ const { decodeEntities } = wp.htmlEntities;
         className: "alpaca-wrap",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 297,
+            lineNumber: 317,
             columnNumber: 7
         },
         __self: this
@@ -1301,7 +1319,7 @@ const { decodeEntities } = wp.htmlEntities;
             onItemClick: handleItemClick,
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 299,
+                lineNumber: 319,
                 columnNumber: 11
             },
             __self: this
@@ -1309,7 +1327,7 @@ const { decodeEntities } = wp.htmlEntities;
         dropAnimation: null,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 309,
+            lineNumber: 329,
             columnNumber: 7
         },
         __self: this
@@ -1317,7 +1335,7 @@ const { decodeEntities } = wp.htmlEntities;
         className: "alpaca-item-dragging",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 311,
+            lineNumber: 331,
             columnNumber: 11
         },
         __self: this
@@ -1327,7 +1345,7 @@ function AlpacaBoard() {
     return /*#__PURE__*/ React.createElement(Board, {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 319,
+            lineNumber: 339,
             columnNumber: 10
         },
         __self: this

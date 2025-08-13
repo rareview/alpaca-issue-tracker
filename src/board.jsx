@@ -276,6 +276,26 @@ function Board() {
     }
 
     saveBoardOrder();
+
+    // Send REST API call to update taxonomy term (status)
+    const movedItemId = parseInt(active.id, 10);
+    const newStatusTermId = parseInt(overContainer.id, 10);
+
+    wp.apiFetch({
+      path: `/issue/v1/update/${movedItemId}`,
+      method: "POST",
+      data: {
+        taxonomies: {
+          status: [newStatusTermId],
+        },
+      },
+    })
+      .then((res) => {
+        console.log("Issue updated successfully:", res);
+      })
+      .catch((err) => {
+        console.error("Error updating issue:", err);
+      });
   }
 
   const handleItemClick = (event, itemId) => {

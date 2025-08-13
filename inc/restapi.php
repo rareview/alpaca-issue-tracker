@@ -164,31 +164,89 @@ function alpaca_update_board_data_callback( WP_REST_Request $request ) {
 
 	return new WP_REST_Response( [ 'success' => true, 'message' => 'Board order saved successfully.' ], 200 );
 }
-// 	    if( $post_id ) {
-// 			wp_set_post_terms( $post_id, $json['browser']['name'], 'browser' );
-// // 			wp_set_post_terms( $post_id, $json['wp']['post']['template'], 'template' );
-// // 			might need to drop this... seems to be an issue with block themes
-// 			wp_set_post_terms( $post_id, $json['wp']['post']['type'], 'type' );
-// //			☝️ this line gives a PHP warning: Undefined array key "post"
-// //			and then: Trying to access array offset on value of type null
-// 			wp_set_post_terms( $post_id, $json['wp']['query'], 'query' );
 
-// 			$todoterm = term_exists( 'to-do', 'status' );
-// 			wp_set_post_terms( $post_id, $todoterm, 'status' );
+add_action( 'rest_api_init', 'alpaca_update_issue' );
+function alpaca_update_issue() {
+    register_rest_route(
+        'issue/v1',
+        '/update/(?P<id>\d+)',
+        array(
+            'methods'  => 'POST',
+            'callback' => 'alpaca_update_issue_callback',
+            'permission_callback' => function () {
+                return current_user_can( 'edit_posts' );
+            },
+            'args' => array(
+                'id' => array(
+                    'validate_callback' => function ( $param ) {
+                        return is_numeric( $param ) && $param > 0;
+                    }
+                )
+            )
+        )
+    );
+}
 
-// 			update_post_meta( $post_id, 'permalink', $json['browser']['url'] );
-// 			update_post_meta( $post_id, 'server', json_encode( $json['server'] ) );
-// 			update_post_meta( $post_id, 'session', json_encode( $json['session'] ) );
-// 			update_post_meta( $post_id, 'get', json_encode( $json['get'] ) );
-// 			update_post_meta( $post_id, 'post', json_encode( $json['post'] ) );
-// 			update_post_meta( $post_id, 'query_vars', json_encode( $json['wp']['query_vars'] ) );
-// 			update_post_meta( $post_id, 'active_plugins', json_encode( $json['wp']['active_plugins'] ) );
-// 			update_post_meta( $post_id, 'screenshot', $json['screenshot'] );
+function alpaca_update_issue_callback( WP_REST_Request $request ) {
+    $issue_id = (int) $request['id'];
+    $data     = $request->get_json_params();
 
-// 			if( $json['wp']['query'] === 'singular' ) {
-// 				wp_update_post( array(
-// 					'ID' => $post_id,
-// 					'post_parent' => $json['wp']['post']['id']
-// 				));
-// 			}
-// 		}
+    // Check post exists and is an 'issue'
+    $post = get_post( $issue_id );
+    if ( ! $post || $post->post_type !== 'issue' ) {
+        return new WP_REST_Response(
+            array(
+                'success' => false,
+                'message' => 'Issue not found.',
+            ),
+            404
+        );
+    }
+
+    // Prepare updated post args
+    $post_args = array(
+        'ID'           => $issue_id,
+        'post_title'   => isset( $data['title'] ) ? wp_kses_post( $data['title'] ) : $post->post_title,
+        'post_content' => isset( $data['content'] ) ? wp_kses_post( $data['content'] ) : $post->post_content,
+    );
+
+    // Update the post
+    $update_result = wp_update_post( $post_args, true );
+
+    if ( is_wp_error( $update_result ) ) {
+        return new WP_REST_Response(
+            array(
+                'success' => false,
+                'message' => 'Failed to update the issue.',
+            ),
+            500
+        );
+    }
+
+    // Update taxonomies if provided
+    if ( isset( $data['taxonomies'] ) && is_array( $data['taxonomies'] ) ) {
+        foreach ( $data['taxonomies'] as $taxonomy => $terms ) {
+            if ( taxonomy_exists( $taxonomy ) ) {
+                // Force integers to avoid WP creating new terms
+                $term_ids = array_map( 'intval', (array) $terms );
+                wp_set_post_terms( $issue_id, $term_ids, $taxonomy, false );
+            }
+        }
+    }
+
+    // Update meta fields if provided
+    if ( isset( $data['meta'] ) && is_array( $data['meta'] ) ) {
+        foreach ( $data['meta'] as $meta_key => $meta_value ) {
+            update_post_meta( $issue_id, sanitize_key( $meta_key ), maybe_serialize( $meta_value ) );
+        }
+    }
+
+    return new WP_REST_Response(
+        array(
+            'success' => true,
+            'message' => 'Issue updated successfully.',
+            'post_id' => $issue_id,
+        ),
+        200
+    );
+}
