@@ -1,5 +1,5 @@
-import { useState, createElement } from "react";
-import { render } from "react-dom";
+const { useState } = wp.element;
+const { decodeEntities } = wp.htmlEntities;
 
 import {
   DndContext,
@@ -20,308 +20,288 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 
 /**
- * Transforms the data from WordPress (via wp_localize_script)
- * into the format required by the Board component's state.
+ * Transform server data into array format for board state.
  * @param {Array} data The data from `alpaca_get_board_data`.
- * @returns {Object} The state object for the Board component.
  */
 const transformDataForBoard = (data) => {
-  if (!data || !Array.isArray(data)) {
-    return {};
-  }
-
-  const boardState = {};
-  data.forEach((column) => {
-    boardState[column.title] = column.issues.map((issue) => ({
-      id: issue.id.toString(), // dnd-kit works best with string IDs
-      content: issue.title,
-    }));
-  });
-  return boardState;
+  if (!data || !Array.isArray(data)) return [];
+  return data.map((column) => ({
+    id: column.id.toString(),
+    title: decodeEntities(column.title),
+    items: column.issues.map((issue) => ({
+      id: issue.id.toString(),
+      content: decodeEntities(issue.title),
+    })),
+  }));
 };
 
-const AlpacaBoard = () => {
+/**
+ * Save board order in DOM order, including container IDs & titles.
+ */
+const saveBoardOrder = () => {
+  const containersInDomOrder = document.querySelectorAll(".alpaca-container");
+
+  const data = Array.from(containersInDomOrder).map((containerEl) => {
+    const id = parseInt(containerEl.dataset.id, 10);
+    const title = containerEl.querySelector("h2").textContent.trim();
+    const items = containerEl.querySelectorAll(".alpaca-item");
+
+    return {
+      id,
+      title,
+      issues: Array.from(items).map((itemEl) => ({
+        id: parseInt(itemEl.dataset.id, 10),
+        title: itemEl.textContent.trim(),
+      })),
+    };
+  });
+
+  console.log(data);
+};
+
+/**
+ * Sortable item component.
+ */
+function SortableItem({
+  id,
+  content,
+  className,
+  isDragDisabled = false,
+  onClick,
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id,
+    animateLayoutChanges: () => false,
+    disabled: isDragDisabled,
+  });
+
+  const style = {
+    transform: isDragging ? undefined : CSS.Transform.toString(transform),
+    transition: isDragging ? "none" : transition,
+    cursor: isDragging ? "grabbing" : isDragDisabled ? "default" : "grab",
+    visibility: isDragging ? "hidden" : "visible",
+    userSelect: isDragDisabled ? "none" : "auto",
+  };
+
+  const handleClick = (event) => {
+    if (!isDragging && onClick) {
+      onClick(event, id);
+    }
+  };
+
   return (
-    <>
-      <Board />
-    </>
+    <div
+      className={`${className}`}
+      ref={setNodeRef}
+      style={style}
+      {...(!isDragDisabled
+        ? { ...attributes, ...listeners }
+        : { tabIndex: -1 })}
+      onClick={handleClick}
+      data-id={id}
+    >
+      {content}
+    </div>
+  );
+}
+
+/**
+ * Container component.
+ */
+function Container({ id, title, items, onItemClick }) {
+  const hasItems = items.length > 0;
+
+  return (
+    <div className="alpaca-container" data-id={id}>
+      <h2 className="alpaca-container-title">{title}</h2>
+      <SortableContext
+        id={id}
+        items={hasItems ? items.map((item) => item.id) : [id]}
+        strategy={verticalListSortingStrategy}
+      >
+        {hasItems ? (
+          items.map((item) => (
+            <SortableItem
+              className="alpaca-item"
+              key={item.id}
+              id={item.id}
+              content={item.content}
+              onClick={onItemClick}
+            />
+          ))
+        ) : (
+          <SortableItem
+            key={id}
+            id={id}
+            className="alpaca-item empty"
+            content={"Drop items here"}
+            isDragDisabled={true}
+          />
+        )}
+      </SortableContext>
+    </div>
+  );
+}
+
+/**
+ * Main board component.
+ */
+function Board() {
+  const [containers, setContainers] = useState(() => {
+    if (typeof alpacaBoardData !== "undefined") {
+      return transformDataForBoard(alpacaBoardData);
+    }
+    return [];
+  });
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 5 },
+    })
   );
 
-  // SortableItem component: Represents a draggable and sortable item
-  function SortableItem({
-    id,
-    content,
-    className,
-    isDragDisabled = false,
-    onClick,
-  }) {
-    // Added onClick prop
-    const {
-      attributes,
-      listeners,
-      setNodeRef,
-      transform,
-      transition,
-      isDragging,
-    } = useSortable({
-      id,
-      animateLayoutChanges: () => false,
-      disabled: isDragDisabled,
-    });
+  const [activeId, setActiveId] = useState(null);
+  const [draggedItem, setDraggedItem] = useState(null);
 
-    const style = {
-      transform: isDragging ? undefined : CSS.Transform.toString(transform),
-      transition: isDragging ? "none" : transition,
-      cursor: isDragging ? "grabbing" : isDragDisabled ? "default" : "grab",
-      visibility: isDragging ? "hidden" : "visible",
-      userSelect: isDragDisabled ? "none" : "auto",
-    };
-
-    // Handle click event: only trigger if not currently dragging
-    const handleClick = (event) => {
-      if (!isDragging && onClick) {
-        onClick(event, id); // Pass the event and item ID to the onClick handler
-      }
-    };
-
-    return (
-      <div
-        className={`${className}`}
-        ref={setNodeRef}
-        style={style}
-        {...(!isDragDisabled
-          ? { ...attributes, ...listeners }
-          : { tabIndex: -1 })}
-        onClick={handleClick} // Attach the click handler
-      >
-        {content}
-      </div>
-    );
+  function findContainerByItemId(itemId) {
+    return containers.find((c) => c.items.some((item) => item.id === itemId));
   }
 
-  // Container component: Holds a list of sortable items
-  function Container({ id, items, onItemClick }) {
-    // Added onItemClick prop
-    const hasItems = items.length > 0;
-
-    return (
-      <div className="alpaca-container">
-        <h2>{id}</h2>
-        <SortableContext
-          id={id}
-          items={hasItems ? items.map((item) => item.id) : [id]}
-          strategy={verticalListSortingStrategy}
-        >
-          {hasItems ? (
-            items.map((item) => (
-              <SortableItem
-                className="alpaca-item"
-                key={item.id}
-                id={item.id}
-                content={item.content}
-                onClick={onItemClick} // Pass the click handler down
-              />
-            ))
-          ) : (
-            <SortableItem
-              key={id}
-              id={id}
-              className="alpaca-item empty"
-              content={"Drop items here"}
-              isDragDisabled={true}
-            />
-          )}
-        </SortableContext>
-      </div>
-    );
+  function findContainerById(containerId) {
+    return containers.find((c) => c.id === containerId);
   }
 
-  // Board component: Manages the overall DndContext and state
-  function Board() {
-    const [containers, setContainers] = useState(() => {
-      // `alpacaBoardData` is localized from PHP in alpaca.php
-      if (typeof alpacaBoardData !== "undefined") {
-        return transformDataForBoard(alpacaBoardData);
+  function getItemById(itemId) {
+    for (const container of containers) {
+      const item = container.items.find((item) => item.id === itemId);
+      if (item) return item;
+    }
+    return null;
+  }
+
+  function handleDragStart(event) {
+    const { active } = event;
+    setActiveId(active.id);
+    setDraggedItem(getItemById(active.id));
+  }
+
+  function handleDragOver(event) {
+    const { active, over } = event;
+    if (!over) return;
+
+    const activeContainer = findContainerByItemId(active.id);
+    const overContainer =
+      findContainerByItemId(over.id) || findContainerById(over.id);
+
+    if (
+      !activeContainer ||
+      !overContainer ||
+      activeContainer.id === overContainer.id
+    ) {
+      return;
+    }
+
+    setContainers((prev) => {
+      const newContainers = prev.map((c) => ({ ...c, items: [...c.items] }));
+
+      const source = newContainers.find((c) => c.id === activeContainer.id);
+      const destination = newContainers.find((c) => c.id === overContainer.id);
+
+      const activeIndex = source.items.findIndex(
+        (item) => item.id === active.id
+      );
+      const [movedItem] = source.items.splice(activeIndex, 1);
+
+      let newIndex;
+      if (over.id === overContainer.id) {
+        newIndex = destination.items.length;
+      } else {
+        newIndex = destination.items.findIndex((item) => item.id === over.id);
+        if (newIndex === -1) newIndex = destination.items.length;
       }
-      return {}; // Start with an empty board if no data is passed
+
+      destination.items.splice(newIndex, 0, movedItem);
+
+      return newContainers;
     });
+  }
 
-    // Configure sensors for drag interactions (PointerSensor for mouse/touch)
-    const sensors = useSensors(
-      useSensor(PointerSensor, {
-        activationConstraint: {
-          distance: 5,
-        },
-      })
-    );
+  function handleDragEnd(event) {
+    const { active, over } = event;
+    setActiveId(null);
+    setDraggedItem(null);
 
-    const [activeId, setActiveId] = useState(null);
-    const [draggedItem, setDraggedItem] = useState(null);
+    if (!over) return;
 
-    // Helper function to find which container an item belongs to
-    function findContainer(id) {
-      for (const key in containers) {
-        if (containers[key].some((item) => item.id === id)) {
-          return key;
-        }
-      }
-      if (containers[id] !== undefined) {
-        return id;
-      }
-      return null;
-    }
+    const activeContainer = findContainerByItemId(active.id);
+    const overContainer =
+      findContainerByItemId(over.id) || findContainerById(over.id);
 
-    // Helper function to get the full item object by its ID
-    function getItemById(id) {
-      for (const containerItems of Object.values(containers)) {
-        const item = containerItems.find((item) => item.id === id);
-        if (item) return item;
-      }
-      return null;
-    }
+    if (!activeContainer || !overContainer) return;
 
-    // Handler for when a drag operation starts
-    function handleDragStart(event) {
-      const { active } = event;
-      setActiveId(active.id);
-      setDraggedItem(getItemById(active.id));
-    }
+    if (activeContainer.id === overContainer.id) {
+      const items = activeContainer.items;
+      const oldIndex = items.findIndex((i) => i.id === active.id);
+      const newIndex = items.findIndex((i) => i.id === over.id);
 
-    // Handler for when a draggable item is dragged over a droppable area
-    function handleDragOver(event) {
-      const { active, over } = event;
-
-      if (!over) return;
-
-      const activeContainer = findContainer(active.id);
-      const overContainer = findContainer(over.id);
-
-      if (
-        !activeContainer ||
-        !overContainer ||
-        activeContainer === overContainer
-      ) {
-        return;
-      }
-
-      setContainers((prevContainers) => {
-        const newContainers = { ...prevContainers };
-
-        const activeItems = [...newContainers[activeContainer]];
-        const overItems = [...newContainers[overContainer]];
-
-        const activeIndex = activeItems.findIndex(
-          (item) => item.id === active.id
+      if (oldIndex !== newIndex) {
+        setContainers((prev) =>
+          prev.map((c) =>
+            c.id === activeContainer.id
+              ? { ...c, items: arrayMove(items, oldIndex, newIndex) }
+              : c
+          )
         );
-
-        if (activeIndex === -1) {
-          return prevContainers;
-        }
-
-        const [movedItem] = activeItems.splice(activeIndex, 1);
-
-        let newIndex;
-        if (
-          over.id === overContainer ||
-          over.id === overItems[overItems.length - 1]?.id
-        ) {
-          newIndex = overItems.length;
-        } else {
-          newIndex = overItems.findIndex((item) => item.id === over.id);
-          if (newIndex === -1) {
-            newIndex = overItems.length;
-          }
-        }
-
-        overItems.splice(newIndex, 0, movedItem);
-
-        newContainers[activeContainer] = activeItems;
-        newContainers[overContainer] = overItems;
-
-        return newContainers;
-      });
+      }
     }
 
-    // Handler for when a drag operation ends
-    function handleDragEnd(event) {
-      const { active, over } = event;
-
-      setActiveId(null);
-      setDraggedItem(null);
-
-      if (!over) {
-        return;
-      }
-
-      const activeContainer = findContainer(active.id);
-      const overContainer = findContainer(over.id);
-
-      if (!activeContainer || !overContainer) {
-        return;
-      }
-
-      if (activeContainer === overContainer) {
-        const items = containers[activeContainer];
-        const oldIndex = items.findIndex((i) => i.id === active.id);
-        const newIndex = items.findIndex((i) => i.id === over.id);
-
-        if (oldIndex !== newIndex) {
-          setContainers((prev) => ({
-            ...prev,
-            [activeContainer]: arrayMove(items, oldIndex, newIndex),
-          }));
-        }
-      }
-      console.log("Drag is finished");
-    }
-
-    // NEW: Function to handle item clicks
-    const handleItemClick = (event, itemId) => {
-      console.log(`Item clicked: ${itemId}`);
-      // You can add any action here, e.g., open a modal, show details, etc.
-      // For demonstration, let's find the item and log its content
-      const clickedItem = getItemById(itemId);
-      if (clickedItem) {
-        console.log(`Content: "${clickedItem.content}"`);
-      }
-    };
-
-    return (
-      <div className="min-h-screen bg-gradient-br flex items-center justify-center py-8">
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragStart={handleDragStart}
-          onDragOver={handleDragOver}
-          onDragEnd={handleDragEnd}
-        >
-          <div className="alpaca-wrap">
-            {Object.entries(containers).map(([containerId, items]) => (
-              <Container
-                key={containerId}
-                id={containerId}
-                items={items}
-                onItemClick={handleItemClick}
-              />
-            ))}
-          </div>
-
-          <DragOverlay dropAnimation={null}>
-            {activeId && draggedItem ? (
-              <div className="alpaca-item-dragging">{draggedItem.content}</div>
-            ) : null}
-          </DragOverlay>
-        </DndContext>
-      </div>
-    );
+    saveBoardOrder();
   }
 
-  wp.domReady(() => {
-    const el = document.getElementById("alpaca-board");
-    if (el) {
-      render(<Board />, el);
+  const handleItemClick = (event, itemId) => {
+    console.log(`Item clicked: ${itemId}`);
+    const clickedItem = getItemById(itemId);
+    if (clickedItem) {
+      console.log(`Content: "${clickedItem.content}"`);
     }
-  });
-};
+  };
 
-export default AlpacaBoard;
+  return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDragEnd={handleDragEnd}
+    >
+      <div className="alpaca-wrap">
+        {containers.map((container) => (
+          <Container
+            key={container.id}
+            id={container.id}
+            title={container.title}
+            items={container.items}
+            onItemClick={handleItemClick}
+          />
+        ))}
+      </div>
+
+      <DragOverlay dropAnimation={null}>
+        {activeId && draggedItem ? (
+          <div className="alpaca-item-dragging">{draggedItem.content}</div>
+        ) : null}
+      </DragOverlay>
+    </DndContext>
+  );
+}
+
+export default function AlpacaBoard() {
+  return <Board />;
+}

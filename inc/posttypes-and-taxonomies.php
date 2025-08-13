@@ -63,7 +63,7 @@ add_action( 'status_edit_form_fields', function( $term ) {
     <tr class="form-field">
         <th scope="row"><label for="term_score"><?php _e( 'Score', 'textdomain' ); ?></label></th>
         <td>
-            <input type="number" name="term_score" id="term_score" value="<?php echo esc_attr( $score ); ?>" step="1" min="0">
+            <input type="number" name="term_score" id="term_score" value="<?php echo esc_attr( $score ); ?>" step="1">
             <p class="description"><?php _e( 'Enter a numerical score for sorting purposes.', 'textdomain' ); ?></p>
         </td>
     </tr>
