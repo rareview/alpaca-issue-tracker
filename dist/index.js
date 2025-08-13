@@ -1073,7 +1073,8 @@ const { decodeEntities } = wp.htmlEntities;
     const data = Array.from(containersInDomOrder).map((containerEl)=>{
         const id = parseInt(containerEl.dataset.id, 10);
         const title = containerEl.querySelector("h2").textContent.trim();
-        const items = containerEl.querySelectorAll(".alpaca-item");
+        // Select all items except for the empty placeholder.
+        const items = containerEl.querySelectorAll(".alpaca-item:not(.empty)");
         return {
             id,
             title,
@@ -1125,7 +1126,7 @@ const { decodeEntities } = wp.htmlEntities;
         "data-id": id,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 113,
+            lineNumber: 114,
             columnNumber: 5
         },
         __self: this
@@ -1140,7 +1141,7 @@ const { decodeEntities } = wp.htmlEntities;
         "data-id": id,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 135,
+            lineNumber: 136,
             columnNumber: 5
         },
         __self: this
@@ -1148,7 +1149,7 @@ const { decodeEntities } = wp.htmlEntities;
         className: "alpaca-container-title",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 136,
+            lineNumber: 137,
             columnNumber: 7
         },
         __self: this
@@ -1160,7 +1161,7 @@ const { decodeEntities } = wp.htmlEntities;
         strategy: (0, _sortable.verticalListSortingStrategy),
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 137,
+            lineNumber: 138,
             columnNumber: 7
         },
         __self: this
@@ -1172,7 +1173,7 @@ const { decodeEntities } = wp.htmlEntities;
             onClick: onItemClick,
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 144,
+                lineNumber: 145,
                 columnNumber: 13
             },
             __self: this
@@ -1184,7 +1185,7 @@ const { decodeEntities } = wp.htmlEntities;
         isDragDisabled: true,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 153,
+            lineNumber: 154,
             columnNumber: 11
         },
         __self: this
@@ -1299,7 +1300,7 @@ const { decodeEntities } = wp.htmlEntities;
         onDragEnd: handleDragEnd,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 310,
+            lineNumber: 311,
             columnNumber: 5
         },
         __self: this
@@ -1307,7 +1308,7 @@ const { decodeEntities } = wp.htmlEntities;
         className: "alpaca-wrap",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 317,
+            lineNumber: 318,
             columnNumber: 7
         },
         __self: this
@@ -1319,7 +1320,7 @@ const { decodeEntities } = wp.htmlEntities;
             onItemClick: handleItemClick,
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 319,
+                lineNumber: 320,
                 columnNumber: 11
             },
             __self: this
@@ -1327,7 +1328,7 @@ const { decodeEntities } = wp.htmlEntities;
         dropAnimation: null,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 329,
+            lineNumber: 330,
             columnNumber: 7
         },
         __self: this
@@ -1335,7 +1336,7 @@ const { decodeEntities } = wp.htmlEntities;
         className: "alpaca-item-dragging",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 331,
+            lineNumber: 332,
             columnNumber: 11
         },
         __self: this
@@ -1345,7 +1346,7 @@ function AlpacaBoard() {
     return /*#__PURE__*/ React.createElement(Board, {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 339,
+            lineNumber: 340,
             columnNumber: 10
         },
         __self: this

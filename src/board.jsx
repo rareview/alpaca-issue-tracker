@@ -44,7 +44,8 @@ const saveBoardOrder = () => {
   const data = Array.from(containersInDomOrder).map((containerEl) => {
     const id = parseInt(containerEl.dataset.id, 10);
     const title = containerEl.querySelector("h2").textContent.trim();
-    const items = containerEl.querySelectorAll(".alpaca-item");
+    // Select all items except for the empty placeholder.
+    const items = containerEl.querySelectorAll(".alpaca-item:not(.empty)");
 
     return {
       id,
