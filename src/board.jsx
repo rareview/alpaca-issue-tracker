@@ -1,6 +1,7 @@
 const { useState, useRef, useEffect } = wp.element;
 const { decodeEntities } = wp.htmlEntities;
-const { Modal, TextareaControl, Button } = wp.components;
+const { Modal, TextareaControl, Button, Panel, PanelBody, PanelRow } =
+  wp.components;
 
 import {
   DndContext,
@@ -451,25 +452,27 @@ function Board() {
                       </tr>
                     )
                   )}
-                  <tr>
-                    <th scope="row">Data</th>
-                    <td>
-                      <TextareaControl
-                        readOnly
-                        rows={10} // Increased rows to accommodate "large amount"
-                        className="alpaca-modal-textarea json"
-                        value={
-                          isLoadingDetails
-                            ? "Loading..."
-                            : issueDetails
-                            ? JSON.stringify(issueDetails, null, 2)
-                            : ""
-                        }
-                      />
-                    </td>
-                  </tr>
                 </tbody>
               </table>
+
+              <Panel>
+                <PanelBody title="Raw data" initialOpen={false}>
+                  <PanelRow>
+                    <TextareaControl
+                      readOnly
+                      rows={10} // Increased rows to accommodate "large amount"
+                      className="alpaca-modal-textarea json"
+                      value={
+                        isLoadingDetails
+                          ? "Loading..."
+                          : issueDetails
+                          ? JSON.stringify(issueDetails, null, 2)
+                          : ""
+                      }
+                    />
+                  </PanelRow>
+                </PanelBody>
+              </Panel>
             </div>
           ) : (
             <p>{issueDetails?.message || "Could not load issue details."}</p>

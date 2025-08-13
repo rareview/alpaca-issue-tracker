@@ -1,3 +1,12 @@
+.alpaca-wrap {
+  flex-wrap: nowrap;
+  overflow-x: scroll;
+}
+
+.alpaca-wrap .alpaca-container {
+  flex-shrink: 0;
+}
+
 .alpaca-modal {
   color: #000;
   background: #fff;
@@ -107,8 +116,17 @@
   font-weight: bold;
 }
 
-.wp-admin .alpaca-details-modal .alpaca-modal-textarea.json textarea {
+.wp-admin .alpaca-details-modal .components-panel {
+  margin-bottom: 1rem;
+}
+
+.wp-admin .alpaca-details-modal .components-panel .alpaca-modal-textarea {
+  width: 100%;
+}
+
+.wp-admin .alpaca-details-modal .components-panel textarea {
   white-space: pre;
+  width: 100%;
   font-family: monospace;
   overflow: hidden scroll;
 }

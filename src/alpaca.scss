@@ -1,5 +1,13 @@
 /* styles go here */
 
+.alpaca-wrap {
+  flex-wrap: nowrap;
+  overflow-x: scroll;
+  .alpaca-container {
+    flex-shrink: 0;
+  }
+}
+
 .alpaca-modal {
   background: white;
   color: black;
@@ -103,11 +111,18 @@
         vertical-align: top;
       }
     }
-    .alpaca-modal-textarea.json textarea {
-      font-family: monospace; /* Often good for preformatted text */
-      white-space: pre;
-      overflow-x: hidden;
-      overflow-y: scroll;
+    .components-panel {
+      margin-bottom: 1rem;
+      .alpaca-modal-textarea {
+        width: 100%;
+      }
+      textarea {
+        width: 100%;
+        font-family: monospace; /* Often good for preformatted text */
+        white-space: pre;
+        overflow-x: hidden;
+        overflow-y: scroll;
+      }
     }
   }
 }

@@ -1034,7 +1034,7 @@ var _sortable = require("@dnd-kit/sortable");
 var _utilities = require("@dnd-kit/utilities");
 const { useState, useRef, useEffect } = wp.element;
 const { decodeEntities } = wp.htmlEntities;
-const { Modal, TextareaControl, Button } = wp.components;
+const { Modal, TextareaControl, Button, Panel, PanelBody, PanelRow } = wp.components;
 /**
  * Transform server data into array format for board state.
  * @param {Array} data The data from `alpaca_get_board_data`.
@@ -1108,7 +1108,7 @@ const { Modal, TextareaControl, Button } = wp.components;
         "data-id": id,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 113,
+            lineNumber: 114,
             columnNumber: 5
         },
         __self: this
@@ -1123,7 +1123,7 @@ const { Modal, TextareaControl, Button } = wp.components;
         "data-id": id,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 135,
+            lineNumber: 136,
             columnNumber: 5
         },
         __self: this
@@ -1131,7 +1131,7 @@ const { Modal, TextareaControl, Button } = wp.components;
         className: "alpaca-container-title",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 136,
+            lineNumber: 137,
             columnNumber: 7
         },
         __self: this
@@ -1143,7 +1143,7 @@ const { Modal, TextareaControl, Button } = wp.components;
         strategy: (0, _sortable.verticalListSortingStrategy),
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 137,
+            lineNumber: 138,
             columnNumber: 7
         },
         __self: this
@@ -1155,7 +1155,7 @@ const { Modal, TextareaControl, Button } = wp.components;
             onClick: onItemClick,
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 144,
+                lineNumber: 145,
                 columnNumber: 13
             },
             __self: this
@@ -1167,7 +1167,7 @@ const { Modal, TextareaControl, Button } = wp.components;
         isDragDisabled: true,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 153,
+            lineNumber: 154,
             columnNumber: 11
         },
         __self: this
@@ -1321,7 +1321,7 @@ const { Modal, TextareaControl, Button } = wp.components;
         onDragEnd: handleDragEnd,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 351,
+            lineNumber: 352,
             columnNumber: 5
         },
         __self: this
@@ -1329,7 +1329,7 @@ const { Modal, TextareaControl, Button } = wp.components;
         className: "alpaca-wrap",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 358,
+            lineNumber: 359,
             columnNumber: 7
         },
         __self: this
@@ -1341,7 +1341,7 @@ const { Modal, TextareaControl, Button } = wp.components;
             onItemClick: handleItemClick,
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 360,
+                lineNumber: 361,
                 columnNumber: 11
             },
             __self: this
@@ -1349,7 +1349,7 @@ const { Modal, TextareaControl, Button } = wp.components;
         dropAnimation: null,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 370,
+            lineNumber: 371,
             columnNumber: 7
         },
         __self: this
@@ -1357,7 +1357,7 @@ const { Modal, TextareaControl, Button } = wp.components;
         className: "alpaca-item-dragging",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 372,
+            lineNumber: 373,
             columnNumber: 11
         },
         __self: this
@@ -1366,7 +1366,7 @@ const { Modal, TextareaControl, Button } = wp.components;
             className: "alpaca-issue-id",
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 381,
+                lineNumber: 382,
                 columnNumber: 15
             }
         }, " #", selectedItem.id)),
@@ -1375,14 +1375,14 @@ const { Modal, TextareaControl, Button } = wp.components;
         className: "alpaca-details-modal",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 377,
+            lineNumber: 378,
             columnNumber: 9
         },
         __self: this
     }, isLoadingDetails ? /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 389,
+            lineNumber: 390,
             columnNumber: 13
         },
         __self: this
@@ -1390,7 +1390,7 @@ const { Modal, TextareaControl, Button } = wp.components;
         className: "alpaca-issue-details",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 391,
+            lineNumber: 392,
             columnNumber: 13
         },
         __self: this
@@ -1398,21 +1398,21 @@ const { Modal, TextareaControl, Button } = wp.components;
         className: "wp-list-table widefat striped",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 392,
+            lineNumber: 393,
             columnNumber: 15
         },
         __self: this
     }, /*#__PURE__*/ React.createElement("tbody", {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 393,
+            lineNumber: 394,
             columnNumber: 17
         },
         __self: this
     }, /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 394,
+            lineNumber: 395,
             columnNumber: 19
         },
         __self: this
@@ -1420,21 +1420,21 @@ const { Modal, TextareaControl, Button } = wp.components;
         scope: "row",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 395,
+            lineNumber: 396,
             columnNumber: 21
         },
         __self: this
     }, "Screenshot"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 396,
+            lineNumber: 397,
             columnNumber: 21
         },
         __self: this
     }, /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 397,
+            lineNumber: 398,
             columnNumber: 23
         },
         __self: this
@@ -1446,58 +1446,58 @@ const { Modal, TextareaControl, Button } = wp.components;
         },
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 398,
+            lineNumber: 399,
             columnNumber: 25
         },
         __self: this
     })))), /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 406,
+            lineNumber: 407,
             columnNumber: 19
         },
         __self: this
     }, /*#__PURE__*/ React.createElement("th", {
         scope: "row",
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 407,
-            columnNumber: 21
-        },
-        __self: this
-    }, "Submitted"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/board.jsx",
             lineNumber: 408,
             columnNumber: 21
         },
         __self: this
+    }, "Submitted"), /*#__PURE__*/ React.createElement("td", {
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 409,
+            columnNumber: 21
+        },
+        __self: this
     }, new Date(issueDetails.post_data.post_date).toLocaleString(), " ", "by ", issueDetails.post_data.post_author_display_name)), /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 415,
+            lineNumber: 416,
             columnNumber: 19
         },
         __self: this
     }, /*#__PURE__*/ React.createElement("th", {
         scope: "row",
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 416,
-            columnNumber: 21
-        },
-        __self: this
-    }, "Description"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/board.jsx",
             lineNumber: 417,
             columnNumber: 21
         },
         __self: this
+    }, "Description"), /*#__PURE__*/ React.createElement("td", {
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 418,
+            columnNumber: 21
+        },
+        __self: this
     }, issueDetails.post_data.post_content)), /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 419,
+            lineNumber: 420,
             columnNumber: 19
         },
         __self: this
@@ -1505,14 +1505,14 @@ const { Modal, TextareaControl, Button } = wp.components;
         scope: "row",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 420,
+            lineNumber: 421,
             columnNumber: 21
         },
         __self: this
     }, "URL"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 421,
+            lineNumber: 422,
             columnNumber: 21
         },
         __self: this
@@ -1522,14 +1522,14 @@ const { Modal, TextareaControl, Button } = wp.components;
         rel: "noopener noreferrer",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 423,
+            lineNumber: 424,
             columnNumber: 25
         },
         __self: this
     }, issueDetails.meta.URL) : "N/A")), /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 435,
+            lineNumber: 436,
             columnNumber: 19
         },
         __self: this
@@ -1537,14 +1537,14 @@ const { Modal, TextareaControl, Button } = wp.components;
         scope: "row",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 436,
+            lineNumber: 437,
             columnNumber: 21
         },
         __self: this
     }, "Screen Size"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 437,
+            lineNumber: 438,
             columnNumber: 21
         },
         __self: this
@@ -1552,7 +1552,7 @@ const { Modal, TextareaControl, Button } = wp.components;
             key: taxonomy,
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 446,
+                lineNumber: 447,
                 columnNumber: 23
             },
             __self: this
@@ -1563,37 +1563,38 @@ const { Modal, TextareaControl, Button } = wp.components;
             },
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 447,
+                lineNumber: 448,
                 columnNumber: 25
             },
             __self: this
         }, taxonomy), /*#__PURE__*/ React.createElement("td", {
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 450,
+                lineNumber: 451,
                 columnNumber: 25
             },
             __self: this
-        }, terms.map((term)=>term.name).join(", ")))), /*#__PURE__*/ React.createElement("tr", {
+        }, terms.map((term)=>term.name).join(", ")))))), /*#__PURE__*/ React.createElement(Panel, {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 454,
+            lineNumber: 458,
+            columnNumber: 15
+        },
+        __self: this
+    }, /*#__PURE__*/ React.createElement(PanelBody, {
+        title: "Raw data",
+        initialOpen: false,
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 459,
+            columnNumber: 17
+        },
+        __self: this
+    }, /*#__PURE__*/ React.createElement(PanelRow, {
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 460,
             columnNumber: 19
-        },
-        __self: this
-    }, /*#__PURE__*/ React.createElement("th", {
-        scope: "row",
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 455,
-            columnNumber: 21
-        },
-        __self: this
-    }, "Data"), /*#__PURE__*/ React.createElement("td", {
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 456,
-            columnNumber: 21
         },
         __self: this
     }, /*#__PURE__*/ React.createElement(TextareaControl, {
@@ -1603,14 +1604,14 @@ const { Modal, TextareaControl, Button } = wp.components;
         value: isLoadingDetails ? "Loading..." : issueDetails ? JSON.stringify(issueDetails, null, 2) : "",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 457,
-            columnNumber: 23
+            lineNumber: 461,
+            columnNumber: 21
         },
         __self: this
-    })))))) : /*#__PURE__*/ React.createElement("p", {
+    }))))) : /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 475,
+            lineNumber: 478,
             columnNumber: 13
         },
         __self: this
@@ -1619,7 +1620,7 @@ const { Modal, TextareaControl, Button } = wp.components;
         onClick: closeModal,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 477,
+            lineNumber: 480,
             columnNumber: 11
         },
         __self: this
@@ -1629,7 +1630,7 @@ function AlpacaBoard() {
     return /*#__PURE__*/ React.createElement(Board, {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 487,
+            lineNumber: 490,
             columnNumber: 10
         },
         __self: this
