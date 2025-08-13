@@ -411,6 +411,7 @@ function Board() {
             id={draggedItem.id}
             content={draggedItem.content}
             author_name={draggedItem.author_name}
+            author_img={draggedItem.author_img}
             className="alpaca-item-dragging"
           />
         ) : null}

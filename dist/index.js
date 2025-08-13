@@ -1407,6 +1407,7 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
         id: draggedItem.id,
         content: draggedItem.content,
         author_name: draggedItem.author_name,
+        author_img: draggedItem.author_img,
         className: "alpaca-item-dragging",
         __source: {
             fileName: "src/board.jsx",
@@ -1419,7 +1420,7 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
             className: "alpaca-issue-id",
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 424,
+                lineNumber: 425,
                 columnNumber: 15
             }
         }, " #", selectedItem.id)),
@@ -1428,14 +1429,14 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
         className: "alpaca-details-modal",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 420,
+            lineNumber: 421,
             columnNumber: 9
         },
         __self: this
     }, isLoadingDetails ? /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 432,
+            lineNumber: 433,
             columnNumber: 13
         },
         __self: this
@@ -1443,7 +1444,7 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
         className: "alpaca-issue-details",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 434,
+            lineNumber: 435,
             columnNumber: 13
         },
         __self: this
@@ -1451,21 +1452,21 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
         className: "wp-list-table widefat striped",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 435,
+            lineNumber: 436,
             columnNumber: 15
         },
         __self: this
     }, /*#__PURE__*/ React.createElement("tbody", {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 436,
+            lineNumber: 437,
             columnNumber: 17
         },
         __self: this
     }, /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 437,
+            lineNumber: 438,
             columnNumber: 19
         },
         __self: this
@@ -1473,21 +1474,21 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
         scope: "row",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 438,
+            lineNumber: 439,
             columnNumber: 21
         },
         __self: this
     }, "Screenshot"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 439,
+            lineNumber: 440,
             columnNumber: 21
         },
         __self: this
     }, /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 440,
+            lineNumber: 441,
             columnNumber: 23
         },
         __self: this
@@ -1499,58 +1500,58 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
         },
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 441,
+            lineNumber: 442,
             columnNumber: 25
         },
         __self: this
     })))), /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 449,
+            lineNumber: 450,
             columnNumber: 19
         },
         __self: this
     }, /*#__PURE__*/ React.createElement("th", {
         scope: "row",
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 450,
-            columnNumber: 21
-        },
-        __self: this
-    }, "Submitted"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/board.jsx",
             lineNumber: 451,
             columnNumber: 21
         },
         __self: this
+    }, "Submitted"), /*#__PURE__*/ React.createElement("td", {
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 452,
+            columnNumber: 21
+        },
+        __self: this
     }, new Date(issueDetails.post_data.post_date).toLocaleString(), " ", "by ", issueDetails.post_data.post_author_display_name)), /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 458,
+            lineNumber: 459,
             columnNumber: 19
         },
         __self: this
     }, /*#__PURE__*/ React.createElement("th", {
         scope: "row",
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 459,
-            columnNumber: 21
-        },
-        __self: this
-    }, "Description"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/board.jsx",
             lineNumber: 460,
             columnNumber: 21
         },
         __self: this
+    }, "Description"), /*#__PURE__*/ React.createElement("td", {
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 461,
+            columnNumber: 21
+        },
+        __self: this
     }, issueDetails.post_data.post_content)), /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 462,
+            lineNumber: 463,
             columnNumber: 19
         },
         __self: this
@@ -1558,14 +1559,14 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
         scope: "row",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 463,
+            lineNumber: 464,
             columnNumber: 21
         },
         __self: this
     }, "URL"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 464,
+            lineNumber: 465,
             columnNumber: 21
         },
         __self: this
@@ -1575,14 +1576,14 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
         rel: "noopener noreferrer",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 466,
+            lineNumber: 467,
             columnNumber: 25
         },
         __self: this
     }, issueDetails.meta.URL) : "N/A")), /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 478,
+            lineNumber: 479,
             columnNumber: 19
         },
         __self: this
@@ -1590,14 +1591,14 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
         scope: "row",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 479,
+            lineNumber: 480,
             columnNumber: 21
         },
         __self: this
     }, "Screen Size"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 480,
+            lineNumber: 481,
             columnNumber: 21
         },
         __self: this
@@ -1605,7 +1606,7 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
             key: taxonomy,
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 489,
+                lineNumber: 490,
                 columnNumber: 23
             },
             __self: this
@@ -1616,21 +1617,21 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
             },
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 490,
+                lineNumber: 491,
                 columnNumber: 25
             },
             __self: this
         }, taxonomy), /*#__PURE__*/ React.createElement("td", {
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 493,
+                lineNumber: 494,
                 columnNumber: 25
             },
             __self: this
         }, terms.map((term)=>term.name).join(", ")))))), /*#__PURE__*/ React.createElement(Panel, {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 500,
+            lineNumber: 501,
             columnNumber: 15
         },
         __self: this
@@ -1639,14 +1640,14 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
         initialOpen: false,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 501,
+            lineNumber: 502,
             columnNumber: 17
         },
         __self: this
     }, /*#__PURE__*/ React.createElement(PanelRow, {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 502,
+            lineNumber: 503,
             columnNumber: 19
         },
         __self: this
@@ -1657,14 +1658,14 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
         value: isLoadingDetails ? "Loading..." : issueDetails ? JSON.stringify(issueDetails, null, 2) : "",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 503,
+            lineNumber: 504,
             columnNumber: 21
         },
         __self: this
     }))))) : /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 520,
+            lineNumber: 521,
             columnNumber: 13
         },
         __self: this
@@ -1673,7 +1674,7 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
         onClick: closeModal,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 522,
+            lineNumber: 523,
             columnNumber: 11
         },
         __self: this
@@ -1683,7 +1684,7 @@ function AlpacaBoard() {
     return /*#__PURE__*/ React.createElement(Board, {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 532,
+            lineNumber: 533,
             columnNumber: 10
         },
         __self: this
