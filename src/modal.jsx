@@ -62,7 +62,7 @@ const AlpacaModal = () => {
       };
 
       const payload = { ...submitted, ...server };
-      console.log(payload);
+      // console.log(payload);
 
       const response = await fetch(wpApiSettings.root + "issue/v1/submit", {
         method: "POST",
@@ -123,7 +123,7 @@ const AlpacaModal = () => {
           ) : (
             <>
               <TextareaControl
-                placeholder="Explain the problem"
+                placeholder="Describe the problem"
                 id="alpaca-modal-textarea"
                 value={feedback}
                 onChange={(value) => setFeedback(value)}
@@ -131,29 +131,7 @@ const AlpacaModal = () => {
                 ref={textareaRef}
               />
 
-              <div className="alpaca-grid">
-                <div className="alpaca-row">
-                  <div className="alpaca-label">
-                    <BaseControl label="Severity" />
-                  </div>
-                  <div className="alpaca-field">
-                    <RangeControl
-                      id="alpaca-modal-severity"
-                      value={severity}
-                      onChange={(s) => setSeverity(s)}
-                      marks={[
-                        { label: "Low", value: 1 },
-                        { label: "Med", value: 2 },
-                        { label: "High", value: 3 },
-                      ]}
-                      max={3}
-                      min={1}
-                      step={1}
-                      withInputField={false}
-                      disabled={status === "submitting"}
-                    />
-                  </div>
-                </div>
+              <div className="small-wrapper">
                 <small>
                   Detailed technical information will also be shared with the
                   development team.

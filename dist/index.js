@@ -702,7 +702,49 @@ if (document.querySelector("#alpaca-board")) render(/*#__PURE__*/ React.createEl
     __self: undefined
 }), document.querySelector("#alpaca-board"));
 
-},{"./alpaca.scss":"1ItKB","./modal.jsx":"lBZco","./settings.jsx":"aIYcP","./board.jsx":"h1t0l","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./apitest.js":"jb82X"}],"1ItKB":[function() {},{}],"lBZco":[function(require,module,exports,__globalThis) {
+},{"./alpaca.scss":"1ItKB","./apitest.js":"jb82X","./modal.jsx":"lBZco","./settings.jsx":"aIYcP","./board.jsx":"h1t0l","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1ItKB":[function() {},{}],"jb82X":[function(require,module,exports,__globalThis) {
+// --- Basic API Endpoint Tests ---
+// To enable, set ALPACA_RUN_API_TESTS to true below.
+// The results will be logged to your browser's developer console when the
+// #alpaca-board element is on the page.
+// You must be logged in with a user that has 'edit_posts' capabilities.
+const ALPACA_RUN_API_TESTS = false;
+if (ALPACA_RUN_API_TESTS && document.querySelector("#alpaca-board")) {
+    const runApiTests = ()=>{
+        console.log("--- Running Alpaca API Endpoint Tests ---");
+        // Helper function for making API requests
+        const testEndpoint = (url, options, operation)=>{
+            // Ensure wpApiSettings is available
+            if (typeof wpApiSettings === "undefined" || !wpApiSettings.root || !wpApiSettings.nonce) {
+                console.error('wpApiSettings is not defined. Make sure "wp-api" is an enqueued dependency.');
+                return;
+            }
+            console.log(`Testing ${operation}...`);
+            fetch(url, options).then((response)=>{
+                if (!response.ok) return response.text().then((text)=>{
+                    throw new Error(`HTTP error! Status: ${response.status}, Body: ${text}`);
+                });
+                return response.json();
+            }).then((data)=>console.log(`\u{2705} ${operation} SUCCESS:`, data)).catch((error)=>console.error(`\u{274C} ${operation} FAILED:`, error.message));
+        };
+        const nonceHeader = {
+            "X-WP-Nonce": wpApiSettings.nonce
+        };
+        const jsonHeaders = {
+            ...nonceHeader,
+            "Content-Type": "application/json"
+        };
+        // Test GET /alpaca/v1/board
+        testEndpoint(`${wpApiSettings.root}alpaca/v1/board`, {
+            method: "GET",
+            headers: nonceHeader
+        }, "GET /alpaca/v1/board");
+    };
+    // Wait for the DOM to be fully loaded to ensure wpApiSettings is available.
+    document.addEventListener("DOMContentLoaded", runApiTests);
+}
+
+},{}],"lBZco":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _snapdomHandlerJs = require("./snapdom-handler.js");
@@ -763,7 +805,7 @@ const AlpacaModal = ()=>{
                 ...submitted,
                 ...server
             };
-            console.log(payload);
+            // console.log(payload);
             const response = await fetch(wpApiSettings.root + "issue/v1/submit", {
                 method: "POST",
                 credentials: "include",
@@ -826,7 +868,7 @@ const AlpacaModal = ()=>{
         },
         __self: undefined
     }, "Close")) : /*#__PURE__*/ React.createElement(React.Fragment, null, /*#__PURE__*/ React.createElement(TextareaControl, {
-        placeholder: "Explain the problem",
+        placeholder: "Describe the problem",
         id: "alpaca-modal-textarea",
         value: feedback,
         onChange: (value)=>setFeedback(value),
@@ -839,78 +881,17 @@ const AlpacaModal = ()=>{
         },
         __self: undefined
     }), /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-grid",
+        className: "small-wrapper",
         __source: {
             fileName: "src/modal.jsx",
             lineNumber: 134,
             columnNumber: 15
         },
         __self: undefined
-    }, /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-row",
+    }, /*#__PURE__*/ React.createElement("small", {
         __source: {
             fileName: "src/modal.jsx",
             lineNumber: 135,
-            columnNumber: 17
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-label",
-        __source: {
-            fileName: "src/modal.jsx",
-            lineNumber: 136,
-            columnNumber: 19
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement(BaseControl, {
-        label: "Severity",
-        __source: {
-            fileName: "src/modal.jsx",
-            lineNumber: 137,
-            columnNumber: 21
-        },
-        __self: undefined
-    })), /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-field",
-        __source: {
-            fileName: "src/modal.jsx",
-            lineNumber: 139,
-            columnNumber: 19
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement(RangeControl, {
-        id: "alpaca-modal-severity",
-        value: severity,
-        onChange: (s)=>setSeverity(s),
-        marks: [
-            {
-                label: "Low",
-                value: 1
-            },
-            {
-                label: "Med",
-                value: 2
-            },
-            {
-                label: "High",
-                value: 3
-            }
-        ],
-        max: 3,
-        min: 1,
-        step: 1,
-        withInputField: false,
-        disabled: status === "submitting",
-        __source: {
-            fileName: "src/modal.jsx",
-            lineNumber: 140,
-            columnNumber: 21
-        },
-        __self: undefined
-    }))), /*#__PURE__*/ React.createElement("small", {
-        __source: {
-            fileName: "src/modal.jsx",
-            lineNumber: 157,
             columnNumber: 17
         },
         __self: undefined
@@ -918,7 +899,7 @@ const AlpacaModal = ()=>{
         className: "alpaca-actions",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 163,
+            lineNumber: 141,
             columnNumber: 15
         },
         __self: undefined
@@ -928,14 +909,14 @@ const AlpacaModal = ()=>{
         disabled: status === "submitting",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 164,
+            lineNumber: 142,
             columnNumber: 17
         },
         __self: undefined
     }, status === "submitting" ? /*#__PURE__*/ React.createElement(Spinner, {
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 169,
+            lineNumber: 147,
             columnNumber: 46
         },
         __self: undefined
@@ -945,7 +926,7 @@ const AlpacaModal = ()=>{
         disabled: status === "submitting",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 171,
+            lineNumber: 149,
             columnNumber: 17
         },
         __self: undefined
@@ -981,7 +962,7 @@ const handleSnapdomCapture = async ()=>{
     // Draw the relevant portion of the original canvas onto the new canvas
     // ctx.drawImage(canvas, x, y, width, height, 0, 0, width, height);
     // might want to exclude admin bar's 32px?
-    ctx.drawImage(canvas, x, y, width, height, 0, -32, width, height);
+    ctx.drawImage(canvas, x, y, width, height, 0, 0, width, height);
     // Get the Base64-encoded string from the canvas
     const base64String = croppedCanvas.toDataURL("image/webp", 0.5); // Set compression level
     // console.log(base64String);
@@ -1053,7 +1034,7 @@ var _sortable = require("@dnd-kit/sortable");
 var _utilities = require("@dnd-kit/utilities");
 const { useState, useRef, useEffect } = wp.element;
 const { decodeEntities } = wp.htmlEntities;
-const { Modal, Button } = wp.components;
+const { Modal, TextareaControl, Button } = wp.components;
 /**
  * Transform server data into array format for board state.
  * @param {Array} data The data from `alpaca_get_board_data`.
@@ -1206,6 +1187,8 @@ const { Modal, Button } = wp.components;
     }));
     const [activeId, setActiveId] = useState(null);
     const [selectedItem, setSelectedItem] = useState(null);
+    const [issueDetails, setIssueDetails] = useState(null);
+    const [isLoadingDetails, setIsLoadingDetails] = useState(false);
     const triggerRef = useRef(null); // To store the element that opened the modal
     const [draggedItem, setDraggedItem] = useState(null);
     function findContainerByItemId(itemId) {
@@ -1302,10 +1285,31 @@ const { Modal, Button } = wp.components;
     };
     const closeModal = ()=>{
         setSelectedItem(null);
+        setIssueDetails(null);
     };
     // When the modal closes, return focus to the element that opened it.
     useEffect(()=>{
         if (selectedItem === null && triggerRef.current) triggerRef.current.focus();
+    }, [
+        selectedItem
+    ]);
+    useEffect(()=>{
+        if (selectedItem) {
+            setIsLoadingDetails(true);
+            setIssueDetails(null); // Clear previous details
+            wp.apiFetch({
+                path: `/issue/v1/get/${selectedItem.id}`
+            }).then((data)=>{
+                setIssueDetails(data);
+                setIsLoadingDetails(false);
+            }).catch((err)=>{
+                console.error("Error fetching issue details:", err);
+                setIssueDetails({
+                    error: "Failed to load details."
+                });
+                setIsLoadingDetails(false);
+            });
+        }
     }, [
         selectedItem
     ]);
@@ -1317,7 +1321,7 @@ const { Modal, Button } = wp.components;
         onDragEnd: handleDragEnd,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 327,
+            lineNumber: 351,
             columnNumber: 5
         },
         __self: this
@@ -1325,7 +1329,7 @@ const { Modal, Button } = wp.components;
         className: "alpaca-wrap",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 334,
+            lineNumber: 358,
             columnNumber: 7
         },
         __self: this
@@ -1337,7 +1341,7 @@ const { Modal, Button } = wp.components;
             onItemClick: handleItemClick,
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 336,
+                lineNumber: 360,
                 columnNumber: 11
             },
             __self: this
@@ -1345,7 +1349,7 @@ const { Modal, Button } = wp.components;
         dropAnimation: null,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 346,
+            lineNumber: 370,
             columnNumber: 7
         },
         __self: this
@@ -1353,53 +1357,269 @@ const { Modal, Button } = wp.components;
         className: "alpaca-item-dragging",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 348,
+            lineNumber: 372,
             columnNumber: 11
         },
         __self: this
     }, draggedItem.content) : null), selectedItem && /*#__PURE__*/ React.createElement(Modal, {
-        title: "Issue Details",
+        title: /*#__PURE__*/ React.createElement(React.Fragment, null, "Issue Details", /*#__PURE__*/ React.createElement("span", {
+            className: "alpaca-issue-id",
+            __source: {
+                fileName: "src/board.jsx",
+                lineNumber: 381,
+                columnNumber: 15
+            }
+        }, " #", selectedItem.id)),
+        size: "large",
         onRequestClose: closeModal,
+        className: "alpaca-details-modal",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 353,
+            lineNumber: 377,
             columnNumber: 9
+        },
+        __self: this
+    }, isLoadingDetails ? /*#__PURE__*/ React.createElement("p", {
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 389,
+            columnNumber: 13
+        },
+        __self: this
+    }, "Loading...") : issueDetails && issueDetails.success ? /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-issue-details",
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 391,
+            columnNumber: 13
+        },
+        __self: this
+    }, /*#__PURE__*/ React.createElement("table", {
+        className: "wp-list-table widefat striped",
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 392,
+            columnNumber: 15
+        },
+        __self: this
+    }, /*#__PURE__*/ React.createElement("tbody", {
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 393,
+            columnNumber: 17
+        },
+        __self: this
+    }, /*#__PURE__*/ React.createElement("tr", {
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 394,
+            columnNumber: 19
+        },
+        __self: this
+    }, /*#__PURE__*/ React.createElement("th", {
+        scope: "row",
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 395,
+            columnNumber: 21
+        },
+        __self: this
+    }, "Screenshot"), /*#__PURE__*/ React.createElement("td", {
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 396,
+            columnNumber: 21
         },
         __self: this
     }, /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 354,
-            columnNumber: 11
+            lineNumber: 397,
+            columnNumber: 23
         },
         __self: this
-    }, /*#__PURE__*/ React.createElement("strong", {
+    }, /*#__PURE__*/ React.createElement("img", {
+        src: issueDetails.meta.screenshot,
+        alt: "Screenshot",
+        style: {
+            height: "240px"
+        },
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 355,
+            lineNumber: 398,
+            columnNumber: 25
+        },
+        __self: this
+    })))), /*#__PURE__*/ React.createElement("tr", {
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 406,
+            columnNumber: 19
+        },
+        __self: this
+    }, /*#__PURE__*/ React.createElement("th", {
+        scope: "row",
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 407,
+            columnNumber: 21
+        },
+        __self: this
+    }, "Submitted"), /*#__PURE__*/ React.createElement("td", {
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 408,
+            columnNumber: 21
+        },
+        __self: this
+    }, new Date(issueDetails.post_data.post_date).toLocaleString(), " ", "by ", issueDetails.post_data.post_author_display_name)), /*#__PURE__*/ React.createElement("tr", {
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 415,
+            columnNumber: 19
+        },
+        __self: this
+    }, /*#__PURE__*/ React.createElement("th", {
+        scope: "row",
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 416,
+            columnNumber: 21
+        },
+        __self: this
+    }, "Description"), /*#__PURE__*/ React.createElement("td", {
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 417,
+            columnNumber: 21
+        },
+        __self: this
+    }, issueDetails.post_data.post_content)), /*#__PURE__*/ React.createElement("tr", {
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 419,
+            columnNumber: 19
+        },
+        __self: this
+    }, /*#__PURE__*/ React.createElement("th", {
+        scope: "row",
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 420,
+            columnNumber: 21
+        },
+        __self: this
+    }, "URL"), /*#__PURE__*/ React.createElement("td", {
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 421,
+            columnNumber: 21
+        },
+        __self: this
+    }, issueDetails.meta.URL ? /*#__PURE__*/ React.createElement("a", {
+        href: issueDetails.meta.URL,
+        target: "_blank",
+        rel: "noopener noreferrer",
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 423,
+            columnNumber: 25
+        },
+        __self: this
+    }, issueDetails.meta.URL) : "N/A")), /*#__PURE__*/ React.createElement("tr", {
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 435,
+            columnNumber: 19
+        },
+        __self: this
+    }, /*#__PURE__*/ React.createElement("th", {
+        scope: "row",
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 436,
+            columnNumber: 21
+        },
+        __self: this
+    }, "Screen Size"), /*#__PURE__*/ React.createElement("td", {
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 437,
+            columnNumber: 21
+        },
+        __self: this
+    }, issueDetails.meta.screenwidth && issueDetails.meta.screenheight ? `${issueDetails.meta.screenwidth} x ${issueDetails.meta.screenheight}` : "N/A")), Object.entries(issueDetails.taxonomies).map(([taxonomy, terms])=>/*#__PURE__*/ React.createElement("tr", {
+            key: taxonomy,
+            __source: {
+                fileName: "src/board.jsx",
+                lineNumber: 446,
+                columnNumber: 23
+            },
+            __self: this
+        }, /*#__PURE__*/ React.createElement("th", {
+            scope: "row",
+            style: {
+                textTransform: "capitalize"
+            },
+            __source: {
+                fileName: "src/board.jsx",
+                lineNumber: 447,
+                columnNumber: 25
+            },
+            __self: this
+        }, taxonomy), /*#__PURE__*/ React.createElement("td", {
+            __source: {
+                fileName: "src/board.jsx",
+                lineNumber: 450,
+                columnNumber: 25
+            },
+            __self: this
+        }, terms.map((term)=>term.name).join(", ")))), /*#__PURE__*/ React.createElement("tr", {
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 454,
+            columnNumber: 19
+        },
+        __self: this
+    }, /*#__PURE__*/ React.createElement("th", {
+        scope: "row",
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 455,
+            columnNumber: 21
+        },
+        __self: this
+    }, "Data"), /*#__PURE__*/ React.createElement("td", {
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 456,
+            columnNumber: 21
+        },
+        __self: this
+    }, /*#__PURE__*/ React.createElement(TextareaControl, {
+        readOnly: true,
+        rows: 10,
+        className: "alpaca-modal-textarea json",
+        value: isLoadingDetails ? "Loading..." : issueDetails ? JSON.stringify(issueDetails, null, 2) : "",
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 457,
+            columnNumber: 23
+        },
+        __self: this
+    })))))) : /*#__PURE__*/ React.createElement("p", {
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 475,
             columnNumber: 13
         },
         __self: this
-    }, "ID:"), " ", selectedItem.id), /*#__PURE__*/ React.createElement("p", {
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 357,
-            columnNumber: 11
-        },
-        __self: this
-    }, /*#__PURE__*/ React.createElement("strong", {
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 358,
-            columnNumber: 13
-        },
-        __self: this
-    }, "Title:"), " ", selectedItem.content), /*#__PURE__*/ React.createElement(Button, {
+    }, issueDetails?.message || "Could not load issue details."), /*#__PURE__*/ React.createElement(Button, {
         isPrimary: true,
         onClick: closeModal,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 360,
+            lineNumber: 477,
             columnNumber: 11
         },
         __self: this
@@ -1409,7 +1629,7 @@ function AlpacaBoard() {
     return /*#__PURE__*/ React.createElement(Board, {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 370,
+            lineNumber: 487,
             columnNumber: 10
         },
         __self: this
@@ -5344,48 +5564,6 @@ function isAfter(a, b) {
     return a.data.current.sortable.index < b.data.current.sortable.index;
 }
 
-},{"react":"f39IF","@dnd-kit/core":"do19q","@dnd-kit/utilities":"a2exI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jb82X":[function(require,module,exports,__globalThis) {
-// --- Basic API Endpoint Tests ---
-// To enable, set ALPACA_RUN_API_TESTS to true below.
-// The results will be logged to your browser's developer console when the
-// #alpaca-board element is on the page.
-// You must be logged in with a user that has 'edit_posts' capabilities.
-const ALPACA_RUN_API_TESTS = false;
-if (ALPACA_RUN_API_TESTS && document.querySelector("#alpaca-board")) {
-    const runApiTests = ()=>{
-        console.log("--- Running Alpaca API Endpoint Tests ---");
-        // Helper function for making API requests
-        const testEndpoint = (url, options, operation)=>{
-            // Ensure wpApiSettings is available
-            if (typeof wpApiSettings === "undefined" || !wpApiSettings.root || !wpApiSettings.nonce) {
-                console.error('wpApiSettings is not defined. Make sure "wp-api" is an enqueued dependency.');
-                return;
-            }
-            console.log(`Testing ${operation}...`);
-            fetch(url, options).then((response)=>{
-                if (!response.ok) return response.text().then((text)=>{
-                    throw new Error(`HTTP error! Status: ${response.status}, Body: ${text}`);
-                });
-                return response.json();
-            }).then((data)=>console.log(`\u{2705} ${operation} SUCCESS:`, data)).catch((error)=>console.error(`\u{274C} ${operation} FAILED:`, error.message));
-        };
-        const nonceHeader = {
-            "X-WP-Nonce": wpApiSettings.nonce
-        };
-        const jsonHeaders = {
-            ...nonceHeader,
-            "Content-Type": "application/json"
-        };
-        // Test GET /alpaca/v1/board
-        testEndpoint(`${wpApiSettings.root}alpaca/v1/board`, {
-            method: "GET",
-            headers: nonceHeader
-        }, "GET /alpaca/v1/board");
-    };
-    // Wait for the DOM to be fully loaded to ensure wpApiSettings is available.
-    document.addEventListener("DOMContentLoaded", runApiTests);
-}
-
-},{}]},["9iTdJ","d8Dch"], "d8Dch", "parcelRequire55a0", {})
+},{"react":"f39IF","@dnd-kit/core":"do19q","@dnd-kit/utilities":"a2exI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["9iTdJ","d8Dch"], "d8Dch", "parcelRequire55a0", {})
 
 //# sourceMappingURL=index.js.map

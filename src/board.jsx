@@ -1,6 +1,6 @@
 const { useState, useRef, useEffect } = wp.element;
 const { decodeEntities } = wp.htmlEntities;
-const { Modal, Button } = wp.components;
+const { Modal, TextareaControl, Button } = wp.components;
 
 import {
   DndContext,
@@ -182,6 +182,8 @@ function Board() {
 
   const [activeId, setActiveId] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [issueDetails, setIssueDetails] = useState(null);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const triggerRef = useRef(null); // To store the element that opened the modal
   const [draggedItem, setDraggedItem] = useState(null);
 
@@ -315,6 +317,7 @@ function Board() {
 
   const closeModal = () => {
     setSelectedItem(null);
+    setIssueDetails(null);
   };
 
   // When the modal closes, return focus to the element that opened it.
@@ -323,6 +326,27 @@ function Board() {
       triggerRef.current.focus();
     }
   }, [selectedItem]);
+
+  useEffect(() => {
+    if (selectedItem) {
+      setIsLoadingDetails(true);
+      setIssueDetails(null); // Clear previous details
+
+      wp.apiFetch({
+        path: `/issue/v1/get/${selectedItem.id}`,
+      })
+        .then((data) => {
+          setIssueDetails(data);
+          setIsLoadingDetails(false);
+        })
+        .catch((err) => {
+          console.error("Error fetching issue details:", err);
+          setIssueDetails({ error: "Failed to load details." });
+          setIsLoadingDetails(false);
+        });
+    }
+  }, [selectedItem]);
+
   return (
     <DndContext
       sensors={sensors}
@@ -350,13 +374,106 @@ function Board() {
       </DragOverlay>
 
       {selectedItem && (
-        <Modal title="Issue Details" onRequestClose={closeModal}>
-          <p>
-            <strong>ID:</strong> {selectedItem.id}
-          </p>
-          <p>
-            <strong>Title:</strong> {selectedItem.content}
-          </p>
+        <Modal
+          title={
+            <>
+              Issue Details
+              <span className="alpaca-issue-id"> #{selectedItem.id}</span>
+            </>
+          }
+          size="large"
+          onRequestClose={closeModal}
+          className="alpaca-details-modal"
+        >
+          {isLoadingDetails ? (
+            <p>Loading...</p>
+          ) : issueDetails && issueDetails.success ? (
+            <div className="alpaca-issue-details">
+              <table className="wp-list-table widefat striped">
+                <tbody>
+                  <tr>
+                    <th scope="row">Screenshot</th>
+                    <td>
+                      <p>
+                        <img
+                          src={issueDetails.meta.screenshot}
+                          alt="Screenshot"
+                          style={{ height: "240px" }}
+                        />
+                      </p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Submitted</th>
+                    <td>
+                      {new Date(
+                        issueDetails.post_data.post_date
+                      ).toLocaleString()}{" "}
+                      by {issueDetails.post_data.post_author_display_name}
+                    </td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Description</th>
+                    <td>{issueDetails.post_data.post_content}</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">URL</th>
+                    <td>
+                      {issueDetails.meta.URL ? (
+                        <a
+                          href={issueDetails.meta.URL}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {issueDetails.meta.URL}
+                        </a>
+                      ) : (
+                        "N/A"
+                      )}
+                    </td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Screen Size</th>
+                    <td>
+                      {issueDetails.meta.screenwidth &&
+                      issueDetails.meta.screenheight
+                        ? `${issueDetails.meta.screenwidth} x ${issueDetails.meta.screenheight}`
+                        : "N/A"}
+                    </td>
+                  </tr>
+                  {Object.entries(issueDetails.taxonomies).map(
+                    ([taxonomy, terms]) => (
+                      <tr key={taxonomy}>
+                        <th scope="row" style={{ textTransform: "capitalize" }}>
+                          {taxonomy}
+                        </th>
+                        <td>{terms.map((term) => term.name).join(", ")}</td>
+                      </tr>
+                    )
+                  )}
+                  <tr>
+                    <th scope="row">Data</th>
+                    <td>
+                      <TextareaControl
+                        readOnly
+                        rows={10} // Increased rows to accommodate "large amount"
+                        className="alpaca-modal-textarea json"
+                        value={
+                          isLoadingDetails
+                            ? "Loading..."
+                            : issueDetails
+                            ? JSON.stringify(issueDetails, null, 2)
+                            : ""
+                        }
+                      />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p>{issueDetails?.message || "Could not load issue details."}</p>
+          )}
           <Button isPrimary onClick={closeModal}>
             Close
           </Button>

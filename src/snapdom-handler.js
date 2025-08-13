@@ -29,7 +29,7 @@ const handleSnapdomCapture = async () => {
   // Draw the relevant portion of the original canvas onto the new canvas
   // ctx.drawImage(canvas, x, y, width, height, 0, 0, width, height);
   // might want to exclude admin bar's 32px?
-  ctx.drawImage(canvas, x, y, width, height, 0, -32, width, height);
+  ctx.drawImage(canvas, x, y, width, height, 0, 0, width, height);
 
   // Get the Base64-encoded string from the canvas
   const base64String = croppedCanvas.toDataURL("image/webp", 0.5); // Set compression level

@@ -1,12 +1,12 @@
 <?php
 
 add_action( 'init', function() {
-	wp_localize_script(
-		'wp-api',
-		'wpApiSettings',
-		array( 'root' => esc_url_raw( rest_url() ), 'nonce' => wp_create_nonce( 'wp_rest' ) )
-	);
-	wp_enqueue_script( 'wp-api' );
+    wp_localize_script(
+        'wp-api',
+        'wpApiSettings',
+        array( 'root' => esc_url_raw( rest_url() ), 'nonce' => wp_create_nonce( 'wp_rest' ) )
+    );
+    wp_enqueue_script( 'wp-api' );
 });
 
 add_action( 'rest_api_init', 'alpaca_issue_submit' );
@@ -17,9 +17,9 @@ function alpaca_issue_submit(){
         array(
             'methods'  => 'POST',
             'callback' => 'alpaca_issue_callback',
-			'permission_callback' => function() {
-				return current_user_can('edit_others_posts');
-			}
+            'permission_callback' => function() {
+                return current_user_can('edit_others_posts');
+            }
         )
     );
 }
@@ -27,17 +27,17 @@ function alpaca_issue_submit(){
 function alpaca_issue_callback( WP_REST_Request $req ) {
     $getbody = $req->get_body();
     if ( isset($getbody) ) {
-	    $json = json_decode( $getbody,true );
+        $json = json_decode( $getbody,true );
 
-	    $post_args = array(
-		    'post_type' => 'issue',
-		    'post_status' => 'publish',
-		    'post_author' => $json['user']['id'],
-		    'post_title' => wp_kses_post( wp_trim_words( $json['userinput']['feedback'], 6 ) ), // Original title
-		    'post_name' => hash('fnv164', $getbody), // Unique slug based on the request body
-		    'post_content' =>wp_kses_post(  $json['userinput']['feedback'] )
-	    );
-	    $post_id = wp_insert_post( $post_args );
+        $post_args = array(
+            'post_type' => 'issue',
+            'post_status' => 'publish',
+            'post_author' => $json['user']['id'],
+            'post_title' => wp_kses_post( wp_trim_words( $json['userinput']['feedback'], 6 ) ), // Original title
+            'post_name' => hash('fnv164', $getbody), // Unique slug based on the request body
+            'post_content' =>wp_kses_post(  $json['userinput']['feedback'] )
+        );
+        $post_id = wp_insert_post( $post_args );
 
         if ( is_wp_error( $post_id ) || $post_id === 0 ) {
             return new WP_REST_Response(
@@ -58,25 +58,25 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
         }
         
         // set terms and meta here
-		wp_set_post_terms( $post_id, $json['client']['browser']['name'], 'browser', true );
-		wp_set_post_terms( $post_id, $json['client']['os'], 'browser', true );
-		wp_set_post_terms( $post_id, $json['wp']['template'], 'phptemplate' );
-		foreach( $json['wp']['type'] as $t ) {
-			wp_set_post_terms( $post_id, $t, 'type' );
-		}
-		// consider: active plugins as a taxonomy?
-		update_post_meta( $post_id, 'screenshot', $json['screenshot'] );
-		update_post_meta( $post_id, 'screenwidth', $json['client']['browser']['width'] );
-		update_post_meta( $post_id, 'screenheight', $json['client']['browser']['height'] );
-		update_post_meta( $post_id, 'URL', $json['server']['REQUEST_URI'] );
-		update_post_meta( $post_id, 'queriedObject', json_encode( $json['wp']['queriedObject'] ) );
+        wp_set_post_terms( $post_id, $json['client']['browser']['name'], 'browser', true );
+        wp_set_post_terms( $post_id, $json['client']['os'], 'browser', true );
+        wp_set_post_terms( $post_id, $json['wp']['template'], 'phptemplate' );
+        foreach( $json['wp']['type'] as $t ) {
+            wp_set_post_terms( $post_id, $t, 'type' );
+        }
+        // consider: active plugins as a taxonomy?
+        update_post_meta( $post_id, 'screenshot', $json['screenshot'] );
+        update_post_meta( $post_id, 'screenwidth', $json['client']['browser']['width'] );
+        update_post_meta( $post_id, 'screenheight', $json['client']['browser']['height'] );
+        update_post_meta( $post_id, 'URL', $json['server']['REQUEST_URI'] );
+        update_post_meta( $post_id, 'queriedObject', json_encode( $json['wp']['queriedObject'] ) );
 
-		if( in_array( 'singular', $json['wp']['type'] ) ) {
-			wp_update_post( array(
-				'ID' => $post_id,
-				'post_parent' => $json['wp']['queriedObject']['ID']
-			));
-		}
+        if( in_array( 'singular', $json['wp']['type'] ) ) {
+            wp_update_post( array(
+                'ID' => $post_id,
+                'post_parent' => $json['wp']['queriedObject']['ID']
+            ));
+        }
 
         return new WP_REST_Response(
             array(
@@ -133,37 +133,37 @@ function alpaca_update_board() {
 }
 
 function alpaca_update_board_data_callback( WP_REST_Request $request ) {
-	$columns = $request->get_json_params();
+    $columns = $request->get_json_params();
 
-	// Check if the received data is an array, which matches the structure from saveBoardOrder.
-	if ( ! is_array( $columns ) ) {
-		return new WP_REST_Response(
-			[
-				'success' => false,
-				'message' => 'Invalid data format. Expected an array of columns.',
-			],
-			400
-		);
-	}
+    // Check if the received data is an array, which matches the structure from saveBoardOrder.
+    if ( ! is_array( $columns ) ) {
+        return new WP_REST_Response(
+            [
+                'success' => false,
+                'message' => 'Invalid data format. Expected an array of columns.',
+            ],
+            400
+        );
+    }
 
-	foreach ( $columns as $column ) {
-		// Basic validation for each column object.
-		if ( ! isset( $column['id'] ) || ! isset( $column['issues'] ) || ! is_array( $column['issues'] ) ) {
-			// Silently skip malformed column data.
-			continue;
-		}
+    foreach ( $columns as $column ) {
+        // Basic validation for each column object.
+        if ( ! isset( $column['id'] ) || ! isset( $column['issues'] ) || ! is_array( $column['issues'] ) ) {
+            // Silently skip malformed column data.
+            continue;
+        }
 
-		$term_id   = (int) $column['id'];
-		$issue_ids = array_map( 'intval', $column['issues'] );
+        $term_id   = (int) $column['id'];
+        $issue_ids = array_map( 'intval', $column['issues'] );
 
-		// A term ID of 0 is invalid.
-		if ( $term_id > 0 ) {
-			// Save the ordered array of issue IDs to the term's metadata.
-			update_term_meta( $term_id, 'issue_order', $issue_ids );
-		}
-	}
+        // A term ID of 0 is invalid.
+        if ( $term_id > 0 ) {
+            // Save the ordered array of issue IDs to the term's metadata.
+            update_term_meta( $term_id, 'issue_order', $issue_ids );
+        }
+    }
 
-	return new WP_REST_Response( [ 'success' => true, 'message' => 'Board order saved successfully.' ], 200 );
+    return new WP_REST_Response( [ 'success' => true, 'message' => 'Board order saved successfully.' ], 200 );
 }
 
 add_action( 'rest_api_init', 'alpaca_update_issue' );
@@ -251,3 +251,111 @@ function alpaca_update_issue_callback( WP_REST_Request $request ) {
         200
     );
 }
+
+// --- NEW ENDPOINT START ---
+add_action( 'rest_api_init', 'alpaca_get_issue_data' );
+function alpaca_get_issue_data() {
+    register_rest_route(
+        'issue/v1', // Namespace
+        '/get/(?P<id>\d+)', // Endpoint with ID parameter
+        array(
+            'methods'  => 'GET',
+            'callback' => 'alpaca_get_issue_data_callback',
+            'permission_callback' => function () {
+                // Anyone can view issues for now, adjust capability as needed
+                return current_user_can( 'read' ); 
+            },
+            'args' => array(
+                'id' => array(
+                    'validate_callback' => function ( $param ) {
+                        return is_numeric( $param ) && $param > 0;
+                    }
+                )
+            )
+        )
+    );
+}
+
+function alpaca_get_issue_data_callback( WP_REST_Request $request ) {
+    $issue_id = (int) $request['id'];
+
+    // Get the post object
+    $post = get_post( $issue_id );
+
+    // Check if the post exists and is of type 'issue'
+    if ( ! $post || $post->post_type !== 'issue' ) {
+        return new WP_REST_Response(
+            array(
+                'success' => false,
+                'message' => 'Issue not found.',
+            ),
+            404
+        );
+    }
+
+    $post['post_author_display_name'] = get_the_author_meta( 'display_name', $post->post_author );
+
+    // Convert the post object to an array for easier manipulation
+    $post_data = $post->to_array();
+    $post_data['post_author_display_name'] = get_the_author_meta( 'display_name', $post_data['post_author'] );
+
+    // Get all post meta
+    $meta = get_post_meta( $issue_id );
+    $formatted_meta = [];
+    foreach ( $meta as $key => $value ) {
+        // Automatically unserialize if needed and remove internal WP meta keys
+        if ( ! str_starts_with( $key, '_' ) ) {
+            $formatted_meta[ $key ] = maybe_unserialize( $value[0] );
+        }
+    }
+
+    // Get all taxonomies associated with 'issue' post type
+    $all_taxonomies = get_object_taxonomies( 'issue', 'objects' );
+    $terms_data = [];
+    foreach ( $all_taxonomies as $taxonomy_obj ) {
+        $terms = wp_get_object_terms( $issue_id, $taxonomy_obj->name, array( 'fields' => 'all' ) );
+        if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) {
+            $terms_data[ $taxonomy_obj->name ] = $terms;
+        }
+    }
+
+    // Get all comments for the post
+    $comments = get_comments( array(
+        'post_id' => $issue_id,
+        'status'  => 'approve', // Only approved comments
+        'order'   => 'ASC',
+        'orderby' => 'comment_date_gmt',
+    ) );
+
+    // Prepare comment data to be included in the response
+    $formatted_comments = [];
+    foreach ( $comments as $comment ) {
+        $formatted_comments[] = array(
+            'comment_ID'           => (int) $comment->comment_ID,
+            'comment_post_ID'      => (int) $comment->comment_post_ID,
+            'comment_author'       => $comment->comment_author,
+            'comment_author_email' => $comment->comment_author_email,
+            'comment_author_url'   => $comment->comment_author_url,
+            'comment_date'         => $comment->comment_date,
+            'comment_date_gmt'     => $comment->comment_date_gmt,
+            'comment_content'      => $comment->comment_content,
+            'comment_parent'       => (int) $comment->comment_parent,
+            'user_id'              => (int) $comment->user_id,
+        );
+    }
+
+
+    // Structure the response similar to alpaca_update_issue_callback, but with more data
+    $response_data = array(
+        'success' => true,
+        'message' => 'Issue data retrieved successfully.',
+        'post_id' => $issue_id,
+        'post_data' => $post_data,
+        'meta'      => $formatted_meta,
+        'taxonomies' => $terms_data,
+        'comments'  => $formatted_comments,
+    );
+
+    return new WP_REST_Response( $response_data, 200 );
+}
+// --- NEW ENDPOINT END ---

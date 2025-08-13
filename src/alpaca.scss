@@ -3,6 +3,9 @@
 .alpaca-modal {
   background: white;
   color: black;
+  .small-wrapper {
+    padding: 0.8rem 0 1rem;
+  }
   small {
     font-size: 12px;
   }
@@ -84,23 +87,31 @@
       border-style: dashed;
     }
   }
+  .alpaca-details-modal {
+    .alpaca-issue-id {
+      font-size: smaller;
+      font-weight: 200;
+      color: #999;
+      margin-left: 0.5rem;
+    }
+    table {
+      border: 0;
+      margin-bottom: 1rem;
+      th {
+        font-weight: bold;
+        text-align: left;
+        vertical-align: top;
+      }
+    }
+    .alpaca-modal-textarea.json textarea {
+      font-family: monospace; /* Often good for preformatted text */
+      white-space: pre;
+      overflow-x: hidden;
+      overflow-y: scroll;
+    }
+  }
 }
 
 @media (min-width: 825px) {
-  .alpaca-modal {
-    .alpaca-grid {
-      .components-base-control__label,
-      .alpaca-label {
-        flex-basis: 25%;
-        padding-top: 8px;
-      }
-      .components-text-control__input,
-      .alpaca-field {
-        flex-basis: 75%;
-        .components-select-control {
-          width: 100%;
-        }
-      }
-    }
-  }
+  // placeholder
 }
