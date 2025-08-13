@@ -669,6 +669,7 @@ function hmrAccept(bundle /*: ParcelRequire */ , id /*: string */ ) {
 },{}],"d8Dch":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 var _alpacaScss = require("./alpaca.scss");
+var _apitestJs = require("./apitest.js");
 var _modalJsx = require("./modal.jsx");
 var _modalJsxDefault = parcelHelpers.interopDefault(_modalJsx);
 var _settingsJsx = require("./settings.jsx");
@@ -679,7 +680,7 @@ const { render } = wp.element;
 if (document.querySelector("#wp-admin-bar-alpaca-menu")) render(/*#__PURE__*/ React.createElement((0, _modalJsxDefault.default), {
     __source: {
         fileName: "src/index.jsx",
-        lineNumber: 10,
+        lineNumber: 12,
         columnNumber: 5
     },
     __self: undefined
@@ -687,7 +688,7 @@ if (document.querySelector("#wp-admin-bar-alpaca-menu")) render(/*#__PURE__*/ Re
 if (document.querySelector("#alpaca-settings")) render(/*#__PURE__*/ React.createElement((0, _settingsJsxDefault.default), {
     __source: {
         fileName: "src/index.jsx",
-        lineNumber: 16,
+        lineNumber: 18,
         columnNumber: 10
     },
     __self: undefined
@@ -695,13 +696,13 @@ if (document.querySelector("#alpaca-settings")) render(/*#__PURE__*/ React.creat
 if (document.querySelector("#alpaca-board")) render(/*#__PURE__*/ React.createElement((0, _boardJsxDefault.default), {
     __source: {
         fileName: "src/index.jsx",
-        lineNumber: 20,
+        lineNumber: 22,
         columnNumber: 10
     },
     __self: undefined
 }), document.querySelector("#alpaca-board"));
 
-},{"./alpaca.scss":"1ItKB","./modal.jsx":"lBZco","./settings.jsx":"aIYcP","./board.jsx":"h1t0l","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1ItKB":[function() {},{}],"lBZco":[function(require,module,exports,__globalThis) {
+},{"./alpaca.scss":"1ItKB","./modal.jsx":"lBZco","./settings.jsx":"aIYcP","./board.jsx":"h1t0l","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./apitest.js":"jb82X"}],"1ItKB":[function() {},{}],"lBZco":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _snapdomHandlerJs = require("./snapdom-handler.js");
@@ -5343,6 +5344,48 @@ function isAfter(a, b) {
     return a.data.current.sortable.index < b.data.current.sortable.index;
 }
 
-},{"react":"f39IF","@dnd-kit/core":"do19q","@dnd-kit/utilities":"a2exI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["9iTdJ","d8Dch"], "d8Dch", "parcelRequire55a0", {})
+},{"react":"f39IF","@dnd-kit/core":"do19q","@dnd-kit/utilities":"a2exI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jb82X":[function(require,module,exports,__globalThis) {
+// --- Basic API Endpoint Tests ---
+// To enable, set ALPACA_RUN_API_TESTS to true below.
+// The results will be logged to your browser's developer console when the
+// #alpaca-board element is on the page.
+// You must be logged in with a user that has 'edit_posts' capabilities.
+const ALPACA_RUN_API_TESTS = false;
+if (ALPACA_RUN_API_TESTS && document.querySelector("#alpaca-board")) {
+    const runApiTests = ()=>{
+        console.log("--- Running Alpaca API Endpoint Tests ---");
+        // Helper function for making API requests
+        const testEndpoint = (url, options, operation)=>{
+            // Ensure wpApiSettings is available
+            if (typeof wpApiSettings === "undefined" || !wpApiSettings.root || !wpApiSettings.nonce) {
+                console.error('wpApiSettings is not defined. Make sure "wp-api" is an enqueued dependency.');
+                return;
+            }
+            console.log(`Testing ${operation}...`);
+            fetch(url, options).then((response)=>{
+                if (!response.ok) return response.text().then((text)=>{
+                    throw new Error(`HTTP error! Status: ${response.status}, Body: ${text}`);
+                });
+                return response.json();
+            }).then((data)=>console.log(`\u{2705} ${operation} SUCCESS:`, data)).catch((error)=>console.error(`\u{274C} ${operation} FAILED:`, error.message));
+        };
+        const nonceHeader = {
+            "X-WP-Nonce": wpApiSettings.nonce
+        };
+        const jsonHeaders = {
+            ...nonceHeader,
+            "Content-Type": "application/json"
+        };
+        // Test GET /alpaca/v1/board
+        testEndpoint(`${wpApiSettings.root}alpaca/v1/board`, {
+            method: "GET",
+            headers: nonceHeader
+        }, "GET /alpaca/v1/board");
+    };
+    // Wait for the DOM to be fully loaded to ensure wpApiSettings is available.
+    document.addEventListener("DOMContentLoaded", runApiTests);
+}
+
+},{}]},["9iTdJ","d8Dch"], "d8Dch", "parcelRequire55a0", {})
 
 //# sourceMappingURL=index.js.map
