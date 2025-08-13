@@ -56,8 +56,6 @@ const saveBoardOrder = () => {
     };
   });
 
-  console.log("Saving board order:", data);
-
   // Use wp.apiFetch to send data to the REST API endpoint.
   // It automatically handles nonces for authenticated requests.
   wp.apiFetch({
@@ -66,7 +64,7 @@ const saveBoardOrder = () => {
     data: data,
   })
     .then((res) => {
-      console.log("Board order saved successfully:", res);
+      // saved successfully
     })
     .catch((err) => {
       console.error("Error saving board order:", err);
@@ -292,7 +290,7 @@ function Board() {
       },
     })
       .then((res) => {
-        console.log("Issue updated successfully:", res);
+        // successfully updated
       })
       .catch((err) => {
         console.error("Error updating issue:", err);
@@ -300,10 +298,9 @@ function Board() {
   }
 
   const handleItemClick = (event, itemId) => {
-    console.log(`Item clicked: ${itemId}`);
     const clickedItem = getItemById(itemId);
     if (clickedItem) {
-      console.log(`Content: "${clickedItem.content}"`);
+      console.log(`Clicked: "${clickedItem.content}"`);
     }
   };
 
