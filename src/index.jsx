@@ -1,5 +1,7 @@
 import "./alpaca.scss";
 
+import "./apitest.js";
+
 import AlpacaModal from "./modal.jsx";
 import AlpacaSettings from "./settings.jsx";
 import AlpacaBoard from "./board.jsx";

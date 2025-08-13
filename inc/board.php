@@ -26,9 +26,6 @@ function alpaca_get_board_data() {
                     'terms' => $status->term_id,
                 ),
             ),
-            'meta_key' => 'issue_order',
-            'orderby' => 'meta_value_num',
-            'order' => 'ASC',
         ) );
 
         $issues = array();
@@ -36,7 +33,6 @@ function alpaca_get_board_data() {
             $issues[] = array(
                 'id' => $post->ID,
                 'title' => $post->post_title,
-                'content' => $post->post_content,
             );
         }
 
