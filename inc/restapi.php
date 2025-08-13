@@ -96,6 +96,57 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
     );
 }
 
+add_action( 'rest_api_init', 'alpaca_get_board' );
+function alpaca_get_board() {
+    register_rest_route(
+        'alpaca/v1',
+        '/board',
+        array(
+            'methods' => 'GET',
+            'callback' => 'alpaca_get_board_data_callback',
+            'permission_callback' => function () {
+                return current_user_can( 'edit_posts' );
+            }
+        )
+    );
+}
+
+function alpaca_get_board_data_callback() {
+    $board_data = alpaca_get_board_data();
+    return new WP_REST_Response( $board_data, 200 );
+}
+
+add_action( 'rest_api_init', 'alpaca_update_board' );
+function alpaca_update_board() {
+    register_rest_route(
+        'alpaca/v1',
+        '/board',
+        array(
+            'methods' => 'POST',
+            'callback' => 'alpaca_update_board_data_callback',
+            'permission_callback' => function () {
+                return current_user_can( 'edit_posts' );
+            }
+        )
+    );
+}
+
+function alpaca_update_board_data_callback( WP_REST_Request $request ) {
+    $params = $request->get_json_params();
+
+    if ( isset( $params['issue_id'] ) && isset( $params['status_id'] ) ) {
+        wp_set_post_terms( $params['issue_id'], $params['status_id'], 'status' );
+    }
+
+    if ( isset( $params['order'] ) ) {
+        foreach ( $params['order'] as $index => $issue_id ) {
+            update_post_meta( $issue_id, 'issue_order', $index );
+        }
+    }
+
+    return new WP_REST_Response( true, 200 );
+}
+
 // 	    if( $post_id ) {
 // 			wp_set_post_terms( $post_id, $json['browser']['name'], 'browser' );
 // // 			wp_set_post_terms( $post_id, $json['wp']['post']['template'], 'template' );

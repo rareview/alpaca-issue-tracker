@@ -10,3 +10,42 @@ function project_board_page() {
 	</div>
 	<?php
 }
+
+function alpaca_get_board_data() {
+    $board_data = array();
+    $statuses = alpaca_get_statuses();
+
+    foreach ( $statuses as $status ) {
+        $posts = get_posts( array(
+            'post_type' => 'issue',
+            'posts_per_page' => -1,
+            'tax_query' => array(
+                array(
+                    'taxonomy' => 'status',
+                    'field' => 'term_id',
+                    'terms' => $status->term_id,
+                ),
+            ),
+            'meta_key' => 'issue_order',
+            'orderby' => 'meta_value_num',
+            'order' => 'ASC',
+        ) );
+
+        $issues = array();
+        foreach ( $posts as $post ) {
+            $issues[] = array(
+                'id' => $post->ID,
+                'title' => $post->post_title,
+                'content' => $post->post_content,
+            );
+        }
+
+        $board_data[] = array(
+            'id' => $status->term_id,
+            'title' => $status->name,
+            'issues' => $issues,
+        );
+    }
+
+    return $board_data;
+}
