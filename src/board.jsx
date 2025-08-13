@@ -34,6 +34,7 @@ const transformDataForBoard = (data) => {
       id: issue.id.toString(),
       content: decodeEntities(issue.title),
       author_name: decodeEntities(issue.author_name),
+      author_img: issue.author_img,
     })),
   }));
 };
@@ -75,7 +76,11 @@ const saveBoardOrder = () => {
 };
 
 const Item = forwardRef(
-  ({ id, content, author_name, className, style, ...props }, ref) => {
+  (
+    { id, content, author_name, author_img, className, style, ...props },
+    ref
+  ) => {
+    console.log("Rendering Item", id, content, author_name, author_img);
     return (
       <div
         ref={ref}
@@ -83,10 +88,18 @@ const Item = forwardRef(
         style={style}
         data-id={id}
         data-author={author_name}
+        data-authorimg={author_img}
         {...props}
       >
         <div className="alpaca-item-content">{content}</div>
-        <div className="alpaca-item-author"> {author_name}</div>
+        <div className="alpaca-item-author">
+          {author_img ? (
+            <img className="alpaca-item-author-img" src={author_img} />
+          ) : (
+            ""
+          )}
+          {author_name}
+        </div>
       </div>
     );
   }
@@ -102,6 +115,7 @@ function SortableItem({
   isDragDisabled = false,
   onClick,
   author_name,
+  author_img = "",
 }) {
   const {
     attributes,
@@ -136,6 +150,7 @@ function SortableItem({
       id={id}
       content={content}
       author_name={author_name}
+      author_img={author_img}
       className={className}
       style={style}
       onClick={handleClick}
@@ -168,6 +183,7 @@ function Container({ id, title, items, onItemClick }) {
               id={item.id}
               content={item.content}
               author_name={item.author_name}
+              author_img={item.author_img}
               onClick={onItemClick}
             />
           ))

@@ -33,7 +33,7 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
             'post_type' => 'issue',
             'post_status' => 'publish',
             'post_author' => $json['user']['id'],
-            'post_title' => wp_kses_post( wp_trim_words( $json['userinput']['feedback'], 6 ) ), // Original title
+            'post_title' => wp_kses_post( wp_trim_words( $json['userinput']['feedback'], 10 ) ), // Original title
             'post_name' => hash('fnv164', $getbody), // Unique slug based on the request body
             'post_content' =>wp_kses_post(  $json['userinput']['feedback'] )
         );
@@ -296,6 +296,7 @@ function alpaca_get_issue_data_callback( WP_REST_Request $request ) {
     // Convert the post object to an array for easier manipulation
     $post_data = $post->to_array();
     $post_data['post_author_display_name'] = get_the_author_meta( 'display_name', $post_data['post_author'] );
+    $post_data['post_author_img'] = get_avatar_url( $post_data['post_author'], array( 'size' => 32 ) );
 
     // Get all post meta
     $meta = get_post_meta( $issue_id );

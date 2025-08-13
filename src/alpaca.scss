@@ -63,7 +63,7 @@
     .alpaca-container {
       margin: 5px 10px 10px 0;
       padding: 10px;
-      width: 250px;
+      width: 220px;
       background: #f9f9f9;
       border: 2px solid #e4e4e4;
       border-radius: 4px;
@@ -77,7 +77,7 @@
     .alpaca-item,
     .alpaca-item-dragging {
       border: 2px solid #e4e4e4;
-      border-radius: 4px;
+      border-radius: 8px;
       padding: 8px 12px;
       margin: 4px 0;
       background-color: white;
@@ -89,10 +89,18 @@
         font-size: 0.8rem;
         color: #999;
         margin-top: 4px;
+        line-height: 24px;
+      }
+      .alpaca-item-author-img {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        margin-right: 0.5rem;
+        vertical-align: middle;
       }
     }
     .alpaca-item-dragging {
-      border-color: #007cba;
+      border-color: var(--wp-admin-theme-color);
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
       cursor: grabbing;
       transform: rotate(3deg);

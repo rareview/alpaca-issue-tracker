@@ -24,6 +24,13 @@ function alpaca_add_admin_bar_menu( $admin_bar ){
 
 	$admin_bar->add_menu(array(
 		'parent' => 'alpaca-menu',
+		'title' => 'View Project Board',
+		'id' => 'alpaca-board',
+		'href' => admin_url('edit.php?post_type=issue&page=alpaca-board'),
+	));
+
+	$admin_bar->add_menu(array(
+		'parent' => 'alpaca-menu',
 		'title' => 'View All Issues',
 		'id' => 'alpaca-view',
 		'href' => admin_url('edit.php?post_type=issue'),
