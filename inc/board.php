@@ -57,6 +57,8 @@ function alpaca_get_board_data() {
             $issues[] = array(
                 'id' => $post->ID,
                 'title' => $post->post_title,
+                'author_id' => $post->post_author,
+                'author_name' => get_the_author_meta( 'display_name', $post->post_author ),
             );
         }
 

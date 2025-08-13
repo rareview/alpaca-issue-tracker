@@ -82,7 +82,17 @@
   border-radius: 4px;
   margin: 4px 0;
   padding: 8px 12px;
-  font-size: .85rem;
+}
+
+.wp-admin #alpaca-board .alpaca-item .alpaca-item-content, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-content {
+  font-size: .9rem;
+  line-height: 1.4;
+}
+
+.wp-admin #alpaca-board .alpaca-item .alpaca-item-author, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-author {
+  color: #999;
+  margin-top: 4px;
+  font-size: .8rem;
 }
 
 .wp-admin #alpaca-board .alpaca-item-dragging {

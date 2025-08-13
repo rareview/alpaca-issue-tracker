@@ -1,4 +1,4 @@
-const { useState, useRef, useEffect } = wp.element;
+const { useState, useRef, useEffect, forwardRef } = wp.element;
 const { decodeEntities } = wp.htmlEntities;
 const { Modal, TextareaControl, Button, Panel, PanelBody, PanelRow } =
   wp.components;
@@ -33,6 +33,7 @@ const transformDataForBoard = (data) => {
     items: column.issues.map((issue) => ({
       id: issue.id.toString(),
       content: decodeEntities(issue.title),
+      author_name: decodeEntities(issue.author_name),
     })),
   }));
 };
@@ -73,6 +74,24 @@ const saveBoardOrder = () => {
     });
 };
 
+const Item = forwardRef(
+  ({ id, content, author_name, className, style, ...props }, ref) => {
+    return (
+      <div
+        ref={ref}
+        className={className}
+        style={style}
+        data-id={id}
+        data-author={author_name}
+        {...props}
+      >
+        <div className="alpaca-item-content">{content}</div>
+        <div className="alpaca-item-author"> {author_name}</div>
+      </div>
+    );
+  }
+);
+
 /**
  * Sortable item component.
  */
@@ -82,6 +101,7 @@ function SortableItem({
   className,
   isDragDisabled = false,
   onClick,
+  author_name,
 }) {
   const {
     attributes,
@@ -111,18 +131,18 @@ function SortableItem({
   };
 
   return (
-    <div
-      className={`${className}`}
+    <Item
       ref={setNodeRef}
+      id={id}
+      content={content}
+      author_name={author_name}
+      className={className}
       style={style}
+      onClick={handleClick}
       {...(!isDragDisabled
         ? { ...attributes, ...listeners }
         : { tabIndex: -1 })}
-      onClick={handleClick}
-      data-id={id}
-    >
-      {content}
-    </div>
+    />
   );
 }
 
@@ -147,6 +167,7 @@ function Container({ id, title, items, onItemClick }) {
               key={item.id}
               id={item.id}
               content={item.content}
+              author_name={item.author_name}
               onClick={onItemClick}
             />
           ))
@@ -370,7 +391,12 @@ function Board() {
 
       <DragOverlay dropAnimation={null}>
         {activeId && draggedItem ? (
-          <div className="alpaca-item-dragging">{draggedItem.content}</div>
+          <Item
+            id={draggedItem.id}
+            content={draggedItem.content}
+            author_name={draggedItem.author_name}
+            className="alpaca-item-dragging"
+          />
         ) : null}
       </DragOverlay>
 
