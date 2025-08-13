@@ -49,14 +49,27 @@ const saveBoardOrder = () => {
     return {
       id,
       title,
-      issues: Array.from(items).map((itemEl) => ({
-        id: parseInt(itemEl.dataset.id, 10),
-        title: itemEl.textContent.trim(),
-      })),
+      issues: Array.from(items).map((itemEl) =>
+        parseInt(itemEl.dataset.id, 10)
+      ),
     };
   });
 
-  console.log(data);
+  console.log("Saving board order:", data);
+
+  // Use wp.apiFetch to send data to the REST API endpoint.
+  // It automatically handles nonces for authenticated requests.
+  wp.apiFetch({
+    path: "/alpaca/v1/board",
+    method: "POST",
+    data: data,
+  })
+    .then((res) => {
+      console.log("Board order saved successfully:", res);
+    })
+    .catch((err) => {
+      console.error("Error saving board order:", err);
+    });
 };
 
 /**

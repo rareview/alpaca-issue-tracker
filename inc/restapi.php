@@ -132,21 +132,38 @@ function alpaca_update_board() {
 }
 
 function alpaca_update_board_data_callback( WP_REST_Request $request ) {
-    $params = $request->get_json_params();
+	$columns = $request->get_json_params();
 
-    if ( isset( $params['issue_id'] ) && isset( $params['status_id'] ) ) {
-        wp_set_post_terms( $params['issue_id'], $params['status_id'], 'status' );
-    }
+	// Check if the received data is an array, which matches the structure from saveBoardOrder.
+	if ( ! is_array( $columns ) ) {
+		return new WP_REST_Response(
+			[
+				'success' => false,
+				'message' => 'Invalid data format. Expected an array of columns.',
+			],
+			400
+		);
+	}
 
-    if ( isset( $params['order'] ) ) {
-        foreach ( $params['order'] as $index => $issue_id ) {
-            update_post_meta( $issue_id, 'issue_order', $index );
-        }
-    }
+	foreach ( $columns as $column ) {
+		// Basic validation for each column object.
+		if ( ! isset( $column['id'] ) || ! isset( $column['issues'] ) || ! is_array( $column['issues'] ) ) {
+			// Silently skip malformed column data.
+			continue;
+		}
 
-    return new WP_REST_Response( true, 200 );
+		$term_id   = (int) $column['id'];
+		$issue_ids = array_map( 'intval', $column['issues'] );
+
+		// A term ID of 0 is invalid.
+		if ( $term_id > 0 ) {
+			// Save the ordered array of issue IDs to the term's metadata.
+			update_term_meta( $term_id, 'issue_order', $issue_ids );
+		}
+	}
+
+	return new WP_REST_Response( [ 'success' => true, 'message' => 'Board order saved successfully.' ], 200 );
 }
-
 // 	    if( $post_id ) {
 // 			wp_set_post_terms( $post_id, $json['browser']['name'], 'browser' );
 // // 			wp_set_post_terms( $post_id, $json['wp']['post']['template'], 'template' );

@@ -1077,13 +1077,21 @@ const { decodeEntities } = wp.htmlEntities;
         return {
             id,
             title,
-            issues: Array.from(items).map((itemEl)=>({
-                    id: parseInt(itemEl.dataset.id, 10),
-                    title: itemEl.textContent.trim()
-                }))
+            issues: Array.from(items).map((itemEl)=>parseInt(itemEl.dataset.id, 10))
         };
     });
-    console.log(data);
+    console.log("Saving board order:", data);
+    // Use wp.apiFetch to send data to the REST API endpoint.
+    // It automatically handles nonces for authenticated requests.
+    wp.apiFetch({
+        path: "/alpaca/v1/board",
+        method: "POST",
+        data: data
+    }).then((res)=>{
+        console.log("Board order saved successfully:", res);
+    }).catch((err)=>{
+        console.error("Error saving board order:", err);
+    });
 };
 /**
  * Sortable item component.
@@ -1117,7 +1125,7 @@ const { decodeEntities } = wp.htmlEntities;
         "data-id": id,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 100,
+            lineNumber: 113,
             columnNumber: 5
         },
         __self: this
@@ -1132,7 +1140,7 @@ const { decodeEntities } = wp.htmlEntities;
         "data-id": id,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 122,
+            lineNumber: 135,
             columnNumber: 5
         },
         __self: this
@@ -1140,7 +1148,7 @@ const { decodeEntities } = wp.htmlEntities;
         className: "alpaca-container-title",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 123,
+            lineNumber: 136,
             columnNumber: 7
         },
         __self: this
@@ -1152,7 +1160,7 @@ const { decodeEntities } = wp.htmlEntities;
         strategy: (0, _sortable.verticalListSortingStrategy),
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 124,
+            lineNumber: 137,
             columnNumber: 7
         },
         __self: this
@@ -1164,7 +1172,7 @@ const { decodeEntities } = wp.htmlEntities;
             onClick: onItemClick,
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 131,
+                lineNumber: 144,
                 columnNumber: 13
             },
             __self: this
@@ -1176,7 +1184,7 @@ const { decodeEntities } = wp.htmlEntities;
         isDragDisabled: true,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 140,
+            lineNumber: 153,
             columnNumber: 11
         },
         __self: this
@@ -1273,7 +1281,7 @@ const { decodeEntities } = wp.htmlEntities;
         onDragEnd: handleDragEnd,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 277,
+            lineNumber: 290,
             columnNumber: 5
         },
         __self: this
@@ -1281,7 +1289,7 @@ const { decodeEntities } = wp.htmlEntities;
         className: "alpaca-wrap",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 284,
+            lineNumber: 297,
             columnNumber: 7
         },
         __self: this
@@ -1293,7 +1301,7 @@ const { decodeEntities } = wp.htmlEntities;
             onItemClick: handleItemClick,
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 286,
+                lineNumber: 299,
                 columnNumber: 11
             },
             __self: this
@@ -1301,7 +1309,7 @@ const { decodeEntities } = wp.htmlEntities;
         dropAnimation: null,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 296,
+            lineNumber: 309,
             columnNumber: 7
         },
         __self: this
@@ -1309,7 +1317,7 @@ const { decodeEntities } = wp.htmlEntities;
         className: "alpaca-item-dragging",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 298,
+            lineNumber: 311,
             columnNumber: 11
         },
         __self: this
@@ -1319,7 +1327,7 @@ function AlpacaBoard() {
     return /*#__PURE__*/ React.createElement(Board, {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 306,
+            lineNumber: 319,
             columnNumber: 10
         },
         __self: this

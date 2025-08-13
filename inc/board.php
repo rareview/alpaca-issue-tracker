@@ -28,6 +28,30 @@ function alpaca_get_board_data() {
             ),
         ) );
 
+        // Get the saved order of issue IDs from term meta.
+        $issue_order = get_term_meta( $status->term_id, 'issue_order', true );
+
+        if ( ! empty( $issue_order ) && is_array( $issue_order ) ) {
+            // Create an associative array of posts, keyed by post ID for efficient lookup.
+            $posts_by_id = array();
+            foreach ( $posts as $post ) {
+                $posts_by_id[ $post->ID ] = $post;
+            }
+
+            // Build the sorted list of posts based on the saved order.
+            $sorted_posts = array();
+            foreach ( $issue_order as $issue_id ) {
+                if ( isset( $posts_by_id[ $issue_id ] ) ) {
+                    $sorted_posts[] = $posts_by_id[ $issue_id ];
+                    // Remove the post from the map to track posts not in the saved order.
+                    unset( $posts_by_id[ $issue_id ] );
+                }
+            }
+
+            // Append any remaining posts that were not in the saved order (e.g., new issues).
+            $posts = array_merge( $sorted_posts, array_values( $posts_by_id ) );
+        }
+
         $issues = array();
         foreach ( $posts as $post ) {
             $issues[] = array(
