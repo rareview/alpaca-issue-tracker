@@ -293,8 +293,6 @@ function alpaca_get_issue_data_callback( WP_REST_Request $request ) {
         );
     }
 
-    $post['post_author_display_name'] = get_the_author_meta( 'display_name', $post->post_author );
-
     // Convert the post object to an array for easier manipulation
     $post_data = $post->to_array();
     $post_data['post_author_display_name'] = get_the_author_meta( 'display_name', $post_data['post_author'] );
