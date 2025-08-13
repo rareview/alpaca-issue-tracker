@@ -19,6 +19,27 @@ import {
 
 import { CSS } from "@dnd-kit/utilities";
 
+/**
+ * Transforms the data from WordPress (via wp_localize_script)
+ * into the format required by the Board component's state.
+ * @param {Array} data The data from `alpaca_get_board_data`.
+ * @returns {Object} The state object for the Board component.
+ */
+const transformDataForBoard = (data) => {
+  if (!data || !Array.isArray(data)) {
+    return {};
+  }
+
+  const boardState = {};
+  data.forEach((column) => {
+    boardState[column.title] = column.issues.map((issue) => ({
+      id: issue.id.toString(), // dnd-kit works best with string IDs
+      content: issue.title,
+    }));
+  });
+  return boardState;
+};
+
 const AlpacaBoard = () => {
   return (
     <>
@@ -117,18 +138,12 @@ const AlpacaBoard = () => {
 
   // Board component: Manages the overall DndContext and state
   function Board() {
-    const [containers, setContainers] = useState({
-      "To do": [
-        { id: "c1", content: "Fix production bug" },
-        { id: "c2", content: "Write comprehensive tests" },
-        { id: "c5", content: "Refactor old module" },
-      ],
-      "In Progress": [{ id: "c3", content: "Build new UI feature" }],
-      Done: [{ id: "c4", content: "Deploy latest version" }],
-      Backlog: [
-        { id: "c6", content: "Research new tech" },
-        { id: "c7", content: "Update documentation" },
-      ],
+    const [containers, setContainers] = useState(() => {
+      // `alpacaBoardData` is localized from PHP in alpaca.php
+      if (typeof alpacaBoardData !== "undefined") {
+        return transformDataForBoard(alpacaBoardData);
+      }
+      return {}; // Start with an empty board if no data is passed
     });
 
     // Configure sensors for drag interactions (PointerSensor for mouse/touch)

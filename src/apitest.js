@@ -3,7 +3,7 @@
 // The results will be logged to your browser's developer console when the
 // #alpaca-board element is on the page.
 // You must be logged in with a user that has 'edit_posts' capabilities.
-const ALPACA_RUN_API_TESTS = true;
+const ALPACA_RUN_API_TESTS = false;
 
 if (ALPACA_RUN_API_TESTS && document.querySelector("#alpaca-board")) {
   const runApiTests = () => {

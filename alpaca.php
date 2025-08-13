@@ -67,7 +67,16 @@ add_action('wp_enqueue_scripts', function() {
     enqueue_alpaca_scripts();
 }, 500);
 
-add_action( 'admin_enqueue_scripts', function() {
+add_action( 'admin_enqueue_scripts', function($hook_suffix) {
     enqueue_alpaca_scripts();
-}, 500);
 
+	// On the project board page, pass data from PHP to our script.
+	// The hook for our page (admin.php?page=alpaca-board) is 'toplevel_page_alpaca-board'.
+	if ( 'toplevel_page_alpaca-board' === $hook_suffix ) {
+		wp_localize_script(
+			'alpaca',
+			'alpacaBoardData',
+			alpaca_get_board_data()
+		);
+	}
+}, 500);
