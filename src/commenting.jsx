@@ -1,5 +1,5 @@
+const { useState, useEffect, useRef, useCallback } = wp.element;
 import AlpacaUser from "./user";
-const { useState, useEffect, useCallback } = wp.element;
 const { TextareaControl, Button, Spinner } = wp.components;
 
 const AlpacaCommenting = ({ issueId }) => {
@@ -8,6 +8,10 @@ const AlpacaCommenting = ({ issueId }) => {
   const [error, setError] = useState(null);
   const [newComment, setNewComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editingContent, setEditingContent] = useState("");
+  const editingRef = useRef(null);
 
   const fetchComments = useCallback(() => {
     if (!issueId) return;
@@ -18,29 +22,35 @@ const AlpacaCommenting = ({ issueId }) => {
     wp.apiFetch({
       path: `/wp/v2/comments?post=${issueId}&orderby=date&order=asc&comment_type=issuecomment&show_hidden_comments=1`,
     })
-      .then((fetchedComments) => {
-        setComments(fetchedComments);
-      })
+      .then(setComments)
       .catch((err) => {
         console.error("Error fetching comments:", err);
         setError("Could not load comments.");
       })
-      .finally(() => {
-        setIsLoadingComments(false);
-      });
+      .finally(() => setIsLoadingComments(false));
   }, [issueId]);
 
   useEffect(() => {
     fetchComments();
   }, [fetchComments]);
 
-  const handleCommentSubmit = () => {
-    if (!newComment.trim()) {
-      return;
+  // Focus Textarea when editing
+  useEffect(() => {
+    if (editingRef.current) {
+      editingRef.current.focus();
     }
+  }, [editingCommentId]);
+
+  const stripHtml = (html) => {
+    const div = document.createElement("div");
+    div.innerHTML = html;
+    return div.textContent || div.innerText || "";
+  };
+
+  const handleCommentSubmit = () => {
+    if (!newComment.trim()) return;
 
     setIsSubmitting(true);
-
     wp.apiFetch({
       path: `/wp/v2/comments`,
       method: "POST",
@@ -52,15 +62,58 @@ const AlpacaCommenting = ({ issueId }) => {
     })
       .then(() => {
         setNewComment("");
-        fetchComments(); // Refetch comments
+        fetchComments();
       })
       .catch((err) => {
         console.error("Error submitting comment:", err);
-        const errorMessage = err.message || "An unknown error occurred.";
-        alert(`Failed to submit comment: ${errorMessage}`);
+        alert(`Failed to submit comment: ${err.message || "Unknown error"}`);
       })
-      .finally(() => {
-        setIsSubmitting(false);
+      .finally(() => setIsSubmitting(false));
+  };
+
+  const startEditing = (comment) => {
+    setEditingCommentId(comment.id);
+    setEditingContent(stripHtml(comment.content.rendered));
+  };
+
+  const cancelEditing = () => {
+    setEditingCommentId(null);
+    setEditingContent("");
+  };
+
+  const saveEdit = (commentId) => {
+    if (!editingContent.trim()) return;
+
+    setIsSubmitting(true);
+    wp.apiFetch({
+      path: `/wp/v2/comments/${commentId}`,
+      method: "POST",
+      data: { content: editingContent },
+    })
+      .then(() => {
+        setEditingCommentId(null);
+        setEditingContent("");
+        fetchComments();
+      })
+      .catch((err) => {
+        console.error("Error updating comment:", err);
+        alert(`Failed to update comment: ${err.message || "Unknown error"}`);
+      })
+      .finally(() => setIsSubmitting(false));
+  };
+
+  const deleteComment = (commentId) => {
+    if (!confirm("Delete this comment?")) return;
+
+    wp.apiFetch({
+      path: `/wp/v2/comments/${commentId}`,
+      method: "DELETE",
+      data: { force: true },
+    })
+      .then(() => fetchComments())
+      .catch((err) => {
+        console.error("Error deleting comment:", err);
+        alert(`Failed to delete comment: ${err.message || "Unknown error"}`);
       });
   };
 
@@ -68,6 +121,7 @@ const AlpacaCommenting = ({ issueId }) => {
     <>
       <h3>Comments</h3>
       <div id="alpaca-comments" className="alpaca-grid">
+        {/* New comment input */}
         <div className="alpaca-row">
           <div className="alpaca-meta">
             <AlpacaUser />
@@ -75,7 +129,6 @@ const AlpacaCommenting = ({ issueId }) => {
           <div className="alpaca-comment">
             <TextareaControl
               placeholder="Add a comment..."
-              id="alpaca-comment-textarea"
               value={newComment}
               onChange={setNewComment}
               disabled={isSubmitting}
@@ -96,6 +149,7 @@ const AlpacaCommenting = ({ issueId }) => {
           <p>No comments yet.</p>
         )}
 
+        {/* Existing comments */}
         {!isLoadingComments &&
           comments.map((comment) => (
             <div className="alpaca-row" key={comment.id}>
@@ -103,12 +157,44 @@ const AlpacaCommenting = ({ issueId }) => {
                 <AlpacaUser userId={comment.author} />
               </div>
               <div className="alpaca-comment">
-                <div
-                  dangerouslySetInnerHTML={{ __html: comment.content.rendered }}
-                />
-                <small className="alpaca-comment-date">
-                  {new Date(comment.date).toLocaleString()}
-                </small>
+                {editingCommentId === comment.id ? (
+                  <>
+                    <TextareaControl
+                      value={editingContent}
+                      onChange={setEditingContent}
+                      ref={editingRef}
+                    />
+                    <Button
+                      isPrimary
+                      onClick={() => saveEdit(comment.id)}
+                      disabled={isSubmitting}
+                    >
+                      Save
+                    </Button>
+                    <Button onClick={cancelEditing} disabled={isSubmitting}>
+                      Cancel
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: comment.content.rendered,
+                      }}
+                    />
+                    <small className="alpaca-comment-date">
+                      {new Date(comment.date).toLocaleString()}
+                    </small>
+                    <div>
+                      <button onClick={() => startEditing(comment)}>
+                        Edit
+                      </button>{" "}
+                      <button onClick={() => deleteComment(comment.id)}>
+                        Delete
+                      </button>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           ))}

@@ -5796,7 +5796,7 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _user = require("./user");
 var _userDefault = parcelHelpers.interopDefault(_user);
-const { useState, useEffect, useCallback } = wp.element;
+const { useState, useEffect, useRef, useCallback } = wp.element;
 const { TextareaControl, Button, Spinner } = wp.components;
 const AlpacaCommenting = ({ issueId })=>{
     const [comments, setComments] = useState([]);
@@ -5804,20 +5804,19 @@ const AlpacaCommenting = ({ issueId })=>{
     const [error, setError] = useState(null);
     const [newComment, setNewComment] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [editingCommentId, setEditingCommentId] = useState(null);
+    const [editingContent, setEditingContent] = useState("");
+    const editingRef = useRef(null);
     const fetchComments = useCallback(()=>{
         if (!issueId) return;
         setIsLoadingComments(true);
         setError(null);
         wp.apiFetch({
             path: `/wp/v2/comments?post=${issueId}&orderby=date&order=asc&comment_type=issuecomment&show_hidden_comments=1`
-        }).then((fetchedComments)=>{
-            setComments(fetchedComments);
-        }).catch((err)=>{
+        }).then(setComments).catch((err)=>{
             console.error("Error fetching comments:", err);
             setError("Could not load comments.");
-        }).finally(()=>{
-            setIsLoadingComments(false);
-        });
+        }).finally(()=>setIsLoadingComments(false));
     }, [
         issueId
     ]);
@@ -5826,6 +5825,17 @@ const AlpacaCommenting = ({ issueId })=>{
     }, [
         fetchComments
     ]);
+    // Focus Textarea when editing
+    useEffect(()=>{
+        if (editingRef.current) editingRef.current.focus();
+    }, [
+        editingCommentId
+    ]);
+    const stripHtml = (html)=>{
+        const div = document.createElement("div");
+        div.innerHTML = html;
+        return div.textContent || div.innerText || "";
+    };
     const handleCommentSubmit = ()=>{
         if (!newComment.trim()) return;
         setIsSubmitting(true);
@@ -5839,19 +5849,55 @@ const AlpacaCommenting = ({ issueId })=>{
             }
         }).then(()=>{
             setNewComment("");
-            fetchComments(); // Refetch comments
+            fetchComments();
         }).catch((err)=>{
             console.error("Error submitting comment:", err);
-            const errorMessage = err.message || "An unknown error occurred.";
-            alert(`Failed to submit comment: ${errorMessage}`);
-        }).finally(()=>{
-            setIsSubmitting(false);
+            alert(`Failed to submit comment: ${err.message || "Unknown error"}`);
+        }).finally(()=>setIsSubmitting(false));
+    };
+    const startEditing = (comment)=>{
+        setEditingCommentId(comment.id);
+        setEditingContent(stripHtml(comment.content.rendered));
+    };
+    const cancelEditing = ()=>{
+        setEditingCommentId(null);
+        setEditingContent("");
+    };
+    const saveEdit = (commentId)=>{
+        if (!editingContent.trim()) return;
+        setIsSubmitting(true);
+        wp.apiFetch({
+            path: `/wp/v2/comments/${commentId}`,
+            method: "POST",
+            data: {
+                content: editingContent
+            }
+        }).then(()=>{
+            setEditingCommentId(null);
+            setEditingContent("");
+            fetchComments();
+        }).catch((err)=>{
+            console.error("Error updating comment:", err);
+            alert(`Failed to update comment: ${err.message || "Unknown error"}`);
+        }).finally(()=>setIsSubmitting(false));
+    };
+    const deleteComment = (commentId)=>{
+        if (!confirm("Delete this comment?")) return;
+        wp.apiFetch({
+            path: `/wp/v2/comments/${commentId}`,
+            method: "DELETE",
+            data: {
+                force: true
+            }
+        }).then(()=>fetchComments()).catch((err)=>{
+            console.error("Error deleting comment:", err);
+            alert(`Failed to delete comment: ${err.message || "Unknown error"}`);
         });
     };
     return /*#__PURE__*/ React.createElement(React.Fragment, null, /*#__PURE__*/ React.createElement("h3", {
         __source: {
             fileName: "src/commenting.jsx",
-            lineNumber: 69,
+            lineNumber: 122,
             columnNumber: 7
         },
         __self: undefined
@@ -5860,7 +5906,7 @@ const AlpacaCommenting = ({ issueId })=>{
         className: "alpaca-grid",
         __source: {
             fileName: "src/commenting.jsx",
-            lineNumber: 70,
+            lineNumber: 123,
             columnNumber: 7
         },
         __self: undefined
@@ -5868,7 +5914,7 @@ const AlpacaCommenting = ({ issueId })=>{
         className: "alpaca-row",
         __source: {
             fileName: "src/commenting.jsx",
-            lineNumber: 71,
+            lineNumber: 125,
             columnNumber: 9
         },
         __self: undefined
@@ -5876,14 +5922,14 @@ const AlpacaCommenting = ({ issueId })=>{
         className: "alpaca-meta",
         __source: {
             fileName: "src/commenting.jsx",
-            lineNumber: 72,
+            lineNumber: 126,
             columnNumber: 11
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement((0, _userDefault.default), {
         __source: {
             fileName: "src/commenting.jsx",
-            lineNumber: 73,
+            lineNumber: 127,
             columnNumber: 13
         },
         __self: undefined
@@ -5891,19 +5937,18 @@ const AlpacaCommenting = ({ issueId })=>{
         className: "alpaca-comment",
         __source: {
             fileName: "src/commenting.jsx",
-            lineNumber: 75,
+            lineNumber: 129,
             columnNumber: 11
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement(TextareaControl, {
         placeholder: "Add a comment...",
-        id: "alpaca-comment-textarea",
         value: newComment,
         onChange: setNewComment,
         disabled: isSubmitting,
         __source: {
             fileName: "src/commenting.jsx",
-            lineNumber: 76,
+            lineNumber: 130,
             columnNumber: 13
         },
         __self: undefined
@@ -5913,14 +5958,14 @@ const AlpacaCommenting = ({ issueId })=>{
         disabled: isSubmitting,
         __source: {
             fileName: "src/commenting.jsx",
-            lineNumber: 83,
+            lineNumber: 136,
             columnNumber: 13
         },
         __self: undefined
     }, isSubmitting ? "Submitting..." : "Submit Comment"))), isLoadingComments && /*#__PURE__*/ React.createElement(Spinner, {
         __source: {
             fileName: "src/commenting.jsx",
-            lineNumber: 93,
+            lineNumber: 146,
             columnNumber: 31
         },
         __self: undefined
@@ -5928,14 +5973,14 @@ const AlpacaCommenting = ({ issueId })=>{
         className: "alpaca-error",
         __source: {
             fileName: "src/commenting.jsx",
-            lineNumber: 94,
+            lineNumber: 147,
             columnNumber: 19
         },
         __self: undefined
     }, error), !isLoadingComments && !error && comments.length === 0 && /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/commenting.jsx",
-            lineNumber: 96,
+            lineNumber: 149,
             columnNumber: 11
         },
         __self: undefined
@@ -5944,7 +5989,7 @@ const AlpacaCommenting = ({ issueId })=>{
             key: comment.id,
             __source: {
                 fileName: "src/commenting.jsx",
-                lineNumber: 101,
+                lineNumber: 155,
                 columnNumber: 13
             },
             __self: undefined
@@ -5952,7 +5997,7 @@ const AlpacaCommenting = ({ issueId })=>{
             className: "alpaca-meta",
             __source: {
                 fileName: "src/commenting.jsx",
-                lineNumber: 102,
+                lineNumber: 156,
                 columnNumber: 15
             },
             __self: undefined
@@ -5960,7 +6005,7 @@ const AlpacaCommenting = ({ issueId })=>{
             userId: comment.author,
             __source: {
                 fileName: "src/commenting.jsx",
-                lineNumber: 103,
+                lineNumber: 157,
                 columnNumber: 17
             },
             __self: undefined
@@ -5968,29 +6013,81 @@ const AlpacaCommenting = ({ issueId })=>{
             className: "alpaca-comment",
             __source: {
                 fileName: "src/commenting.jsx",
-                lineNumber: 105,
+                lineNumber: 159,
                 columnNumber: 15
             },
             __self: undefined
-        }, /*#__PURE__*/ React.createElement("div", {
+        }, editingCommentId === comment.id ? /*#__PURE__*/ React.createElement(React.Fragment, null, /*#__PURE__*/ React.createElement(TextareaControl, {
+            value: editingContent,
+            onChange: setEditingContent,
+            ref: editingRef,
+            __source: {
+                fileName: "src/commenting.jsx",
+                lineNumber: 162,
+                columnNumber: 21
+            },
+            __self: undefined
+        }), /*#__PURE__*/ React.createElement(Button, {
+            isPrimary: true,
+            onClick: ()=>saveEdit(comment.id),
+            disabled: isSubmitting,
+            __source: {
+                fileName: "src/commenting.jsx",
+                lineNumber: 167,
+                columnNumber: 21
+            },
+            __self: undefined
+        }, "Save"), /*#__PURE__*/ React.createElement(Button, {
+            onClick: cancelEditing,
+            disabled: isSubmitting,
+            __source: {
+                fileName: "src/commenting.jsx",
+                lineNumber: 174,
+                columnNumber: 21
+            },
+            __self: undefined
+        }, "Cancel")) : /*#__PURE__*/ React.createElement(React.Fragment, null, /*#__PURE__*/ React.createElement("div", {
             dangerouslySetInnerHTML: {
                 __html: comment.content.rendered
             },
             __source: {
                 fileName: "src/commenting.jsx",
-                lineNumber: 106,
-                columnNumber: 17
+                lineNumber: 180,
+                columnNumber: 21
             },
             __self: undefined
         }), /*#__PURE__*/ React.createElement("small", {
             className: "alpaca-comment-date",
             __source: {
                 fileName: "src/commenting.jsx",
-                lineNumber: 109,
-                columnNumber: 17
+                lineNumber: 185,
+                columnNumber: 21
             },
             __self: undefined
-        }, new Date(comment.date).toLocaleString()))))));
+        }, new Date(comment.date).toLocaleString()), /*#__PURE__*/ React.createElement("div", {
+            __source: {
+                fileName: "src/commenting.jsx",
+                lineNumber: 188,
+                columnNumber: 21
+            },
+            __self: undefined
+        }, /*#__PURE__*/ React.createElement("button", {
+            onClick: ()=>startEditing(comment),
+            __source: {
+                fileName: "src/commenting.jsx",
+                lineNumber: 189,
+                columnNumber: 23
+            },
+            __self: undefined
+        }, "Edit"), " ", /*#__PURE__*/ React.createElement("button", {
+            onClick: ()=>deleteComment(comment.id),
+            __source: {
+                fileName: "src/commenting.jsx",
+                lineNumber: 192,
+                columnNumber: 23
+            },
+            __self: undefined
+        }, "Delete"))))))));
 };
 exports.default = AlpacaCommenting;
 
