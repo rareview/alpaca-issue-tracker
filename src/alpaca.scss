@@ -78,19 +78,25 @@
       }
       .alpaca-item-meta {
         display: flex;
-        align-items: baseline;
+        align-items: center;
         color: #999;
         div {
           padding-right: 0.5rem;
         }
+        .alpaca-item-author,
+        .alpaca-item-assignee {
+          font-size: 0.8rem;
+          color: #999;
+          margin-top: 4px;
+          line-height: 24px;
+          display: flex;
+          align-items: center;
+        }
+        .has-dashicon {
+          margin-top: 4px;
+        }
       }
-      .alpaca-item-author {
-        font-size: 0.8rem;
-        color: #999;
-        margin-top: 4px;
-        line-height: 24px;
-      }
-      .alpaca-item-author-img {
+      .alpaca-item-user-img {
         width: 24px;
         height: 24px;
         border-radius: 50%;

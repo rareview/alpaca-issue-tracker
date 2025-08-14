@@ -82,7 +82,7 @@
 
 .wp-admin #alpaca-board .alpaca-item .alpaca-item-meta, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-meta {
   color: #999;
-  align-items: baseline;
+  align-items: center;
   display: flex;
 }
 
@@ -90,14 +90,20 @@
   padding-right: .5rem;
 }
 
-.wp-admin #alpaca-board .alpaca-item .alpaca-item-author, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-author {
+.wp-admin #alpaca-board .alpaca-item .alpaca-item-meta .alpaca-item-author, .wp-admin #alpaca-board .alpaca-item .alpaca-item-meta .alpaca-item-assignee, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-meta .alpaca-item-author, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-meta .alpaca-item-assignee {
   color: #999;
+  align-items: center;
   margin-top: 4px;
   font-size: .8rem;
   line-height: 24px;
+  display: flex;
 }
 
-.wp-admin #alpaca-board .alpaca-item .alpaca-item-author-img, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-author-img {
+.wp-admin #alpaca-board .alpaca-item .alpaca-item-meta .has-dashicon, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-meta .has-dashicon {
+  margin-top: 4px;
+}
+
+.wp-admin #alpaca-board .alpaca-item .alpaca-item-user-img, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-user-img {
   vertical-align: middle;
   border-radius: 50%;
   width: 24px;

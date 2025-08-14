@@ -43,42 +43,48 @@ function alpaca_get_board_data() {
         $issue_order = get_term_meta( $status->term_id, 'issue_order', true );
 
         if ( ! empty( $issue_order ) && is_array( $issue_order ) ) {
-            // Create an associative array of posts, keyed by post ID for efficient lookup.
             $posts_by_id = array();
             foreach ( $posts as $post ) {
                 $posts_by_id[ $post->ID ] = $post;
             }
-
-            // Build the sorted list of posts based on the saved order.
             $sorted_posts = array();
             foreach ( $issue_order as $issue_id ) {
                 if ( isset( $posts_by_id[ $issue_id ] ) ) {
                     $sorted_posts[] = $posts_by_id[ $issue_id ];
-                    // Remove the post from the map to track posts not in the saved order.
                     unset( $posts_by_id[ $issue_id ] );
                 }
             }
-
-            // Append any remaining posts that were not in the saved order (e.g., new issues).
             $posts = array_merge( $sorted_posts, array_values( $posts_by_id ) );
         }
 
         $issues = array();
         foreach ( $posts as $post ) {
-            // We need to specifically count our custom comment type,
-            // as they are excluded from the standard post->comment_count.
+            // Count only 'issuecomment' type comments
             $issue_comment_count = get_comments( array(
                 'post_id' => $post->ID,
                 'type'    => 'issuecomment',
                 'count'   => true,
             ) );
+
+            // --- Assignees ---
+            $assignee_terms = wp_get_object_terms( $post->ID, 'assignee', array( 'fields' => 'all' ) );
+            $assignees = array();
+            foreach ( $assignee_terms as $term ) {
+                $user = get_user_by( 'slug', $term->slug );
+                $avatar = $user ? get_avatar_url( $user->ID, array( 'size' => 32 ) ) : '';
+                $assignees[] = array(
+                    'id'           => $term->term_id,
+                    'slug'         => $term->slug,
+                    'display_name' => $term->name, // term name is display name
+                    'avatar'       => $avatar,
+                );
+            }
+
             $issues[] = array(
                 'id' => $post->ID,
                 'title' => $post->post_title,
-                'author_id' => $post->post_author,
-                'author_name' => get_the_author_meta( 'display_name', $post->post_author ),
-                'author_img' => get_avatar_url( $post->post_author, array( 'size' => 24 ) ),
                 'comment_count' => $issue_comment_count,
+                'assignees' => $assignees, // <-- Add this line
             );
         }
 

@@ -33,8 +33,7 @@ const transformDataForBoard = (data) => {
     items: column.issues.map((issue) => ({
       id: issue.id.toString(),
       content: decodeEntities(issue.title),
-      author_name: decodeEntities(issue.author_name),
-      author_img: issue.author_img,
+      assignees: issue.assignees || [], // <-- Add this line
       comment_count: issue.comment_count,
     })),
   }));
@@ -78,16 +77,7 @@ const saveBoardOrder = () => {
 
 const Item = forwardRef(
   (
-    {
-      id,
-      content,
-      author_name,
-      author_img,
-      comment_count,
-      className,
-      style,
-      ...props
-    },
+    { id, content, assignees = [], comment_count, className, style, ...props },
     ref
   ) => {
     return (
@@ -96,23 +86,55 @@ const Item = forwardRef(
         className={className}
         style={style}
         data-id={id}
-        data-author={author_name}
-        data-authorimg={author_img}
         {...props}
       >
         <div className="alpaca-item-content">{content}</div>
         <div className="alpaca-item-meta">
-          <div className="alpaca-item-author">
-            {author_img ? (
-              <img className="alpaca-item-author-img" src={author_img} />
-            ) : (
-              ""
-            )}
-            {author_name}
-          </div>
+          {/* --- Assignees --- */}
+          {assignees.length === 1 && (
+            <div className="alpaca-item-assignees">
+              <div
+                key={assignees[0].id || assignees[0].slug || assignees[0].name}
+                className="alpaca-item-assignee"
+                title={assignees[0].display_name || assignees[0].name}
+              >
+                {assignees[0].avatar && (
+                  <img
+                    className="alpaca-item-user-img"
+                    src={assignees[0].avatar}
+                    alt={assignees[0].display_name || assignees[0].name}
+                    style={{
+                      width: 20,
+                      height: 20,
+                      borderRadius: "50%",
+                      verticalAlign: "middle",
+                      marginRight: 4,
+                    }}
+                  />
+                )}
+                <div className="alpaca-item-assignee-name">
+                  {assignees[0].display_name || assignees[0].name}
+                </div>
+              </div>
+            </div>
+          )}
+          {assignees.length > 1 && (
+            <div className="alpaca-item-assignees">
+              {assignees.map((assignee) => (
+                <img
+                  key={assignee.id || assignee.slug || assignee.name}
+                  className="alpaca-item-user-img"
+                  src={assignee.avatar}
+                  alt={assignee.display_name || assignee.name}
+                  title={assignee.display_name || assignee.name}
+                />
+              ))}
+            </div>
+          )}
+          {/* If no assignees, show nothing */}
 
           {typeof comment_count !== "undefined" && comment_count > 0 && (
-            <div className="alpaca-item-comment-count">
+            <div className="alpaca-item-comment-count has-dashicon">
               <span
                 className="dashicons dashicons-admin-comments"
                 aria-hidden="true"
@@ -135,8 +157,7 @@ function SortableItem({
   className,
   isDragDisabled = false,
   onClick,
-  author_name,
-  author_img = "",
+  assignees = [],
   comment_count,
 }) {
   const {
@@ -171,8 +192,7 @@ function SortableItem({
       ref={setNodeRef}
       id={id}
       content={content}
-      author_name={author_name}
-      author_img={author_img}
+      assignees={assignees}
       comment_count={comment_count}
       className={className}
       style={style}
@@ -205,8 +225,7 @@ function Container({ id, title, items, onItemClick }) {
               key={item.id}
               id={item.id}
               content={item.content}
-              author_name={item.author_name}
-              author_img={item.author_img}
+              assignees={item.assignees} // <-- Add this line
               comment_count={item.comment_count}
               onClick={onItemClick}
             />
