@@ -76,6 +76,14 @@
         font-size: 0.9rem;
         line-height: 1.4;
       }
+      .alpaca-item-meta {
+        display: flex;
+        align-items: baseline;
+        color: #999;
+        div {
+          padding-right: 0.5rem;
+        }
+      }
       .alpaca-item-author {
         font-size: 0.8rem;
         color: #999;

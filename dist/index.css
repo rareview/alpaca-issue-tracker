@@ -80,6 +80,16 @@
   line-height: 1.4;
 }
 
+.wp-admin #alpaca-board .alpaca-item .alpaca-item-meta, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-meta {
+  color: #999;
+  align-items: baseline;
+  display: flex;
+}
+
+.wp-admin #alpaca-board .alpaca-item .alpaca-item-meta div, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-meta div {
+  padding-right: .5rem;
+}
+
 .wp-admin #alpaca-board .alpaca-item .alpaca-item-author, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-author {
   color: #999;
   margin-top: 4px;

@@ -101,21 +101,24 @@ const Item = forwardRef(
         {...props}
       >
         <div className="alpaca-item-content">{content}</div>
-        <div className="alpaca-item-author">
-          {author_img ? (
-            <img className="alpaca-item-author-img" src={author_img} />
-          ) : (
-            ""
-          )}
-          {author_name}
+        <div className="alpaca-item-meta">
+          <div className="alpaca-item-author">
+            {author_img ? (
+              <img className="alpaca-item-author-img" src={author_img} />
+            ) : (
+              ""
+            )}
+            {author_name}
+          </div>
+
           {typeof comment_count !== "undefined" && comment_count > 0 && (
-            <span className="alpaca-item-comment-count">
+            <div className="alpaca-item-comment-count">
               <span
                 className="dashicons dashicons-admin-comments"
                 aria-hidden="true"
               ></span>
               {comment_count}
-            </span>
+            </div>
           )}
         </div>
       </div>
