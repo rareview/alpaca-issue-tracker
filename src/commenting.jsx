@@ -1,6 +1,6 @@
 const { useState, useEffect, useRef, useCallback } = wp.element;
 import AlpacaUser from "./user";
-const { TextareaControl, Button, Spinner } = wp.components;
+const { TextareaControl, Button, Spinner, Modal } = wp.components;
 
 const AlpacaCommenting = ({ issueId }) => {
   const [comments, setComments] = useState([]);
@@ -13,9 +13,10 @@ const AlpacaCommenting = ({ issueId }) => {
   const [editingContent, setEditingContent] = useState("");
   const editingRef = useRef(null);
 
+  const [deleteCommentId, setDeleteCommentId] = useState(null); // New state for modal
+
   const fetchComments = useCallback(() => {
     if (!issueId) return;
-
     setIsLoadingComments(true);
     setError(null);
 
@@ -34,11 +35,8 @@ const AlpacaCommenting = ({ issueId }) => {
     fetchComments();
   }, [fetchComments]);
 
-  // Focus Textarea when editing
   useEffect(() => {
-    if (editingRef.current) {
-      editingRef.current.focus();
-    }
+    if (editingRef.current) editingRef.current.focus();
   }, [editingCommentId]);
 
   const stripHtml = (html) => {
@@ -49,8 +47,8 @@ const AlpacaCommenting = ({ issueId }) => {
 
   const handleCommentSubmit = () => {
     if (!newComment.trim()) return;
-
     setIsSubmitting(true);
+
     wp.apiFetch({
       path: `/wp/v2/comments`,
       method: "POST",
@@ -65,7 +63,7 @@ const AlpacaCommenting = ({ issueId }) => {
         fetchComments();
       })
       .catch((err) => {
-        console.error("Error submitting comment:", err);
+        console.error(err);
         alert(`Failed to submit comment: ${err.message || "Unknown error"}`);
       })
       .finally(() => setIsSubmitting(false));
@@ -83,8 +81,8 @@ const AlpacaCommenting = ({ issueId }) => {
 
   const saveEdit = (commentId) => {
     if (!editingContent.trim()) return;
-
     setIsSubmitting(true);
+
     wp.apiFetch({
       path: `/wp/v2/comments/${commentId}`,
       method: "POST",
@@ -96,23 +94,31 @@ const AlpacaCommenting = ({ issueId }) => {
         fetchComments();
       })
       .catch((err) => {
-        console.error("Error updating comment:", err);
+        console.error(err);
         alert(`Failed to update comment: ${err.message || "Unknown error"}`);
       })
       .finally(() => setIsSubmitting(false));
   };
 
-  const deleteComment = (commentId) => {
-    if (!confirm("Delete this comment?")) return;
+  const confirmDeleteComment = (commentId) => {
+    setDeleteCommentId(commentId);
+  };
 
+  const cancelDelete = () => setDeleteCommentId(null);
+
+  const deleteComment = () => {
+    if (!deleteCommentId) return;
     wp.apiFetch({
-      path: `/wp/v2/comments/${commentId}`,
+      path: `/wp/v2/comments/${deleteCommentId}`,
       method: "DELETE",
       data: { force: true },
     })
-      .then(() => fetchComments())
+      .then(() => {
+        fetchComments();
+        setDeleteCommentId(null);
+      })
       .catch((err) => {
-        console.error("Error deleting comment:", err);
+        console.error(err);
         alert(`Failed to delete comment: ${err.message || "Unknown error"}`);
       });
   };
@@ -149,7 +155,7 @@ const AlpacaCommenting = ({ issueId }) => {
           <p>No comments yet.</p>
         )}
 
-        {/* Existing comments */}
+        {/* Comments list */}
         {!isLoadingComments &&
           comments.map((comment) => (
             <div className="alpaca-row" key={comment.id}>
@@ -188,8 +194,9 @@ const AlpacaCommenting = ({ issueId }) => {
                     <div>
                       <button onClick={() => startEditing(comment)}>
                         Edit
-                      </button>{" "}
-                      <button onClick={() => deleteComment(comment.id)}>
+                      </button>
+                      {" | "}
+                      <button onClick={() => confirmDeleteComment(comment.id)}>
                         Delete
                       </button>
                     </div>
@@ -198,6 +205,21 @@ const AlpacaCommenting = ({ issueId }) => {
               </div>
             </div>
           ))}
+
+        {/* Modal for delete */}
+        {deleteCommentId && (
+          <Modal
+            title="Delete Comment?"
+            onRequestClose={cancelDelete}
+            className="alpaca-modal"
+          >
+            <p>Are you sure you want to delete this comment?</p>
+            <Button isPrimary onClick={deleteComment}>
+              Delete
+            </Button>
+            <Button onClick={cancelDelete}>Cancel</Button>
+          </Modal>
+        )}
       </div>
     </>
   );
