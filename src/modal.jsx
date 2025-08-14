@@ -58,7 +58,7 @@ const AlpacaModal = () => {
       const server = JSON.parse(atob(alpaca_data.env));
       setStatus("submitting");
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // await new Promise((resolve) => setTimeout(resolve, 1000));
 
       const screenshot = await handleSnapdomCapture();
 
