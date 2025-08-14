@@ -3,14 +3,15 @@ add_action( 'init', function() {
 
     register_post_type( 'issue', array(
         'public'             => false,
+        'show_in_rest'       => true,
         'show_ui'			 => true,
-        'publicly_queryable' => false,
-        'rewrite'			 => false,
-        'query_var'			 => false,
+        // 'publicly_queryable' => false,
+        // 'rewrite'			 => false,
+        // 'query_var'			 => false,
         'label'              => 'Issues',
         'labels'			 => array(
 	        'name'				=> 'Issue',
-	        'singular_name'		=> 'Issues',
+	        'singular_name'		=> 'Issue',
 	        'all_items'			=> 'All Issues',
 	        'edit_item'			=> 'Edit Issue',
 	        'view_item'			=> 'View Issue',
@@ -18,7 +19,7 @@ add_action( 'init', function() {
         ),
         'menu_icon'          => 'dashicons-warning',
         'menu_position'		 => 102,
-        'supports'           => array( 'editor','custom-fields','author' ), // skipping 'comments' for now
+        'supports'           => array( 'editor','custom-fields','author','comments' ),
 		'map_meta_cap' => true, // prevents viewing/editing if false
 		// 'capabilities' => array(
 		// 	'create_posts' => false, // Removes support for the "Add New" function ( use 'do_not_allow' instead of false for multisite set ups )
@@ -46,6 +47,22 @@ add_action( 'init', function() {
     alpaca_register_taxonomy( 'status', array(  
         'meta_box_cb' => 'status_metabox', // custom metabox, see below
     ) );
+
+add_filter( 'rest_pre_insert_comment', function( $prepared_comment, $request ) {
+    if ( isset( $request['comment_type'] ) && $request['comment_type'] === 'issuecomment' ) {
+        $prepared_comment['comment_type'] = 'issuecomment';
+    }
+    return $prepared_comment;
+}, 10, 2 );
+
+add_filter( 'rest_comment_query', function( $args, $request ) {
+    if ( isset( $request['comment_type'] ) && $request['comment_type'] === 'issuecomment' ) {
+        $args['type'] = 'issuecomment';
+    }
+    return $args;
+}, 10, 2 );
+
+
 
 add_action( 'status_add_form_fields', function() {
     ?>
@@ -120,7 +137,6 @@ function status_metabox( $post ) {
 
 });
 
-
 function alpaca_get_statuses( $order = 'ASC' ) {
     $terms = get_terms(array(
 		'taxonomy' => 'status',
@@ -131,3 +147,5 @@ function alpaca_get_statuses( $order = 'ASC' ) {
 	));
     return $terms;
 }
+
+

@@ -35,7 +35,8 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
             'post_author' => $json['user']['id'],
             'post_title' => wp_kses_post( wp_trim_words( $json['userinput']['feedback'], 10 ) ), // Original title
             'post_name' => hash('fnv164', $getbody), // Unique slug based on the request body
-            'post_content' =>wp_kses_post(  $json['userinput']['feedback'] )
+            'post_content' =>wp_kses_post(  $json['userinput']['feedback'] ),
+            'comment_status' => 'open', // Allow comments on the issue
         );
         $post_id = wp_insert_post( $post_args );
 
@@ -266,8 +267,8 @@ function alpaca_get_issue_data() {
             'methods'  => 'GET',
             'callback' => 'alpaca_get_issue_data_callback',
             'permission_callback' => function () {
-                // Anyone can view issues for now, adjust capability as needed
-                return current_user_can( 'read' ); 
+                // Users must be able to edit posts to view issue details.
+                return current_user_can( 'edit_posts' );
             },
             'args' => array(
                 'id' => array(
@@ -322,32 +323,6 @@ function alpaca_get_issue_data_callback( WP_REST_Request $request ) {
         }
     }
 
-    // Get all comments for the post
-    $comments = get_comments( array(
-        'post_id' => $issue_id,
-        'status'  => 'approve', // Only approved comments
-        'order'   => 'ASC',
-        'orderby' => 'comment_date_gmt',
-    ) );
-
-    // Prepare comment data to be included in the response
-    $formatted_comments = [];
-    foreach ( $comments as $comment ) {
-        $formatted_comments[] = array(
-            'comment_ID'           => (int) $comment->comment_ID,
-            'comment_post_ID'      => (int) $comment->comment_post_ID,
-            'comment_author'       => $comment->comment_author,
-            'comment_author_email' => $comment->comment_author_email,
-            'comment_author_url'   => $comment->comment_author_url,
-            'comment_date'         => $comment->comment_date,
-            'comment_date_gmt'     => $comment->comment_date_gmt,
-            'comment_content'      => $comment->comment_content,
-            'comment_parent'       => (int) $comment->comment_parent,
-            'user_id'              => (int) $comment->user_id,
-        );
-    }
-
-
     // Structure the response similar to alpaca_update_issue_callback, but with more data
     $response_data = array(
         'success' => true,
@@ -356,7 +331,6 @@ function alpaca_get_issue_data_callback( WP_REST_Request $request ) {
         'post_data' => $post_data,
         'meta'      => $formatted_meta,
         'taxonomies' => $terms_data,
-        'comments'  => $formatted_comments,
     );
 
     return new WP_REST_Response( $response_data, 200 );

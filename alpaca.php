@@ -16,7 +16,7 @@ namespace alpaca;
 include('lib/private-comments.php');
 add_action('init', function() {
     hide_comment_type(
-        'comment',  // comment type
+        'issuecomment',  // comment type
         true        // remove from comment counts?
     );
 });

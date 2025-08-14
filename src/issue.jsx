@@ -1,6 +1,6 @@
-import AlpacaUser from "./user";
+import AlpacaCommenting from "./commenting.jsx";
 const { useState, useEffect } = wp.element;
-const { Modal, TextareaControl, Button } = wp.components;
+const { Modal } = wp.components;
 
 const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef }) => {
   const [issueDetails, setIssueDetails] = useState(null);
@@ -16,18 +16,18 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef }) => {
   useEffect(() => {
     if (issueId && isOpen) {
       setIsLoadingDetails(true);
-      setIssueDetails(null); // Clear previous details
 
       wp.apiFetch({
         path: `/issue/v1/get/${issueId}`,
       })
         .then((data) => {
           setIssueDetails(data);
-          setIsLoadingDetails(false);
         })
         .catch((err) => {
           console.error("Error fetching issue details:", err);
           setIssueDetails({ error: "Failed to load details." });
+        })
+        .finally(() => {
           setIsLoadingDetails(false);
         });
     }
@@ -125,32 +125,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef }) => {
             </tbody>
           </table>
 
-          <h3>Comments</h3>
-
-          <div id="alpaca-comments" className="alpaca-grid">
-            <div className="alpaca-row">
-              <div className="alpaca-meta">
-                <AlpacaUser />
-              </div>
-              <div className="alpaca-comment">
-                <TextareaControl
-                  placeholder="Not implemented yet"
-                  id="alpaca-comment-textarea"
-                  value={""} // No comment input in this version
-                  onChange={() => {}}
-                  disabled={true} // Disable input for now
-                />
-                <Button isPrimary>Submit Comment</Button>
-              </div>
-            </div>
-
-            <div className="alpaca-row">
-              <div className="alpaca-meta">
-                <div className="alpaca-author">Author</div>
-              </div>
-              <div className="alpaca-comment">Comment</div>
-            </div>
-          </div>
+          <AlpacaCommenting issueId={issueId} />
         </div>
       ) : (
         <p>{issueDetails?.message || "Could not load issue details."}</p>
