@@ -42,7 +42,7 @@ add_action( 'init', function() {
     // alpaca_register_taxonomy( 'plugin' );
     // alpaca_register_taxonomy( 'query' );
     alpaca_register_taxonomy( 'assignee', array(
-        'public' => false,
+        'public' => true,
     ) );
     alpaca_register_taxonomy( 'status', array(  
         'meta_box_cb' => 'status_metabox', // custom metabox, see below

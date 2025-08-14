@@ -1,6 +1,6 @@
 import AlpacaCommenting from "./commenting.jsx";
 const { useState, useEffect } = wp.element;
-const { Modal } = wp.components;
+const { Modal, FormTokenField } = wp.components;
 
 const AlpacaIssue = ({
   issueId,
@@ -11,14 +11,28 @@ const AlpacaIssue = ({
 }) => {
   const [issueDetails, setIssueDetails] = useState(null);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const [allUsers, setAllUsers] = useState([]);
+  const [assignees, setAssignees] = useState([]);
+  const [isSaving, setIsSaving] = useState(false);
+  const [userMap, setUserMap] = useState({}); // Map display name -> slug
 
-  // When the modal closes, return focus to the element that opened it.
+  // Fetch all users for suggestions
   useEffect(() => {
-    if (!isOpen && triggerRef && triggerRef.current) {
-      triggerRef.current.focus();
+    if (isOpen) {
+      wp.apiFetch({ path: "/wp/v2/users?per_page=100" }).then((users) => {
+        // Map display name and slug for lookup
+        const map = {};
+        users.forEach((u) => {
+          map[u.name] = u.slug;
+          map[u.slug] = u.slug; // allow slug as fallback
+        });
+        setUserMap(map);
+        setAllUsers(users.map((u) => u.name)); // suggestions: display names
+      });
     }
-  }, [isOpen, triggerRef]);
+  }, [isOpen]);
 
+  // Fetch issue details
   useEffect(() => {
     if (issueId && isOpen) {
       setIsLoadingDetails(true);
@@ -28,6 +42,25 @@ const AlpacaIssue = ({
       })
         .then((data) => {
           setIssueDetails(data);
+          // Pre-populate assignees from taxonomy
+          if (
+            data.taxonomies &&
+            data.taxonomies.assignee &&
+            Array.isArray(data.taxonomies.assignee)
+          ) {
+            setAssignees(
+              data.taxonomies.assignee.map(
+                (t) =>
+                  Object.keys(userMap).find(
+                    (k) => userMap[k] === (t.username || t.name)
+                  ) ||
+                  t.username ||
+                  t.name
+              )
+            );
+          } else {
+            setAssignees([]);
+          }
         })
         .catch((err) => {
           console.error("Error fetching issue details:", err);
@@ -37,7 +70,25 @@ const AlpacaIssue = ({
           setIsLoadingDetails(false);
         });
     }
-  }, [issueId, isOpen]);
+  }, [issueId, isOpen, userMap]);
+
+  // Save handler for assignees
+  const handleSaveAssignees = () => {
+    setIsSaving(true);
+    wp.apiFetch({
+      path: `/issue/v1/update/${issueId}`,
+      method: "POST",
+      data: {
+        taxonomies: {
+          assignee: assignees, // send usernames
+        },
+      },
+    })
+      .then(() => {
+        // Optionally refetch details or show a notice
+      })
+      .finally(() => setIsSaving(false));
+  };
 
   if (!isOpen) {
     return null;
@@ -61,6 +112,36 @@ const AlpacaIssue = ({
         <div className="alpaca-issue-details">
           <table className="wp-list-table widefat striped">
             <tbody>
+              <tr>
+                <th scope="row">Assigned to:</th>
+                <td>
+                  <FormTokenField
+                    label=""
+                    value={assignees}
+                    suggestions={allUsers}
+                    onChange={(newAssignees) => {
+                      setAssignees(newAssignees);
+                      // Convert display names to slugs for saving
+                      const slugs = newAssignees.map((a) => userMap[a] || a);
+                      setIsSaving(true);
+                      wp.apiFetch({
+                        path: `/issue/v1/update/${issueId}`,
+                        method: "POST",
+                        data: {
+                          taxonomies: {
+                            assignee: slugs,
+                          },
+                        },
+                      })
+                        .then(() => {
+                          // Optionally refetch details or show a notice
+                        })
+                        .finally(() => setIsSaving(false));
+                    }}
+                  />
+                </td>
+              </tr>
+
               <tr>
                 <th scope="row">Screenshot</th>
                 <td>

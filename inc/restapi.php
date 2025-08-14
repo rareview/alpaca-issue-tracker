@@ -242,9 +242,37 @@ function alpaca_update_issue_callback( WP_REST_Request $request ) {
     if ( isset( $data['taxonomies'] ) && is_array( $data['taxonomies'] ) ) {
         foreach ( $data['taxonomies'] as $taxonomy => $terms ) {
             if ( taxonomy_exists( $taxonomy ) ) {
-                // Force integers to avoid WP creating new terms
-                $term_ids = array_map( 'intval', (array) $terms );
-                wp_set_post_terms( $issue_id, $term_ids, $taxonomy, false );
+                // Special handling for assignee: convert usernames to term IDs
+                if ( $taxonomy === 'assignee' ) {
+                    $term_ids = [];
+                    foreach ( (array) $terms as $user_slug ) {
+                        $user = get_user_by( 'slug', $user_slug );
+                        if ( $user ) {
+                            // Use display name as term name, slug as term slug
+                            $term = get_term_by( 'slug', $user->user_nicename, 'assignee' );
+                            if ( ! $term ) {
+                                $term = wp_insert_term(
+                                    $user->display_name,
+                                    'assignee',
+                                    [
+                                        'slug'        => $user->user_nicename,
+                                        'description' => $user->user_login,
+                                    ]
+                                );
+                                $term_id = is_array( $term ) ? $term['term_id'] : $term;
+                            } else {
+                                $term_id = $term->term_id;
+                            }
+                            if ( $term_id ) {
+                                $term_ids[] = (int) $term_id;
+                            }
+                        }
+                    }
+                    wp_set_post_terms( $issue_id, $term_ids, 'assignee', false );
+                } else {
+                    $term_ids = array_map( 'intval', (array) $terms );
+                    wp_set_post_terms( $issue_id, $term_ids, $taxonomy, false );
+                }
             }
         }
     }
@@ -330,6 +358,14 @@ function alpaca_get_issue_data_callback( WP_REST_Request $request ) {
     foreach ( $all_taxonomies as $taxonomy_obj ) {
         $terms = wp_get_object_terms( $issue_id, $taxonomy_obj->name, array( 'fields' => 'all' ) );
         if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) {
+            // For assignee, return usernames
+            if ( $taxonomy_obj->name === 'assignee' ) {
+                foreach ( $terms as &$term ) {
+                    $term->username = $term->name;
+                    // Optionally, try to get display_name from description
+                    $term->display_name = $term->description;
+                }
+            }
             $terms_data[ $taxonomy_obj->name ] = $terms;
         }
     }
