@@ -92,6 +92,7 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
                     'author_id'   => $post_args['post_author'],
                     'author_name' => get_the_author_meta( 'display_name', $post_args['post_author'] ),
                     'author_img'  => get_avatar_url( $post_args['post_author'], array( 'size' => 24 ) ),
+                    'comment_count' => 0, // New issue has 0 comments
                 ),
                 'statusId'  => $status_term_id,
             ),
@@ -333,6 +334,14 @@ function alpaca_get_issue_data_callback( WP_REST_Request $request ) {
         }
     }
 
+    // We need to specifically count our custom comment type,
+    // as they are excluded from the standard post->comment_count.
+    $issue_comment_count = get_comments( array(
+        'post_id' => $issue_id,
+        'type'    => 'issuecomment',
+        'count'   => true,
+    ) );
+
     // Structure the response similar to alpaca_update_issue_callback, but with more data
     $response_data = array(
         'success' => true,
@@ -341,6 +350,7 @@ function alpaca_get_issue_data_callback( WP_REST_Request $request ) {
         'post_data' => $post_data,
         'meta'      => $formatted_meta,
         'taxonomies' => $terms_data,
+        'comment_count' => $issue_comment_count,
     );
 
     return new WP_REST_Response( $response_data, 200 );

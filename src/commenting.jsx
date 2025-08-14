@@ -1,8 +1,7 @@
 const { useState, useEffect, useRef, useCallback } = wp.element;
 import AlpacaUser from "./user";
 const { TextareaControl, Button, Spinner, Modal } = wp.components;
-
-const AlpacaCommenting = ({ issueId }) => {
+const AlpacaCommenting = ({ issueId, onCommentCountChange }) => {
   const [comments, setComments] = useState([]);
   const [isLoadingComments, setIsLoadingComments] = useState(true);
   const [error, setError] = useState(null);
@@ -23,13 +22,18 @@ const AlpacaCommenting = ({ issueId }) => {
     wp.apiFetch({
       path: `/wp/v2/comments?post=${issueId}&orderby=date&order=asc&comment_type=issuecomment&show_hidden_comments=1`,
     })
-      .then(setComments)
+      .then((fetchedComments) => {
+        setComments(fetchedComments);
+        if (onCommentCountChange) {
+          onCommentCountChange(fetchedComments.length);
+        }
+      })
       .catch((err) => {
         console.error("Error fetching comments:", err);
         setError("Could not load comments.");
       })
       .finally(() => setIsLoadingComments(false));
-  }, [issueId]);
+  }, [issueId, onCommentCountChange]);
 
   useEffect(() => {
     fetchComments();

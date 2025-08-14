@@ -1,4 +1,4 @@
-const { useState, useRef, useEffect, forwardRef } = wp.element;
+const { useState, useRef, useEffect, forwardRef, useCallback } = wp.element;
 const { decodeEntities } = wp.htmlEntities;
 
 import {
@@ -35,6 +35,7 @@ const transformDataForBoard = (data) => {
       content: decodeEntities(issue.title),
       author_name: decodeEntities(issue.author_name),
       author_img: issue.author_img,
+      comment_count: issue.comment_count,
     })),
   }));
 };
@@ -77,7 +78,16 @@ const saveBoardOrder = () => {
 
 const Item = forwardRef(
   (
-    { id, content, author_name, author_img, className, style, ...props },
+    {
+      id,
+      content,
+      author_name,
+      author_img,
+      comment_count,
+      className,
+      style,
+      ...props
+    },
     ref
   ) => {
     return (
@@ -98,6 +108,15 @@ const Item = forwardRef(
             ""
           )}
           {author_name}
+          {typeof comment_count !== "undefined" && comment_count > 0 && (
+            <span className="alpaca-item-comment-count">
+              <span
+                className="dashicons dashicons-admin-comments"
+                aria-hidden="true"
+              ></span>
+              {comment_count}
+            </span>
+          )}
         </div>
       </div>
     );
@@ -115,6 +134,7 @@ function SortableItem({
   onClick,
   author_name,
   author_img = "",
+  comment_count,
 }) {
   const {
     attributes,
@@ -150,6 +170,7 @@ function SortableItem({
       content={content}
       author_name={author_name}
       author_img={author_img}
+      comment_count={comment_count}
       className={className}
       style={style}
       onClick={handleClick}
@@ -183,6 +204,7 @@ function Container({ id, title, items, onItemClick }) {
               content={item.content}
               author_name={item.author_name}
               author_img={item.author_img}
+              comment_count={item.comment_count}
               onClick={onItemClick}
             />
           ))
@@ -350,6 +372,34 @@ function Board() {
     setSelectedItem(item);
   };
 
+  const handleCommentCountChange = useCallback((issueId, newCount) => {
+    setContainers((prevContainers) =>
+      prevContainers.map((container) => {
+        const itemIndex = container.items.findIndex(
+          (item) => item.id === issueId.toString()
+        );
+
+        if (itemIndex === -1) {
+          return container;
+        }
+
+        const newItems = [...container.items];
+        newItems[itemIndex] = {
+          ...newItems[itemIndex],
+          comment_count: newCount,
+        };
+
+        return { ...container, items: newItems };
+      })
+    );
+  }, []);
+
+  const onCommentCountChangeForIssue = useCallback(
+    (newCount) =>
+      selectedItem?.id && handleCommentCountChange(selectedItem.id, newCount),
+    [selectedItem, handleCommentCountChange]
+  );
+
   const closeModal = () => {
     setSelectedItem(null);
   };
@@ -383,6 +433,7 @@ function Board() {
             content: issue.title,
             author_name: issue.author_name,
             author_img: issue.author_img,
+            comment_count: issue.comment_count ?? 0,
           });
         }
 
@@ -424,6 +475,7 @@ function Board() {
             content={draggedItem.content}
             author_name={draggedItem.author_name}
             author_img={draggedItem.author_img}
+            comment_count={draggedItem.comment_count}
             className="alpaca-item-dragging"
           />
         ) : null}
@@ -434,6 +486,7 @@ function Board() {
         isOpen={!!selectedItem}
         onClose={closeModal}
         triggerRef={triggerRef}
+        onCommentCountChange={onCommentCountChangeForIssue}
       />
     </DndContext>
   );

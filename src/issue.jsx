@@ -2,7 +2,13 @@ import AlpacaCommenting from "./commenting.jsx";
 const { useState, useEffect } = wp.element;
 const { Modal } = wp.components;
 
-const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef }) => {
+const AlpacaIssue = ({
+  issueId,
+  isOpen,
+  onClose,
+  triggerRef,
+  onCommentCountChange,
+}) => {
   const [issueDetails, setIssueDetails] = useState(null);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
 
@@ -125,7 +131,10 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef }) => {
             </tbody>
           </table>
 
-          <AlpacaCommenting issueId={issueId} />
+          <AlpacaCommenting
+            issueId={issueId}
+            onCommentCountChange={onCommentCountChange}
+          />
         </div>
       ) : (
         <p>{issueDetails?.message || "Could not load issue details."}</p>

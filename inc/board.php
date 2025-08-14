@@ -65,12 +65,20 @@ function alpaca_get_board_data() {
 
         $issues = array();
         foreach ( $posts as $post ) {
+            // We need to specifically count our custom comment type,
+            // as they are excluded from the standard post->comment_count.
+            $issue_comment_count = get_comments( array(
+                'post_id' => $post->ID,
+                'type'    => 'issuecomment',
+                'count'   => true,
+            ) );
             $issues[] = array(
                 'id' => $post->ID,
                 'title' => $post->post_title,
                 'author_id' => $post->post_author,
                 'author_name' => get_the_author_meta( 'display_name', $post->post_author ),
                 'author_img' => get_avatar_url( $post->post_author, array( 'size' => 24 ) ),
+                'comment_count' => $issue_comment_count,
             );
         }
 
