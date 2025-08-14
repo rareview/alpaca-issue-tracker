@@ -13,6 +13,7 @@
 }
 
 .alpaca-modal .small-wrapper {
+  text-wrap: balance;
   padding: .8rem 0 1rem;
 }
 
@@ -24,16 +25,6 @@
   margin-top: 0;
   margin-bottom: 1rem;
   font-size: .8rem;
-}
-
-.alpaca-modal .alpaca-grid {
-  margin-bottom: 1.6rem;
-}
-
-.alpaca-modal .alpaca-grid .components-base-control__field, .alpaca-modal .alpaca-grid .alpaca-row {
-  flex-wrap: wrap;
-  align-items: center;
-  display: flex;
 }
 
 .alpaca-modal .alpaca-actions {
@@ -132,6 +123,7 @@
 .wp-admin .alpaca-details-modal table th {
   text-align: left;
   vertical-align: top;
+  width: 150px;
   font-weight: bold;
 }
 
@@ -148,5 +140,19 @@
   width: 100%;
   font-family: monospace;
   overflow: hidden scroll;
+}
+
+.wp-admin .alpaca-grid .alpaca-row {
+  display: flex;
+}
+
+.wp-admin .alpaca-grid .alpaca-row .alpaca-meta {
+  width: 150px;
+  padding: 10px;
+}
+
+.wp-admin .alpaca-grid .alpaca-row .alpaca-comment {
+  flex-grow: 1;
+  padding: 10px 0;
 }
 /*# sourceMappingURL=index.css.map */

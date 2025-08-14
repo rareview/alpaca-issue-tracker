@@ -20,6 +20,7 @@ import {
 } from "@dnd-kit/sortable";
 
 import { CSS } from "@dnd-kit/utilities";
+import AlpacaUser from "./user";
 
 /**
  * Transform server data into array format for board state.
@@ -80,7 +81,6 @@ const Item = forwardRef(
     { id, content, author_name, author_img, className, style, ...props },
     ref
   ) => {
-    console.log("Rendering Item", id, content, author_name, author_img);
     return (
       <div
         ref={ref}
@@ -457,6 +457,14 @@ function Board() {
                     </td>
                   </tr>
                   <tr>
+                    <th scope="row">Last modified</th>
+                    <td>
+                      {new Date(
+                        issueDetails.post_data.post_modified
+                      ).toLocaleString()}{" "}
+                    </td>
+                  </tr>
+                  <tr>
                     <th scope="row">Description</th>
                     <td>{issueDetails.post_data.post_content}</td>
                   </tr>
@@ -498,7 +506,34 @@ function Board() {
                 </tbody>
               </table>
 
-              <Panel>
+              <h3>Comments</h3>
+
+              <div id="alpaca-comments" className="alpaca-grid">
+                <div className="alpaca-row">
+                  <div className="alpaca-meta">
+                    <AlpacaUser />
+                  </div>
+                  <div className="alpaca-comment">
+                    <TextareaControl
+                      placeholder="Not implemented yet"
+                      id="alpaca-comment-textarea"
+                      value={""} // No comment input in this version
+                      onChange={() => {}}
+                      disabled={true} // Disable input for now
+                    />
+                    <Button isPrimary>Submit Comment</Button>
+                  </div>
+                </div>
+
+                <div className="alpaca-row">
+                  <div className="alpaca-meta">
+                    <div className="alpaca-author">Author</div>
+                  </div>
+                  <div className="alpaca-comment">Comment</div>
+                </div>
+              </div>
+
+              {/* <Panel>
                 <PanelBody title="Raw data" initialOpen={false}>
                   <PanelRow>
                     <TextareaControl
@@ -515,14 +550,11 @@ function Board() {
                     />
                   </PanelRow>
                 </PanelBody>
-              </Panel>
+              </Panel> */}
             </div>
           ) : (
             <p>{issueDetails?.message || "Could not load issue details."}</p>
           )}
-          <Button isPrimary onClick={closeModal}>
-            Close
-          </Button>
         </Modal>
       )}
     </DndContext>

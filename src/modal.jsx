@@ -133,8 +133,9 @@ const AlpacaModal = () => {
 
               <div className="small-wrapper">
                 <small>
-                  Detailed technical information will also be shared with the
-                  development team.
+                  No need to describe context in your response: the development
+                  team will receive full details automatically, along with your
+                  issue report.
                 </small>
               </div>
 

@@ -209,6 +209,8 @@ function alpaca_update_issue_callback( WP_REST_Request $request ) {
         'ID'           => $issue_id,
         'post_title'   => isset( $data['title'] ) ? wp_kses_post( $data['title'] ) : $post->post_title,
         'post_content' => isset( $data['content'] ) ? wp_kses_post( $data['content'] ) : $post->post_content,
+        'post_modified'     => current_time( 'mysql' ),
+        'post_modified_gmt' => current_time( 'mysql', 1 ),
     );
 
     // Update the post
@@ -241,6 +243,8 @@ function alpaca_update_issue_callback( WP_REST_Request $request ) {
             update_post_meta( $issue_id, sanitize_key( $meta_key ), maybe_serialize( $meta_value ) );
         }
     }
+
+
 
     return new WP_REST_Response(
         array(
