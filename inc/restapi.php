@@ -50,10 +50,12 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
             );
         }
 
+        $status_term_id = 0;
         $statuses = alpaca_get_statuses();
         if ( ! empty( $statuses ) ) {
             $status_term = reset( $statuses ); // Get the first status term
             wp_set_post_terms( $post_id, array( $status_term->term_id ), 'status' );
+            $status_term_id = $status_term->term_id;
             // sets issue status to lowest scored term
             // TODO: allow user to choose the default status
         }
@@ -84,6 +86,14 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
                 'success' => true,
                 'message' => 'Issue submitted successfully.',
                 'post_id' => $post_id,
+                'issue'   => array(
+                    'id'          => $post_id,
+                    'title'       => $post_args['post_title'],
+                    'author_id'   => $post_args['post_author'],
+                    'author_name' => get_the_author_meta( 'display_name', $post_args['post_author'] ),
+                    'author_img'  => get_avatar_url( $post_args['post_author'], array( 'size' => 24 ) ),
+                ),
+                'statusId'  => $status_term_id,
             ),
             200
         );

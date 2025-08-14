@@ -361,6 +361,43 @@ function Board() {
     }
   }, [selectedItem]);
 
+  useEffect(() => {
+    const handleIssueSubmitted = (event) => {
+      const { issue, statusId } = event.detail;
+
+      // Ensure we have the necessary data
+      if (!issue || !statusId) {
+        return;
+      }
+
+      setContainers((prevContainers) => {
+        const newContainers = [...prevContainers];
+        const targetContainer = newContainers.find(
+          (c) => c.id === statusId.toString()
+        );
+
+        if (targetContainer) {
+          // Add the new issue to the top of the correct column
+          targetContainer.items.unshift({
+            id: issue.id.toString(),
+            content: issue.title,
+            author_name: issue.author_name,
+            author_img: issue.author_img,
+          });
+        }
+
+        return newContainers;
+      });
+    };
+
+    document.addEventListener("alpaca:issue-submitted", handleIssueSubmitted);
+    return () =>
+      document.removeEventListener(
+        "alpaca:issue-submitted",
+        handleIssueSubmitted
+      );
+  }, []);
+
   return (
     <DndContext
       sensors={sensors}

@@ -82,10 +82,28 @@ const AlpacaModal = () => {
         body: JSON.stringify(payload),
       });
 
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const responseData = await response.json();
+
+      if (!response.ok || !responseData.success) {
+        throw new Error(responseData.message || `HTTP ${response.status}`);
+      }
 
       setStatus("success");
       setMessage("Your issue has been submitted successfully.");
+
+      // If on the board page, dispatch an event to add the new issue
+      if (document.getElementById("alpaca-board")) {
+        document.dispatchEvent(
+          new CustomEvent("alpaca:issue-submitted", {
+            detail: {
+              issue: responseData.issue,
+              statusId: responseData.statusId,
+            },
+          })
+        );
+      }
+
+      setTimeout(closeModal, 1500);
     } catch (error) {
       console.error("Submission error:", error);
       setStatus("error");

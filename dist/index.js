@@ -830,9 +830,18 @@ const AlpacaModal = ()=>{
                 }),
                 body: JSON.stringify(payload)
             });
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const responseData = await response.json();
+            if (!response.ok || !responseData.success) throw new Error(responseData.message || `HTTP ${response.status}`);
             setStatus("success");
             setMessage("Your issue has been submitted successfully.");
+            // If on the board page, dispatch an event to add the new issue
+            if (document.getElementById("alpaca-board")) document.dispatchEvent(new CustomEvent("alpaca:issue-submitted", {
+                detail: {
+                    issue: responseData.issue,
+                    statusId: responseData.statusId
+                }
+            }));
+            setTimeout(closeModal, 1500);
         } catch (error) {
             console.error("Submission error:", error);
             setStatus("error");
@@ -848,7 +857,7 @@ const AlpacaModal = ()=>{
         },
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 98,
+            lineNumber: 116,
             columnNumber: 7
         },
         __self: undefined
@@ -860,14 +869,14 @@ const AlpacaModal = ()=>{
         isDismissible: false,
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 110,
+            lineNumber: 128,
             columnNumber: 9
         },
         __self: undefined
     }, status === "success" || status === "error" ? /*#__PURE__*/ React.createElement(React.Fragment, null, /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 125,
+            lineNumber: 143,
             columnNumber: 15
         },
         __self: undefined
@@ -877,7 +886,7 @@ const AlpacaModal = ()=>{
         ref: closeBtnRef,
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 126,
+            lineNumber: 144,
             columnNumber: 15
         },
         __self: undefined
@@ -890,7 +899,7 @@ const AlpacaModal = ()=>{
         ref: textareaRef,
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 132,
+            lineNumber: 150,
             columnNumber: 15
         },
         __self: undefined
@@ -898,14 +907,14 @@ const AlpacaModal = ()=>{
         className: "small-wrapper",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 141,
+            lineNumber: 159,
             columnNumber: 15
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("small", {
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 142,
+            lineNumber: 160,
             columnNumber: 17
         },
         __self: undefined
@@ -913,7 +922,7 @@ const AlpacaModal = ()=>{
         className: "alpaca-actions",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 148,
+            lineNumber: 166,
             columnNumber: 15
         },
         __self: undefined
@@ -923,14 +932,14 @@ const AlpacaModal = ()=>{
         disabled: status === "submitting",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 149,
+            lineNumber: 167,
             columnNumber: 17
         },
         __self: undefined
     }, status === "submitting" ? /*#__PURE__*/ React.createElement(Spinner, {
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 154,
+            lineNumber: 172,
             columnNumber: 46
         },
         __self: undefined
@@ -940,7 +949,7 @@ const AlpacaModal = ()=>{
         disabled: status === "submitting",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 156,
+            lineNumber: 174,
             columnNumber: 17
         },
         __self: undefined
@@ -1356,6 +1365,29 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
     }, [
         selectedItem
     ]);
+    useEffect(()=>{
+        const handleIssueSubmitted = (event)=>{
+            const { issue, statusId } = event.detail;
+            // Ensure we have the necessary data
+            if (!issue || !statusId) return;
+            setContainers((prevContainers)=>{
+                const newContainers = [
+                    ...prevContainers
+                ];
+                const targetContainer = newContainers.find((c)=>c.id === statusId.toString());
+                if (targetContainer) // Add the new issue to the top of the correct column
+                targetContainer.items.unshift({
+                    id: issue.id.toString(),
+                    content: issue.title,
+                    author_name: issue.author_name,
+                    author_img: issue.author_img
+                });
+                return newContainers;
+            });
+        };
+        document.addEventListener("alpaca:issue-submitted", handleIssueSubmitted);
+        return ()=>document.removeEventListener("alpaca:issue-submitted", handleIssueSubmitted);
+    }, []);
     return /*#__PURE__*/ React.createElement((0, _core.DndContext), {
         sensors: sensors,
         collisionDetection: (0, _core.closestCenter),
@@ -1364,7 +1396,7 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
         onDragEnd: handleDragEnd,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 365,
+            lineNumber: 402,
             columnNumber: 5
         },
         __self: this
@@ -1372,7 +1404,7 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
         className: "alpaca-wrap",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 372,
+            lineNumber: 409,
             columnNumber: 7
         },
         __self: this
@@ -1384,7 +1416,7 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
             onItemClick: handleItemClick,
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 374,
+                lineNumber: 411,
                 columnNumber: 11
             },
             __self: this
@@ -1392,7 +1424,7 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
         dropAnimation: null,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 383,
+            lineNumber: 420,
             columnNumber: 7
         },
         __self: this
@@ -1404,7 +1436,7 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
         className: "alpaca-item-dragging",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 385,
+            lineNumber: 422,
             columnNumber: 11
         },
         __self: this
@@ -1415,7 +1447,7 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
         triggerRef: triggerRef,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 395,
+            lineNumber: 432,
             columnNumber: 7
         },
         __self: this
@@ -1425,7 +1457,7 @@ function AlpacaBoard() {
     return /*#__PURE__*/ React.createElement(Board, {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 406,
+            lineNumber: 443,
             columnNumber: 10
         },
         __self: this
