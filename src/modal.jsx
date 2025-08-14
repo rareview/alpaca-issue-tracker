@@ -2,7 +2,7 @@ import handleSnapdomCapture from "./snapdom-handler.js";
 
 const { Button, Modal, TextareaControl, RangeControl, BaseControl, Spinner } =
   wp.components;
-const { useState, useRef, useEffect } = wp.element;
+const { useState, useRef, useEffect, useCallback } = wp.element;
 
 const AlpacaModal = () => {
   const [isOpen, setOpen] = useState(false);
@@ -14,17 +14,24 @@ const AlpacaModal = () => {
   const textareaRef = useRef(null);
   const closeBtnRef = useRef(null);
 
-  const openModal = () => {
+  const openModal = useCallback(() => {
     setMessage("");
     setStatus("idle");
     setFeedback("");
     setOpen(true);
-  };
+  }, []);
 
   const closeModal = () => {
     setOpen(false);
     setStatus("idle");
   };
+
+  // Listen for a global event to open the modal
+  useEffect(() => {
+    const handleOpen = () => openModal();
+    document.addEventListener("alpaca:open-modal", handleOpen);
+    return () => document.removeEventListener("alpaca:open-modal", handleOpen);
+  }, [openModal]);
 
   // Focus textarea when modal opens
   useEffect(() => {
@@ -133,9 +140,8 @@ const AlpacaModal = () => {
 
               <div className="small-wrapper">
                 <small>
-                  No need to describe context in your response: the development
-                  team will receive full details automatically, along with your
-                  issue report.
+                  Detailed technical information will also be shared with the
+                  development team.
                 </small>
               </div>
 

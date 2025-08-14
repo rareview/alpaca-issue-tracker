@@ -756,7 +756,7 @@ parcelHelpers.defineInteropFlag(exports);
 var _snapdomHandlerJs = require("./snapdom-handler.js");
 var _snapdomHandlerJsDefault = parcelHelpers.interopDefault(_snapdomHandlerJs);
 const { Button, Modal, TextareaControl, RangeControl, BaseControl, Spinner } = wp.components;
-const { useState, useRef, useEffect } = wp.element;
+const { useState, useRef, useEffect, useCallback } = wp.element;
 const AlpacaModal = ()=>{
     const [isOpen, setOpen] = useState(false);
     const [severity, setSeverity] = useState("2");
@@ -765,16 +765,24 @@ const AlpacaModal = ()=>{
     const [feedback, setFeedback] = useState("");
     const textareaRef = useRef(null);
     const closeBtnRef = useRef(null);
-    const openModal = ()=>{
+    const openModal = useCallback(()=>{
         setMessage("");
         setStatus("idle");
         setFeedback("");
         setOpen(true);
-    };
+    }, []);
     const closeModal = ()=>{
         setOpen(false);
         setStatus("idle");
     };
+    // Listen for a global event to open the modal
+    useEffect(()=>{
+        const handleOpen = ()=>openModal();
+        document.addEventListener("alpaca:open-modal", handleOpen);
+        return ()=>document.removeEventListener("alpaca:open-modal", handleOpen);
+    }, [
+        openModal
+    ]);
     // Focus textarea when modal opens
     useEffect(()=>{
         if (isOpen && status === "idle" && textareaRef.current) setTimeout(()=>{
@@ -840,7 +848,7 @@ const AlpacaModal = ()=>{
         },
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 91,
+            lineNumber: 98,
             columnNumber: 7
         },
         __self: undefined
@@ -852,14 +860,14 @@ const AlpacaModal = ()=>{
         isDismissible: false,
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 103,
+            lineNumber: 110,
             columnNumber: 9
         },
         __self: undefined
     }, status === "success" || status === "error" ? /*#__PURE__*/ React.createElement(React.Fragment, null, /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 118,
+            lineNumber: 125,
             columnNumber: 15
         },
         __self: undefined
@@ -869,7 +877,7 @@ const AlpacaModal = ()=>{
         ref: closeBtnRef,
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 119,
+            lineNumber: 126,
             columnNumber: 15
         },
         __self: undefined
@@ -882,7 +890,7 @@ const AlpacaModal = ()=>{
         ref: textareaRef,
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 125,
+            lineNumber: 132,
             columnNumber: 15
         },
         __self: undefined
@@ -890,22 +898,22 @@ const AlpacaModal = ()=>{
         className: "small-wrapper",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 134,
+            lineNumber: 141,
             columnNumber: 15
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("small", {
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 135,
+            lineNumber: 142,
             columnNumber: 17
         },
         __self: undefined
-    }, "No need to describe context in your response: the development team will receive full details automatically, along with your issue report.")), /*#__PURE__*/ React.createElement("div", {
+    }, "Detailed technical information will also be shared with the development team.")), /*#__PURE__*/ React.createElement("div", {
         className: "alpaca-actions",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 142,
+            lineNumber: 148,
             columnNumber: 15
         },
         __self: undefined
@@ -915,14 +923,14 @@ const AlpacaModal = ()=>{
         disabled: status === "submitting",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 143,
+            lineNumber: 149,
             columnNumber: 17
         },
         __self: undefined
     }, status === "submitting" ? /*#__PURE__*/ React.createElement(Spinner, {
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 148,
+            lineNumber: 154,
             columnNumber: 46
         },
         __self: undefined
@@ -932,7 +940,7 @@ const AlpacaModal = ()=>{
         disabled: status === "submitting",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 150,
+            lineNumber: 156,
             columnNumber: 17
         },
         __self: undefined
@@ -5791,7 +5799,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef })=>{
 };
 exports.default = AlpacaIssue;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./commenting.jsx":"AUa4b"}],"AUa4b":[function(require,module,exports,__globalThis) {
+},{"./commenting.jsx":"AUa4b","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"AUa4b":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _user = require("./user");
@@ -6132,6 +6140,6 @@ const AlpacaCommenting = ({ issueId })=>{
 };
 exports.default = AlpacaCommenting;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./user":"6qIFK"}]},["9iTdJ","d8Dch"], "d8Dch", "parcelRequire55a0", {})
+},{"./user":"6qIFK","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["9iTdJ","d8Dch"], "d8Dch", "parcelRequire55a0", {})
 
 //# sourceMappingURL=index.js.map

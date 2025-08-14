@@ -8,6 +8,17 @@ function project_board_page() {
 	<hr class="wp-header-end">
 	<div id="alpaca-board"></div>
 	</div>
+	<script type="text/javascript">
+		document.addEventListener('DOMContentLoaded', function() {
+			const addIssueButton = document.getElementById('alpaca-add-issue');
+			if (addIssueButton) {
+				addIssueButton.addEventListener('click', function(e) {
+					e.preventDefault();
+					document.dispatchEvent(new CustomEvent('alpaca:open-modal'));
+				});
+			}
+		});
+	</script>
 	<?php
 }
 
