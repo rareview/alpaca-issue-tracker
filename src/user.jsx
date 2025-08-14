@@ -103,7 +103,7 @@ const AlpacaUser = ({ userId }) => {
 
       {displayedUser && !loading && (
         <>
-          <div>
+          <div className="alpaca-user-avatar">
             <img src={avatarUrl} alt={`Avatar of ${displayedUser.name}`} />
           </div>
           <div>

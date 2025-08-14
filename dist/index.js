@@ -5471,6 +5471,7 @@ const AlpacaUser = ({ userId })=>{
         },
         __self: undefined
     }, "No user data available")), displayedUser && !loading && /*#__PURE__*/ React.createElement(React.Fragment, null, /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-user-avatar",
         __source: {
             fileName: "src/user.jsx",
             lineNumber: 106,

@@ -142,6 +142,12 @@
   overflow: hidden scroll;
 }
 
+.wp-admin #alpaca-comments .alpaca-user-avatar img {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  width: 32px;
+}
+
 .wp-admin .alpaca-grid .alpaca-row {
   display: flex;
 }
