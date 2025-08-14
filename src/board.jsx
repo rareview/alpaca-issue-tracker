@@ -1,7 +1,5 @@
 const { useState, useRef, useEffect, forwardRef } = wp.element;
 const { decodeEntities } = wp.htmlEntities;
-const { Modal, TextareaControl, Button, Panel, PanelBody, PanelRow } =
-  wp.components;
 
 import {
   DndContext,
@@ -21,6 +19,7 @@ import {
 
 import { CSS } from "@dnd-kit/utilities";
 import AlpacaUser from "./user";
+import AlpacaIssue from "./issue";
 
 /**
  * Transform server data into array format for board state.
@@ -220,8 +219,6 @@ function Board() {
 
   const [activeId, setActiveId] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
-  const [issueDetails, setIssueDetails] = useState(null);
-  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const triggerRef = useRef(null); // To store the element that opened the modal
   const [draggedItem, setDraggedItem] = useState(null);
 
@@ -355,33 +352,12 @@ function Board() {
 
   const closeModal = () => {
     setSelectedItem(null);
-    setIssueDetails(null);
   };
 
   // When the modal closes, return focus to the element that opened it.
   useEffect(() => {
-    if (selectedItem === null && triggerRef.current) {
+    if (!selectedItem && triggerRef.current) {
       triggerRef.current.focus();
-    }
-  }, [selectedItem]);
-
-  useEffect(() => {
-    if (selectedItem) {
-      setIsLoadingDetails(true);
-      setIssueDetails(null); // Clear previous details
-
-      wp.apiFetch({
-        path: `/issue/v1/get/${selectedItem.id}`,
-      })
-        .then((data) => {
-          setIssueDetails(data);
-          setIsLoadingDetails(false);
-        })
-        .catch((err) => {
-          console.error("Error fetching issue details:", err);
-          setIssueDetails({ error: "Failed to load details." });
-          setIsLoadingDetails(false);
-        });
     }
   }, [selectedItem]);
 
@@ -404,7 +380,6 @@ function Board() {
           />
         ))}
       </div>
-
       <DragOverlay dropAnimation={null}>
         {activeId && draggedItem ? (
           <Item
@@ -417,146 +392,12 @@ function Board() {
         ) : null}
       </DragOverlay>
 
-      {selectedItem && (
-        <Modal
-          title={
-            <>
-              Issue Details
-              <span className="alpaca-issue-id"> #{selectedItem.id}</span>
-            </>
-          }
-          size="large"
-          onRequestClose={closeModal}
-          className="alpaca-details-modal"
-        >
-          {isLoadingDetails ? (
-            <p>Loading...</p>
-          ) : issueDetails && issueDetails.success ? (
-            <div className="alpaca-issue-details">
-              <table className="wp-list-table widefat striped">
-                <tbody>
-                  <tr>
-                    <th scope="row">Screenshot</th>
-                    <td>
-                      <p>
-                        <img
-                          src={issueDetails.meta.screenshot}
-                          alt="Screenshot"
-                          style={{ height: "240px" }}
-                        />
-                      </p>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Submitted</th>
-                    <td>
-                      {new Date(
-                        issueDetails.post_data.post_date
-                      ).toLocaleString()}{" "}
-                      by {issueDetails.post_data.post_author_display_name}
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Last modified</th>
-                    <td>
-                      {new Date(
-                        issueDetails.post_data.post_modified
-                      ).toLocaleString()}{" "}
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Description</th>
-                    <td>{issueDetails.post_data.post_content}</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">URL</th>
-                    <td>
-                      {issueDetails.meta.URL ? (
-                        <a
-                          href={issueDetails.meta.URL}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          {issueDetails.meta.URL}
-                        </a>
-                      ) : (
-                        "N/A"
-                      )}
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Screen Size</th>
-                    <td>
-                      {issueDetails.meta.screenwidth &&
-                      issueDetails.meta.screenheight
-                        ? `${issueDetails.meta.screenwidth} x ${issueDetails.meta.screenheight}`
-                        : "N/A"}
-                    </td>
-                  </tr>
-                  {Object.entries(issueDetails.taxonomies).map(
-                    ([taxonomy, terms]) => (
-                      <tr key={taxonomy}>
-                        <th scope="row" style={{ textTransform: "capitalize" }}>
-                          {taxonomy}
-                        </th>
-                        <td>{terms.map((term) => term.name).join(", ")}</td>
-                      </tr>
-                    )
-                  )}
-                </tbody>
-              </table>
-
-              <h3>Comments</h3>
-
-              <div id="alpaca-comments" className="alpaca-grid">
-                <div className="alpaca-row">
-                  <div className="alpaca-meta">
-                    <AlpacaUser />
-                  </div>
-                  <div className="alpaca-comment">
-                    <TextareaControl
-                      placeholder="Not implemented yet"
-                      id="alpaca-comment-textarea"
-                      value={""} // No comment input in this version
-                      onChange={() => {}}
-                      disabled={true} // Disable input for now
-                    />
-                    <Button isPrimary>Submit Comment</Button>
-                  </div>
-                </div>
-
-                <div className="alpaca-row">
-                  <div className="alpaca-meta">
-                    <div className="alpaca-author">Author</div>
-                  </div>
-                  <div className="alpaca-comment">Comment</div>
-                </div>
-              </div>
-
-              {/* <Panel>
-                <PanelBody title="Raw data" initialOpen={false}>
-                  <PanelRow>
-                    <TextareaControl
-                      readOnly
-                      rows={10} // Increased rows to accommodate "large amount"
-                      className="alpaca-modal-textarea json"
-                      value={
-                        isLoadingDetails
-                          ? "Loading..."
-                          : issueDetails
-                          ? JSON.stringify(issueDetails, null, 2)
-                          : ""
-                      }
-                    />
-                  </PanelRow>
-                </PanelBody>
-              </Panel> */}
-            </div>
-          ) : (
-            <p>{issueDetails?.message || "Could not load issue details."}</p>
-          )}
-        </Modal>
-      )}
+      <AlpacaIssue
+        issueId={selectedItem?.id}
+        isOpen={!!selectedItem}
+        onClose={closeModal}
+        triggerRef={triggerRef}
+      />
     </DndContext>
   );
 }

@@ -678,11 +678,15 @@ var _boardJsx = require("./board.jsx");
 var _boardJsxDefault = parcelHelpers.interopDefault(_boardJsx);
 var _userJsx = require("./user.jsx");
 var _userJsxDefault = parcelHelpers.interopDefault(_userJsx);
+var _commentingJsx = require("./commenting.jsx");
+var _commentingJsxDefault = parcelHelpers.interopDefault(_commentingJsx);
+var _issueJsx = require("./issue.jsx");
+var _issueJsxDefault = parcelHelpers.interopDefault(_issueJsx);
 const { render } = wp.element;
 if (document.querySelector("#wp-admin-bar-alpaca-menu")) render(/*#__PURE__*/ React.createElement((0, _modalJsxDefault.default), {
     __source: {
         fileName: "src/index.jsx",
-        lineNumber: 13,
+        lineNumber: 15,
         columnNumber: 5
     },
     __self: undefined
@@ -690,7 +694,7 @@ if (document.querySelector("#wp-admin-bar-alpaca-menu")) render(/*#__PURE__*/ Re
 if (document.querySelector("#alpaca-settings")) render(/*#__PURE__*/ React.createElement((0, _settingsJsxDefault.default), {
     __source: {
         fileName: "src/index.jsx",
-        lineNumber: 19,
+        lineNumber: 21,
         columnNumber: 10
     },
     __self: undefined
@@ -698,13 +702,13 @@ if (document.querySelector("#alpaca-settings")) render(/*#__PURE__*/ React.creat
 if (document.querySelector("#alpaca-board")) render(/*#__PURE__*/ React.createElement((0, _boardJsxDefault.default), {
     __source: {
         fileName: "src/index.jsx",
-        lineNumber: 23,
+        lineNumber: 25,
         columnNumber: 10
     },
     __self: undefined
 }), document.querySelector("#alpaca-board"));
 
-},{"./alpaca.scss":"1ItKB","./apitest.js":"jb82X","./modal.jsx":"lBZco","./settings.jsx":"aIYcP","./board.jsx":"h1t0l","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./user.jsx":"6qIFK"}],"1ItKB":[function() {},{}],"jb82X":[function(require,module,exports,__globalThis) {
+},{"./alpaca.scss":"1ItKB","./apitest.js":"jb82X","./modal.jsx":"lBZco","./settings.jsx":"aIYcP","./board.jsx":"h1t0l","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./user.jsx":"6qIFK","./commenting.jsx":"AUa4b","./issue.jsx":"alebk"}],"1ItKB":[function() {},{}],"jb82X":[function(require,module,exports,__globalThis) {
 // --- Basic API Endpoint Tests ---
 // To enable, set ALPACA_RUN_API_TESTS to true below.
 // The results will be logged to your browser's developer console when the
@@ -1036,9 +1040,10 @@ var _sortable = require("@dnd-kit/sortable");
 var _utilities = require("@dnd-kit/utilities");
 var _user = require("./user");
 var _userDefault = parcelHelpers.interopDefault(_user);
+var _issue = require("./issue");
+var _issueDefault = parcelHelpers.interopDefault(_issue);
 const { useState, useRef, useEffect, forwardRef } = wp.element;
 const { decodeEntities } = wp.htmlEntities;
-const { Modal, TextareaControl, Button, Panel, PanelBody, PanelRow } = wp.components;
 /**
  * Transform server data into array format for board state.
  * @param {Array} data The data from `alpaca_get_board_data`.
@@ -1093,7 +1098,7 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
         ...props,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 85,
+            lineNumber: 84,
             columnNumber: 7
         },
         __self: undefined
@@ -1101,7 +1106,7 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
         className: "alpaca-item-content",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 94,
+            lineNumber: 93,
             columnNumber: 9
         },
         __self: undefined
@@ -1109,7 +1114,7 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
         className: "alpaca-item-author",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 95,
+            lineNumber: 94,
             columnNumber: 9
         },
         __self: undefined
@@ -1118,7 +1123,7 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
         src: author_img,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 97,
+            lineNumber: 96,
             columnNumber: 13
         },
         __self: undefined
@@ -1159,7 +1164,7 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
         },
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 148,
+            lineNumber: 147,
             columnNumber: 5
         },
         __self: this
@@ -1174,7 +1179,7 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
         "data-id": id,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 171,
+            lineNumber: 170,
             columnNumber: 5
         },
         __self: this
@@ -1182,7 +1187,7 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
         className: "alpaca-container-title",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 172,
+            lineNumber: 171,
             columnNumber: 7
         },
         __self: this
@@ -1194,7 +1199,7 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
         strategy: (0, _sortable.verticalListSortingStrategy),
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 173,
+            lineNumber: 172,
             columnNumber: 7
         },
         __self: this
@@ -1208,7 +1213,7 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
             onClick: onItemClick,
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 180,
+                lineNumber: 179,
                 columnNumber: 13
             },
             __self: this
@@ -1220,7 +1225,7 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
         isDragDisabled: true,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 191,
+            lineNumber: 190,
             columnNumber: 11
         },
         __self: this
@@ -1240,8 +1245,6 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
     }));
     const [activeId, setActiveId] = useState(null);
     const [selectedItem, setSelectedItem] = useState(null);
-    const [issueDetails, setIssueDetails] = useState(null);
-    const [isLoadingDetails, setIsLoadingDetails] = useState(false);
     const triggerRef = useRef(null); // To store the element that opened the modal
     const [draggedItem, setDraggedItem] = useState(null);
     function findContainerByItemId(itemId) {
@@ -1338,31 +1341,10 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
     };
     const closeModal = ()=>{
         setSelectedItem(null);
-        setIssueDetails(null);
     };
     // When the modal closes, return focus to the element that opened it.
     useEffect(()=>{
-        if (selectedItem === null && triggerRef.current) triggerRef.current.focus();
-    }, [
-        selectedItem
-    ]);
-    useEffect(()=>{
-        if (selectedItem) {
-            setIsLoadingDetails(true);
-            setIssueDetails(null); // Clear previous details
-            wp.apiFetch({
-                path: `/issue/v1/get/${selectedItem.id}`
-            }).then((data)=>{
-                setIssueDetails(data);
-                setIsLoadingDetails(false);
-            }).catch((err)=>{
-                console.error("Error fetching issue details:", err);
-                setIssueDetails({
-                    error: "Failed to load details."
-                });
-                setIsLoadingDetails(false);
-            });
-        }
+        if (!selectedItem && triggerRef.current) triggerRef.current.focus();
     }, [
         selectedItem
     ]);
@@ -1374,7 +1356,7 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
         onDragEnd: handleDragEnd,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 389,
+            lineNumber: 365,
             columnNumber: 5
         },
         __self: this
@@ -1382,7 +1364,7 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
         className: "alpaca-wrap",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 396,
+            lineNumber: 372,
             columnNumber: 7
         },
         __self: this
@@ -1394,7 +1376,7 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
             onItemClick: handleItemClick,
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 398,
+                lineNumber: 374,
                 columnNumber: 11
             },
             __self: this
@@ -1402,7 +1384,7 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
         dropAnimation: null,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 408,
+            lineNumber: 383,
             columnNumber: 7
         },
         __self: this
@@ -1414,365 +1396,35 @@ const Item = forwardRef(({ id, content, author_name, author_img, className, styl
         className: "alpaca-item-dragging",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 410,
+            lineNumber: 385,
             columnNumber: 11
         },
         __self: this
-    }) : null), selectedItem && /*#__PURE__*/ React.createElement(Modal, {
-        title: /*#__PURE__*/ React.createElement(React.Fragment, null, "Issue Details", /*#__PURE__*/ React.createElement("span", {
-            className: "alpaca-issue-id",
-            __source: {
-                fileName: "src/board.jsx",
-                lineNumber: 425,
-                columnNumber: 15
-            }
-        }, " #", selectedItem.id)),
-        size: "large",
-        onRequestClose: closeModal,
-        className: "alpaca-details-modal",
+    }) : null), /*#__PURE__*/ React.createElement((0, _issueDefault.default), {
+        issueId: selectedItem?.id,
+        isOpen: !!selectedItem,
+        onClose: closeModal,
+        triggerRef: triggerRef,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 421,
-            columnNumber: 9
+            lineNumber: 395,
+            columnNumber: 7
         },
         __self: this
-    }, isLoadingDetails ? /*#__PURE__*/ React.createElement("p", {
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 433,
-            columnNumber: 13
-        },
-        __self: this
-    }, "Loading...") : issueDetails && issueDetails.success ? /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-issue-details",
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 435,
-            columnNumber: 13
-        },
-        __self: this
-    }, /*#__PURE__*/ React.createElement("table", {
-        className: "wp-list-table widefat striped",
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 436,
-            columnNumber: 15
-        },
-        __self: this
-    }, /*#__PURE__*/ React.createElement("tbody", {
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 437,
-            columnNumber: 17
-        },
-        __self: this
-    }, /*#__PURE__*/ React.createElement("tr", {
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 438,
-            columnNumber: 19
-        },
-        __self: this
-    }, /*#__PURE__*/ React.createElement("th", {
-        scope: "row",
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 439,
-            columnNumber: 21
-        },
-        __self: this
-    }, "Screenshot"), /*#__PURE__*/ React.createElement("td", {
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 440,
-            columnNumber: 21
-        },
-        __self: this
-    }, /*#__PURE__*/ React.createElement("p", {
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 441,
-            columnNumber: 23
-        },
-        __self: this
-    }, /*#__PURE__*/ React.createElement("img", {
-        src: issueDetails.meta.screenshot,
-        alt: "Screenshot",
-        style: {
-            height: "240px"
-        },
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 442,
-            columnNumber: 25
-        },
-        __self: this
-    })))), /*#__PURE__*/ React.createElement("tr", {
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 450,
-            columnNumber: 19
-        },
-        __self: this
-    }, /*#__PURE__*/ React.createElement("th", {
-        scope: "row",
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 451,
-            columnNumber: 21
-        },
-        __self: this
-    }, "Submitted"), /*#__PURE__*/ React.createElement("td", {
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 452,
-            columnNumber: 21
-        },
-        __self: this
-    }, new Date(issueDetails.post_data.post_date).toLocaleString(), " ", "by ", issueDetails.post_data.post_author_display_name)), /*#__PURE__*/ React.createElement("tr", {
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 459,
-            columnNumber: 19
-        },
-        __self: this
-    }, /*#__PURE__*/ React.createElement("th", {
-        scope: "row",
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 460,
-            columnNumber: 21
-        },
-        __self: this
-    }, "Last modified"), /*#__PURE__*/ React.createElement("td", {
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 461,
-            columnNumber: 21
-        },
-        __self: this
-    }, new Date(issueDetails.post_data.post_modified).toLocaleString(), " ")), /*#__PURE__*/ React.createElement("tr", {
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 467,
-            columnNumber: 19
-        },
-        __self: this
-    }, /*#__PURE__*/ React.createElement("th", {
-        scope: "row",
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 468,
-            columnNumber: 21
-        },
-        __self: this
-    }, "Description"), /*#__PURE__*/ React.createElement("td", {
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 469,
-            columnNumber: 21
-        },
-        __self: this
-    }, issueDetails.post_data.post_content)), /*#__PURE__*/ React.createElement("tr", {
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 471,
-            columnNumber: 19
-        },
-        __self: this
-    }, /*#__PURE__*/ React.createElement("th", {
-        scope: "row",
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 472,
-            columnNumber: 21
-        },
-        __self: this
-    }, "URL"), /*#__PURE__*/ React.createElement("td", {
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 473,
-            columnNumber: 21
-        },
-        __self: this
-    }, issueDetails.meta.URL ? /*#__PURE__*/ React.createElement("a", {
-        href: issueDetails.meta.URL,
-        target: "_blank",
-        rel: "noopener noreferrer",
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 475,
-            columnNumber: 25
-        },
-        __self: this
-    }, issueDetails.meta.URL) : "N/A")), /*#__PURE__*/ React.createElement("tr", {
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 487,
-            columnNumber: 19
-        },
-        __self: this
-    }, /*#__PURE__*/ React.createElement("th", {
-        scope: "row",
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 488,
-            columnNumber: 21
-        },
-        __self: this
-    }, "Screen Size"), /*#__PURE__*/ React.createElement("td", {
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 489,
-            columnNumber: 21
-        },
-        __self: this
-    }, issueDetails.meta.screenwidth && issueDetails.meta.screenheight ? `${issueDetails.meta.screenwidth} x ${issueDetails.meta.screenheight}` : "N/A")), Object.entries(issueDetails.taxonomies).map(([taxonomy, terms])=>/*#__PURE__*/ React.createElement("tr", {
-            key: taxonomy,
-            __source: {
-                fileName: "src/board.jsx",
-                lineNumber: 498,
-                columnNumber: 23
-            },
-            __self: this
-        }, /*#__PURE__*/ React.createElement("th", {
-            scope: "row",
-            style: {
-                textTransform: "capitalize"
-            },
-            __source: {
-                fileName: "src/board.jsx",
-                lineNumber: 499,
-                columnNumber: 25
-            },
-            __self: this
-        }, taxonomy), /*#__PURE__*/ React.createElement("td", {
-            __source: {
-                fileName: "src/board.jsx",
-                lineNumber: 502,
-                columnNumber: 25
-            },
-            __self: this
-        }, terms.map((term)=>term.name).join(", ")))))), /*#__PURE__*/ React.createElement("h3", {
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 509,
-            columnNumber: 15
-        },
-        __self: this
-    }, "Comments"), /*#__PURE__*/ React.createElement("div", {
-        id: "alpaca-comments",
-        className: "alpaca-grid",
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 511,
-            columnNumber: 15
-        },
-        __self: this
-    }, /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-row",
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 512,
-            columnNumber: 17
-        },
-        __self: this
-    }, /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-meta",
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 513,
-            columnNumber: 19
-        },
-        __self: this
-    }, /*#__PURE__*/ React.createElement((0, _userDefault.default), {
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 514,
-            columnNumber: 21
-        },
-        __self: this
-    })), /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-comment",
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 516,
-            columnNumber: 19
-        },
-        __self: this
-    }, /*#__PURE__*/ React.createElement(TextareaControl, {
-        placeholder: "Not implemented yet",
-        id: "alpaca-comment-textarea",
-        value: "",
-        onChange: ()=>{},
-        disabled: true,
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 517,
-            columnNumber: 21
-        },
-        __self: this
-    }), /*#__PURE__*/ React.createElement(Button, {
-        isPrimary: true,
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 524,
-            columnNumber: 21
-        },
-        __self: this
-    }, "Submit Comment"))), /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-row",
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 528,
-            columnNumber: 17
-        },
-        __self: this
-    }, /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-meta",
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 529,
-            columnNumber: 19
-        },
-        __self: this
-    }, /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-author",
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 530,
-            columnNumber: 21
-        },
-        __self: this
-    }, "Author")), /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-comment",
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 532,
-            columnNumber: 19
-        },
-        __self: this
-    }, "Comment")))) : /*#__PURE__*/ React.createElement("p", {
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 556,
-            columnNumber: 13
-        },
-        __self: this
-    }, issueDetails?.message || "Could not load issue details.")));
+    }));
 }
 function AlpacaBoard() {
     return /*#__PURE__*/ React.createElement(Board, {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 565,
+            lineNumber: 406,
             columnNumber: 10
         },
         __self: this
     });
 }
 
-},{"@dnd-kit/core":"do19q","@dnd-kit/sortable":"fw7EW","@dnd-kit/utilities":"a2exI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./user":"6qIFK"}],"do19q":[function(require,module,exports,__globalThis) {
+},{"@dnd-kit/core":"do19q","@dnd-kit/sortable":"fw7EW","@dnd-kit/utilities":"a2exI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./user":"6qIFK","./issue":"alebk"}],"do19q":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "AutoScrollActivator", ()=>AutoScrollActivator);
@@ -5845,6 +5497,490 @@ const AlpacaUser = ({ userId })=>{
 };
 // Export the AlpacaUser component as default for React to render
 exports.default = AlpacaUser;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"alebk":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _user = require("./user");
+var _userDefault = parcelHelpers.interopDefault(_user);
+const { useState, useEffect } = wp.element;
+const { Modal, TextareaControl, Button } = wp.components;
+const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef })=>{
+    const [issueDetails, setIssueDetails] = useState(null);
+    const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+    // When the modal closes, return focus to the element that opened it.
+    useEffect(()=>{
+        if (!isOpen && triggerRef && triggerRef.current) triggerRef.current.focus();
+    }, [
+        isOpen,
+        triggerRef
+    ]);
+    useEffect(()=>{
+        if (issueId && isOpen) {
+            setIsLoadingDetails(true);
+            setIssueDetails(null); // Clear previous details
+            wp.apiFetch({
+                path: `/issue/v1/get/${issueId}`
+            }).then((data)=>{
+                setIssueDetails(data);
+                setIsLoadingDetails(false);
+            }).catch((err)=>{
+                console.error("Error fetching issue details:", err);
+                setIssueDetails({
+                    error: "Failed to load details."
+                });
+                setIsLoadingDetails(false);
+            });
+        }
+    }, [
+        issueId,
+        isOpen
+    ]);
+    if (!isOpen) return null;
+    return /*#__PURE__*/ React.createElement(Modal, {
+        title: /*#__PURE__*/ React.createElement(React.Fragment, null, "Issue Details", /*#__PURE__*/ React.createElement("span", {
+            className: "alpaca-issue-id",
+            __source: {
+                fileName: "src/issue.jsx",
+                lineNumber: 45,
+                columnNumber: 11
+            }
+        }, " #", issueId)),
+        size: "large",
+        onRequestClose: onClose,
+        className: "alpaca-details-modal",
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 41,
+            columnNumber: 5
+        },
+        __self: undefined
+    }, isLoadingDetails ? /*#__PURE__*/ React.createElement("p", {
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 53,
+            columnNumber: 9
+        },
+        __self: undefined
+    }, "Loading...") : issueDetails && issueDetails.success ? /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-issue-details",
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 55,
+            columnNumber: 9
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("table", {
+        className: "wp-list-table widefat striped",
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 56,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("tbody", {
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 57,
+            columnNumber: 13
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("tr", {
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 58,
+            columnNumber: 15
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("th", {
+        scope: "row",
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 59,
+            columnNumber: 17
+        },
+        __self: undefined
+    }, "Screenshot"), /*#__PURE__*/ React.createElement("td", {
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 60,
+            columnNumber: 17
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("p", {
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 61,
+            columnNumber: 19
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("img", {
+        src: issueDetails.meta.screenshot,
+        alt: "Screenshot",
+        style: {
+            height: "240px"
+        },
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 62,
+            columnNumber: 21
+        },
+        __self: undefined
+    })))), /*#__PURE__*/ React.createElement("tr", {
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 70,
+            columnNumber: 15
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("th", {
+        scope: "row",
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 71,
+            columnNumber: 17
+        },
+        __self: undefined
+    }, "Submitted"), /*#__PURE__*/ React.createElement("td", {
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 72,
+            columnNumber: 17
+        },
+        __self: undefined
+    }, new Date(issueDetails.post_data.post_date).toLocaleString(), " ", "by ", issueDetails.post_data.post_author_display_name, " (", issueDetails.post_data.post_author, ")")), /*#__PURE__*/ React.createElement("tr", {
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 78,
+            columnNumber: 15
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("th", {
+        scope: "row",
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 79,
+            columnNumber: 17
+        },
+        __self: undefined
+    }, "Last modified"), /*#__PURE__*/ React.createElement("td", {
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 80,
+            columnNumber: 17
+        },
+        __self: undefined
+    }, new Date(issueDetails.post_data.post_modified).toLocaleString(), " ")), /*#__PURE__*/ React.createElement("tr", {
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 86,
+            columnNumber: 15
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("th", {
+        scope: "row",
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 87,
+            columnNumber: 17
+        },
+        __self: undefined
+    }, "Description"), /*#__PURE__*/ React.createElement("td", {
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 88,
+            columnNumber: 17
+        },
+        __self: undefined
+    }, issueDetails.post_data.post_content)), /*#__PURE__*/ React.createElement("tr", {
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 90,
+            columnNumber: 15
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("th", {
+        scope: "row",
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 91,
+            columnNumber: 17
+        },
+        __self: undefined
+    }, "URL"), /*#__PURE__*/ React.createElement("td", {
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 92,
+            columnNumber: 17
+        },
+        __self: undefined
+    }, issueDetails.meta.URL ? /*#__PURE__*/ React.createElement("a", {
+        href: issueDetails.meta.URL,
+        target: "_blank",
+        rel: "noopener noreferrer",
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 94,
+            columnNumber: 21
+        },
+        __self: undefined
+    }, issueDetails.meta.URL) : "N/A")), /*#__PURE__*/ React.createElement("tr", {
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 106,
+            columnNumber: 15
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("th", {
+        scope: "row",
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 107,
+            columnNumber: 17
+        },
+        __self: undefined
+    }, "Screen Size"), /*#__PURE__*/ React.createElement("td", {
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 108,
+            columnNumber: 17
+        },
+        __self: undefined
+    }, issueDetails.meta.screenwidth && issueDetails.meta.screenheight ? `${issueDetails.meta.screenwidth} x ${issueDetails.meta.screenheight}` : "N/A")), Object.entries(issueDetails.taxonomies).map(([taxonomy, terms])=>/*#__PURE__*/ React.createElement("tr", {
+            key: taxonomy,
+            __source: {
+                fileName: "src/issue.jsx",
+                lineNumber: 117,
+                columnNumber: 19
+            },
+            __self: undefined
+        }, /*#__PURE__*/ React.createElement("th", {
+            scope: "row",
+            style: {
+                textTransform: "capitalize"
+            },
+            __source: {
+                fileName: "src/issue.jsx",
+                lineNumber: 118,
+                columnNumber: 21
+            },
+            __self: undefined
+        }, taxonomy), /*#__PURE__*/ React.createElement("td", {
+            __source: {
+                fileName: "src/issue.jsx",
+                lineNumber: 121,
+                columnNumber: 21
+            },
+            __self: undefined
+        }, terms.map((term)=>term.name).join(", ")))))), /*#__PURE__*/ React.createElement("h3", {
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 128,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, "Comments"), /*#__PURE__*/ React.createElement("div", {
+        id: "alpaca-comments",
+        className: "alpaca-grid",
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 130,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-row",
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 131,
+            columnNumber: 13
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-meta",
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 132,
+            columnNumber: 15
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement((0, _userDefault.default), {
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 133,
+            columnNumber: 17
+        },
+        __self: undefined
+    })), /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-comment",
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 135,
+            columnNumber: 15
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement(TextareaControl, {
+        placeholder: "Not implemented yet",
+        id: "alpaca-comment-textarea",
+        value: "",
+        onChange: ()=>{},
+        disabled: true,
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 136,
+            columnNumber: 17
+        },
+        __self: undefined
+    }), /*#__PURE__*/ React.createElement(Button, {
+        isPrimary: true,
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 143,
+            columnNumber: 17
+        },
+        __self: undefined
+    }, "Submit Comment"))), /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-row",
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 147,
+            columnNumber: 13
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-meta",
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 148,
+            columnNumber: 15
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-author",
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 149,
+            columnNumber: 17
+        },
+        __self: undefined
+    }, "Author")), /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-comment",
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 151,
+            columnNumber: 15
+        },
+        __self: undefined
+    }, "Comment")))) : /*#__PURE__*/ React.createElement("p", {
+        __source: {
+            fileName: "src/issue.jsx",
+            lineNumber: 156,
+            columnNumber: 9
+        },
+        __self: undefined
+    }, issueDetails?.message || "Could not load issue details."));
+};
+exports.default = AlpacaIssue;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./user":"6qIFK"}],"AUa4b":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+const AlpacaCommenting = ()=>{
+    /*#__PURE__*/ React.createElement("div", {
+        id: "alpaca-comments",
+        className: "alpaca-grid",
+        __source: {
+            fileName: "src/commenting.jsx",
+            lineNumber: 2,
+            columnNumber: 3
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-row",
+        __source: {
+            fileName: "src/commenting.jsx",
+            lineNumber: 3,
+            columnNumber: 5
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-meta",
+        __source: {
+            fileName: "src/commenting.jsx",
+            lineNumber: 4,
+            columnNumber: 7
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement(AlpacaUser, {
+        __source: {
+            fileName: "src/commenting.jsx",
+            lineNumber: 5,
+            columnNumber: 9
+        },
+        __self: undefined
+    })), /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-comment",
+        __source: {
+            fileName: "src/commenting.jsx",
+            lineNumber: 7,
+            columnNumber: 7
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement(TextareaControl, {
+        placeholder: "Not implemented yet",
+        id: "alpaca-comment-textarea",
+        value: "",
+        onChange: ()=>{},
+        disabled: true,
+        __source: {
+            fileName: "src/commenting.jsx",
+            lineNumber: 8,
+            columnNumber: 9
+        },
+        __self: undefined
+    }), /*#__PURE__*/ React.createElement(Button, {
+        isPrimary: true,
+        __source: {
+            fileName: "src/commenting.jsx",
+            lineNumber: 15,
+            columnNumber: 9
+        },
+        __self: undefined
+    }, "Submit Comment"))), /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-row",
+        __source: {
+            fileName: "src/commenting.jsx",
+            lineNumber: 19,
+            columnNumber: 5
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-meta",
+        __source: {
+            fileName: "src/commenting.jsx",
+            lineNumber: 20,
+            columnNumber: 7
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-author",
+        __source: {
+            fileName: "src/commenting.jsx",
+            lineNumber: 21,
+            columnNumber: 9
+        },
+        __self: undefined
+    }, "Author")), /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-comment",
+        __source: {
+            fileName: "src/commenting.jsx",
+            lineNumber: 23,
+            columnNumber: 7
+        },
+        __self: undefined
+    }, "Comment")));
+};
+exports.default = AlpacaCommenting;
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["9iTdJ","d8Dch"], "d8Dch", "parcelRequire55a0", {})
 
