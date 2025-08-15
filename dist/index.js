@@ -1133,59 +1133,49 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
             columnNumber: 9
         },
         __self: undefined
-    }, assignees.length === 1 && /*#__PURE__*/ React.createElement("div", {
-        key: assignees[0].id || assignees[0].slug || assignees[0].name,
-        className: "alpaca-item-assignee",
-        title: assignees[0].display_name || assignees[0].name,
+    }, assignees.length > 0 && /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-item-assignees",
+        "data-assignees": assignees.length,
+        title: assignees.length === 1 ? assignees[0].display_name || assignees[0].name : assignees.map((a)=>a.display_name || a.name).join(", "),
         __source: {
             fileName: "src/board.jsx",
             lineNumber: 95,
             columnNumber: 13
         },
         __self: undefined
-    }, assignees[0].avatar && /*#__PURE__*/ React.createElement("img", {
-        className: "alpaca-item-user-img",
-        src: assignees[0].avatar,
-        alt: assignees[0].display_name || assignees[0].name,
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 101,
-            columnNumber: 17
-        },
-        __self: undefined
-    }), /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-item-assignee-name",
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 107,
-            columnNumber: 15
-        },
-        __self: undefined
-    }, assignees[0].display_name || assignees[0].name)), assignees.length > 1 && /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-item-assignees",
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 113,
-            columnNumber: 13
-        },
-        __self: undefined
-    }, assignees.map((assignee)=>/*#__PURE__*/ React.createElement("img", {
+    }, assignees.map((assignee)=>/*#__PURE__*/ React.createElement("span", {
             key: assignee.id || assignee.slug || assignee.name,
+            className: "alpaca-item-assignee",
+            __source: {
+                fileName: "src/board.jsx",
+                lineNumber: 105,
+                columnNumber: 17
+            },
+            __self: undefined
+        }, assignee.avatar && /*#__PURE__*/ React.createElement("img", {
             className: "alpaca-item-user-img",
             src: assignee.avatar,
             alt: assignee.display_name || assignee.name,
             title: assignee.display_name || assignee.name,
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 115,
-                columnNumber: 17
+                lineNumber: 110,
+                columnNumber: 21
             },
             __self: undefined
-        }))), typeof comment_count !== "undefined" && comment_count > 0 && /*#__PURE__*/ React.createElement("div", {
+        }), /*#__PURE__*/ React.createElement("div", {
+            className: "alpaca-item-assignee-name",
+            __source: {
+                fileName: "src/board.jsx",
+                lineNumber: 117,
+                columnNumber: 19
+            },
+            __self: undefined
+        }, assignee.display_name || assignee.name)))), typeof comment_count !== "undefined" && comment_count > 0 && /*#__PURE__*/ React.createElement("div", {
         className: "alpaca-item-comment-count has-dashicon",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 128,
+            lineNumber: 127,
             columnNumber: 13
         },
         __self: undefined
@@ -1194,7 +1184,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         "aria-hidden": "true",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 129,
+            lineNumber: 128,
             columnNumber: 15
         },
         __self: undefined
@@ -1235,7 +1225,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         },
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 182,
+            lineNumber: 181,
             columnNumber: 5
         },
         __self: this
@@ -1250,7 +1240,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         "data-id": id,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 205,
+            lineNumber: 204,
             columnNumber: 5
         },
         __self: this
@@ -1258,7 +1248,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         className: "alpaca-container-title",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 206,
+            lineNumber: 205,
             columnNumber: 7
         },
         __self: this
@@ -1270,7 +1260,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         strategy: (0, _sortable.verticalListSortingStrategy),
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 207,
+            lineNumber: 206,
             columnNumber: 7
         },
         __self: this
@@ -1284,7 +1274,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
             onClick: onItemClick,
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 214,
+                lineNumber: 213,
                 columnNumber: 13
             },
             __self: this
@@ -1296,7 +1286,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         isDragDisabled: true,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 225,
+            lineNumber: 224,
             columnNumber: 11
         },
         __self: this
@@ -1490,7 +1480,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         onDragEnd: handleDragEnd,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 489,
+            lineNumber: 488,
             columnNumber: 5
         },
         __self: this
@@ -1498,7 +1488,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         className: "alpaca-wrap",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 496,
+            lineNumber: 495,
             columnNumber: 7
         },
         __self: this
@@ -1510,7 +1500,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
             onItemClick: handleItemClick,
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 498,
+                lineNumber: 497,
                 columnNumber: 11
             },
             __self: this
@@ -1518,7 +1508,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         dropAnimation: null,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 507,
+            lineNumber: 506,
             columnNumber: 7
         },
         __self: this
@@ -1530,7 +1520,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         className: "alpaca-item-dragging",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 509,
+            lineNumber: 508,
             columnNumber: 11
         },
         __self: this
@@ -1543,7 +1533,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         onAssigneesChange: handleAssigneesChange,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 519,
+            lineNumber: 518,
             columnNumber: 7
         },
         __self: this
@@ -1553,7 +1543,7 @@ function AlpacaBoard() {
     return /*#__PURE__*/ React.createElement(Board, {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 532,
+            lineNumber: 531,
             columnNumber: 10
         },
         __self: this

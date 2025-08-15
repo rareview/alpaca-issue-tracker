@@ -103,24 +103,23 @@
 }
 
 .wp-admin #alpaca-board .alpaca-item .alpaca-item-meta .alpaca-item-assignees, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-meta .alpaca-item-assignees {
-  margin-right: 1em;
+  padding-right: 12px;
 }
 
-.wp-admin #alpaca-board .alpaca-item .alpaca-item-meta .alpaca-item-assignees .alpaca-item-user-img, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-meta .alpaca-item-assignees .alpaca-item-user-img {
-  margin-right: -6px;
-  position: relative;
+.wp-admin #alpaca-board .alpaca-item .alpaca-item-meta .alpaca-item-assignees .alpaca-item-assignee-name, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-meta .alpaca-item-assignees .alpaca-item-assignee-name {
+  display: none;
+}
+
+.wp-admin #alpaca-board .alpaca-item .alpaca-item-meta .alpaca-item-assignees[data-assignees="1"] .alpaca-item-assignee-name, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-meta .alpaca-item-assignees[data-assignees="1"] .alpaca-item-assignee-name {
+  padding-left: 6px;
+  display: block;
 }
 
 .wp-admin #alpaca-board .alpaca-item .alpaca-item-meta .alpaca-item-author, .wp-admin #alpaca-board .alpaca-item .alpaca-item-meta .alpaca-item-assignee, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-meta .alpaca-item-author, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-meta .alpaca-item-assignee {
   color: #999;
   align-items: center;
-  margin: 4px 8px 0 0;
   font-size: .8rem;
   display: flex;
-}
-
-.wp-admin #alpaca-board .alpaca-item .alpaca-item-meta .alpaca-item-author .alpaca-item-user-img, .wp-admin #alpaca-board .alpaca-item .alpaca-item-meta .alpaca-item-assignee .alpaca-item-user-img, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-meta .alpaca-item-author .alpaca-item-user-img, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-meta .alpaca-item-assignee .alpaca-item-user-img {
-  margin-right: 6px;
 }
 
 .wp-admin #alpaca-board .alpaca-item .alpaca-item-meta .has-dashicon, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-meta .has-dashicon {

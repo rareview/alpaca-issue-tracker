@@ -91,34 +91,33 @@ const Item = forwardRef(
         <div className="alpaca-item-content">{content}</div>
         <div className="alpaca-item-meta">
           {/* --- Assignees --- */}
-          {assignees.length === 1 && (
+          {assignees.length > 0 && (
             <div
-              key={assignees[0].id || assignees[0].slug || assignees[0].name}
-              className="alpaca-item-assignee"
-              title={assignees[0].display_name || assignees[0].name}
+              className="alpaca-item-assignees"
+              data-assignees={assignees.length}
+              title={
+                assignees.length === 1
+                  ? assignees[0].display_name || assignees[0].name
+                  : assignees.map((a) => a.display_name || a.name).join(", ")
+              }
             >
-              {assignees[0].avatar && (
-                <img
-                  className="alpaca-item-user-img"
-                  src={assignees[0].avatar}
-                  alt={assignees[0].display_name || assignees[0].name}
-                />
-              )}
-              <div className="alpaca-item-assignee-name">
-                {assignees[0].display_name || assignees[0].name}
-              </div>
-            </div>
-          )}
-          {assignees.length > 1 && (
-            <div className="alpaca-item-assignees">
               {assignees.map((assignee) => (
-                <img
+                <span
                   key={assignee.id || assignee.slug || assignee.name}
-                  className="alpaca-item-user-img"
-                  src={assignee.avatar}
-                  alt={assignee.display_name || assignee.name}
-                  title={assignee.display_name || assignee.name}
-                />
+                  className="alpaca-item-assignee"
+                >
+                  {assignee.avatar && (
+                    <img
+                      className="alpaca-item-user-img"
+                      src={assignee.avatar}
+                      alt={assignee.display_name || assignee.name}
+                      title={assignee.display_name || assignee.name}
+                    />
+                  )}
+                  <div className="alpaca-item-assignee-name">
+                    {assignee.display_name || assignee.name}
+                  </div>
+                </span>
               ))}
             </div>
           )}
