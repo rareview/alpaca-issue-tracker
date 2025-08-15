@@ -161,18 +161,52 @@ const AlpacaIssue = ({
                 </td>
               </tr>
 
-              <tr>
-                <th scope="row">Screenshot</th>
-                <td>
-                  <p>
-                    <img
-                      src={issueDetails.meta.screenshot}
-                      alt="Screenshot"
-                      style={{ height: "240px" }}
-                    />
-                  </p>
-                </td>
-              </tr>
+              {issueDetails.meta.screenshot && (
+                <tr>
+                  <th scope="row">Screenshot</th>
+                  <td>
+                    <p>
+                      <img
+                        src={issueDetails.meta.screenshot}
+                        className="alpaca-screenshot"
+                        alt="Screenshot"
+                      />
+                    </p>
+                    <p>
+                      <button
+                        type="button"
+                        className="button-link-delete"
+                        disabled={isSaving}
+                        onClick={() => {
+                          setIsSaving(true);
+                          wp.apiFetch({
+                            path: `/issue/v1/update/${issueId}`,
+                            method: "POST",
+                            data: {
+                              meta: {
+                                screenshot: "",
+                              },
+                            },
+                          })
+                            .then(() => {
+                              // Remove screenshot from local state
+                              setIssueDetails((prev) => ({
+                                ...prev,
+                                meta: {
+                                  ...prev.meta,
+                                  screenshot: "",
+                                },
+                              }));
+                            })
+                            .finally(() => setIsSaving(false));
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </p>
+                  </td>
+                </tr>
+              )}
               <tr>
                 <th scope="row">Submitted</th>
                 <td>

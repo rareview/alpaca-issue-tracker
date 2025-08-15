@@ -198,8 +198,7 @@ const AlpacaCommenting = ({ issueId, onCommentCountChange }) => {
                     <div>
                       <button onClick={() => startEditing(comment)}>
                         Edit
-                      </button>
-                      {" | "}
+                      </button>{" "}
                       <button onClick={() => confirmDeleteComment(comment.id)}>
                         Delete
                       </button>
