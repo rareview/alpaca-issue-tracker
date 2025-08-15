@@ -122,10 +122,6 @@
   display: flex;
 }
 
-.wp-admin #alpaca-board .alpaca-item .alpaca-item-meta .has-dashicon, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-meta .has-dashicon {
-  margin-top: 4px;
-}
-
 .wp-admin #alpaca-board .alpaca-item-dragging {
   border-color: var(--wp-admin-theme-color);
   cursor: grabbing;
