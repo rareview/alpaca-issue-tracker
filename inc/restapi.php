@@ -53,7 +53,18 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
         $status_term_id = 0;
         $statuses = alpaca_get_statuses();
         if ( ! empty( $statuses ) ) {
-            $status_term = reset( $statuses ); // Get the first status term
+            $status_term = null;
+            foreach ( $statuses as $s ) {
+                $score = get_term_meta( $s->term_id, 'term_score', true );
+                if ( $score > -1 ) {
+                    $status_term = $s;
+                    break;
+                }
+            }
+            // Fallback: if none found, use the first status as before
+            if ( ! $status_term && ! empty( $statuses ) ) {
+                $status_term = reset( $statuses );
+            }
             wp_set_post_terms( $post_id, array( $status_term->term_id ), 'status' );
             $status_term_id = $status_term->term_id;
             // sets issue status to lowest scored term
