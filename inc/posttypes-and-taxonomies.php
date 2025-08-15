@@ -137,6 +137,33 @@ function status_metabox( $post ) {
 
 });
 
+/**
+ * When a user's profile is updated, find the corresponding 'assignee' term
+ * and update its name to match the user's new display name.
+ *
+ * The link between a user and an assignee term is the user's nicename (slug).
+ *
+ * @param int    $user_id       The ID of the user being updated.
+ * @param object $old_user_data The old user data.
+ */
+function alpaca_update_assignee_term_on_profile_update( $user_id, $old_user_data ) {
+	$user = get_userdata( $user_id );
+
+	// No need to do anything if the display name hasn't changed.
+	if ( $user->display_name === $old_user_data->display_name ) {
+		return;
+	}
+
+	// Find the term in the 'assignee' taxonomy with a slug that matches the user's nicename.
+	$term = get_term_by( 'slug', $user->user_nicename, 'assignee' );
+
+	// If a term is found, update its name to the user's new display name.
+	if ( $term ) {
+		wp_update_term( $term->term_id, 'assignee', array( 'name' => $user->display_name ) );
+	}
+}
+add_action( 'profile_update', 'alpaca_update_assignee_term_on_profile_update', 10, 2 );
+
 function alpaca_get_statuses( $order = 'ASC' ) {
     $terms = get_terms(array(
 		'taxonomy' => 'status',
@@ -147,5 +174,3 @@ function alpaca_get_statuses( $order = 'ASC' ) {
 	));
     return $terms;
 }
-
-
