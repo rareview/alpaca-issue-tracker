@@ -6365,6 +6365,7 @@ const AlpacaCommenting = ({ issueId, onCommentCountChange })=>{
             },
             __self: undefined
         }, "Edit"), " ", /*#__PURE__*/ React.createElement("button", {
+            className: "button-link-delete",
             onClick: ()=>confirmDeleteComment(comment.id),
             __source: {
                 fileName: "src/commenting.jsx",
@@ -6378,14 +6379,14 @@ const AlpacaCommenting = ({ issueId, onCommentCountChange })=>{
         className: "alpaca-modal",
         __source: {
             fileName: "src/commenting.jsx",
-            lineNumber: 214,
+            lineNumber: 217,
             columnNumber: 11
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/commenting.jsx",
-            lineNumber: 219,
+            lineNumber: 222,
             columnNumber: 13
         },
         __self: undefined
@@ -6394,7 +6395,7 @@ const AlpacaCommenting = ({ issueId, onCommentCountChange })=>{
         onClick: deleteComment,
         __source: {
             fileName: "src/commenting.jsx",
-            lineNumber: 220,
+            lineNumber: 223,
             columnNumber: 13
         },
         __self: undefined
@@ -6402,7 +6403,7 @@ const AlpacaCommenting = ({ issueId, onCommentCountChange })=>{
         onClick: cancelDelete,
         __source: {
             fileName: "src/commenting.jsx",
-            lineNumber: 223,
+            lineNumber: 226,
             columnNumber: 13
         },
         __self: undefined
