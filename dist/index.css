@@ -83,7 +83,7 @@
 .wp-admin #alpaca-board .alpaca-item .alpaca-item-meta, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-meta {
   color: #999;
   align-items: center;
-  line-height: 32px;
+  margin: 8px 0 4px;
   display: flex;
 }
 
