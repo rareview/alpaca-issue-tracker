@@ -422,6 +422,29 @@ function Board() {
     [selectedItem, handleCommentCountChange]
   );
 
+  // Add this handler to update assignees for a specific issue/item
+  const handleAssigneesChange = useCallback((issueId, newAssignees) => {
+    setContainers((prevContainers) =>
+      prevContainers.map((container) => {
+        const itemIndex = container.items.findIndex(
+          (item) => item.id === issueId.toString()
+        );
+
+        if (itemIndex === -1) {
+          return container;
+        }
+
+        const newItems = [...container.items];
+        newItems[itemIndex] = {
+          ...newItems[itemIndex],
+          assignees: newAssignees, // Update only the assignees field
+        };
+
+        return { ...container, items: newItems };
+      })
+    );
+  }, []);
+
   const closeModal = () => {
     setSelectedItem(null);
   };
@@ -509,6 +532,7 @@ function Board() {
         onClose={closeModal}
         triggerRef={triggerRef}
         onCommentCountChange={onCommentCountChangeForIssue}
+        onAssigneesChange={handleAssigneesChange} // <-- Pass the handler here
       />
     </DndContext>
   );

@@ -8,10 +8,12 @@ const AlpacaIssue = ({
   onClose,
   triggerRef,
   onCommentCountChange,
+  onAssigneesChange, // <-- Add this prop
 }) => {
   const [issueDetails, setIssueDetails] = useState(null);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
-  const [allUsers, setAllUsers] = useState([]);
+  const [allUsers, setAllUsers] = useState([]); // display names for suggestions
+  const [allUserObjects, setAllUserObjects] = useState([]); // full user objects
   const [assignees, setAssignees] = useState([]);
   const [isSaving, setIsSaving] = useState(false);
   const [userMap, setUserMap] = useState({}); // Map display name -> slug
@@ -20,14 +22,23 @@ const AlpacaIssue = ({
   useEffect(() => {
     if (isOpen) {
       wp.apiFetch({ path: "/wp/v2/users?per_page=100" }).then((users) => {
-        // Map display name and slug for lookup
+        // Add avatar property for board display
+        const usersWithAvatar = users.map((u) => ({
+          ...u,
+          avatar:
+            u.avatar_urls?.["48"] ||
+            u.avatar_urls?.["96"] ||
+            u.avatar_urls?.["24"] ||
+            "",
+        }));
         const map = {};
-        users.forEach((u) => {
+        usersWithAvatar.forEach((u) => {
           map[u.name] = u.slug;
-          map[u.slug] = u.slug; // allow slug as fallback
+          map[u.slug] = u.slug;
         });
         setUserMap(map);
-        setAllUsers(users.map((u) => u.name)); // suggestions: display names
+        setAllUsers(usersWithAvatar.map((u) => u.name)); // suggestions: display names
+        setAllUserObjects(usersWithAvatar); // store full user objects with avatar
       });
     }
   }, [isOpen]);
@@ -121,7 +132,6 @@ const AlpacaIssue = ({
                     suggestions={allUsers}
                     onChange={(newAssignees) => {
                       setAssignees(newAssignees);
-                      // Convert display names to slugs for saving
                       const slugs = newAssignees.map((a) => userMap[a] || a);
                       setIsSaving(true);
                       wp.apiFetch({
@@ -134,7 +144,16 @@ const AlpacaIssue = ({
                         },
                       })
                         .then(() => {
-                          // Optionally refetch details or show a notice
+                          // Notify parent/board to refresh
+                          if (typeof onAssigneesChange === "function") {
+                            // Find the full user objects for the selected assignees
+                            const assigneeObjects = allUserObjects.filter(
+                              (u) =>
+                                newAssignees.includes(u.name) ||
+                                newAssignees.includes(u.slug)
+                            );
+                            onAssigneesChange(issueId, assigneeObjects);
+                          }
                         })
                         .finally(() => setIsSaving(false));
                     }}
