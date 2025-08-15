@@ -5997,11 +5997,11 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
             columnNumber: 17
         },
         __self: undefined
-    }, issueDetails.meta.screenwidth && issueDetails.meta.screenheight ? `${issueDetails.meta.screenwidth} x ${issueDetails.meta.screenheight}` : "N/A")), Object.entries(issueDetails.taxonomies).map(([taxonomy, terms])=>/*#__PURE__*/ React.createElement("tr", {
+    }, issueDetails.meta.screenwidth && issueDetails.meta.screenheight ? `${issueDetails.meta.screenwidth} x ${issueDetails.meta.screenheight}` : "N/A")), Object.entries(issueDetails.taxonomies).filter(([taxonomy])=>taxonomy !== "assignee").map(([taxonomy, terms])=>/*#__PURE__*/ React.createElement("tr", {
             key: taxonomy,
             __source: {
                 fileName: "src/issue.jsx",
-                lineNumber: 234,
+                lineNumber: 235,
                 columnNumber: 19
             },
             __self: undefined
@@ -6012,14 +6012,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
             },
             __source: {
                 fileName: "src/issue.jsx",
-                lineNumber: 235,
+                lineNumber: 236,
                 columnNumber: 21
             },
             __self: undefined
         }, taxonomy), /*#__PURE__*/ React.createElement("td", {
             __source: {
                 fileName: "src/issue.jsx",
-                lineNumber: 238,
+                lineNumber: 239,
                 columnNumber: 21
             },
             __self: undefined

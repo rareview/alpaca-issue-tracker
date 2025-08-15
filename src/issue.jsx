@@ -229,16 +229,16 @@ const AlpacaIssue = ({
                     : "N/A"}
                 </td>
               </tr>
-              {Object.entries(issueDetails.taxonomies).map(
-                ([taxonomy, terms]) => (
+              {Object.entries(issueDetails.taxonomies)
+                .filter(([taxonomy]) => taxonomy !== "assignee")
+                .map(([taxonomy, terms]) => (
                   <tr key={taxonomy}>
                     <th scope="row" style={{ textTransform: "capitalize" }}>
                       {taxonomy}
                     </th>
                     <td>{terms.map((term) => term.name).join(", ")}</td>
                   </tr>
-                )
-              )}
+                ))}
             </tbody>
           </table>
 
