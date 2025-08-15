@@ -92,22 +92,20 @@ const Item = forwardRef(
         <div className="alpaca-item-meta">
           {/* --- Assignees --- */}
           {assignees.length === 1 && (
-            <div className="alpaca-item-assignees">
-              <div
-                key={assignees[0].id || assignees[0].slug || assignees[0].name}
-                className="alpaca-item-assignee"
-                title={assignees[0].display_name || assignees[0].name}
-              >
-                {assignees[0].avatar && (
-                  <img
-                    className="alpaca-item-user-img"
-                    src={assignees[0].avatar}
-                    alt={assignees[0].display_name || assignees[0].name}
-                  />
-                )}
-                <div className="alpaca-item-assignee-name">
-                  {assignees[0].display_name || assignees[0].name}
-                </div>
+            <div
+              key={assignees[0].id || assignees[0].slug || assignees[0].name}
+              className="alpaca-item-assignee"
+              title={assignees[0].display_name || assignees[0].name}
+            >
+              {assignees[0].avatar && (
+                <img
+                  className="alpaca-item-user-img"
+                  src={assignees[0].avatar}
+                  alt={assignees[0].display_name || assignees[0].name}
+                />
+              )}
+              <div className="alpaca-item-assignee-name">
+                {assignees[0].display_name || assignees[0].name}
               </div>
             </div>
           )}
