@@ -1,6 +1,7 @@
 import AlpacaCommenting from "./commenting.jsx";
 const { useState, useEffect } = wp.element;
 const { Modal, FormTokenField } = wp.components;
+const { decodeEntities } = wp.htmlEntities;
 
 const AlpacaIssue = ({
   issueId,
@@ -225,7 +226,7 @@ const AlpacaIssue = ({
               </tr>
               <tr>
                 <th scope="row">Description</th>
-                <td>{issueDetails.post_data.post_content}</td>
+                <td>{decodeEntities(issueDetails.post_data.post_content)}</td>
               </tr>
               <tr>
                 <th scope="row">URL</th>

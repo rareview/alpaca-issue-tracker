@@ -468,7 +468,7 @@ function Board() {
           // Add the new issue to the top of the correct column
           targetContainer.items.unshift({
             id: issue.id.toString(),
-            content: issue.title,
+            content: decodeEntities(issue.title),
             author_name: issue.author_name,
             author_img: issue.author_img,
             comment_count: issue.comment_count ?? 0,
