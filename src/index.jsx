@@ -5,9 +5,6 @@ import "./apitest.js";
 import AlpacaModal from "./modal.jsx";
 import AlpacaSettings from "./settings.jsx";
 import AlpacaBoard from "./board.jsx";
-import AlpacaUser from "./user.jsx";
-import AlpacaCommenting from "./commenting.jsx";
-import AlpacaIssue from "./issue.jsx";
 
 const { render } = wp.element;
 if (document.querySelector("#wp-admin-bar-alpaca-menu")) {

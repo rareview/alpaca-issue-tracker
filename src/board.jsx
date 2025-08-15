@@ -255,6 +255,7 @@ function Board() {
   const [selectedItem, setSelectedItem] = useState(null);
   const triggerRef = useRef(null); // To store the element that opened the modal
   const [draggedItem, setDraggedItem] = useState(null);
+  const [needsSave, setNeedsSave] = useState(false);
 
   function findContainerByItemId(itemId) {
     return containers.find((c) => c.items.some((item) => item.id === itemId));
@@ -447,6 +448,15 @@ function Board() {
   }, [selectedItem]);
 
   useEffect(() => {
+    // After a new issue is submitted and the state has been updated,
+    // save the new board order.
+    if (needsSave) {
+      saveBoardOrder();
+      setNeedsSave(false); // Reset the flag
+    }
+  }, [needsSave, containers]);
+
+  useEffect(() => {
     const handleIssueSubmitted = (event) => {
       const { issue, statusId } = event.detail;
 
@@ -468,12 +478,14 @@ function Board() {
             content: decodeEntities(issue.title),
             author_name: issue.author_name,
             author_img: issue.author_img,
+            assignees: [], // New issues have no assignees
             comment_count: issue.comment_count ?? 0,
           });
         }
 
         return newContainers;
       });
+      setNeedsSave(true);
     };
 
     document.addEventListener("alpaca:issue-submitted", handleIssueSubmitted);

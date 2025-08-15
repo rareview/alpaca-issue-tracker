@@ -58,8 +58,6 @@ const AlpacaModal = () => {
       const server = JSON.parse(atob(alpaca_data.env));
       setStatus("submitting");
 
-      // await new Promise((resolve) => setTimeout(resolve, 1000));
-
       const screenshot = await handleSnapdomCapture();
 
       const submitted = {
@@ -69,7 +67,6 @@ const AlpacaModal = () => {
       };
 
       const payload = { ...submitted, ...server };
-      // console.log(payload);
 
       const response = await fetch(wpApiSettings.root + "issue/v1/submit", {
         method: "POST",
