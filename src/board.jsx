@@ -103,13 +103,6 @@ const Item = forwardRef(
                     className="alpaca-item-user-img"
                     src={assignees[0].avatar}
                     alt={assignees[0].display_name || assignees[0].name}
-                    style={{
-                      width: 20,
-                      height: 20,
-                      borderRadius: "50%",
-                      verticalAlign: "middle",
-                      marginRight: 4,
-                    }}
                   />
                 )}
                 <div className="alpaca-item-assignee-name">
@@ -518,8 +511,7 @@ function Board() {
           <Item
             id={draggedItem.id}
             content={draggedItem.content}
-            author_name={draggedItem.author_name}
-            author_img={draggedItem.author_img}
+            assignees={draggedItem.assignees} // <-- Add this line to show assignees in drag overlay
             comment_count={draggedItem.comment_count}
             className="alpaca-item-dragging"
           />
