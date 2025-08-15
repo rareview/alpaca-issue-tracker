@@ -19,88 +19,64 @@ const AlpacaIssue = ({
   const [isSaving, setIsSaving] = useState(false);
   const [userMap, setUserMap] = useState({}); // Map display name -> slug
 
-  // Fetch all users for suggestions
-  useEffect(() => {
-    if (isOpen) {
-      wp.apiFetch({ path: "/wp/v2/users?per_page=100" }).then((users) => {
-        // Add avatar property for board display
-        const usersWithAvatar = users.map((u) => ({
-          ...u,
-          avatar:
-            u.avatar_urls?.["48"] ||
-            u.avatar_urls?.["96"] ||
-            u.avatar_urls?.["24"] ||
-            "",
-        }));
-        const map = {};
-        usersWithAvatar.forEach((u) => {
-          map[u.name] = u.slug;
-          map[u.slug] = u.slug;
-        });
-        setUserMap(map);
-        setAllUsers(usersWithAvatar.map((u) => u.name)); // suggestions: display names
-        setAllUserObjects(usersWithAvatar); // store full user objects with avatar
-      });
-    }
-  }, [isOpen]);
-
-  // Fetch issue details
+  // Fetch all users and issue details concurrently
   useEffect(() => {
     if (issueId && isOpen) {
       setIsLoadingDetails(true);
 
-      wp.apiFetch({
-        path: `/issue/v1/get/${issueId}`,
-      })
-        .then((data) => {
-          setIssueDetails(data);
-          // Pre-populate assignees from taxonomy
+      const usersPromise = wp.apiFetch({ path: "/wp/v2/users?per_page=100" });
+      const issuePromise = wp.apiFetch({ path: `/issue/v1/get/${issueId}` });
+
+      Promise.all([usersPromise, issuePromise])
+        .then(([users, issueData]) => {
+          // 1. Process users first to build the map
+          const usersWithAvatar = users.map((u) => ({
+            ...u,
+            avatar:
+              u.avatar_urls?.["48"] ||
+              u.avatar_urls?.["96"] ||
+              u.avatar_urls?.["24"] ||
+              "",
+          }));
+          const localUserMap = {};
+          usersWithAvatar.forEach((u) => {
+            localUserMap[u.name] = u.slug;
+            localUserMap[u.slug] = u.slug; // For reverse lookup if needed
+          });
+          setUserMap(localUserMap);
+          setAllUsers(usersWithAvatar.map((u) => u.name));
+          setAllUserObjects(usersWithAvatar);
+
+          // 2. Process issue details
+          setIssueDetails(issueData);
+
+          // 3. Now that the user map is guaranteed to exist, populate assignees
           if (
-            data.taxonomies &&
-            data.taxonomies.assignee &&
-            Array.isArray(data.taxonomies.assignee)
+            issueData.taxonomies &&
+            issueData.taxonomies.assignee &&
+            Array.isArray(issueData.taxonomies.assignee)
           ) {
-            setAssignees(
-              data.taxonomies.assignee.map(
-                (t) =>
-                  Object.keys(userMap).find(
-                    (k) => userMap[k] === (t.username || t.name)
-                  ) ||
-                  t.username ||
-                  t.name
-              )
-            );
+            const assigneeNames = issueData.taxonomies.assignee.map((t) => {
+              // Find the user's display name from their slug (t.slug)
+              const userObject = usersWithAvatar.find(
+                (user) => user.slug === t.slug
+              );
+              return userObject ? userObject.name : t.name; // Fallback to term name
+            });
+            setAssignees(assigneeNames);
           } else {
             setAssignees([]);
           }
         })
         .catch((err) => {
-          console.error("Error fetching issue details:", err);
+          console.error("Error fetching issue data:", err);
           setIssueDetails({ error: "Failed to load details." });
         })
         .finally(() => {
           setIsLoadingDetails(false);
         });
     }
-  }, [issueId, isOpen, userMap]);
-
-  // Save handler for assignees
-  const handleSaveAssignees = () => {
-    setIsSaving(true);
-    wp.apiFetch({
-      path: `/issue/v1/update/${issueId}`,
-      method: "POST",
-      data: {
-        taxonomies: {
-          assignee: assignees, // send usernames
-        },
-      },
-    })
-      .then(() => {
-        // Optionally refetch details or show a notice
-      })
-      .finally(() => setIsSaving(false));
-  };
+  }, [issueId, isOpen]);
 
   if (!isOpen) {
     return null;

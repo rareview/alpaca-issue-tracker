@@ -1556,7 +1556,7 @@ function AlpacaBoard() {
     });
 }
 
-},{"@dnd-kit/core":"do19q","@dnd-kit/sortable":"fw7EW","@dnd-kit/utilities":"a2exI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./issue":"alebk","./user":"6qIFK"}],"do19q":[function(require,module,exports,__globalThis) {
+},{"@dnd-kit/core":"do19q","@dnd-kit/sortable":"fw7EW","@dnd-kit/utilities":"a2exI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./user":"6qIFK","./issue":"alebk"}],"do19q":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "AutoScrollActivator", ()=>AutoScrollActivator);
@@ -5484,7 +5484,154 @@ function isAfter(a, b) {
     return a.data.current.sortable.index < b.data.current.sortable.index;
 }
 
-},{"react":"f39IF","@dnd-kit/core":"do19q","@dnd-kit/utilities":"a2exI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"alebk":[function(require,module,exports,__globalThis) {
+},{"react":"f39IF","@dnd-kit/core":"do19q","@dnd-kit/utilities":"a2exI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6qIFK":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+const { useState, useRef, useEffect } = wp.element;
+// Main AlpacaUser component which will be rendered by WordPress
+// It now accepts a 'userId' prop
+const AlpacaUser = ({ userId })=>{
+    // State to hold the user data being displayed
+    const [displayedUser, setDisplayedUser] = useState(null);
+    // State for loading status
+    const [loading, setLoading] = useState(true);
+    // State for error messages
+    const [error, setError] = useState(null);
+    /**
+   * Fetches user data from the WordPress REST API.
+   * @param {string | number | null} idToFetch - The ID of the user to fetch. If null, fetches data for the current user ('me' endpoint).
+   */ const fetchUserData = async (idToFetch = null)=>{
+        // Ensure wpApiSettings is available, which is exposed by WordPress in the admin area
+        if (typeof window.wpApiSettings === "undefined" || !window.wpApiSettings.root) {
+            setError("WordPress API settings not found. Ensure this component is loaded within a WordPress admin context.");
+            setLoading(false);
+            return;
+        }
+        try {
+            setLoading(true);
+            setError(null);
+            // Determine the API endpoint based on whether an ID is provided
+            const endpoint = idToFetch ? `wp/v2/users/${idToFetch}` : `wp/v2/users/me`;
+            const apiUrl = `${window.wpApiSettings.root}${endpoint}`;
+            const response = await fetch(apiUrl, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    // Include the WordPress nonce for authentication and CSRF protection.
+                    // wpApiSettings.nonce is usually localized by WordPress for backend scripts.
+                    "X-WP-Nonce": window.wpApiSettings.nonce || ""
+                }
+            });
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+            }
+            const userData = await response.json();
+            setDisplayedUser(userData); // Update the displayed user
+        } catch (err) {
+            console.error("Failed to fetch user data:", err);
+            setDisplayedUser(null); // Clear displayed user on error
+            setError(`Error loading user data: ${err.message}`);
+        } finally{
+            setLoading(false);
+        }
+    };
+    // Effect hook to fetch data when the component mounts or when the 'userId' prop changes
+    useEffect(()=>{
+        // If a userId prop is provided, fetch that specific user, otherwise fetch the current user
+        if (userId) fetchUserData(userId);
+        else fetchUserData(); // Calls without an ID to get the current user
+    }, [
+        userId
+    ]); // Re-run effect if the userId prop changes
+    // Get the highest resolution avatar URL available from the displayedUser object
+    const avatarUrl = displayedUser?.avatar_urls ? displayedUser.avatar_urls["96"] || displayedUser.avatar_urls["48"] || displayedUser.avatar_urls["24"] : "https://placehold.co/96x96/cccccc/333333?text=Avatar"; // Placeholder if no avatar URL is found
+    return /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-user-container",
+        __source: {
+            fileName: "src/user.jsx",
+            lineNumber: 86,
+            columnNumber: 5
+        },
+        __self: undefined
+    }, loading && "Loading user data...", error && !loading && /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-error-message",
+        role: "alert",
+        __source: {
+            fileName: "src/user.jsx",
+            lineNumber: 91,
+            columnNumber: 9
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("strong", {
+        __source: {
+            fileName: "src/user.jsx",
+            lineNumber: 92,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, "Error!"), /*#__PURE__*/ React.createElement("span", {
+        className: "alpaca-error-text",
+        __source: {
+            fileName: "src/user.jsx",
+            lineNumber: 93,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, error)), !displayedUser && !loading && !error && /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-error-message",
+        role: "alert",
+        __source: {
+            fileName: "src/user.jsx",
+            lineNumber: 98,
+            columnNumber: 9
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("strong", {
+        __source: {
+            fileName: "src/user.jsx",
+            lineNumber: 99,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, "Error!"), /*#__PURE__*/ React.createElement("span", {
+        className: "alpaca-error-text",
+        __source: {
+            fileName: "src/user.jsx",
+            lineNumber: 100,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, "No user data available")), displayedUser && !loading && /*#__PURE__*/ React.createElement(React.Fragment, null, /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-user-avatar",
+        __source: {
+            fileName: "src/user.jsx",
+            lineNumber: 106,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("img", {
+        src: avatarUrl,
+        alt: `Avatar of ${displayedUser.name}`,
+        __source: {
+            fileName: "src/user.jsx",
+            lineNumber: 107,
+            columnNumber: 13
+        },
+        __self: undefined
+    })), /*#__PURE__*/ React.createElement("div", {
+        __source: {
+            fileName: "src/user.jsx",
+            lineNumber: 109,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, displayedUser.name, " (", displayedUser.id, ")")));
+};
+// Export the AlpacaUser component as default for React to render
+exports.default = AlpacaUser;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"alebk":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _commentingJsx = require("./commenting.jsx");
@@ -5500,41 +5647,46 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
     const [assignees, setAssignees] = useState([]);
     const [isSaving, setIsSaving] = useState(false);
     const [userMap, setUserMap] = useState({}); // Map display name -> slug
-    // Fetch all users for suggestions
-    useEffect(()=>{
-        if (isOpen) wp.apiFetch({
-            path: "/wp/v2/users?per_page=100"
-        }).then((users)=>{
-            // Add avatar property for board display
-            const usersWithAvatar = users.map((u)=>({
-                    ...u,
-                    avatar: u.avatar_urls?.["48"] || u.avatar_urls?.["96"] || u.avatar_urls?.["24"] || ""
-                }));
-            const map = {};
-            usersWithAvatar.forEach((u)=>{
-                map[u.name] = u.slug;
-                map[u.slug] = u.slug;
-            });
-            setUserMap(map);
-            setAllUsers(usersWithAvatar.map((u)=>u.name)); // suggestions: display names
-            setAllUserObjects(usersWithAvatar); // store full user objects with avatar
-        });
-    }, [
-        isOpen
-    ]);
-    // Fetch issue details
+    // Fetch all users and issue details concurrently
     useEffect(()=>{
         if (issueId && isOpen) {
             setIsLoadingDetails(true);
-            wp.apiFetch({
+            const usersPromise = wp.apiFetch({
+                path: "/wp/v2/users?per_page=100"
+            });
+            const issuePromise = wp.apiFetch({
                 path: `/issue/v1/get/${issueId}`
-            }).then((data)=>{
-                setIssueDetails(data);
-                // Pre-populate assignees from taxonomy
-                if (data.taxonomies && data.taxonomies.assignee && Array.isArray(data.taxonomies.assignee)) setAssignees(data.taxonomies.assignee.map((t)=>Object.keys(userMap).find((k)=>userMap[k] === (t.username || t.name)) || t.username || t.name));
-                else setAssignees([]);
+            });
+            Promise.all([
+                usersPromise,
+                issuePromise
+            ]).then(([users, issueData])=>{
+                // 1. Process users first to build the map
+                const usersWithAvatar = users.map((u)=>({
+                        ...u,
+                        avatar: u.avatar_urls?.["48"] || u.avatar_urls?.["96"] || u.avatar_urls?.["24"] || ""
+                    }));
+                const localUserMap = {};
+                usersWithAvatar.forEach((u)=>{
+                    localUserMap[u.name] = u.slug;
+                    localUserMap[u.slug] = u.slug; // For reverse lookup if needed
+                });
+                setUserMap(localUserMap);
+                setAllUsers(usersWithAvatar.map((u)=>u.name));
+                setAllUserObjects(usersWithAvatar);
+                // 2. Process issue details
+                setIssueDetails(issueData);
+                // 3. Now that the user map is guaranteed to exist, populate assignees
+                if (issueData.taxonomies && issueData.taxonomies.assignee && Array.isArray(issueData.taxonomies.assignee)) {
+                    const assigneeNames = issueData.taxonomies.assignee.map((t)=>{
+                        // Find the user's display name from their slug (t.slug)
+                        const userObject = usersWithAvatar.find((user)=>user.slug === t.slug);
+                        return userObject ? userObject.name : t.name; // Fallback to term name
+                    });
+                    setAssignees(assigneeNames);
+                } else setAssignees([]);
             }).catch((err)=>{
-                console.error("Error fetching issue details:", err);
+                console.error("Error fetching issue data:", err);
                 setIssueDetails({
                     error: "Failed to load details."
                 });
@@ -5544,31 +5696,15 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         }
     }, [
         issueId,
-        isOpen,
-        userMap
+        isOpen
     ]);
-    // Save handler for assignees
-    const handleSaveAssignees = ()=>{
-        setIsSaving(true);
-        wp.apiFetch({
-            path: `/issue/v1/update/${issueId}`,
-            method: "POST",
-            data: {
-                taxonomies: {
-                    assignee: assignees
-                }
-            }
-        }).then(()=>{
-        // Optionally refetch details or show a notice
-        }).finally(()=>setIsSaving(false));
-    };
     if (!isOpen) return null;
     return /*#__PURE__*/ React.createElement(Modal, {
         title: /*#__PURE__*/ React.createElement(React.Fragment, null, "Issue Details", /*#__PURE__*/ React.createElement("span", {
             className: "alpaca-issue-id",
             __source: {
                 fileName: "src/issue.jsx",
-                lineNumber: 114,
+                lineNumber: 90,
                 columnNumber: 11
             }
         }, " #", issueId)),
@@ -5577,14 +5713,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         className: "alpaca-details-modal",
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 110,
+            lineNumber: 86,
             columnNumber: 5
         },
         __self: undefined
     }, isLoadingDetails ? /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 122,
+            lineNumber: 98,
             columnNumber: 9
         },
         __self: undefined
@@ -5592,7 +5728,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         className: "alpaca-issue-details",
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 124,
+            lineNumber: 100,
             columnNumber: 9
         },
         __self: undefined
@@ -5600,21 +5736,21 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         className: "wp-list-table widefat striped",
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 125,
+            lineNumber: 101,
             columnNumber: 11
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("tbody", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 126,
+            lineNumber: 102,
             columnNumber: 13
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 127,
+            lineNumber: 103,
             columnNumber: 15
         },
         __self: undefined
@@ -5622,14 +5758,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         scope: "row",
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 128,
+            lineNumber: 104,
             columnNumber: 17
         },
         __self: undefined
     }, "Assigned to:"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 129,
+            lineNumber: 105,
             columnNumber: 17
         },
         __self: undefined
@@ -5660,14 +5796,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         },
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 130,
+            lineNumber: 106,
             columnNumber: 19
         },
         __self: undefined
     }))), issueDetails.meta.screenshot && /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 166,
+            lineNumber: 142,
             columnNumber: 17
         },
         __self: undefined
@@ -5675,21 +5811,21 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         scope: "row",
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 167,
+            lineNumber: 143,
             columnNumber: 19
         },
         __self: undefined
     }, "Screenshot"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 168,
+            lineNumber: 144,
             columnNumber: 19
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 169,
+            lineNumber: 145,
             columnNumber: 21
         },
         __self: undefined
@@ -5699,14 +5835,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         alt: "Screenshot",
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 170,
+            lineNumber: 146,
             columnNumber: 23
         },
         __self: undefined
     })), /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 176,
+            lineNumber: 152,
             columnNumber: 21
         },
         __self: undefined
@@ -5737,14 +5873,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         },
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 177,
+            lineNumber: 153,
             columnNumber: 23
         },
         __self: undefined
     }, "Delete")))), /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 211,
+            lineNumber: 187,
             columnNumber: 15
         },
         __self: undefined
@@ -5752,21 +5888,21 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         scope: "row",
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 212,
+            lineNumber: 188,
             columnNumber: 17
         },
         __self: undefined
     }, "Submitted"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 213,
+            lineNumber: 189,
             columnNumber: 17
         },
         __self: undefined
     }, new Date(issueDetails.post_data.post_date).toLocaleString(), " ", "by ", issueDetails.post_data.post_author_display_name, " (", issueDetails.post_data.post_author, ")")), /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 219,
+            lineNumber: 195,
             columnNumber: 15
         },
         __self: undefined
@@ -5774,21 +5910,21 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         scope: "row",
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 220,
+            lineNumber: 196,
             columnNumber: 17
         },
         __self: undefined
     }, "Last modified"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 221,
+            lineNumber: 197,
             columnNumber: 17
         },
         __self: undefined
     }, new Date(issueDetails.post_data.post_modified).toLocaleString(), " ")), /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 227,
+            lineNumber: 203,
             columnNumber: 15
         },
         __self: undefined
@@ -5796,21 +5932,21 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         scope: "row",
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 228,
+            lineNumber: 204,
             columnNumber: 17
         },
         __self: undefined
     }, "Description"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 229,
+            lineNumber: 205,
             columnNumber: 17
         },
         __self: undefined
     }, decodeEntities(issueDetails.post_data.post_content))), /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 231,
+            lineNumber: 207,
             columnNumber: 15
         },
         __self: undefined
@@ -5818,14 +5954,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         scope: "row",
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 232,
+            lineNumber: 208,
             columnNumber: 17
         },
         __self: undefined
     }, "URL"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 233,
+            lineNumber: 209,
             columnNumber: 17
         },
         __self: undefined
@@ -5835,14 +5971,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         rel: "noopener noreferrer",
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 235,
+            lineNumber: 211,
             columnNumber: 21
         },
         __self: undefined
     }, issueDetails.meta.URL) : "N/A")), /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 247,
+            lineNumber: 223,
             columnNumber: 15
         },
         __self: undefined
@@ -5850,14 +5986,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         scope: "row",
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 248,
+            lineNumber: 224,
             columnNumber: 17
         },
         __self: undefined
     }, "Screen Size"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 249,
+            lineNumber: 225,
             columnNumber: 17
         },
         __self: undefined
@@ -5865,7 +6001,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
             key: taxonomy,
             __source: {
                 fileName: "src/issue.jsx",
-                lineNumber: 258,
+                lineNumber: 234,
                 columnNumber: 19
             },
             __self: undefined
@@ -5876,14 +6012,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
             },
             __source: {
                 fileName: "src/issue.jsx",
-                lineNumber: 259,
+                lineNumber: 235,
                 columnNumber: 21
             },
             __self: undefined
         }, taxonomy), /*#__PURE__*/ React.createElement("td", {
             __source: {
                 fileName: "src/issue.jsx",
-                lineNumber: 262,
+                lineNumber: 238,
                 columnNumber: 21
             },
             __self: undefined
@@ -5892,14 +6028,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         onCommentCountChange: onCommentCountChange,
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 269,
+            lineNumber: 245,
             columnNumber: 11
         },
         __self: undefined
     })) : /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 275,
+            lineNumber: 251,
             columnNumber: 9
         },
         __self: undefined
@@ -6253,153 +6389,6 @@ const AlpacaCommenting = ({ issueId, onCommentCountChange })=>{
 };
 exports.default = AlpacaCommenting;
 
-},{"./user":"6qIFK","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6qIFK":[function(require,module,exports,__globalThis) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-const { useState, useRef, useEffect } = wp.element;
-// Main AlpacaUser component which will be rendered by WordPress
-// It now accepts a 'userId' prop
-const AlpacaUser = ({ userId })=>{
-    // State to hold the user data being displayed
-    const [displayedUser, setDisplayedUser] = useState(null);
-    // State for loading status
-    const [loading, setLoading] = useState(true);
-    // State for error messages
-    const [error, setError] = useState(null);
-    /**
-   * Fetches user data from the WordPress REST API.
-   * @param {string | number | null} idToFetch - The ID of the user to fetch. If null, fetches data for the current user ('me' endpoint).
-   */ const fetchUserData = async (idToFetch = null)=>{
-        // Ensure wpApiSettings is available, which is exposed by WordPress in the admin area
-        if (typeof window.wpApiSettings === "undefined" || !window.wpApiSettings.root) {
-            setError("WordPress API settings not found. Ensure this component is loaded within a WordPress admin context.");
-            setLoading(false);
-            return;
-        }
-        try {
-            setLoading(true);
-            setError(null);
-            // Determine the API endpoint based on whether an ID is provided
-            const endpoint = idToFetch ? `wp/v2/users/${idToFetch}` : `wp/v2/users/me`;
-            const apiUrl = `${window.wpApiSettings.root}${endpoint}`;
-            const response = await fetch(apiUrl, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    // Include the WordPress nonce for authentication and CSRF protection.
-                    // wpApiSettings.nonce is usually localized by WordPress for backend scripts.
-                    "X-WP-Nonce": window.wpApiSettings.nonce || ""
-                }
-            });
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-            }
-            const userData = await response.json();
-            setDisplayedUser(userData); // Update the displayed user
-        } catch (err) {
-            console.error("Failed to fetch user data:", err);
-            setDisplayedUser(null); // Clear displayed user on error
-            setError(`Error loading user data: ${err.message}`);
-        } finally{
-            setLoading(false);
-        }
-    };
-    // Effect hook to fetch data when the component mounts or when the 'userId' prop changes
-    useEffect(()=>{
-        // If a userId prop is provided, fetch that specific user, otherwise fetch the current user
-        if (userId) fetchUserData(userId);
-        else fetchUserData(); // Calls without an ID to get the current user
-    }, [
-        userId
-    ]); // Re-run effect if the userId prop changes
-    // Get the highest resolution avatar URL available from the displayedUser object
-    const avatarUrl = displayedUser?.avatar_urls ? displayedUser.avatar_urls["96"] || displayedUser.avatar_urls["48"] || displayedUser.avatar_urls["24"] : "https://placehold.co/96x96/cccccc/333333?text=Avatar"; // Placeholder if no avatar URL is found
-    return /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-user-container",
-        __source: {
-            fileName: "src/user.jsx",
-            lineNumber: 86,
-            columnNumber: 5
-        },
-        __self: undefined
-    }, loading && "Loading user data...", error && !loading && /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-error-message",
-        role: "alert",
-        __source: {
-            fileName: "src/user.jsx",
-            lineNumber: 91,
-            columnNumber: 9
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("strong", {
-        __source: {
-            fileName: "src/user.jsx",
-            lineNumber: 92,
-            columnNumber: 11
-        },
-        __self: undefined
-    }, "Error!"), /*#__PURE__*/ React.createElement("span", {
-        className: "alpaca-error-text",
-        __source: {
-            fileName: "src/user.jsx",
-            lineNumber: 93,
-            columnNumber: 11
-        },
-        __self: undefined
-    }, error)), !displayedUser && !loading && !error && /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-error-message",
-        role: "alert",
-        __source: {
-            fileName: "src/user.jsx",
-            lineNumber: 98,
-            columnNumber: 9
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("strong", {
-        __source: {
-            fileName: "src/user.jsx",
-            lineNumber: 99,
-            columnNumber: 11
-        },
-        __self: undefined
-    }, "Error!"), /*#__PURE__*/ React.createElement("span", {
-        className: "alpaca-error-text",
-        __source: {
-            fileName: "src/user.jsx",
-            lineNumber: 100,
-            columnNumber: 11
-        },
-        __self: undefined
-    }, "No user data available")), displayedUser && !loading && /*#__PURE__*/ React.createElement(React.Fragment, null, /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-user-avatar",
-        __source: {
-            fileName: "src/user.jsx",
-            lineNumber: 106,
-            columnNumber: 11
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("img", {
-        src: avatarUrl,
-        alt: `Avatar of ${displayedUser.name}`,
-        __source: {
-            fileName: "src/user.jsx",
-            lineNumber: 107,
-            columnNumber: 13
-        },
-        __self: undefined
-    })), /*#__PURE__*/ React.createElement("div", {
-        __source: {
-            fileName: "src/user.jsx",
-            lineNumber: 109,
-            columnNumber: 11
-        },
-        __self: undefined
-    }, displayedUser.name, " (", displayedUser.id, ")")));
-};
-// Export the AlpacaUser component as default for React to render
-exports.default = AlpacaUser;
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["9iTdJ","d8Dch"], "d8Dch", "parcelRequire55a0", {})
+},{"./user":"6qIFK","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["9iTdJ","d8Dch"], "d8Dch", "parcelRequire55a0", {})
 
 //# sourceMappingURL=index.js.map
