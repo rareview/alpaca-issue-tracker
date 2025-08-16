@@ -186,6 +186,10 @@
   width: 32px;
 }
 
+.wp-admin #alpaca-comments .alpaca-status-comment {
+  font-weight: bold;
+}
+
 .wp-admin .alpaca-grid .alpaca-row {
   display: flex;
 }
