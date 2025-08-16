@@ -1,7 +1,11 @@
 const { useState, useEffect, useRef, useCallback } = wp.element;
 import AlpacaUser from "./user";
 const { TextareaControl, Button, Spinner, Modal } = wp.components;
-const AlpacaCommenting = ({ issueId, onCommentCountChange }) => {
+const AlpacaCommenting = ({
+  issueId,
+  onCommentCountChange,
+  commentRefreshKey,
+}) => {
   const [comments, setComments] = useState([]);
   const [isLoadingComments, setIsLoadingComments] = useState(true);
   const [error, setError] = useState(null);
@@ -37,7 +41,7 @@ const AlpacaCommenting = ({ issueId, onCommentCountChange }) => {
 
   useEffect(() => {
     fetchComments();
-  }, [fetchComments]);
+  }, [fetchComments, commentRefreshKey]);
 
   useEffect(() => {
     if (editingRef.current) editingRef.current.focus();

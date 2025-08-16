@@ -186,7 +186,7 @@
   width: 32px;
 }
 
-.wp-admin #alpaca-comments .alpaca-status-comment {
+.wp-admin #alpaca-comments .alpaca-status-comment, .wp-admin #alpaca-comments .alpaca-status-assignee {
   font-weight: bold;
 }
 

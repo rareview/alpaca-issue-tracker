@@ -259,15 +259,16 @@ function Board() {
   const [originalContainerId, setOriginalContainerId] = useState(null);
 
   const createIssueComment = (issueId, commentContent) => {
-    wp.apiFetch({
-      path: `/wp/v2/comments`,
-      method: "POST",
-      data: {
-        content: commentContent,
-        post: issueId,
-        comment_type: "issuecomment",
-      },
-    })
+    return wp
+      .apiFetch({
+        path: `/wp/v2/comments`,
+        method: "POST",
+        data: {
+          content: commentContent,
+          post: issueId,
+          comment_type: "issuecomment",
+        },
+      })
       .then(() => {
         // On success, update the comment count for the item on the board
         const item = getItemById(issueId);
@@ -277,6 +278,7 @@ function Board() {
       })
       .catch((err) => {
         console.error("Error creating status change comment:", err);
+        throw err;
       });
   };
 
@@ -575,7 +577,8 @@ function Board() {
         onClose={closeModal}
         triggerRef={triggerRef}
         onCommentCountChange={onCommentCountChangeForIssue}
-        onAssigneesChange={handleAssigneesChange} // <-- Pass the handler here
+        onAssigneesChange={handleAssigneesChange}
+        createIssueComment={createIssueComment}
       />
     </DndContext>
   );

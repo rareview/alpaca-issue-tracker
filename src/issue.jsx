@@ -9,7 +9,8 @@ const AlpacaIssue = ({
   onClose,
   triggerRef,
   onCommentCountChange,
-  onAssigneesChange, // <-- Add this prop
+  onAssigneesChange,
+  createIssueComment,
 }) => {
   const [issueDetails, setIssueDetails] = useState(null);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
@@ -18,6 +19,7 @@ const AlpacaIssue = ({
   const [assignees, setAssignees] = useState([]);
   const [isSaving, setIsSaving] = useState(false);
   const [userMap, setUserMap] = useState({}); // Map display name -> slug
+  const [commentRefreshKey, setCommentRefreshKey] = useState(0);
 
   // Fetch all users and issue details concurrently
   useEffect(() => {
@@ -82,6 +84,12 @@ const AlpacaIssue = ({
     return null;
   }
 
+  const generateAssigneeSpan = (user) => {
+    if (!user) return "";
+    const avatarAttr = user.avatar ? ` data-avatar="${user.avatar}"` : "";
+    return `<span class="alpaca-status-assignee" data-userid="${user.id}"${avatarAttr}>${user.name}</span>`;
+  };
+
   return (
     <Modal
       title={
@@ -108,6 +116,59 @@ const AlpacaIssue = ({
                     value={assignees}
                     suggestions={allUsers}
                     onChange={(newAssignees) => {
+                      const oldAssignees = [...assignees];
+
+                      const added = newAssignees.filter(
+                        (name) => !oldAssignees.includes(name)
+                      );
+                      const removed = oldAssignees.filter(
+                        (name) => !newAssignees.includes(name)
+                      );
+
+                      if (createIssueComment) {
+                        const commentPromises = [];
+                        added.forEach((name) => {
+                          const user = allUserObjects.find(
+                            (u) => u.name === name
+                          );
+                          if (user) {
+                            const assigneeSpan = generateAssigneeSpan(user);
+                            commentPromises.push(
+                              createIssueComment(
+                                issueId,
+                                `${assigneeSpan} has been assigned to this issue.`
+                              )
+                            );
+                          }
+                        });
+                        removed.forEach((name) => {
+                          const user = allUserObjects.find(
+                            (u) => u.name === name
+                          );
+                          if (user) {
+                            const assigneeSpan = generateAssigneeSpan(user);
+                            commentPromises.push(
+                              createIssueComment(
+                                issueId,
+                                `${assigneeSpan} is no longer assigned to this issue.`
+                              )
+                            );
+                          }
+                        });
+
+                        if (commentPromises.length > 0) {
+                          Promise.all(commentPromises)
+                            .then(() => {
+                              setCommentRefreshKey((prevKey) => prevKey + 1);
+                            })
+                            .catch((err) => {
+                              console.error(
+                                "Failed to create one or more assignee comments",
+                                err
+                              );
+                            });
+                        }
+                      }
                       setAssignees(newAssignees);
                       const slugs = newAssignees.map((a) => userMap[a] || a);
                       setIsSaving(true);
@@ -245,6 +306,7 @@ const AlpacaIssue = ({
           <AlpacaCommenting
             issueId={issueId}
             onCommentCountChange={onCommentCountChange}
+            commentRefreshKey={commentRefreshKey}
           />
         </div>
       ) : (
