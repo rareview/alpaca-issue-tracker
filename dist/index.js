@@ -1135,7 +1135,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
             columnNumber: 13
         },
         __self: undefined
-    }, assignees.map((assignee)=>/*#__PURE__*/ React.createElement("span", {
+    }, assignees.map((assignee)=>/*#__PURE__*/ React.createElement("div", {
             key: assignee.id || assignee.slug || assignee.name,
             className: "alpaca-item-assignee",
             __source: {

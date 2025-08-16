@@ -102,7 +102,7 @@ const Item = forwardRef(
               }
             >
               {assignees.map((assignee) => (
-                <span
+                <div
                   key={assignee.id || assignee.slug || assignee.name}
                   className="alpaca-item-assignee"
                 >
@@ -117,7 +117,7 @@ const Item = forwardRef(
                   <div className="alpaca-item-assignee-name">
                     {assignee.display_name || assignee.name}
                   </div>
-                </span>
+                </div>
               ))}
             </div>
           )}
