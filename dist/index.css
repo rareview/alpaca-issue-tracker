@@ -71,7 +71,6 @@
 
 .wp-admin #alpaca-board .alpaca-item, .wp-admin #alpaca-board .alpaca-item-dragging {
   background-color: #fff;
-  border-top: 5px solid #999;
   border-radius: 8px;
   margin: 4px 0;
   padding: 8px 12px;
