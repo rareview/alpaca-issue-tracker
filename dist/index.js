@@ -1301,6 +1301,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
     const triggerRef = useRef(null); // To store the element that opened the modal
     const [draggedItem, setDraggedItem] = useState(null);
     const [needsSave, setNeedsSave] = useState(false);
+    const [originalContainerId, setOriginalContainerId] = useState(null);
     function findContainerByItemId(itemId) {
         return containers.find((c)=>c.items.some((item)=>item.id === itemId));
     }
@@ -1318,6 +1319,8 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         const { active } = event;
         setActiveId(active.id);
         setDraggedItem(getItemById(active.id));
+        const container = findContainerByItemId(active.id);
+        if (container) setOriginalContainerId(container.id);
     }
     function handleDragOver(event) {
         const { active, over } = event;
@@ -1348,8 +1351,33 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
     }
     function handleDragEnd(event) {
         const { active, over } = event;
+        if (over && originalContainerId) {
+            const overContainer = findContainerByItemId(over.id) || findContainerById(over.id);
+            if (overContainer && overContainer.id !== originalContainerId) {
+                const originalContainer = findContainerById(originalContainerId);
+                if (originalContainer) {
+                    const commentContent = `Item moved from status <span class="alpaca-status-comment">${originalContainer.title}</span> to <span class="alpaca-status-comment">${overContainer.title}</span>`;
+                    wp.apiFetch({
+                        path: `/wp/v2/comments`,
+                        method: "POST",
+                        data: {
+                            content: commentContent,
+                            post: active.id,
+                            comment_type: "issuecomment"
+                        }
+                    }).then(()=>{
+                        // On success, update the comment count for the item on the board
+                        const item = getItemById(active.id);
+                        if (item && typeof item.comment_count !== "undefined") handleCommentCountChange(active.id, item.comment_count + 1);
+                    }).catch((err)=>{
+                        console.error("Error creating status change comment:", err);
+                    });
+                }
+            }
+        }
         setActiveId(null);
         setDraggedItem(null);
+        setOriginalContainerId(null);
         if (!over) return;
         const activeContainer = findContainerByItemId(active.id);
         const overContainer = findContainerByItemId(over.id) || findContainerById(over.id);
@@ -1486,7 +1514,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         onDragEnd: handleDragEnd,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 500,
+            lineNumber: 539,
             columnNumber: 5
         },
         __self: this
@@ -1494,7 +1522,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         className: "alpaca-wrap",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 507,
+            lineNumber: 546,
             columnNumber: 7
         },
         __self: this
@@ -1506,7 +1534,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
             onItemClick: handleItemClick,
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 509,
+                lineNumber: 548,
                 columnNumber: 11
             },
             __self: this
@@ -1514,7 +1542,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         dropAnimation: null,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 518,
+            lineNumber: 557,
             columnNumber: 7
         },
         __self: this
@@ -1526,7 +1554,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         className: "alpaca-item-dragging",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 520,
+            lineNumber: 559,
             columnNumber: 11
         },
         __self: this
@@ -1539,7 +1567,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         onAssigneesChange: handleAssigneesChange,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 530,
+            lineNumber: 569,
             columnNumber: 7
         },
         __self: this
@@ -1549,7 +1577,7 @@ function AlpacaBoard() {
     return /*#__PURE__*/ React.createElement(Board, {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 543,
+            lineNumber: 582,
             columnNumber: 10
         },
         __self: this

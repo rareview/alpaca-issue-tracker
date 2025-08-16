@@ -256,6 +256,7 @@ function Board() {
   const triggerRef = useRef(null); // To store the element that opened the modal
   const [draggedItem, setDraggedItem] = useState(null);
   const [needsSave, setNeedsSave] = useState(false);
+  const [originalContainerId, setOriginalContainerId] = useState(null);
 
   function findContainerByItemId(itemId) {
     return containers.find((c) => c.items.some((item) => item.id === itemId));
@@ -277,6 +278,10 @@ function Board() {
     const { active } = event;
     setActiveId(active.id);
     setDraggedItem(getItemById(active.id));
+    const container = findContainerByItemId(active.id);
+    if (container) {
+      setOriginalContainerId(container.id);
+    }
   }
 
   function handleDragOver(event) {
@@ -322,8 +327,42 @@ function Board() {
 
   function handleDragEnd(event) {
     const { active, over } = event;
+
+    if (over && originalContainerId) {
+      const overContainer =
+        findContainerByItemId(over.id) || findContainerById(over.id);
+
+      if (overContainer && overContainer.id !== originalContainerId) {
+        const originalContainer = findContainerById(originalContainerId);
+        if (originalContainer) {
+          const commentContent = `Item moved from status <span class="alpaca-status-comment">${originalContainer.title}</span> to <span class="alpaca-status-comment">${overContainer.title}</span>`;
+
+          wp.apiFetch({
+            path: `/wp/v2/comments`,
+            method: "POST",
+            data: {
+              content: commentContent,
+              post: active.id,
+              comment_type: "issuecomment",
+            },
+          })
+            .then(() => {
+              // On success, update the comment count for the item on the board
+              const item = getItemById(active.id);
+              if (item && typeof item.comment_count !== "undefined") {
+                handleCommentCountChange(active.id, item.comment_count + 1);
+              }
+            })
+            .catch((err) => {
+              console.error("Error creating status change comment:", err);
+            });
+        }
+      }
+    }
+
     setActiveId(null);
     setDraggedItem(null);
+    setOriginalContainerId(null);
 
     if (!over) return;
 
