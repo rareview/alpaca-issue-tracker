@@ -71,10 +71,11 @@
 
 .wp-admin #alpaca-board .alpaca-item, .wp-admin #alpaca-board .alpaca-item-dragging {
   background-color: #fff;
-  border: 2px solid #e4e4e4;
+  border-top: 5px solid #999;
   border-radius: 8px;
   margin: 4px 0;
   padding: 8px 12px;
+  box-shadow: 0 0 2px #888;
 }
 
 .wp-admin #alpaca-board .alpaca-item .alpaca-item-content, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-content {
@@ -130,10 +131,9 @@
 }
 
 .wp-admin #alpaca-board .alpaca-item-dragging {
-  border-color: var(--wp-admin-theme-color);
+  box-shadow: 0 0 5px var(--wp-admin-theme-color);
   cursor: grabbing;
   transform: rotate(3deg);
-  box-shadow: 0 5px 15px #00000026;
 }
 
 .wp-admin #alpaca-board .alpaca-item.empty {

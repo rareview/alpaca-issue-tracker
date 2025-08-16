@@ -69,7 +69,8 @@
     }
     .alpaca-item,
     .alpaca-item-dragging {
-      border: 2px solid #e4e4e4;
+      border-top: 5px solid #999;
+      box-shadow: 0 0 2px #888;
       border-radius: 8px;
       padding: 8px 12px;
       margin: 4px 0;
@@ -122,8 +123,7 @@
       }
     }
     .alpaca-item-dragging {
-      border-color: var(--wp-admin-theme-color);
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 0 5px var(--wp-admin-theme-color);
       cursor: grabbing;
       transform: rotate(3deg);
     }
