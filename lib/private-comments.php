@@ -47,9 +47,11 @@ function hide_comment_type( $type = '', $exclude_from_count = true ) {
 
     add_action("pre_get_comments", function ($query) use ($type, $should_hide) {
         global $pagenow;
-        if ( is_admin() && $pagenow === "edit-comments.php" ) {
-            return;
-        }
+        // maybe I want to hide these comments from the Comments admin page,
+        // maybe I don't.
+        // if ( is_admin() && $pagenow === "edit-comments.php" ) {
+        //     return;
+        // }
         if ( $should_hide() && ( !isset($query->query_vars["type"]) || $query->query_vars["type"] !== $type ) ) {
             $query->query_vars["type__not_in"] = [$type];
         }
