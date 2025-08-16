@@ -101,6 +101,7 @@
   border-radius: 50%;
   width: 24px;
   height: 24px;
+  margin-right: 8px;
   box-shadow: 0 0 4px #666;
 }
 
@@ -113,7 +114,6 @@
 }
 
 .wp-admin #alpaca-board .alpaca-item .alpaca-item-meta .alpaca-item-assignees[data-assignees="1"] .alpaca-item-assignee-name, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-meta .alpaca-item-assignees[data-assignees="1"] .alpaca-item-assignee-name {
-  padding-left: 6px;
   display: block;
 }
 
