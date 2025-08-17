@@ -122,9 +122,9 @@
       }
     }
     .alpaca-item-dragging {
-      box-shadow: 0 0 5px var(--wp-admin-theme-color);
       cursor: grabbing;
       transform: rotate(3deg);
+      // note: function to match admin colors in alpaca.php
     }
     .alpaca-item.empty {
       font-style: italic;
