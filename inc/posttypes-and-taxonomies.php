@@ -140,7 +140,7 @@ add_action( 'init', function() {
 add_filter('alpaca_board_statuses', function( $statuses ) {
     $desired_statuses = array();
     foreach ( $statuses as $status ) {
-        if( "xarchive" == $status->slug ) {
+        if( $status->term_score > 100 ) {
             continue;
         }
         $desired_statuses[] = $status;
@@ -184,5 +184,9 @@ function alpaca_get_statuses( $order = 'ASC' ) {
 		'orderby' => 'meta_value_num',
 		'order' => $order,
 	));
+    foreach( $terms as $term ) {
+        $score = get_term_meta( $term->term_id, 'term_score', true );
+        $term->term_score = $score;
+    }
     return $terms;
 }
