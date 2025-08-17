@@ -10,7 +10,7 @@ function expose_admin_colors() {
         $scheme = $_wp_admin_css_colors[$current_scheme];
         $colors = $scheme->colors;
 
-        echo '<style id="myplugin-admin-colors">:root {';
+        echo '<style id="expose-admin-colors">:root {';
         foreach ($colors as $i => $color) {
             // Expose each admin color as a CSS variable
             printf('--admin-color-%d: %s; ', $i + 1, esc_html($color));

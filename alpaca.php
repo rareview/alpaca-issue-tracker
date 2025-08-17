@@ -85,5 +85,7 @@ add_action( 'admin_enqueue_scripts', function($hook_suffix) {
 }, 500);
 
 add_action('admin_footer', function() {
+	if( function_exists('expose_admin_colors') ) {
 		echo '<style type="text/css">.wp-admin #alpaca-board .alpaca-item-dragging { box-shadow: 0 0 8px var(--admin-color-1); }</style>';
+	}
 });
