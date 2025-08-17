@@ -84,8 +84,31 @@ add_action( 'admin_enqueue_scripts', function($hook_suffix) {
 	}
 }, 500);
 
-add_action('admin_footer', function() {
-	if( function_exists('expose_admin_colors') ) {
-		echo '<style type="text/css">.wp-admin #alpaca-board .alpaca-item-dragging { box-shadow: 0 0 8px var(--admin-color-1); }</style>';
-	}
-});
+add_action('admin_enqueue_scripts', function() {
+    global $pagenow;
+
+    // Only target the specific admin page
+    if ( $pagenow === 'admin.php' && isset($_GET['page']) && $_GET['page'] === 'alpaca-board' ) {
+        
+        $me = get_current_user_id();
+
+        wp_register_style( 'alpaca-admin-inline', false );
+        wp_enqueue_style( 'alpaca-admin-inline' );
+
+        $custom_css = "
+            .wp-admin #alpaca-board .alpaca-item[data-assignee-$me],
+            .wp-admin #alpaca-board .alpaca-item-dragging[data-assignee-$me] {
+                background-color: #eee;
+                border: 1px solid #999;
+            }";
+
+        if ( function_exists('expose_admin_colors') ) {
+            $custom_css .= "
+                .wp-admin #alpaca-board .alpaca-item-dragging {
+                    box-shadow: 0 0 8px var(--admin-color-1);
+                }";
+        }
+
+        wp_add_inline_style( $handle, $custom_css );
+    }
+}, 501);

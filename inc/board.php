@@ -75,9 +75,12 @@ function alpaca_get_board_data() {
             $assignees = array();
             foreach ( $assignee_terms as $term ) {
                 $user = get_user_by( 'slug', $term->slug );
+                if ( ! $user ) {
+					continue;
+				}
                 $avatar = $user ? get_avatar_url( $user->ID, array( 'size' => 32 ) ) : '';
                 $assignees[] = array(
-                    'id'           => $term->term_id,
+                    'id'           => $user->ID,
                     'slug'         => $term->slug,
                     'display_name' => $term->name, // term name is display name
                     'avatar'       => $avatar,

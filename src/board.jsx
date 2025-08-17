@@ -80,12 +80,20 @@ const Item = forwardRef(
     { id, content, assignees = [], comment_count, className, style, ...props },
     ref
   ) => {
+    const assigneeDataAttributes = assignees.reduce((acc, assignee) => {
+      if (assignee && assignee.id) {
+        acc[`data-assignee-${assignee.id}`] = "";
+      }
+      return acc;
+    }, {});
+
     return (
       <div
         ref={ref}
         className={className}
         style={style}
         data-id={id}
+        {...assigneeDataAttributes}
         {...props}
       >
         <div className="alpaca-item-content">{content}</div>
@@ -102,10 +110,7 @@ const Item = forwardRef(
               }
             >
               {assignees.map((assignee) => (
-                <div
-                  key={assignee.id || assignee.slug || assignee.name}
-                  className="alpaca-item-assignee"
-                >
+                <div key={assignee.id} className="alpaca-item-assignee">
                   {assignee.avatar && (
                     <img
                       className="alpaca-item-user-img"
