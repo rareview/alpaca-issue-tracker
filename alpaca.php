@@ -92,8 +92,10 @@ add_action('admin_enqueue_scripts', function() {
         
         $me = get_current_user_id();
 
-        wp_register_style( 'alpaca-admin-inline', false );
-        wp_enqueue_style( 'alpaca-admin-inline' );
+        // Register a dummy handle if needed, or use 'wp-admin' styles
+        $handle = 'alpaca-admin-inline';
+        wp_register_style( $handle, false );
+        wp_enqueue_style( $handle );
 
         $custom_css = "
             .wp-admin #alpaca-board .alpaca-item[data-assignee-$me],
