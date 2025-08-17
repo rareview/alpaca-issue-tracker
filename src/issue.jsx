@@ -26,7 +26,7 @@ const AlpacaIssue = ({
     if (issueId && isOpen) {
       setIsLoadingDetails(true);
 
-      const usersPromise = wp.apiFetch({ path: "/wp/v2/users?per_page=100" });
+      const usersPromise = wp.apiFetch({ path: "/alpaca/v1/users" });
       const issuePromise = wp.apiFetch({ path: `/issue/v1/get/${issueId}` });
 
       Promise.all([usersPromise, issuePromise])

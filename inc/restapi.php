@@ -307,7 +307,6 @@ function alpaca_update_issue_callback( WP_REST_Request $request ) {
     );
 }
 
-// --- NEW ENDPOINT START ---
 add_action( 'rest_api_init', 'alpaca_get_issue_data' );
 function alpaca_get_issue_data() {
     register_rest_route(
@@ -402,4 +401,43 @@ function alpaca_get_issue_data_callback( WP_REST_Request $request ) {
 
     return new WP_REST_Response( $response_data, 200 );
 }
-// --- NEW ENDPOINT END ---
+
+add_action( 'rest_api_init', 'alpaca_register_user_list_endpoint' );
+function alpaca_register_user_list_endpoint() {
+    register_rest_route(
+        'alpaca/v1',
+        '/users',
+        array(
+            'methods'             => 'GET',
+            'callback'            => 'alpaca_get_all_users_callback',
+            'permission_callback' => function () {
+                return current_user_can( 'edit_posts' );
+            },
+        )
+    );
+}
+
+function alpaca_get_all_users_callback() {
+    // We can add role filtering here if needed in the future, e.g., 'role__in' => ['administrator', 'editor', 'author']
+    $users = get_users( array( 'fields' => array( 'ID', 'display_name', 'user_nicename' ) ) );
+
+    if ( empty( $users ) ) {
+        return new WP_REST_Response( array(), 200 );
+    }
+
+    $response_data = array();
+    foreach ( $users as $user ) {
+        $response_data[] = array(
+            'id'          => $user->ID,
+            'name'        => $user->display_name,
+            'slug'        => $user->user_nicename,
+            'avatar_urls' => array(
+                '24' => get_avatar_url( $user->ID, array( 'size' => 24 ) ),
+                '48' => get_avatar_url( $user->ID, array( 'size' => 48 ) ),
+                '96' => get_avatar_url( $user->ID, array( 'size' => 96 ) ),
+            ),
+        );
+    }
+
+    return new WP_REST_Response( $response_data, 200 );
+}
