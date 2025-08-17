@@ -30,7 +30,9 @@ function alpaca_get_board_data() {
     $board_data = array();
     $statuses = alpaca_get_statuses();
 
-    foreach ( $statuses as $status ) {
+    $desired_statuses = apply_filters( 'alpaca_board_statuses', $statuses );
+
+    foreach ( $desired_statuses as $status ) {
         $posts = get_posts( array(
             'post_type' => 'issue',
             'posts_per_page' => -1,

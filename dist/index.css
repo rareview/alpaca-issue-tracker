@@ -133,7 +133,7 @@
 
 .wp-admin #alpaca-board .alpaca-item.empty {
   background-color: #0000;
-  border-style: dashed;
+  border: 1px dashed #aaa;
   font-style: italic;
 }
 

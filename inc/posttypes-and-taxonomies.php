@@ -48,94 +48,106 @@ add_action( 'init', function() {
         'meta_box_cb' => 'status_metabox', // custom metabox, see below
     ) );
 
-add_filter( 'rest_pre_insert_comment', function( $prepared_comment, $request ) {
-    if ( isset( $request['comment_type'] ) && $request['comment_type'] === 'issuecomment' ) {
-        $prepared_comment['comment_type'] = 'issuecomment';
-    }
-    return $prepared_comment;
-}, 10, 2 );
+    add_filter( 'rest_pre_insert_comment', function( $prepared_comment, $request ) {
+        if ( isset( $request['comment_type'] ) && $request['comment_type'] === 'issuecomment' ) {
+            $prepared_comment['comment_type'] = 'issuecomment';
+        }
+        return $prepared_comment;
+    }, 10, 2 );
 
-add_filter( 'rest_comment_query', function( $args, $request ) {
-    if ( isset( $request['comment_type'] ) && $request['comment_type'] === 'issuecomment' ) {
-        $args['type'] = 'issuecomment';
-    }
-    return $args;
-}, 10, 2 );
+    add_filter( 'rest_comment_query', function( $args, $request ) {
+        if ( isset( $request['comment_type'] ) && $request['comment_type'] === 'issuecomment' ) {
+            $args['type'] = 'issuecomment';
+        }
+        return $args;
+    }, 10, 2 );
 
 
 
-add_action( 'status_add_form_fields', function() {
-    ?>
-    <div class="form-field">
-        <label for="term_score"><?php _e( 'Score', 'textdomain' ); ?></label>
-        <input type="number" name="term_score" id="term_score" value="" step="1" min="0">
-        <p class="description"><?php _e( 'Enter a numerical score for sorting purposes.', 'textdomain' ); ?></p>
-    </div>
-    <?php
-} );
-
-add_action( 'status_edit_form_fields', function( $term ) {
-    $score = get_term_meta( $term->term_id, 'term_score', true );
-    ?>
-    <tr class="form-field">
-        <th scope="row"><label for="term_score"><?php _e( 'Score', 'textdomain' ); ?></label></th>
-        <td>
-            <input type="number" name="term_score" id="term_score" value="<?php echo esc_attr( $score ); ?>" step="1">
+    add_action( 'status_add_form_fields', function() {
+        ?>
+        <div class="form-field">
+            <label for="term_score"><?php _e( 'Score', 'textdomain' ); ?></label>
+            <input type="number" name="term_score" id="term_score" value="" step="1" min="0">
             <p class="description"><?php _e( 'Enter a numerical score for sorting purposes.', 'textdomain' ); ?></p>
-        </td>
-    </tr>
-    <?php
-}, 10, 1 );
+        </div>
+        <?php
+    } );
 
-// Save term meta when creating or editing
-function save_status_term_score( $term_id ) {
-    if ( isset( $_POST['term_score'] ) ) {
-        $score = intval( $_POST['term_score'] );
-        update_term_meta( $term_id, 'term_score', $score );
+    add_action( 'status_edit_form_fields', function( $term ) {
+        $score = get_term_meta( $term->term_id, 'term_score', true );
+        ?>
+        <tr class="form-field">
+            <th scope="row"><label for="term_score"><?php _e( 'Score', 'textdomain' ); ?></label></th>
+            <td>
+                <input type="number" name="term_score" id="term_score" value="<?php echo esc_attr( $score ); ?>" step="1">
+                <p class="description"><?php _e( 'Enter a numerical score for sorting purposes.', 'textdomain' ); ?></p>
+            </td>
+        </tr>
+        <?php
+    }, 10, 1 );
+
+    // Save term meta when creating or editing
+    function save_status_term_score( $term_id ) {
+        if ( isset( $_POST['term_score'] ) ) {
+            $score = intval( $_POST['term_score'] );
+            update_term_meta( $term_id, 'term_score', $score );
+        }
     }
-}
-add_action( 'created_status', 'save_status_term_score' );
-add_action( 'edited_status',  'save_status_term_score' );
+    add_action( 'created_status', 'save_status_term_score' );
+    add_action( 'edited_status',  'save_status_term_score' );
 
-// Add new column header
-add_filter( 'manage_edit-status_columns', function( $columns ) {
-    $columns['term_score'] = __( 'Score', 'textdomain' );
-    return $columns;
-} );
+    // Add new column header
+    add_filter( 'manage_edit-status_columns', function( $columns ) {
+        $columns['term_score'] = __( 'Score', 'textdomain' );
+        return $columns;
+    } );
 
-// Fill the column content
-add_filter( 'manage_status_custom_column', function( $content, $column_name, $term_id ) {
-    if ( 'term_score' === $column_name ) {
-        $score = get_term_meta( $term_id, 'term_score', true );
-        $content = $score !== '' ? intval( $score ) : '—';
+    // Fill the column content
+    add_filter( 'manage_status_custom_column', function( $content, $column_name, $term_id ) {
+        if ( 'term_score' === $column_name ) {
+            $score = get_term_meta( $term_id, 'term_score', true );
+            $content = $score !== '' ? intval( $score ) : '—';
+        }
+        return $content;
+    }, 10, 3 );
+    add_filter( 'manage_edit-status_sortable_columns', function( $sortable_columns ) {
+        $sortable_columns['term_score'] = 'term_score';
+        return $sortable_columns;
+    } );
+
+
+    /*
+        Inspiration taken from:
+        https://wordpress.stackexchange.com/questions/50077/display-a-custom-taxonomy-as-a-dropdown-on-the-edit-posts-page
+    */
+    function status_metabox( $post ) {
+        $current_terms = wp_get_post_terms($post->ID, 'status', array('fields' => 'ids'));
+        $current_term_id = !empty($current_terms) ? $current_terms[0] : 0;
+
+        $terms = alpaca_get_statuses();
+
+        echo '<div class="statuses_radiolist">';
+        foreach ($terms as $term) {
+            $checked = ($current_term_id == $term->term_id) ? 'checked' : '';
+            echo '<label><input type="radio" name="tax_input[status][]" value="' . esc_attr($term->slug) . '" ' . $checked . '/> ' . esc_html($term->name) . '</label><br>';
+        }
+        echo '</div>';
     }
-    return $content;
-}, 10, 3 );
-add_filter( 'manage_edit-status_sortable_columns', function( $sortable_columns ) {
-    $sortable_columns['term_score'] = 'term_score';
-    return $sortable_columns;
-} );
-
-
-/*
-	Inspiration taken from:
-	https://wordpress.stackexchange.com/questions/50077/display-a-custom-taxonomy-as-a-dropdown-on-the-edit-posts-page
-*/
-function status_metabox( $post ) {
-    $current_terms = wp_get_post_terms($post->ID, 'status', array('fields' => 'ids'));
-    $current_term_id = !empty($current_terms) ? $current_terms[0] : 0;
-
-    $terms = alpaca_get_statuses();
-
-    echo '<div class="statuses_radiolist">';
-    foreach ($terms as $term) {
-        $checked = ($current_term_id == $term->term_id) ? 'checked' : '';
-        echo '<label><input type="radio" name="tax_input[status][]" value="' . esc_attr($term->slug) . '" ' . $checked . '/> ' . esc_html($term->name) . '</label><br>';
-    }
-    echo '</div>';
-}
 
 });
+
+add_filter('alpaca_board_statuses', function( $statuses ) {
+    $desired_statuses = array();
+    foreach ( $statuses as $status ) {
+        if( "xarchive" == $status->slug ) {
+            continue;
+        }
+        $desired_statuses[] = $status;
+    }
+    return $desired_statuses;
+});
+
 
 /**
  * When a user's profile is updated, find the corresponding 'assignee' term
