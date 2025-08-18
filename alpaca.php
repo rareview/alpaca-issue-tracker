@@ -118,7 +118,11 @@ add_action('admin_enqueue_scripts', function() {
             $custom_css .= "
                 .wp-admin #alpaca-board .alpaca-item-dragging {
                     box-shadow: 0 0 8px var(--admin-color-1);
-                }";
+                }
+				.wp-admin .alpaca-board-filter::before {
+					background-color: var(--admin-color-1);
+				}
+			";
         }
 
         wp_add_inline_style( $handle, $custom_css );

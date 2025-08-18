@@ -10,7 +10,7 @@ function project_board_page() {
     </div>
     
 	<hr class="wp-header-end">
-    <div id="alpaca-board-controls" class="tablenav top">
+    <div id="alpaca-board-controls">
     </div>
 
 	<div id="alpaca-board"></div>

@@ -1,5 +1,9 @@
 const { useState, useEffect } = wp.element;
-const { ToggleControl } = wp.components;
+const {
+  ToggleControl,
+  __experimentalToggleGroupControl: ToggleGroupControl,
+  __experimentalToggleGroupControlOption: ToggleGroupControlOption,
+} = wp.components;
 import Board from "./BoardMain";
 import { getCookie, setCookie } from "../utils/cookies";
 
@@ -36,12 +40,16 @@ export function AlpacaBoardControls() {
   }
 
   return (
-    <div className="alignleft actions">
-      <ToggleControl
-        label="Show only my issues"
-        checked={showOnlyMyIssues}
-        onChange={() => setShowOnlyMyIssues(!showOnlyMyIssues)}
-      />
-    </div>
+    <ToggleGroupControl
+      className="alpaca-board-filter"
+      value={showOnlyMyIssues ? "my-issues" : "all-issues"}
+      onChange={(value) => setShowOnlyMyIssues(value === "my-issues")}
+      isBlock
+    >
+      <ToggleGroupControlOption value="all-issues" label="All Issues" />
+      <ToggleGroupControlOption value="my-issues" label="Assigned to me" />
+      <ToggleGroupControlOption value="my-watchlist" label="My Watchlist" />
+    </ToggleGroupControl>
   );
+  // TODO: watchlist functionality
 }

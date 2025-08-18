@@ -45,6 +45,22 @@
     }
   }
 
+  #alpaca-board-controls {
+    .alpaca-board-filter {
+      width: fit-content;
+      background: transparent;
+      border-width: 0;
+      & > div {
+        flex: none;
+      }
+      &:focus-within {
+        outline: none;
+        box-shadow: none;
+        border-width: 0;
+      }
+    }
+  }
+
   #alpaca-board {
     .alpaca-wrap {
       display: flex;
@@ -58,8 +74,7 @@
       background: #f9f9f9;
       border: 2px solid #e4e4e4;
       border-radius: 4px;
-      min-height: 300px;
-      max-height: 75vh;
+      height: 75vh;
       overflow-y: auto;
       display: flex;
       flex-direction: column;

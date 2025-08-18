@@ -45,6 +45,22 @@
   height: auto;
 }
 
+.wp-admin #alpaca-board-controls .alpaca-board-filter {
+  background: none;
+  border-width: 0;
+  width: fit-content;
+}
+
+.wp-admin #alpaca-board-controls .alpaca-board-filter > div {
+  flex: none;
+}
+
+.wp-admin #alpaca-board-controls .alpaca-board-filter:focus-within {
+  box-shadow: none;
+  border-width: 0;
+  outline: none;
+}
+
 .wp-admin #alpaca-board .alpaca-wrap {
   flex-direction: row;
   padding: 10px 0;
@@ -57,8 +73,7 @@
   border-radius: 4px;
   flex-direction: column;
   width: 220px;
-  min-height: 300px;
-  max-height: 75vh;
+  height: 75vh;
   margin: 0 10px 0 0;
   padding: 0 10px;
   display: flex;

@@ -1063,12 +1063,12 @@ var _boardMain = require("./BoardMain");
 var _boardMainDefault = parcelHelpers.interopDefault(_boardMain);
 var _cookies = require("../utils/cookies");
 const { useState, useEffect } = wp.element;
-const { ToggleControl } = wp.components;
+const { ToggleControl, __experimentalToggleGroupControl: ToggleGroupControl, __experimentalToggleGroupControlOption: ToggleGroupControlOption } = wp.components;
 function AlpacaBoard() {
     return /*#__PURE__*/ React.createElement((0, _boardMainDefault.default), {
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 7,
+            lineNumber: 11,
             columnNumber: 10
         },
         __self: this
@@ -1096,25 +1096,46 @@ function AlpacaBoardControls() {
         boardElement
     ]);
     if (typeof alpacaUserData === "undefined" || !alpacaUserData.currentUserId) return null; // Don't render if we don't know the current user
-    return /*#__PURE__*/ React.createElement("div", {
-        className: "alignleft actions",
+    return /*#__PURE__*/ React.createElement(ToggleGroupControl, {
+        className: "alpaca-board-filter",
+        value: showOnlyMyIssues ? "my-issues" : "all-issues",
+        onChange: (value)=>setShowOnlyMyIssues(value === "my-issues"),
+        isBlock: true,
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 39,
+            lineNumber: 43,
             columnNumber: 5
         },
         __self: this
-    }, /*#__PURE__*/ React.createElement(ToggleControl, {
-        label: "Show only my issues",
-        checked: showOnlyMyIssues,
-        onChange: ()=>setShowOnlyMyIssues(!showOnlyMyIssues),
+    }, /*#__PURE__*/ React.createElement(ToggleGroupControlOption, {
+        value: "all-issues",
+        label: "All Issues",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 40,
+            lineNumber: 49,
+            columnNumber: 7
+        },
+        __self: this
+    }), /*#__PURE__*/ React.createElement(ToggleGroupControlOption, {
+        value: "my-issues",
+        label: "Assigned to me",
+        __source: {
+            fileName: "src/components/BoardFrame.jsx",
+            lineNumber: 50,
+            columnNumber: 7
+        },
+        __self: this
+    }), /*#__PURE__*/ React.createElement(ToggleGroupControlOption, {
+        value: "my-watchlist",
+        label: "My Watchlist",
+        __source: {
+            fileName: "src/components/BoardFrame.jsx",
+            lineNumber: 51,
             columnNumber: 7
         },
         __self: this
     }));
+// TODO: watchlist functionality
 }
 
 },{"../utils/cookies":"4qoXW","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./BoardMain":"1nh76"}],"4qoXW":[function(require,module,exports,__globalThis) {
