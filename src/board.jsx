@@ -203,25 +203,47 @@ function SortableItem({
 /**
  * Container component.
  */
-function Container({ id, title, items, onItemClick }) {
+function Container({
+  id,
+  title,
+  items,
+  onItemClick,
+  onMoveAllToNext,
+  isLastContainer,
+}) {
+  const [isHidden, setIsHidden] = useState(false);
   const hasItems = items.length > 0;
 
+  const toggleHidden = () => {
+    setIsHidden((prev) => !prev);
+  };
+
+  const menuControls = [
+    {
+      icon: isHidden ? "visibility" : "hidden",
+      title: isHidden ? "Show items" : "Hide items",
+      onClick: toggleHidden,
+    },
+  ];
+
+  if (!isLastContainer) {
+    menuControls.push({
+      icon: "arrow-right-alt",
+      title: "Move all to next column",
+      onClick: () => onMoveAllToNext(id),
+      disabled: !hasItems,
+    });
+  }
+
   return (
-    <div className="alpaca-container" data-id={id}>
+    <div
+      className={`alpaca-container ${isHidden ? "hidden" : ""}`}
+      data-id={id}
+    >
       <div class="alpaca-container-header">
         <h2 className="alpaca-container-title">{title}</h2>
         <div class="alpaca-container-controls">
-          <DropdownMenu
-            icon="menu"
-            label="Options"
-            controls={[
-              {
-                icon: "controls-forward",
-                title: "Push all to next column",
-                onClick: () => alert("Not wired in yet"),
-              },
-            ]}
-          />
+          <DropdownMenu icon="menu" label="Options" controls={menuControls} />
         </div>
       </div>
       <SortableContext
@@ -478,6 +500,51 @@ function Board() {
     [selectedItem, handleCommentCountChange]
   );
 
+  const moveAllItemsToNextContainer = (sourceContainerId) => {
+    const containersCopy = containers.map((c) => ({
+      ...c,
+      items: [...c.items],
+    }));
+
+    const sourceIndex = containersCopy.findIndex(
+      (c) => c.id === sourceContainerId
+    );
+
+    if (sourceIndex === -1 || sourceIndex >= containersCopy.length - 1) {
+      return;
+    }
+
+    const sourceContainer = containersCopy[sourceIndex];
+    const nextContainer = containersCopy[sourceIndex + 1];
+    const itemsToMove = [...sourceContainer.items];
+
+    if (itemsToMove.length === 0) {
+      return;
+    }
+
+    // Update the arrays in our copied state
+    sourceContainer.items = [];
+    nextContainer.items.push(...itemsToMove);
+
+    // Create status change comments and update taxonomies for each moved item
+    const commentContent = `Item moved from status <span class="alpaca-status-comment">${sourceContainer.title}</span> to <span class="alpaca-status-comment">${nextContainer.title}</span>`;
+    itemsToMove.forEach((item) => {
+      createIssueComment(item.id, commentContent);
+      wp.apiFetch({
+        path: `/issue/v1/update/${item.id}`,
+        method: "POST",
+        data: {
+          taxonomies: {
+            status: [parseInt(nextContainer.id, 10)],
+          },
+        },
+      }).catch((err) => console.error(`Error updating issue ${item.id}:`, err));
+    });
+
+    setContainers(containersCopy);
+    setNeedsSave(true);
+  };
+
   // Add this handler to update assignees for a specific issue/item
   const handleAssigneesChange = useCallback((issueId, newAssignees) => {
     setContainers((prevContainers) =>
@@ -570,13 +637,15 @@ function Board() {
       onDragEnd={handleDragEnd}
     >
       <div className="alpaca-wrap">
-        {containers.map((container) => (
+        {containers.map((container, index) => (
           <Container
             key={container.id}
             id={container.id}
             title={container.title}
             items={container.items}
             onItemClick={handleItemClick}
+            onMoveAllToNext={moveAllItemsToNextContainer}
+            isLastContainer={index === containers.length - 1}
           />
         ))}
       </div>

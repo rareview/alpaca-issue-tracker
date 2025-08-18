@@ -87,6 +87,12 @@
           }
         }
       }
+      &.hidden {
+        align-self: flex-start;
+        .alpaca-item {
+          display: none;
+        }
+      }
     }
     .alpaca-item,
     .alpaca-item-dragging {

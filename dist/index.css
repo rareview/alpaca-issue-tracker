@@ -94,6 +94,14 @@
   cursor: pointer;
 }
 
+.wp-admin #alpaca-board .alpaca-container.hidden {
+  align-self: flex-start;
+}
+
+.wp-admin #alpaca-board .alpaca-container.hidden .alpaca-item {
+  display: none;
+}
+
 .wp-admin #alpaca-board .alpaca-item, .wp-admin #alpaca-board .alpaca-item-dragging {
   background-color: #fff;
   border-radius: 8px;

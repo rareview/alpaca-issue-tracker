@@ -1231,14 +1231,31 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
 }
 /**
  * Container component.
- */ function Container({ id, title, items, onItemClick }) {
+ */ function Container({ id, title, items, onItemClick, onMoveAllToNext, isLastContainer }) {
+    const [isHidden, setIsHidden] = useState(false);
     const hasItems = items.length > 0;
+    const toggleHidden = ()=>{
+        setIsHidden((prev)=>!prev);
+    };
+    const menuControls = [
+        {
+            icon: isHidden ? "visibility" : "hidden",
+            title: isHidden ? "Show items" : "Hide items",
+            onClick: toggleHidden
+        }
+    ];
+    if (!isLastContainer) menuControls.push({
+        icon: "arrow-right-alt",
+        title: "Move all to next column",
+        onClick: ()=>onMoveAllToNext(id),
+        disabled: !hasItems
+    });
     return /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-container",
+        className: `alpaca-container ${isHidden ? "hidden" : ""}`,
         "data-id": id,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 210,
+            lineNumber: 239,
             columnNumber: 5
         },
         __self: this
@@ -1246,7 +1263,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         class: "alpaca-container-header",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 211,
+            lineNumber: 243,
             columnNumber: 7
         },
         __self: this
@@ -1254,7 +1271,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         className: "alpaca-container-title",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 212,
+            lineNumber: 244,
             columnNumber: 9
         },
         __self: this
@@ -1262,23 +1279,17 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         class: "alpaca-container-controls",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 213,
+            lineNumber: 245,
             columnNumber: 9
         },
         __self: this
     }, /*#__PURE__*/ React.createElement(DropdownMenu, {
         icon: "menu",
         label: "Options",
-        controls: [
-            {
-                icon: "controls-forward",
-                title: "Push all to next column",
-                onClick: ()=>alert("Not wired in yet")
-            }
-        ],
+        controls: menuControls,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 214,
+            lineNumber: 246,
             columnNumber: 11
         },
         __self: this
@@ -1290,7 +1301,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         strategy: (0, _sortable.verticalListSortingStrategy),
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 227,
+            lineNumber: 249,
             columnNumber: 7
         },
         __self: this
@@ -1304,7 +1315,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
             onClick: onItemClick,
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 234,
+                lineNumber: 256,
                 columnNumber: 13
             },
             __self: this
@@ -1316,7 +1327,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         isDragDisabled: true,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 245,
+            lineNumber: 267,
             columnNumber: 11
         },
         __self: this
@@ -1484,6 +1495,43 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         selectedItem,
         handleCommentCountChange
     ]);
+    const moveAllItemsToNextContainer = (sourceContainerId)=>{
+        const containersCopy = containers.map((c)=>({
+                ...c,
+                items: [
+                    ...c.items
+                ]
+            }));
+        const sourceIndex = containersCopy.findIndex((c)=>c.id === sourceContainerId);
+        if (sourceIndex === -1 || sourceIndex >= containersCopy.length - 1) return;
+        const sourceContainer = containersCopy[sourceIndex];
+        const nextContainer = containersCopy[sourceIndex + 1];
+        const itemsToMove = [
+            ...sourceContainer.items
+        ];
+        if (itemsToMove.length === 0) return;
+        // Update the arrays in our copied state
+        sourceContainer.items = [];
+        nextContainer.items.push(...itemsToMove);
+        // Create status change comments and update taxonomies for each moved item
+        const commentContent = `Item moved from status <span class="alpaca-status-comment">${sourceContainer.title}</span> to <span class="alpaca-status-comment">${nextContainer.title}</span>`;
+        itemsToMove.forEach((item)=>{
+            createIssueComment(item.id, commentContent);
+            wp.apiFetch({
+                path: `/issue/v1/update/${item.id}`,
+                method: "POST",
+                data: {
+                    taxonomies: {
+                        status: [
+                            parseInt(nextContainer.id, 10)
+                        ]
+                    }
+                }
+            }).catch((err)=>console.error(`Error updating issue ${item.id}:`, err));
+        });
+        setContainers(containersCopy);
+        setNeedsSave(true);
+    };
     // Add this handler to update assignees for a specific issue/item
     const handleAssigneesChange = useCallback((issueId, newAssignees)=>{
         setContainers((prevContainers)=>prevContainers.map((container)=>{
@@ -1556,7 +1604,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         onDragEnd: handleDragEnd,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 565,
+            lineNumber: 632,
             columnNumber: 5
         },
         __self: this
@@ -1564,19 +1612,21 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         className: "alpaca-wrap",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 572,
+            lineNumber: 639,
             columnNumber: 7
         },
         __self: this
-    }, containers.map((container)=>/*#__PURE__*/ React.createElement(Container, {
+    }, containers.map((container, index)=>/*#__PURE__*/ React.createElement(Container, {
             key: container.id,
             id: container.id,
             title: container.title,
             items: container.items,
             onItemClick: handleItemClick,
+            onMoveAllToNext: moveAllItemsToNextContainer,
+            isLastContainer: index === containers.length - 1,
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 574,
+                lineNumber: 641,
                 columnNumber: 11
             },
             __self: this
@@ -1584,7 +1634,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         dropAnimation: null,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 583,
+            lineNumber: 652,
             columnNumber: 7
         },
         __self: this
@@ -1596,7 +1646,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         className: "alpaca-item-dragging",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 585,
+            lineNumber: 654,
             columnNumber: 11
         },
         __self: this
@@ -1610,7 +1660,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         createIssueComment: createIssueComment,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 595,
+            lineNumber: 664,
             columnNumber: 7
         },
         __self: this
@@ -1620,7 +1670,7 @@ function AlpacaBoard() {
     return /*#__PURE__*/ React.createElement(Board, {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 609,
+            lineNumber: 678,
             columnNumber: 10
         },
         __self: this
