@@ -675,7 +675,6 @@ var _modalJsxDefault = parcelHelpers.interopDefault(_modalJsx);
 var _settingsJsx = require("./settings.jsx");
 var _settingsJsxDefault = parcelHelpers.interopDefault(_settingsJsx);
 var _boardJsx = require("./board.jsx");
-var _boardJsxDefault = parcelHelpers.interopDefault(_boardJsx);
 const { render } = wp.element;
 if (document.querySelector("#wp-admin-bar-alpaca-menu")) render(/*#__PURE__*/ React.createElement((0, _modalJsxDefault.default), {
     __source: {
@@ -693,7 +692,7 @@ if (document.querySelector("#alpaca-settings")) render(/*#__PURE__*/ React.creat
     },
     __self: undefined
 }), document.querySelector("#alpaca-settings"));
-if (document.querySelector("#alpaca-board")) render(/*#__PURE__*/ React.createElement((0, _boardJsxDefault.default), {
+if (document.querySelector("#alpaca-board")) render(/*#__PURE__*/ React.createElement((0, _boardJsx.AlpacaBoard), {
     __source: {
         fileName: "src/index.jsx",
         lineNumber: 22,
@@ -701,6 +700,14 @@ if (document.querySelector("#alpaca-board")) render(/*#__PURE__*/ React.createEl
     },
     __self: undefined
 }), document.querySelector("#alpaca-board"));
+if (document.querySelector("#alpaca-board-controls")) render(/*#__PURE__*/ React.createElement((0, _boardJsx.AlpacaBoardControls), {
+    __source: {
+        fileName: "src/index.jsx",
+        lineNumber: 27,
+        columnNumber: 5
+    },
+    __self: undefined
+}), document.querySelector("#alpaca-board-controls"));
 
 },{"./alpaca.scss":"1ItKB","./apitest.js":"jb82X","./modal.jsx":"lBZco","./settings.jsx":"aIYcP","./board.jsx":"h1t0l","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1ItKB":[function() {},{}],"jb82X":[function(require,module,exports,__globalThis) {
 // --- Basic API Endpoint Tests ---
@@ -1043,7 +1050,8 @@ exports.default = AlpacaSettings;
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"h1t0l":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "default", ()=>AlpacaBoard);
+parcelHelpers.export(exports, "AlpacaBoard", ()=>AlpacaBoard);
+parcelHelpers.export(exports, "AlpacaBoardControls", ()=>AlpacaBoardControls);
 var _core = require("@dnd-kit/core");
 var _sortable = require("@dnd-kit/sortable");
 var _utilities = require("@dnd-kit/utilities");
@@ -1053,7 +1061,7 @@ var _issue = require("./issue");
 var _issueDefault = parcelHelpers.interopDefault(_issue);
 const { useState, useRef, useEffect, forwardRef, useCallback } = wp.element;
 const { decodeEntities } = wp.htmlEntities;
-const { DropdownMenu } = wp.components;
+const { DropdownMenu, ToggleControl, CustomSelectControlV2 } = wp.components;
 // Cookie helper functions
 const setCookie = (name, value, days)=>{
     let expires = "";
@@ -1740,6 +1748,48 @@ function AlpacaBoard() {
         },
         __self: this
     });
+}
+function AlpacaBoardControls() {
+    const [showOnlyMyIssues, setShowOnlyMyIssues] = useState(()=>{
+        return getCookie("alpaca_show_only_my_issues") === "true";
+    });
+    const boardElement = document.querySelector("#alpaca-board");
+    useEffect(()=>{
+        setCookie("alpaca_show_only_my_issues", showOnlyMyIssues, 365);
+        if (boardElement) {
+            if (showOnlyMyIssues) boardElement.classList.add("show-only-my-issues");
+            else boardElement.classList.remove("show-only-my-issues");
+        }
+    }, [
+        showOnlyMyIssues,
+        boardElement
+    ]);
+    // Set initial class on mount
+    useEffect(()=>{
+        if (boardElement && showOnlyMyIssues) boardElement.classList.add("show-only-my-issues");
+    }, [
+        boardElement
+    ]);
+    if (typeof alpacaUserData === "undefined" || !alpacaUserData.currentUserId) return null; // Don't render if we don't know the current user
+    return /*#__PURE__*/ React.createElement("div", {
+        className: "alignleft actions",
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 786,
+            columnNumber: 5
+        },
+        __self: this
+    }, /*#__PURE__*/ React.createElement(ToggleControl, {
+        label: "Show only my issues",
+        checked: showOnlyMyIssues,
+        onChange: ()=>setShowOnlyMyIssues(!showOnlyMyIssues),
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 787,
+            columnNumber: 7
+        },
+        __self: this
+    }));
 }
 
 },{"@dnd-kit/core":"do19q","@dnd-kit/sortable":"fw7EW","@dnd-kit/utilities":"a2exI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./user":"6qIFK","./issue":"alebk"}],"do19q":[function(require,module,exports,__globalThis) {

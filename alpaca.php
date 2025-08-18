@@ -80,6 +80,13 @@ add_action( 'admin_enqueue_scripts', function($hook_suffix) {
 			'alpacaBoardData',
 			alpaca_get_board_data()
 		);
+		wp_localize_script(
+			'alpaca',
+			'alpacaUserData',
+			array(
+				'currentUserId' => get_current_user_id(),
+			)
+		);
 
 	}
 }, 500);
@@ -102,6 +109,9 @@ add_action('admin_enqueue_scripts', function() {
             .wp-admin #alpaca-board .alpaca-item-dragging[data-assignee-$me] {
                 background-color: #eee;
                 border: 1px solid #999;
+            }
+            .wp-admin #alpaca-board.show-only-my-issues .alpaca-item:not([data-assignee-{$me}]) {
+                display: none;
             }";
 
         if ( function_exists('expose_admin_colors') ) {
