@@ -1,6 +1,9 @@
 const { useState, useEffect, useRef, useCallback } = wp.element;
 import AlpacaUser from "./user";
 const { TextareaControl, Button, Spinner, Modal } = wp.components;
+
+import { marked } from "marked";
+
 const AlpacaCommenting = ({
   issueId,
   onCommentCountChange,
@@ -24,7 +27,7 @@ const AlpacaCommenting = ({
     setError(null);
 
     wp.apiFetch({
-      path: `/wp/v2/comments?post=${issueId}&orderby=date&order=asc&comment_type=issuecomment&show_hidden_comments=1`,
+      path: `/wp/v2/comments?post=${issueId}&orderby=date&order=asc&comment_type=issuecomment&show_hidden_comments=1&context=edit`,
     })
       .then((fetchedComments) => {
         setComments(fetchedComments);
@@ -79,7 +82,9 @@ const AlpacaCommenting = ({
 
   const startEditing = (comment) => {
     setEditingCommentId(comment.id);
-    setEditingContent(stripHtml(comment.content.rendered));
+    setEditingContent(
+      comment.content.raw || stripHtml(comment.content.rendered)
+    );
   };
 
   const cancelEditing = () => {
@@ -193,7 +198,9 @@ const AlpacaCommenting = ({
                   <>
                     <div
                       dangerouslySetInnerHTML={{
-                        __html: comment.content.rendered,
+                        __html: comment.content.raw
+                          ? marked(comment.content.raw)
+                          : comment.content.rendered,
                       }}
                     />
                     <small className="alpaca-comment-date">

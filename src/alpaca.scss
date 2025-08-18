@@ -172,6 +172,11 @@
       aspect-ratio: 1 / 1;
       border-radius: 50%;
     }
+    .alpaca-comment {
+      ul li {
+        list-style: disc inside;
+      }
+    }
     .alpaca-status-comment,
     .alpaca-status-assignee {
       font-weight: bold;
