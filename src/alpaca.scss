@@ -129,16 +129,37 @@
     }
     .alpaca-item,
     .alpaca-item-dragging {
+      display: grid;
+      grid-template-columns: 1fr 3em;
+      grid-template-rows: auto auto;
+      gap: 0;
       box-shadow: 0 0 2px #888;
       border-radius: 8px;
       padding: 8px 12px;
       margin: 4px 0;
       background-color: white;
       .alpaca-item-content {
+        grid-column: 1;
+        grid-row: 1;
         font-size: 0.9rem;
         line-height: 1.4;
       }
+      .alpaca-item-controls {
+        grid-column: 2;
+        grid-row: 1;
+        text-align: right;
+      }
+      // .dashicons {
+      //   opacity: 0;
+      // }
+      // &:hover {
+      //   .dashicons {
+      //     opacity: 0.3;
+      //   }
+      // }
       .alpaca-item-meta {
+        grid-column: 1;
+        grid-row: 2;
         display: flex;
         align-items: center;
         color: #999;
@@ -190,6 +211,9 @@
       font-style: italic;
       background-color: transparent;
       border: 1px dashed #aaa;
+      .alpaca-item-controls {
+        display: none;
+      }
     }
   }
   .alpaca-details-modal {

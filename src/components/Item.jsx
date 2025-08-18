@@ -22,6 +22,9 @@ const Item = forwardRef(
         {...props}
       >
         <div className="alpaca-item-content">{content}</div>
+        <div className="alpaca-item-controls">
+          <div className="dashicons dashicons-star-filled"></div>
+        </div>
         <div className="alpaca-item-meta">
           {/* --- Assignees --- */}
           {assignees.length > 0 && (
