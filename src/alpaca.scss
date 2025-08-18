@@ -52,8 +52,8 @@
       padding: 10px 0;
     }
     .alpaca-container {
-      margin: 5px 10px 10px 0;
-      padding: 10px;
+      margin: 0 10px 0px 0;
+      padding: 0 10px;
       width: 220px;
       background: #f9f9f9;
       border: 2px solid #e4e4e4;
@@ -64,20 +64,26 @@
       display: flex;
       flex-direction: column;
       .alpaca-container-header {
+        padding: 5px 0;
         display: flex;
         justify-content: space-between;
-        align-items: flex-start;
+        align-items: flex-end;
         h2 {
           margin: 2px 2px 10px 2px;
         }
         .alpaca-container-controls {
-          opacity: 0.2;
           padding: 2px 0;
           display: flex;
           align-items: center;
           flex-direction: row;
-          .alpaca-container-control {
+          button {
             margin-left: 2px;
+            opacity: 0.2;
+            transition: opacity 0.2s ease-in-out;
+            &:hover {
+              opacity: 1;
+              cursor: pointer;
+            }
           }
         }
       }

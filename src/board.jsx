@@ -1,5 +1,6 @@
 const { useState, useRef, useEffect, forwardRef, useCallback } = wp.element;
 const { decodeEntities } = wp.htmlEntities;
+const { DropdownMenu } = wp.components;
 
 import {
   DndContext,
@@ -210,7 +211,17 @@ function Container({ id, title, items, onItemClick }) {
       <div class="alpaca-container-header">
         <h2 className="alpaca-container-title">{title}</h2>
         <div class="alpaca-container-controls">
-          <div class="alpaca-container-control">Button?</div>
+          <DropdownMenu
+            icon="menu"
+            label="Options"
+            controls={[
+              {
+                icon: "controls-forward",
+                title: "Push all to next column",
+                onClick: () => alert("Not wired in yet"),
+              },
+            ]}
+          />
         </div>
       </div>
       <SortableContext
