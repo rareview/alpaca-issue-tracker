@@ -162,14 +162,6 @@
   grid-area: 1 / 2;
 }
 
-.wp-admin #alpaca-board .alpaca-item .alpaca-item-controls .dashicons:hover, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-controls .dashicons:hover {
-  cursor: pointer;
-}
-
-.wp-admin #alpaca-board .alpaca-item.is-watched .alpaca-item-controls .dashicons, .wp-admin #alpaca-board .alpaca-item-dragging.is-watched .alpaca-item-controls .dashicons {
-  color: red;
-}
-
 .wp-admin #alpaca-board .alpaca-item .alpaca-item-meta, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-meta {
   color: #999;
   grid-area: 2 / 1;
@@ -280,6 +272,22 @@
 
 .wp-admin #alpaca-comments .alpaca-status-comment, .wp-admin #alpaca-comments .alpaca-status-assignee {
   font-weight: bold;
+}
+
+.wp-admin .alpaca-item .alpaca-item-controls .dashicons, .wp-admin .alpaca-item-dragging .alpaca-item-controls .dashicons {
+  opacity: 0;
+}
+
+.wp-admin .alpaca-item:hover .alpaca-item-controls .dashicons {
+  opacity: .3;
+}
+
+.wp-admin .alpaca-item.is-watched .alpaca-item-controls .dashicons, .wp-admin .alpaca-item-dragging.is-watched .alpaca-item-controls .dashicons {
+  opacity: 1;
+}
+
+.wp-admin .alpaca-item .alpaca-item-controls .dashicons:hover {
+  cursor: pointer;
 }
 
 .wp-admin .alpaca-grid .alpaca-row {

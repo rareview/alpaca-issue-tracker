@@ -148,16 +148,6 @@
         grid-column: 2;
         grid-row: 1;
         text-align: right;
-        .dashicons {
-          &:hover {
-            cursor: pointer;
-          }
-        }
-      }
-      &.is-watched {
-        .alpaca-item-controls .dashicons {
-          color: red;
-        }
       }
       // .dashicons {
       //   opacity: 0;
@@ -275,6 +265,21 @@
     .alpaca-status-assignee {
       font-weight: bold;
     }
+  }
+
+  .alpaca-item .alpaca-item-controls .dashicons,
+  .alpaca-item-dragging .alpaca-item-controls .dashicons {
+    opacity: 0;
+  }
+  .alpaca-item:hover .alpaca-item-controls .dashicons {
+    opacity: 0.3;
+  }
+  .alpaca-item.is-watched .alpaca-item-controls .dashicons,
+  .alpaca-item-dragging.is-watched .alpaca-item-controls .dashicons {
+    opacity: 1;
+  }
+  .alpaca-item .alpaca-item-controls .dashicons:hover {
+    cursor: pointer;
   }
 
   .alpaca-grid {
