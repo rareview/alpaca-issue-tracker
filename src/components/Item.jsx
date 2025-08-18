@@ -1,10 +1,34 @@
-const { forwardRef } = wp.element;
+const { forwardRef, useState, useEffect } = wp.element;
+const { apiFetch } = wp;
 
 const Item = forwardRef(
   (
     { id, content, assignees = [], comment_count, className, style, ...props },
     ref
   ) => {
+    const [isWatched, setIsWatched] = useState(false);
+
+    useEffect(() => {
+      apiFetch({ path: "/alpaca/v1/watchlist" }).then((watchlist) => {
+        if (watchlist && watchlist.includes(id)) {
+          setIsWatched(true);
+        }
+      });
+    }, [id]);
+
+    const toggleWatch = (e) => {
+      e.stopPropagation();
+      apiFetch({
+        path: "/alpaca/v1/watchlist",
+        method: "POST",
+        data: { issue_id: id },
+      }).then((response) => {
+        if (response.success) {
+          setIsWatched(response.watchlist.includes(id));
+        }
+      });
+    };
+
     const assigneeDataAttributes = assignees.reduce((acc, assignee) => {
       if (assignee && assignee.id) {
         acc[`data-assignee-${assignee.id}`] = "";
@@ -12,10 +36,12 @@ const Item = forwardRef(
       return acc;
     }, {});
 
+    const watchedClass = isWatched ? "is-watched" : "";
+
     return (
       <div
         ref={ref}
-        className={className}
+        className={`${className} ${watchedClass}`}
         style={style}
         data-id={id}
         {...assigneeDataAttributes}
@@ -23,7 +49,10 @@ const Item = forwardRef(
       >
         <div className="alpaca-item-content">{content}</div>
         <div className="alpaca-item-controls">
-          <div className="dashicons dashicons-star-filled"></div>
+          <div
+            className="dashicons dashicons-star-filled"
+            onClick={toggleWatch}
+          ></div>
         </div>
         <div className="alpaca-item-meta">
           {/* --- Assignees --- */}

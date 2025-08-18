@@ -5484,22 +5484,46 @@ function isAfter(a, b) {
 },{"react":"f39IF","@dnd-kit/core":"do19q","@dnd-kit/utilities":"a2exI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2yEr4":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
-const { forwardRef } = wp.element;
+const { forwardRef, useState, useEffect } = wp.element;
+const { apiFetch } = wp;
 const Item = forwardRef(({ id, content, assignees = [], comment_count, className, style, ...props }, ref)=>{
+    const [isWatched, setIsWatched] = useState(false);
+    useEffect(()=>{
+        apiFetch({
+            path: "/alpaca/v1/watchlist"
+        }).then((watchlist)=>{
+            if (watchlist && watchlist.includes(id)) setIsWatched(true);
+        });
+    }, [
+        id
+    ]);
+    const toggleWatch = (e)=>{
+        e.stopPropagation();
+        apiFetch({
+            path: "/alpaca/v1/watchlist",
+            method: "POST",
+            data: {
+                issue_id: id
+            }
+        }).then((response)=>{
+            if (response.success) setIsWatched(response.watchlist.includes(id));
+        });
+    };
     const assigneeDataAttributes = assignees.reduce((acc, assignee)=>{
         if (assignee && assignee.id) acc[`data-assignee-${assignee.id}`] = "";
         return acc;
     }, {});
+    const watchedClass = isWatched ? "is-watched" : "";
     return /*#__PURE__*/ React.createElement("div", {
         ref: ref,
-        className: className,
+        className: `${className} ${watchedClass}`,
         style: style,
         "data-id": id,
         ...assigneeDataAttributes,
         ...props,
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 16,
+            lineNumber: 42,
             columnNumber: 7
         },
         __self: undefined
@@ -5507,7 +5531,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         className: "alpaca-item-content",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 24,
+            lineNumber: 50,
             columnNumber: 9
         },
         __self: undefined
@@ -5515,15 +5539,16 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         className: "alpaca-item-controls",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 25,
+            lineNumber: 51,
             columnNumber: 9
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("div", {
         className: "dashicons dashicons-star-filled",
+        onClick: toggleWatch,
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 26,
+            lineNumber: 52,
             columnNumber: 11
         },
         __self: undefined
@@ -5531,7 +5556,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         className: "alpaca-item-meta",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 28,
+            lineNumber: 57,
             columnNumber: 9
         },
         __self: undefined
@@ -5541,7 +5566,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         title: assignees.length === 1 ? assignees[0].display_name || assignees[0].name : assignees.map((a)=>a.display_name || a.name).join(", "),
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 31,
+            lineNumber: 60,
             columnNumber: 13
         },
         __self: undefined
@@ -5550,7 +5575,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
             className: "alpaca-item-assignee",
             __source: {
                 fileName: "src/components/Item.jsx",
-                lineNumber: 41,
+                lineNumber: 70,
                 columnNumber: 17
             },
             __self: undefined
@@ -5561,7 +5586,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
             title: assignee.display_name || assignee.name,
             __source: {
                 fileName: "src/components/Item.jsx",
-                lineNumber: 43,
+                lineNumber: 72,
                 columnNumber: 21
             },
             __self: undefined
@@ -5569,7 +5594,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
             className: "alpaca-item-assignee-name",
             __source: {
                 fileName: "src/components/Item.jsx",
-                lineNumber: 50,
+                lineNumber: 79,
                 columnNumber: 19
             },
             __self: undefined
@@ -5577,7 +5602,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         className: "alpaca-item-comment-count has-dashicon",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 60,
+            lineNumber: 89,
             columnNumber: 13
         },
         __self: undefined
@@ -5586,7 +5611,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         "aria-hidden": "true",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 61,
+            lineNumber: 90,
             columnNumber: 15
         },
         __self: undefined

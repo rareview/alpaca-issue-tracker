@@ -441,3 +441,61 @@ function alpaca_get_all_users_callback() {
 
     return new WP_REST_Response( $response_data, 200 );
 }
+
+add_action( 'rest_api_init', 'alpaca_watchlist_endpoint' );
+function alpaca_watchlist_endpoint() {
+    register_rest_route(
+        'alpaca/v1',
+        '/watchlist',
+        array(
+            'methods' => 'POST',
+            'callback' => 'alpaca_update_watchlist_callback',
+            'permission_callback' => function () {
+                return current_user_can( 'edit_posts' );
+            }
+        )
+    );
+
+    register_rest_route(
+        'alpaca/v1',
+        '/watchlist',
+        array(
+            'methods' => 'GET',
+            'callback' => 'alpaca_get_watchlist_callback',
+            'permission_callback' => function () {
+                return current_user_can( 'edit_posts' );
+            }
+        )
+    );
+}
+
+function alpaca_get_watchlist_callback() {
+    $user_id = get_current_user_id();
+    $watchlist = get_user_meta( $user_id, 'alpaca_watchlist', true );
+
+    if ( ! is_array( $watchlist ) ) {
+        $watchlist = array();
+    }
+
+    return new WP_REST_Response( $watchlist, 200 );
+}
+
+function alpaca_update_watchlist_callback( WP_REST_Request $request ) {
+    $issue_id = $request->get_param( 'issue_id' );
+    $user_id = get_current_user_id();
+    $watchlist = get_user_meta( $user_id, 'alpaca_watchlist', true );
+
+    if ( ! is_array( $watchlist ) ) {
+        $watchlist = array();
+    }
+
+    if ( in_array( $issue_id, $watchlist ) ) {
+        $watchlist = array_diff( $watchlist, array( $issue_id ) );
+    } else {
+        $watchlist[] = $issue_id;
+    }
+
+    update_user_meta( $user_id, 'alpaca_watchlist', $watchlist );
+
+    return new WP_REST_Response( array( 'success' => true, 'watchlist' => $watchlist ), 200 );
+}

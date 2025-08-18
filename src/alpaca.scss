@@ -148,6 +148,16 @@
         grid-column: 2;
         grid-row: 1;
         text-align: right;
+        .dashicons {
+          &:hover {
+            cursor: pointer;
+          }
+        }
+      }
+      &.is-watched {
+        .alpaca-item-controls .dashicons {
+          color: red;
+        }
       }
       // .dashicons {
       //   opacity: 0;
