@@ -22,6 +22,28 @@ import { CSS } from "@dnd-kit/utilities";
 import AlpacaUser from "./user";
 import AlpacaIssue from "./issue";
 
+// Cookie helper functions
+const setCookie = (name, value, days) => {
+  let expires = "";
+  if (days) {
+    const date = new Date();
+    date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+    expires = "; expires=" + date.toUTCString();
+  }
+  document.cookie = name + "=" + (value || "") + expires + "; path=/";
+};
+
+const getCookie = (name) => {
+  const nameEQ = name + "=";
+  const ca = document.cookie.split(";");
+  for (let i = 0; i < ca.length; i++) {
+    let c = ca[i];
+    while (c.charAt(0) === " ") c = c.substring(1, c.length);
+    if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+  }
+  return null;
+};
+
 /**
  * Transform server data into array format for board state.
  * @param {Array} data The data from `alpaca_get_board_data`.
@@ -231,12 +253,13 @@ function Container({
   onItemClick,
   onMoveAllToNext,
   isLastContainer,
+  isHidden,
+  onToggleHidden,
 }) {
-  const [isHidden, setIsHidden] = useState(false);
   const hasItems = items.length > 0;
 
   const toggleHidden = () => {
-    setIsHidden((prev) => !prev);
+    onToggleHidden(id);
   };
 
   const menuControls = [
@@ -323,6 +346,27 @@ function Board() {
   const [draggedItem, setDraggedItem] = useState(null);
   const [needsSave, setNeedsSave] = useState(false);
   const [originalContainerId, setOriginalContainerId] = useState(null);
+  const [hiddenContainerIds, setHiddenContainerIds] = useState(() => {
+    const cookie = getCookie("alpaca_hidden_containers");
+    return cookie ? cookie.split(",").filter(Boolean) : [];
+  });
+
+  // Effect to update cookie when hiddenContainerIds changes
+  useEffect(() => {
+    setCookie("alpaca_hidden_containers", hiddenContainerIds.join(","), 365);
+  }, [hiddenContainerIds]);
+
+  const handleToggleHidden = (containerId) => {
+    setHiddenContainerIds((prev) => {
+      const newIds = new Set(prev);
+      if (newIds.has(containerId)) {
+        newIds.delete(containerId);
+      } else {
+        newIds.add(containerId);
+      }
+      return Array.from(newIds);
+    });
+  };
 
   const createIssueComment = (issueId, commentContent) => {
     return wp
@@ -675,6 +719,8 @@ function Board() {
             onItemClick={handleItemClick}
             onMoveAllToNext={moveAllItemsToNextContainer}
             isLastContainer={index === containers.length - 1}
+            isHidden={hiddenContainerIds.includes(container.id)}
+            onToggleHidden={handleToggleHidden}
           />
         ))}
       </div>

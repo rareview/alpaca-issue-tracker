@@ -1054,6 +1054,26 @@ var _issueDefault = parcelHelpers.interopDefault(_issue);
 const { useState, useRef, useEffect, forwardRef, useCallback } = wp.element;
 const { decodeEntities } = wp.htmlEntities;
 const { DropdownMenu } = wp.components;
+// Cookie helper functions
+const setCookie = (name, value, days)=>{
+    let expires = "";
+    if (days) {
+        const date = new Date();
+        date.setTime(date.getTime() + days * 86400000);
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (value || "") + expires + "; path=/";
+};
+const getCookie = (name)=>{
+    const nameEQ = name + "=";
+    const ca = document.cookie.split(";");
+    for(let i = 0; i < ca.length; i++){
+        let c = ca[i];
+        while(c.charAt(0) === " ")c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+    }
+    return null;
+};
 /**
  * Transform server data into array format for board state.
  * @param {Array} data The data from `alpaca_get_board_data`.
@@ -1128,7 +1148,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         ...props,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 113,
+            lineNumber: 135,
             columnNumber: 7
         },
         __self: undefined
@@ -1136,7 +1156,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         className: "alpaca-item-content",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 121,
+            lineNumber: 143,
             columnNumber: 9
         },
         __self: undefined
@@ -1144,7 +1164,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         className: "alpaca-item-meta",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 122,
+            lineNumber: 144,
             columnNumber: 9
         },
         __self: undefined
@@ -1154,7 +1174,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         title: assignees.length === 1 ? assignees[0].display_name || assignees[0].name : assignees.map((a)=>a.display_name || a.name).join(", "),
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 125,
+            lineNumber: 147,
             columnNumber: 13
         },
         __self: undefined
@@ -1163,7 +1183,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
             className: "alpaca-item-assignee",
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 135,
+                lineNumber: 157,
                 columnNumber: 17
             },
             __self: undefined
@@ -1174,7 +1194,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
             title: assignee.display_name || assignee.name,
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 137,
+                lineNumber: 159,
                 columnNumber: 21
             },
             __self: undefined
@@ -1182,7 +1202,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
             className: "alpaca-item-assignee-name",
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 144,
+                lineNumber: 166,
                 columnNumber: 19
             },
             __self: undefined
@@ -1190,7 +1210,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         className: "alpaca-item-comment-count has-dashicon",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 154,
+            lineNumber: 176,
             columnNumber: 13
         },
         __self: undefined
@@ -1199,7 +1219,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         "aria-hidden": "true",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 155,
+            lineNumber: 177,
             columnNumber: 15
         },
         __self: undefined
@@ -1240,7 +1260,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         },
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 208,
+            lineNumber: 230,
             columnNumber: 5
         },
         __self: this
@@ -1248,11 +1268,10 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
 }
 /**
  * Container component.
- */ function Container({ id, title, items, onItemClick, onMoveAllToNext, isLastContainer }) {
-    const [isHidden, setIsHidden] = useState(false);
+ */ function Container({ id, title, items, onItemClick, onMoveAllToNext, isLastContainer, isHidden, onToggleHidden }) {
     const hasItems = items.length > 0;
     const toggleHidden = ()=>{
-        setIsHidden((prev)=>!prev);
+        onToggleHidden(id);
     };
     const menuControls = [
         {
@@ -1272,7 +1291,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         "data-id": id,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 260,
+            lineNumber: 283,
             columnNumber: 5
         },
         __self: this
@@ -1280,7 +1299,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         class: "alpaca-container-header",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 264,
+            lineNumber: 287,
             columnNumber: 7
         },
         __self: this
@@ -1288,7 +1307,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         className: "alpaca-container-title",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 265,
+            lineNumber: 288,
             columnNumber: 9
         },
         __self: this
@@ -1296,7 +1315,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         className: "alpaca-item-count",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 266,
+            lineNumber: 289,
             columnNumber: 19
         },
         __self: this
@@ -1304,7 +1323,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         class: "alpaca-container-controls",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 268,
+            lineNumber: 291,
             columnNumber: 9
         },
         __self: this
@@ -1314,7 +1333,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         controls: menuControls,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 269,
+            lineNumber: 292,
             columnNumber: 11
         },
         __self: this
@@ -1326,7 +1345,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         strategy: (0, _sortable.verticalListSortingStrategy),
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 272,
+            lineNumber: 295,
             columnNumber: 7
         },
         __self: this
@@ -1340,7 +1359,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
             onClick: onItemClick,
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 279,
+                lineNumber: 302,
                 columnNumber: 13
             },
             __self: this
@@ -1352,7 +1371,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         isDragDisabled: true,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 290,
+            lineNumber: 313,
             columnNumber: 11
         },
         __self: this
@@ -1376,6 +1395,24 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
     const [draggedItem, setDraggedItem] = useState(null);
     const [needsSave, setNeedsSave] = useState(false);
     const [originalContainerId, setOriginalContainerId] = useState(null);
+    const [hiddenContainerIds, setHiddenContainerIds] = useState(()=>{
+        const cookie = getCookie("alpaca_hidden_containers");
+        return cookie ? cookie.split(",").filter(Boolean) : [];
+    });
+    // Effect to update cookie when hiddenContainerIds changes
+    useEffect(()=>{
+        setCookie("alpaca_hidden_containers", hiddenContainerIds.join(","), 365);
+    }, [
+        hiddenContainerIds
+    ]);
+    const handleToggleHidden = (containerId)=>{
+        setHiddenContainerIds((prev)=>{
+            const newIds = new Set(prev);
+            if (newIds.has(containerId)) newIds.delete(containerId);
+            else newIds.add(containerId);
+            return Array.from(newIds);
+        });
+    };
     const createIssueComment = (issueId, commentContent)=>{
         return wp.apiFetch({
             path: `/wp/v2/comments`,
@@ -1629,7 +1666,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         onDragEnd: handleDragEnd,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 661,
+            lineNumber: 705,
             columnNumber: 5
         },
         __self: this
@@ -1637,7 +1674,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         className: "alpaca-wrap",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 668,
+            lineNumber: 712,
             columnNumber: 7
         },
         __self: this
@@ -1649,9 +1686,11 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
             onItemClick: handleItemClick,
             onMoveAllToNext: moveAllItemsToNextContainer,
             isLastContainer: index === containers.length - 1,
+            isHidden: hiddenContainerIds.includes(container.id),
+            onToggleHidden: handleToggleHidden,
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 670,
+                lineNumber: 714,
                 columnNumber: 11
             },
             __self: this
@@ -1659,7 +1698,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         dropAnimation: null,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 681,
+            lineNumber: 727,
             columnNumber: 7
         },
         __self: this
@@ -1671,7 +1710,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         className: "alpaca-item-dragging",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 683,
+            lineNumber: 729,
             columnNumber: 11
         },
         __self: this
@@ -1686,7 +1725,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         generateAssigneeSpan: generateAssigneeSpan,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 693,
+            lineNumber: 739,
             columnNumber: 7
         },
         __self: this
@@ -1696,7 +1735,7 @@ function AlpacaBoard() {
     return /*#__PURE__*/ React.createElement(Board, {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 708,
+            lineNumber: 754,
             columnNumber: 10
         },
         __self: this
