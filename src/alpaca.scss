@@ -76,6 +76,9 @@
           display: flex;
           align-items: center;
           flex-direction: row;
+          .components-button:focus:not(:disabled) {
+            box-shadow: none;
+          }
           button {
             margin-left: 2px;
             opacity: 0.2;
@@ -88,7 +91,16 @@
         }
       }
       &.hidden {
-        align-self: flex-start;
+        width: auto;
+        padding: 0;
+        opacity: 0.5;
+        .alpaca-container-header {
+          writing-mode: vertical-rl;
+          transform: rotate(180deg);
+          h2 {
+            margin: 10px auto;
+          }
+        }
         .alpaca-item {
           display: none;
         }
