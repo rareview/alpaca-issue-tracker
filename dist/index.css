@@ -76,7 +76,7 @@
   width: 220px;
   height: 75vh;
   margin: 0 10px 0 0;
-  padding: 0 10px;
+  padding: 0 10px 10px;
   display: flex;
   overflow-y: auto;
 }

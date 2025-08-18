@@ -70,7 +70,7 @@
     }
     .alpaca-container {
       margin: 0 10px 0px 0;
-      padding: 0 10px;
+      padding: 0 10px 10px 10px;
       width: 220px;
       background: #f9f9f9;
       border: 2px solid #e4e4e4;
@@ -150,14 +150,6 @@
         grid-row: 1;
         text-align: right;
       }
-      // .dashicons {
-      //   opacity: 0;
-      // }
-      // &:hover {
-      //   .dashicons {
-      //     opacity: 0.3;
-      //   }
-      // }
       .alpaca-item-meta {
         grid-column: 1;
         grid-row: 2;

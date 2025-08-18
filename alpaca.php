@@ -95,7 +95,7 @@ add_action('admin_enqueue_scripts', function() {
     global $pagenow;
 
     // Only target the specific admin page
-    if ( $pagenow === 'admin.php' && isset($_GET['page']) && $_GET['page'] === 'alpaca-board' ) {
+    if ( isset($_GET['page']) && $_GET['page'] === 'alpaca-board' ) {
         
         $me = get_current_user_id();
 
