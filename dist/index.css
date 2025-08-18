@@ -65,6 +65,7 @@
   flex-direction: row;
   padding: 10px 0;
   display: flex;
+  overflow-x: auto;
 }
 
 .wp-admin #alpaca-board .alpaca-container {
