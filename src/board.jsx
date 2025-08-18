@@ -1,3 +1,3 @@
-import { AlpacaBoard, AlpacaBoardControls } from "./components/AlpacaBoard";
+import { AlpacaBoard, AlpacaBoardControls } from "./components/BoardFrame";
 
 export { AlpacaBoard, AlpacaBoardControls };

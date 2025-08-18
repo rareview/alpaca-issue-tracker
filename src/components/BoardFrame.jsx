@@ -1,6 +1,6 @@
 const { useState, useEffect } = wp.element;
 const { ToggleControl } = wp.components;
-import Board from "./Board";
+import Board from "./BoardMain";
 import { getCookie, setCookie } from "../utils/cookies";
 
 export function AlpacaBoard() {

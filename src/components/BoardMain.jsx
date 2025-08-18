@@ -11,7 +11,7 @@ import {
 
 import { arrayMove } from "@dnd-kit/sortable";
 
-import AlpacaIssue from "../issue";
+import AlpacaIssue from "./issue";
 import Item from "./Item";
 import Container from "./Container";
 
@@ -306,7 +306,12 @@ function Board() {
           post: item.id,
           comment_type: "issuecomment",
         },
-      }).catch((err) => console.error(`Error creating status change comment for issue ${item.id}:`, err));
+      }).catch((err) =>
+        console.error(
+          `Error creating status change comment for issue ${item.id}:`,
+          err
+        )
+      );
 
       wp.apiFetch({
         path: `/issue/v1/update/${item.id}`,

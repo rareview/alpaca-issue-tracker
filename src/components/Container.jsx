@@ -27,7 +27,7 @@ function Container({
   const menuControls = [
     {
       icon: isHidden ? "visibility" : "hidden",
-      title: isHidden ? "Show items" : "Hide items",
+      title: isHidden ? "Expand Column" : "Collapse Column",
       onClick: toggleHidden,
     },
   ];
