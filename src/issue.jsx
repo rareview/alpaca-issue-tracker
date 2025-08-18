@@ -11,6 +11,7 @@ const AlpacaIssue = ({
   onCommentCountChange,
   onAssigneesChange,
   createIssueComment,
+  generateAssigneeSpan,
 }) => {
   const [issueDetails, setIssueDetails] = useState(null);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
@@ -84,12 +85,6 @@ const AlpacaIssue = ({
     return null;
   }
 
-  const generateAssigneeSpan = (user) => {
-    if (!user) return "";
-    const avatarAttr = user.avatar ? ` data-avatar="${user.avatar}"` : "";
-    return `<span class="alpaca-status-assignee" data-userid="${user.id}"${avatarAttr}>${user.name}</span>`;
-  };
-
   return (
     <Modal
       title={
@@ -125,7 +120,7 @@ const AlpacaIssue = ({
                         (name) => !newAssignees.includes(name)
                       );
 
-                      if (createIssueComment) {
+                      if (createIssueComment && generateAssigneeSpan) {
                         const commentPromises = [];
                         added.forEach((name) => {
                           const user = allUserObjects.find(

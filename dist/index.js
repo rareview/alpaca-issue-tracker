@@ -1071,6 +1071,23 @@ const { DropdownMenu } = wp.components;
         }));
 };
 /**
+ * Generates HTML for an assignee span to be used in comments.
+ * @param {object} user The user object for the assignee.
+ * @returns {string} HTML string.
+ */ const generateAssigneeSpan = (user)=>{
+    if (!user) return "";
+    const avatarAttr = user.avatar ? ` data-avatar="${user.avatar}"` : "";
+    return `<span class="alpaca-status-assignee" data-userid="${user.id}"${avatarAttr}>${user.name}</span>`;
+};
+/**
+ * Generates HTML for a status change comment.
+ * @param {string} fromStatus The title of the original status.
+ * @param {string} toStatus The title of the new status.
+ * @returns {string} HTML string.
+ */ const generateStatusChangeComment = (fromStatus, toStatus)=>{
+    return `Item moved from status <span class="alpaca-status-comment">${fromStatus}</span> to <span class="alpaca-status-comment">${toStatus}</span>`;
+};
+/**
  * Save board order in DOM order, including container IDs & titles.
  */ const saveBoardOrder = ()=>{
     const containersInDomOrder = document.querySelectorAll(".alpaca-container");
@@ -1111,7 +1128,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         ...props,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 92,
+            lineNumber: 113,
             columnNumber: 7
         },
         __self: undefined
@@ -1119,7 +1136,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         className: "alpaca-item-content",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 100,
+            lineNumber: 121,
             columnNumber: 9
         },
         __self: undefined
@@ -1127,7 +1144,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         className: "alpaca-item-meta",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 101,
+            lineNumber: 122,
             columnNumber: 9
         },
         __self: undefined
@@ -1137,7 +1154,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         title: assignees.length === 1 ? assignees[0].display_name || assignees[0].name : assignees.map((a)=>a.display_name || a.name).join(", "),
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 104,
+            lineNumber: 125,
             columnNumber: 13
         },
         __self: undefined
@@ -1146,7 +1163,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
             className: "alpaca-item-assignee",
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 114,
+                lineNumber: 135,
                 columnNumber: 17
             },
             __self: undefined
@@ -1157,7 +1174,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
             title: assignee.display_name || assignee.name,
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 116,
+                lineNumber: 137,
                 columnNumber: 21
             },
             __self: undefined
@@ -1165,7 +1182,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
             className: "alpaca-item-assignee-name",
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 123,
+                lineNumber: 144,
                 columnNumber: 19
             },
             __self: undefined
@@ -1173,7 +1190,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         className: "alpaca-item-comment-count has-dashicon",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 133,
+            lineNumber: 154,
             columnNumber: 13
         },
         __self: undefined
@@ -1182,7 +1199,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         "aria-hidden": "true",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 134,
+            lineNumber: 155,
             columnNumber: 15
         },
         __self: undefined
@@ -1223,7 +1240,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         },
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 187,
+            lineNumber: 208,
             columnNumber: 5
         },
         __self: this
@@ -1255,7 +1272,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         "data-id": id,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 239,
+            lineNumber: 260,
             columnNumber: 5
         },
         __self: this
@@ -1263,7 +1280,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         class: "alpaca-container-header",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 243,
+            lineNumber: 264,
             columnNumber: 7
         },
         __self: this
@@ -1271,7 +1288,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         className: "alpaca-container-title",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 244,
+            lineNumber: 265,
             columnNumber: 9
         },
         __self: this
@@ -1279,7 +1296,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         class: "alpaca-container-controls",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 245,
+            lineNumber: 266,
             columnNumber: 9
         },
         __self: this
@@ -1289,7 +1306,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         controls: menuControls,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 246,
+            lineNumber: 267,
             columnNumber: 11
         },
         __self: this
@@ -1301,7 +1318,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         strategy: (0, _sortable.verticalListSortingStrategy),
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 249,
+            lineNumber: 270,
             columnNumber: 7
         },
         __self: this
@@ -1315,7 +1332,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
             onClick: onItemClick,
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 256,
+                lineNumber: 277,
                 columnNumber: 13
             },
             __self: this
@@ -1327,7 +1344,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         isDragDisabled: true,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 267,
+            lineNumber: 288,
             columnNumber: 11
         },
         __self: this
@@ -1423,7 +1440,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
             if (overContainer && overContainer.id !== originalContainerId) {
                 const originalContainer = findContainerById(originalContainerId);
                 if (originalContainer) {
-                    const commentContent = `Item moved from status <span class="alpaca-status-comment">${originalContainer.title}</span> to <span class="alpaca-status-comment">${overContainer.title}</span>`;
+                    const commentContent = generateStatusChangeComment(originalContainer.title, overContainer.title);
                     createIssueComment(active.id, commentContent);
                 }
             }
@@ -1514,7 +1531,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         sourceContainer.items = [];
         nextContainer.items.push(...itemsToMove);
         // Create status change comments and update taxonomies for each moved item
-        const commentContent = `Item moved from status <span class="alpaca-status-comment">${sourceContainer.title}</span> to <span class="alpaca-status-comment">${nextContainer.title}</span>`;
+        const commentContent = generateStatusChangeComment(sourceContainer.title, nextContainer.title);
         itemsToMove.forEach((item)=>{
             createIssueComment(item.id, commentContent);
             wp.apiFetch({
@@ -1604,7 +1621,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         onDragEnd: handleDragEnd,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 632,
+            lineNumber: 659,
             columnNumber: 5
         },
         __self: this
@@ -1612,7 +1629,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         className: "alpaca-wrap",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 639,
+            lineNumber: 666,
             columnNumber: 7
         },
         __self: this
@@ -1626,7 +1643,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
             isLastContainer: index === containers.length - 1,
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 641,
+                lineNumber: 668,
                 columnNumber: 11
             },
             __self: this
@@ -1634,7 +1651,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         dropAnimation: null,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 652,
+            lineNumber: 679,
             columnNumber: 7
         },
         __self: this
@@ -1646,7 +1663,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         className: "alpaca-item-dragging",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 654,
+            lineNumber: 681,
             columnNumber: 11
         },
         __self: this
@@ -1658,9 +1675,10 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         onCommentCountChange: onCommentCountChangeForIssue,
         onAssigneesChange: handleAssigneesChange,
         createIssueComment: createIssueComment,
+        generateAssigneeSpan: generateAssigneeSpan,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 664,
+            lineNumber: 691,
             columnNumber: 7
         },
         __self: this
@@ -1670,7 +1688,7 @@ function AlpacaBoard() {
     return /*#__PURE__*/ React.createElement(Board, {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 678,
+            lineNumber: 706,
             columnNumber: 10
         },
         __self: this
@@ -5760,7 +5778,7 @@ var _commentingJsxDefault = parcelHelpers.interopDefault(_commentingJsx);
 const { useState, useEffect } = wp.element;
 const { Modal, FormTokenField } = wp.components;
 const { decodeEntities } = wp.htmlEntities;
-const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChange, onAssigneesChange, createIssueComment })=>{
+const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChange, onAssigneesChange, createIssueComment, generateAssigneeSpan })=>{
     const [issueDetails, setIssueDetails] = useState(null);
     const [isLoadingDetails, setIsLoadingDetails] = useState(false);
     const [allUsers, setAllUsers] = useState([]); // display names for suggestions
@@ -5821,17 +5839,12 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         isOpen
     ]);
     if (!isOpen) return null;
-    const generateAssigneeSpan = (user)=>{
-        if (!user) return "";
-        const avatarAttr = user.avatar ? ` data-avatar="${user.avatar}"` : "";
-        return `<span class="alpaca-status-assignee" data-userid="${user.id}"${avatarAttr}>${user.name}</span>`;
-    };
     return /*#__PURE__*/ React.createElement(Modal, {
         title: /*#__PURE__*/ React.createElement(React.Fragment, null, "Issue Details", /*#__PURE__*/ React.createElement("span", {
             className: "alpaca-issue-id",
             __source: {
                 fileName: "src/issue.jsx",
-                lineNumber: 98,
+                lineNumber: 93,
                 columnNumber: 11
             }
         }, " #", issueId)),
@@ -5840,14 +5853,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         className: "alpaca-details-modal",
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 94,
+            lineNumber: 89,
             columnNumber: 5
         },
         __self: undefined
     }, isLoadingDetails ? /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 106,
+            lineNumber: 101,
             columnNumber: 9
         },
         __self: undefined
@@ -5855,7 +5868,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         className: "alpaca-issue-details",
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 108,
+            lineNumber: 103,
             columnNumber: 9
         },
         __self: undefined
@@ -5863,21 +5876,21 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         className: "wp-list-table widefat striped",
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 109,
+            lineNumber: 104,
             columnNumber: 11
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("tbody", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 110,
+            lineNumber: 105,
             columnNumber: 13
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 111,
+            lineNumber: 106,
             columnNumber: 15
         },
         __self: undefined
@@ -5885,14 +5898,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         scope: "row",
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 112,
+            lineNumber: 107,
             columnNumber: 17
         },
         __self: undefined
     }, "Assigned to:"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 113,
+            lineNumber: 108,
             columnNumber: 17
         },
         __self: undefined
@@ -5906,7 +5919,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
             ];
             const added = newAssignees.filter((name)=>!oldAssignees.includes(name));
             const removed = oldAssignees.filter((name)=>!newAssignees.includes(name));
-            if (createIssueComment) {
+            if (createIssueComment && generateAssigneeSpan) {
                 const commentPromises = [];
                 added.forEach((name)=>{
                     const user = allUserObjects.find((u)=>u.name === name);
@@ -5950,14 +5963,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         },
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 114,
+            lineNumber: 109,
             columnNumber: 19
         },
         __self: undefined
     }))), issueDetails.meta.screenshot && /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 203,
+            lineNumber: 198,
             columnNumber: 17
         },
         __self: undefined
@@ -5965,21 +5978,21 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         scope: "row",
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 204,
+            lineNumber: 199,
             columnNumber: 19
         },
         __self: undefined
     }, "Screenshot"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 205,
+            lineNumber: 200,
             columnNumber: 19
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 206,
+            lineNumber: 201,
             columnNumber: 21
         },
         __self: undefined
@@ -5989,14 +6002,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         alt: "Screenshot",
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 207,
+            lineNumber: 202,
             columnNumber: 23
         },
         __self: undefined
     })), /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 213,
+            lineNumber: 208,
             columnNumber: 21
         },
         __self: undefined
@@ -6027,14 +6040,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         },
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 214,
+            lineNumber: 209,
             columnNumber: 23
         },
         __self: undefined
     }, "Delete")))), /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 248,
+            lineNumber: 243,
             columnNumber: 15
         },
         __self: undefined
@@ -6042,21 +6055,21 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         scope: "row",
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 249,
+            lineNumber: 244,
             columnNumber: 17
         },
         __self: undefined
     }, "Submitted"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 250,
+            lineNumber: 245,
             columnNumber: 17
         },
         __self: undefined
     }, new Date(issueDetails.post_data.post_date).toLocaleString(), " ", "by ", issueDetails.post_data.post_author_display_name, " (", issueDetails.post_data.post_author, ")")), /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 256,
+            lineNumber: 251,
             columnNumber: 15
         },
         __self: undefined
@@ -6064,21 +6077,21 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         scope: "row",
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 257,
+            lineNumber: 252,
             columnNumber: 17
         },
         __self: undefined
     }, "Last modified"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 258,
+            lineNumber: 253,
             columnNumber: 17
         },
         __self: undefined
     }, new Date(issueDetails.post_data.post_modified).toLocaleString(), " ")), /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 264,
+            lineNumber: 259,
             columnNumber: 15
         },
         __self: undefined
@@ -6086,21 +6099,21 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         scope: "row",
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 265,
+            lineNumber: 260,
             columnNumber: 17
         },
         __self: undefined
     }, "Description"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 266,
+            lineNumber: 261,
             columnNumber: 17
         },
         __self: undefined
     }, decodeEntities(issueDetails.post_data.post_content))), /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 268,
+            lineNumber: 263,
             columnNumber: 15
         },
         __self: undefined
@@ -6108,14 +6121,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         scope: "row",
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 269,
+            lineNumber: 264,
             columnNumber: 17
         },
         __self: undefined
     }, "URL"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 270,
+            lineNumber: 265,
             columnNumber: 17
         },
         __self: undefined
@@ -6125,14 +6138,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         rel: "noopener noreferrer",
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 272,
+            lineNumber: 267,
             columnNumber: 21
         },
         __self: undefined
     }, issueDetails.meta.URL) : "N/A")), /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 284,
+            lineNumber: 279,
             columnNumber: 15
         },
         __self: undefined
@@ -6140,14 +6153,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         scope: "row",
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 285,
+            lineNumber: 280,
             columnNumber: 17
         },
         __self: undefined
     }, "Screen Size"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 286,
+            lineNumber: 281,
             columnNumber: 17
         },
         __self: undefined
@@ -6155,7 +6168,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
             key: taxonomy,
             __source: {
                 fileName: "src/issue.jsx",
-                lineNumber: 296,
+                lineNumber: 291,
                 columnNumber: 19
             },
             __self: undefined
@@ -6166,14 +6179,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
             },
             __source: {
                 fileName: "src/issue.jsx",
-                lineNumber: 297,
+                lineNumber: 292,
                 columnNumber: 21
             },
             __self: undefined
         }, taxonomy), /*#__PURE__*/ React.createElement("td", {
             __source: {
                 fileName: "src/issue.jsx",
-                lineNumber: 300,
+                lineNumber: 295,
                 columnNumber: 21
             },
             __self: undefined
@@ -6183,14 +6196,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         commentRefreshKey: commentRefreshKey,
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 306,
+            lineNumber: 301,
             columnNumber: 11
         },
         __self: undefined
     })) : /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/issue.jsx",
-            lineNumber: 313,
+            lineNumber: 308,
             columnNumber: 9
         },
         __self: undefined

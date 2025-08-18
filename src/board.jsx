@@ -41,6 +41,27 @@ const transformDataForBoard = (data) => {
 };
 
 /**
+ * Generates HTML for an assignee span to be used in comments.
+ * @param {object} user The user object for the assignee.
+ * @returns {string} HTML string.
+ */
+const generateAssigneeSpan = (user) => {
+  if (!user) return "";
+  const avatarAttr = user.avatar ? ` data-avatar="${user.avatar}"` : "";
+  return `<span class="alpaca-status-assignee" data-userid="${user.id}"${avatarAttr}>${user.name}</span>`;
+};
+
+/**
+ * Generates HTML for a status change comment.
+ * @param {string} fromStatus The title of the original status.
+ * @param {string} toStatus The title of the new status.
+ * @returns {string} HTML string.
+ */
+const generateStatusChangeComment = (fromStatus, toStatus) => {
+  return `Item moved from status <span class="alpaca-status-comment">${fromStatus}</span> to <span class="alpaca-status-comment">${toStatus}</span>`;
+};
+
+/**
  * Save board order in DOM order, including container IDs & titles.
  */
 const saveBoardOrder = () => {
@@ -402,7 +423,10 @@ function Board() {
       if (overContainer && overContainer.id !== originalContainerId) {
         const originalContainer = findContainerById(originalContainerId);
         if (originalContainer) {
-          const commentContent = `Item moved from status <span class="alpaca-status-comment">${originalContainer.title}</span> to <span class="alpaca-status-comment">${overContainer.title}</span>`;
+          const commentContent = generateStatusChangeComment(
+            originalContainer.title,
+            overContainer.title
+          );
           createIssueComment(active.id, commentContent);
         }
       }
@@ -527,7 +551,10 @@ function Board() {
     nextContainer.items.push(...itemsToMove);
 
     // Create status change comments and update taxonomies for each moved item
-    const commentContent = `Item moved from status <span class="alpaca-status-comment">${sourceContainer.title}</span> to <span class="alpaca-status-comment">${nextContainer.title}</span>`;
+    const commentContent = generateStatusChangeComment(
+      sourceContainer.title,
+      nextContainer.title
+    );
     itemsToMove.forEach((item) => {
       createIssueComment(item.id, commentContent);
       wp.apiFetch({
@@ -669,6 +696,7 @@ function Board() {
         onCommentCountChange={onCommentCountChangeForIssue}
         onAssigneesChange={handleAssigneesChange}
         createIssueComment={createIssueComment}
+        generateAssigneeSpan={generateAssigneeSpan}
       />
     </DndContext>
   );
