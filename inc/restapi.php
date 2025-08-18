@@ -490,7 +490,7 @@ function alpaca_update_watchlist_callback( WP_REST_Request $request ) {
     }
 
     if ( in_array( $issue_id, $watchlist ) ) {
-        $watchlist = array_diff( $watchlist, array( $issue_id ) );
+        $watchlist = array_values(array_diff( $watchlist, array( $issue_id ) ));
     } else {
         $watchlist[] = $issue_id;
     }
