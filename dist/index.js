@@ -1063,74 +1063,86 @@ var _boardMain = require("./BoardMain");
 var _boardMainDefault = parcelHelpers.interopDefault(_boardMain);
 var _cookies = require("../utils/cookies");
 const { useState, useEffect } = wp.element;
-const { ToggleControl, __experimentalToggleGroupControl: ToggleGroupControl, __experimentalToggleGroupControlOption: ToggleGroupControlOption } = wp.components;
+const { __experimentalToggleGroupControl: ToggleGroupControl, __experimentalToggleGroupControlOption: ToggleGroupControlOption } = wp.components;
 function AlpacaBoard() {
     return /*#__PURE__*/ React.createElement((0, _boardMainDefault.default), {
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 11,
+            lineNumber: 10,
             columnNumber: 10
         },
         __self: this
     });
 }
 function AlpacaBoardControls() {
-    const [showOnlyMyIssues, setShowOnlyMyIssues] = useState(()=>{
-        return (0, _cookies.getCookie)("alpaca_show_only_my_issues") === "true";
+    // Use a string state instead of a boolean
+    const [filterIssues, setFilterIssues] = useState(()=>{
+        return (0, _cookies.getCookie)("alpaca_filter_issues") || "all";
     });
     const boardElement = document.querySelector("#alpaca-board");
     useEffect(()=>{
-        (0, _cookies.setCookie)("alpaca_show_only_my_issues", showOnlyMyIssues, 365);
+        (0, _cookies.setCookie)("alpaca_filter_issues", filterIssues, 365);
         if (boardElement) {
-            if (showOnlyMyIssues) boardElement.classList.add("show-only-my-issues");
-            else boardElement.classList.remove("show-only-my-issues");
+            // Remove any existing filter classes first
+            boardElement.classList.remove("filter-all", "filter-mine", "filter-others", "filter-watchlist");
+            // Add the selected filter class
+            boardElement.classList.add(`filter-${filterIssues}`);
         }
     }, [
-        showOnlyMyIssues,
+        filterIssues,
         boardElement
     ]);
     // Set initial class on mount
     useEffect(()=>{
-        if (boardElement && showOnlyMyIssues) boardElement.classList.add("show-only-my-issues");
+        if (boardElement) boardElement.classList.add(`filter-${filterIssues}`);
     }, [
         boardElement
     ]);
     if (typeof alpacaUserData === "undefined" || !alpacaUserData.currentUserId) return null; // Don't render if we don't know the current user
     return /*#__PURE__*/ React.createElement(ToggleGroupControl, {
         className: "alpaca-board-filter",
-        value: showOnlyMyIssues ? "my-issues" : "all-issues",
-        onChange: (value)=>setShowOnlyMyIssues(value === "my-issues"),
+        value: filterIssues,
+        onChange: (value)=>setFilterIssues(value),
         isBlock: true,
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 43,
+            lineNumber: 50,
             columnNumber: 5
         },
         __self: this
     }, /*#__PURE__*/ React.createElement(ToggleGroupControlOption, {
-        value: "all-issues",
+        value: "all",
         label: "All Issues",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 49,
+            lineNumber: 56,
             columnNumber: 7
         },
         __self: this
     }), /*#__PURE__*/ React.createElement(ToggleGroupControlOption, {
-        value: "my-issues",
+        value: "mine",
         label: "Assigned to me",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 50,
+            lineNumber: 57,
             columnNumber: 7
         },
         __self: this
     }), /*#__PURE__*/ React.createElement(ToggleGroupControlOption, {
-        value: "my-watchlist",
+        value: "watchlist",
         label: "My Watchlist",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 51,
+            lineNumber: 58,
+            columnNumber: 7
+        },
+        __self: this
+    }), /*#__PURE__*/ React.createElement(ToggleGroupControlOption, {
+        value: "others",
+        label: "Others",
+        __source: {
+            fileName: "src/components/BoardFrame.jsx",
+            lineNumber: 59,
             columnNumber: 7
         },
         __self: this

@@ -1,6 +1,5 @@
 const { useState, useEffect } = wp.element;
 const {
-  ToggleControl,
   __experimentalToggleGroupControl: ToggleGroupControl,
   __experimentalToggleGroupControlOption: ToggleGroupControlOption,
 } = wp.components;
@@ -12,26 +11,34 @@ export function AlpacaBoard() {
 }
 
 export function AlpacaBoardControls() {
-  const [showOnlyMyIssues, setShowOnlyMyIssues] = useState(() => {
-    return getCookie("alpaca_show_only_my_issues") === "true";
+  // Use a string state instead of a boolean
+  const [filterIssues, setFilterIssues] = useState(() => {
+    return getCookie("alpaca_filter_issues") || "all";
   });
+
   const boardElement = document.querySelector("#alpaca-board");
 
   useEffect(() => {
-    setCookie("alpaca_show_only_my_issues", showOnlyMyIssues, 365);
+    setCookie("alpaca_filter_issues", filterIssues, 365);
+
     if (boardElement) {
-      if (showOnlyMyIssues) {
-        boardElement.classList.add("show-only-my-issues");
-      } else {
-        boardElement.classList.remove("show-only-my-issues");
-      }
+      // Remove any existing filter classes first
+      boardElement.classList.remove(
+        "filter-all",
+        "filter-mine",
+        "filter-others",
+        "filter-watchlist"
+      );
+
+      // Add the selected filter class
+      boardElement.classList.add(`filter-${filterIssues}`);
     }
-  }, [showOnlyMyIssues, boardElement]);
+  }, [filterIssues, boardElement]);
 
   // Set initial class on mount
   useEffect(() => {
-    if (boardElement && showOnlyMyIssues) {
-      boardElement.classList.add("show-only-my-issues");
+    if (boardElement) {
+      boardElement.classList.add(`filter-${filterIssues}`);
     }
   }, [boardElement]);
 
@@ -42,13 +49,14 @@ export function AlpacaBoardControls() {
   return (
     <ToggleGroupControl
       className="alpaca-board-filter"
-      value={showOnlyMyIssues ? "my-issues" : "all-issues"}
-      onChange={(value) => setShowOnlyMyIssues(value === "my-issues")}
+      value={filterIssues}
+      onChange={(value) => setFilterIssues(value)}
       isBlock
     >
-      <ToggleGroupControlOption value="all-issues" label="All Issues" />
-      <ToggleGroupControlOption value="my-issues" label="Assigned to me" />
-      <ToggleGroupControlOption value="my-watchlist" label="My Watchlist" />
+      <ToggleGroupControlOption value="all" label="All Issues" />
+      <ToggleGroupControlOption value="mine" label="Assigned to me" />
+      <ToggleGroupControlOption value="watchlist" label="My Watchlist" />
+      <ToggleGroupControlOption value="others" label="Others" />
     </ToggleGroupControl>
   );
   // TODO: watchlist functionality

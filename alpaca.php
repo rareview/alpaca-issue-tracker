@@ -110,7 +110,7 @@ add_action('admin_enqueue_scripts', function() {
                 background-color: #eee;
                 border: 1px solid #999;
             }
-            .wp-admin #alpaca-board.show-only-my-issues .alpaca-item:not([data-assignee-{$me}]) {
+            .wp-admin #alpaca-board.filter-mine .alpaca-item:not([data-assignee-{$me}]) {
                 display: none;
             }";
 
