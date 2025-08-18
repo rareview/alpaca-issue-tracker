@@ -143,6 +143,9 @@ add_filter('alpaca_board_statuses', function( $statuses ) {
         if( $status->term_score > 100 ) {
             continue;
         }
+        if( $status->term_score < -100 ) {
+            continue;
+        }
         $desired_statuses[] = $status;
     }
     return $desired_statuses;
