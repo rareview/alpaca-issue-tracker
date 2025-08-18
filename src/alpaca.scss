@@ -63,8 +63,23 @@
       overflow-y: auto;
       display: flex;
       flex-direction: column;
-      h2 {
-        margin: 2px 2px 10px 2px;
+      .alpaca-container-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        h2 {
+          margin: 2px 2px 10px 2px;
+        }
+        .alpaca-container-controls {
+          opacity: 0.2;
+          padding: 2px 0;
+          display: flex;
+          align-items: center;
+          flex-direction: row;
+          .alpaca-container-control {
+            margin-left: 2px;
+          }
+        }
       }
     }
     .alpaca-item,

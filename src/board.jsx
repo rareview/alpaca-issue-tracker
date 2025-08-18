@@ -207,7 +207,12 @@ function Container({ id, title, items, onItemClick }) {
 
   return (
     <div className="alpaca-container" data-id={id}>
-      <h2 className="alpaca-container-title">{title}</h2>
+      <div class="alpaca-container-header">
+        <h2 className="alpaca-container-title">{title}</h2>
+        <div class="alpaca-container-controls">
+          <div class="alpaca-container-control">Button?</div>
+        </div>
+      </div>
       <SortableContext
         id={id}
         items={hasItems ? items.map((item) => item.id) : [id]}
