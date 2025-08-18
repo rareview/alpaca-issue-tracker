@@ -11,7 +11,7 @@ const AlpacaIssue = ({
   onCommentCountChange,
   onAssigneesChange,
   createIssueComment,
-  generateAssigneeSpan,
+  generateAssigneeChangeComment,
 }) => {
   const [issueDetails, setIssueDetails] = useState(null);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
@@ -120,18 +120,17 @@ const AlpacaIssue = ({
                         (name) => !newAssignees.includes(name)
                       );
 
-                      if (createIssueComment && generateAssigneeSpan) {
+                      if (createIssueComment && generateAssigneeChangeComment) {
                         const commentPromises = [];
                         added.forEach((name) => {
                           const user = allUserObjects.find(
                             (u) => u.name === name
                           );
                           if (user) {
-                            const assigneeSpan = generateAssigneeSpan(user);
                             commentPromises.push(
                               createIssueComment(
                                 issueId,
-                                `${assigneeSpan} has been assigned to this issue.`
+                                generateAssigneeChangeComment(user, true)
                               )
                             );
                           }
@@ -141,11 +140,10 @@ const AlpacaIssue = ({
                             (u) => u.name === name
                           );
                           if (user) {
-                            const assigneeSpan = generateAssigneeSpan(user);
                             commentPromises.push(
                               createIssueComment(
                                 issueId,
-                                `${assigneeSpan} is no longer assigned to this issue.`
+                                generateAssigneeChangeComment(user, false)
                               )
                             );
                           }

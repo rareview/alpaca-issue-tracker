@@ -17,7 +17,11 @@ import Container from "./Container";
 
 import { setCookie, getCookie } from "../utils/cookies";
 import { transformDataForBoard, saveBoardOrder } from "../utils/data";
-import { generateStatusChangeComment } from "../utils/comments";
+import {
+  generateAssigneeSpan,
+  generateStatusChangeComment,
+  generateAssigneeChangeComment,
+} from "../utils/comments";
 
 /**
  * Main board component.
@@ -454,7 +458,7 @@ function Board() {
         onCommentCountChange={onCommentCountChangeForIssue}
         onAssigneesChange={handleAssigneesChange}
         createIssueComment={createIssueComment}
-        // generateAssigneeSpan={generateAssigneeSpan} // This is not used in AlpacaIssue
+        generateAssigneeChangeComment={generateAssigneeChangeComment}
       />
     </DndContext>
   );

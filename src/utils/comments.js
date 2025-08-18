@@ -19,4 +19,22 @@ const generateStatusChangeComment = (fromStatus, toStatus) => {
   return `Item moved from status <span class="alpaca-status-comment">${fromStatus}</span> to <span class="alpaca-status-comment">${toStatus}</span>`;
 };
 
-export { generateAssigneeSpan, generateStatusChangeComment };
+/**
+ * Generates HTML for an assignee change comment.
+ * @param {object} user The user object for the assignee.
+ * @param {boolean} isAssigned True if the user was assigned, false if unassigned.
+ * @returns {string} HTML string.
+ */
+const generateAssigneeChangeComment = (user, isAssigned) => {
+  const assigneeSpan = generateAssigneeSpan(user);
+  if (isAssigned) {
+    return `${assigneeSpan} has been assigned to this issue.`;
+  }
+  return `${assigneeSpan} is no longer assigned to this issue.`;
+};
+
+export {
+  generateAssigneeSpan,
+  generateStatusChangeComment,
+  generateAssigneeChangeComment,
+};
