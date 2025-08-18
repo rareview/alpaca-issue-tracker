@@ -1130,7 +1130,7 @@ function AlpacaBoardControls() {
         __self: this
     }), /*#__PURE__*/ React.createElement(ToggleGroupControlOption, {
         value: "watchlist",
-        label: "My Watchlist",
+        label: "Starred",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
             lineNumber: 57,

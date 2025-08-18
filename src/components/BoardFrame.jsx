@@ -54,7 +54,7 @@ export function AlpacaBoardControls() {
     >
       <ToggleGroupControlOption value="all" label="All Issues" />
       <ToggleGroupControlOption value="mine" label="Assigned to me" />
-      <ToggleGroupControlOption value="watchlist" label="My Watchlist" />
+      <ToggleGroupControlOption value="watchlist" label="Starred" />
     </ToggleGroupControl>
   );
   // TODO: watchlist functionality

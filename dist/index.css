@@ -276,6 +276,7 @@
 
 .wp-admin .alpaca-item .alpaca-item-controls .dashicons, .wp-admin .alpaca-item-dragging .alpaca-item-controls .dashicons {
   opacity: 0;
+  transition: opacity .2s ease-in-out;
 }
 
 .wp-admin .alpaca-item:hover .alpaca-item-controls .dashicons {

@@ -270,6 +270,7 @@
   .alpaca-item .alpaca-item-controls .dashicons,
   .alpaca-item-dragging .alpaca-item-controls .dashicons {
     opacity: 0;
+    transition: opacity 0.2s ease-in-out;
   }
   .alpaca-item:hover .alpaca-item-controls .dashicons {
     opacity: 0.3;
@@ -281,6 +282,7 @@
   .alpaca-item .alpaca-item-controls .dashicons:hover {
     cursor: pointer;
   }
+  // fix: flash on star when you start dragging
 
   #alpaca-board.filter-watchlist .alpaca-item:not(.is-watched) {
     display: none;
