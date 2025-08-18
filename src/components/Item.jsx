@@ -1,5 +1,4 @@
 const { forwardRef, useState, useEffect } = wp.element;
-const { apiFetch } = wp;
 
 const Item = forwardRef(
   (
@@ -9,8 +8,8 @@ const Item = forwardRef(
     const [isWatched, setIsWatched] = useState(false);
 
     useEffect(() => {
-      apiFetch({ path: "/alpaca/v1/watchlist" }).then((watchlist) => {
-        if (watchlist && watchlist.includes(id)) {
+      wp.apiFetch({ path: "/alpaca/v1/watchlist" }).then((watchlist) => {
+        if (watchlist && Array.isArray(watchlist) && watchlist.includes(id)) {
           setIsWatched(true);
         }
       });
@@ -18,7 +17,7 @@ const Item = forwardRef(
 
     const toggleWatch = (e) => {
       e.stopPropagation();
-      apiFetch({
+      wp.apiFetch({
         path: "/alpaca/v1/watchlist",
         method: "POST",
         data: { issue_id: id },
