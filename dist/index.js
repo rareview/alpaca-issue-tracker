@@ -1050,346 +1050,93 @@ exports.default = AlpacaSettings;
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"h1t0l":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "AlpacaBoard", ()=>(0, _alpacaBoard.AlpacaBoard));
+parcelHelpers.export(exports, "AlpacaBoardControls", ()=>(0, _alpacaBoard.AlpacaBoardControls));
+var _alpacaBoard = require("./components/AlpacaBoard");
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./components/AlpacaBoard":"bLvEt"}],"bLvEt":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "AlpacaBoard", ()=>AlpacaBoard);
 parcelHelpers.export(exports, "AlpacaBoardControls", ()=>AlpacaBoardControls);
+var _board = require("./Board");
+var _boardDefault = parcelHelpers.interopDefault(_board);
+var _cookies = require("../utils/cookies");
+const { useState, useEffect } = wp.element;
+const { ToggleControl } = wp.components;
+function AlpacaBoard() {
+    return /*#__PURE__*/ React.createElement((0, _boardDefault.default), {
+        __source: {
+            fileName: "src/components/AlpacaBoard.jsx",
+            lineNumber: 7,
+            columnNumber: 10
+        },
+        __self: this
+    });
+}
+function AlpacaBoardControls() {
+    const [showOnlyMyIssues, setShowOnlyMyIssues] = useState(()=>{
+        return (0, _cookies.getCookie)("alpaca_show_only_my_issues") === "true";
+    });
+    const boardElement = document.querySelector("#alpaca-board");
+    useEffect(()=>{
+        (0, _cookies.setCookie)("alpaca_show_only_my_issues", showOnlyMyIssues, 365);
+        if (boardElement) {
+            if (showOnlyMyIssues) boardElement.classList.add("show-only-my-issues");
+            else boardElement.classList.remove("show-only-my-issues");
+        }
+    }, [
+        showOnlyMyIssues,
+        boardElement
+    ]);
+    // Set initial class on mount
+    useEffect(()=>{
+        if (boardElement && showOnlyMyIssues) boardElement.classList.add("show-only-my-issues");
+    }, [
+        boardElement
+    ]);
+    if (typeof alpacaUserData === "undefined" || !alpacaUserData.currentUserId) return null; // Don't render if we don't know the current user
+    return /*#__PURE__*/ React.createElement("div", {
+        className: "alignleft actions",
+        __source: {
+            fileName: "src/components/AlpacaBoard.jsx",
+            lineNumber: 39,
+            columnNumber: 5
+        },
+        __self: this
+    }, /*#__PURE__*/ React.createElement(ToggleControl, {
+        label: "Show only my issues",
+        checked: showOnlyMyIssues,
+        onChange: ()=>setShowOnlyMyIssues(!showOnlyMyIssues),
+        __source: {
+            fileName: "src/components/AlpacaBoard.jsx",
+            lineNumber: 40,
+            columnNumber: 7
+        },
+        __self: this
+    }));
+}
+
+},{"./Board":"4IknA","../utils/cookies":"4qoXW","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"4IknA":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
 var _core = require("@dnd-kit/core");
 var _sortable = require("@dnd-kit/sortable");
-var _utilities = require("@dnd-kit/utilities");
-var _user = require("./user");
-var _userDefault = parcelHelpers.interopDefault(_user);
-var _issue = require("./issue");
+var _issue = require("../issue");
 var _issueDefault = parcelHelpers.interopDefault(_issue);
-const { useState, useRef, useEffect, forwardRef, useCallback } = wp.element;
-const { decodeEntities } = wp.htmlEntities;
-const { DropdownMenu, ToggleControl, CustomSelectControlV2 } = wp.components;
-// Cookie helper functions
-const setCookie = (name, value, days)=>{
-    let expires = "";
-    if (days) {
-        const date = new Date();
-        date.setTime(date.getTime() + days * 86400000);
-        expires = "; expires=" + date.toUTCString();
-    }
-    document.cookie = name + "=" + (value || "") + expires + "; path=/";
-};
-const getCookie = (name)=>{
-    const nameEQ = name + "=";
-    const ca = document.cookie.split(";");
-    for(let i = 0; i < ca.length; i++){
-        let c = ca[i];
-        while(c.charAt(0) === " ")c = c.substring(1, c.length);
-        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
-    }
-    return null;
-};
-/**
- * Transform server data into array format for board state.
- * @param {Array} data The data from `alpaca_get_board_data`.
- */ const transformDataForBoard = (data)=>{
-    if (!data || !Array.isArray(data)) return [];
-    return data.map((column)=>({
-            id: column.id.toString(),
-            title: decodeEntities(column.title),
-            items: column.issues.map((issue)=>({
-                    id: issue.id.toString(),
-                    content: decodeEntities(issue.title),
-                    assignees: issue.assignees || [],
-                    comment_count: issue.comment_count
-                }))
-        }));
-};
-/**
- * Generates HTML for an assignee span to be used in comments.
- * @param {object} user The user object for the assignee.
- * @returns {string} HTML string.
- */ const generateAssigneeSpan = (user)=>{
-    if (!user) return "";
-    const avatarAttr = user.avatar ? ` data-avatar="${user.avatar}"` : "";
-    return `<span class="alpaca-status-assignee" data-userid="${user.id}"${avatarAttr}>${user.name}</span>`;
-};
-/**
- * Generates HTML for a status change comment.
- * @param {string} fromStatus The title of the original status.
- * @param {string} toStatus The title of the new status.
- * @returns {string} HTML string.
- */ const generateStatusChangeComment = (fromStatus, toStatus)=>{
-    return `Item moved from status <span class="alpaca-status-comment">${fromStatus}</span> to <span class="alpaca-status-comment">${toStatus}</span>`;
-};
-/**
- * Save board order in DOM order, including container IDs & titles.
- */ const saveBoardOrder = ()=>{
-    const containersInDomOrder = document.querySelectorAll(".alpaca-container");
-    const data = Array.from(containersInDomOrder).map((containerEl)=>{
-        const id = parseInt(containerEl.dataset.id, 10);
-        const title = containerEl.querySelector("h2").textContent.trim();
-        // Select all items except for the empty placeholder.
-        const items = containerEl.querySelectorAll(".alpaca-item:not(.empty)");
-        return {
-            id,
-            title,
-            issues: Array.from(items).map((itemEl)=>parseInt(itemEl.dataset.id, 10))
-        };
-    });
-    // Use wp.apiFetch to send data to the REST API endpoint.
-    // It automatically handles nonces for authenticated requests.
-    wp.apiFetch({
-        path: "/alpaca/v1/board",
-        method: "POST",
-        data: data
-    }).then((res)=>{
-    // saved successfully
-    }).catch((err)=>{
-        console.error("Error saving board order:", err);
-    });
-};
-const Item = forwardRef(({ id, content, assignees = [], comment_count, className, style, ...props }, ref)=>{
-    const assigneeDataAttributes = assignees.reduce((acc, assignee)=>{
-        if (assignee && assignee.id) acc[`data-assignee-${assignee.id}`] = "";
-        return acc;
-    }, {});
-    return /*#__PURE__*/ React.createElement("div", {
-        ref: ref,
-        className: className,
-        style: style,
-        "data-id": id,
-        ...assigneeDataAttributes,
-        ...props,
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 135,
-            columnNumber: 7
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-item-content",
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 143,
-            columnNumber: 9
-        },
-        __self: undefined
-    }, content), /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-item-meta",
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 144,
-            columnNumber: 9
-        },
-        __self: undefined
-    }, assignees.length > 0 && /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-item-assignees",
-        "data-assignees": assignees.length,
-        title: assignees.length === 1 ? assignees[0].display_name || assignees[0].name : assignees.map((a)=>a.display_name || a.name).join(", "),
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 147,
-            columnNumber: 13
-        },
-        __self: undefined
-    }, assignees.map((assignee)=>/*#__PURE__*/ React.createElement("div", {
-            key: assignee.id,
-            className: "alpaca-item-assignee",
-            __source: {
-                fileName: "src/board.jsx",
-                lineNumber: 157,
-                columnNumber: 17
-            },
-            __self: undefined
-        }, assignee.avatar && /*#__PURE__*/ React.createElement("img", {
-            className: "alpaca-item-user-img",
-            src: assignee.avatar,
-            alt: assignee.display_name || assignee.name,
-            title: assignee.display_name || assignee.name,
-            __source: {
-                fileName: "src/board.jsx",
-                lineNumber: 159,
-                columnNumber: 21
-            },
-            __self: undefined
-        }), /*#__PURE__*/ React.createElement("div", {
-            className: "alpaca-item-assignee-name",
-            __source: {
-                fileName: "src/board.jsx",
-                lineNumber: 166,
-                columnNumber: 19
-            },
-            __self: undefined
-        }, assignee.display_name || assignee.name)))), typeof comment_count !== "undefined" && comment_count > 0 && /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-item-comment-count has-dashicon",
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 176,
-            columnNumber: 13
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("span", {
-        className: "dashicons dashicons-admin-comments",
-        "aria-hidden": "true",
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 177,
-            columnNumber: 15
-        },
-        __self: undefined
-    }), comment_count)));
-});
-/**
- * Sortable item component.
- */ function SortableItem({ id, content, className, isDragDisabled = false, onClick, assignees = [], comment_count }) {
-    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = (0, _sortable.useSortable)({
-        id,
-        animateLayoutChanges: ()=>false,
-        disabled: isDragDisabled
-    });
-    const style = {
-        transform: isDragging ? undefined : (0, _utilities.CSS).Transform.toString(transform),
-        transition: isDragging ? "none" : transition,
-        cursor: isDragging ? "grabbing" : isDragDisabled ? "default" : "grab",
-        visibility: isDragging ? "hidden" : "visible",
-        userSelect: isDragDisabled ? "none" : "auto"
-    };
-    const handleClick = (event)=>{
-        if (!isDragging && onClick) onClick(event, id);
-    };
-    return /*#__PURE__*/ React.createElement(Item, {
-        ref: setNodeRef,
-        id: id,
-        content: content,
-        assignees: assignees,
-        comment_count: comment_count,
-        className: className,
-        style: style,
-        onClick: handleClick,
-        ...!isDragDisabled ? {
-            ...attributes,
-            ...listeners
-        } : {
-            tabIndex: -1
-        },
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 230,
-            columnNumber: 5
-        },
-        __self: this
-    });
-}
-/**
- * Container component.
- */ function Container({ id, title, items, onItemClick, onMoveAllToNext, isLastContainer, isHidden, onToggleHidden }) {
-    const hasItems = items.length > 0;
-    const toggleHidden = ()=>{
-        onToggleHidden(id);
-    };
-    const menuControls = [
-        {
-            icon: isHidden ? "visibility" : "hidden",
-            title: isHidden ? "Show items" : "Hide items",
-            onClick: toggleHidden
-        }
-    ];
-    if (!isLastContainer) menuControls.push({
-        icon: "arrow-right-alt",
-        title: "Move all to next column",
-        onClick: ()=>onMoveAllToNext(id),
-        disabled: !hasItems
-    });
-    return /*#__PURE__*/ React.createElement("div", {
-        className: `alpaca-container ${isHidden ? "hidden" : ""}`,
-        "data-id": id,
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 283,
-            columnNumber: 5
-        },
-        __self: this
-    }, /*#__PURE__*/ React.createElement("div", {
-        class: "alpaca-container-header",
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 287,
-            columnNumber: 7
-        },
-        __self: this
-    }, /*#__PURE__*/ React.createElement("h2", {
-        className: "alpaca-container-title",
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 288,
-            columnNumber: 9
-        },
-        __self: this
-    }, title, " ", /*#__PURE__*/ React.createElement("span", {
-        className: "alpaca-item-count",
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 289,
-            columnNumber: 19
-        },
-        __self: this
-    }, items.length)), /*#__PURE__*/ React.createElement("div", {
-        class: "alpaca-container-controls",
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 291,
-            columnNumber: 9
-        },
-        __self: this
-    }, /*#__PURE__*/ React.createElement(DropdownMenu, {
-        icon: "menu",
-        label: "Options",
-        controls: menuControls,
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 292,
-            columnNumber: 11
-        },
-        __self: this
-    }))), /*#__PURE__*/ React.createElement((0, _sortable.SortableContext), {
-        id: id,
-        items: hasItems ? items.map((item)=>item.id) : [
-            id
-        ],
-        strategy: (0, _sortable.verticalListSortingStrategy),
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 295,
-            columnNumber: 7
-        },
-        __self: this
-    }, hasItems ? items.map((item)=>/*#__PURE__*/ React.createElement(SortableItem, {
-            className: "alpaca-item",
-            key: item.id,
-            id: item.id,
-            content: item.content,
-            assignees: item.assignees,
-            comment_count: item.comment_count,
-            onClick: onItemClick,
-            __source: {
-                fileName: "src/board.jsx",
-                lineNumber: 302,
-                columnNumber: 13
-            },
-            __self: this
-        })) : /*#__PURE__*/ React.createElement(SortableItem, {
-        key: id,
-        id: id,
-        className: "alpaca-item empty",
-        content: "Drop items here",
-        isDragDisabled: true,
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 313,
-            columnNumber: 11
-        },
-        __self: this
-    })));
-}
+var _item = require("./Item");
+var _itemDefault = parcelHelpers.interopDefault(_item);
+var _container = require("./Container");
+var _containerDefault = parcelHelpers.interopDefault(_container);
+var _cookies = require("../utils/cookies");
+var _data = require("../utils/data");
+var _comments = require("../utils/comments");
+const { useState, useRef, useEffect, useCallback } = wp.element;
 /**
  * Main board component.
  */ function Board() {
     const [containers, setContainers] = useState(()=>{
-        if (typeof alpacaBoardData !== "undefined") return transformDataForBoard(alpacaBoardData);
+        if (typeof alpacaBoardData !== "undefined") return (0, _data.transformDataForBoard)(alpacaBoardData);
         return [];
     });
     const sensors = (0, _core.useSensors)((0, _core.useSensor)((0, _core.PointerSensor), {
@@ -1404,12 +1151,12 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
     const [needsSave, setNeedsSave] = useState(false);
     const [originalContainerId, setOriginalContainerId] = useState(null);
     const [hiddenContainerIds, setHiddenContainerIds] = useState(()=>{
-        const cookie = getCookie("alpaca_hidden_containers");
+        const cookie = (0, _cookies.getCookie)("alpaca_hidden_containers");
         return cookie ? cookie.split(",").filter(Boolean) : [];
     });
     // Effect to update cookie when hiddenContainerIds changes
     useEffect(()=>{
-        setCookie("alpaca_hidden_containers", hiddenContainerIds.join(","), 365);
+        (0, _cookies.setCookie)("alpaca_hidden_containers", hiddenContainerIds.join(","), 365);
     }, [
         hiddenContainerIds
     ]);
@@ -1493,7 +1240,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
             if (overContainer && overContainer.id !== originalContainerId) {
                 const originalContainer = findContainerById(originalContainerId);
                 if (originalContainer) {
-                    const commentContent = generateStatusChangeComment(originalContainer.title, overContainer.title);
+                    const commentContent = (0, _comments.generateStatusChangeComment)(originalContainer.title, overContainer.title);
                     createIssueComment(active.id, commentContent);
                 }
             }
@@ -1514,7 +1261,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
                         items: (0, _sortable.arrayMove)(items, oldIndex, newIndex)
                     } : c));
         }
-        saveBoardOrder();
+        (0, _data.saveBoardOrder)();
         // Send REST API call to update taxonomy term (status)
         const movedItemId = parseInt(active.id, 10);
         const newStatusTermId = parseInt(overContainer.id, 10);
@@ -1584,9 +1331,17 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         sourceContainer.items = [];
         nextContainer.items.push(...itemsToMove);
         // Create status change comments and update taxonomies for each moved item
-        const commentContent = generateStatusChangeComment(sourceContainer.title, nextContainer.title);
+        const commentContent = (0, _comments.generateStatusChangeComment)(sourceContainer.title, nextContainer.title);
         itemsToMove.forEach((item)=>{
-            createIssueComment(item.id, commentContent);
+            wp.apiFetch({
+                path: `/wp/v2/comments`,
+                method: "POST",
+                data: {
+                    content: commentContent,
+                    post: item.id,
+                    comment_type: "issuecomment"
+                }
+            }).catch((err)=>console.error(`Error creating status change comment for issue ${item.id}:`, err));
             wp.apiFetch({
                 path: `/issue/v1/update/${item.id}`,
                 method: "POST",
@@ -1633,7 +1388,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         // After a new issue is submitted and the state has been updated,
         // save the new board order.
         if (needsSave) {
-            saveBoardOrder();
+            (0, _data.saveBoardOrder)();
             setNeedsSave(false); // Reset the flag
         }
     }, [
@@ -1653,7 +1408,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
                 if (targetContainer) // Add the new issue to the top of the correct column
                 targetContainer.items.unshift({
                     id: issue.id.toString(),
-                    content: decodeEntities(issue.title),
+                    content: issue.title,
                     author_name: issue.author_name,
                     author_img: issue.author_img,
                     assignees: [],
@@ -1673,20 +1428,20 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         onDragOver: handleDragOver,
         onDragEnd: handleDragEnd,
         __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 705,
+            fileName: "src/components/Board.jsx",
+            lineNumber: 410,
             columnNumber: 5
         },
         __self: this
     }, /*#__PURE__*/ React.createElement("div", {
         className: "alpaca-wrap",
         __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 712,
+            fileName: "src/components/Board.jsx",
+            lineNumber: 417,
             columnNumber: 7
         },
         __self: this
-    }, containers.map((container, index)=>/*#__PURE__*/ React.createElement(Container, {
+    }, containers.map((container, index)=>/*#__PURE__*/ React.createElement((0, _containerDefault.default), {
             key: container.id,
             id: container.id,
             title: container.title,
@@ -1697,28 +1452,28 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
             isHidden: hiddenContainerIds.includes(container.id),
             onToggleHidden: handleToggleHidden,
             __source: {
-                fileName: "src/board.jsx",
-                lineNumber: 714,
+                fileName: "src/components/Board.jsx",
+                lineNumber: 419,
                 columnNumber: 11
             },
             __self: this
         }))), /*#__PURE__*/ React.createElement((0, _core.DragOverlay), {
         dropAnimation: null,
         __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 727,
+            fileName: "src/components/Board.jsx",
+            lineNumber: 432,
             columnNumber: 7
         },
         __self: this
-    }, activeId && draggedItem ? /*#__PURE__*/ React.createElement(Item, {
+    }, activeId && draggedItem ? /*#__PURE__*/ React.createElement((0, _itemDefault.default), {
         id: draggedItem.id,
         content: draggedItem.content,
         assignees: draggedItem.assignees,
         comment_count: draggedItem.comment_count,
         className: "alpaca-item-dragging",
         __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 729,
+            fileName: "src/components/Board.jsx",
+            lineNumber: 434,
             columnNumber: 11
         },
         __self: this
@@ -1730,69 +1485,17 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         onCommentCountChange: onCommentCountChangeForIssue,
         onAssigneesChange: handleAssigneesChange,
         createIssueComment: createIssueComment,
-        generateAssigneeSpan: generateAssigneeSpan,
         __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 739,
+            fileName: "src/components/Board.jsx",
+            lineNumber: 444,
             columnNumber: 7
         },
         __self: this
     }));
 }
-function AlpacaBoard() {
-    return /*#__PURE__*/ React.createElement(Board, {
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 754,
-            columnNumber: 10
-        },
-        __self: this
-    });
-}
-function AlpacaBoardControls() {
-    const [showOnlyMyIssues, setShowOnlyMyIssues] = useState(()=>{
-        return getCookie("alpaca_show_only_my_issues") === "true";
-    });
-    const boardElement = document.querySelector("#alpaca-board");
-    useEffect(()=>{
-        setCookie("alpaca_show_only_my_issues", showOnlyMyIssues, 365);
-        if (boardElement) {
-            if (showOnlyMyIssues) boardElement.classList.add("show-only-my-issues");
-            else boardElement.classList.remove("show-only-my-issues");
-        }
-    }, [
-        showOnlyMyIssues,
-        boardElement
-    ]);
-    // Set initial class on mount
-    useEffect(()=>{
-        if (boardElement && showOnlyMyIssues) boardElement.classList.add("show-only-my-issues");
-    }, [
-        boardElement
-    ]);
-    if (typeof alpacaUserData === "undefined" || !alpacaUserData.currentUserId) return null; // Don't render if we don't know the current user
-    return /*#__PURE__*/ React.createElement("div", {
-        className: "alignleft actions",
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 786,
-            columnNumber: 5
-        },
-        __self: this
-    }, /*#__PURE__*/ React.createElement(ToggleControl, {
-        label: "Show only my issues",
-        checked: showOnlyMyIssues,
-        onChange: ()=>setShowOnlyMyIssues(!showOnlyMyIssues),
-        __source: {
-            fileName: "src/board.jsx",
-            lineNumber: 787,
-            columnNumber: 7
-        },
-        __self: this
-    }));
-}
+exports.default = Board;
 
-},{"@dnd-kit/core":"do19q","@dnd-kit/sortable":"fw7EW","@dnd-kit/utilities":"a2exI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./user":"6qIFK","./issue":"alebk"}],"do19q":[function(require,module,exports,__globalThis) {
+},{"@dnd-kit/core":"do19q","@dnd-kit/sortable":"fw7EW","../issue":"alebk","./Item":"2yEr4","./Container":"QNfzH","../utils/cookies":"4qoXW","../utils/data":"j8lWA","../utils/comments":"hPhNI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"do19q":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "AutoScrollActivator", ()=>AutoScrollActivator);
@@ -5720,154 +5423,7 @@ function isAfter(a, b) {
     return a.data.current.sortable.index < b.data.current.sortable.index;
 }
 
-},{"react":"f39IF","@dnd-kit/core":"do19q","@dnd-kit/utilities":"a2exI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6qIFK":[function(require,module,exports,__globalThis) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-const { useState, useRef, useEffect } = wp.element;
-// Main AlpacaUser component which will be rendered by WordPress
-// It now accepts a 'userId' prop
-const AlpacaUser = ({ userId })=>{
-    // State to hold the user data being displayed
-    const [displayedUser, setDisplayedUser] = useState(null);
-    // State for loading status
-    const [loading, setLoading] = useState(true);
-    // State for error messages
-    const [error, setError] = useState(null);
-    /**
-   * Fetches user data from the WordPress REST API.
-   * @param {string | number | null} idToFetch - The ID of the user to fetch. If null, fetches data for the current user ('me' endpoint).
-   */ const fetchUserData = async (idToFetch = null)=>{
-        // Ensure wpApiSettings is available, which is exposed by WordPress in the admin area
-        if (typeof window.wpApiSettings === "undefined" || !window.wpApiSettings.root) {
-            setError("WordPress API settings not found. Ensure this component is loaded within a WordPress admin context.");
-            setLoading(false);
-            return;
-        }
-        try {
-            setLoading(true);
-            setError(null);
-            // Determine the API endpoint based on whether an ID is provided
-            const endpoint = idToFetch ? `wp/v2/users/${idToFetch}` : `wp/v2/users/me`;
-            const apiUrl = `${window.wpApiSettings.root}${endpoint}`;
-            const response = await fetch(apiUrl, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    // Include the WordPress nonce for authentication and CSRF protection.
-                    // wpApiSettings.nonce is usually localized by WordPress for backend scripts.
-                    "X-WP-Nonce": window.wpApiSettings.nonce || ""
-                }
-            });
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-            }
-            const userData = await response.json();
-            setDisplayedUser(userData); // Update the displayed user
-        } catch (err) {
-            console.error("Failed to fetch user data:", err);
-            setDisplayedUser(null); // Clear displayed user on error
-            setError(`Error loading user data: ${err.message}`);
-        } finally{
-            setLoading(false);
-        }
-    };
-    // Effect hook to fetch data when the component mounts or when the 'userId' prop changes
-    useEffect(()=>{
-        // If a userId prop is provided, fetch that specific user, otherwise fetch the current user
-        if (userId) fetchUserData(userId);
-        else fetchUserData(); // Calls without an ID to get the current user
-    }, [
-        userId
-    ]); // Re-run effect if the userId prop changes
-    // Get the highest resolution avatar URL available from the displayedUser object
-    const avatarUrl = displayedUser?.avatar_urls ? displayedUser.avatar_urls["96"] || displayedUser.avatar_urls["48"] || displayedUser.avatar_urls["24"] : "https://placehold.co/96x96/cccccc/333333?text=Avatar"; // Placeholder if no avatar URL is found
-    return /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-user-container",
-        __source: {
-            fileName: "src/user.jsx",
-            lineNumber: 86,
-            columnNumber: 5
-        },
-        __self: undefined
-    }, loading && "Loading user data...", error && !loading && /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-error-message",
-        role: "alert",
-        __source: {
-            fileName: "src/user.jsx",
-            lineNumber: 91,
-            columnNumber: 9
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("strong", {
-        __source: {
-            fileName: "src/user.jsx",
-            lineNumber: 92,
-            columnNumber: 11
-        },
-        __self: undefined
-    }, "Error!"), /*#__PURE__*/ React.createElement("span", {
-        className: "alpaca-error-text",
-        __source: {
-            fileName: "src/user.jsx",
-            lineNumber: 93,
-            columnNumber: 11
-        },
-        __self: undefined
-    }, error)), !displayedUser && !loading && !error && /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-error-message",
-        role: "alert",
-        __source: {
-            fileName: "src/user.jsx",
-            lineNumber: 98,
-            columnNumber: 9
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("strong", {
-        __source: {
-            fileName: "src/user.jsx",
-            lineNumber: 99,
-            columnNumber: 11
-        },
-        __self: undefined
-    }, "Error!"), /*#__PURE__*/ React.createElement("span", {
-        className: "alpaca-error-text",
-        __source: {
-            fileName: "src/user.jsx",
-            lineNumber: 100,
-            columnNumber: 11
-        },
-        __self: undefined
-    }, "No user data available")), displayedUser && !loading && /*#__PURE__*/ React.createElement(React.Fragment, null, /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-user-avatar",
-        __source: {
-            fileName: "src/user.jsx",
-            lineNumber: 106,
-            columnNumber: 11
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("img", {
-        src: avatarUrl,
-        alt: `Avatar of ${displayedUser.name}`,
-        __source: {
-            fileName: "src/user.jsx",
-            lineNumber: 107,
-            columnNumber: 13
-        },
-        __self: undefined
-    })), /*#__PURE__*/ React.createElement("div", {
-        __source: {
-            fileName: "src/user.jsx",
-            lineNumber: 109,
-            columnNumber: 11
-        },
-        __self: undefined
-    }, displayedUser.name, " (", displayedUser.id, ")")));
-};
-// Export the AlpacaUser component as default for React to render
-exports.default = AlpacaUser;
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"alebk":[function(require,module,exports,__globalThis) {
+},{"react":"f39IF","@dnd-kit/core":"do19q","@dnd-kit/utilities":"a2exI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"alebk":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _commentingJsx = require("./commenting.jsx");
@@ -6656,7 +6212,154 @@ const AlpacaCommenting = ({ issueId, onCommentCountChange, commentRefreshKey })=
 };
 exports.default = AlpacaCommenting;
 
-},{"./user":"6qIFK","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","marked":"4duqf"}],"4duqf":[function(require,module,exports,__globalThis) {
+},{"./user":"6qIFK","marked":"4duqf","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"6qIFK":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+const { useState, useRef, useEffect } = wp.element;
+// Main AlpacaUser component which will be rendered by WordPress
+// It now accepts a 'userId' prop
+const AlpacaUser = ({ userId })=>{
+    // State to hold the user data being displayed
+    const [displayedUser, setDisplayedUser] = useState(null);
+    // State for loading status
+    const [loading, setLoading] = useState(true);
+    // State for error messages
+    const [error, setError] = useState(null);
+    /**
+   * Fetches user data from the WordPress REST API.
+   * @param {string | number | null} idToFetch - The ID of the user to fetch. If null, fetches data for the current user ('me' endpoint).
+   */ const fetchUserData = async (idToFetch = null)=>{
+        // Ensure wpApiSettings is available, which is exposed by WordPress in the admin area
+        if (typeof window.wpApiSettings === "undefined" || !window.wpApiSettings.root) {
+            setError("WordPress API settings not found. Ensure this component is loaded within a WordPress admin context.");
+            setLoading(false);
+            return;
+        }
+        try {
+            setLoading(true);
+            setError(null);
+            // Determine the API endpoint based on whether an ID is provided
+            const endpoint = idToFetch ? `wp/v2/users/${idToFetch}` : `wp/v2/users/me`;
+            const apiUrl = `${window.wpApiSettings.root}${endpoint}`;
+            const response = await fetch(apiUrl, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    // Include the WordPress nonce for authentication and CSRF protection.
+                    // wpApiSettings.nonce is usually localized by WordPress for backend scripts.
+                    "X-WP-Nonce": window.wpApiSettings.nonce || ""
+                }
+            });
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+            }
+            const userData = await response.json();
+            setDisplayedUser(userData); // Update the displayed user
+        } catch (err) {
+            console.error("Failed to fetch user data:", err);
+            setDisplayedUser(null); // Clear displayed user on error
+            setError(`Error loading user data: ${err.message}`);
+        } finally{
+            setLoading(false);
+        }
+    };
+    // Effect hook to fetch data when the component mounts or when the 'userId' prop changes
+    useEffect(()=>{
+        // If a userId prop is provided, fetch that specific user, otherwise fetch the current user
+        if (userId) fetchUserData(userId);
+        else fetchUserData(); // Calls without an ID to get the current user
+    }, [
+        userId
+    ]); // Re-run effect if the userId prop changes
+    // Get the highest resolution avatar URL available from the displayedUser object
+    const avatarUrl = displayedUser?.avatar_urls ? displayedUser.avatar_urls["96"] || displayedUser.avatar_urls["48"] || displayedUser.avatar_urls["24"] : "https://placehold.co/96x96/cccccc/333333?text=Avatar"; // Placeholder if no avatar URL is found
+    return /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-user-container",
+        __source: {
+            fileName: "src/user.jsx",
+            lineNumber: 86,
+            columnNumber: 5
+        },
+        __self: undefined
+    }, loading && "Loading user data...", error && !loading && /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-error-message",
+        role: "alert",
+        __source: {
+            fileName: "src/user.jsx",
+            lineNumber: 91,
+            columnNumber: 9
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("strong", {
+        __source: {
+            fileName: "src/user.jsx",
+            lineNumber: 92,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, "Error!"), /*#__PURE__*/ React.createElement("span", {
+        className: "alpaca-error-text",
+        __source: {
+            fileName: "src/user.jsx",
+            lineNumber: 93,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, error)), !displayedUser && !loading && !error && /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-error-message",
+        role: "alert",
+        __source: {
+            fileName: "src/user.jsx",
+            lineNumber: 98,
+            columnNumber: 9
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("strong", {
+        __source: {
+            fileName: "src/user.jsx",
+            lineNumber: 99,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, "Error!"), /*#__PURE__*/ React.createElement("span", {
+        className: "alpaca-error-text",
+        __source: {
+            fileName: "src/user.jsx",
+            lineNumber: 100,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, "No user data available")), displayedUser && !loading && /*#__PURE__*/ React.createElement(React.Fragment, null, /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-user-avatar",
+        __source: {
+            fileName: "src/user.jsx",
+            lineNumber: 106,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("img", {
+        src: avatarUrl,
+        alt: `Avatar of ${displayedUser.name}`,
+        __source: {
+            fileName: "src/user.jsx",
+            lineNumber: 107,
+            columnNumber: 13
+        },
+        __self: undefined
+    })), /*#__PURE__*/ React.createElement("div", {
+        __source: {
+            fileName: "src/user.jsx",
+            lineNumber: 109,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, displayedUser.name, " (", displayedUser.id, ")")));
+};
+// Export the AlpacaUser component as default for React to render
+exports.default = AlpacaUser;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"4duqf":[function(require,module,exports,__globalThis) {
 /**
  * marked v16.2.0 - a markdown parser
  * Copyright (c) 2011-2025, Christopher Jeffrey. (MIT Licensed)
@@ -8202,6 +7905,371 @@ Please report this to https://github.com/markedjs/marked.`, e) {
     return module1.exports;
 });
 
-},{}]},["9iTdJ","d8Dch"], "d8Dch", "parcelRequire55a0", {})
+},{}],"2yEr4":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+const { forwardRef } = wp.element;
+const Item = forwardRef(({ id, content, assignees = [], comment_count, className, style, ...props }, ref)=>{
+    const assigneeDataAttributes = assignees.reduce((acc, assignee)=>{
+        if (assignee && assignee.id) acc[`data-assignee-${assignee.id}`] = "";
+        return acc;
+    }, {});
+    return /*#__PURE__*/ React.createElement("div", {
+        ref: ref,
+        className: className,
+        style: style,
+        "data-id": id,
+        ...assigneeDataAttributes,
+        ...props,
+        __source: {
+            fileName: "src/components/Item.jsx",
+            lineNumber: 16,
+            columnNumber: 7
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-item-content",
+        __source: {
+            fileName: "src/components/Item.jsx",
+            lineNumber: 24,
+            columnNumber: 9
+        },
+        __self: undefined
+    }, content), /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-item-meta",
+        __source: {
+            fileName: "src/components/Item.jsx",
+            lineNumber: 25,
+            columnNumber: 9
+        },
+        __self: undefined
+    }, assignees.length > 0 && /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-item-assignees",
+        "data-assignees": assignees.length,
+        title: assignees.length === 1 ? assignees[0].display_name || assignees[0].name : assignees.map((a)=>a.display_name || a.name).join(", "),
+        __source: {
+            fileName: "src/components/Item.jsx",
+            lineNumber: 28,
+            columnNumber: 13
+        },
+        __self: undefined
+    }, assignees.map((assignee)=>/*#__PURE__*/ React.createElement("div", {
+            key: assignee.id,
+            className: "alpaca-item-assignee",
+            __source: {
+                fileName: "src/components/Item.jsx",
+                lineNumber: 38,
+                columnNumber: 17
+            },
+            __self: undefined
+        }, assignee.avatar && /*#__PURE__*/ React.createElement("img", {
+            className: "alpaca-item-user-img",
+            src: assignee.avatar,
+            alt: assignee.display_name || assignee.name,
+            title: assignee.display_name || assignee.name,
+            __source: {
+                fileName: "src/components/Item.jsx",
+                lineNumber: 40,
+                columnNumber: 21
+            },
+            __self: undefined
+        }), /*#__PURE__*/ React.createElement("div", {
+            className: "alpaca-item-assignee-name",
+            __source: {
+                fileName: "src/components/Item.jsx",
+                lineNumber: 47,
+                columnNumber: 19
+            },
+            __self: undefined
+        }, assignee.display_name || assignee.name)))), typeof comment_count !== "undefined" && comment_count > 0 && /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-item-comment-count has-dashicon",
+        __source: {
+            fileName: "src/components/Item.jsx",
+            lineNumber: 57,
+            columnNumber: 13
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("span", {
+        className: "dashicons dashicons-admin-comments",
+        "aria-hidden": "true",
+        __source: {
+            fileName: "src/components/Item.jsx",
+            lineNumber: 58,
+            columnNumber: 15
+        },
+        __self: undefined
+    }), comment_count)));
+});
+exports.default = Item;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"QNfzH":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _sortable = require("@dnd-kit/sortable");
+var _sortableItem = require("./SortableItem");
+var _sortableItemDefault = parcelHelpers.interopDefault(_sortableItem);
+const { DropdownMenu } = wp.components;
+/**
+ * Container component.
+ */ function Container({ id, title, items, onItemClick, onMoveAllToNext, isLastContainer, isHidden, onToggleHidden }) {
+    const hasItems = items.length > 0;
+    const toggleHidden = ()=>{
+        onToggleHidden(id);
+    };
+    const menuControls = [
+        {
+            icon: isHidden ? "visibility" : "hidden",
+            title: isHidden ? "Show items" : "Hide items",
+            onClick: toggleHidden
+        }
+    ];
+    if (!isLastContainer) menuControls.push({
+        icon: "arrow-right-alt",
+        title: "Move all to next column",
+        onClick: ()=>onMoveAllToNext(id),
+        disabled: !hasItems
+    });
+    return /*#__PURE__*/ React.createElement("div", {
+        className: `alpaca-container ${isHidden ? "hidden" : ""}`,
+        "data-id": id,
+        __source: {
+            fileName: "src/components/Container.jsx",
+            lineNumber: 45,
+            columnNumber: 5
+        },
+        __self: this
+    }, /*#__PURE__*/ React.createElement("div", {
+        class: "alpaca-container-header",
+        __source: {
+            fileName: "src/components/Container.jsx",
+            lineNumber: 49,
+            columnNumber: 7
+        },
+        __self: this
+    }, /*#__PURE__*/ React.createElement("h2", {
+        className: "alpaca-container-title",
+        __source: {
+            fileName: "src/components/Container.jsx",
+            lineNumber: 50,
+            columnNumber: 9
+        },
+        __self: this
+    }, title, " ", /*#__PURE__*/ React.createElement("span", {
+        className: "alpaca-item-count",
+        __source: {
+            fileName: "src/components/Container.jsx",
+            lineNumber: 51,
+            columnNumber: 19
+        },
+        __self: this
+    }, items.length)), /*#__PURE__*/ React.createElement("div", {
+        class: "alpaca-container-controls",
+        __source: {
+            fileName: "src/components/Container.jsx",
+            lineNumber: 53,
+            columnNumber: 9
+        },
+        __self: this
+    }, /*#__PURE__*/ React.createElement(DropdownMenu, {
+        icon: "menu",
+        label: "Options",
+        controls: menuControls,
+        __source: {
+            fileName: "src/components/Container.jsx",
+            lineNumber: 54,
+            columnNumber: 11
+        },
+        __self: this
+    }))), /*#__PURE__*/ React.createElement((0, _sortable.SortableContext), {
+        id: id,
+        items: hasItems ? items.map((item)=>item.id) : [
+            id
+        ],
+        strategy: (0, _sortable.verticalListSortingStrategy),
+        __source: {
+            fileName: "src/components/Container.jsx",
+            lineNumber: 57,
+            columnNumber: 7
+        },
+        __self: this
+    }, hasItems ? items.map((item)=>/*#__PURE__*/ React.createElement((0, _sortableItemDefault.default), {
+            className: "alpaca-item",
+            key: item.id,
+            id: item.id,
+            content: item.content,
+            assignees: item.assignees,
+            comment_count: item.comment_count,
+            onClick: onItemClick,
+            __source: {
+                fileName: "src/components/Container.jsx",
+                lineNumber: 64,
+                columnNumber: 13
+            },
+            __self: this
+        })) : /*#__PURE__*/ React.createElement((0, _sortableItemDefault.default), {
+        key: id,
+        id: id,
+        className: "alpaca-item empty",
+        content: "Drop items here",
+        isDragDisabled: true,
+        __source: {
+            fileName: "src/components/Container.jsx",
+            lineNumber: 75,
+            columnNumber: 11
+        },
+        __self: this
+    })));
+}
+exports.default = Container;
+
+},{"@dnd-kit/sortable":"fw7EW","./SortableItem":"ji6pg","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"ji6pg":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _sortable = require("@dnd-kit/sortable");
+var _utilities = require("@dnd-kit/utilities");
+var _item = require("./Item");
+var _itemDefault = parcelHelpers.interopDefault(_item);
+/**
+ * Sortable item component.
+ */ function SortableItem({ id, content, className, isDragDisabled = false, onClick, assignees = [], comment_count }) {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = (0, _sortable.useSortable)({
+        id,
+        animateLayoutChanges: ()=>false,
+        disabled: isDragDisabled
+    });
+    const style = {
+        transform: isDragging ? undefined : (0, _utilities.CSS).Transform.toString(transform),
+        transition: isDragging ? "none" : transition,
+        cursor: isDragging ? "grabbing" : isDragDisabled ? "default" : "grab",
+        visibility: isDragging ? "hidden" : "visible",
+        userSelect: isDragDisabled ? "none" : "auto"
+    };
+    const handleClick = (event)=>{
+        if (!isDragging && onClick) onClick(event, id);
+    };
+    return /*#__PURE__*/ React.createElement((0, _itemDefault.default), {
+        ref: setNodeRef,
+        id: id,
+        content: content,
+        assignees: assignees,
+        comment_count: comment_count,
+        className: className,
+        style: style,
+        onClick: handleClick,
+        ...!isDragDisabled ? {
+            ...attributes,
+            ...listeners
+        } : {
+            tabIndex: -1
+        },
+        __source: {
+            fileName: "src/components/SortableItem.jsx",
+            lineNumber: 45,
+            columnNumber: 5
+        },
+        __self: this
+    });
+}
+exports.default = SortableItem;
+
+},{"@dnd-kit/sortable":"fw7EW","@dnd-kit/utilities":"a2exI","./Item":"2yEr4","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"4qoXW":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "setCookie", ()=>setCookie);
+parcelHelpers.export(exports, "getCookie", ()=>getCookie);
+const setCookie = (name, value, days)=>{
+    let expires = "";
+    if (days) {
+        const date = new Date();
+        date.setTime(date.getTime() + days * 86400000);
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (value || "") + expires + "; path=/";
+};
+const getCookie = (name)=>{
+    const nameEQ = name + "=";
+    const ca = document.cookie.split(";");
+    for(let i = 0; i < ca.length; i++){
+        let c = ca[i];
+        while(c.charAt(0) === " ")c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+    }
+    return null;
+};
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"j8lWA":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "transformDataForBoard", ()=>transformDataForBoard);
+parcelHelpers.export(exports, "saveBoardOrder", ()=>saveBoardOrder);
+const { decodeEntities } = wp.htmlEntities;
+/**
+ * Transform server data into array format for board state.
+ * @param {Array} data The data from `alpaca_get_board_data`.
+ */ const transformDataForBoard = (data)=>{
+    if (!data || !Array.isArray(data)) return [];
+    return data.map((column)=>({
+            id: column.id.toString(),
+            title: decodeEntities(column.title),
+            items: column.issues.map((issue)=>({
+                    id: issue.id.toString(),
+                    content: decodeEntities(issue.title),
+                    assignees: issue.assignees || [],
+                    comment_count: issue.comment_count
+                }))
+        }));
+};
+/**
+ * Save board order in DOM order, including container IDs & titles.
+ */ const saveBoardOrder = ()=>{
+    const containersInDomOrder = document.querySelectorAll(".alpaca-container");
+    const data = Array.from(containersInDomOrder).map((containerEl)=>{
+        const id = parseInt(containerEl.dataset.id, 10);
+        const title = containerEl.querySelector("h2").textContent.trim();
+        // Select all items except for the empty placeholder.
+        const items = containerEl.querySelectorAll(".alpaca-item:not(.empty)");
+        return {
+            id,
+            title,
+            issues: Array.from(items).map((itemEl)=>parseInt(itemEl.dataset.id, 10))
+        };
+    });
+    // Use wp.apiFetch to send data to the REST API endpoint.
+    // It automatically handles nonces for authenticated requests.
+    wp.apiFetch({
+        path: "/alpaca/v1/board",
+        method: "POST",
+        data: data
+    }).then((res)=>{
+    // saved successfully
+    }).catch((err)=>{
+        console.error("Error saving board order:", err);
+    });
+};
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hPhNI":[function(require,module,exports,__globalThis) {
+/**
+ * Generates HTML for an assignee span to be used in comments.
+ * @param {object} user The user object for the assignee.
+ * @returns {string} HTML string.
+ */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "generateAssigneeSpan", ()=>generateAssigneeSpan);
+parcelHelpers.export(exports, "generateStatusChangeComment", ()=>generateStatusChangeComment);
+const generateAssigneeSpan = (user)=>{
+    if (!user) return "";
+    const avatarAttr = user.avatar ? ` data-avatar="${user.avatar}"` : "";
+    return `<span class="alpaca-status-assignee" data-userid="${user.id}"${avatarAttr}>${user.name}</span>`;
+};
+/**
+ * Generates HTML for a status change comment.
+ * @param {string} fromStatus The title of the original status.
+ * @param {string} toStatus The title of the new status.
+ * @returns {string} HTML string.
+ */ const generateStatusChangeComment = (fromStatus, toStatus)=>{
+    return `Item moved from status <span class="alpaca-status-comment">${fromStatus}</span> to <span class="alpaca-status-comment">${toStatus}</span>`;
+};
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["9iTdJ","d8Dch"], "d8Dch", "parcelRequire55a0", {})
 
 //# sourceMappingURL=index.js.map
