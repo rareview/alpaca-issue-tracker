@@ -26,7 +26,6 @@ export function AlpacaBoardControls() {
       boardElement.classList.remove(
         "filter-all",
         "filter-mine",
-        "filter-others",
         "filter-watchlist"
       );
 
@@ -56,7 +55,6 @@ export function AlpacaBoardControls() {
       <ToggleGroupControlOption value="all" label="All Issues" />
       <ToggleGroupControlOption value="mine" label="Assigned to me" />
       <ToggleGroupControlOption value="watchlist" label="My Watchlist" />
-      <ToggleGroupControlOption value="others" label="Others" />
     </ToggleGroupControl>
   );
   // TODO: watchlist functionality

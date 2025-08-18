@@ -1084,7 +1084,7 @@ function AlpacaBoardControls() {
         (0, _cookies.setCookie)("alpaca_filter_issues", filterIssues, 365);
         if (boardElement) {
             // Remove any existing filter classes first
-            boardElement.classList.remove("filter-all", "filter-mine", "filter-others", "filter-watchlist");
+            boardElement.classList.remove("filter-all", "filter-mine", "filter-watchlist");
             // Add the selected filter class
             boardElement.classList.add(`filter-${filterIssues}`);
         }
@@ -1106,7 +1106,7 @@ function AlpacaBoardControls() {
         isBlock: true,
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 50,
+            lineNumber: 49,
             columnNumber: 5
         },
         __self: this
@@ -1115,7 +1115,7 @@ function AlpacaBoardControls() {
         label: "All Issues",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 56,
+            lineNumber: 55,
             columnNumber: 7
         },
         __self: this
@@ -1124,7 +1124,7 @@ function AlpacaBoardControls() {
         label: "Assigned to me",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 57,
+            lineNumber: 56,
             columnNumber: 7
         },
         __self: this
@@ -1133,16 +1133,7 @@ function AlpacaBoardControls() {
         label: "My Watchlist",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 58,
-            columnNumber: 7
-        },
-        __self: this
-    }), /*#__PURE__*/ React.createElement(ToggleGroupControlOption, {
-        value: "others",
-        label: "Others",
-        __source: {
-            fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 59,
+            lineNumber: 57,
             columnNumber: 7
         },
         __self: this

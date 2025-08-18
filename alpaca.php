@@ -122,6 +122,9 @@ add_action('admin_enqueue_scripts', function() {
 				.wp-admin .alpaca-board-filter::before {
 					background-color: var(--admin-color-1);
 				}
+				.alpaca-item .alpaca-item-controls .dashicons {
+					color: var(--admin-color-1);
+				}
 			";
         }
 

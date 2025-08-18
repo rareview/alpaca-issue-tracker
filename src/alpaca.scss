@@ -282,6 +282,10 @@
     cursor: pointer;
   }
 
+  #alpaca-board.filter-watchlist .alpaca-item:not(.is-watched) {
+    display: none;
+  }
+
   .alpaca-grid {
     .alpaca-row {
       display: flex;

@@ -290,6 +290,10 @@
   cursor: pointer;
 }
 
+.wp-admin #alpaca-board.filter-watchlist .alpaca-item:not(.is-watched) {
+  display: none;
+}
+
 .wp-admin .alpaca-grid .alpaca-row {
   display: flex;
 }
