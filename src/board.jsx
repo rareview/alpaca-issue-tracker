@@ -262,7 +262,9 @@ function Container({
       data-id={id}
     >
       <div class="alpaca-container-header">
-        <h2 className="alpaca-container-title">{title}</h2>
+        <h2 className="alpaca-container-title">
+          {title} <span className="alpaca-item-count">{items.length}</span>
+        </h2>
         <div class="alpaca-container-controls">
           <DropdownMenu icon="menu" label="Options" controls={menuControls} />
         </div>

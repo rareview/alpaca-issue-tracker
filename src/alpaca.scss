@@ -70,6 +70,12 @@
         align-items: flex-end;
         h2 {
           margin: 2px 2px 10px 2px;
+          .alpaca-item-count {
+            font-size: smaller;
+            font-weight: 200;
+            margin-left: 0.5rem;
+            opacity: 0.5;
+          }
         }
         .alpaca-container-controls {
           padding: 2px 0;

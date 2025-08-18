@@ -1292,11 +1292,19 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
             columnNumber: 9
         },
         __self: this
-    }, title), /*#__PURE__*/ React.createElement("div", {
-        class: "alpaca-container-controls",
+    }, title, " ", /*#__PURE__*/ React.createElement("span", {
+        className: "alpaca-item-count",
         __source: {
             fileName: "src/board.jsx",
             lineNumber: 266,
+            columnNumber: 19
+        },
+        __self: this
+    }, items.length)), /*#__PURE__*/ React.createElement("div", {
+        class: "alpaca-container-controls",
+        __source: {
+            fileName: "src/board.jsx",
+            lineNumber: 268,
             columnNumber: 9
         },
         __self: this
@@ -1306,7 +1314,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         controls: menuControls,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 267,
+            lineNumber: 269,
             columnNumber: 11
         },
         __self: this
@@ -1318,7 +1326,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         strategy: (0, _sortable.verticalListSortingStrategy),
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 270,
+            lineNumber: 272,
             columnNumber: 7
         },
         __self: this
@@ -1332,7 +1340,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
             onClick: onItemClick,
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 277,
+                lineNumber: 279,
                 columnNumber: 13
             },
             __self: this
@@ -1344,7 +1352,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         isDragDisabled: true,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 288,
+            lineNumber: 290,
             columnNumber: 11
         },
         __self: this
@@ -1621,7 +1629,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         onDragEnd: handleDragEnd,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 659,
+            lineNumber: 661,
             columnNumber: 5
         },
         __self: this
@@ -1629,7 +1637,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         className: "alpaca-wrap",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 666,
+            lineNumber: 668,
             columnNumber: 7
         },
         __self: this
@@ -1643,7 +1651,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
             isLastContainer: index === containers.length - 1,
             __source: {
                 fileName: "src/board.jsx",
-                lineNumber: 668,
+                lineNumber: 670,
                 columnNumber: 11
             },
             __self: this
@@ -1651,7 +1659,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         dropAnimation: null,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 679,
+            lineNumber: 681,
             columnNumber: 7
         },
         __self: this
@@ -1663,7 +1671,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         className: "alpaca-item-dragging",
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 681,
+            lineNumber: 683,
             columnNumber: 11
         },
         __self: this
@@ -1678,7 +1686,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, className
         generateAssigneeSpan: generateAssigneeSpan,
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 691,
+            lineNumber: 693,
             columnNumber: 7
         },
         __self: this
@@ -1688,7 +1696,7 @@ function AlpacaBoard() {
     return /*#__PURE__*/ React.createElement(Board, {
         __source: {
             fileName: "src/board.jsx",
-            lineNumber: 706,
+            lineNumber: 708,
             columnNumber: 10
         },
         __self: this
