@@ -5,6 +5,7 @@ const { useState, useEffect, useCallback } = wp.element;
 const AlpacaSettings = () => {
   const [statuses, setStatuses] = useState([]);
   const [currentStatuses, setCurrentStatuses] = useState([]); // Track current order
+  const [defaultStatusId, setDefaultStatusId] = useState(""); // Track default status
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -31,6 +32,11 @@ const AlpacaSettings = () => {
     setCurrentStatuses(newOrder);
   }, []);
 
+  // Handle when DefaultStatusSelector changes the default
+  const handleDefaultStatusChange = useCallback((newDefaultId) => {
+    setDefaultStatusId(newDefaultId);
+  }, []);
+
   return (
     <>
       <h2>Status Management</h2>
@@ -44,9 +50,13 @@ const AlpacaSettings = () => {
         isLoading={isLoading}
         error={error}
         onStatusesChange={handleStatusesOrderChange}
+        defaultStatusId={defaultStatusId}
       />
       <hr style={{ marginTop: "2rem" }} />
-      <DefaultStatusSelector statuses={currentStatuses} />
+      <DefaultStatusSelector
+        statuses={currentStatuses}
+        onDefaultChange={handleDefaultStatusChange}
+      />
     </>
   );
 };

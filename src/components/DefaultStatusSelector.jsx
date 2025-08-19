@@ -1,7 +1,7 @@
 const { useState, useEffect, useCallback, useMemo } = wp.element;
 const { SelectControl, Spinner } = wp.components;
 
-const DefaultStatusSelector = ({ statuses }) => {
+const DefaultStatusSelector = ({ statuses, onDefaultChange }) => {
   const [defaultStatus, setDefaultStatus] = useState("");
   const [isFetching, setIsFetching] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -13,7 +13,12 @@ const DefaultStatusSelector = ({ statuses }) => {
       path: "/alpaca/v1/options/default_status",
     })
       .then((option) => {
-        setDefaultStatus(option.value ? option.value.toString() : "");
+        const value = option.value ? option.value.toString() : "";
+        setDefaultStatus(value);
+        // Notify parent of the initial value
+        if (onDefaultChange) {
+          onDefaultChange(value);
+        }
       })
       .catch((err) => {
         console.error("Error fetching data:", err);
@@ -31,6 +36,11 @@ const DefaultStatusSelector = ({ statuses }) => {
   const handleStatusChange = (newValue) => {
     setIsSaving(true);
     setDefaultStatus(newValue);
+
+    // Notify parent of the change
+    if (onDefaultChange) {
+      onDefaultChange(newValue);
+    }
 
     wp.apiFetch({
       path: "/alpaca/v1/options/default_status",

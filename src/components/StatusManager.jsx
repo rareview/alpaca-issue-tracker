@@ -7,9 +7,11 @@ const StatusManager = ({
   isLoading,
   error,
   onStatusesChange,
+  defaultStatusId,
 }) => {
   const [statusToDelete, setStatusToDelete] = useState(null);
   const [localStatuses, setLocalStatuses] = useState(statuses);
+  const [isUpdatingScores, setIsUpdatingScores] = useState(false);
 
   useEffect(() => {
     setLocalStatuses(statuses);
@@ -21,6 +23,48 @@ const StatusManager = ({
       onStatusesChange(localStatuses);
     }
   }, [localStatuses, onStatusesChange]);
+
+  // Recalculate term_scores based on order and default status
+  const recalculateScores = async (statusesArray, defaultId) => {
+    if (!defaultId) return; // No default selected, skip scoring
+
+    setIsUpdatingScores(true);
+
+    try {
+      const defaultIndex = statusesArray.findIndex(
+        (s) => s.term_id.toString() === defaultId
+      );
+      if (defaultIndex === -1) return; // Default status not found
+
+      // Calculate scores relative to default status
+      const scoreUpdates = statusesArray.map((status, index) => {
+        const score = index - defaultIndex; // Default gets 0, above get negative, below get positive
+        return {
+          id: status.term_id,
+          score: score,
+        };
+      });
+
+      // Update all scores via API
+      await Promise.all(
+        scoreUpdates.map((update) =>
+          wp.apiFetch({
+            path: `/alpaca/v1/status/${update.id}`,
+            method: "POST",
+            data: { term_score: update.score },
+          })
+        )
+      );
+
+      // Refresh the statuses to get updated scores
+      fetchStatuses();
+    } catch (err) {
+      console.error("Error updating term scores:", err);
+      alert("Error updating status order: " + err.message);
+    } finally {
+      setIsUpdatingScores(false);
+    }
+  };
 
   const handleMove = (id, direction) => {
     const oldIndex = localStatuses.findIndex((s) => s.term_id === id);
@@ -34,7 +78,11 @@ const StatusManager = ({
     newStatuses.splice(newIndex, 0, movedItem);
 
     setLocalStatuses(newStatuses);
-    // TODO: Save new order by updating term_score for each status
+
+    // Recalculate scores when order changes
+    if (defaultStatusId) {
+      recalculateScores(newStatuses, defaultStatusId);
+    }
   };
 
   const handleRename = (id, newName) => {
@@ -106,6 +154,22 @@ const StatusManager = ({
 
   return (
     <div className="alpaca-status-manager">
+      {isUpdatingScores && (
+        <div
+          style={{
+            padding: "10px",
+            backgroundColor: "#f0f6fc",
+            border: "1px solid #c3d7f0",
+            marginBottom: "1rem",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}
+        >
+          <Spinner />
+          <span>Updating status order...</span>
+        </div>
+      )}
       <table className="wp-list-table widefat striped">
         <thead>
           <tr>

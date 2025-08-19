@@ -1033,6 +1033,7 @@ const { useState, useEffect, useCallback } = wp.element;
 const AlpacaSettings = ()=>{
     const [statuses, setStatuses] = useState([]);
     const [currentStatuses, setCurrentStatuses] = useState([]); // Track current order
+    const [defaultStatusId, setDefaultStatusId] = useState(""); // Track default status
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
     const fetchStatuses = useCallback(()=>{
@@ -1057,17 +1058,21 @@ const AlpacaSettings = ()=>{
     const handleStatusesOrderChange = useCallback((newOrder)=>{
         setCurrentStatuses(newOrder);
     }, []);
+    // Handle when DefaultStatusSelector changes the default
+    const handleDefaultStatusChange = useCallback((newDefaultId)=>{
+        setDefaultStatusId(newDefaultId);
+    }, []);
     return /*#__PURE__*/ React.createElement(React.Fragment, null, /*#__PURE__*/ React.createElement("h2", {
         __source: {
             fileName: "src/settings.jsx",
-            lineNumber: 36,
+            lineNumber: 42,
             columnNumber: 7
         },
         __self: undefined
     }, "Status Management"), /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/settings.jsx",
-            lineNumber: 37,
+            lineNumber: 43,
             columnNumber: 7
         },
         __self: undefined
@@ -1077,9 +1082,10 @@ const AlpacaSettings = ()=>{
         isLoading: isLoading,
         error: error,
         onStatusesChange: handleStatusesOrderChange,
+        defaultStatusId: defaultStatusId,
         __source: {
             fileName: "src/settings.jsx",
-            lineNumber: 41,
+            lineNumber: 47,
             columnNumber: 7
         },
         __self: undefined
@@ -1089,15 +1095,16 @@ const AlpacaSettings = ()=>{
         },
         __source: {
             fileName: "src/settings.jsx",
-            lineNumber: 48,
+            lineNumber: 55,
             columnNumber: 7
         },
         __self: undefined
     }), /*#__PURE__*/ React.createElement((0, _defaultStatusSelectorDefault.default), {
         statuses: currentStatuses,
+        onDefaultChange: handleDefaultStatusChange,
         __source: {
             fileName: "src/settings.jsx",
-            lineNumber: 49,
+            lineNumber: 56,
             columnNumber: 7
         },
         __self: undefined
@@ -1110,9 +1117,10 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 const { useState, useEffect, useRef } = wp.element;
 const { Button, Spinner, Modal, TextControl } = wp.components;
-const StatusManager = ({ statuses, fetchStatuses, isLoading, error, onStatusesChange })=>{
+const StatusManager = ({ statuses, fetchStatuses, isLoading, error, onStatusesChange, defaultStatusId })=>{
     const [statusToDelete, setStatusToDelete] = useState(null);
     const [localStatuses, setLocalStatuses] = useState(statuses);
+    const [isUpdatingScores, setIsUpdatingScores] = useState(false);
     useEffect(()=>{
         setLocalStatuses(statuses);
     }, [
@@ -1125,6 +1133,38 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error, onStatusesCh
         localStatuses,
         onStatusesChange
     ]);
+    // Recalculate term_scores based on order and default status
+    const recalculateScores = async (statusesArray, defaultId)=>{
+        if (!defaultId) return; // No default selected, skip scoring
+        setIsUpdatingScores(true);
+        try {
+            const defaultIndex = statusesArray.findIndex((s)=>s.term_id.toString() === defaultId);
+            if (defaultIndex === -1) return; // Default status not found
+            // Calculate scores relative to default status
+            const scoreUpdates = statusesArray.map((status, index)=>{
+                const score = index - defaultIndex; // Default gets 0, above get negative, below get positive
+                return {
+                    id: status.term_id,
+                    score: score
+                };
+            });
+            // Update all scores via API
+            await Promise.all(scoreUpdates.map((update)=>wp.apiFetch({
+                    path: `/alpaca/v1/status/${update.id}`,
+                    method: "POST",
+                    data: {
+                        term_score: update.score
+                    }
+                })));
+            // Refresh the statuses to get updated scores
+            fetchStatuses();
+        } catch (err) {
+            console.error("Error updating term scores:", err);
+            alert("Error updating status order: " + err.message);
+        } finally{
+            setIsUpdatingScores(false);
+        }
+    };
     const handleMove = (id, direction)=>{
         const oldIndex = localStatuses.findIndex((s)=>s.term_id === id);
         if (oldIndex === -1) return;
@@ -1136,7 +1176,8 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error, onStatusesCh
         const [movedItem] = newStatuses.splice(oldIndex, 1);
         newStatuses.splice(newIndex, 0, movedItem);
         setLocalStatuses(newStatuses);
-    // TODO: Save new order by updating term_score for each status
+        // Recalculate scores when order changes
+        if (defaultStatusId) recalculateScores(newStatuses, defaultStatusId);
     };
     const handleRename = (id, newName)=>{
         wp.apiFetch({
@@ -1190,7 +1231,7 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error, onStatusesCh
     if (isLoading) return /*#__PURE__*/ React.createElement(Spinner, {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 104,
+            lineNumber: 152,
             columnNumber: 25
         },
         __self: undefined
@@ -1198,7 +1239,7 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error, onStatusesCh
     if (error) return /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 105,
+            lineNumber: 153,
             columnNumber: 21
         },
         __self: undefined
@@ -1207,36 +1248,66 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error, onStatusesCh
         className: "alpaca-status-manager",
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 108,
+            lineNumber: 156,
             columnNumber: 5
         },
         __self: undefined
-    }, /*#__PURE__*/ React.createElement("table", {
+    }, isUpdatingScores && /*#__PURE__*/ React.createElement("div", {
+        style: {
+            padding: "10px",
+            backgroundColor: "#f0f6fc",
+            border: "1px solid #c3d7f0",
+            marginBottom: "1rem",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px"
+        },
+        __source: {
+            fileName: "src/components/StatusManager.jsx",
+            lineNumber: 158,
+            columnNumber: 9
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement(Spinner, {
+        __source: {
+            fileName: "src/components/StatusManager.jsx",
+            lineNumber: 169,
+            columnNumber: 11
+        },
+        __self: undefined
+    }), /*#__PURE__*/ React.createElement("span", {
+        __source: {
+            fileName: "src/components/StatusManager.jsx",
+            lineNumber: 170,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, "Updating status order...")), /*#__PURE__*/ React.createElement("table", {
         className: "wp-list-table widefat striped",
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 109,
+            lineNumber: 173,
             columnNumber: 7
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("thead", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 110,
+            lineNumber: 174,
             columnNumber: 9
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 111,
+            lineNumber: 175,
             columnNumber: 11
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("th", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 112,
+            lineNumber: 176,
             columnNumber: 13
         },
         __self: undefined
@@ -1247,14 +1318,14 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error, onStatusesCh
         },
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 113,
+            lineNumber: 177,
             columnNumber: 13
         },
         __self: undefined
     }, "Actions"))), /*#__PURE__*/ React.createElement("tbody", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 116,
+            lineNumber: 180,
             columnNumber: 9
         },
         __self: undefined
@@ -1268,14 +1339,14 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error, onStatusesCh
             isLast: index === localStatuses.length - 1,
             __source: {
                 fileName: "src/components/StatusManager.jsx",
-                lineNumber: 118,
+                lineNumber: 182,
                 columnNumber: 13
             },
             __self: undefined
         })))), /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 131,
+            lineNumber: 195,
             columnNumber: 7
         },
         __self: undefined
@@ -1284,7 +1355,7 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error, onStatusesCh
         onClick: handleAddStatus,
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 132,
+            lineNumber: 196,
             columnNumber: 9
         },
         __self: undefined
@@ -1294,21 +1365,21 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error, onStatusesCh
         className: "alpaca-modal",
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 138,
+            lineNumber: 202,
             columnNumber: 9
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 143,
+            lineNumber: 207,
             columnNumber: 11
         },
         __self: undefined
     }, 'Are you sure you want to delete the status "', /*#__PURE__*/ React.createElement("strong", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 145,
+            lineNumber: 209,
             columnNumber: 13
         },
         __self: undefined
@@ -1316,7 +1387,7 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error, onStatusesCh
         className: "alpaca-actions",
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 147,
+            lineNumber: 211,
             columnNumber: 11
         },
         __self: undefined
@@ -1326,7 +1397,7 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error, onStatusesCh
         onClick: performDelete,
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 148,
+            lineNumber: 212,
             columnNumber: 13
         },
         __self: undefined
@@ -1335,7 +1406,7 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error, onStatusesCh
         onClick: cancelDelete,
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 151,
+            lineNumber: 215,
             columnNumber: 13
         },
         __self: undefined
@@ -1373,14 +1444,14 @@ const StatusRow = ({ status, onRename, onDelete, onMove, isFirst, isLast })=>{
     return /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 201,
+            lineNumber: 265,
             columnNumber: 5
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 202,
+            lineNumber: 266,
             columnNumber: 7
         },
         __self: undefined
@@ -1392,7 +1463,7 @@ const StatusRow = ({ status, onRename, onDelete, onMove, isFirst, isLast })=>{
         onKeyDown: handleKeyDown,
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 204,
+            lineNumber: 268,
             columnNumber: 11
         },
         __self: undefined
@@ -1401,14 +1472,14 @@ const StatusRow = ({ status, onRename, onDelete, onMove, isFirst, isLast })=>{
         onClick: handleStartRename,
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 212,
+            lineNumber: 276,
             columnNumber: 11
         },
         __self: undefined
     }, status.name)), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 217,
+            lineNumber: 281,
             columnNumber: 7
         },
         __self: undefined
@@ -1419,7 +1490,7 @@ const StatusRow = ({ status, onRename, onDelete, onMove, isFirst, isLast })=>{
         disabled: isFirst,
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 218,
+            lineNumber: 282,
             columnNumber: 9
         },
         __self: undefined
@@ -1430,7 +1501,7 @@ const StatusRow = ({ status, onRename, onDelete, onMove, isFirst, isLast })=>{
         disabled: isLast,
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 224,
+            lineNumber: 288,
             columnNumber: 9
         },
         __self: undefined
@@ -1439,7 +1510,7 @@ const StatusRow = ({ status, onRename, onDelete, onMove, isFirst, isLast })=>{
         onClick: ()=>onDelete(status.term_id),
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 230,
+            lineNumber: 294,
             columnNumber: 9
         },
         __self: undefined
@@ -1452,7 +1523,7 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 const { useState, useEffect, useCallback, useMemo } = wp.element;
 const { SelectControl, Spinner } = wp.components;
-const DefaultStatusSelector = ({ statuses })=>{
+const DefaultStatusSelector = ({ statuses, onDefaultChange })=>{
     const [defaultStatus, setDefaultStatus] = useState("");
     const [isFetching, setIsFetching] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
@@ -1462,7 +1533,10 @@ const DefaultStatusSelector = ({ statuses })=>{
         wp.apiFetch({
             path: "/alpaca/v1/options/default_status"
         }).then((option)=>{
-            setDefaultStatus(option.value ? option.value.toString() : "");
+            const value = option.value ? option.value.toString() : "";
+            setDefaultStatus(value);
+            // Notify parent of the initial value
+            if (onDefaultChange) onDefaultChange(value);
         }).catch((err)=>{
             console.error("Error fetching data:", err);
             setError("Could not load default status settings.");
@@ -1478,6 +1552,8 @@ const DefaultStatusSelector = ({ statuses })=>{
     const handleStatusChange = (newValue)=>{
         setIsSaving(true);
         setDefaultStatus(newValue);
+        // Notify parent of the change
+        if (onDefaultChange) onDefaultChange(newValue);
         wp.apiFetch({
             path: "/alpaca/v1/options/default_status",
             method: "POST",
@@ -1509,7 +1585,7 @@ const DefaultStatusSelector = ({ statuses })=>{
         className: "alpaca-error",
         __source: {
             fileName: "src/components/DefaultStatusSelector.jsx",
-            lineNumber: 63,
+            lineNumber: 73,
             columnNumber: 12
         },
         __self: undefined
@@ -1520,21 +1596,21 @@ const DefaultStatusSelector = ({ statuses })=>{
         },
         __source: {
             fileName: "src/components/DefaultStatusSelector.jsx",
-            lineNumber: 67,
+            lineNumber: 77,
             columnNumber: 5
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("h3", {
         __source: {
             fileName: "src/components/DefaultStatusSelector.jsx",
-            lineNumber: 68,
+            lineNumber: 78,
             columnNumber: 7
         },
         __self: undefined
     }, "Default Status for New Issues"), /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/DefaultStatusSelector.jsx",
-            lineNumber: 69,
+            lineNumber: 79,
             columnNumber: 7
         },
         __self: undefined
@@ -1546,7 +1622,7 @@ const DefaultStatusSelector = ({ statuses })=>{
         },
         __source: {
             fileName: "src/components/DefaultStatusSelector.jsx",
-            lineNumber: 70,
+            lineNumber: 80,
             columnNumber: 7
         },
         __self: undefined
@@ -1559,14 +1635,14 @@ const DefaultStatusSelector = ({ statuses })=>{
         disabled: isSaving || isFetching,
         __source: {
             fileName: "src/components/DefaultStatusSelector.jsx",
-            lineNumber: 71,
+            lineNumber: 81,
             columnNumber: 9
         },
         __self: undefined
     }), (isFetching || isSaving) && /*#__PURE__*/ React.createElement(Spinner, {
         __source: {
             fileName: "src/components/DefaultStatusSelector.jsx",
-            lineNumber: 79,
+            lineNumber: 89,
             columnNumber: 38
         },
         __self: undefined
