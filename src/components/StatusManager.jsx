@@ -1,5 +1,5 @@
 const { useState, useEffect, useCallback } = wp.element;
-const { Button, Spinner } = wp.components;
+const { Button, Spinner, Modal } = wp.components;
 import {
   DndContext,
   closestCenter,
@@ -18,6 +18,7 @@ const StatusManager = () => {
   const [statuses, setStatuses] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [statusToDelete, setStatusToDelete] = useState(null);
 
   const fetchStatuses = useCallback(() => {
     setIsLoading(true);
@@ -94,16 +95,23 @@ const StatusManager = () => {
   };
 
   const handleDelete = (id) => {
-    if (
-      !window.confirm(
-        "Are you sure you want to delete this status? This cannot be undone."
-      )
-    ) {
-      return;
+    const status = statuses.find((s) => s.term_id === id);
+    if (status) {
+      setStatusToDelete(status);
     }
+  };
 
+  const cancelDelete = () => {
+    setStatusToDelete(null);
+  };
+
+  const performDelete = () => {
+    if (!statusToDelete) return;
+
+    const { term_id: id } = statusToDelete;
     const originalStatuses = [...statuses];
     setStatuses((prev) => prev.filter((status) => status.term_id !== id));
+    setStatusToDelete(null); // Close modal immediately
 
     wp.apiFetch({
       path: `/wp/v2/status/${id}?force=true`,
@@ -182,6 +190,26 @@ const StatusManager = () => {
           New Status
         </Button>
       </p>
+      {statusToDelete && (
+        <Modal
+          title="Delete Status?"
+          onRequestClose={cancelDelete}
+          className="alpaca-modal"
+        >
+          <p>
+            Are you sure you want to delete the status "
+            <strong>{statusToDelete.name}</strong>"? This cannot be undone.
+          </p>
+          <div className="alpaca-actions">
+            <Button variant="primary" isDestructive onClick={performDelete}>
+              Delete
+            </Button>
+            <Button isSecondary onClick={cancelDelete}>
+              Cancel
+            </Button>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };

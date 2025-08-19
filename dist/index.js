@@ -1061,11 +1061,12 @@ var _sortable = require("@dnd-kit/sortable");
 var _sortableStatusRow = require("./SortableStatusRow");
 var _sortableStatusRowDefault = parcelHelpers.interopDefault(_sortableStatusRow);
 const { useState, useEffect, useCallback } = wp.element;
-const { Button, Spinner } = wp.components;
+const { Button, Spinner, Modal } = wp.components;
 const StatusManager = ()=>{
     const [statuses, setStatuses] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [statusToDelete, setStatusToDelete] = useState(null);
     const fetchStatuses = useCallback(()=>{
         setIsLoading(true);
         wp.apiFetch({
@@ -1131,11 +1132,20 @@ const StatusManager = ()=>{
         });
     };
     const handleDelete = (id)=>{
-        if (!window.confirm("Are you sure you want to delete this status? This cannot be undone.")) return;
+        const status = statuses.find((s)=>s.term_id === id);
+        if (status) setStatusToDelete(status);
+    };
+    const cancelDelete = ()=>{
+        setStatusToDelete(null);
+    };
+    const performDelete = ()=>{
+        if (!statusToDelete) return;
+        const { term_id: id } = statusToDelete;
         const originalStatuses = [
             ...statuses
         ];
         setStatuses((prev)=>prev.filter((status)=>status.term_id !== id));
+        setStatusToDelete(null); // Close modal immediately
         wp.apiFetch({
             path: `/wp/v2/status/${id}?force=true`,
             method: "DELETE"
@@ -1166,7 +1176,7 @@ const StatusManager = ()=>{
     if (isLoading) return /*#__PURE__*/ React.createElement(Spinner, {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 141,
+            lineNumber: 149,
             columnNumber: 25
         },
         __self: undefined
@@ -1174,7 +1184,7 @@ const StatusManager = ()=>{
     if (error) return /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 142,
+            lineNumber: 150,
             columnNumber: 21
         },
         __self: undefined
@@ -1183,7 +1193,7 @@ const StatusManager = ()=>{
         className: "alpaca-status-manager",
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 145,
+            lineNumber: 153,
             columnNumber: 5
         },
         __self: undefined
@@ -1193,7 +1203,7 @@ const StatusManager = ()=>{
         onDragEnd: handleDragEnd,
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 146,
+            lineNumber: 154,
             columnNumber: 7
         },
         __self: undefined
@@ -1202,7 +1212,7 @@ const StatusManager = ()=>{
         strategy: (0, _sortable.verticalListSortingStrategy),
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 151,
+            lineNumber: 159,
             columnNumber: 9
         },
         __self: undefined
@@ -1210,21 +1220,21 @@ const StatusManager = ()=>{
         className: "wp-list-table widefat striped",
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 155,
+            lineNumber: 163,
             columnNumber: 11
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("thead", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 156,
+            lineNumber: 164,
             columnNumber: 13
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 157,
+            lineNumber: 165,
             columnNumber: 15
         },
         __self: undefined
@@ -1234,14 +1244,14 @@ const StatusManager = ()=>{
         },
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 158,
+            lineNumber: 166,
             columnNumber: 17
         },
         __self: undefined
     }), /*#__PURE__*/ React.createElement("th", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 159,
+            lineNumber: 167,
             columnNumber: 17
         },
         __self: undefined
@@ -1252,14 +1262,14 @@ const StatusManager = ()=>{
         },
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 160,
+            lineNumber: 168,
             columnNumber: 17
         },
         __self: undefined
     }, "Actions"))), /*#__PURE__*/ React.createElement("tbody", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 163,
+            lineNumber: 171,
             columnNumber: 13
         },
         __self: undefined
@@ -1274,14 +1284,14 @@ const StatusManager = ()=>{
             isLast: index === statuses.length - 1,
             __source: {
                 fileName: "src/components/StatusManager.jsx",
-                lineNumber: 165,
+                lineNumber: 173,
                 columnNumber: 17
             },
             __self: undefined
         })))))), /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 180,
+            lineNumber: 188,
             columnNumber: 7
         },
         __self: undefined
@@ -1290,11 +1300,62 @@ const StatusManager = ()=>{
         onClick: handleAddStatus,
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 181,
+            lineNumber: 189,
             columnNumber: 9
         },
         __self: undefined
-    }, "New Status")));
+    }, "New Status")), statusToDelete && /*#__PURE__*/ React.createElement(Modal, {
+        title: "Delete Status?",
+        onRequestClose: cancelDelete,
+        className: "alpaca-modal",
+        __source: {
+            fileName: "src/components/StatusManager.jsx",
+            lineNumber: 194,
+            columnNumber: 9
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("p", {
+        __source: {
+            fileName: "src/components/StatusManager.jsx",
+            lineNumber: 199,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, 'Are you sure you want to delete the status "', /*#__PURE__*/ React.createElement("strong", {
+        __source: {
+            fileName: "src/components/StatusManager.jsx",
+            lineNumber: 201,
+            columnNumber: 13
+        },
+        __self: undefined
+    }, statusToDelete.name), '"? This cannot be undone.'), /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-actions",
+        __source: {
+            fileName: "src/components/StatusManager.jsx",
+            lineNumber: 203,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement(Button, {
+        variant: "primary",
+        isDestructive: true,
+        onClick: performDelete,
+        __source: {
+            fileName: "src/components/StatusManager.jsx",
+            lineNumber: 204,
+            columnNumber: 13
+        },
+        __self: undefined
+    }, "Delete"), /*#__PURE__*/ React.createElement(Button, {
+        isSecondary: true,
+        onClick: cancelDelete,
+        __source: {
+            fileName: "src/components/StatusManager.jsx",
+            lineNumber: 207,
+            columnNumber: 13
+        },
+        __self: undefined
+    }, "Cancel"))));
 };
 exports.default = StatusManager;
 
