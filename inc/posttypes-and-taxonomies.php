@@ -1,6 +1,14 @@
 <?php
 add_action( 'init', function() {
 
+    register_term_meta( 'status', 'term_score', array(
+        'type'         => 'number',
+        'description'  => 'A score for ordering statuses on the board.',
+        'single'       => true,
+        'show_in_rest' => true,
+        'default'      => 0,
+    ) );
+
     register_post_type( 'issue', array(
         'public'             => false,
         'show_in_rest'       => true,
@@ -45,7 +53,8 @@ add_action( 'init', function() {
         'public' => true,
     ) );
     alpaca_register_taxonomy( 'status', array(  
-        'meta_box_cb' => 'status_metabox', // custom metabox, see below
+        'show_in_rest' => true,
+        'meta_box_cb'  => 'status_metabox', // custom metabox, see below
     ) );
 
     add_filter( 'rest_pre_insert_comment', function( $prepared_comment, $request ) {

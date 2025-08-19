@@ -500,6 +500,31 @@ function alpaca_update_watchlist_callback( WP_REST_Request $request ) {
     return new WP_REST_Response( array( 'success' => true, 'watchlist' => $watchlist ), 200 );
 }
 
+add_action( 'rest_api_init', 'alpaca_get_statuses_endpoint' );
+function alpaca_get_statuses_endpoint() {
+    register_rest_route(
+        'alpaca/v1',
+        '/statuses',
+        array(
+            'methods'             => 'GET',
+            'callback'            => 'alpaca_get_statuses_callback',
+            'permission_callback' => function () {
+                return current_user_can( 'manage_options' );
+            },
+        )
+    );
+}
+
+function alpaca_get_statuses_callback() {
+    // This function is in posttypes-and-taxonomies.php
+    $statuses = alpaca_get_statuses();
+    if ( is_wp_error( $statuses ) ) {
+        return $statuses;
+    }
+    return new WP_REST_Response( $statuses, 200 );
+}
+
+
 add_action( 'rest_api_init', 'alpaca_update_status_endpoint' );
 function alpaca_update_status_endpoint() {
     register_rest_route(

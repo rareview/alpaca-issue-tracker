@@ -1025,532 +1025,280 @@ exports.export = function(dest, destName, get) {
 },{}],"aIYcP":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
-const { TextControl, Button } = wp.components;
+var _statusManager = require("./components/StatusManager");
+var _statusManagerDefault = parcelHelpers.interopDefault(_statusManager);
 const AlpacaSettings = ()=>{
-    return /*#__PURE__*/ React.createElement(React.Fragment, null, /*#__PURE__*/ React.createElement("p", {
+    return /*#__PURE__*/ React.createElement(React.Fragment, null, /*#__PURE__*/ React.createElement("h2", {
         __source: {
             fileName: "src/settings.jsx",
             lineNumber: 6,
             columnNumber: 7
         },
         __self: undefined
-    }, "Time for dndkit"), /*#__PURE__*/ React.createElement(Button, {
-        isPrimary: true,
-        onClick: ()=>alert("Settings saved!"),
+    }, "Status Management"), /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/settings.jsx",
             lineNumber: 7,
             columnNumber: 7
         },
         __self: undefined
-    }, "Save Settings"));
+    }, "Define the statuses (columns) for your project board. Drag and drop to reorder."), /*#__PURE__*/ React.createElement((0, _statusManagerDefault.default), {
+        __source: {
+            fileName: "src/settings.jsx",
+            lineNumber: 11,
+            columnNumber: 7
+        },
+        __self: undefined
+    }));
 };
 exports.default = AlpacaSettings;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"h1t0l":[function(require,module,exports,__globalThis) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "AlpacaBoard", ()=>(0, _boardFrame.AlpacaBoard));
-parcelHelpers.export(exports, "AlpacaBoardControls", ()=>(0, _boardFrame.AlpacaBoardControls));
-var _boardFrame = require("./components/BoardFrame");
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./components/BoardFrame":"5N5Bs"}],"5N5Bs":[function(require,module,exports,__globalThis) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "AlpacaBoard", ()=>AlpacaBoard);
-parcelHelpers.export(exports, "AlpacaBoardControls", ()=>AlpacaBoardControls);
-var _boardMain = require("./BoardMain");
-var _boardMainDefault = parcelHelpers.interopDefault(_boardMain);
-var _cookies = require("../utils/cookies");
-const { useState, useEffect } = wp.element;
-const { __experimentalToggleGroupControl: ToggleGroupControl, __experimentalToggleGroupControlOption: ToggleGroupControlOption } = wp.components;
-function AlpacaBoard() {
-    return /*#__PURE__*/ React.createElement((0, _boardMainDefault.default), {
-        __source: {
-            fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 10,
-            columnNumber: 10
-        },
-        __self: this
-    });
-}
-function AlpacaBoardControls() {
-    // Use a string state instead of a boolean
-    const [filterIssues, setFilterIssues] = useState(()=>{
-        return (0, _cookies.getCookie)("alpaca_filter_issues") || "all";
-    });
-    const boardElement = document.querySelector("#alpaca-board");
-    useEffect(()=>{
-        (0, _cookies.setCookie)("alpaca_filter_issues", filterIssues, 365);
-        if (boardElement) {
-            // Remove any existing filter classes first
-            boardElement.classList.remove("filter-all", "filter-mine", "filter-watchlist");
-            // Add the selected filter class
-            boardElement.classList.add(`filter-${filterIssues}`);
-        }
-    }, [
-        filterIssues,
-        boardElement
-    ]);
-    // Set initial class on mount
-    useEffect(()=>{
-        if (boardElement) boardElement.classList.add(`filter-${filterIssues}`);
-    }, [
-        boardElement
-    ]);
-    if (typeof alpacaUserData === "undefined" || !alpacaUserData.currentUserId) return null; // Don't render if we don't know the current user
-    return /*#__PURE__*/ React.createElement(ToggleGroupControl, {
-        className: "alpaca-board-filter",
-        value: filterIssues,
-        onChange: (value)=>setFilterIssues(value),
-        isBlock: true,
-        __source: {
-            fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 49,
-            columnNumber: 5
-        },
-        __self: this
-    }, /*#__PURE__*/ React.createElement(ToggleGroupControlOption, {
-        value: "all",
-        label: "All Issues",
-        __source: {
-            fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 55,
-            columnNumber: 7
-        },
-        __self: this
-    }), /*#__PURE__*/ React.createElement(ToggleGroupControlOption, {
-        value: "mine",
-        label: "Assigned to me",
-        __source: {
-            fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 56,
-            columnNumber: 7
-        },
-        __self: this
-    }), /*#__PURE__*/ React.createElement(ToggleGroupControlOption, {
-        value: "watchlist",
-        label: "Starred",
-        __source: {
-            fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 57,
-            columnNumber: 7
-        },
-        __self: this
-    }));
-// TODO: watchlist functionality
-}
-
-},{"../utils/cookies":"4qoXW","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./BoardMain":"1nh76"}],"4qoXW":[function(require,module,exports,__globalThis) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "setCookie", ()=>setCookie);
-parcelHelpers.export(exports, "getCookie", ()=>getCookie);
-const setCookie = (name, value, days)=>{
-    let expires = "";
-    if (days) {
-        const date = new Date();
-        date.setTime(date.getTime() + days * 86400000);
-        expires = "; expires=" + date.toUTCString();
-    }
-    document.cookie = name + "=" + (value || "") + expires + "; path=/";
-};
-const getCookie = (name)=>{
-    const nameEQ = name + "=";
-    const ca = document.cookie.split(";");
-    for(let i = 0; i < ca.length; i++){
-        let c = ca[i];
-        while(c.charAt(0) === " ")c = c.substring(1, c.length);
-        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
-    }
-    return null;
-};
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1nh76":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./components/StatusManager":"4cgN2"}],"4cgN2":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _core = require("@dnd-kit/core");
 var _sortable = require("@dnd-kit/sortable");
-var _issue = require("./issue");
-var _issueDefault = parcelHelpers.interopDefault(_issue);
-var _item = require("./Item");
-var _itemDefault = parcelHelpers.interopDefault(_item);
-var _container = require("./Container");
-var _containerDefault = parcelHelpers.interopDefault(_container);
-var _cookies = require("../utils/cookies");
-var _data = require("../utils/data");
-var _comments = require("../utils/comments");
-const { useState, useRef, useEffect, useCallback } = wp.element;
-/**
- * Main board component.
- */ function Board() {
-    const [containers, setContainers] = useState(()=>{
-        if (typeof alpacaBoardData !== "undefined") return (0, _data.transformDataForBoard)(alpacaBoardData);
-        return [];
-    });
+var _sortableStatusRow = require("./SortableStatusRow");
+var _sortableStatusRowDefault = parcelHelpers.interopDefault(_sortableStatusRow);
+const { useState, useEffect, useCallback } = wp.element;
+const { Button, Spinner } = wp.components;
+const StatusManager = ()=>{
+    const [statuses, setStatuses] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const fetchStatuses = useCallback(()=>{
+        setIsLoading(true);
+        wp.apiFetch({
+            path: "/alpaca/v1/statuses"
+        }).then((data)=>{
+            setStatuses(data);
+            setIsLoading(false);
+        }).catch((err)=>{
+            setError(err.message);
+            setIsLoading(false);
+        });
+    }, []);
+    useEffect(()=>{
+        fetchStatuses();
+    }, [
+        fetchStatuses
+    ]);
     const sensors = (0, _core.useSensors)((0, _core.useSensor)((0, _core.PointerSensor), {
         activationConstraint: {
             distance: 5
         }
     }));
-    const [activeId, setActiveId] = useState(null);
-    const [selectedItem, setSelectedItem] = useState(null);
-    const triggerRef = useRef(null);
-    const [draggedItem, setDraggedItem] = useState(null);
-    const [needsSave, setNeedsSave] = useState(false);
-    const [originalContainerId, setOriginalContainerId] = useState(null);
-    const [hiddenContainerIds, setHiddenContainerIds] = useState(()=>{
-        const cookie = (0, _cookies.getCookie)("alpaca_hidden_containers");
-        return cookie ? cookie.split(",").filter(Boolean) : [];
-    });
-    // Effect to update cookie when hiddenContainerIds changes
-    useEffect(()=>{
-        (0, _cookies.setCookie)("alpaca_hidden_containers", hiddenContainerIds.join(","), 365);
-    }, [
-        hiddenContainerIds
-    ]);
-    const handleToggleHidden = (containerId)=>{
-        setHiddenContainerIds((prev)=>{
-            const newIds = new Set(prev);
-            if (newIds.has(containerId)) newIds.delete(containerId);
-            else newIds.add(containerId);
-            return Array.from(newIds);
-        });
-    };
-    // 🔹 Handle renaming a container
-    const handleRenameContainer = (containerId, newTitle)=>{
-        const original = containers;
-        const updated = containers.map((c)=>c.id === containerId ? {
-                ...c,
-                title: newTitle
-            } : c);
-        setContainers(updated);
-        // Persist via REST API
-        wp.apiFetch({
-            path: `/alpaca/v1/status/${containerId}`,
-            method: "POST",
-            data: {
-                name: newTitle
-            }
-        }).catch((err)=>{
-            console.error("Error renaming container:", err);
-            setContainers(original); // revert on failure
-        });
-    };
-    const createIssueComment = (issueId, commentContent)=>{
-        return wp.apiFetch({
-            path: `/wp/v2/comments`,
-            method: "POST",
-            data: {
-                content: commentContent,
-                post: issueId,
-                comment_type: "issuecomment"
-            }
-        }).then(()=>{
-            const item = getItemById(issueId);
-            if (item && typeof item.comment_count !== "undefined") handleCommentCountChange(issueId, item.comment_count + 1);
-        }).catch((err)=>{
-            console.error("Error creating status change comment:", err);
-            throw err;
-        });
-    };
-    function findContainerByItemId(itemId) {
-        return containers.find((c)=>c.items.some((item)=>item.id === itemId));
-    }
-    function findContainerById(containerId) {
-        return containers.find((c)=>c.id === containerId);
-    }
-    function getItemById(itemId) {
-        for (const container of containers){
-            const item = container.items.find((item)=>item.id === itemId);
-            if (item) return item;
-        }
-        return null;
-    }
-    function handleDragStart(event) {
-        const { active } = event;
-        setActiveId(active.id);
-        setDraggedItem(getItemById(active.id));
-        const container = findContainerByItemId(active.id);
-        if (container) setOriginalContainerId(container.id);
-    }
-    function handleDragOver(event) {
+    const handleDragEnd = (event)=>{
         const { active, over } = event;
-        if (!over) return;
-        const activeContainer = findContainerByItemId(active.id);
-        const overContainer = findContainerByItemId(over.id) || findContainerById(over.id);
-        if (!activeContainer || !overContainer || activeContainer.id === overContainer.id) return;
-        setContainers((prev)=>{
-            const newContainers = prev.map((c)=>({
-                    ...c,
-                    items: [
-                        ...c.items
-                    ]
-                }));
-            const source = newContainers.find((c)=>c.id === activeContainer.id);
-            const destination = newContainers.find((c)=>c.id === overContainer.id);
-            const activeIndex = source.items.findIndex((item)=>item.id === active.id);
-            const [movedItem] = source.items.splice(activeIndex, 1);
-            let newIndex;
-            if (over.id === overContainer.id) newIndex = destination.items.length;
-            else {
-                newIndex = destination.items.findIndex((item)=>item.id === over.id);
-                if (newIndex === -1) newIndex = destination.items.length;
-            }
-            destination.items.splice(newIndex, 0, movedItem);
-            return newContainers;
+        if (active.id !== over.id) setStatuses((items)=>{
+            const oldIndex = items.findIndex((item)=>item.term_id === active.id);
+            const newIndex = items.findIndex((item)=>item.term_id === over.id);
+            const newOrder = (0, _sortable.arrayMove)(items, oldIndex, newIndex);
+            console.log("New order (drag):", newOrder.map((s)=>s.name));
+            // TODO: Save new order by updating term_score for each status
+            return newOrder;
         });
-    }
-    function handleDragEnd(event) {
-        const { active, over } = event;
-        if (over && originalContainerId) {
-            const overContainer = findContainerByItemId(over.id) || findContainerById(over.id);
-            if (overContainer && overContainer.id !== originalContainerId) {
-                const originalContainer = findContainerById(originalContainerId);
-                if (originalContainer) {
-                    const commentContent = (0, _comments.generateStatusChangeComment)(originalContainer.title, overContainer.title);
-                    createIssueComment(active.id, commentContent);
-                }
-            }
-        }
-        setActiveId(null);
-        setDraggedItem(null);
-        setOriginalContainerId(null);
-        if (!over) return;
-        const activeContainer = findContainerByItemId(active.id);
-        const overContainer = findContainerByItemId(over.id) || findContainerById(over.id);
-        if (!activeContainer || !overContainer) return;
-        if (activeContainer.id === overContainer.id) {
-            const items = activeContainer.items;
-            const oldIndex = items.findIndex((i)=>i.id === active.id);
-            const newIndex = items.findIndex((i)=>i.id === over.id);
-            if (oldIndex !== newIndex) setContainers((prev)=>prev.map((c)=>c.id === activeContainer.id ? {
-                        ...c,
-                        items: (0, _sortable.arrayMove)(items, oldIndex, newIndex)
-                    } : c));
-        }
-        (0, _data.saveBoardOrder)();
-        const movedItemId = parseInt(active.id, 10);
-        const newStatusTermId = parseInt(overContainer.id, 10);
-        wp.apiFetch({
-            path: `/issue/v1/update/${movedItemId}`,
-            method: "POST",
-            data: {
-                taxonomies: {
-                    status: [
-                        newStatusTermId
-                    ]
-                }
-            }
-        }).catch((err)=>{
-            console.error("Error updating issue:", err);
-        });
-    }
-    const handleItemClick = (event, itemId)=>{
-        triggerRef.current = event.currentTarget;
-        event.currentTarget.blur();
-        const item = getItemById(itemId);
-        setSelectedItem(item);
     };
-    const handleCommentCountChange = useCallback((issueId, newCount)=>{
-        setContainers((prevContainers)=>prevContainers.map((container)=>{
-                const itemIndex = container.items.findIndex((item)=>item.id === issueId.toString());
-                if (itemIndex === -1) return container;
-                const newItems = [
-                    ...container.items
-                ];
-                newItems[itemIndex] = {
-                    ...newItems[itemIndex],
-                    comment_count: newCount
-                };
-                return {
-                    ...container,
-                    items: newItems
-                };
-            }));
-    }, []);
-    const onCommentCountChangeForIssue = useCallback((newCount)=>selectedItem?.id && handleCommentCountChange(selectedItem.id, newCount), [
-        selectedItem,
-        handleCommentCountChange
-    ]);
-    const moveAllItemsToNextContainer = (sourceContainerId)=>{
-        const containersCopy = containers.map((c)=>({
-                ...c,
-                items: [
-                    ...c.items
-                ]
-            }));
-        const sourceIndex = containersCopy.findIndex((c)=>c.id === sourceContainerId);
-        if (sourceIndex === -1 || sourceIndex >= containersCopy.length - 1) return;
-        const sourceContainer = containersCopy[sourceIndex];
-        const nextContainer = containersCopy[sourceIndex + 1];
-        const itemsToMove = [
-            ...sourceContainer.items
+    const handleMove = (id, direction)=>{
+        const oldIndex = statuses.findIndex((s)=>s.term_id === id);
+        if (oldIndex === -1) return;
+        const newIndex = oldIndex + direction;
+        if (newIndex < 0 || newIndex >= statuses.length) return;
+        const newOrder = (0, _sortable.arrayMove)(statuses, oldIndex, newIndex);
+        setStatuses(newOrder);
+        console.log("New order (click):", newOrder.map((s)=>s.name));
+    // TODO: Save new order
+    };
+    const handleRename = (id, newName)=>{
+        const originalStatuses = [
+            ...statuses
         ];
-        if (itemsToMove.length === 0) return;
-        sourceContainer.items = [];
-        nextContainer.items.push(...itemsToMove);
-        const commentContent = (0, _comments.generateStatusChangeComment)(sourceContainer.title, nextContainer.title);
-        itemsToMove.forEach((item)=>{
-            wp.apiFetch({
-                path: `/wp/v2/comments`,
-                method: "POST",
-                data: {
-                    content: commentContent,
-                    post: item.id,
-                    comment_type: "issuecomment"
-                }
-            }).catch((err)=>console.error(`Error creating status change comment for issue ${item.id}:`, err));
-            wp.apiFetch({
-                path: `/issue/v1/update/${item.id}`,
-                method: "POST",
-                data: {
-                    taxonomies: {
-                        status: [
-                            parseInt(nextContainer.id, 10)
-                        ]
-                    }
-                }
-            }).catch((err)=>console.error(`Error updating issue ${item.id}:`, err));
+        const updatedStatuses = statuses.map((status)=>status.term_id === id ? {
+                ...status,
+                name: newName
+            } : status);
+        setStatuses(updatedStatuses);
+        wp.apiFetch({
+            path: `/alpaca/v1/status/${id}`,
+            method: "POST",
+            data: {
+                name: newName
+            }
+        }).catch((err)=>{
+            console.error("Error renaming status:", err);
+            setStatuses(originalStatuses);
+            alert("Error renaming status: " + err.message);
         });
-        setContainers(containersCopy);
-        setNeedsSave(true);
     };
-    const handleAssigneesChange = useCallback((issueId, newAssignees)=>{
-        setContainers((prevContainers)=>prevContainers.map((container)=>{
-                const itemIndex = container.items.findIndex((item)=>item.id === issueId.toString());
-                if (itemIndex === -1) return container;
-                const newItems = [
-                    ...container.items
-                ];
-                newItems[itemIndex] = {
-                    ...newItems[itemIndex],
-                    assignees: newAssignees
-                };
-                return {
-                    ...container,
-                    items: newItems
-                };
-            }));
-    }, []);
-    const closeModal = ()=>{
-        setSelectedItem(null);
+    const handleDelete = (id)=>{
+        if (!window.confirm("Are you sure you want to delete this status? This cannot be undone.")) return;
+        const originalStatuses = [
+            ...statuses
+        ];
+        setStatuses((prev)=>prev.filter((status)=>status.term_id !== id));
+        wp.apiFetch({
+            path: `/wp/v2/status/${id}?force=true`,
+            method: "DELETE"
+        }).catch((err)=>{
+            console.error("Error deleting status:", err);
+            setStatuses(originalStatuses);
+            alert("Error deleting status: " + err.message);
+        });
     };
-    useEffect(()=>{
-        if (!selectedItem && triggerRef.current) triggerRef.current.focus();
-    }, [
-        selectedItem
-    ]);
-    useEffect(()=>{
-        if (needsSave) {
-            (0, _data.saveBoardOrder)();
-            setNeedsSave(false);
-        }
-    }, [
-        needsSave,
-        containers
-    ]);
-    useEffect(()=>{
-        const handleIssueSubmitted = (event)=>{
-            const { issue, statusId } = event.detail;
-            if (!issue || !statusId) return;
-            setContainers((prevContainers)=>{
-                const newContainers = [
-                    ...prevContainers
-                ];
-                const targetContainer = newContainers.find((c)=>c.id === statusId.toString());
-                if (targetContainer) targetContainer.items.unshift({
-                    id: issue.id.toString(),
-                    content: issue.title,
-                    author_name: issue.author_name,
-                    author_img: issue.author_img,
-                    assignees: [],
-                    comment_count: issue.comment_count ?? 0
-                });
-                return newContainers;
-            });
-            setNeedsSave(true);
-        };
-        document.addEventListener("alpaca:issue-submitted", handleIssueSubmitted);
-        return ()=>document.removeEventListener("alpaca:issue-submitted", handleIssueSubmitted);
-    }, []);
-    return /*#__PURE__*/ React.createElement((0, _core.DndContext), {
-        sensors: sensors,
-        collisionDetection: (0, _core.closestCenter),
-        onDragStart: handleDragStart,
-        onDragOver: handleDragOver,
-        onDragEnd: handleDragEnd,
+    const handleAddStatus = ()=>{
+        const newName = prompt("Enter the name for the new status:");
+        if (!newName || !newName.trim()) return;
+        const maxScore = statuses.reduce((max, s)=>Math.max(max, parseInt(s.term_score, 10) || 0), 0);
+        wp.apiFetch({
+            path: `/wp/v2/status`,
+            method: "POST",
+            data: {
+                name: newName,
+                meta: {
+                    term_score: maxScore + 10
+                }
+            }
+        }).then(()=>fetchStatuses()).catch((err)=>{
+            console.error("Error adding status:", err);
+            alert("Error adding status: " + err.message);
+        });
+    };
+    if (isLoading) return /*#__PURE__*/ React.createElement(Spinner, {
         __source: {
-            fileName: "src/components/BoardMain.jsx",
-            lineNumber: 416,
+            fileName: "src/components/StatusManager.jsx",
+            lineNumber: 141,
+            columnNumber: 25
+        },
+        __self: undefined
+    });
+    if (error) return /*#__PURE__*/ React.createElement("p", {
+        __source: {
+            fileName: "src/components/StatusManager.jsx",
+            lineNumber: 142,
+            columnNumber: 21
+        },
+        __self: undefined
+    }, "Error: ", error);
+    return /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-status-manager",
+        __source: {
+            fileName: "src/components/StatusManager.jsx",
+            lineNumber: 145,
             columnNumber: 5
         },
-        __self: this
-    }, /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-wrap",
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement((0, _core.DndContext), {
+        sensors: sensors,
+        collisionDetection: (0, _core.closestCenter),
+        onDragEnd: handleDragEnd,
         __source: {
-            fileName: "src/components/BoardMain.jsx",
-            lineNumber: 423,
+            fileName: "src/components/StatusManager.jsx",
+            lineNumber: 146,
             columnNumber: 7
         },
-        __self: this
-    }, containers.map((container, index)=>/*#__PURE__*/ React.createElement((0, _containerDefault.default), {
-            key: container.id,
-            id: container.id,
-            title: container.title,
-            items: container.items,
-            onItemClick: handleItemClick,
-            onMoveAllToNext: moveAllItemsToNextContainer,
-            isLastContainer: index === containers.length - 1,
-            isHidden: hiddenContainerIds.includes(container.id),
-            onToggleHidden: handleToggleHidden,
-            onRename: handleRenameContainer,
-            __source: {
-                fileName: "src/components/BoardMain.jsx",
-                lineNumber: 425,
-                columnNumber: 11
-            },
-            __self: this
-        }))), /*#__PURE__*/ React.createElement((0, _core.DragOverlay), {
-        dropAnimation: null,
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement((0, _sortable.SortableContext), {
+        items: statuses.map((s)=>s.term_id),
+        strategy: (0, _sortable.verticalListSortingStrategy),
         __source: {
-            fileName: "src/components/BoardMain.jsx",
-            lineNumber: 439,
-            columnNumber: 7
+            fileName: "src/components/StatusManager.jsx",
+            lineNumber: 151,
+            columnNumber: 9
         },
-        __self: this
-    }, activeId && draggedItem ? /*#__PURE__*/ React.createElement((0, _itemDefault.default), {
-        id: draggedItem.id,
-        content: draggedItem.content,
-        assignees: draggedItem.assignees,
-        comment_count: draggedItem.comment_count,
-        className: "alpaca-item-dragging",
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("table", {
+        className: "wp-list-table widefat striped",
         __source: {
-            fileName: "src/components/BoardMain.jsx",
-            lineNumber: 441,
+            fileName: "src/components/StatusManager.jsx",
+            lineNumber: 155,
             columnNumber: 11
         },
-        __self: this
-    }) : null), /*#__PURE__*/ React.createElement((0, _issueDefault.default), {
-        issueId: selectedItem?.id,
-        isOpen: !!selectedItem,
-        onClose: closeModal,
-        triggerRef: triggerRef,
-        onCommentCountChange: onCommentCountChangeForIssue,
-        onAssigneesChange: handleAssigneesChange,
-        createIssueComment: createIssueComment,
-        generateAssigneeChangeComment: (0, _comments.generateAssigneeChangeComment),
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("thead", {
         __source: {
-            fileName: "src/components/BoardMain.jsx",
-            lineNumber: 451,
+            fileName: "src/components/StatusManager.jsx",
+            lineNumber: 156,
+            columnNumber: 13
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("tr", {
+        __source: {
+            fileName: "src/components/StatusManager.jsx",
+            lineNumber: 157,
+            columnNumber: 15
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("th", {
+        style: {
+            width: "50px"
+        },
+        __source: {
+            fileName: "src/components/StatusManager.jsx",
+            lineNumber: 158,
+            columnNumber: 17
+        },
+        __self: undefined
+    }), /*#__PURE__*/ React.createElement("th", {
+        __source: {
+            fileName: "src/components/StatusManager.jsx",
+            lineNumber: 159,
+            columnNumber: 17
+        },
+        __self: undefined
+    }, "Name"), /*#__PURE__*/ React.createElement("th", {
+        style: {
+            width: "200px",
+            textAlign: "right"
+        },
+        __source: {
+            fileName: "src/components/StatusManager.jsx",
+            lineNumber: 160,
+            columnNumber: 17
+        },
+        __self: undefined
+    }, "Actions"))), /*#__PURE__*/ React.createElement("tbody", {
+        __source: {
+            fileName: "src/components/StatusManager.jsx",
+            lineNumber: 163,
+            columnNumber: 13
+        },
+        __self: undefined
+    }, statuses.map((status, index)=>/*#__PURE__*/ React.createElement((0, _sortableStatusRowDefault.default), {
+            key: status.term_id,
+            id: status.term_id,
+            status: status,
+            onRename: handleRename,
+            onDelete: handleDelete,
+            onMove: handleMove,
+            isFirst: index === 0,
+            isLast: index === statuses.length - 1,
+            __source: {
+                fileName: "src/components/StatusManager.jsx",
+                lineNumber: 165,
+                columnNumber: 17
+            },
+            __self: undefined
+        })))))), /*#__PURE__*/ React.createElement("p", {
+        __source: {
+            fileName: "src/components/StatusManager.jsx",
+            lineNumber: 180,
             columnNumber: 7
         },
-        __self: this
-    }));
-}
-exports.default = Board;
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement(Button, {
+        isPrimary: true,
+        onClick: handleAddStatus,
+        __source: {
+            fileName: "src/components/StatusManager.jsx",
+            lineNumber: 181,
+            columnNumber: 9
+        },
+        __self: undefined
+    }, "New Status")));
+};
+exports.default = StatusManager;
 
-},{"@dnd-kit/core":"do19q","@dnd-kit/sortable":"fw7EW","./Item":"2yEr4","./Container":"QNfzH","../utils/cookies":"4qoXW","../utils/data":"j8lWA","../utils/comments":"hPhNI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./issue":"l6q71"}],"do19q":[function(require,module,exports,__globalThis) {
+},{"@dnd-kit/core":"do19q","@dnd-kit/sortable":"fw7EW","./SortableStatusRow":"czaEV","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"do19q":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "AutoScrollActivator", ()=>AutoScrollActivator);
@@ -5478,7 +5226,653 @@ function isAfter(a, b) {
     return a.data.current.sortable.index < b.data.current.sortable.index;
 }
 
-},{"react":"f39IF","@dnd-kit/core":"do19q","@dnd-kit/utilities":"a2exI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2yEr4":[function(require,module,exports,__globalThis) {
+},{"react":"f39IF","@dnd-kit/core":"do19q","@dnd-kit/utilities":"a2exI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"czaEV":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _sortable = require("@dnd-kit/sortable");
+var _utilities = require("@dnd-kit/utilities");
+const { useState, useRef, useEffect } = wp.element;
+const { TextControl, Button, Dashicon } = wp.components;
+const SortableStatusRow = ({ id, status, onRename, onDelete, onMove, isFirst, isLast })=>{
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = (0, _sortable.useSortable)({
+        id
+    });
+    const style = {
+        transform: (0, _utilities.CSS).Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.5 : 1
+    };
+    const [isRenaming, setIsRenaming] = useState(false);
+    const [name, setName] = useState(status.name);
+    const inputRef = useRef(null);
+    useEffect(()=>{
+        if (isRenaming && inputRef.current) {
+            inputRef.current.focus();
+            inputRef.current.select();
+        }
+    }, [
+        isRenaming
+    ]);
+    const handleStartRename = ()=>{
+        setIsRenaming(true);
+    };
+    const handleCancelRename = ()=>{
+        setIsRenaming(false);
+        setName(status.name);
+    };
+    const handleSaveRename = ()=>{
+        setIsRenaming(false);
+        if (name.trim() && name !== status.name) onRename(id, name);
+        else setName(status.name);
+    };
+    const handleKeyDown = (event)=>{
+        if (event.key === "Enter") handleSaveRename();
+        else if (event.key === "Escape") handleCancelRename();
+    };
+    return /*#__PURE__*/ React.createElement("tr", {
+        ref: setNodeRef,
+        style: style,
+        ...attributes,
+        __source: {
+            fileName: "src/components/SortableStatusRow.jsx",
+            lineNumber: 68,
+            columnNumber: 5
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("td", {
+        className: "alpaca-status-drag-handle",
+        ...listeners,
+        style: {
+            cursor: "grab"
+        },
+        __source: {
+            fileName: "src/components/SortableStatusRow.jsx",
+            lineNumber: 69,
+            columnNumber: 7
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement(Dashicon, {
+        icon: "menu",
+        __source: {
+            fileName: "src/components/SortableStatusRow.jsx",
+            lineNumber: 74,
+            columnNumber: 9
+        },
+        __self: undefined
+    })), /*#__PURE__*/ React.createElement("td", {
+        __source: {
+            fileName: "src/components/SortableStatusRow.jsx",
+            lineNumber: 76,
+            columnNumber: 7
+        },
+        __self: undefined
+    }, isRenaming ? /*#__PURE__*/ React.createElement(TextControl, {
+        ref: inputRef,
+        value: name,
+        onChange: setName,
+        onBlur: handleSaveRename,
+        onKeyDown: handleKeyDown,
+        __source: {
+            fileName: "src/components/SortableStatusRow.jsx",
+            lineNumber: 78,
+            columnNumber: 11
+        },
+        __self: undefined
+    }) : /*#__PURE__*/ React.createElement("button", {
+        className: "button-link",
+        onClick: handleStartRename,
+        __source: {
+            fileName: "src/components/SortableStatusRow.jsx",
+            lineNumber: 86,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, status.name)), /*#__PURE__*/ React.createElement("td", {
+        __source: {
+            fileName: "src/components/SortableStatusRow.jsx",
+            lineNumber: 91,
+            columnNumber: 7
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement(Button, {
+        icon: "arrow-up-alt2",
+        label: "Move Up",
+        onClick: ()=>onMove(id, -1),
+        disabled: isFirst,
+        __source: {
+            fileName: "src/components/SortableStatusRow.jsx",
+            lineNumber: 92,
+            columnNumber: 9
+        },
+        __self: undefined
+    }), /*#__PURE__*/ React.createElement(Button, {
+        icon: "arrow-down-alt2",
+        label: "Move Down",
+        onClick: ()=>onMove(id, 1),
+        disabled: isLast,
+        __source: {
+            fileName: "src/components/SortableStatusRow.jsx",
+            lineNumber: 98,
+            columnNumber: 9
+        },
+        __self: undefined
+    }), /*#__PURE__*/ React.createElement(Button, {
+        isDestructive: true,
+        onClick: ()=>onDelete(id),
+        __source: {
+            fileName: "src/components/SortableStatusRow.jsx",
+            lineNumber: 104,
+            columnNumber: 9
+        },
+        __self: undefined
+    }, "Delete")));
+};
+exports.default = SortableStatusRow;
+
+},{"@dnd-kit/sortable":"fw7EW","@dnd-kit/utilities":"a2exI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"h1t0l":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "AlpacaBoard", ()=>(0, _boardFrame.AlpacaBoard));
+parcelHelpers.export(exports, "AlpacaBoardControls", ()=>(0, _boardFrame.AlpacaBoardControls));
+var _boardFrame = require("./components/BoardFrame");
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./components/BoardFrame":"5N5Bs"}],"5N5Bs":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "AlpacaBoard", ()=>AlpacaBoard);
+parcelHelpers.export(exports, "AlpacaBoardControls", ()=>AlpacaBoardControls);
+var _boardMain = require("./BoardMain");
+var _boardMainDefault = parcelHelpers.interopDefault(_boardMain);
+var _cookies = require("../utils/cookies");
+const { useState, useEffect } = wp.element;
+const { __experimentalToggleGroupControl: ToggleGroupControl, __experimentalToggleGroupControlOption: ToggleGroupControlOption } = wp.components;
+function AlpacaBoard() {
+    return /*#__PURE__*/ React.createElement((0, _boardMainDefault.default), {
+        __source: {
+            fileName: "src/components/BoardFrame.jsx",
+            lineNumber: 10,
+            columnNumber: 10
+        },
+        __self: this
+    });
+}
+function AlpacaBoardControls() {
+    // Use a string state instead of a boolean
+    const [filterIssues, setFilterIssues] = useState(()=>{
+        return (0, _cookies.getCookie)("alpaca_filter_issues") || "all";
+    });
+    const boardElement = document.querySelector("#alpaca-board");
+    useEffect(()=>{
+        (0, _cookies.setCookie)("alpaca_filter_issues", filterIssues, 365);
+        if (boardElement) {
+            // Remove any existing filter classes first
+            boardElement.classList.remove("filter-all", "filter-mine", "filter-watchlist");
+            // Add the selected filter class
+            boardElement.classList.add(`filter-${filterIssues}`);
+        }
+    }, [
+        filterIssues,
+        boardElement
+    ]);
+    // Set initial class on mount
+    useEffect(()=>{
+        if (boardElement) boardElement.classList.add(`filter-${filterIssues}`);
+    }, [
+        boardElement
+    ]);
+    if (typeof alpacaUserData === "undefined" || !alpacaUserData.currentUserId) return null; // Don't render if we don't know the current user
+    return /*#__PURE__*/ React.createElement(ToggleGroupControl, {
+        className: "alpaca-board-filter",
+        value: filterIssues,
+        onChange: (value)=>setFilterIssues(value),
+        isBlock: true,
+        __source: {
+            fileName: "src/components/BoardFrame.jsx",
+            lineNumber: 49,
+            columnNumber: 5
+        },
+        __self: this
+    }, /*#__PURE__*/ React.createElement(ToggleGroupControlOption, {
+        value: "all",
+        label: "All Issues",
+        __source: {
+            fileName: "src/components/BoardFrame.jsx",
+            lineNumber: 55,
+            columnNumber: 7
+        },
+        __self: this
+    }), /*#__PURE__*/ React.createElement(ToggleGroupControlOption, {
+        value: "mine",
+        label: "Assigned to me",
+        __source: {
+            fileName: "src/components/BoardFrame.jsx",
+            lineNumber: 56,
+            columnNumber: 7
+        },
+        __self: this
+    }), /*#__PURE__*/ React.createElement(ToggleGroupControlOption, {
+        value: "watchlist",
+        label: "Starred",
+        __source: {
+            fileName: "src/components/BoardFrame.jsx",
+            lineNumber: 57,
+            columnNumber: 7
+        },
+        __self: this
+    }));
+// TODO: watchlist functionality
+}
+
+},{"../utils/cookies":"4qoXW","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./BoardMain":"1nh76"}],"4qoXW":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "setCookie", ()=>setCookie);
+parcelHelpers.export(exports, "getCookie", ()=>getCookie);
+const setCookie = (name, value, days)=>{
+    let expires = "";
+    if (days) {
+        const date = new Date();
+        date.setTime(date.getTime() + days * 86400000);
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + (value || "") + expires + "; path=/";
+};
+const getCookie = (name)=>{
+    const nameEQ = name + "=";
+    const ca = document.cookie.split(";");
+    for(let i = 0; i < ca.length; i++){
+        let c = ca[i];
+        while(c.charAt(0) === " ")c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+    }
+    return null;
+};
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"1nh76":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _core = require("@dnd-kit/core");
+var _sortable = require("@dnd-kit/sortable");
+var _issue = require("./issue");
+var _issueDefault = parcelHelpers.interopDefault(_issue);
+var _item = require("./Item");
+var _itemDefault = parcelHelpers.interopDefault(_item);
+var _container = require("./Container");
+var _containerDefault = parcelHelpers.interopDefault(_container);
+var _cookies = require("../utils/cookies");
+var _data = require("../utils/data");
+var _comments = require("../utils/comments");
+const { useState, useRef, useEffect, useCallback } = wp.element;
+/**
+ * Main board component.
+ */ function Board() {
+    const [containers, setContainers] = useState(()=>{
+        if (typeof alpacaBoardData !== "undefined") return (0, _data.transformDataForBoard)(alpacaBoardData);
+        return [];
+    });
+    const sensors = (0, _core.useSensors)((0, _core.useSensor)((0, _core.PointerSensor), {
+        activationConstraint: {
+            distance: 5
+        }
+    }));
+    const [activeId, setActiveId] = useState(null);
+    const [selectedItem, setSelectedItem] = useState(null);
+    const triggerRef = useRef(null);
+    const [draggedItem, setDraggedItem] = useState(null);
+    const [needsSave, setNeedsSave] = useState(false);
+    const [originalContainerId, setOriginalContainerId] = useState(null);
+    const [hiddenContainerIds, setHiddenContainerIds] = useState(()=>{
+        const cookie = (0, _cookies.getCookie)("alpaca_hidden_containers");
+        return cookie ? cookie.split(",").filter(Boolean) : [];
+    });
+    // Effect to update cookie when hiddenContainerIds changes
+    useEffect(()=>{
+        (0, _cookies.setCookie)("alpaca_hidden_containers", hiddenContainerIds.join(","), 365);
+    }, [
+        hiddenContainerIds
+    ]);
+    const handleToggleHidden = (containerId)=>{
+        setHiddenContainerIds((prev)=>{
+            const newIds = new Set(prev);
+            if (newIds.has(containerId)) newIds.delete(containerId);
+            else newIds.add(containerId);
+            return Array.from(newIds);
+        });
+    };
+    // 🔹 Handle renaming a container
+    const handleRenameContainer = (containerId, newTitle)=>{
+        const original = containers;
+        const updated = containers.map((c)=>c.id === containerId ? {
+                ...c,
+                title: newTitle
+            } : c);
+        setContainers(updated);
+        // Persist via REST API
+        wp.apiFetch({
+            path: `/alpaca/v1/status/${containerId}`,
+            method: "POST",
+            data: {
+                name: newTitle
+            }
+        }).catch((err)=>{
+            console.error("Error renaming container:", err);
+            setContainers(original); // revert on failure
+        });
+    };
+    const createIssueComment = (issueId, commentContent)=>{
+        return wp.apiFetch({
+            path: `/wp/v2/comments`,
+            method: "POST",
+            data: {
+                content: commentContent,
+                post: issueId,
+                comment_type: "issuecomment"
+            }
+        }).then(()=>{
+            const item = getItemById(issueId);
+            if (item && typeof item.comment_count !== "undefined") handleCommentCountChange(issueId, item.comment_count + 1);
+        }).catch((err)=>{
+            console.error("Error creating status change comment:", err);
+            throw err;
+        });
+    };
+    function findContainerByItemId(itemId) {
+        return containers.find((c)=>c.items.some((item)=>item.id === itemId));
+    }
+    function findContainerById(containerId) {
+        return containers.find((c)=>c.id === containerId);
+    }
+    function getItemById(itemId) {
+        for (const container of containers){
+            const item = container.items.find((item)=>item.id === itemId);
+            if (item) return item;
+        }
+        return null;
+    }
+    function handleDragStart(event) {
+        const { active } = event;
+        setActiveId(active.id);
+        setDraggedItem(getItemById(active.id));
+        const container = findContainerByItemId(active.id);
+        if (container) setOriginalContainerId(container.id);
+    }
+    function handleDragOver(event) {
+        const { active, over } = event;
+        if (!over) return;
+        const activeContainer = findContainerByItemId(active.id);
+        const overContainer = findContainerByItemId(over.id) || findContainerById(over.id);
+        if (!activeContainer || !overContainer || activeContainer.id === overContainer.id) return;
+        setContainers((prev)=>{
+            const newContainers = prev.map((c)=>({
+                    ...c,
+                    items: [
+                        ...c.items
+                    ]
+                }));
+            const source = newContainers.find((c)=>c.id === activeContainer.id);
+            const destination = newContainers.find((c)=>c.id === overContainer.id);
+            const activeIndex = source.items.findIndex((item)=>item.id === active.id);
+            const [movedItem] = source.items.splice(activeIndex, 1);
+            let newIndex;
+            if (over.id === overContainer.id) newIndex = destination.items.length;
+            else {
+                newIndex = destination.items.findIndex((item)=>item.id === over.id);
+                if (newIndex === -1) newIndex = destination.items.length;
+            }
+            destination.items.splice(newIndex, 0, movedItem);
+            return newContainers;
+        });
+    }
+    function handleDragEnd(event) {
+        const { active, over } = event;
+        if (over && originalContainerId) {
+            const overContainer = findContainerByItemId(over.id) || findContainerById(over.id);
+            if (overContainer && overContainer.id !== originalContainerId) {
+                const originalContainer = findContainerById(originalContainerId);
+                if (originalContainer) {
+                    const commentContent = (0, _comments.generateStatusChangeComment)(originalContainer.title, overContainer.title);
+                    createIssueComment(active.id, commentContent);
+                }
+            }
+        }
+        setActiveId(null);
+        setDraggedItem(null);
+        setOriginalContainerId(null);
+        if (!over) return;
+        const activeContainer = findContainerByItemId(active.id);
+        const overContainer = findContainerByItemId(over.id) || findContainerById(over.id);
+        if (!activeContainer || !overContainer) return;
+        if (activeContainer.id === overContainer.id) {
+            const items = activeContainer.items;
+            const oldIndex = items.findIndex((i)=>i.id === active.id);
+            const newIndex = items.findIndex((i)=>i.id === over.id);
+            if (oldIndex !== newIndex) setContainers((prev)=>prev.map((c)=>c.id === activeContainer.id ? {
+                        ...c,
+                        items: (0, _sortable.arrayMove)(items, oldIndex, newIndex)
+                    } : c));
+        }
+        (0, _data.saveBoardOrder)();
+        const movedItemId = parseInt(active.id, 10);
+        const newStatusTermId = parseInt(overContainer.id, 10);
+        wp.apiFetch({
+            path: `/issue/v1/update/${movedItemId}`,
+            method: "POST",
+            data: {
+                taxonomies: {
+                    status: [
+                        newStatusTermId
+                    ]
+                }
+            }
+        }).catch((err)=>{
+            console.error("Error updating issue:", err);
+        });
+    }
+    const handleItemClick = (event, itemId)=>{
+        triggerRef.current = event.currentTarget;
+        event.currentTarget.blur();
+        const item = getItemById(itemId);
+        setSelectedItem(item);
+    };
+    const handleCommentCountChange = useCallback((issueId, newCount)=>{
+        setContainers((prevContainers)=>prevContainers.map((container)=>{
+                const itemIndex = container.items.findIndex((item)=>item.id === issueId.toString());
+                if (itemIndex === -1) return container;
+                const newItems = [
+                    ...container.items
+                ];
+                newItems[itemIndex] = {
+                    ...newItems[itemIndex],
+                    comment_count: newCount
+                };
+                return {
+                    ...container,
+                    items: newItems
+                };
+            }));
+    }, []);
+    const onCommentCountChangeForIssue = useCallback((newCount)=>selectedItem?.id && handleCommentCountChange(selectedItem.id, newCount), [
+        selectedItem,
+        handleCommentCountChange
+    ]);
+    const moveAllItemsToNextContainer = (sourceContainerId)=>{
+        const containersCopy = containers.map((c)=>({
+                ...c,
+                items: [
+                    ...c.items
+                ]
+            }));
+        const sourceIndex = containersCopy.findIndex((c)=>c.id === sourceContainerId);
+        if (sourceIndex === -1 || sourceIndex >= containersCopy.length - 1) return;
+        const sourceContainer = containersCopy[sourceIndex];
+        const nextContainer = containersCopy[sourceIndex + 1];
+        const itemsToMove = [
+            ...sourceContainer.items
+        ];
+        if (itemsToMove.length === 0) return;
+        sourceContainer.items = [];
+        nextContainer.items.push(...itemsToMove);
+        const commentContent = (0, _comments.generateStatusChangeComment)(sourceContainer.title, nextContainer.title);
+        itemsToMove.forEach((item)=>{
+            wp.apiFetch({
+                path: `/wp/v2/comments`,
+                method: "POST",
+                data: {
+                    content: commentContent,
+                    post: item.id,
+                    comment_type: "issuecomment"
+                }
+            }).catch((err)=>console.error(`Error creating status change comment for issue ${item.id}:`, err));
+            wp.apiFetch({
+                path: `/issue/v1/update/${item.id}`,
+                method: "POST",
+                data: {
+                    taxonomies: {
+                        status: [
+                            parseInt(nextContainer.id, 10)
+                        ]
+                    }
+                }
+            }).catch((err)=>console.error(`Error updating issue ${item.id}:`, err));
+        });
+        setContainers(containersCopy);
+        setNeedsSave(true);
+    };
+    const handleAssigneesChange = useCallback((issueId, newAssignees)=>{
+        setContainers((prevContainers)=>prevContainers.map((container)=>{
+                const itemIndex = container.items.findIndex((item)=>item.id === issueId.toString());
+                if (itemIndex === -1) return container;
+                const newItems = [
+                    ...container.items
+                ];
+                newItems[itemIndex] = {
+                    ...newItems[itemIndex],
+                    assignees: newAssignees
+                };
+                return {
+                    ...container,
+                    items: newItems
+                };
+            }));
+    }, []);
+    const closeModal = ()=>{
+        setSelectedItem(null);
+    };
+    useEffect(()=>{
+        if (!selectedItem && triggerRef.current) triggerRef.current.focus();
+    }, [
+        selectedItem
+    ]);
+    useEffect(()=>{
+        if (needsSave) {
+            (0, _data.saveBoardOrder)();
+            setNeedsSave(false);
+        }
+    }, [
+        needsSave,
+        containers
+    ]);
+    useEffect(()=>{
+        const handleIssueSubmitted = (event)=>{
+            const { issue, statusId } = event.detail;
+            if (!issue || !statusId) return;
+            setContainers((prevContainers)=>{
+                const newContainers = [
+                    ...prevContainers
+                ];
+                const targetContainer = newContainers.find((c)=>c.id === statusId.toString());
+                if (targetContainer) targetContainer.items.unshift({
+                    id: issue.id.toString(),
+                    content: issue.title,
+                    author_name: issue.author_name,
+                    author_img: issue.author_img,
+                    assignees: [],
+                    comment_count: issue.comment_count ?? 0
+                });
+                return newContainers;
+            });
+            setNeedsSave(true);
+        };
+        document.addEventListener("alpaca:issue-submitted", handleIssueSubmitted);
+        return ()=>document.removeEventListener("alpaca:issue-submitted", handleIssueSubmitted);
+    }, []);
+    return /*#__PURE__*/ React.createElement((0, _core.DndContext), {
+        sensors: sensors,
+        collisionDetection: (0, _core.closestCenter),
+        onDragStart: handleDragStart,
+        onDragOver: handleDragOver,
+        onDragEnd: handleDragEnd,
+        __source: {
+            fileName: "src/components/BoardMain.jsx",
+            lineNumber: 416,
+            columnNumber: 5
+        },
+        __self: this
+    }, /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-wrap",
+        __source: {
+            fileName: "src/components/BoardMain.jsx",
+            lineNumber: 423,
+            columnNumber: 7
+        },
+        __self: this
+    }, containers.map((container, index)=>/*#__PURE__*/ React.createElement((0, _containerDefault.default), {
+            key: container.id,
+            id: container.id,
+            title: container.title,
+            items: container.items,
+            onItemClick: handleItemClick,
+            onMoveAllToNext: moveAllItemsToNextContainer,
+            isLastContainer: index === containers.length - 1,
+            isHidden: hiddenContainerIds.includes(container.id),
+            onToggleHidden: handleToggleHidden,
+            onRename: handleRenameContainer,
+            __source: {
+                fileName: "src/components/BoardMain.jsx",
+                lineNumber: 425,
+                columnNumber: 11
+            },
+            __self: this
+        }))), /*#__PURE__*/ React.createElement((0, _core.DragOverlay), {
+        dropAnimation: null,
+        __source: {
+            fileName: "src/components/BoardMain.jsx",
+            lineNumber: 439,
+            columnNumber: 7
+        },
+        __self: this
+    }, activeId && draggedItem ? /*#__PURE__*/ React.createElement((0, _itemDefault.default), {
+        id: draggedItem.id,
+        content: draggedItem.content,
+        assignees: draggedItem.assignees,
+        comment_count: draggedItem.comment_count,
+        className: "alpaca-item-dragging",
+        __source: {
+            fileName: "src/components/BoardMain.jsx",
+            lineNumber: 441,
+            columnNumber: 11
+        },
+        __self: this
+    }) : null), /*#__PURE__*/ React.createElement((0, _issueDefault.default), {
+        issueId: selectedItem?.id,
+        isOpen: !!selectedItem,
+        onClose: closeModal,
+        triggerRef: triggerRef,
+        onCommentCountChange: onCommentCountChangeForIssue,
+        onAssigneesChange: handleAssigneesChange,
+        createIssueComment: createIssueComment,
+        generateAssigneeChangeComment: (0, _comments.generateAssigneeChangeComment),
+        __source: {
+            fileName: "src/components/BoardMain.jsx",
+            lineNumber: 451,
+            columnNumber: 7
+        },
+        __self: this
+    }));
+}
+exports.default = Board;
+
+},{"@dnd-kit/core":"do19q","@dnd-kit/sortable":"fw7EW","./Item":"2yEr4","./Container":"QNfzH","../utils/cookies":"4qoXW","../utils/data":"j8lWA","../utils/comments":"hPhNI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./issue":"l6q71"}],"2yEr4":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 const { forwardRef, useState, useEffect } = wp.element;

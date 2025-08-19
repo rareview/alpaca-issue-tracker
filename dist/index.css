@@ -333,4 +333,26 @@
   flex-grow: 1;
   padding: 10px 0;
 }
+
+.wp-admin .alpaca-status-manager table td.alpaca-status-drag-handle {
+  cursor: grab;
+  vertical-align: middle;
+}
+
+.wp-admin .alpaca-status-manager table td.alpaca-status-drag-handle .dashicons {
+  opacity: .5;
+}
+
+.wp-admin .alpaca-status-manager table .button-link {
+  box-shadow: none;
+  background: none;
+  border: none;
+  height: auto;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.wp-admin .alpaca-status-manager table .button-link:hover {
+  color: var(--wp-admin-theme-color);
+}
 /*# sourceMappingURL=index.css.map */

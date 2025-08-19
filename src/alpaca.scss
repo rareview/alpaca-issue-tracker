@@ -316,6 +316,28 @@
       }
     }
   }
+  .alpaca-status-manager {
+    table {
+      td.alpaca-status-drag-handle {
+        cursor: grab;
+        vertical-align: middle;
+        .dashicons {
+          opacity: 0.5;
+        }
+      }
+      .button-link {
+        box-shadow: none;
+        text-decoration: underline;
+        padding: 0;
+        height: auto;
+        border: none;
+        background: none;
+        &:hover {
+          color: var(--wp-admin-theme-color);
+        }
+      }
+    }
+  }
 }
 
 @media (min-width: 825px) {
