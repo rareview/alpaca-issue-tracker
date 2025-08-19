@@ -42,7 +42,7 @@ function Board() {
 
   const [activeId, setActiveId] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
-  const triggerRef = useRef(null); // To store the element that opened the modal
+  const triggerRef = useRef(null);
   const [draggedItem, setDraggedItem] = useState(null);
   const [needsSave, setNeedsSave] = useState(false);
   const [originalContainerId, setOriginalContainerId] = useState(null);
@@ -68,6 +68,25 @@ function Board() {
     });
   };
 
+  // 🔹 Handle renaming a container
+  const handleRenameContainer = (containerId, newTitle) => {
+    const original = containers;
+    const updated = containers.map((c) =>
+      c.id === containerId ? { ...c, title: newTitle } : c
+    );
+    setContainers(updated);
+
+    // Persist via REST API
+    wp.apiFetch({
+      path: `/alpaca/v1/status/${containerId}`,
+      method: "POST",
+      data: { name: newTitle },
+    }).catch((err) => {
+      console.error("Error renaming container:", err);
+      setContainers(original); // revert on failure
+    });
+  };
+
   const createIssueComment = (issueId, commentContent) => {
     return wp
       .apiFetch({
@@ -80,7 +99,6 @@ function Board() {
         },
       })
       .then(() => {
-        // On success, update the comment count for the item on the board
         const item = getItemById(issueId);
         if (item && typeof item.comment_count !== "undefined") {
           handleCommentCountChange(issueId, item.comment_count + 1);
@@ -208,7 +226,6 @@ function Board() {
 
     saveBoardOrder();
 
-    // Send REST API call to update taxonomy term (status)
     const movedItemId = parseInt(active.id, 10);
     const newStatusTermId = parseInt(overContainer.id, 10);
 
@@ -220,22 +237,13 @@ function Board() {
           status: [newStatusTermId],
         },
       },
-    })
-      .then((res) => {
-        // successfully updated
-      })
-      .catch((err) => {
-        console.error("Error updating issue:", err);
-      });
+    }).catch((err) => {
+      console.error("Error updating issue:", err);
+    });
   }
 
   const handleItemClick = (event, itemId) => {
-    // Store the trigger element so we can return focus to it when the modal closes.
     triggerRef.current = event.currentTarget;
-
-    // Immediately blur the clicked item. This prevents the accessibility warning
-    // by ensuring the item doesn't have focus when the modal applies `aria-hidden`
-    // to the rest of the page. The Modal component will then trap focus inside itself.
     event.currentTarget.blur();
 
     const item = getItemById(itemId);
@@ -292,11 +300,9 @@ function Board() {
       return;
     }
 
-    // Update the arrays in our copied state
     sourceContainer.items = [];
     nextContainer.items.push(...itemsToMove);
 
-    // Create status change comments and update taxonomies for each moved item
     const commentContent = generateStatusChangeComment(
       sourceContainer.title,
       nextContainer.title
@@ -332,7 +338,6 @@ function Board() {
     setNeedsSave(true);
   };
 
-  // Add this handler to update assignees for a specific issue/item
   const handleAssigneesChange = useCallback((issueId, newAssignees) => {
     setContainers((prevContainers) =>
       prevContainers.map((container) => {
@@ -347,7 +352,7 @@ function Board() {
         const newItems = [...container.items];
         newItems[itemIndex] = {
           ...newItems[itemIndex],
-          assignees: newAssignees, // Update only the assignees field
+          assignees: newAssignees,
         };
 
         return { ...container, items: newItems };
@@ -359,7 +364,6 @@ function Board() {
     setSelectedItem(null);
   };
 
-  // When the modal closes, return focus to the element that opened it.
   useEffect(() => {
     if (!selectedItem && triggerRef.current) {
       triggerRef.current.focus();
@@ -367,22 +371,16 @@ function Board() {
   }, [selectedItem]);
 
   useEffect(() => {
-    // After a new issue is submitted and the state has been updated,
-    // save the new board order.
     if (needsSave) {
       saveBoardOrder();
-      setNeedsSave(false); // Reset the flag
+      setNeedsSave(false);
     }
   }, [needsSave, containers]);
 
   useEffect(() => {
     const handleIssueSubmitted = (event) => {
       const { issue, statusId } = event.detail;
-
-      // Ensure we have the necessary data
-      if (!issue || !statusId) {
-        return;
-      }
+      if (!issue || !statusId) return;
 
       setContainers((prevContainers) => {
         const newContainers = [...prevContainers];
@@ -391,13 +389,12 @@ function Board() {
         );
 
         if (targetContainer) {
-          // Add the new issue to the top of the correct column
           targetContainer.items.unshift({
             id: issue.id.toString(),
             content: issue.title,
             author_name: issue.author_name,
             author_img: issue.author_img,
-            assignees: [], // New issues have no assignees
+            assignees: [],
             comment_count: issue.comment_count ?? 0,
           });
         }
@@ -435,6 +432,7 @@ function Board() {
             isLastContainer={index === containers.length - 1}
             isHidden={hiddenContainerIds.includes(container.id)}
             onToggleHidden={handleToggleHidden}
+            onRename={handleRenameContainer} // 🔹 pass down rename handler
           />
         ))}
       </div>
@@ -443,7 +441,7 @@ function Board() {
           <Item
             id={draggedItem.id}
             content={draggedItem.content}
-            assignees={draggedItem.assignees} // <-- Add this line to show assignees in drag overlay
+            assignees={draggedItem.assignees}
             comment_count={draggedItem.comment_count}
             className="alpaca-item-dragging"
           />

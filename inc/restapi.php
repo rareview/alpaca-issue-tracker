@@ -499,3 +499,80 @@ function alpaca_update_watchlist_callback( WP_REST_Request $request ) {
 
     return new WP_REST_Response( array( 'success' => true, 'watchlist' => $watchlist ), 200 );
 }
+
+add_action( 'rest_api_init', 'alpaca_update_status_endpoint' );
+function alpaca_update_status_endpoint() {
+    register_rest_route(
+        'alpaca/v1',
+        '/status/(?P<id>\d+)',
+        array(
+            'methods'  => 'POST',
+            'callback' => 'alpaca_update_status_callback',
+            'permission_callback' => function () {
+                return current_user_can( 'edit_posts' );
+            },
+            'args' => array(
+                'id' => array(
+                    'validate_callback' => function ( $param ) {
+                        return is_numeric( $param ) && $param > 0;
+                    }
+                )
+            )
+        )
+    );
+}
+
+function alpaca_update_status_callback( WP_REST_Request $request ) {
+    $term_id = (int) $request['id'];
+    $data    = $request->get_json_params();
+
+    // Check term exists and is a 'status'
+    $term = get_term( $term_id, 'status' );
+    if ( ! $term || is_wp_error( $term ) ) {
+        return new WP_REST_Response(
+            array(
+                'success' => false,
+                'message' => 'Status not found.',
+            ),
+            404
+        );
+    }
+
+    // Update term name if provided
+    if ( isset( $data['name'] ) ) {
+        $new_name = $data['name'];
+        $new_slug = sanitize_title( $new_name ); // generate a slug from the name
+
+        $update_result = wp_update_term(
+            $term_id,
+            'status',
+            array(
+                'name' => $new_name,
+                'slug' => $new_slug,
+            )
+        );
+
+        if ( is_wp_error( $update_result ) ) {
+            return new WP_REST_Response(
+                array(
+                    'success' => false,
+                    'message' => 'Failed to update status name and slug.',
+                ),
+                500
+            );
+        }
+    }
+
+    // Update term score if provided
+    if ( isset( $data['term_score'] ) ) {
+        update_term_meta( $term_id, 'term_score', $data['term_score'] );
+    }
+
+    return new WP_REST_Response(
+        array(
+            'success' => true,
+            'message' => 'Status updated successfully.',
+        ),
+        200
+    );
+}

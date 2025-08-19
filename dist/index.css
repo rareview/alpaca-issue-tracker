@@ -82,17 +82,32 @@
 }
 
 .wp-admin #alpaca-board .alpaca-container .alpaca-container-header {
-  justify-content: space-between;
-  align-items: flex-end;
+  grid-template-columns: 1fr 40px;
+  align-items: center;
   padding: 5px 0;
-  display: flex;
+  display: grid;
 }
 
-.wp-admin #alpaca-board .alpaca-container .alpaca-container-header h2 {
-  margin: 2px 2px 10px;
+.wp-admin #alpaca-board .alpaca-container .alpaca-container-header h2, .wp-admin #alpaca-board .alpaca-container .alpaca-container-header .alpaca-container-title-input input {
+  background: none;
+  border: none;
+  margin: 0;
+  padding: 0;
+  font-size: 18px;
+  font-weight: 600;
 }
 
-.wp-admin #alpaca-board .alpaca-container .alpaca-container-header h2 .alpaca-item-count {
+.wp-admin #alpaca-board .alpaca-container .alpaca-container-header h2:focus, .wp-admin #alpaca-board .alpaca-container .alpaca-container-header .alpaca-container-title-input input:focus {
+  box-shadow: none;
+  outline: none;
+}
+
+.wp-admin #alpaca-board .alpaca-container .alpaca-container-header .alpaca-container-title-input > div {
+  margin: -1px 0 0;
+  padding: 0;
+}
+
+.wp-admin #alpaca-board .alpaca-container .alpaca-container-header .alpaca-item-count {
   opacity: .5;
   margin: .5rem;
   font-size: smaller;
@@ -124,7 +139,7 @@
 .wp-admin #alpaca-board .alpaca-container.hidden {
   opacity: .5;
   width: auto;
-  padding: 0;
+  padding: 0 0 10px;
 }
 
 .wp-admin #alpaca-board .alpaca-container.hidden .alpaca-container-header {
@@ -133,7 +148,7 @@
 }
 
 .wp-admin #alpaca-board .alpaca-container.hidden .alpaca-container-header h2 {
-  margin: 10px auto;
+  margin: 5px auto;
 }
 
 .wp-admin #alpaca-board .alpaca-container.hidden .alpaca-item {
