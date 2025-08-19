@@ -355,4 +355,14 @@
 .wp-admin .alpaca-status-manager table .button-link:hover {
   color: var(--wp-admin-theme-color);
 }
+
+.wp-admin .alpaca-status-manager table {
+  position: relative;
+}
+
+.wp-admin .alpaca-status-manager tr[data-dragging="true"] {
+  z-index: 999;
+  background-color: #f0f0f1;
+  position: relative;
+}
 /*# sourceMappingURL=index.css.map */

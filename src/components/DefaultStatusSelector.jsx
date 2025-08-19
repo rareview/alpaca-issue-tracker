@@ -1,4 +1,4 @@
-const { useState, useEffect, useCallback } = wp.element;
+const { useState, useEffect, useCallback, useMemo } = wp.element;
 const { SelectControl, Spinner } = wp.components;
 
 const DefaultStatusSelector = ({ statuses }) => {
@@ -47,17 +47,21 @@ const DefaultStatusSelector = ({ statuses }) => {
       });
   };
 
+  // Memoize status options to ensure they update when statuses order changes
+  const statusOptions = useMemo(
+    () => [
+      { label: "Select a default status...", value: "" },
+      ...statuses.map((status) => ({
+        label: status.name,
+        value: status.term_id.toString(),
+      })),
+    ],
+    [statuses]
+  );
+
   if (error) {
     return <p className="alpaca-error">{error}</p>;
   }
-
-  const statusOptions = [
-    { label: "Select a default status...", value: "" },
-    ...statuses.map((status) => ({
-      label: status.name,
-      value: status.term_id.toString(),
-    })),
-  ];
 
   return (
     <div style={{ marginTop: "2rem" }}>

@@ -1,20 +1,13 @@
-const { useState, useEffect, useCallback } = wp.element;
-const { Button, Spinner, Modal } = wp.components;
-import {
-  DndContext,
-  closestCenter,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-  arrayMove,
-} from "@dnd-kit/sortable";
-import SortableStatusRow from "./SortableStatusRow";
+const { useState, useEffect, useRef } = wp.element;
+const { Button, Spinner, Modal, TextControl } = wp.components;
 
-const StatusManager = ({ statuses, fetchStatuses, isLoading, error }) => {
+const StatusManager = ({
+  statuses,
+  fetchStatuses,
+  isLoading,
+  error,
+  onStatusesChange,
+}) => {
   const [statusToDelete, setStatusToDelete] = useState(null);
   const [localStatuses, setLocalStatuses] = useState(statuses);
 
@@ -22,24 +15,12 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error }) => {
     setLocalStatuses(statuses);
   }, [statuses]);
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 5 },
-    })
-  );
-
-  const handleDragEnd = (event) => {
-    const { active, over } = event;
-    if (active.id !== over.id) {
-      setLocalStatuses((items) => {
-        const oldIndex = items.findIndex((item) => item.term_id === active.id);
-        const newIndex = items.findIndex((item) => item.term_id === over.id);
-        const newOrder = arrayMove(items, oldIndex, newIndex);
-        // TODO: Save new order by updating term_score for each status
-        return newOrder;
-      });
+  // Notify parent when local order changes
+  useEffect(() => {
+    if (onStatusesChange) {
+      onStatusesChange(localStatuses);
     }
-  };
+  }, [localStatuses, onStatusesChange]);
 
   const handleMove = (id, direction) => {
     const oldIndex = localStatuses.findIndex((s) => s.term_id === id);
@@ -48,9 +29,12 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error }) => {
     const newIndex = oldIndex + direction;
     if (newIndex < 0 || newIndex >= localStatuses.length) return;
 
-    const newOrder = arrayMove(localStatuses, oldIndex, newIndex);
-    setLocalStatuses(newOrder);
-    // TODO: Save new order
+    const newStatuses = [...localStatuses];
+    const [movedItem] = newStatuses.splice(oldIndex, 1);
+    newStatuses.splice(newIndex, 0, movedItem);
+
+    setLocalStatuses(newStatuses);
+    // TODO: Save new order by updating term_score for each status
   };
 
   const handleRename = (id, newName) => {
@@ -122,45 +106,34 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error }) => {
 
   return (
     <div className="alpaca-status-manager">
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
-        <SortableContext
-          items={localStatuses.map((s) => s.term_id)}
-          strategy={verticalListSortingStrategy}
-        >
-          <table className="wp-list-table widefat striped">
-            <thead>
-              <tr>
-                <th style={{ width: "50px" }}></th>
-                <th>Name</th>
-                <th style={{ width: "200px", textAlign: "right" }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {localStatuses.map((status, index) => (
-                <SortableStatusRow
-                  key={status.term_id}
-                  id={status.term_id}
-                  status={status}
-                  onRename={handleRename}
-                  onDelete={handleDelete}
-                  onMove={handleMove}
-                  isFirst={index === 0}
-                  isLast={index === localStatuses.length - 1}
-                />
-              ))}
-            </tbody>
-          </table>
-        </SortableContext>
-      </DndContext>
+      <table className="wp-list-table widefat striped">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th style={{ width: "200px", textAlign: "right" }}>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {localStatuses.map((status, index) => (
+            <StatusRow
+              key={status.term_id}
+              status={status}
+              onRename={handleRename}
+              onDelete={handleDelete}
+              onMove={handleMove}
+              isFirst={index === 0}
+              isLast={index === localStatuses.length - 1}
+            />
+          ))}
+        </tbody>
+      </table>
+
       <p>
         <Button isPrimary onClick={handleAddStatus}>
           New Status
         </Button>
       </p>
+
       {statusToDelete && (
         <Modal
           title="Delete Status?"
@@ -185,5 +158,81 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error }) => {
   );
 };
 
+// Simple StatusRow component without drag-and-drop
+const StatusRow = ({ status, onRename, onDelete, onMove, isFirst, isLast }) => {
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [name, setName] = useState(status.name);
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (isRenaming && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isRenaming]);
+
+  const handleStartRename = () => {
+    setIsRenaming(true);
+  };
+
+  const handleCancelRename = () => {
+    setIsRenaming(false);
+    setName(status.name);
+  };
+
+  const handleSaveRename = () => {
+    setIsRenaming(false);
+    if (name.trim() && name !== status.name) {
+      onRename(status.term_id, name);
+    } else {
+      setName(status.name);
+    }
+  };
+
+  const handleKeyDown = (event) => {
+    if (event.key === "Enter") {
+      handleSaveRename();
+    } else if (event.key === "Escape") {
+      handleCancelRename();
+    }
+  };
+
+  return (
+    <tr>
+      <td>
+        {isRenaming ? (
+          <TextControl
+            ref={inputRef}
+            value={name}
+            onChange={setName}
+            onBlur={handleSaveRename}
+            onKeyDown={handleKeyDown}
+          />
+        ) : (
+          <button className="button-link" onClick={handleStartRename}>
+            {status.name}
+          </button>
+        )}
+      </td>
+      <td>
+        <Button
+          icon="arrow-up-alt2"
+          label="Move Up"
+          onClick={() => onMove(status.term_id, -1)}
+          disabled={isFirst}
+        />
+        <Button
+          icon="arrow-down-alt2"
+          label="Move Down"
+          onClick={() => onMove(status.term_id, 1)}
+          disabled={isLast}
+        />
+        <Button isDestructive onClick={() => onDelete(status.term_id)}>
+          Delete
+        </Button>
+      </td>
+    </tr>
+  );
+};
 
 export default StatusManager;
