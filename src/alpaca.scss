@@ -328,11 +328,12 @@
         }
       }
       .alpaca-status-manager-name {
+        line-height: 1.5em;
         div {
           margin: 0;
         }
         button .dashicons {
-          display: none;
+          opacity: 0;
         }
         input {
           margin: 0;
@@ -345,7 +346,8 @@
           }
         }
         &:hover button .dashicons {
-          display: inline-block;
+          opacity: 1;
+          cursor: pointer;
         }
       }
       .alpaca-status-manager-actions {
