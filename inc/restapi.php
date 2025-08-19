@@ -41,15 +41,51 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
         $post_id = wp_insert_post( $post_args );
 
         if ( is_wp_error( $post_id ) || $post_id === 0 ) {
-            return new WP_REST_Response(
-                array(
-                    'success' => false,
-                    'message' => 'Failed to create the issue post.',
-                ),
-                500
-            );
+            return new WP_REST_Response( array(
+                'success' => false,
+                'message' => 'Failed to create the issue post.',
+            ), 500 );
         }
 
+        $status_term_id = 0;
+        $statuses         = alpaca_get_statuses(); // Already ordered by score
+        if ( ! empty( $statuses ) ) {
+            $status_term       = null;
+            $default_status_id = get_option( 'alpaca_default_status_id' );
+
+            // 1. Try to use the saved default status
+            if ( ! empty( $default_status_id ) ) {
+                $term = get_term( (int) $default_status_id, 'status' );
+                // Check if the term exists and is one of the statuses on the board
+                if ( $term && ! is_wp_error( $term ) && in_array( $term->term_id, wp_list_pluck( $statuses, 'term_id' ) ) ) {
+                    $status_term = $term;
+                }
+            }
+
+            // 2. If no valid default is set, fall back to the first status with a non-negative score
+            if ( ! $status_term ) {
+                foreach ( $statuses as $s ) {
+                    if ( (int) $s->term_score >= 0 ) {
+                        $status_term = $s;
+                        break;
+                    }
+                }
+            }
+
+            // 3. If still no status, just use the first one available
+            if ( ! $status_term ) {
+                $status_term = reset( $statuses );
+            }
+
+            // If we found a status, assign it
+            if ( $status_term ) {
+                wp_set_post_terms( $post_id, array( $status_term->term_id ), 'status' );
+                $status_term_id = $status_term->term_id;
+            }
+        }
+
+        /*
+        // OLD LOGIC
         $status_term_id = 0;
         $statuses = alpaca_get_statuses();
         if ( ! empty( $statuses ) ) {
@@ -67,9 +103,7 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
             }
             wp_set_post_terms( $post_id, array( $status_term->term_id ), 'status' );
             $status_term_id = $status_term->term_id;
-            // sets issue status to lowest scored term
-            // TODO: allow user to choose the default status
-        }
+        }*/
         
         // set terms and meta here
         wp_set_post_terms( $post_id, $json['client']['browser']['name'], 'browser', true );
@@ -305,6 +339,49 @@ function alpaca_update_issue_callback( WP_REST_Request $request ) {
         ),
         200
     );
+}
+
+add_action( 'rest_api_init', 'alpaca_register_options_endpoints' );
+function alpaca_register_options_endpoints() {
+    register_rest_route(
+        'alpaca/v1',
+        '/options/default_status',
+        array(
+            array(
+                'methods'             => 'GET',
+                'callback'            => 'alpaca_get_default_status_option',
+                'permission_callback' => function () {
+                    return current_user_can( 'manage_options' );
+                },
+            ),
+            array(
+                'methods'             => 'POST',
+                'callback'            => 'alpaca_update_default_status_option',
+                'permission_callback' => function () {
+                    return current_user_can( 'manage_options' );
+                },
+                'args'                => array(
+                    'value' => array(
+                        'required'          => true,
+                        'validate_callback' => function ( $param ) {
+                            return is_numeric( $param ) || $param === '';
+                        },
+                    ),
+                ),
+            ),
+        )
+    );
+}
+
+function alpaca_get_default_status_option() {
+    $default_status_id = get_option( 'alpaca_default_status_id', '' );
+    return new WP_REST_Response( array( 'value' => $default_status_id ), 200 );
+}
+
+function alpaca_update_default_status_option( WP_REST_Request $request ) {
+    $value = $request->get_param( 'value' );
+    update_option( 'alpaca_default_status_id', intval( $value ) );
+    return new WP_REST_Response( array( 'success' => true, 'value' => intval( $value ) ), 200 );
 }
 
 add_action( 'rest_api_init', 'alpaca_get_issue_data' );

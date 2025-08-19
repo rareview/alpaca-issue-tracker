@@ -1027,46 +1027,13 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _statusManager = require("./components/StatusManager");
 var _statusManagerDefault = parcelHelpers.interopDefault(_statusManager);
-const AlpacaSettings = ()=>{
-    return /*#__PURE__*/ React.createElement(React.Fragment, null, /*#__PURE__*/ React.createElement("h2", {
-        __source: {
-            fileName: "src/settings.jsx",
-            lineNumber: 6,
-            columnNumber: 7
-        },
-        __self: undefined
-    }, "Status Management"), /*#__PURE__*/ React.createElement("p", {
-        __source: {
-            fileName: "src/settings.jsx",
-            lineNumber: 7,
-            columnNumber: 7
-        },
-        __self: undefined
-    }, "Define the statuses (columns) for your project board. Drag and drop to reorder."), /*#__PURE__*/ React.createElement((0, _statusManagerDefault.default), {
-        __source: {
-            fileName: "src/settings.jsx",
-            lineNumber: 11,
-            columnNumber: 7
-        },
-        __self: undefined
-    }));
-};
-exports.default = AlpacaSettings;
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./components/StatusManager":"4cgN2"}],"4cgN2":[function(require,module,exports,__globalThis) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-var _core = require("@dnd-kit/core");
-var _sortable = require("@dnd-kit/sortable");
-var _sortableStatusRow = require("./SortableStatusRow");
-var _sortableStatusRowDefault = parcelHelpers.interopDefault(_sortableStatusRow);
+var _defaultStatusSelector = require("./components/DefaultStatusSelector");
+var _defaultStatusSelectorDefault = parcelHelpers.interopDefault(_defaultStatusSelector);
 const { useState, useEffect, useCallback } = wp.element;
-const { Button, Spinner, Modal } = wp.components;
-const StatusManager = ()=>{
+const AlpacaSettings = ()=>{
     const [statuses, setStatuses] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [statusToDelete, setStatusToDelete] = useState(null);
     const fetchStatuses = useCallback(()=>{
         setIsLoading(true);
         wp.apiFetch({
@@ -1084,6 +1051,70 @@ const StatusManager = ()=>{
     }, [
         fetchStatuses
     ]);
+    return /*#__PURE__*/ React.createElement(React.Fragment, null, /*#__PURE__*/ React.createElement("h2", {
+        __source: {
+            fileName: "src/settings.jsx",
+            lineNumber: 29,
+            columnNumber: 7
+        },
+        __self: undefined
+    }, "Status Management"), /*#__PURE__*/ React.createElement("p", {
+        __source: {
+            fileName: "src/settings.jsx",
+            lineNumber: 30,
+            columnNumber: 7
+        },
+        __self: undefined
+    }, "Define the statuses (columns) for your project board. Drag and drop to reorder."), /*#__PURE__*/ React.createElement((0, _statusManagerDefault.default), {
+        statuses: statuses,
+        fetchStatuses: fetchStatuses,
+        isLoading: isLoading,
+        error: error,
+        __source: {
+            fileName: "src/settings.jsx",
+            lineNumber: 34,
+            columnNumber: 7
+        },
+        __self: undefined
+    }), /*#__PURE__*/ React.createElement("hr", {
+        style: {
+            marginTop: "2rem"
+        },
+        __source: {
+            fileName: "src/settings.jsx",
+            lineNumber: 35,
+            columnNumber: 7
+        },
+        __self: undefined
+    }), /*#__PURE__*/ React.createElement((0, _defaultStatusSelectorDefault.default), {
+        statuses: statuses,
+        __source: {
+            fileName: "src/settings.jsx",
+            lineNumber: 36,
+            columnNumber: 7
+        },
+        __self: undefined
+    }));
+};
+exports.default = AlpacaSettings;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./components/StatusManager":"4cgN2","./components/DefaultStatusSelector":"8A2rp"}],"4cgN2":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _core = require("@dnd-kit/core");
+var _sortable = require("@dnd-kit/sortable");
+var _sortableStatusRow = require("./SortableStatusRow");
+var _sortableStatusRowDefault = parcelHelpers.interopDefault(_sortableStatusRow);
+const { useState, useEffect, useCallback } = wp.element;
+const { Button, Spinner, Modal } = wp.components;
+const StatusManager = ({ statuses, fetchStatuses, isLoading, error })=>{
+    const [statusToDelete, setStatusToDelete] = useState(null);
+    const [localStatuses, setLocalStatuses] = useState(statuses);
+    useEffect(()=>{
+        setLocalStatuses(statuses);
+    }, [
+        statuses
+    ]);
     const sensors = (0, _core.useSensors)((0, _core.useSensor)((0, _core.PointerSensor), {
         activationConstraint: {
             distance: 5
@@ -1091,48 +1122,37 @@ const StatusManager = ()=>{
     }));
     const handleDragEnd = (event)=>{
         const { active, over } = event;
-        if (active.id !== over.id) setStatuses((items)=>{
+        if (active.id !== over.id) setLocalStatuses((items)=>{
             const oldIndex = items.findIndex((item)=>item.term_id === active.id);
             const newIndex = items.findIndex((item)=>item.term_id === over.id);
             const newOrder = (0, _sortable.arrayMove)(items, oldIndex, newIndex);
-            console.log("New order (drag):", newOrder.map((s)=>s.name));
             // TODO: Save new order by updating term_score for each status
             return newOrder;
         });
     };
     const handleMove = (id, direction)=>{
-        const oldIndex = statuses.findIndex((s)=>s.term_id === id);
+        const oldIndex = localStatuses.findIndex((s)=>s.term_id === id);
         if (oldIndex === -1) return;
         const newIndex = oldIndex + direction;
-        if (newIndex < 0 || newIndex >= statuses.length) return;
-        const newOrder = (0, _sortable.arrayMove)(statuses, oldIndex, newIndex);
-        setStatuses(newOrder);
-        console.log("New order (click):", newOrder.map((s)=>s.name));
+        if (newIndex < 0 || newIndex >= localStatuses.length) return;
+        const newOrder = (0, _sortable.arrayMove)(localStatuses, oldIndex, newIndex);
+        setLocalStatuses(newOrder);
     // TODO: Save new order
     };
     const handleRename = (id, newName)=>{
-        const originalStatuses = [
-            ...statuses
-        ];
-        const updatedStatuses = statuses.map((status)=>status.term_id === id ? {
-                ...status,
-                name: newName
-            } : status);
-        setStatuses(updatedStatuses);
         wp.apiFetch({
             path: `/alpaca/v1/status/${id}`,
             method: "POST",
             data: {
                 name: newName
             }
-        }).catch((err)=>{
+        }).then(()=>fetchStatuses()).catch((err)=>{
             console.error("Error renaming status:", err);
-            setStatuses(originalStatuses);
             alert("Error renaming status: " + err.message);
         });
     };
     const handleDelete = (id)=>{
-        const status = statuses.find((s)=>s.term_id === id);
+        const status = localStatuses.find((s)=>s.term_id === id);
         if (status) setStatusToDelete(status);
     };
     const cancelDelete = ()=>{
@@ -1141,24 +1161,19 @@ const StatusManager = ()=>{
     const performDelete = ()=>{
         if (!statusToDelete) return;
         const { term_id: id } = statusToDelete;
-        const originalStatuses = [
-            ...statuses
-        ];
-        setStatuses((prev)=>prev.filter((status)=>status.term_id !== id));
         setStatusToDelete(null); // Close modal immediately
         wp.apiFetch({
             path: `/wp/v2/status/${id}?force=true`,
             method: "DELETE"
-        }).catch((err)=>{
+        }).then(()=>fetchStatuses()).catch((err)=>{
             console.error("Error deleting status:", err);
-            setStatuses(originalStatuses);
             alert("Error deleting status: " + err.message);
         });
     };
     const handleAddStatus = ()=>{
         const newName = prompt("Enter the name for the new status:");
         if (!newName || !newName.trim()) return;
-        const maxScore = statuses.reduce((max, s)=>Math.max(max, parseInt(s.term_score, 10) || 0), 0);
+        const maxScore = localStatuses.reduce((max, s)=>Math.max(max, parseInt(s.term_score, 10) || 0), 0);
         wp.apiFetch({
             path: `/wp/v2/status`,
             method: "POST",
@@ -1176,7 +1191,7 @@ const StatusManager = ()=>{
     if (isLoading) return /*#__PURE__*/ React.createElement(Spinner, {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 149,
+            lineNumber: 120,
             columnNumber: 25
         },
         __self: undefined
@@ -1184,7 +1199,7 @@ const StatusManager = ()=>{
     if (error) return /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 150,
+            lineNumber: 121,
             columnNumber: 21
         },
         __self: undefined
@@ -1193,7 +1208,7 @@ const StatusManager = ()=>{
         className: "alpaca-status-manager",
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 153,
+            lineNumber: 124,
             columnNumber: 5
         },
         __self: undefined
@@ -1203,16 +1218,16 @@ const StatusManager = ()=>{
         onDragEnd: handleDragEnd,
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 154,
+            lineNumber: 125,
             columnNumber: 7
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement((0, _sortable.SortableContext), {
-        items: statuses.map((s)=>s.term_id),
+        items: localStatuses.map((s)=>s.term_id),
         strategy: (0, _sortable.verticalListSortingStrategy),
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 159,
+            lineNumber: 130,
             columnNumber: 9
         },
         __self: undefined
@@ -1220,21 +1235,21 @@ const StatusManager = ()=>{
         className: "wp-list-table widefat striped",
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 163,
+            lineNumber: 134,
             columnNumber: 11
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("thead", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 164,
+            lineNumber: 135,
             columnNumber: 13
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 165,
+            lineNumber: 136,
             columnNumber: 15
         },
         __self: undefined
@@ -1244,14 +1259,14 @@ const StatusManager = ()=>{
         },
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 166,
+            lineNumber: 137,
             columnNumber: 17
         },
         __self: undefined
     }), /*#__PURE__*/ React.createElement("th", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 167,
+            lineNumber: 138,
             columnNumber: 17
         },
         __self: undefined
@@ -1262,18 +1277,18 @@ const StatusManager = ()=>{
         },
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 168,
+            lineNumber: 139,
             columnNumber: 17
         },
         __self: undefined
     }, "Actions"))), /*#__PURE__*/ React.createElement("tbody", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 171,
+            lineNumber: 142,
             columnNumber: 13
         },
         __self: undefined
-    }, statuses.map((status, index)=>/*#__PURE__*/ React.createElement((0, _sortableStatusRowDefault.default), {
+    }, localStatuses.map((status, index)=>/*#__PURE__*/ React.createElement((0, _sortableStatusRowDefault.default), {
             key: status.term_id,
             id: status.term_id,
             status: status,
@@ -1281,17 +1296,17 @@ const StatusManager = ()=>{
             onDelete: handleDelete,
             onMove: handleMove,
             isFirst: index === 0,
-            isLast: index === statuses.length - 1,
+            isLast: index === localStatuses.length - 1,
             __source: {
                 fileName: "src/components/StatusManager.jsx",
-                lineNumber: 173,
+                lineNumber: 144,
                 columnNumber: 17
             },
             __self: undefined
         })))))), /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 188,
+            lineNumber: 159,
             columnNumber: 7
         },
         __self: undefined
@@ -1300,7 +1315,7 @@ const StatusManager = ()=>{
         onClick: handleAddStatus,
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 189,
+            lineNumber: 160,
             columnNumber: 9
         },
         __self: undefined
@@ -1310,21 +1325,21 @@ const StatusManager = ()=>{
         className: "alpaca-modal",
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 194,
+            lineNumber: 165,
             columnNumber: 9
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 199,
+            lineNumber: 170,
             columnNumber: 11
         },
         __self: undefined
     }, 'Are you sure you want to delete the status "', /*#__PURE__*/ React.createElement("strong", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 201,
+            lineNumber: 172,
             columnNumber: 13
         },
         __self: undefined
@@ -1332,7 +1347,7 @@ const StatusManager = ()=>{
         className: "alpaca-actions",
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 203,
+            lineNumber: 174,
             columnNumber: 11
         },
         __self: undefined
@@ -1342,7 +1357,7 @@ const StatusManager = ()=>{
         onClick: performDelete,
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 204,
+            lineNumber: 175,
             columnNumber: 13
         },
         __self: undefined
@@ -1351,7 +1366,7 @@ const StatusManager = ()=>{
         onClick: cancelDelete,
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 207,
+            lineNumber: 178,
             columnNumber: 13
         },
         __self: undefined
@@ -5430,7 +5445,131 @@ const SortableStatusRow = ({ id, status, onRename, onDelete, onMove, isFirst, is
 };
 exports.default = SortableStatusRow;
 
-},{"@dnd-kit/sortable":"fw7EW","@dnd-kit/utilities":"a2exI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"h1t0l":[function(require,module,exports,__globalThis) {
+},{"@dnd-kit/sortable":"fw7EW","@dnd-kit/utilities":"a2exI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"8A2rp":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+const { useState, useEffect, useCallback } = wp.element;
+const { SelectControl, Spinner } = wp.components;
+const DefaultStatusSelector = ({ statuses })=>{
+    const [defaultStatus, setDefaultStatus] = useState("");
+    const [isFetching, setIsFetching] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+    const [error, setError] = useState(null);
+    const fetchOption = useCallback(()=>{
+        setIsFetching(true);
+        wp.apiFetch({
+            path: "/alpaca/v1/options/default_status"
+        }).then((option)=>{
+            setDefaultStatus(option.value ? option.value.toString() : "");
+        }).catch((err)=>{
+            console.error("Error fetching data:", err);
+            setError("Could not load default status settings.");
+        }).finally(()=>{
+            setIsFetching(false);
+        });
+    }, []);
+    useEffect(()=>{
+        fetchOption();
+    }, [
+        fetchOption
+    ]);
+    const handleStatusChange = (newValue)=>{
+        setIsSaving(true);
+        setDefaultStatus(newValue);
+        wp.apiFetch({
+            path: "/alpaca/v1/options/default_status",
+            method: "POST",
+            data: {
+                value: newValue
+            }
+        }).catch((err)=>{
+            console.error("Error saving default status:", err);
+            alert("Error saving setting: " + err.message);
+            fetchOption(); // Revert on error
+        }).finally(()=>{
+            setIsSaving(false);
+        });
+    };
+    if (error) return /*#__PURE__*/ React.createElement("p", {
+        className: "alpaca-error",
+        __source: {
+            fileName: "src/components/DefaultStatusSelector.jsx",
+            lineNumber: 51,
+            columnNumber: 12
+        },
+        __self: undefined
+    }, error);
+    const statusOptions = [
+        {
+            label: "Select a default status...",
+            value: ""
+        },
+        ...statuses.map((status)=>({
+                label: status.name,
+                value: status.term_id.toString()
+            }))
+    ];
+    return /*#__PURE__*/ React.createElement("div", {
+        style: {
+            marginTop: "2rem"
+        },
+        __source: {
+            fileName: "src/components/DefaultStatusSelector.jsx",
+            lineNumber: 63,
+            columnNumber: 5
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("h3", {
+        __source: {
+            fileName: "src/components/DefaultStatusSelector.jsx",
+            lineNumber: 64,
+            columnNumber: 7
+        },
+        __self: undefined
+    }, "Default Status for New Issues"), /*#__PURE__*/ React.createElement("p", {
+        __source: {
+            fileName: "src/components/DefaultStatusSelector.jsx",
+            lineNumber: 65,
+            columnNumber: 7
+        },
+        __self: undefined
+    }, "Choose which status new issues should be assigned to by default."), /*#__PURE__*/ React.createElement("div", {
+        style: {
+            display: "flex",
+            alignItems: "center",
+            gap: "8px"
+        },
+        __source: {
+            fileName: "src/components/DefaultStatusSelector.jsx",
+            lineNumber: 66,
+            columnNumber: 7
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement(SelectControl, {
+        label: "Default Status",
+        hideLabelFromVision: true,
+        value: defaultStatus,
+        options: statusOptions,
+        onChange: handleStatusChange,
+        disabled: isSaving || isFetching,
+        __source: {
+            fileName: "src/components/DefaultStatusSelector.jsx",
+            lineNumber: 67,
+            columnNumber: 9
+        },
+        __self: undefined
+    }), (isFetching || isSaving) && /*#__PURE__*/ React.createElement(Spinner, {
+        __source: {
+            fileName: "src/components/DefaultStatusSelector.jsx",
+            lineNumber: 75,
+            columnNumber: 38
+        },
+        __self: undefined
+    })));
+};
+exports.default = DefaultStatusSelector;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"h1t0l":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "AlpacaBoard", ()=>(0, _boardFrame.AlpacaBoard));
