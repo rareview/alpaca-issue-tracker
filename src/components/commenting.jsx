@@ -174,6 +174,9 @@ const AlpacaCommenting = ({
             <div className="alpaca-row" key={comment.id}>
               <div className="alpaca-meta">
                 <AlpacaUser userId={comment.author} />
+                <small className="alpaca-comment-date">
+                  {new Date(comment.date).toLocaleString()}
+                </small>
               </div>
               <div className="alpaca-comment">
                 {editingCommentId === comment.id ? (
@@ -203,9 +206,6 @@ const AlpacaCommenting = ({
                           : comment.content.rendered,
                       }}
                     />
-                    <small className="alpaca-comment-date">
-                      {new Date(comment.date).toLocaleString()}
-                    </small>
                     <div>
                       <button onClick={() => startEditing(comment)}>
                         Edit

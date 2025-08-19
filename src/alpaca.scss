@@ -303,19 +303,15 @@
     display: none;
   }
 
-  .alpaca-grid {
+  #alpaca-comments {
     .alpaca-row {
-      display: flex;
-      .alpaca-meta {
-        width: 150px;
-        padding: 10px;
-      }
-      .alpaca-comment {
-        flex-grow: 1;
-        padding: 10px 0;
-      }
+      display: grid;
+      grid-template-columns: 100px 1fr;
+      align-items: top;
+      padding: 10px;
     }
   }
+
   .alpaca-status-manager {
     table {
       max-width: 50vw;

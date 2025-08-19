@@ -320,18 +320,11 @@
   display: none;
 }
 
-.wp-admin .alpaca-grid .alpaca-row {
-  display: flex;
-}
-
-.wp-admin .alpaca-grid .alpaca-row .alpaca-meta {
-  width: 150px;
+.wp-admin #alpaca-comments .alpaca-row {
+  align-items: top;
+  grid-template-columns: 100px 1fr;
   padding: 10px;
-}
-
-.wp-admin .alpaca-grid .alpaca-row .alpaca-comment {
-  flex-grow: 1;
-  padding: 10px 0;
+  display: grid;
 }
 
 .wp-admin .alpaca-status-manager table {

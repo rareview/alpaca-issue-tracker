@@ -28,6 +28,8 @@ foreach ($all_includes as $file) {
 	include_once($file);
 }
 
+register_activation_hook( __FILE__, 'alpaca_activate' );
+
 function enqueue_alpaca_scripts() {
 	$plugin_url = plugin_dir_url( __FILE__ );
 

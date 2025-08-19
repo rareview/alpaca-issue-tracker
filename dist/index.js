@@ -9466,11 +9466,19 @@ const AlpacaCommenting = ({ issueId, onCommentCountChange, commentRefreshKey })=
                 columnNumber: 17
             },
             __self: undefined
-        })), /*#__PURE__*/ React.createElement("div", {
+        }), /*#__PURE__*/ React.createElement("small", {
+            className: "alpaca-comment-date",
+            __source: {
+                fileName: "src/components/commenting.jsx",
+                lineNumber: 177,
+                columnNumber: 17
+            },
+            __self: undefined
+        }, new Date(comment.date).toLocaleString())), /*#__PURE__*/ React.createElement("div", {
             className: "alpaca-comment",
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 178,
+                lineNumber: 181,
                 columnNumber: 15
             },
             __self: undefined
@@ -9480,7 +9488,7 @@ const AlpacaCommenting = ({ issueId, onCommentCountChange, commentRefreshKey })=
             ref: editingRef,
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 181,
+                lineNumber: 184,
                 columnNumber: 21
             },
             __self: undefined
@@ -9490,7 +9498,7 @@ const AlpacaCommenting = ({ issueId, onCommentCountChange, commentRefreshKey })=
             disabled: isSubmitting,
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 186,
+                lineNumber: 189,
                 columnNumber: 21
             },
             __self: undefined
@@ -9499,7 +9507,7 @@ const AlpacaCommenting = ({ issueId, onCommentCountChange, commentRefreshKey })=
             disabled: isSubmitting,
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 193,
+                lineNumber: 196,
                 columnNumber: 21
             },
             __self: undefined
@@ -9509,19 +9517,11 @@ const AlpacaCommenting = ({ issueId, onCommentCountChange, commentRefreshKey })=
             },
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 199,
+                lineNumber: 202,
                 columnNumber: 21
             },
             __self: undefined
-        }), /*#__PURE__*/ React.createElement("small", {
-            className: "alpaca-comment-date",
-            __source: {
-                fileName: "src/components/commenting.jsx",
-                lineNumber: 206,
-                columnNumber: 21
-            },
-            __self: undefined
-        }, new Date(comment.date).toLocaleString()), /*#__PURE__*/ React.createElement("div", {
+        }), /*#__PURE__*/ React.createElement("div", {
             __source: {
                 fileName: "src/components/commenting.jsx",
                 lineNumber: 209,
