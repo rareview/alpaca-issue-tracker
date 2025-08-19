@@ -144,11 +144,20 @@
 
 .wp-admin #alpaca-board .alpaca-container.hidden .alpaca-container-header {
   writing-mode: vertical-rl;
+  height: 100%;
   transform: rotate(180deg);
 }
 
+.wp-admin #alpaca-board .alpaca-container.hidden .alpaca-container-header h2, .wp-admin #alpaca-board .alpaca-container.hidden .alpaca-container-header input {
+  height: 100%;
+}
+
 .wp-admin #alpaca-board .alpaca-container.hidden .alpaca-container-header h2 {
-  margin: 5px auto;
+  margin: 5px 0;
+}
+
+.wp-admin #alpaca-board .alpaca-container.hidden .alpaca-container-header input {
+  margin: 5px -1px;
 }
 
 .wp-admin #alpaca-board .alpaca-container.hidden .alpaca-item {

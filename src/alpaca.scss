@@ -131,10 +131,18 @@
         padding: 0 0 10px 0;
         opacity: 0.5;
         .alpaca-container-header {
+          height: 100%;
           writing-mode: vertical-rl;
           transform: rotate(180deg);
+          h2,
+          input {
+            height: 100%;
+          }
           h2 {
-            margin: 5px auto;
+            margin: 5px 0;
+          }
+          input {
+            margin: 5px -1px;
           }
         }
         .alpaca-item {
