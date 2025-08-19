@@ -154,22 +154,6 @@ const StatusManager = ({
 
   return (
     <div className="alpaca-status-manager">
-      {isUpdatingScores && (
-        <div
-          style={{
-            padding: "10px",
-            backgroundColor: "#f0f6fc",
-            border: "1px solid #c3d7f0",
-            marginBottom: "1rem",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-          }}
-        >
-          <Spinner />
-          <span>Updating status order...</span>
-        </div>
-      )}
       <table className="wp-list-table widefat striped">
         <thead>
           <tr>
@@ -291,9 +275,11 @@ const StatusRow = ({ status, onRename, onDelete, onMove, isFirst, isLast }) => {
           onClick={() => onMove(status.term_id, 1)}
           disabled={isLast}
         />
-        <Button isDestructive onClick={() => onDelete(status.term_id)}>
-          Delete
-        </Button>
+        <Button
+          icon="trash"
+          // isDestructive
+          onClick={() => onDelete(status.term_id)}
+        />
       </td>
     </tr>
   );
