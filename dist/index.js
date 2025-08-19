@@ -1282,10 +1282,7 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error, onStatusesCh
         },
         __self: undefined
     }, "Name"), /*#__PURE__*/ React.createElement("th", {
-        style: {
-            width: "200px",
-            textAlign: "right"
-        },
+        className: "alpaca-status-manager-actions",
         __source: {
             fileName: "src/components/StatusManager.jsx",
             lineNumber: 161,
@@ -1447,6 +1444,7 @@ const StatusRow = ({ status, onRename, onDelete, onMove, isFirst, isLast })=>{
         },
         __self: undefined
     }, status.name)), /*#__PURE__*/ React.createElement("td", {
+        className: "alpaca-status-manager-actions",
         __source: {
             fileName: "src/components/StatusManager.jsx",
             lineNumber: 265,

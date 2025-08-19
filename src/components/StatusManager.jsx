@@ -158,7 +158,7 @@ const StatusManager = ({
         <thead>
           <tr>
             <th>Name</th>
-            <th style={{ width: "200px", textAlign: "right" }}>Actions</th>
+            <th className="alpaca-status-manager-actions">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -262,7 +262,7 @@ const StatusRow = ({ status, onRename, onDelete, onMove, isFirst, isLast }) => {
           </button>
         )}
       </td>
-      <td>
+      <td className="alpaca-status-manager-actions">
         <Button
           icon="arrow-up-alt2"
           label="Move Up"
