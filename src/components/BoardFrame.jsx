@@ -57,5 +57,4 @@ export function AlpacaBoardControls() {
       <ToggleGroupControlOption value="watchlist" label="Starred" />
     </ToggleGroupControl>
   );
-  // TODO: watchlist functionality
 }

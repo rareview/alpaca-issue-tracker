@@ -1121,6 +1121,7 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error, onStatusesCh
     const [statusToDelete, setStatusToDelete] = useState(null);
     const [localStatuses, setLocalStatuses] = useState(statuses);
     const [isUpdatingScores, setIsUpdatingScores] = useState(false);
+    // fix: table flashes when statuses move
     useEffect(()=>{
         setLocalStatuses(statuses);
     }, [
@@ -1231,7 +1232,7 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error, onStatusesCh
     if (isLoading) return /*#__PURE__*/ React.createElement(Spinner, {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 152,
+            lineNumber: 154,
             columnNumber: 25
         },
         __self: undefined
@@ -1239,7 +1240,7 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error, onStatusesCh
     if (error) return /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 153,
+            lineNumber: 155,
             columnNumber: 21
         },
         __self: undefined
@@ -1248,7 +1249,7 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error, onStatusesCh
         className: "alpaca-status-manager",
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 156,
+            lineNumber: 158,
             columnNumber: 5
         },
         __self: undefined
@@ -1256,28 +1257,28 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error, onStatusesCh
         className: "wp-list-table widefat striped",
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 157,
+            lineNumber: 159,
             columnNumber: 7
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("thead", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 158,
+            lineNumber: 160,
             columnNumber: 9
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 159,
+            lineNumber: 161,
             columnNumber: 11
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("th", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 160,
+            lineNumber: 162,
             columnNumber: 13
         },
         __self: undefined
@@ -1285,14 +1286,14 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error, onStatusesCh
         className: "alpaca-status-manager-actions",
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 161,
+            lineNumber: 163,
             columnNumber: 13
         },
         __self: undefined
     }, "Actions"))), /*#__PURE__*/ React.createElement("tbody", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 164,
+            lineNumber: 166,
             columnNumber: 9
         },
         __self: undefined
@@ -1306,14 +1307,14 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error, onStatusesCh
             isLast: index === localStatuses.length - 1,
             __source: {
                 fileName: "src/components/StatusManager.jsx",
-                lineNumber: 166,
+                lineNumber: 168,
                 columnNumber: 13
             },
             __self: undefined
         })))), /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 179,
+            lineNumber: 181,
             columnNumber: 7
         },
         __self: undefined
@@ -1322,7 +1323,7 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error, onStatusesCh
         onClick: handleAddStatus,
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 180,
+            lineNumber: 182,
             columnNumber: 9
         },
         __self: undefined
@@ -1332,21 +1333,21 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error, onStatusesCh
         className: "alpaca-modal",
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 186,
+            lineNumber: 188,
             columnNumber: 9
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 191,
+            lineNumber: 193,
             columnNumber: 11
         },
         __self: undefined
     }, 'Are you sure you want to delete the status "', /*#__PURE__*/ React.createElement("strong", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 193,
+            lineNumber: 195,
             columnNumber: 13
         },
         __self: undefined
@@ -1354,7 +1355,7 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error, onStatusesCh
         className: "alpaca-actions",
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 195,
+            lineNumber: 197,
             columnNumber: 11
         },
         __self: undefined
@@ -1364,7 +1365,7 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error, onStatusesCh
         onClick: performDelete,
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 196,
+            lineNumber: 198,
             columnNumber: 13
         },
         __self: undefined
@@ -1373,7 +1374,7 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error, onStatusesCh
         onClick: cancelDelete,
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 199,
+            lineNumber: 201,
             columnNumber: 13
         },
         __self: undefined
@@ -1411,14 +1412,15 @@ const StatusRow = ({ status, onRename, onDelete, onMove, isFirst, isLast })=>{
     return /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 249,
+            lineNumber: 251,
             columnNumber: 5
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("td", {
+        className: "alpaca-status-manager-name",
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 250,
+            lineNumber: 252,
             columnNumber: 7
         },
         __self: undefined
@@ -1430,7 +1432,7 @@ const StatusRow = ({ status, onRename, onDelete, onMove, isFirst, isLast })=>{
         onKeyDown: handleKeyDown,
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 252,
+            lineNumber: 254,
             columnNumber: 11
         },
         __self: undefined
@@ -1439,15 +1441,23 @@ const StatusRow = ({ status, onRename, onDelete, onMove, isFirst, isLast })=>{
         onClick: handleStartRename,
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 260,
+            lineNumber: 262,
             columnNumber: 11
         },
         __self: undefined
-    }, status.name)), /*#__PURE__*/ React.createElement("td", {
+    }, status.name, " ", /*#__PURE__*/ React.createElement("span", {
+        className: "dashicons dashicons-edit",
+        __source: {
+            fileName: "src/components/StatusManager.jsx",
+            lineNumber: 263,
+            columnNumber: 27
+        },
+        __self: undefined
+    }))), /*#__PURE__*/ React.createElement("td", {
         className: "alpaca-status-manager-actions",
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 265,
+            lineNumber: 267,
             columnNumber: 7
         },
         __self: undefined
@@ -1458,7 +1468,7 @@ const StatusRow = ({ status, onRename, onDelete, onMove, isFirst, isLast })=>{
         disabled: isFirst,
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 266,
+            lineNumber: 268,
             columnNumber: 9
         },
         __self: undefined
@@ -1469,7 +1479,7 @@ const StatusRow = ({ status, onRename, onDelete, onMove, isFirst, isLast })=>{
         disabled: isLast,
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 272,
+            lineNumber: 274,
             columnNumber: 9
         },
         __self: undefined
@@ -1479,7 +1489,7 @@ const StatusRow = ({ status, onRename, onDelete, onMove, isFirst, isLast })=>{
         onClick: ()=>onDelete(status.term_id),
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 278,
+            lineNumber: 280,
             columnNumber: 9
         },
         __self: undefined
@@ -1710,7 +1720,6 @@ function AlpacaBoardControls() {
         },
         __self: this
     }));
-// TODO: watchlist functionality
 }
 
 },{"../utils/cookies":"4qoXW","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./BoardMain":"1nh76"}],"4qoXW":[function(require,module,exports,__globalThis) {

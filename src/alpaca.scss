@@ -327,6 +327,27 @@
           vertical-align: middle;
         }
       }
+      .alpaca-status-manager-name {
+        div {
+          margin: 0;
+        }
+        button .dashicons {
+          display: none;
+        }
+        input {
+          margin: 0;
+          padding: 0;
+          background: transparent;
+          border: none;
+          &:focus {
+            outline: none;
+            box-shadow: none;
+          }
+        }
+        &:hover button .dashicons {
+          display: inline-block;
+        }
+      }
       .alpaca-status-manager-actions {
         width: 10rem;
         text-align: center;

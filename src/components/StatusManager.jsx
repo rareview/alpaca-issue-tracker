@@ -13,6 +13,8 @@ const StatusManager = ({
   const [localStatuses, setLocalStatuses] = useState(statuses);
   const [isUpdatingScores, setIsUpdatingScores] = useState(false);
 
+  // fix: table flashes when statuses move
+
   useEffect(() => {
     setLocalStatuses(statuses);
   }, [statuses]);
@@ -247,7 +249,7 @@ const StatusRow = ({ status, onRename, onDelete, onMove, isFirst, isLast }) => {
 
   return (
     <tr>
-      <td>
+      <td className="alpaca-status-manager-name">
         {isRenaming ? (
           <TextControl
             ref={inputRef}
@@ -258,7 +260,7 @@ const StatusRow = ({ status, onRename, onDelete, onMove, isFirst, isLast }) => {
           />
         ) : (
           <button className="button-link" onClick={handleStartRename}>
-            {status.name}
+            {status.name} <span className="dashicons dashicons-edit"></span>
           </button>
         )}
       </td>

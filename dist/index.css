@@ -346,6 +346,30 @@
   vertical-align: middle;
 }
 
+.wp-admin .alpaca-status-manager table .alpaca-status-manager-name div {
+  margin: 0;
+}
+
+.wp-admin .alpaca-status-manager table .alpaca-status-manager-name button .dashicons {
+  display: none;
+}
+
+.wp-admin .alpaca-status-manager table .alpaca-status-manager-name input {
+  background: none;
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+.wp-admin .alpaca-status-manager table .alpaca-status-manager-name input:focus {
+  box-shadow: none;
+  outline: none;
+}
+
+.wp-admin .alpaca-status-manager table .alpaca-status-manager-name:hover button .dashicons {
+  display: inline-block;
+}
+
 .wp-admin .alpaca-status-manager table .alpaca-status-manager-actions {
   text-align: center;
   width: 10rem;
