@@ -185,11 +185,20 @@ function alpaca_get_board_data() {
                 }
             }
 
+            $meta_keys_for_card = [
+                'deadline',
+            ];
+            $meta_vals_for_card = [];
+            foreach( $meta_keys_for_card as $meta ) {
+                $meta_vals_for_card[ $meta ] = get_post_meta( $post->ID, $meta );
+            }
+
             $issues[] = array(
                 'id'            => $post->ID,
                 'title'         => $post->post_title,
                 'comment_count' => $comment_count,
                 'assignees'     => $assignees,
+                'meta'          => $meta_vals_for_card,
             );
         }
 

@@ -10,6 +10,7 @@ const AlpacaIssue = ({
   triggerRef,
   onCommentCountChange,
   onAssigneesChange,
+  onDeadlineChange,
   createIssueComment,
   generateAssigneeChangeComment,
 }) => {
@@ -196,12 +197,12 @@ const AlpacaIssue = ({
 
               <tr>
                 <th scope="row">Deadline</th>
-                <td>
-                  <span id="deadline">
+                <td className="alpaca-align-controls">
+                  <div id="deadline">
                     {deadline
                       ? new Date(deadline).toLocaleDateString()
                       : "No deadline set."}
-                  </span>
+                  </div>
 
                   <button
                     ref={calendarButtonRef}
@@ -229,10 +230,16 @@ const AlpacaIssue = ({
                             data: {
                               meta: { deadline: newDate },
                             },
-                          }).finally(() => {
-                            setIsSaving(false);
-                            setIsEditingDeadline(false);
-                          });
+                          })
+                            .then(() => {
+                              if (typeof onDeadlineChange === "function") {
+                                onDeadlineChange(issueId, newDate);
+                              }
+                            })
+                            .finally(() => {
+                              setIsSaving(false);
+                              setIsEditingDeadline(false);
+                            });
                         }}
                       />
                     </Popover>
@@ -249,7 +256,13 @@ const AlpacaIssue = ({
                           data: {
                             meta: { deadline: "" },
                           },
-                        }).finally(() => setIsSaving(false));
+                        })
+                          .then(() => {
+                            if (typeof onDeadlineChange === "function") {
+                              onDeadlineChange(issueId, null);
+                            }
+                          })
+                          .finally(() => setIsSaving(false));
                       }}
                       className="button-link"
                     >

@@ -12,8 +12,9 @@ const transformDataForBoard = (data) => {
     items: column.issues.map((issue) => ({
       id: issue.id.toString(),
       content: decodeEntities(issue.title),
-      assignees: issue.assignees || [], // <-- Add this line
+      assignees: issue.assignees || [],
       comment_count: issue.comment_count,
+      meta: issue.meta,
     })),
   }));
 };

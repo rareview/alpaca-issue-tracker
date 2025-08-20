@@ -135,6 +135,7 @@ function Container({
               content={item.content}
               assignees={item.assignees}
               comment_count={item.comment_count}
+              meta={item.meta}
               onClick={onItemClick}
             />
           ))

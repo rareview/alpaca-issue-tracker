@@ -360,6 +360,31 @@ function Board() {
     );
   }, []);
 
+  const handleDeadlineChange = useCallback((issueId, newDeadline) => {
+    setContainers((prevContainers) =>
+      prevContainers.map((container) => {
+        const itemIndex = container.items.findIndex(
+          (item) => item.id === issueId.toString()
+        );
+
+        if (itemIndex === -1) {
+          return container;
+        }
+
+        const newItems = [...container.items];
+        newItems[itemIndex] = {
+          ...newItems[itemIndex],
+          meta: {
+            ...newItems[itemIndex].meta,
+            deadline: newDeadline ? [newDeadline] : null,
+          },
+        };
+
+        return { ...container, items: newItems };
+      })
+    );
+  }, []);
+
   const closeModal = () => {
     setSelectedItem(null);
   };
@@ -443,6 +468,7 @@ function Board() {
             content={draggedItem.content}
             assignees={draggedItem.assignees}
             comment_count={draggedItem.comment_count}
+            meta={draggedItem.meta}
             className="alpaca-item-dragging"
           />
         ) : null}
@@ -455,6 +481,7 @@ function Board() {
         triggerRef={triggerRef}
         onCommentCountChange={onCommentCountChangeForIssue}
         onAssigneesChange={handleAssigneesChange}
+        onDeadlineChange={handleDeadlineChange}
         createIssueComment={createIssueComment}
         generateAssigneeChangeComment={generateAssigneeChangeComment}
       />

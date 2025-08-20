@@ -2,7 +2,16 @@ const { forwardRef, useState, useEffect } = wp.element;
 
 const Item = forwardRef(
   (
-    { id, content, assignees = [], comment_count, className, style, ...props },
+    {
+      id,
+      content,
+      assignees = [],
+      comment_count,
+      meta,
+      className,
+      style,
+      ...props
+    },
     ref
   ) => {
     const [isWatched, setIsWatched] = useState(false);
@@ -36,6 +45,12 @@ const Item = forwardRef(
     }, {});
 
     const watchedClass = isWatched ? "is-watched" : "";
+
+    const deadline =
+      meta && meta.deadline && meta.deadline[0]
+        ? new Date(meta.deadline[0])
+        : null;
+    const isValidDate = deadline && !isNaN(deadline);
 
     return (
       <div
@@ -91,6 +106,17 @@ const Item = forwardRef(
                 aria-hidden="true"
               ></span>
               {comment_count}
+            </div>
+          )}
+
+          {/* --- Deadline --- */}
+          {isValidDate && (
+            <div className="alpaca-item-deadline has-dashicon">
+              <span
+                className="dashicons dashicons-calendar"
+                aria-hidden="true"
+              ></span>
+              {deadline.toLocaleDateString()}
             </div>
           )}
         </div>

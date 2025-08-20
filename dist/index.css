@@ -254,6 +254,13 @@
   font-weight: 200;
 }
 
+.wp-admin .alpaca-details-modal .alpaca-align-controls {
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+  display: flex;
+}
+
 .wp-admin .alpaca-details-modal .alpaca-screenshot {
   height: 200px;
 }

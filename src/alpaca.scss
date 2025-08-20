@@ -238,6 +238,12 @@
       color: #999;
       margin-left: 0.5rem;
     }
+    .alpaca-align-controls {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 1rem;
+    }
     .alpaca-screenshot {
       height: 200px;
     }

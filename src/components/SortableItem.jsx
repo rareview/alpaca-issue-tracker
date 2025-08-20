@@ -13,6 +13,7 @@ function SortableItem({
   onClick,
   assignees = [],
   comment_count,
+  meta,
 }) {
   const {
     attributes,
@@ -48,6 +49,7 @@ function SortableItem({
       content={content}
       assignees={assignees}
       comment_count={comment_count}
+      meta={meta}
       className={className}
       style={style}
       onClick={handleClick}
