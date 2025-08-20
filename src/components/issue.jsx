@@ -200,7 +200,10 @@ const AlpacaIssue = ({
                 <td className="alpaca-align-controls">
                   <div id="deadline">
                     {deadline
-                      ? new Date(deadline).toLocaleDateString()
+                      ? new Date(deadline).toLocaleDateString(undefined, {
+                          month: "short",
+                          day: "numeric",
+                        })
                       : "No deadline set."}
                   </div>
 

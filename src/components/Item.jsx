@@ -61,12 +61,14 @@ const Item = forwardRef(
         {...assigneeDataAttributes}
         {...props}
       >
-        <div className="alpaca-item-content">{content}</div>
-        <div className="alpaca-item-controls">
-          <div
-            className="dashicons dashicons-star-filled"
-            onClick={toggleWatch}
-          ></div>
+        <div className="alpaca-item-upper">
+          <div className="alpaca-item-content">{content}</div>
+          <div className="alpaca-item-controls">
+            <div
+              className="dashicons dashicons-star-filled"
+              onClick={toggleWatch}
+            ></div>
+          </div>
         </div>
         <div className="alpaca-item-meta">
           {/* --- Assignees --- */}
@@ -116,7 +118,10 @@ const Item = forwardRef(
                 className="dashicons dashicons-calendar"
                 aria-hidden="true"
               ></span>
-              {deadline.toLocaleDateString()}
+              {deadline.toLocaleDateString(undefined, {
+                month: "short",
+                day: "numeric",
+              })}
             </div>
           )}
         </div>

@@ -167,13 +167,16 @@
 .wp-admin #alpaca-board .alpaca-item, .wp-admin #alpaca-board .alpaca-item-dragging {
   background-color: #fff;
   border-radius: 8px;
-  grid-template-rows: auto auto;
-  grid-template-columns: 1fr 3em;
-  gap: 0;
   margin: 4px 0;
   padding: 8px 12px;
-  display: grid;
   box-shadow: 0 0 2px #888;
+}
+
+.wp-admin #alpaca-board .alpaca-item .alpaca-item-upper, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-upper {
+  grid-template-rows: auto;
+  grid-template-columns: 1fr 3em;
+  gap: 0;
+  display: grid;
 }
 
 .wp-admin #alpaca-board .alpaca-item .alpaca-item-content, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-content {
