@@ -50,7 +50,15 @@ const Item = forwardRef(
       meta && meta.deadline && meta.deadline[0]
         ? new Date(meta.deadline[0])
         : null;
-    const isValidDate = deadline && !isNaN(deadline);
+    const isValidDeadline = deadline && !isNaN(deadline);
+
+    let diffDays = null;
+    if (isValidDeadline) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      deadline.setHours(0, 0, 0, 0);
+      diffDays = Math.ceil((deadline - today) / (1000 * 60 * 60 * 24));
+    }
 
     return (
       <div
@@ -112,16 +120,21 @@ const Item = forwardRef(
           )}
 
           {/* --- Deadline --- */}
-          {isValidDate && (
-            <div className="alpaca-item-deadline has-dashicon">
+          {isValidDeadline && (
+            <div
+              className="alpaca-item-deadline has-dashicon"
+              data-diff-days={diffDays}
+            >
               <span
                 className="dashicons dashicons-calendar"
                 aria-hidden="true"
               ></span>
-              {deadline.toLocaleDateString(undefined, {
-                month: "short",
-                day: "numeric",
-              })}
+              {/* deadline.toLocaleDateString(undefined, { month: "short", day: "numeric", }) */}
+              {diffDays > 0
+                ? `${diffDays} day${diffDays > 1 ? "s" : ""} left`
+                : diffDays === 0
+                ? "Today"
+                : `${Math.abs(diffDays)} day${diffDays < -1 ? "s" : ""} ago`}
             </div>
           )}
         </div>

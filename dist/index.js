@@ -6127,7 +6127,14 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
     }, {});
     const watchedClass = isWatched ? "is-watched" : "";
     const deadline = meta && meta.deadline && meta.deadline[0] ? new Date(meta.deadline[0]) : null;
-    const isValidDate = deadline && !isNaN(deadline);
+    const isValidDeadline = deadline && !isNaN(deadline);
+    let diffDays = null;
+    if (isValidDeadline) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        deadline.setHours(0, 0, 0, 0);
+        diffDays = Math.ceil((deadline - today) / 86400000);
+    }
     return /*#__PURE__*/ React.createElement("div", {
         ref: ref,
         className: `${className} ${watchedClass}`,
@@ -6137,7 +6144,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         ...props,
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 56,
+            lineNumber: 64,
             columnNumber: 7
         },
         __self: undefined
@@ -6145,7 +6152,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         className: "alpaca-item-upper",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 64,
+            lineNumber: 72,
             columnNumber: 9
         },
         __self: undefined
@@ -6153,7 +6160,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         className: "alpaca-item-content",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 65,
+            lineNumber: 73,
             columnNumber: 11
         },
         __self: undefined
@@ -6161,7 +6168,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         className: "alpaca-item-controls",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 66,
+            lineNumber: 74,
             columnNumber: 11
         },
         __self: undefined
@@ -6170,7 +6177,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         onClick: toggleWatch,
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 67,
+            lineNumber: 75,
             columnNumber: 13
         },
         __self: undefined
@@ -6178,7 +6185,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         className: "alpaca-item-meta",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 73,
+            lineNumber: 81,
             columnNumber: 9
         },
         __self: undefined
@@ -6188,7 +6195,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         title: assignees.length === 1 ? assignees[0].display_name || assignees[0].name : assignees.map((a)=>a.display_name || a.name).join(", "),
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 76,
+            lineNumber: 84,
             columnNumber: 13
         },
         __self: undefined
@@ -6197,7 +6204,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
             className: "alpaca-item-assignee",
             __source: {
                 fileName: "src/components/Item.jsx",
-                lineNumber: 86,
+                lineNumber: 94,
                 columnNumber: 17
             },
             __self: undefined
@@ -6208,7 +6215,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
             title: assignee.display_name || assignee.name,
             __source: {
                 fileName: "src/components/Item.jsx",
-                lineNumber: 88,
+                lineNumber: 96,
                 columnNumber: 21
             },
             __self: undefined
@@ -6216,7 +6223,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
             className: "alpaca-item-assignee-name",
             __source: {
                 fileName: "src/components/Item.jsx",
-                lineNumber: 95,
+                lineNumber: 103,
                 columnNumber: 19
             },
             __self: undefined
@@ -6224,7 +6231,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         className: "alpaca-item-comment-count has-dashicon",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 105,
+            lineNumber: 113,
             columnNumber: 13
         },
         __self: undefined
@@ -6233,15 +6240,16 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         "aria-hidden": "true",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 106,
+            lineNumber: 114,
             columnNumber: 15
         },
         __self: undefined
-    }), comment_count), isValidDate && /*#__PURE__*/ React.createElement("div", {
+    }), comment_count), isValidDeadline && /*#__PURE__*/ React.createElement("div", {
         className: "alpaca-item-deadline has-dashicon",
+        "data-diff-days": diffDays,
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 116,
+            lineNumber: 124,
             columnNumber: 13
         },
         __self: undefined
@@ -6250,14 +6258,11 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         "aria-hidden": "true",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 117,
+            lineNumber: 128,
             columnNumber: 15
         },
         __self: undefined
-    }), deadline.toLocaleDateString(undefined, {
-        month: "short",
-        day: "numeric"
-    }))));
+    }), diffDays > 0 ? `${diffDays} day${diffDays > 1 ? "s" : ""} left` : diffDays === 0 ? "Today" : `${Math.abs(diffDays)} day${diffDays < -1 ? "s" : ""} ago`)));
 });
 exports.default = Item;
 
