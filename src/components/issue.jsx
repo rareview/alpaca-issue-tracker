@@ -1,6 +1,6 @@
 import AlpacaCommenting from "./commenting.jsx";
-const { useState, useEffect } = wp.element;
-const { Modal, FormTokenField } = wp.components;
+const { useState, useEffect, useRef } = wp.element;
+const { Modal, FormTokenField, DatePicker, Popover } = wp.components;
 const { decodeEntities } = wp.htmlEntities;
 
 const AlpacaIssue = ({
@@ -21,6 +21,10 @@ const AlpacaIssue = ({
   const [isSaving, setIsSaving] = useState(false);
   const [userMap, setUserMap] = useState({}); // Map display name -> slug
   const [commentRefreshKey, setCommentRefreshKey] = useState(0);
+  const [deadline, setDeadline] = useState(null);
+  const [isEditingDeadline, setIsEditingDeadline] = useState(false);
+
+  const calendarButtonRef = useRef();
 
   // Fetch all users and issue details concurrently
   useEffect(() => {
@@ -52,6 +56,7 @@ const AlpacaIssue = ({
 
           // 2. Process issue details
           setIssueDetails(issueData);
+          setDeadline(issueData.meta.deadline || null);
 
           // 3. Now that the user map is guaranteed to exist, populate assignees
           if (
@@ -60,11 +65,10 @@ const AlpacaIssue = ({
             Array.isArray(issueData.taxonomies.assignee)
           ) {
             const assigneeNames = issueData.taxonomies.assignee.map((t) => {
-              // Find the user's display name from their slug (t.slug)
               const userObject = usersWithAvatar.find(
                 (user) => user.slug === t.slug
               );
-              return userObject ? userObject.name : t.name; // Fallback to term name
+              return userObject ? userObject.name : t.name;
             });
             setAssignees(assigneeNames);
           } else {
@@ -175,9 +179,7 @@ const AlpacaIssue = ({
                         },
                       })
                         .then(() => {
-                          // Notify parent/board to refresh
                           if (typeof onAssigneesChange === "function") {
-                            // Find the full user objects for the selected assignees
                             const assigneeObjects = allUserObjects.filter(
                               (u) =>
                                 newAssignees.includes(u.name) ||
@@ -189,6 +191,71 @@ const AlpacaIssue = ({
                         .finally(() => setIsSaving(false));
                     }}
                   />
+                </td>
+              </tr>
+
+              <tr>
+                <th scope="row">Deadline</th>
+                <td>
+                  <span id="deadline">
+                    {deadline
+                      ? new Date(deadline).toLocaleDateString()
+                      : "No deadline set."}
+                  </span>
+
+                  <button
+                    ref={calendarButtonRef}
+                    onClick={() => setIsEditingDeadline((prev) => !prev)}
+                    className="button-link"
+                  >
+                    <span className="dashicons dashicons-calendar"></span>
+                  </button>
+
+                  {isEditingDeadline && (
+                    <Popover
+                      placement="bottom-start"
+                      onClose={() => setIsEditingDeadline(false)}
+                      anchorRef={calendarButtonRef.current}
+                      focusOnMount={false}
+                    >
+                      <DatePicker
+                        currentDate={deadline}
+                        onChange={(newDate) => {
+                          setDeadline(newDate);
+                          setIsSaving(true);
+                          wp.apiFetch({
+                            path: `/issue/v1/update/${issueId}`,
+                            method: "POST",
+                            data: {
+                              meta: { deadline: newDate },
+                            },
+                          }).finally(() => {
+                            setIsSaving(false);
+                            setIsEditingDeadline(false);
+                          });
+                        }}
+                      />
+                    </Popover>
+                  )}
+
+                  {deadline && (
+                    <button
+                      onClick={() => {
+                        setDeadline(null);
+                        setIsSaving(true);
+                        wp.apiFetch({
+                          path: `/issue/v1/update/${issueId}`,
+                          method: "POST",
+                          data: {
+                            meta: { deadline: "" },
+                          },
+                        }).finally(() => setIsSaving(false));
+                      }}
+                      className="button-link"
+                    >
+                      <span className="dashicons dashicons-trash"></span>
+                    </button>
+                  )}
                 </td>
               </tr>
 
@@ -220,7 +287,6 @@ const AlpacaIssue = ({
                             },
                           })
                             .then(() => {
-                              // Remove screenshot from local state
                               setIssueDetails((prev) => ({
                                 ...prev,
                                 meta: {

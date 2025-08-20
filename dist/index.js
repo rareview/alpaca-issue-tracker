@@ -8816,8 +8816,8 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _commentingJsx = require("./commenting.jsx");
 var _commentingJsxDefault = parcelHelpers.interopDefault(_commentingJsx);
-const { useState, useEffect } = wp.element;
-const { Modal, FormTokenField } = wp.components;
+const { useState, useEffect, useRef } = wp.element;
+const { Modal, FormTokenField, DatePicker, Popover } = wp.components;
 const { decodeEntities } = wp.htmlEntities;
 const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChange, onAssigneesChange, createIssueComment, generateAssigneeChangeComment })=>{
     const [issueDetails, setIssueDetails] = useState(null);
@@ -8828,6 +8828,9 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
     const [isSaving, setIsSaving] = useState(false);
     const [userMap, setUserMap] = useState({}); // Map display name -> slug
     const [commentRefreshKey, setCommentRefreshKey] = useState(0);
+    const [deadline, setDeadline] = useState(null);
+    const [isEditingDeadline, setIsEditingDeadline] = useState(false);
+    const calendarButtonRef = useRef();
     // Fetch all users and issue details concurrently
     useEffect(()=>{
         if (issueId && isOpen) {
@@ -8857,12 +8860,12 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
                 setAllUserObjects(usersWithAvatar);
                 // 2. Process issue details
                 setIssueDetails(issueData);
+                setDeadline(issueData.meta.deadline || null);
                 // 3. Now that the user map is guaranteed to exist, populate assignees
                 if (issueData.taxonomies && issueData.taxonomies.assignee && Array.isArray(issueData.taxonomies.assignee)) {
                     const assigneeNames = issueData.taxonomies.assignee.map((t)=>{
-                        // Find the user's display name from their slug (t.slug)
                         const userObject = usersWithAvatar.find((user)=>user.slug === t.slug);
-                        return userObject ? userObject.name : t.name; // Fallback to term name
+                        return userObject ? userObject.name : t.name;
                     });
                     setAssignees(assigneeNames);
                 } else setAssignees([]);
@@ -8885,7 +8888,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
             className: "alpaca-issue-id",
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 93,
+                lineNumber: 97,
                 columnNumber: 11
             }
         }, " #", issueId)),
@@ -8894,14 +8897,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         className: "alpaca-details-modal",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 89,
+            lineNumber: 93,
             columnNumber: 5
         },
         __self: undefined
     }, isLoadingDetails ? /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 101,
+            lineNumber: 105,
             columnNumber: 9
         },
         __self: undefined
@@ -8909,7 +8912,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         className: "alpaca-issue-details",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 103,
+            lineNumber: 107,
             columnNumber: 9
         },
         __self: undefined
@@ -8917,21 +8920,21 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         className: "wp-list-table widefat striped",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 104,
+            lineNumber: 108,
             columnNumber: 11
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("tbody", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 105,
+            lineNumber: 109,
             columnNumber: 13
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 106,
+            lineNumber: 110,
             columnNumber: 15
         },
         __self: undefined
@@ -8939,14 +8942,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         scope: "row",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 107,
+            lineNumber: 111,
             columnNumber: 17
         },
         __self: undefined
     }, "Assigned to:"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 108,
+            lineNumber: 112,
             columnNumber: 17
         },
         __self: undefined
@@ -8988,9 +8991,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
                     }
                 }
             }).then(()=>{
-                // Notify parent/board to refresh
                 if (typeof onAssigneesChange === "function") {
-                    // Find the full user objects for the selected assignees
                     const assigneeObjects = allUserObjects.filter((u)=>newAssignees.includes(u.name) || newAssignees.includes(u.slug));
                     onAssigneesChange(issueId, assigneeObjects);
                 }
@@ -8998,14 +8999,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         },
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 109,
+            lineNumber: 113,
             columnNumber: 19
         },
         __self: undefined
     }))), /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 195,
+            lineNumber: 197,
             columnNumber: 15
         },
         __self: undefined
@@ -9013,21 +9014,111 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         scope: "row",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 196,
+            lineNumber: 198,
             columnNumber: 17
         },
         __self: undefined
     }, "Deadline"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 197,
+            lineNumber: 199,
             columnNumber: 17
         },
         __self: undefined
-    }, "Hey")), issueDetails.meta.screenshot && /*#__PURE__*/ React.createElement("tr", {
+    }, /*#__PURE__*/ React.createElement("span", {
+        id: "deadline",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 201,
+            lineNumber: 200,
+            columnNumber: 19
+        },
+        __self: undefined
+    }, deadline ? new Date(deadline).toLocaleDateString() : "No deadline set."), /*#__PURE__*/ React.createElement("button", {
+        ref: calendarButtonRef,
+        onClick: ()=>setIsEditingDeadline((prev)=>!prev),
+        className: "button-link",
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 206,
+            columnNumber: 19
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("span", {
+        className: "dashicons dashicons-calendar",
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 211,
+            columnNumber: 21
+        },
+        __self: undefined
+    })), isEditingDeadline && /*#__PURE__*/ React.createElement(Popover, {
+        placement: "bottom-start",
+        onClose: ()=>setIsEditingDeadline(false),
+        anchorRef: calendarButtonRef.current,
+        focusOnMount: false,
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 215,
+            columnNumber: 21
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement(DatePicker, {
+        currentDate: deadline,
+        onChange: (newDate)=>{
+            setDeadline(newDate);
+            setIsSaving(true);
+            wp.apiFetch({
+                path: `/issue/v1/update/${issueId}`,
+                method: "POST",
+                data: {
+                    meta: {
+                        deadline: newDate
+                    }
+                }
+            }).finally(()=>{
+                setIsSaving(false);
+                setIsEditingDeadline(false);
+            });
+        },
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 221,
+            columnNumber: 23
+        },
+        __self: undefined
+    })), deadline && /*#__PURE__*/ React.createElement("button", {
+        onClick: ()=>{
+            setDeadline(null);
+            setIsSaving(true);
+            wp.apiFetch({
+                path: `/issue/v1/update/${issueId}`,
+                method: "POST",
+                data: {
+                    meta: {
+                        deadline: ""
+                    }
+                }
+            }).finally(()=>setIsSaving(false));
+        },
+        className: "button-link",
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 242,
+            columnNumber: 21
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("span", {
+        className: "dashicons dashicons-trash",
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 256,
+            columnNumber: 23
+        },
+        __self: undefined
+    })))), issueDetails.meta.screenshot && /*#__PURE__*/ React.createElement("tr", {
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 263,
             columnNumber: 17
         },
         __self: undefined
@@ -9035,21 +9126,21 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         scope: "row",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 202,
+            lineNumber: 264,
             columnNumber: 19
         },
         __self: undefined
     }, "Screenshot"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 203,
+            lineNumber: 265,
             columnNumber: 19
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 204,
+            lineNumber: 266,
             columnNumber: 21
         },
         __self: undefined
@@ -9059,14 +9150,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         alt: "Screenshot",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 205,
+            lineNumber: 267,
             columnNumber: 23
         },
         __self: undefined
     })), /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 211,
+            lineNumber: 273,
             columnNumber: 21
         },
         __self: undefined
@@ -9085,7 +9176,6 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
                     }
                 }
             }).then(()=>{
-                // Remove screenshot from local state
                 setIssueDetails((prev)=>({
                         ...prev,
                         meta: {
@@ -9097,14 +9187,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         },
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 212,
+            lineNumber: 274,
             columnNumber: 23
         },
         __self: undefined
     }, "Delete")))), /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 246,
+            lineNumber: 307,
             columnNumber: 15
         },
         __self: undefined
@@ -9112,21 +9202,21 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         scope: "row",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 247,
+            lineNumber: 308,
             columnNumber: 17
         },
         __self: undefined
     }, "Submitted"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 248,
+            lineNumber: 309,
             columnNumber: 17
         },
         __self: undefined
     }, new Date(issueDetails.post_data.post_date).toLocaleString(), " ", "by ", issueDetails.post_data.post_author_display_name, " (", issueDetails.post_data.post_author, ")")), /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 254,
+            lineNumber: 315,
             columnNumber: 15
         },
         __self: undefined
@@ -9134,21 +9224,21 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         scope: "row",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 255,
+            lineNumber: 316,
             columnNumber: 17
         },
         __self: undefined
     }, "Last modified"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 256,
+            lineNumber: 317,
             columnNumber: 17
         },
         __self: undefined
     }, new Date(issueDetails.post_data.post_modified).toLocaleString(), " ")), /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 262,
+            lineNumber: 323,
             columnNumber: 15
         },
         __self: undefined
@@ -9156,21 +9246,21 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         scope: "row",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 263,
+            lineNumber: 324,
             columnNumber: 17
         },
         __self: undefined
     }, "Description"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 264,
+            lineNumber: 325,
             columnNumber: 17
         },
         __self: undefined
     }, decodeEntities(issueDetails.post_data.post_content))), /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 266,
+            lineNumber: 327,
             columnNumber: 15
         },
         __self: undefined
@@ -9178,14 +9268,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         scope: "row",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 267,
+            lineNumber: 328,
             columnNumber: 17
         },
         __self: undefined
     }, "URL"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 268,
+            lineNumber: 329,
             columnNumber: 17
         },
         __self: undefined
@@ -9195,14 +9285,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         rel: "noopener noreferrer",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 270,
+            lineNumber: 331,
             columnNumber: 21
         },
         __self: undefined
     }, issueDetails.meta.URL) : "N/A")), /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 282,
+            lineNumber: 343,
             columnNumber: 15
         },
         __self: undefined
@@ -9210,14 +9300,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         scope: "row",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 283,
+            lineNumber: 344,
             columnNumber: 17
         },
         __self: undefined
     }, "Screen Size"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 284,
+            lineNumber: 345,
             columnNumber: 17
         },
         __self: undefined
@@ -9225,7 +9315,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
             key: taxonomy,
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 294,
+                lineNumber: 355,
                 columnNumber: 19
             },
             __self: undefined
@@ -9236,14 +9326,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
             },
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 295,
+                lineNumber: 356,
                 columnNumber: 21
             },
             __self: undefined
         }, taxonomy), /*#__PURE__*/ React.createElement("td", {
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 298,
+                lineNumber: 359,
                 columnNumber: 21
             },
             __self: undefined
@@ -9253,14 +9343,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         commentRefreshKey: commentRefreshKey,
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 304,
+            lineNumber: 365,
             columnNumber: 11
         },
         __self: undefined
     })) : /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 311,
+            lineNumber: 372,
             columnNumber: 9
         },
         __self: undefined
@@ -9616,7 +9706,154 @@ const AlpacaCommenting = ({ issueId, onCommentCountChange, commentRefreshKey })=
 };
 exports.default = AlpacaCommenting;
 
-},{"marked":"4duqf","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./user":"ec5iJ"}],"4duqf":[function(require,module,exports,__globalThis) {
+},{"./user":"ec5iJ","marked":"4duqf","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"ec5iJ":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+const { useState, useRef, useEffect } = wp.element;
+// Main AlpacaUser component which will be rendered by WordPress
+// It now accepts a 'userId' prop
+const AlpacaUser = ({ userId })=>{
+    // State to hold the user data being displayed
+    const [displayedUser, setDisplayedUser] = useState(null);
+    // State for loading status
+    const [loading, setLoading] = useState(true);
+    // State for error messages
+    const [error, setError] = useState(null);
+    /**
+   * Fetches user data from the WordPress REST API.
+   * @param {string | number | null} idToFetch - The ID of the user to fetch. If null, fetches data for the current user ('me' endpoint).
+   */ const fetchUserData = async (idToFetch = null)=>{
+        // Ensure wpApiSettings is available, which is exposed by WordPress in the admin area
+        if (typeof window.wpApiSettings === "undefined" || !window.wpApiSettings.root) {
+            setError("WordPress API settings not found. Ensure this component is loaded within a WordPress admin context.");
+            setLoading(false);
+            return;
+        }
+        try {
+            setLoading(true);
+            setError(null);
+            // Determine the API endpoint based on whether an ID is provided
+            const endpoint = idToFetch ? `wp/v2/users/${idToFetch}` : `wp/v2/users/me`;
+            const apiUrl = `${window.wpApiSettings.root}${endpoint}`;
+            const response = await fetch(apiUrl, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    // Include the WordPress nonce for authentication and CSRF protection.
+                    // wpApiSettings.nonce is usually localized by WordPress for backend scripts.
+                    "X-WP-Nonce": window.wpApiSettings.nonce || ""
+                }
+            });
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+            }
+            const userData = await response.json();
+            setDisplayedUser(userData); // Update the displayed user
+        } catch (err) {
+            console.error("Failed to fetch user data:", err);
+            setDisplayedUser(null); // Clear displayed user on error
+            setError(`Error loading user data: ${err.message}`);
+        } finally{
+            setLoading(false);
+        }
+    };
+    // Effect hook to fetch data when the component mounts or when the 'userId' prop changes
+    useEffect(()=>{
+        // If a userId prop is provided, fetch that specific user, otherwise fetch the current user
+        if (userId) fetchUserData(userId);
+        else fetchUserData(); // Calls without an ID to get the current user
+    }, [
+        userId
+    ]); // Re-run effect if the userId prop changes
+    // Get the highest resolution avatar URL available from the displayedUser object
+    const avatarUrl = displayedUser?.avatar_urls ? displayedUser.avatar_urls["96"] || displayedUser.avatar_urls["48"] || displayedUser.avatar_urls["24"] : "https://placehold.co/96x96/cccccc/333333?text=Avatar"; // Placeholder if no avatar URL is found
+    return /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-user-container",
+        __source: {
+            fileName: "src/components/user.jsx",
+            lineNumber: 86,
+            columnNumber: 5
+        },
+        __self: undefined
+    }, loading && "Loading user data...", error && !loading && /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-error-message",
+        role: "alert",
+        __source: {
+            fileName: "src/components/user.jsx",
+            lineNumber: 91,
+            columnNumber: 9
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("strong", {
+        __source: {
+            fileName: "src/components/user.jsx",
+            lineNumber: 92,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, "Error!"), /*#__PURE__*/ React.createElement("span", {
+        className: "alpaca-error-text",
+        __source: {
+            fileName: "src/components/user.jsx",
+            lineNumber: 93,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, error)), !displayedUser && !loading && !error && /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-error-message",
+        role: "alert",
+        __source: {
+            fileName: "src/components/user.jsx",
+            lineNumber: 98,
+            columnNumber: 9
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("strong", {
+        __source: {
+            fileName: "src/components/user.jsx",
+            lineNumber: 99,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, "Error!"), /*#__PURE__*/ React.createElement("span", {
+        className: "alpaca-error-text",
+        __source: {
+            fileName: "src/components/user.jsx",
+            lineNumber: 100,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, "No user data available")), displayedUser && !loading && /*#__PURE__*/ React.createElement(React.Fragment, null, /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-user-avatar",
+        __source: {
+            fileName: "src/components/user.jsx",
+            lineNumber: 106,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("img", {
+        src: avatarUrl,
+        alt: `Avatar of ${displayedUser.name}`,
+        __source: {
+            fileName: "src/components/user.jsx",
+            lineNumber: 107,
+            columnNumber: 13
+        },
+        __self: undefined
+    })), /*#__PURE__*/ React.createElement("div", {
+        __source: {
+            fileName: "src/components/user.jsx",
+            lineNumber: 109,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, displayedUser.name, " (", displayedUser.id, ")")));
+};
+// Export the AlpacaUser component as default for React to render
+exports.default = AlpacaUser;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"4duqf":[function(require,module,exports,__globalThis) {
 /**
  * marked v16.2.0 - a markdown parser
  * Copyright (c) 2011-2025, Christopher Jeffrey. (MIT Licensed)
@@ -11162,153 +11399,6 @@ Please report this to https://github.com/markedjs/marked.`, e) {
     return module1.exports;
 });
 
-},{}],"ec5iJ":[function(require,module,exports,__globalThis) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-const { useState, useRef, useEffect } = wp.element;
-// Main AlpacaUser component which will be rendered by WordPress
-// It now accepts a 'userId' prop
-const AlpacaUser = ({ userId })=>{
-    // State to hold the user data being displayed
-    const [displayedUser, setDisplayedUser] = useState(null);
-    // State for loading status
-    const [loading, setLoading] = useState(true);
-    // State for error messages
-    const [error, setError] = useState(null);
-    /**
-   * Fetches user data from the WordPress REST API.
-   * @param {string | number | null} idToFetch - The ID of the user to fetch. If null, fetches data for the current user ('me' endpoint).
-   */ const fetchUserData = async (idToFetch = null)=>{
-        // Ensure wpApiSettings is available, which is exposed by WordPress in the admin area
-        if (typeof window.wpApiSettings === "undefined" || !window.wpApiSettings.root) {
-            setError("WordPress API settings not found. Ensure this component is loaded within a WordPress admin context.");
-            setLoading(false);
-            return;
-        }
-        try {
-            setLoading(true);
-            setError(null);
-            // Determine the API endpoint based on whether an ID is provided
-            const endpoint = idToFetch ? `wp/v2/users/${idToFetch}` : `wp/v2/users/me`;
-            const apiUrl = `${window.wpApiSettings.root}${endpoint}`;
-            const response = await fetch(apiUrl, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    // Include the WordPress nonce for authentication and CSRF protection.
-                    // wpApiSettings.nonce is usually localized by WordPress for backend scripts.
-                    "X-WP-Nonce": window.wpApiSettings.nonce || ""
-                }
-            });
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-            }
-            const userData = await response.json();
-            setDisplayedUser(userData); // Update the displayed user
-        } catch (err) {
-            console.error("Failed to fetch user data:", err);
-            setDisplayedUser(null); // Clear displayed user on error
-            setError(`Error loading user data: ${err.message}`);
-        } finally{
-            setLoading(false);
-        }
-    };
-    // Effect hook to fetch data when the component mounts or when the 'userId' prop changes
-    useEffect(()=>{
-        // If a userId prop is provided, fetch that specific user, otherwise fetch the current user
-        if (userId) fetchUserData(userId);
-        else fetchUserData(); // Calls without an ID to get the current user
-    }, [
-        userId
-    ]); // Re-run effect if the userId prop changes
-    // Get the highest resolution avatar URL available from the displayedUser object
-    const avatarUrl = displayedUser?.avatar_urls ? displayedUser.avatar_urls["96"] || displayedUser.avatar_urls["48"] || displayedUser.avatar_urls["24"] : "https://placehold.co/96x96/cccccc/333333?text=Avatar"; // Placeholder if no avatar URL is found
-    return /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-user-container",
-        __source: {
-            fileName: "src/components/user.jsx",
-            lineNumber: 86,
-            columnNumber: 5
-        },
-        __self: undefined
-    }, loading && "Loading user data...", error && !loading && /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-error-message",
-        role: "alert",
-        __source: {
-            fileName: "src/components/user.jsx",
-            lineNumber: 91,
-            columnNumber: 9
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("strong", {
-        __source: {
-            fileName: "src/components/user.jsx",
-            lineNumber: 92,
-            columnNumber: 11
-        },
-        __self: undefined
-    }, "Error!"), /*#__PURE__*/ React.createElement("span", {
-        className: "alpaca-error-text",
-        __source: {
-            fileName: "src/components/user.jsx",
-            lineNumber: 93,
-            columnNumber: 11
-        },
-        __self: undefined
-    }, error)), !displayedUser && !loading && !error && /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-error-message",
-        role: "alert",
-        __source: {
-            fileName: "src/components/user.jsx",
-            lineNumber: 98,
-            columnNumber: 9
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("strong", {
-        __source: {
-            fileName: "src/components/user.jsx",
-            lineNumber: 99,
-            columnNumber: 11
-        },
-        __self: undefined
-    }, "Error!"), /*#__PURE__*/ React.createElement("span", {
-        className: "alpaca-error-text",
-        __source: {
-            fileName: "src/components/user.jsx",
-            lineNumber: 100,
-            columnNumber: 11
-        },
-        __self: undefined
-    }, "No user data available")), displayedUser && !loading && /*#__PURE__*/ React.createElement(React.Fragment, null, /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-user-avatar",
-        __source: {
-            fileName: "src/components/user.jsx",
-            lineNumber: 106,
-            columnNumber: 11
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("img", {
-        src: avatarUrl,
-        alt: `Avatar of ${displayedUser.name}`,
-        __source: {
-            fileName: "src/components/user.jsx",
-            lineNumber: 107,
-            columnNumber: 13
-        },
-        __self: undefined
-    })), /*#__PURE__*/ React.createElement("div", {
-        __source: {
-            fileName: "src/components/user.jsx",
-            lineNumber: 109,
-            columnNumber: 11
-        },
-        __self: undefined
-    }, displayedUser.name, " (", displayedUser.id, ")")));
-};
-// Export the AlpacaUser component as default for React to render
-exports.default = AlpacaUser;
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["9iTdJ","d8Dch"], "d8Dch", "parcelRequire55a0", {}, null, null, "http://localhost:1234")
+},{}]},["9iTdJ","d8Dch"], "d8Dch", "parcelRequire55a0", {}, null, null, "http://localhost:1234")
 
 //# sourceMappingURL=index.js.map
