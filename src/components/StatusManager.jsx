@@ -279,12 +279,15 @@ const StatusRow = ({ status, onRename, onDelete, onMove, isFirst, isLast }) => {
         />
         <Button
           icon="trash"
+          label="Delete"
           // isDestructive
           onClick={() => onDelete(status.term_id)}
         />
+        <Button icon="hidden" label="Toggle Visibility" />
       </td>
     </tr>
   );
 };
+// todo: option to make status (in)visible
 
 export default StatusManager;

@@ -340,6 +340,7 @@
 }
 
 .wp-admin .alpaca-status-manager table .alpaca-status-manager-name {
+  font-size: 1rem;
   line-height: 1.5em;
 }
 

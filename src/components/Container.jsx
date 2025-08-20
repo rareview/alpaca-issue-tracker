@@ -108,7 +108,7 @@ function Container({
             className="alpaca-container-title-input"
             value={newTitle}
             onChange={setNewTitle}
-            // onBlur={handleRename}
+            onBlur={handleRename}
             onKeyDown={handleKeyDown}
             ref={inputRef}
           />
