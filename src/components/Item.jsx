@@ -1,4 +1,6 @@
 const { forwardRef, useState, useEffect } = wp.element;
+import User from "./User";
+import User from "./User";
 
 const Item = forwardRef(
   (
@@ -91,19 +93,7 @@ const Item = forwardRef(
               }
             >
               {assignees.map((assignee) => (
-                <div key={assignee.id} className="alpaca-item-assignee">
-                  {assignee.avatar && (
-                    <img
-                      className="alpaca-item-user-img"
-                      src={assignee.avatar}
-                      alt={assignee.display_name || assignee.name}
-                      title={assignee.display_name || assignee.name}
-                    />
-                  )}
-                  <div className="alpaca-item-assignee-name">
-                    {assignee.display_name || assignee.name}
-                  </div>
-                </div>
+                <User key={assignee.id} user={assignee} />
               ))}
             </div>
           )}

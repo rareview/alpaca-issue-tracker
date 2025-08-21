@@ -204,26 +204,16 @@
   display: flex;
 }
 
-.wp-admin #alpaca-board .alpaca-item .alpaca-item-meta .alpaca-item-user-img, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-meta .alpaca-item-user-img {
-  vertical-align: middle;
-  background: #fff;
-  border: 2px solid #fff;
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
-  box-shadow: 0 0 4px #666;
-}
-
-.wp-admin #alpaca-board .alpaca-item .alpaca-item-meta .alpaca-item-assignees .alpaca-item-assignee-name, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-meta .alpaca-item-assignees .alpaca-item-assignee-name {
+.wp-admin #alpaca-board .alpaca-item .alpaca-item-meta .alpaca-item-assignees .alpaca-user-name, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-meta .alpaca-item-assignees .alpaca-user-name {
   display: none;
 }
 
-.wp-admin #alpaca-board .alpaca-item .alpaca-item-meta .alpaca-item-assignees[data-assignees="1"] .alpaca-item-assignee-name, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-meta .alpaca-item-assignees[data-assignees="1"] .alpaca-item-assignee-name {
+.wp-admin #alpaca-board .alpaca-item .alpaca-item-meta .alpaca-item-assignees[data-assignees="1"] .alpaca-user .alpaca-user-name, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-meta .alpaca-item-assignees[data-assignees="1"] .alpaca-user .alpaca-user-name {
   padding-left: 6px;
   display: block;
 }
 
-.wp-admin #alpaca-board .alpaca-item .alpaca-item-meta .alpaca-item-author, .wp-admin #alpaca-board .alpaca-item .alpaca-item-meta .alpaca-item-assignee, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-meta .alpaca-item-author, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-meta .alpaca-item-assignee {
+.wp-admin #alpaca-board .alpaca-item .alpaca-item-meta .alpaca-user, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-meta .alpaca-user {
   color: #999;
   align-items: center;
   margin-left: -8px;
@@ -231,8 +221,18 @@
   display: flex;
 }
 
-.wp-admin #alpaca-board .alpaca-item .alpaca-item-meta .alpaca-item-author:first-child, .wp-admin #alpaca-board .alpaca-item .alpaca-item-meta .alpaca-item-assignee:first-child, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-meta .alpaca-item-author:first-child, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-meta .alpaca-item-assignee:first-child {
+.wp-admin #alpaca-board .alpaca-item .alpaca-item-meta .alpaca-user:first-child, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-meta .alpaca-user:first-child {
   margin-left: 0;
+}
+
+.wp-admin #alpaca-board .alpaca-item .alpaca-item-meta .alpaca-user .alpaca-user-avatar img, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-meta .alpaca-user .alpaca-user-avatar img {
+  vertical-align: middle;
+  background: #fff;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  box-shadow: 0 0 4px #666;
 }
 
 .wp-admin #alpaca-board .alpaca-item-dragging {
@@ -295,9 +295,7 @@
   overflow: hidden scroll;
 }
 
-.wp-admin #alpaca-comments .alpaca-user-avatar img {
-  aspect-ratio: 1;
-  border-radius: 50%;
+.wp-admin #alpaca-comments .alpaca-user .alpaca-user-avatar img {
   width: 32px;
 }
 

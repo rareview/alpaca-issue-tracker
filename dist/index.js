@@ -6097,6 +6097,8 @@ function isAfter(a, b) {
 },{"react":"f39IF","@dnd-kit/core":"do19q","@dnd-kit/utilities":"a2exI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2yEr4":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
+var _user = require("./User");
+var _userDefault = parcelHelpers.interopDefault(_user);
 const { forwardRef, useState, useEffect } = wp.element;
 const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, className, style, ...props }, ref)=>{
     const [isWatched, setIsWatched] = useState(false);
@@ -6144,7 +6146,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         ...props,
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 64,
+            lineNumber: 66,
             columnNumber: 7
         },
         __self: undefined
@@ -6152,7 +6154,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         className: "alpaca-item-upper",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 72,
+            lineNumber: 74,
             columnNumber: 9
         },
         __self: undefined
@@ -6160,7 +6162,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         className: "alpaca-item-content",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 73,
+            lineNumber: 75,
             columnNumber: 11
         },
         __self: undefined
@@ -6168,7 +6170,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         className: "alpaca-item-controls",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 74,
+            lineNumber: 76,
             columnNumber: 11
         },
         __self: undefined
@@ -6177,7 +6179,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         onClick: toggleWatch,
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 75,
+            lineNumber: 77,
             columnNumber: 13
         },
         __self: undefined
@@ -6185,7 +6187,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         className: "alpaca-item-meta",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 81,
+            lineNumber: 83,
             columnNumber: 9
         },
         __self: undefined
@@ -6195,43 +6197,24 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         title: assignees.length === 1 ? assignees[0].display_name || assignees[0].name : assignees.map((a)=>a.display_name || a.name).join(", "),
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 84,
+            lineNumber: 86,
             columnNumber: 13
         },
         __self: undefined
-    }, assignees.map((assignee)=>/*#__PURE__*/ React.createElement("div", {
+    }, assignees.map((assignee)=>/*#__PURE__*/ React.createElement((0, _userDefault.default), {
             key: assignee.id,
-            className: "alpaca-item-assignee",
-            __source: {
-                fileName: "src/components/Item.jsx",
-                lineNumber: 94,
-                columnNumber: 17
-            },
-            __self: undefined
-        }, assignee.avatar && /*#__PURE__*/ React.createElement("img", {
-            className: "alpaca-item-user-img",
-            src: assignee.avatar,
-            alt: assignee.display_name || assignee.name,
-            title: assignee.display_name || assignee.name,
+            user: assignee,
             __source: {
                 fileName: "src/components/Item.jsx",
                 lineNumber: 96,
-                columnNumber: 21
+                columnNumber: 17
             },
             __self: undefined
-        }), /*#__PURE__*/ React.createElement("div", {
-            className: "alpaca-item-assignee-name",
-            __source: {
-                fileName: "src/components/Item.jsx",
-                lineNumber: 103,
-                columnNumber: 19
-            },
-            __self: undefined
-        }, assignee.display_name || assignee.name)))), typeof comment_count !== "undefined" && comment_count > 0 && /*#__PURE__*/ React.createElement("div", {
+        }))), typeof comment_count !== "undefined" && comment_count > 0 && /*#__PURE__*/ React.createElement("div", {
         className: "alpaca-item-comment-count has-dashicon",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 113,
+            lineNumber: 103,
             columnNumber: 13
         },
         __self: undefined
@@ -6240,7 +6223,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         "aria-hidden": "true",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 114,
+            lineNumber: 104,
             columnNumber: 15
         },
         __self: undefined
@@ -6249,7 +6232,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         "data-diff-days": diffDays,
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 124,
+            lineNumber: 114,
             columnNumber: 13
         },
         __self: undefined
@@ -6258,13 +6241,58 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         "aria-hidden": "true",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 128,
+            lineNumber: 118,
             columnNumber: 15
         },
         __self: undefined
     }), diffDays > 0 ? `${diffDays} day${diffDays > 1 ? "s" : ""} left` : diffDays === 0 ? "Today" : `${Math.abs(diffDays)} day${diffDays < -1 ? "s" : ""} ago`)));
 });
 exports.default = Item;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./User":"enwL1"}],"enwL1":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+const User = ({ user })=>{
+    if (!user) return null;
+    const { id, name, avatar, display_name, avatar_urls } = user;
+    const userName = display_name || name;
+    const avatarUrl = avatar || avatar_urls && avatar_urls[96] || "https://placehold.co/96x96/cccccc/333333?text=Avatar";
+    return /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-user",
+        __source: {
+            fileName: "src/components/User.jsx",
+            lineNumber: 15,
+            columnNumber: 5
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-user-avatar",
+        __source: {
+            fileName: "src/components/User.jsx",
+            lineNumber: 16,
+            columnNumber: 7
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("img", {
+        src: avatarUrl,
+        alt: userName,
+        __source: {
+            fileName: "src/components/User.jsx",
+            lineNumber: 17,
+            columnNumber: 9
+        },
+        __self: undefined
+    })), /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-user-name",
+        __source: {
+            fileName: "src/components/User.jsx",
+            lineNumber: 19,
+            columnNumber: 7
+        },
+        __self: undefined
+    }, userName));
+};
+exports.default = User;
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"QNfzH":[function(require,module,exports,__globalThis) {
 var $parcel$ReactRefreshHelpers$2ee0 = require("@parcel/transformer-react-refresh-wrap/lib/helpers/helpers.js");
@@ -9431,21 +9459,29 @@ exports.default = AlpacaIssue;
 },{"./commenting.jsx":"321JG","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"321JG":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
-var _user = require("./user");
+var _user = require("./User");
 var _userDefault = parcelHelpers.interopDefault(_user);
 var _marked = require("marked");
 const { useState, useEffect, useRef, useCallback } = wp.element;
 const { TextareaControl, Button, Spinner, Modal } = wp.components;
-const AlpacaCommenting = ({ issueId, onCommentCountChange, commentRefreshKey })=>{
+const Commenting = ({ issueId, onCommentCountChange, commentRefreshKey })=>{
     const [comments, setComments] = useState([]);
     const [isLoadingComments, setIsLoadingComments] = useState(true);
     const [error, setError] = useState(null);
     const [newComment, setNewComment] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [currentUser, setCurrentUser] = useState(null);
     const [editingCommentId, setEditingCommentId] = useState(null);
     const [editingContent, setEditingContent] = useState("");
     const editingRef = useRef(null);
     const [deleteCommentId, setDeleteCommentId] = useState(null); // New state for modal
+    useEffect(()=>{
+        wp.apiFetch({
+            path: "/wp/v2/users/me"
+        }).then((user)=>{
+            setCurrentUser(user);
+        });
+    }, []);
     const fetchComments = useCallback(()=>{
         if (!issueId) return;
         setIsLoadingComments(true);
@@ -9547,7 +9583,7 @@ const AlpacaCommenting = ({ issueId, onCommentCountChange, commentRefreshKey })=
     return /*#__PURE__*/ React.createElement(React.Fragment, null, /*#__PURE__*/ React.createElement("h3", {
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 141,
+            lineNumber: 148,
             columnNumber: 7
         },
         __self: undefined
@@ -9556,7 +9592,7 @@ const AlpacaCommenting = ({ issueId, onCommentCountChange, commentRefreshKey })=
         className: "alpaca-grid",
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 142,
+            lineNumber: 149,
             columnNumber: 7
         },
         __self: undefined
@@ -9564,7 +9600,7 @@ const AlpacaCommenting = ({ issueId, onCommentCountChange, commentRefreshKey })=
         className: "alpaca-row",
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 144,
+            lineNumber: 151,
             columnNumber: 9
         },
         __self: undefined
@@ -9572,14 +9608,15 @@ const AlpacaCommenting = ({ issueId, onCommentCountChange, commentRefreshKey })=
         className: "alpaca-meta",
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 145,
+            lineNumber: 152,
             columnNumber: 11
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement((0, _userDefault.default), {
+        user: currentUser,
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 146,
+            lineNumber: 153,
             columnNumber: 13
         },
         __self: undefined
@@ -9587,7 +9624,7 @@ const AlpacaCommenting = ({ issueId, onCommentCountChange, commentRefreshKey })=
         className: "alpaca-comment",
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 148,
+            lineNumber: 155,
             columnNumber: 11
         },
         __self: undefined
@@ -9598,7 +9635,7 @@ const AlpacaCommenting = ({ issueId, onCommentCountChange, commentRefreshKey })=
         disabled: isSubmitting,
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 149,
+            lineNumber: 156,
             columnNumber: 13
         },
         __self: undefined
@@ -9608,14 +9645,14 @@ const AlpacaCommenting = ({ issueId, onCommentCountChange, commentRefreshKey })=
         disabled: isSubmitting,
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 155,
+            lineNumber: 162,
             columnNumber: 13
         },
         __self: undefined
     }, isSubmitting ? "Submitting..." : "Submit Comment"))), isLoadingComments && /*#__PURE__*/ React.createElement(Spinner, {
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 165,
+            lineNumber: 172,
             columnNumber: 31
         },
         __self: undefined
@@ -9623,14 +9660,14 @@ const AlpacaCommenting = ({ issueId, onCommentCountChange, commentRefreshKey })=
         className: "alpaca-error",
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 166,
+            lineNumber: 173,
             columnNumber: 19
         },
         __self: undefined
     }, error), !isLoadingComments && !error && comments.length === 0 && /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 168,
+            lineNumber: 175,
             columnNumber: 11
         },
         __self: undefined
@@ -9639,7 +9676,7 @@ const AlpacaCommenting = ({ issueId, onCommentCountChange, commentRefreshKey })=
             key: comment.id,
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 174,
+                lineNumber: 181,
                 columnNumber: 13
             },
             __self: undefined
@@ -9647,15 +9684,19 @@ const AlpacaCommenting = ({ issueId, onCommentCountChange, commentRefreshKey })=
             className: "alpaca-meta",
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 175,
+                lineNumber: 182,
                 columnNumber: 15
             },
             __self: undefined
         }, /*#__PURE__*/ React.createElement((0, _userDefault.default), {
-            userId: comment.author,
+            user: {
+                ...comment.author_meta,
+                name: comment.author_name,
+                avatar: comment.author_avatar_urls[96]
+            },
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 176,
+                lineNumber: 183,
                 columnNumber: 17
             },
             __self: undefined
@@ -9663,7 +9704,7 @@ const AlpacaCommenting = ({ issueId, onCommentCountChange, commentRefreshKey })=
             className: "alpaca-comment-date",
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 177,
+                lineNumber: 184,
                 columnNumber: 17
             },
             __self: undefined
@@ -9671,7 +9712,7 @@ const AlpacaCommenting = ({ issueId, onCommentCountChange, commentRefreshKey })=
             className: "alpaca-comment",
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 181,
+                lineNumber: 188,
                 columnNumber: 15
             },
             __self: undefined
@@ -9681,7 +9722,7 @@ const AlpacaCommenting = ({ issueId, onCommentCountChange, commentRefreshKey })=
             ref: editingRef,
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 184,
+                lineNumber: 191,
                 columnNumber: 21
             },
             __self: undefined
@@ -9691,7 +9732,7 @@ const AlpacaCommenting = ({ issueId, onCommentCountChange, commentRefreshKey })=
             disabled: isSubmitting,
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 189,
+                lineNumber: 196,
                 columnNumber: 21
             },
             __self: undefined
@@ -9700,7 +9741,7 @@ const AlpacaCommenting = ({ issueId, onCommentCountChange, commentRefreshKey })=
             disabled: isSubmitting,
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 196,
+                lineNumber: 203,
                 columnNumber: 21
             },
             __self: undefined
@@ -9710,14 +9751,14 @@ const AlpacaCommenting = ({ issueId, onCommentCountChange, commentRefreshKey })=
             },
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 202,
+                lineNumber: 209,
                 columnNumber: 21
             },
             __self: undefined
         }), /*#__PURE__*/ React.createElement("div", {
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 209,
+                lineNumber: 216,
                 columnNumber: 21
             },
             __self: undefined
@@ -9725,7 +9766,7 @@ const AlpacaCommenting = ({ issueId, onCommentCountChange, commentRefreshKey })=
             onClick: ()=>startEditing(comment),
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 210,
+                lineNumber: 217,
                 columnNumber: 23
             },
             __self: undefined
@@ -9734,7 +9775,7 @@ const AlpacaCommenting = ({ issueId, onCommentCountChange, commentRefreshKey })=
             onClick: ()=>confirmDeleteComment(comment.id),
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 213,
+                lineNumber: 220,
                 columnNumber: 23
             },
             __self: undefined
@@ -9744,14 +9785,14 @@ const AlpacaCommenting = ({ issueId, onCommentCountChange, commentRefreshKey })=
         className: "alpaca-modal",
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 228,
+            lineNumber: 235,
             columnNumber: 11
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 233,
+            lineNumber: 240,
             columnNumber: 13
         },
         __self: undefined
@@ -9760,7 +9801,7 @@ const AlpacaCommenting = ({ issueId, onCommentCountChange, commentRefreshKey })=
         onClick: deleteComment,
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 234,
+            lineNumber: 241,
             columnNumber: 13
         },
         __self: undefined
@@ -9768,162 +9809,15 @@ const AlpacaCommenting = ({ issueId, onCommentCountChange, commentRefreshKey })=
         onClick: cancelDelete,
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 237,
+            lineNumber: 244,
             columnNumber: 13
         },
         __self: undefined
     }, "Cancel"))));
 };
-exports.default = AlpacaCommenting;
+exports.default = Commenting;
 
-},{"./user":"ec5iJ","marked":"4duqf","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"ec5iJ":[function(require,module,exports,__globalThis) {
-var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-const { useState, useRef, useEffect } = wp.element;
-// Main AlpacaUser component which will be rendered by WordPress
-// It now accepts a 'userId' prop
-const AlpacaUser = ({ userId })=>{
-    // State to hold the user data being displayed
-    const [displayedUser, setDisplayedUser] = useState(null);
-    // State for loading status
-    const [loading, setLoading] = useState(true);
-    // State for error messages
-    const [error, setError] = useState(null);
-    /**
-   * Fetches user data from the WordPress REST API.
-   * @param {string | number | null} idToFetch - The ID of the user to fetch. If null, fetches data for the current user ('me' endpoint).
-   */ const fetchUserData = async (idToFetch = null)=>{
-        // Ensure wpApiSettings is available, which is exposed by WordPress in the admin area
-        if (typeof window.wpApiSettings === "undefined" || !window.wpApiSettings.root) {
-            setError("WordPress API settings not found. Ensure this component is loaded within a WordPress admin context.");
-            setLoading(false);
-            return;
-        }
-        try {
-            setLoading(true);
-            setError(null);
-            // Determine the API endpoint based on whether an ID is provided
-            const endpoint = idToFetch ? `wp/v2/users/${idToFetch}` : `wp/v2/users/me`;
-            const apiUrl = `${window.wpApiSettings.root}${endpoint}`;
-            const response = await fetch(apiUrl, {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json",
-                    // Include the WordPress nonce for authentication and CSRF protection.
-                    // wpApiSettings.nonce is usually localized by WordPress for backend scripts.
-                    "X-WP-Nonce": window.wpApiSettings.nonce || ""
-                }
-            });
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-            }
-            const userData = await response.json();
-            setDisplayedUser(userData); // Update the displayed user
-        } catch (err) {
-            console.error("Failed to fetch user data:", err);
-            setDisplayedUser(null); // Clear displayed user on error
-            setError(`Error loading user data: ${err.message}`);
-        } finally{
-            setLoading(false);
-        }
-    };
-    // Effect hook to fetch data when the component mounts or when the 'userId' prop changes
-    useEffect(()=>{
-        // If a userId prop is provided, fetch that specific user, otherwise fetch the current user
-        if (userId) fetchUserData(userId);
-        else fetchUserData(); // Calls without an ID to get the current user
-    }, [
-        userId
-    ]); // Re-run effect if the userId prop changes
-    // Get the highest resolution avatar URL available from the displayedUser object
-    const avatarUrl = displayedUser?.avatar_urls ? displayedUser.avatar_urls["96"] || displayedUser.avatar_urls["48"] || displayedUser.avatar_urls["24"] : "https://placehold.co/96x96/cccccc/333333?text=Avatar"; // Placeholder if no avatar URL is found
-    return /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-user-container",
-        __source: {
-            fileName: "src/components/user.jsx",
-            lineNumber: 86,
-            columnNumber: 5
-        },
-        __self: undefined
-    }, loading && "Loading user data...", error && !loading && /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-error-message",
-        role: "alert",
-        __source: {
-            fileName: "src/components/user.jsx",
-            lineNumber: 91,
-            columnNumber: 9
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("strong", {
-        __source: {
-            fileName: "src/components/user.jsx",
-            lineNumber: 92,
-            columnNumber: 11
-        },
-        __self: undefined
-    }, "Error!"), /*#__PURE__*/ React.createElement("span", {
-        className: "alpaca-error-text",
-        __source: {
-            fileName: "src/components/user.jsx",
-            lineNumber: 93,
-            columnNumber: 11
-        },
-        __self: undefined
-    }, error)), !displayedUser && !loading && !error && /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-error-message",
-        role: "alert",
-        __source: {
-            fileName: "src/components/user.jsx",
-            lineNumber: 98,
-            columnNumber: 9
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("strong", {
-        __source: {
-            fileName: "src/components/user.jsx",
-            lineNumber: 99,
-            columnNumber: 11
-        },
-        __self: undefined
-    }, "Error!"), /*#__PURE__*/ React.createElement("span", {
-        className: "alpaca-error-text",
-        __source: {
-            fileName: "src/components/user.jsx",
-            lineNumber: 100,
-            columnNumber: 11
-        },
-        __self: undefined
-    }, "No user data available")), displayedUser && !loading && /*#__PURE__*/ React.createElement(React.Fragment, null, /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-user-avatar",
-        __source: {
-            fileName: "src/components/user.jsx",
-            lineNumber: 106,
-            columnNumber: 11
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("img", {
-        src: avatarUrl,
-        alt: `Avatar of ${displayedUser.name}`,
-        __source: {
-            fileName: "src/components/user.jsx",
-            lineNumber: 107,
-            columnNumber: 13
-        },
-        __self: undefined
-    })), /*#__PURE__*/ React.createElement("div", {
-        __source: {
-            fileName: "src/components/user.jsx",
-            lineNumber: 109,
-            columnNumber: 11
-        },
-        __self: undefined
-    }, displayedUser.name, " (", displayedUser.id, ")")));
-};
-// Export the AlpacaUser component as default for React to render
-exports.default = AlpacaUser;
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"4duqf":[function(require,module,exports,__globalThis) {
+},{"marked":"4duqf","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./User":"enwL1"}],"4duqf":[function(require,module,exports,__globalThis) {
 /**
  * marked v16.2.0 - a markdown parser
  * Copyright (c) 2011-2025, Christopher Jeffrey. (MIT Licensed)

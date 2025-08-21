@@ -186,28 +186,18 @@
           align-items: center;
           margin-right: 12px;
         }
-        .alpaca-item-user-img {
-          width: 24px;
-          height: 24px;
-          border-radius: 50%;
-          vertical-align: middle;
-          border: 2px solid white;
-          box-shadow: 0 0 4px #666;
-          background: white;
-        }
         .alpaca-item-assignees {
-          .alpaca-item-assignee-name {
+          .alpaca-user-name {
             display: none;
           }
           &[data-assignees="1"] {
-            .alpaca-item-assignee-name {
+            .alpaca-user .alpaca-user-name {
               display: block;
               padding-left: 6px;
             }
           }
         }
-        .alpaca-item-author,
-        .alpaca-item-assignee {
+        .alpaca-user {
           font-size: 0.8rem;
           color: #999;
           display: flex;
@@ -215,6 +205,15 @@
           margin-left: -8px;
           &:first-child {
             margin-left: 0;
+          }
+          .alpaca-user-avatar img {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            vertical-align: middle;
+            border: 2px solid white;
+            box-shadow: 0 0 4px #666;
+            background: white;
           }
         }
       }
@@ -274,10 +273,8 @@
     }
   }
   #alpaca-comments {
-    .alpaca-user-avatar img {
+    .alpaca-user .alpaca-user-avatar img {
       width: 32px;
-      aspect-ratio: 1 / 1;
-      border-radius: 50%;
     }
     .alpaca-comment {
       ul li {

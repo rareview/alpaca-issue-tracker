@@ -1,10 +1,10 @@
 const { useState, useEffect, useRef, useCallback } = wp.element;
-import AlpacaUser from "./user";
+import User from "./User";
 const { TextareaControl, Button, Spinner, Modal } = wp.components;
 
 import { marked } from "marked";
 
-const AlpacaCommenting = ({
+const Commenting = ({
   issueId,
   onCommentCountChange,
   commentRefreshKey,
@@ -14,12 +14,19 @@ const AlpacaCommenting = ({
   const [error, setError] = useState(null);
   const [newComment, setNewComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentUser, setCurrentUser] = useState(null);
 
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editingContent, setEditingContent] = useState("");
   const editingRef = useRef(null);
 
   const [deleteCommentId, setDeleteCommentId] = useState(null); // New state for modal
+
+  useEffect(() => {
+    wp.apiFetch({ path: "/wp/v2/users/me" }).then((user) => {
+      setCurrentUser(user);
+    });
+  }, []);
 
   const fetchComments = useCallback(() => {
     if (!issueId) return;
@@ -143,7 +150,7 @@ const AlpacaCommenting = ({
         {/* New comment input */}
         <div className="alpaca-row">
           <div className="alpaca-meta">
-            <AlpacaUser />
+            <User user={currentUser} />
           </div>
           <div className="alpaca-comment">
             <TextareaControl
@@ -173,7 +180,7 @@ const AlpacaCommenting = ({
           comments.map((comment) => (
             <div className="alpaca-row" key={comment.id}>
               <div className="alpaca-meta">
-                <AlpacaUser userId={comment.author} />
+                <User user={{...comment.author_meta, name: comment.author_name, avatar: comment.author_avatar_urls[96]}} />
                 <small className="alpaca-comment-date">
                   {new Date(comment.date).toLocaleString()}
                 </small>
@@ -242,4 +249,4 @@ const AlpacaCommenting = ({
   );
 };
 
-export default AlpacaCommenting;
+export default Commenting;
