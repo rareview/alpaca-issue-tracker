@@ -34,7 +34,7 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
             'post_status' => 'publish',
             'post_author' => $json['user']['id'],
             'post_title' => wp_kses_post( wp_trim_words( $json['userinput']['feedback'], 10 ) ), // Original title
-            'post_name' => hash('fnv164', $getbody), // Unique slug based on the request body
+            'post_name' => hash('adler32', $getbody), // Unique slug based on the request body
             'post_content' =>wp_kses_post(  $json['userinput']['feedback'] ),
             'comment_status' => 'open', // Allow comments on the issue
         );
