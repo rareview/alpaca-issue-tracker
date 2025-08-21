@@ -98,7 +98,7 @@ const AlpacaIssue = ({
           <span className="alpaca-issue-id"> #{issueId}</span>
         </>
       }
-      size="large"
+      size="fill"
       onRequestClose={onClose}
       className="alpaca-details-modal"
     >

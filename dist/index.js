@@ -8954,7 +8954,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
                 columnNumber: 11
             }
         }, " #", issueId)),
-        size: "large",
+        size: "fill",
         onRequestClose: onClose,
         className: "alpaca-details-modal",
         __source: {
