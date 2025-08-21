@@ -1,7 +1,11 @@
 import AlpacaCommenting from "./commenting.jsx";
 const { useState, useEffect, useRef } = wp.element;
-const { Modal, FormTokenField, DatePicker, Popover } = wp.components;
+const { Modal, FormTokenField, DatePicker, Popover, BaseControl } =
+  wp.components;
 const { decodeEntities } = wp.htmlEntities;
+import User from "./User";
+const { date } = wp;
+const datesettings = wp.date.getSettings();
 
 const AlpacaIssue = ({
   issueId,
@@ -92,13 +96,7 @@ const AlpacaIssue = ({
 
   return (
     <Modal
-      title={
-        <>
-          Issue Details
-          <span className="alpaca-issue-id"> #{issueId}</span>
-        </>
-      }
-      size="fill"
+      size="large"
       onRequestClose={onClose}
       className="alpaca-details-modal"
     >
@@ -106,283 +104,288 @@ const AlpacaIssue = ({
         <p>Loading...</p>
       ) : issueDetails && issueDetails.success ? (
         <div className="alpaca-issue-details">
-          <table className="wp-list-table widefat striped">
-            <tbody>
-              <tr>
-                <th scope="row">Assigned to:</th>
-                <td>
-                  <FormTokenField
-                    label=""
-                    value={assignees}
-                    suggestions={allUsers}
-                    onChange={(newAssignees) => {
-                      const oldAssignees = [...assignees];
-
-                      const added = newAssignees.filter(
-                        (name) => !oldAssignees.includes(name)
-                      );
-                      const removed = oldAssignees.filter(
-                        (name) => !newAssignees.includes(name)
-                      );
-
-                      if (createIssueComment && generateAssigneeChangeComment) {
-                        const commentPromises = [];
-                        added.forEach((name) => {
-                          const user = allUserObjects.find(
-                            (u) => u.name === name
-                          );
-                          if (user) {
-                            commentPromises.push(
-                              createIssueComment(
-                                issueId,
-                                generateAssigneeChangeComment(user, true)
-                              )
-                            );
-                          }
-                        });
-                        removed.forEach((name) => {
-                          const user = allUserObjects.find(
-                            (u) => u.name === name
-                          );
-                          if (user) {
-                            commentPromises.push(
-                              createIssueComment(
-                                issueId,
-                                generateAssigneeChangeComment(user, false)
-                              )
-                            );
-                          }
-                        });
-
-                        if (commentPromises.length > 0) {
-                          Promise.all(commentPromises)
-                            .then(() => {
-                              setCommentRefreshKey((prevKey) => prevKey + 1);
-                            })
-                            .catch((err) => {
-                              console.error(
-                                "Failed to create one or more assignee comments",
-                                err
-                              );
-                            });
-                        }
-                      }
-                      setAssignees(newAssignees);
-                      const slugs = newAssignees.map((a) => userMap[a] || a);
-                      setIsSaving(true);
-                      wp.apiFetch({
-                        path: `/issue/v1/update/${issueId}`,
-                        method: "POST",
-                        data: {
-                          taxonomies: {
-                            assignee: slugs,
-                          },
-                        },
-                      })
-                        .then(() => {
-                          if (typeof onAssigneesChange === "function") {
-                            const assigneeObjects = allUserObjects.filter(
-                              (u) =>
-                                newAssignees.includes(u.name) ||
-                                newAssignees.includes(u.slug)
-                            );
-                            onAssigneesChange(issueId, assigneeObjects);
-                          }
-                        })
-                        .finally(() => setIsSaving(false));
-                    }}
-                  />
-                </td>
-              </tr>
-
-              <tr>
-                <th scope="row">Deadline</th>
-                <td className="alpaca-align-controls">
-                  <div id="deadline">
-                    {deadline
-                      ? new Date(deadline).toLocaleDateString(undefined, {
-                          month: "short",
-                          day: "numeric",
-                        })
-                      : "No deadline set."}
-                  </div>
-
-                  <button
-                    ref={calendarButtonRef}
-                    onClick={() => setIsEditingDeadline((prev) => !prev)}
-                    className="button-link"
-                  >
-                    <span className="dashicons dashicons-calendar"></span>
-                  </button>
-
-                  {isEditingDeadline && (
-                    <Popover
-                      placement="bottom-start"
-                      onClose={() => setIsEditingDeadline(false)}
-                      anchorRef={calendarButtonRef.current}
-                      focusOnMount={false}
-                    >
-                      <DatePicker
-                        currentDate={deadline}
-                        onChange={(newDate) => {
-                          setDeadline(newDate);
-                          setIsSaving(true);
-                          wp.apiFetch({
-                            path: `/issue/v1/update/${issueId}`,
-                            method: "POST",
-                            data: {
-                              meta: { deadline: newDate },
-                            },
-                          })
-                            .then(() => {
-                              if (typeof onDeadlineChange === "function") {
-                                onDeadlineChange(issueId, newDate);
-                              }
-                            })
-                            .finally(() => {
-                              setIsSaving(false);
-                              setIsEditingDeadline(false);
-                            });
-                        }}
-                      />
-                    </Popover>
-                  )}
-
-                  {deadline && (
+          <div className="alpaca-issue-header">
+            <div className="alpaca-issue-slug">
+              {issueDetails.post_data.post_name}
+            </div>
+            <div className="alpaca-issue-identity">
+              <div className="alpaca-issue-author">
+                <User user={issueDetails.post_data.post_author} />
+              </div>
+              <h3 className="alpaca-issue-title">
+                {decodeEntities(issueDetails.post_data.post_content)}
+              </h3>
+              {issueDetails.meta.screenshot && (
+                <div>
+                  {" "}
+                  <p>
+                    <img
+                      src={issueDetails.meta.screenshot}
+                      className="alpaca-screenshot"
+                      alt="Screenshot"
+                    />
+                  </p>
+                  <p>
                     <button
+                      type="button"
+                      className="button-link-delete"
+                      disabled={isSaving}
                       onClick={() => {
-                        setDeadline(null);
                         setIsSaving(true);
                         wp.apiFetch({
                           path: `/issue/v1/update/${issueId}`,
                           method: "POST",
                           data: {
-                            meta: { deadline: "" },
+                            meta: {
+                              screenshot: "",
+                            },
+                          },
+                        })
+                          .then(() => {
+                            setIssueDetails((prev) => ({
+                              ...prev,
+                              meta: {
+                                ...prev.meta,
+                                screenshot: "",
+                              },
+                            }));
+                          })
+                          .finally(() => setIsSaving(false));
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="alpaca-issue-main-controls">
+            <FormTokenField
+              label="Assigned To"
+              value={assignees}
+              suggestions={allUsers}
+              onChange={(newAssignees) => {
+                const oldAssignees = [...assignees];
+
+                const added = newAssignees.filter(
+                  (name) => !oldAssignees.includes(name)
+                );
+                const removed = oldAssignees.filter(
+                  (name) => !newAssignees.includes(name)
+                );
+
+                if (createIssueComment && generateAssigneeChangeComment) {
+                  const commentPromises = [];
+                  added.forEach((name) => {
+                    const user = allUserObjects.find((u) => u.name === name);
+                    if (user) {
+                      commentPromises.push(
+                        createIssueComment(
+                          issueId,
+                          generateAssigneeChangeComment(user, true)
+                        )
+                      );
+                    }
+                  });
+                  removed.forEach((name) => {
+                    const user = allUserObjects.find((u) => u.name === name);
+                    if (user) {
+                      commentPromises.push(
+                        createIssueComment(
+                          issueId,
+                          generateAssigneeChangeComment(user, false)
+                        )
+                      );
+                    }
+                  });
+
+                  if (commentPromises.length > 0) {
+                    Promise.all(commentPromises)
+                      .then(() => {
+                        setCommentRefreshKey((prevKey) => prevKey + 1);
+                      })
+                      .catch((err) => {
+                        console.error(
+                          "Failed to create one or more assignee comments",
+                          err
+                        );
+                      });
+                  }
+                }
+                setAssignees(newAssignees);
+                const slugs = newAssignees.map((a) => userMap[a] || a);
+                setIsSaving(true);
+                wp.apiFetch({
+                  path: `/issue/v1/update/${issueId}`,
+                  method: "POST",
+                  data: {
+                    taxonomies: {
+                      assignee: slugs,
+                    },
+                  },
+                })
+                  .then(() => {
+                    if (typeof onAssigneesChange === "function") {
+                      const assigneeObjects = allUserObjects.filter(
+                        (u) =>
+                          newAssignees.includes(u.name) ||
+                          newAssignees.includes(u.slug)
+                      );
+                      onAssigneesChange(issueId, assigneeObjects);
+                    }
+                  })
+                  .finally(() => setIsSaving(false));
+              }}
+            />
+
+            <BaseControl label="Deadline" className="alpaca-deadline-control">
+              <div className="alpaca-deadline">
+                <div className="alpaca-deadline-date">
+                  {deadline
+                    ? date.format(datesettings.formats.date, deadline)
+                    : "No deadline set."}
+                </div>
+
+                <button
+                  ref={calendarButtonRef}
+                  onClick={() => setIsEditingDeadline((prev) => !prev)}
+                  className="button-link"
+                >
+                  <span className="dashicons dashicons-calendar"></span>
+                </button>
+
+                {isEditingDeadline && (
+                  <Popover
+                    placement="bottom-start"
+                    onClose={() => setIsEditingDeadline(false)}
+                    anchorRef={calendarButtonRef.current}
+                    focusOnMount={false}
+                  >
+                    <DatePicker
+                      current={deadline}
+                      onChange={(newDate) => {
+                        setDeadline(newDate);
+                        setIsSaving(true);
+                        wp.apiFetch({
+                          path: `/issue/v1/update/${issueId}`,
+                          method: "POST",
+                          data: {
+                            meta: { deadline: newDate },
                           },
                         })
                           .then(() => {
                             if (typeof onDeadlineChange === "function") {
-                              onDeadlineChange(issueId, null);
+                              onDeadlineChange(issueId, newDate);
                             }
                           })
-                          .finally(() => setIsSaving(false));
+                          .finally(() => {
+                            setIsSaving(false);
+                            setIsEditingDeadline(false);
+                          });
                       }}
-                      className="button-link"
-                    >
-                      <span className="dashicons dashicons-trash"></span>
-                    </button>
-                  )}
-                </td>
-              </tr>
+                    />
+                  </Popover>
+                )}
 
-              {issueDetails.meta.screenshot && (
-                <tr>
-                  <th scope="row">Screenshot</th>
-                  <td>
-                    <p>
-                      <img
-                        src={issueDetails.meta.screenshot}
-                        className="alpaca-screenshot"
-                        alt="Screenshot"
-                      />
-                    </p>
-                    <p>
-                      <button
-                        type="button"
-                        className="button-link-delete"
-                        disabled={isSaving}
-                        onClick={() => {
-                          setIsSaving(true);
-                          wp.apiFetch({
-                            path: `/issue/v1/update/${issueId}`,
-                            method: "POST",
-                            data: {
-                              meta: {
-                                screenshot: "",
-                              },
-                            },
-                          })
-                            .then(() => {
-                              setIssueDetails((prev) => ({
-                                ...prev,
-                                meta: {
-                                  ...prev.meta,
-                                  screenshot: "",
-                                },
-                              }));
-                            })
-                            .finally(() => setIsSaving(false));
-                        }}
-                      >
-                        Delete
-                      </button>
-                    </p>
-                  </td>
-                </tr>
-              )}
-              <tr>
-                <th scope="row">Submitted</th>
-                <td>
-                  {new Date(issueDetails.post_data.post_date).toLocaleString()}{" "}
-                  by {issueDetails.post_data.post_author_display_name} (
-                  {issueDetails.post_data.post_author})
-                </td>
-              </tr>
-              <tr>
-                <th scope="row">Last modified</th>
-                <td>
-                  {new Date(
-                    issueDetails.post_data.post_modified
-                  ).toLocaleString()}{" "}
-                </td>
-              </tr>
-              <tr>
-                <th scope="row">Description</th>
-                <td>{decodeEntities(issueDetails.post_data.post_content)}</td>
-              </tr>
-              <tr>
-                <th scope="row">URL</th>
-                <td>
-                  {issueDetails.meta.URL ? (
-                    <a
-                      href={issueDetails.meta.URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {issueDetails.meta.URL}
-                    </a>
-                  ) : (
-                    "N/A"
-                  )}
-                </td>
-              </tr>
-              <tr>
-                <th scope="row">Screen Size</th>
-                <td>
-                  {issueDetails.meta.screenwidth &&
-                  issueDetails.meta.screenheight
-                    ? `${issueDetails.meta.screenwidth} x ${issueDetails.meta.screenheight}`
-                    : "N/A"}
-                </td>
-              </tr>
-              {Object.entries(issueDetails.taxonomies)
-                .filter(([taxonomy]) => taxonomy !== "assignee")
-                .map(([taxonomy, terms]) => (
-                  <tr key={taxonomy}>
-                    <th scope="row" style={{ textTransform: "capitalize" }}>
-                      {taxonomy}
-                    </th>
-                    <td>{terms.map((term) => term.name).join(", ")}</td>
+                {deadline && (
+                  <button
+                    onClick={() => {
+                      setDeadline(null);
+                      setIsSaving(true);
+                      wp.apiFetch({
+                        path: `/issue/v1/update/${issueId}`,
+                        method: "POST",
+                        data: {
+                          meta: { deadline: "" },
+                        },
+                      })
+                        .then(() => {
+                          if (typeof onDeadlineChange === "function") {
+                            onDeadlineChange(issueId, null);
+                          }
+                        })
+                        .finally(() => setIsSaving(false));
+                    }}
+                    className="button-link"
+                  >
+                    <span className="dashicons dashicons-trash"></span>
+                  </button>
+                )}
+              </div>
+            </BaseControl>
+          </div>
+
+          <div className="alpaca-issue-columns">
+            <div className="alpaca-issue-column alpaca-issue-meta">
+              <table className="wp-list-table widefat striped">
+                <tbody>
+                  <tr>
+                    <th scope="row">Submitted</th>
+                    <td>
+                      {date.format(
+                        datesettings.formats.datetime,
+                        new Date(issueDetails.post_data.post_date)
+                      )}
+                    </td>
                   </tr>
-                ))}
-            </tbody>
-          </table>
+                  <tr>
+                    <th scope="row">Last modified</th>
+                    <td>
+                      {date.format(
+                        datesettings.formats.datetime,
+                        new Date(issueDetails.post_data.post_modified)
+                      )}
+                    </td>
+                  </tr>
+                  <tr>
+                    <th scope="row">URL</th>
+                    <td>
+                      {issueDetails.meta.URL ? (
+                        <a
+                          href={issueDetails.meta.URL}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {issueDetails.meta.URL}
+                        </a>
+                      ) : (
+                        "N/A"
+                      )}
+                    </td>
+                  </tr>
+                  <tr>
+                    <th scope="row">Screen Size</th>
+                    <td>
+                      {issueDetails.meta.screenwidth &&
+                      issueDetails.meta.screenheight
+                        ? `${issueDetails.meta.screenwidth} x ${issueDetails.meta.screenheight}`
+                        : "N/A"}
+                    </td>
+                  </tr>
+                  {Object.entries(issueDetails.taxonomies)
+                    .filter(([taxonomy]) => taxonomy !== "assignee")
+                    .map(([taxonomy, terms]) => (
+                      <tr key={taxonomy}>
+                        <th scope="row" style={{ textTransform: "capitalize" }}>
+                          {taxonomy}
+                        </th>
+                        <td>{terms.map((term) => term.name).join(", ")}</td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
 
-          <AlpacaCommenting
-            issueId={issueId}
-            onCommentCountChange={onCommentCountChange}
-            commentRefreshKey={commentRefreshKey}
-          />
+            <div className="alpaca-issue-column alpaca-issue-commenting">
+              <AlpacaCommenting
+                issueId={issueId}
+                onCommentCountChange={onCommentCountChange}
+                commentRefreshKey={commentRefreshKey}
+              />
+            </div>
+          </div>
         </div>
       ) : (
         <p>{issueDetails?.message || "Could not load issue details."}</p>

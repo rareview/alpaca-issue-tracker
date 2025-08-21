@@ -45,6 +45,17 @@
   height: auto;
 }
 
+.wp-admin .alpaca-user-avatar img {
+  aspect-ratio: 1;
+  vertical-align: middle;
+  background: #fff;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  box-shadow: 0 0 4px #666;
+}
+
 .wp-admin #alpaca-board-controls .alpaca-board-filter {
   background: none;
   border-width: 0;
@@ -225,16 +236,6 @@
   margin-left: 0;
 }
 
-.wp-admin #alpaca-board .alpaca-item .alpaca-item-meta .alpaca-user .alpaca-user-avatar img, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-meta .alpaca-user .alpaca-user-avatar img {
-  vertical-align: middle;
-  background: #fff;
-  border: 2px solid #fff;
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
-  box-shadow: 0 0 4px #666;
-}
-
 .wp-admin #alpaca-board .alpaca-item-dragging {
   cursor: grabbing;
   transform: rotate(3deg);
@@ -250,11 +251,67 @@
   display: none;
 }
 
-.wp-admin .alpaca-details-modal .alpaca-issue-id {
-  color: #999;
-  margin-left: .5rem;
-  font-size: smaller;
-  font-weight: 200;
+.wp-admin .alpaca-details-modal .alpaca-issue-identity {
+  flex-direction: row;
+  align-items: start;
+  gap: 1em;
+  padding: 1em 0;
+  display: flex;
+}
+
+.wp-admin .alpaca-details-modal .alpaca-issue-header .alpaca-issue-slug {
+  font-family: monospace;
+}
+
+.wp-admin .alpaca-details-modal .alpaca-issue-header h3 {
+  text-wrap: balance;
+  margin: 5px 0;
+  font-size: xx-large;
+  line-height: 1.1;
+}
+
+.wp-admin .alpaca-details-modal .alpaca-issue-header .alpaca-user-name {
+  display: none;
+}
+
+.wp-admin .alpaca-details-modal .alpaca-issue-header .alpaca-user-avatar img {
+  width: 48px;
+  height: 48px;
+}
+
+.wp-admin .alpaca-details-modal .alpaca-issue-main-controls {
+  flex-direction: row;
+  align-items: start;
+  gap: 3em;
+  padding: 1em 0;
+  display: flex;
+}
+
+.wp-admin .alpaca-details-modal .alpaca-issue-main-controls .alpaca-deadline {
+  flex-direction: row;
+  gap: 1em;
+  display: flex;
+}
+
+.wp-admin .alpaca-details-modal .alpaca-issue-main-controls .alpaca-deadline .alpaca-deadline-date {
+  border: 1px solid;
+  min-width: 200px;
+  padding: 7px 10px 8px;
+}
+
+.wp-admin .alpaca-details-modal .alpaca-issue-main-controls .alpaca-deadline button span {
+  text-decoration: none;
+}
+
+.wp-admin .alpaca-details-modal .alpaca-issue-columns {
+  flex-direction: row;
+  gap: 20px;
+  display: flex;
+  overflow-y: auto;
+}
+
+.wp-admin .alpaca-details-modal .alpaca-issue-columns > * {
+  width: 100%;
 }
 
 .wp-admin .alpaca-details-modal .alpaca-align-controls {
@@ -295,10 +352,6 @@
   overflow: hidden scroll;
 }
 
-.wp-admin #alpaca-comments .alpaca-user .alpaca-user-avatar img {
-  width: 32px;
-}
-
 .wp-admin #alpaca-comments .alpaca-comment ul li {
   list-style: inside;
 }
@@ -328,11 +381,17 @@
   display: none;
 }
 
+.wp-admin #alpaca-comments .alpaca-meta, .wp-admin #alpaca-comments .alpaca-user {
+  flex-direction: row;
+  align-items: center;
+  gap: 1em;
+  display: flex;
+}
+
 .wp-admin #alpaca-comments .alpaca-row {
-  align-items: top;
-  grid-template-columns: 100px 1fr;
-  padding: 10px;
-  display: grid;
+  border-top: 1px solid #ccc;
+  margin: 1em 0 0;
+  padding: 1em 0;
 }
 
 .wp-admin .alpaca-status-manager table {

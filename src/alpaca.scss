@@ -45,6 +45,17 @@
     }
   }
 
+  .alpaca-user-avatar img {
+    width: 24px;
+    height: 24px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    vertical-align: middle;
+    border: 2px solid white;
+    box-shadow: 0 0 4px #666;
+    background: white;
+  }
+
   #alpaca-board-controls {
     .alpaca-board-filter {
       width: fit-content;
@@ -206,15 +217,6 @@
           &:first-child {
             margin-left: 0;
           }
-          .alpaca-user-avatar img {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            vertical-align: middle;
-            border: 2px solid white;
-            box-shadow: 0 0 4px #666;
-            background: white;
-          }
         }
       }
     }
@@ -232,13 +234,67 @@
       }
     }
   }
+
   .alpaca-details-modal {
-    .alpaca-issue-id {
-      font-size: smaller;
-      font-weight: 200;
-      color: #999;
-      margin-left: 0.5rem;
+    .alpaca-issue-identity {
+      display: flex;
+      flex-direction: row;
+      padding: 1em 0;
+      gap: 1em;
+      align-items: start;
     }
+
+    .alpaca-issue-header {
+      .alpaca-issue-slug {
+        font-family: monospace;
+      }
+      h3 {
+        font-size: xx-large;
+        line-height: 1.1;
+        margin: 5px 0;
+        text-wrap: balance;
+      }
+      .alpaca-user-name {
+        display: none;
+      }
+      .alpaca-user-avatar img {
+        width: 48px;
+        height: 48px;
+      }
+    }
+    .alpaca-issue-main-controls {
+      display: flex;
+      flex-direction: row;
+      gap: 3em;
+      align-items: start;
+      padding: 1em 0;
+      .alpaca-deadline {
+        display: flex;
+        flex-direction: row;
+        gap: 1em;
+        .alpaca-deadline-date {
+          border: 1px solid;
+          padding: 7px 10px 8px;
+          min-width: 200px;
+        }
+        button {
+          span {
+            text-decoration: none;
+          }
+        }
+      }
+    }
+
+    .alpaca-issue-columns {
+      display: flex;
+      flex-direction: row;
+      gap: 20px;
+      overflow-y: auto;
+      & > * {
+        width: 100%;
+      }
+    }
+
     .alpaca-align-controls {
       display: flex;
       flex-direction: row;
@@ -273,9 +329,6 @@
     }
   }
   #alpaca-comments {
-    .alpaca-user .alpaca-user-avatar img {
-      width: 32px;
-    }
     .alpaca-comment {
       ul li {
         list-style: disc inside;
@@ -309,11 +362,18 @@
   }
 
   #alpaca-comments {
+    .alpaca-meta,
+    .alpaca-user {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 1em;
+    }
     .alpaca-row {
-      display: grid;
-      grid-template-columns: 100px 1fr;
-      align-items: top;
-      padding: 10px;
+      margin: 1em 0 0 0;
+      padding: 1em 0;
+      border-top: 1px solid #ccc;
+      padding: 1em 0;
     }
   }
 

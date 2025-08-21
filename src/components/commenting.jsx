@@ -4,11 +4,7 @@ const { TextareaControl, Button, Spinner, Modal } = wp.components;
 
 import { marked } from "marked";
 
-const Commenting = ({
-  issueId,
-  onCommentCountChange,
-  commentRefreshKey,
-}) => {
+const Commenting = ({ issueId, onCommentCountChange, commentRefreshKey }) => {
   const [comments, setComments] = useState([]);
   const [isLoadingComments, setIsLoadingComments] = useState(true);
   const [error, setError] = useState(null);
@@ -145,29 +141,17 @@ const Commenting = ({
 
   return (
     <>
-      <h3>Comments</h3>
       <div id="alpaca-comments" className="alpaca-grid">
         {/* New comment input */}
-        <div className="alpaca-row">
-          <div className="alpaca-meta">
-            <User user={currentUser} />
-          </div>
-          <div className="alpaca-comment">
-            <TextareaControl
-              placeholder="Add a comment..."
-              value={newComment}
-              onChange={setNewComment}
-              disabled={isSubmitting}
-            />
-            <Button
-              isPrimary
-              onClick={handleCommentSubmit}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Submitting..." : "Submit Comment"}
-            </Button>
-          </div>
-        </div>
+        <TextareaControl
+          placeholder="Add a comment..."
+          value={newComment}
+          onChange={setNewComment}
+          disabled={isSubmitting}
+        />
+        <Button isPrimary onClick={handleCommentSubmit} disabled={isSubmitting}>
+          {isSubmitting ? "Submitting..." : "Submit Comment"}
+        </Button>
 
         {isLoadingComments && <Spinner />}
         {error && <p className="alpaca-error">{error}</p>}
@@ -180,10 +164,16 @@ const Commenting = ({
           comments.map((comment) => (
             <div className="alpaca-row" key={comment.id}>
               <div className="alpaca-meta">
-                <User user={{...comment.author_meta, name: comment.author_name, avatar: comment.author_avatar_urls[96]}} />
-                <small className="alpaca-comment-date">
+                <User
+                  user={{
+                    ...comment.author_meta,
+                    name: comment.author_name,
+                    avatar: comment.author_avatar_urls[96],
+                  }}
+                />
+                <span className="alpaca-comment-date">
                   {new Date(comment.date).toLocaleString()}
-                </small>
+                </span>
               </div>
               <div className="alpaca-comment">
                 {editingCommentId === comment.id ? (
