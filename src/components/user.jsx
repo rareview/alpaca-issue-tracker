@@ -3,19 +3,18 @@ const User = ({ user }) => {
     return null;
   }
 
-  const { id, name, avatar, display_name, avatar_urls } = user;
+  const { name, avatar, display_name, avatar_urls } = user;
   const userName = display_name || name;
 
-  const avatarUrl =
-    avatar ||
-    (avatar_urls && avatar_urls[96]) ||
-    "https://placehold.co/96x96/cccccc/333333?text=Avatar";
+  const avatarUrl = avatar || (avatar_urls && avatar_urls[96]);
 
   return (
-    <div className="alpaca-user">
-      <div className="alpaca-user-avatar">
-        <img src={avatarUrl} alt={userName} />
-      </div>
+    <div className="alpaca-user" title={userName}>
+      {avatarUrl && (
+        <div className="alpaca-user-avatar">
+          <img src={avatarUrl} alt={`Avatar of ${userName}`} />
+        </div>
+      )}
       <div className="alpaca-user-name">{userName}</div>
     </div>
   );

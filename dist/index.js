@@ -6254,39 +6254,40 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 const User = ({ user })=>{
     if (!user) return null;
-    const { id, name, avatar, display_name, avatar_urls } = user;
+    const { name, avatar, display_name, avatar_urls } = user;
     const userName = display_name || name;
-    const avatarUrl = avatar || avatar_urls && avatar_urls[96] || "https://placehold.co/96x96/cccccc/333333?text=Avatar";
+    const avatarUrl = avatar || avatar_urls && avatar_urls[96];
     return /*#__PURE__*/ React.createElement("div", {
         className: "alpaca-user",
+        title: userName,
         __source: {
             fileName: "src/components/User.jsx",
-            lineNumber: 15,
+            lineNumber: 12,
             columnNumber: 5
         },
         __self: undefined
-    }, /*#__PURE__*/ React.createElement("div", {
+    }, avatarUrl && /*#__PURE__*/ React.createElement("div", {
         className: "alpaca-user-avatar",
         __source: {
             fileName: "src/components/User.jsx",
-            lineNumber: 16,
-            columnNumber: 7
+            lineNumber: 14,
+            columnNumber: 9
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("img", {
         src: avatarUrl,
-        alt: userName,
+        alt: `Avatar of ${userName}`,
         __source: {
             fileName: "src/components/User.jsx",
-            lineNumber: 17,
-            columnNumber: 9
+            lineNumber: 15,
+            columnNumber: 11
         },
         __self: undefined
     })), /*#__PURE__*/ React.createElement("div", {
         className: "alpaca-user-name",
         __source: {
             fileName: "src/components/User.jsx",
-            lineNumber: 19,
+            lineNumber: 18,
             columnNumber: 7
         },
         __self: undefined
