@@ -325,18 +325,28 @@ const AlpacaIssue = ({
                     <th scope="row">Submitted</th>
                     <td>
                       {date.format(
-                        datesettings.formats.datetime,
+                        datesettings.formats.date,
                         new Date(issueDetails.post_data.post_date)
                       )}
+                      {", "}
+                      {date.format(
+                        datesettings.formats.time,
+                        new Date(issueDetails.post_data.post_date)
+                      )}{" "}
                     </td>
                   </tr>
                   <tr>
                     <th scope="row">Last modified</th>
                     <td>
                       {date.format(
-                        datesettings.formats.datetime,
+                        datesettings.formats.date,
                         new Date(issueDetails.post_data.post_modified)
                       )}
+                      {", "}
+                      {date.format(
+                        datesettings.formats.time,
+                        new Date(issueDetails.post_data.post_modified)
+                      )}{" "}
                     </td>
                   </tr>
                   <tr>
