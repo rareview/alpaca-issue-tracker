@@ -235,7 +235,37 @@
     }
   }
 
-  .alpaca-details-modal {
+  .alpaca-issue-details {
+    .alpaca-issue-sidebar {
+      position: fixed;
+      top: 72px;
+      right: 1rem;
+      margin-right: 1rem;
+      width: 260px;
+      max-height: 100%;
+      overflow-x: hidden;
+    }
+
+    .alpaca-issue-main {
+      margin-right: 270px;
+      .alpaca-issue-slug {
+        font-family: monospace;
+      }
+      h3 {
+        font-size: xx-large;
+        line-height: 1.3;
+        margin: 5px 0;
+        text-wrap: balance;
+      }
+      .alpaca-user-name {
+        display: none;
+      }
+      .alpaca-user-avatar img {
+        width: 48px;
+        height: 48px;
+      }
+    }
+
     .alpaca-issue-identity {
       display: flex;
       flex-direction: row;
@@ -262,6 +292,7 @@
         height: 48px;
       }
     }
+
     .alpaca-issue-main-controls {
       display: flex;
       flex-direction: row;
@@ -285,16 +316,6 @@
       }
     }
 
-    .alpaca-issue-columns {
-      display: flex;
-      flex-direction: row;
-      gap: 20px;
-      overflow-y: auto;
-      & > * {
-        width: 100%;
-      }
-    }
-
     .alpaca-align-controls {
       display: flex;
       flex-direction: row;
@@ -302,16 +323,15 @@
       gap: 1rem;
     }
     .alpaca-screenshot {
-      height: 200px;
+      width: 100%;
+      height: auto;
     }
     table {
       border: 0;
-      margin-bottom: 1rem;
       th {
         font-weight: bold;
         text-align: left;
         vertical-align: top;
-        width: 150px;
       }
     }
     .components-panel {

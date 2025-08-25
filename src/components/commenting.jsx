@@ -30,7 +30,7 @@ const Commenting = ({ issueId, onCommentCountChange, commentRefreshKey }) => {
     setError(null);
 
     wp.apiFetch({
-      path: `/wp/v2/comments?post=${issueId}&per_page=-1&orderby=date&order=asc&comment_type=issuecomment&show_hidden_comments=1&context=edit`,
+      path: `/wp/v2/comments?post=${issueId}&per_page=-1&orderby=date&order=desc&comment_type=issuecomment&show_hidden_comments=1&context=edit`,
     })
       .then((fetchedComments) => {
         setComments(fetchedComments);
