@@ -322,7 +322,7 @@ const AlpacaIssue = ({
                 </p>
               </div>
             )}
-            <table className="wp-list-table widefat">
+            <table className="">
               <tbody>
                 <tr>
                   <th scope="row">Reported</th>

@@ -9340,7 +9340,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
         },
         __self: undefined
     }, "Delete"))), /*#__PURE__*/ React.createElement("table", {
-        className: "wp-list-table widefat",
+        className: "",
         __source: {
             fileName: "src/components/issue.jsx",
             lineNumber: 325,

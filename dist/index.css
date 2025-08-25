@@ -314,10 +314,9 @@
 }
 
 .wp-admin .alpaca-issue-details .alpaca-issue-main-controls {
-  flex-direction: row;
+  flex-direction: column;
   align-items: start;
-  gap: 3em;
-  padding: 1em 0;
+  padding: 1rem 0;
   display: flex;
 }
 
@@ -356,7 +355,12 @@
 .wp-admin .alpaca-issue-details table th {
   text-align: left;
   vertical-align: top;
+  padding: 5px 1rem 5px 0;
   font-weight: bold;
+}
+
+.wp-admin .alpaca-issue-details table td {
+  padding: 5px 0;
 }
 
 .wp-admin .alpaca-issue-details .components-panel {
