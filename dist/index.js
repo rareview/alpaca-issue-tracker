@@ -6146,7 +6146,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         ...props,
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 66,
+            lineNumber: 65,
             columnNumber: 7
         },
         __self: undefined
@@ -6154,7 +6154,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         className: "alpaca-item-upper",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 74,
+            lineNumber: 73,
             columnNumber: 9
         },
         __self: undefined
@@ -6162,7 +6162,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         className: "alpaca-item-content",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 75,
+            lineNumber: 74,
             columnNumber: 11
         },
         __self: undefined
@@ -6170,7 +6170,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         className: "alpaca-item-controls",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 76,
+            lineNumber: 75,
             columnNumber: 11
         },
         __self: undefined
@@ -6179,7 +6179,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         onClick: toggleWatch,
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 77,
+            lineNumber: 76,
             columnNumber: 13
         },
         __self: undefined
@@ -6187,7 +6187,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         className: "alpaca-item-meta",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 83,
+            lineNumber: 82,
             columnNumber: 9
         },
         __self: undefined
@@ -6197,7 +6197,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         title: assignees.length === 1 ? assignees[0].display_name || assignees[0].name : assignees.map((a)=>a.display_name || a.name).join(", "),
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 86,
+            lineNumber: 85,
             columnNumber: 13
         },
         __self: undefined
@@ -6206,7 +6206,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
             user: assignee,
             __source: {
                 fileName: "src/components/Item.jsx",
-                lineNumber: 96,
+                lineNumber: 95,
                 columnNumber: 17
             },
             __self: undefined
@@ -6214,7 +6214,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         className: "alpaca-item-comment-count has-dashicon",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 103,
+            lineNumber: 102,
             columnNumber: 13
         },
         __self: undefined
@@ -6223,7 +6223,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         "aria-hidden": "true",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 104,
+            lineNumber: 103,
             columnNumber: 15
         },
         __self: undefined
@@ -6232,7 +6232,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         "data-diff-days": diffDays,
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 114,
+            lineNumber: 113,
             columnNumber: 13
         },
         __self: undefined
@@ -6241,7 +6241,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         "aria-hidden": "true",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 118,
+            lineNumber: 117,
             columnNumber: 15
         },
         __self: undefined
@@ -6321,7 +6321,7 @@ const User = ({ user })=>{
 };
 exports.default = User;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../utils/usercache":"gUv4D"}],"gUv4D":[function(require,module,exports,__globalThis) {
+},{"../utils/usercache":"gUv4D","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gUv4D":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "getUser", ()=>getUser);

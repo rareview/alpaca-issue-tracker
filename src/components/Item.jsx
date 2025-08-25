@@ -1,6 +1,5 @@
 const { forwardRef, useState, useEffect } = wp.element;
 import User from "./User";
-import User from "./User";
 
 const Item = forwardRef(
   (
