@@ -1656,12 +1656,12 @@ var _boardMain = require("./BoardMain");
 var _boardMainDefault = parcelHelpers.interopDefault(_boardMain);
 var _cookies = require("../utils/cookies");
 const { useState, useEffect } = wp.element;
-const { __experimentalToggleGroupControl: ToggleGroupControl, __experimentalToggleGroupControlOption: ToggleGroupControlOption } = wp.components;
+const { __experimentalToggleGroupControl: ToggleGroupControl, __experimentalToggleGroupControlOption: ToggleGroupControlOption, ComboboxControl } = wp.components;
 function AlpacaBoard() {
     return /*#__PURE__*/ React.createElement((0, _boardMainDefault.default), {
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 10,
+            lineNumber: 11,
             columnNumber: 10
         },
         __self: this
@@ -1672,6 +1672,50 @@ function AlpacaBoardControls() {
     const [filterIssues, setFilterIssues] = useState(()=>{
         return (0, _cookies.getCookie)("alpaca_filter_issues") || "all";
     });
+    const [allAssignees, setAllAssignees] = useState([]);
+    const [filteredAssignee, setFilteredAssignee] = useState("");
+    useEffect(()=>{
+        // On mount, check for assignee data that may have been set globally
+        // to win a race condition with the event firing.
+        if (window.alpacaAssignees && window.alpacaAssignees.length > 0) setAllAssignees(window.alpacaAssignees);
+        const handleAssigneesUpdated = (event)=>{
+            const { assignees } = event.detail;
+            if (assignees && Array.isArray(assignees)) setAllAssignees([
+                ...assignees
+            ]);
+        };
+        document.addEventListener("alpaca:assignees-updated", handleAssigneesUpdated);
+        return ()=>{
+            document.removeEventListener("alpaca:assignees-updated", handleAssigneesUpdated);
+        };
+    }, []);
+    // This effect generates and injects the CSS for assignee filtering.
+    useEffect(()=>{
+        if (allAssignees.length > 0) {
+            const styleId = "alpaca-assignee-filter-styles";
+            let styleElement = document.getElementById(styleId);
+            if (!styleElement) {
+                styleElement = document.createElement("style");
+                styleElement.id = styleId;
+                document.head.appendChild(styleElement);
+            }
+            let rules = `
+        [class*="assignee-filter-"] .alpaca-item {
+          display: none;
+        }
+      `;
+            allAssignees.forEach((assignee)=>{
+                rules += `
+          #alpaca-board.assignee-filter-${assignee.id} .alpaca-item[data-assignee-${assignee.id}] {
+            display: block;
+          }
+        `;
+            });
+            styleElement.innerHTML = rules;
+        }
+    }, [
+        allAssignees
+    ]);
     const boardElement = document.querySelector("#alpaca-board");
     useEffect(()=>{
         (0, _cookies.setCookie)("alpaca_filter_issues", filterIssues, 365);
@@ -1685,22 +1729,54 @@ function AlpacaBoardControls() {
         filterIssues,
         boardElement
     ]);
+    useEffect(()=>{
+        if (boardElement) {
+            // Remove previous assignee filters
+            boardElement.className = boardElement.className.replace(/\s*assignee-filter-\S*/g, "");
+            if (filteredAssignee) boardElement.classList.add(`assignee-filter-${filteredAssignee}`);
+        }
+    }, [
+        filteredAssignee,
+        boardElement
+    ]);
     // Set initial class on mount
     useEffect(()=>{
         if (boardElement) boardElement.classList.add(`filter-${filterIssues}`);
     }, [
         boardElement
     ]);
+    // Clear the assignee filter if the selected assignee is no longer valid.
+    useEffect(()=>{
+        if (filteredAssignee && allAssignees.length > 0) {
+            const isFilteredAssigneeStillPresent = allAssignees.some((assignee)=>assignee.id.toString() === filteredAssignee);
+            if (!isFilteredAssigneeStillPresent) setFilteredAssignee("");
+        }
+    }, [
+        allAssignees,
+        filteredAssignee
+    ]);
+    const assigneeOptions = (allAssignees || []).filter((assignee)=>assignee && assignee.id).map((assignee)=>({
+            value: assignee.id.toString(),
+            label: assignee.display_name || assignee.slug || "Unnamed"
+        }));
     if (typeof alpacaUserData === "undefined" || !alpacaUserData.currentUserId) return null; // Don't render if we don't know the current user
-    return /*#__PURE__*/ React.createElement(ToggleGroupControl, {
+    return /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-board-controls",
+        __source: {
+            fileName: "src/components/BoardFrame.jsx",
+            lineNumber: 140,
+            columnNumber: 5
+        },
+        __self: this
+    }, /*#__PURE__*/ React.createElement(ToggleGroupControl, {
         className: "alpaca-board-filter",
         value: filterIssues,
         onChange: (value)=>setFilterIssues(value),
         isBlock: true,
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 49,
-            columnNumber: 5
+            lineNumber: 141,
+            columnNumber: 7
         },
         __self: this
     }, /*#__PURE__*/ React.createElement(ToggleGroupControlOption, {
@@ -1708,8 +1784,8 @@ function AlpacaBoardControls() {
         label: "All Issues",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 55,
-            columnNumber: 7
+            lineNumber: 147,
+            columnNumber: 9
         },
         __self: this
     }), /*#__PURE__*/ React.createElement(ToggleGroupControlOption, {
@@ -1717,8 +1793,8 @@ function AlpacaBoardControls() {
         label: "Assigned to me",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 56,
-            columnNumber: 7
+            lineNumber: 148,
+            columnNumber: 9
         },
         __self: this
     }), /*#__PURE__*/ React.createElement(ToggleGroupControlOption, {
@@ -1726,7 +1802,18 @@ function AlpacaBoardControls() {
         label: "Starred",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 57,
+            lineNumber: 149,
+            columnNumber: 9
+        },
+        __self: this
+    })), /*#__PURE__*/ React.createElement(ComboboxControl, {
+        label: "Filter by Assignee",
+        // value={filteredAssignee}
+        onChange: setFilteredAssignee,
+        options: assigneeOptions,
+        __source: {
+            fileName: "src/components/BoardFrame.jsx",
+            lineNumber: 151,
             columnNumber: 7
         },
         __self: this
@@ -2008,7 +2095,23 @@ const { useState, useRef, useEffect, useCallback } = wp.element;
         setContainers(containersCopy);
         setNeedsSave(true);
     };
-    const handleAssigneesChange = useCallback((issueId, newAssignees)=>{
+    const handleAssigneesChange = async (issueId, newAssignees)=>{
+        const enrichedAssignees = await Promise.all(newAssignees.map(async (assignee)=>{
+            if (assignee && assignee.id && !assignee.display_name) try {
+                const fullUser = await wp.apiFetch({
+                    path: `/wp/v2/users/${assignee.id}`
+                });
+                return {
+                    ...assignee,
+                    display_name: fullUser.name,
+                    slug: fullUser.slug
+                };
+            } catch (error) {
+                console.error(`Error fetching user data for ID ${assignee.id}:`, error);
+                return assignee;
+            }
+            return assignee;
+        }));
         setContainers((prevContainers)=>prevContainers.map((container)=>{
                 const itemIndex = container.items.findIndex((item)=>item.id === issueId.toString());
                 if (itemIndex === -1) return container;
@@ -2017,14 +2120,14 @@ const { useState, useRef, useEffect, useCallback } = wp.element;
                 ];
                 newItems[itemIndex] = {
                     ...newItems[itemIndex],
-                    assignees: newAssignees
+                    assignees: enrichedAssignees
                 };
                 return {
                     ...container,
                     items: newItems
                 };
             }));
-    }, []);
+    };
     const handleDeadlineChange = useCallback((issueId, newDeadline)=>{
         setContainers((prevContainers)=>prevContainers.map((container)=>{
                 const itemIndex = container.items.findIndex((item)=>item.id === issueId.toString());
@@ -2088,6 +2191,30 @@ const { useState, useRef, useEffect, useCallback } = wp.element;
         document.addEventListener("alpaca:issue-submitted", handleIssueSubmitted);
         return ()=>document.removeEventListener("alpaca:issue-submitted", handleIssueSubmitted);
     }, []);
+    useEffect(()=>{
+        const allAssignees = new Map();
+        containers.forEach((container)=>{
+            container.items.forEach((item)=>{
+                if (item.assignees && Array.isArray(item.assignees)) item.assignees.forEach((assignee)=>{
+                    if (assignee && assignee.id) {
+                        const assigneeId = assignee.id.toString();
+                        const existing = allAssignees.get(assigneeId);
+                        if (!existing || !existing.display_name && assignee.display_name) allAssignees.set(assigneeId, assignee);
+                    }
+                });
+            });
+        });
+        const assigneesArray = Array.from(allAssignees.values());
+        window.alpacaAssignees = assigneesArray;
+        const event = new CustomEvent("alpaca:assignees-updated", {
+            detail: {
+                assignees: assigneesArray
+            }
+        });
+        document.dispatchEvent(event);
+    }, [
+        containers
+    ]);
     return /*#__PURE__*/ React.createElement((0, _core.DndContext), {
         sensors: sensors,
         collisionDetection: (0, _core.closestCenter),
@@ -2096,7 +2223,7 @@ const { useState, useRef, useEffect, useCallback } = wp.element;
         onDragEnd: handleDragEnd,
         __source: {
             fileName: "src/components/BoardMain.jsx",
-            lineNumber: 441,
+            lineNumber: 483,
             columnNumber: 5
         },
         __self: this
@@ -2104,7 +2231,7 @@ const { useState, useRef, useEffect, useCallback } = wp.element;
         className: "alpaca-wrap",
         __source: {
             fileName: "src/components/BoardMain.jsx",
-            lineNumber: 448,
+            lineNumber: 490,
             columnNumber: 7
         },
         __self: this
@@ -2121,7 +2248,7 @@ const { useState, useRef, useEffect, useCallback } = wp.element;
             onRename: handleRenameContainer,
             __source: {
                 fileName: "src/components/BoardMain.jsx",
-                lineNumber: 450,
+                lineNumber: 492,
                 columnNumber: 11
             },
             __self: this
@@ -2129,7 +2256,7 @@ const { useState, useRef, useEffect, useCallback } = wp.element;
         dropAnimation: null,
         __source: {
             fileName: "src/components/BoardMain.jsx",
-            lineNumber: 464,
+            lineNumber: 506,
             columnNumber: 7
         },
         __self: this
@@ -2142,7 +2269,7 @@ const { useState, useRef, useEffect, useCallback } = wp.element;
         className: "alpaca-item-dragging",
         __source: {
             fileName: "src/components/BoardMain.jsx",
-            lineNumber: 466,
+            lineNumber: 508,
             columnNumber: 11
         },
         __self: this
@@ -2158,7 +2285,7 @@ const { useState, useRef, useEffect, useCallback } = wp.element;
         generateAssigneeChangeComment: (0, _comments.generateAssigneeChangeComment),
         __source: {
             fileName: "src/components/BoardMain.jsx",
-            lineNumber: 477,
+            lineNumber: 519,
             columnNumber: 7
         },
         __self: this

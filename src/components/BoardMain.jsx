@@ -338,7 +338,22 @@ function Board() {
     setNeedsSave(true);
   };
 
-  const handleAssigneesChange = useCallback((issueId, newAssignees) => {
+  const handleAssigneesChange = async (issueId, newAssignees) => {
+    const enrichedAssignees = await Promise.all(
+      newAssignees.map(async (assignee) => {
+        if (assignee && assignee.id && !assignee.display_name) {
+          try {
+            const fullUser = await wp.apiFetch({ path: `/wp/v2/users/${assignee.id}` });
+            return { ...assignee, display_name: fullUser.name, slug: fullUser.slug };
+          } catch (error) {
+            console.error(`Error fetching user data for ID ${assignee.id}:`, error);
+            return assignee;
+          }
+        }
+        return assignee;
+      })
+    );
+
     setContainers((prevContainers) =>
       prevContainers.map((container) => {
         const itemIndex = container.items.findIndex(
@@ -352,13 +367,13 @@ function Board() {
         const newItems = [...container.items];
         newItems[itemIndex] = {
           ...newItems[itemIndex],
-          assignees: newAssignees,
+          assignees: enrichedAssignees,
         };
 
         return { ...container, items: newItems };
       })
     );
-  }, []);
+  };
 
   const handleDeadlineChange = useCallback((issueId, newDeadline) => {
     setContainers((prevContainers) =>
@@ -436,6 +451,33 @@ function Board() {
         handleIssueSubmitted
       );
   }, []);
+
+  useEffect(() => {
+    const allAssignees = new Map();
+    containers.forEach((container) => {
+      container.items.forEach((item) => {
+        if (item.assignees && Array.isArray(item.assignees)) {
+          item.assignees.forEach((assignee) => {
+            if (assignee && assignee.id) {
+              const assigneeId = assignee.id.toString();
+              const existing = allAssignees.get(assigneeId);
+              if (!existing || (!existing.display_name && assignee.display_name)) {
+                allAssignees.set(assigneeId, assignee);
+              }
+            }
+          });
+        }
+      });
+    });
+
+    const assigneesArray = Array.from(allAssignees.values());
+
+    window.alpacaAssignees = assigneesArray;
+    const event = new CustomEvent("alpaca:assignees-updated", {
+      detail: { assignees: assigneesArray },
+    });
+    document.dispatchEvent(event);
+  }, [containers]);
 
   return (
     <DndContext

@@ -257,13 +257,6 @@
         margin: 5px 0;
         text-wrap: balance;
       }
-      .alpaca-user-name {
-        display: none;
-      }
-      .alpaca-user-avatar img {
-        width: 48px;
-        height: 48px;
-      }
     }
 
     .alpaca-issue-identity {
@@ -272,18 +265,6 @@
       padding: 1em 0;
       gap: 1em;
       align-items: start;
-    }
-
-    .alpaca-issue-header {
-      .alpaca-issue-slug {
-        font-family: monospace;
-      }
-      h3 {
-        font-size: xx-large;
-        line-height: 1.3;
-        margin: 5px 0;
-        text-wrap: balance;
-      }
       .alpaca-user-name {
         display: none;
       }
