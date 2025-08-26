@@ -1,5 +1,5 @@
 import AlpacaCommenting from "./commenting.jsx";
-const { useState, useEffect, useRef } = wp.element;
+const { useState, useEffect, useRef, createPortal } = wp.element;
 const { Modal, FormTokenField, DatePicker, Popover, BaseControl } =
   wp.components;
 const { decodeEntities } = wp.htmlEntities;
@@ -28,8 +28,18 @@ const AlpacaIssue = ({
   const [commentRefreshKey, setCommentRefreshKey] = useState(0);
   const [deadline, setDeadline] = useState(null);
   const [isEditingDeadline, setIsEditingDeadline] = useState(false);
+  const [lightboxSrc, setLightboxSrc] = useState(null);
 
   const calendarButtonRef = useRef();
+
+  // Close lightbox on Escape
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if (e.key === "Escape") setLightboxSrc(null);
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // Fetch all users and issue details concurrently
   useEffect(() => {
@@ -281,12 +291,13 @@ const AlpacaIssue = ({
           <div className="alpaca-issue-sidebar column">
             {issueDetails.meta.screenshot && (
               <div>
-                {" "}
                 <p>
                   <img
                     src={issueDetails.meta.screenshot}
                     className="alpaca-screenshot"
                     alt="Screenshot"
+                    style={{ cursor: "zoom-in", maxWidth: "100%" }}
+                    onClick={() => setLightboxSrc(issueDetails.meta.screenshot)}
                   />
                 </p>
                 <p>
@@ -384,6 +395,36 @@ const AlpacaIssue = ({
       ) : (
         <p>{issueDetails?.message || "Could not load issue details."}</p>
       )}
+
+      {lightboxSrc &&
+        createPortal(
+          <div
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              width: "100vw",
+              height: "100vh",
+              background: "rgba(0,0,0,0.85)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 99999999999999, // higher than Modal
+            }}
+            onClick={() => setLightboxSrc(null)}
+          >
+            <img
+              src={lightboxSrc}
+              alt="Enlarged screenshot"
+              style={{
+                maxWidth: "90%",
+                maxHeight: "90%",
+                boxShadow: "0 0 20px rgba(0,0,0,0.5)",
+              }}
+            />
+          </div>,
+          document.body
+        )}
     </Modal>
   );
 };
