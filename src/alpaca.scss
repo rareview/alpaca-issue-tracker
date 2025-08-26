@@ -1,5 +1,9 @@
 /* styles go here */
 
+:root {
+  --seethrough: 0.2;
+}
+
 .alpaca-wrap {
   flex-wrap: nowrap;
   overflow-x: scroll;
@@ -169,6 +173,8 @@
         grid-template-rows: auto;
         gap: 0;
       }
+      opacity: 1;
+      transition: opacity 0.2s ease-in-out;
       box-shadow: 0 0 2px #888;
       border-radius: 8px;
       padding: 8px 12px;
@@ -381,7 +387,7 @@
   // fix: flash on star when you start dragging
 
   #alpaca-board.filter-watchlist .alpaca-item:not(.is-watched) {
-    display: none;
+    opacity: var(--seethrough);
   }
 
   #alpaca-comments {
