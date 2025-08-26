@@ -176,10 +176,12 @@
 }
 
 .wp-admin #alpaca-board .alpaca-item, .wp-admin #alpaca-board .alpaca-item-dragging {
+  opacity: 1;
   background-color: #fff;
   border-radius: 8px;
   margin: 4px 0;
   padding: 8px 12px;
+  transition: opacity .2s ease-in-out;
   box-shadow: 0 0 2px #888;
 }
 
@@ -384,7 +386,7 @@
 }
 
 .wp-admin #alpaca-board.filter-watchlist .alpaca-item:not(.is-watched) {
-  display: none;
+  opacity: .2;
 }
 
 .wp-admin #alpaca-comments .alpaca-meta, .wp-admin #alpaca-comments .alpaca-user {
