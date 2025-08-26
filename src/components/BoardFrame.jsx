@@ -58,15 +58,15 @@ export function AlpacaBoardControls() {
       }
 
       let rules = `
-        [class*="assignee-filter-"] .alpaca-item {
-          display: none;
+        #alpaca-board[class*="assignee-filter-"] .alpaca-item {
+          opacity: 0.2;
         }
       `;
 
       allAssignees.forEach((assignee) => {
         rules += `
           #alpaca-board.assignee-filter-${assignee.id} .alpaca-item[data-assignee-${assignee.id}] {
-            display: block;
+            opacity: 1;
           }
         `;
       });
