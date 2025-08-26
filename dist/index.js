@@ -1655,25 +1655,22 @@ parcelHelpers.export(exports, "AlpacaBoardControls", ()=>AlpacaBoardControls);
 var _boardMain = require("./BoardMain");
 var _boardMainDefault = parcelHelpers.interopDefault(_boardMain);
 var _cookies = require("../utils/cookies");
-const { useState, useEffect } = wp.element;
-const { __experimentalToggleGroupControl: ToggleGroupControl, __experimentalToggleGroupControlOption: ToggleGroupControlOption, ComboboxControl } = wp.components;
+const { useState, useEffect, useRef } = wp.element;
+const { ComboboxControl, Popover, Button } = wp.components;
 function AlpacaBoard() {
     return /*#__PURE__*/ React.createElement((0, _boardMainDefault.default), {
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 11,
+            lineNumber: 7,
             columnNumber: 10
         },
         __self: this
     });
 }
 function AlpacaBoardControls() {
-    // Use a string state instead of a boolean
-    const [filterIssues, setFilterIssues] = useState(()=>{
-        return (0, _cookies.getCookie)("alpaca_filter_issues") || "all";
-    });
     const [allAssignees, setAllAssignees] = useState([]);
     const [filteredAssignee, setFilteredAssignee] = useState("");
+    const [showStarredOnly, setShowStarredOnly] = useState(false);
     useEffect(()=>{
         // On mount, check for assignee data that may have been set globally
         // to win a race condition with the event firing.
@@ -1718,18 +1715,6 @@ function AlpacaBoardControls() {
     ]);
     const boardElement = document.querySelector("#alpaca-board");
     useEffect(()=>{
-        (0, _cookies.setCookie)("alpaca_filter_issues", filterIssues, 365);
-        if (boardElement) {
-            // Remove any existing filter classes first
-            boardElement.classList.remove("filter-all", "filter-mine", "filter-watchlist");
-            // Add the selected filter class
-            boardElement.classList.add(`filter-${filterIssues}`);
-        }
-    }, [
-        filterIssues,
-        boardElement
-    ]);
-    useEffect(()=>{
         if (boardElement) {
             // Remove previous assignee filters
             boardElement.className = boardElement.className.replace(/\s*assignee-filter-\S*/g, "");
@@ -1737,12 +1722,6 @@ function AlpacaBoardControls() {
         }
     }, [
         filteredAssignee,
-        boardElement
-    ]);
-    // Set initial class on mount
-    useEffect(()=>{
-        if (boardElement) boardElement.classList.add(`filter-${filterIssues}`);
-    }, [
         boardElement
     ]);
     // Clear the assignee filter if the selected assignee is no longer valid.
@@ -1755,69 +1734,98 @@ function AlpacaBoardControls() {
         allAssignees,
         filteredAssignee
     ]);
+    // Update board classes based on showStarredOnly
+    useEffect(()=>{
+        if (boardElement) {
+            if (showStarredOnly) boardElement.classList.add("filter-watchlist");
+            else boardElement.classList.remove("filter-watchlist");
+        }
+    }, [
+        showStarredOnly,
+        boardElement
+    ]);
     const assigneeOptions = (allAssignees || []).filter((assignee)=>assignee && assignee.id).map((assignee)=>({
             value: assignee.id.toString(),
             label: assignee.display_name || assignee.slug || "Unnamed"
         }));
     if (typeof alpacaUserData === "undefined" || !alpacaUserData.currentUserId) return null; // Don't render if we don't know the current user
+    const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+    const popoverAnchorRef = useRef();
+    const togglePopover = ()=>{
+        setIsPopoverOpen(!isPopoverOpen);
+    };
+    const onClosePopover = ()=>{
+        setIsPopoverOpen(false);
+    };
     return /*#__PURE__*/ React.createElement("div", {
         className: "alpaca-board-controls",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 140,
+            lineNumber: 132,
             columnNumber: 5
         },
         __self: this
-    }, /*#__PURE__*/ React.createElement(ToggleGroupControl, {
-        className: "alpaca-board-filter",
-        value: filterIssues,
-        onChange: (value)=>setFilterIssues(value),
-        isBlock: true,
+    }, /*#__PURE__*/ React.createElement(Button, {
+        ref: popoverAnchorRef,
+        onClick: togglePopover,
+        isSecondary: true,
+        label: "Open Filters",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 141,
+            lineNumber: 133,
             columnNumber: 7
         },
         __self: this
-    }, /*#__PURE__*/ React.createElement(ToggleGroupControlOption, {
-        value: "all",
-        label: "All Issues",
+    }, "Open Filters"), isPopoverOpen && /*#__PURE__*/ React.createElement(Popover, {
+        anchorRef: popoverAnchorRef,
+        onClose: onClosePopover,
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 147,
+            lineNumber: 142,
             columnNumber: 9
         },
         __self: this
-    }), /*#__PURE__*/ React.createElement(ToggleGroupControlOption, {
-        value: "mine",
-        label: "Assigned to me",
+    }, /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-control-popover",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 148,
-            columnNumber: 9
+            lineNumber: 143,
+            columnNumber: 11
         },
         __self: this
-    }), /*#__PURE__*/ React.createElement(ToggleGroupControlOption, {
-        value: "watchlist",
-        label: "Starred",
+    }, /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-control alpaca-control-starred",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 149,
-            columnNumber: 9
+            lineNumber: 144,
+            columnNumber: 13
         },
         __self: this
-    })), /*#__PURE__*/ React.createElement(ComboboxControl, {
+    }, /*#__PURE__*/ React.createElement(Button, {
+        onClick: ()=>setShowStarredOnly(!showStarredOnly),
+        isPressed: showStarredOnly,
+        icon: showStarredOnly ? "star-filled" : "star-empty",
+        label: "Toggle Starred Items",
+        variant: "tertiary",
+        __source: {
+            fileName: "src/components/BoardFrame.jsx",
+            lineNumber: 145,
+            columnNumber: 15
+        },
+        __self: this
+    }, "Starred Items")), /*#__PURE__*/ React.createElement(ComboboxControl, {
         label: "Filter by Assignee",
-        // value={filteredAssignee}
+        value: filteredAssignee,
         onChange: setFilteredAssignee,
         options: assigneeOptions,
+        className: "alpaca-control",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 151,
-            columnNumber: 7
+            lineNumber: 156,
+            columnNumber: 13
         },
         __self: this
-    }));
+    }))));
 }
 
 },{"../utils/cookies":"4qoXW","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./BoardMain":"1nh76"}],"4qoXW":[function(require,module,exports,__globalThis) {

@@ -1,9 +1,5 @@
-const { useState, useEffect } = wp.element;
-const {
-  __experimentalToggleGroupControl: ToggleGroupControl,
-  __experimentalToggleGroupControlOption: ToggleGroupControlOption,
-  ComboboxControl,
-} = wp.components;
+const { useState, useEffect, useRef } = wp.element;
+const { ComboboxControl, Popover, Button } = wp.components;
 import Board from "./BoardMain";
 import { getCookie, setCookie } from "../utils/cookies";
 
@@ -12,12 +8,9 @@ export function AlpacaBoard() {
 }
 
 export function AlpacaBoardControls() {
-  // Use a string state instead of a boolean
-  const [filterIssues, setFilterIssues] = useState(() => {
-    return getCookie("alpaca_filter_issues") || "all";
-  });
   const [allAssignees, setAllAssignees] = useState([]);
   const [filteredAssignee, setFilteredAssignee] = useState("");
+  const [showStarredOnly, setShowStarredOnly] = useState(false);
 
   useEffect(() => {
     // On mount, check for assignee data that may have been set globally
@@ -78,22 +71,6 @@ export function AlpacaBoardControls() {
   const boardElement = document.querySelector("#alpaca-board");
 
   useEffect(() => {
-    setCookie("alpaca_filter_issues", filterIssues, 365);
-
-    if (boardElement) {
-      // Remove any existing filter classes first
-      boardElement.classList.remove(
-        "filter-all",
-        "filter-mine",
-        "filter-watchlist"
-      );
-
-      // Add the selected filter class
-      boardElement.classList.add(`filter-${filterIssues}`);
-    }
-  }, [filterIssues, boardElement]);
-
-  useEffect(() => {
     if (boardElement) {
       // Remove previous assignee filters
       boardElement.className = boardElement.className.replace(
@@ -105,13 +82,6 @@ export function AlpacaBoardControls() {
       }
     }
   }, [filteredAssignee, boardElement]);
-
-  // Set initial class on mount
-  useEffect(() => {
-    if (boardElement) {
-      boardElement.classList.add(`filter-${filterIssues}`);
-    }
-  }, [boardElement]);
 
   // Clear the assignee filter if the selected assignee is no longer valid.
   useEffect(() => {
@@ -125,6 +95,17 @@ export function AlpacaBoardControls() {
     }
   }, [allAssignees, filteredAssignee]);
 
+  // Update board classes based on showStarredOnly
+  useEffect(() => {
+    if (boardElement) {
+      if (showStarredOnly) {
+        boardElement.classList.add("filter-watchlist");
+      } else {
+        boardElement.classList.remove("filter-watchlist");
+      }
+    }
+  }, [showStarredOnly, boardElement]);
+
   const assigneeOptions = (allAssignees || [])
     .filter((assignee) => assignee && assignee.id)
     .map((assignee) => ({
@@ -136,24 +117,52 @@ export function AlpacaBoardControls() {
     return null; // Don't render if we don't know the current user
   }
 
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const popoverAnchorRef = useRef();
+
+  const togglePopover = () => {
+    setIsPopoverOpen(!isPopoverOpen);
+  };
+
+  const onClosePopover = () => {
+    setIsPopoverOpen(false);
+  };
+
   return (
     <div className="alpaca-board-controls">
-      <ToggleGroupControl
-        className="alpaca-board-filter"
-        value={filterIssues}
-        onChange={(value) => setFilterIssues(value)}
-        isBlock
+      <Button
+        ref={popoverAnchorRef}
+        onClick={togglePopover}
+        isSecondary
+        label="Open Filters"
       >
-        <ToggleGroupControlOption value="all" label="All Issues" />
-        <ToggleGroupControlOption value="mine" label="Assigned to me" />
-        <ToggleGroupControlOption value="watchlist" label="Starred" />
-      </ToggleGroupControl>
-      <ComboboxControl
-        label="Filter by Assignee"
-        // value={filteredAssignee}
-        onChange={setFilteredAssignee}
-        options={assigneeOptions}
-      />
+        Open Filters
+      </Button>
+      {isPopoverOpen && (
+        <Popover anchorRef={popoverAnchorRef} onClose={onClosePopover}>
+          <div className="alpaca-control-popover">
+            <div className="alpaca-control alpaca-control-starred">
+              <Button
+                onClick={() => setShowStarredOnly(!showStarredOnly)}
+                isPressed={showStarredOnly}
+                icon={showStarredOnly ? "star-filled" : "star-empty"}
+                label="Toggle Starred Items"
+                variant="tertiary"
+              >
+                Starred Items
+              </Button>
+            </div>
+
+            <ComboboxControl
+              label="Filter by Assignee"
+              value={filteredAssignee}
+              onChange={setFilteredAssignee}
+              options={assigneeOptions}
+              className="alpaca-control"
+            />
+          </div>
+        </Popover>
+      )}
     </div>
   );
 }
