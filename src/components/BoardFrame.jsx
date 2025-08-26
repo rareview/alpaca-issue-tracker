@@ -139,7 +139,7 @@ export function AlpacaBoardControls() {
         Open Filters
       </Button>
       {isPopoverOpen && (
-        <Popover anchorRef={popoverAnchorRef} onClose={onClosePopover}>
+        <Popover anchor={popoverAnchorRef.current} onClose={onClosePopover}>
           <div className="alpaca-control-popover">
             <div className="alpaca-control alpaca-control-starred">
               <Button

@@ -225,7 +225,7 @@ const AlpacaIssue = ({
                     <Popover
                       placement="bottom-start"
                       onClose={() => setIsEditingDeadline(false)}
-                      anchorRef={calendarButtonRef.current}
+                      anchor={calendarButtonRef.current}
                       focusOnMount={false}
                     >
                       <DatePicker
