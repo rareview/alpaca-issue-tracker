@@ -72,6 +72,10 @@
   outline: none;
 }
 
+.wp-admin #alpaca-board-controls .components-combobox-control {
+  width: 300px;
+}
+
 .wp-admin #alpaca-board .alpaca-wrap {
   flex-direction: row;
   padding: 10px 0;
