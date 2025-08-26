@@ -1,7 +1,3 @@
-:root {
-  --seethrough: .2;
-}
-
 .alpaca-wrap {
   flex-wrap: nowrap;
   overflow-x: scroll;
@@ -410,7 +406,7 @@
 }
 
 .wp-admin #alpaca-board.filter-watchlist .alpaca-item:not(.is-watched) {
-  opacity: var(--seethrough);
+  opacity: .2;
 }
 
 .wp-admin #alpaca-comments .alpaca-meta, .wp-admin #alpaca-comments .alpaca-user {

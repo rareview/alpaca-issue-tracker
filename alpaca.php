@@ -113,7 +113,7 @@ add_action('admin_enqueue_scripts', function() {
                 border: 1px solid #999;
             }
             .wp-admin #alpaca-board.filter-mine .alpaca-item:not([data-assignee-{$me}]) {
-                opacity: var(--seethrough);
+                opacity: 0.2;
             }";
 
         if ( function_exists('expose_admin_colors') ) {
