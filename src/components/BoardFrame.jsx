@@ -147,7 +147,7 @@ export function AlpacaBoardControls() {
                 isPressed={showStarredOnly}
                 icon={showStarredOnly ? "star-filled" : "star-empty"}
                 label="Toggle Starred Items"
-                variant="tertiary"
+                variant="secondary"
               >
                 Starred Items
               </Button>

@@ -1806,7 +1806,7 @@ function AlpacaBoardControls() {
         isPressed: showStarredOnly,
         icon: showStarredOnly ? "star-filled" : "star-empty",
         label: "Toggle Starred Items",
-        variant: "tertiary",
+        variant: "secondary",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
             lineNumber: 145,
