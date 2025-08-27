@@ -161,6 +161,7 @@ const AlpacaIssue = ({
             <div className="alpaca-issue-main-controls">
               <FormTokenField
                 label="Assigned To"
+                placeholder="Nobody"
                 value={assignees}
                 suggestions={allUsers}
                 onChange={(newAssignees) => {
