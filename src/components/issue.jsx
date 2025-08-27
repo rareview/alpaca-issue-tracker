@@ -7,6 +7,77 @@ import User from "./User";
 const { date } = wp;
 const datesettings = wp.date.getSettings();
 
+function JsonTable({ data }) {
+  if (!data) return null;
+
+  const parsedData = JSON.parse(data);
+
+  const escapeHtml = (unsafe) => {
+    return unsafe
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  };
+
+  const decodeHtml = (html) => {
+    const txt = document.createElement("textarea");
+    txt.innerHTML = html;
+    return txt.value;
+  };
+
+  return (
+    <table
+      className="alpaca-json-table"
+      style={{ borderCollapse: "collapse", width: "100%" }}
+    >
+      <tbody>
+        {Object.entries(parsedData).map(([key, value]) => (
+          <tr key={key}>
+            <th
+              style={{
+                textAlign: "left",
+                padding: "4px",
+                border: "1px solid #ddd",
+              }}
+            >
+              {key}
+            </th>
+            <td style={{ padding: "4px", border: "1px solid #ddd" }}>
+              {key === "post_content" ? (
+                <textarea
+                  style={{
+                    width: "100%",
+                    minHeight: "200px",
+                    border: "none",
+                    padding: 0,
+                    margin: 0,
+                    whiteSpace: "pre-wrap",
+                    wordBreak: "break-word",
+                  }}
+                  readOnly
+                  defaultValue={decodeHtml(String(value))}
+                />
+              ) : (
+                <div
+                  style={{
+                    margin: 0,
+                    whiteSpace: "pre-wrap",
+                    wordBreak: "break-word",
+                  }}
+                >
+                  {escapeHtml(String(value))}
+                </div>
+              )}
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
 const AlpacaIssue = ({
   issueId,
   isOpen,
@@ -390,6 +461,8 @@ const AlpacaIssue = ({
                   ))}
               </tbody>
             </table>
+
+            <JsonTable data={issueDetails.meta.queriedObject} />
           </div>
         </div>
       ) : (

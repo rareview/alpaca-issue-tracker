@@ -117,7 +117,16 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
         update_post_meta( $post_id, 'screenwidth', $json['client']['browser']['width'] );
         update_post_meta( $post_id, 'screenheight', $json['client']['browser']['height'] );
         update_post_meta( $post_id, 'URL', $json['server']['REQUEST_URI'] );
-        update_post_meta( $post_id, 'queriedObject', json_encode( $json['wp']['queriedObject'] ) );
+
+        if( isset( $json['wp']['queriedObject'] ) ) {
+            if( isset( $json['wp']['queriedObject']['post_content'] ) ) {
+                $raw = $json['wp']['queriedObject']['post_content'];
+                $escaped = htmlspecialchars( $raw );
+                $json['wp']['queriedObject']['post_content'] = $escaped;
+            }
+            $encoded = json_encode( $json['wp']['queriedObject'] );
+            update_post_meta( $post_id, 'queriedObject', $encoded );           
+        }
 
         if( in_array( 'singular', $json['wp']['type'] ) ) {
             wp_update_post( array(
