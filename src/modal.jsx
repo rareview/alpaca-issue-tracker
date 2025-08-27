@@ -1,15 +1,15 @@
 import handleSnapdomCapture from "./snapdom-handler.js";
 
-const { Button, Modal, TextareaControl, RangeControl, BaseControl, Spinner } =
+const { Button, Modal, TextareaControl, Spinner, CheckboxControl } =
   wp.components;
 const { useState, useRef, useEffect, useCallback } = wp.element;
 
 const AlpacaModal = () => {
   const [isOpen, setOpen] = useState(false);
-  const [severity, setSeverity] = useState("2");
   const [status, setStatus] = useState("idle"); // idle, submitting, success, error
   const [message, setMessage] = useState("");
   const [feedback, setFeedback] = useState("");
+  const [includeContext, setIncludeContext] = useState(true); // <-- new state
 
   const textareaRef = useRef(null);
   const closeBtnRef = useRef(null);
@@ -18,6 +18,7 @@ const AlpacaModal = () => {
     setMessage("");
     setStatus("idle");
     setFeedback("");
+    setIncludeContext(true); // reset to default each time modal opens
     setOpen(true);
   }, []);
 
@@ -36,18 +37,14 @@ const AlpacaModal = () => {
   // Focus textarea when modal opens
   useEffect(() => {
     if (isOpen && status === "idle" && textareaRef.current) {
-      setTimeout(() => {
-        textareaRef.current.focus();
-      }, 10);
+      setTimeout(() => textareaRef.current.focus(), 10);
     }
   }, [isOpen, status]);
 
   // Focus close button on success or error
   useEffect(() => {
     if ((status === "success" || status === "error") && closeBtnRef.current) {
-      setTimeout(() => {
-        closeBtnRef.current.focus();
-      }, 10);
+      setTimeout(() => closeBtnRef.current.focus(), 10);
     }
   }, [status]);
 
@@ -61,7 +58,10 @@ const AlpacaModal = () => {
       const screenshot = await handleSnapdomCapture();
 
       const submitted = {
-        userinput: { feedback, severity },
+        userinput: {
+          feedback,
+          includeContext, // <-- include checkbox status
+        },
         client: alpaca_data.device,
         screenshot,
       };
@@ -88,7 +88,6 @@ const AlpacaModal = () => {
       setStatus("success");
       setMessage("Your issue has been submitted successfully.");
 
-      // If on the board page, dispatch an event to add the new issue
       if (document.getElementById("alpaca-board")) {
         document.dispatchEvent(
           new CustomEvent("alpaca:issue-submitted", {
@@ -154,10 +153,14 @@ const AlpacaModal = () => {
               />
 
               <div className="small-wrapper">
-                <small>
-                  Detailed technical information will also be shared with the
-                  development team.
-                </small>
+                <CheckboxControl
+                  id="alpaca-include-context"
+                  checked={includeContext}
+                  onChange={(val) => setIncludeContext(val)} // <-- update state
+                  label="Include full context with report?"
+                  help="Always do this, unless you are sure it is not relevant"
+                  disabled={status === "submitting"}
+                />
               </div>
 
               <div className="alpaca-actions">

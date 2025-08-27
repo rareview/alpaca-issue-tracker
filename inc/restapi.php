@@ -28,6 +28,7 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
     $getbody = $req->get_body();
     if ( isset($getbody) ) {
         $json = json_decode( $getbody,true );
+        error_log($getbody);
 
         $post_args = array(
             'post_type' => 'issue',
@@ -105,33 +106,35 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
             $status_term_id = $status_term->term_id;
         }*/
         
-        // set terms and meta here
-        wp_set_post_terms( $post_id, $json['client']['browser']['name'], 'browser', true );
-        wp_set_post_terms( $post_id, $json['client']['os'], 'browser', true );
-        wp_set_post_terms( $post_id, $json['wp']['template'], 'phptemplate' );
-        foreach( $json['wp']['type'] as $t ) {
-            wp_set_post_terms( $post_id, $t, 'type' );
-        }
-        // consider: active plugins as a taxonomy?
-        update_post_meta( $post_id, 'screenshot', $json['screenshot'] );
-        update_post_meta( $post_id, 'screenwidth', $json['client']['browser']['width'] );
-        update_post_meta( $post_id, 'screenheight', $json['client']['browser']['height'] );
-        update_post_meta( $post_id, 'URL', $json['server']['REQUEST_URI'] );
-
-        if( isset( $json['wp']['queriedObject'] ) ) {
-            if( isset( $json['wp']['queriedObject']['post_content'] ) ) {
-                unset( $json['wp']['queriedObject']['post_content'] );
-                // todo: how to handle post_content (if we think we need it)
+        if( $json['userinput']['includeContext'] ) {
+            // set terms and meta here
+            wp_set_post_terms( $post_id, $json['client']['browser']['name'], 'browser', true );
+            wp_set_post_terms( $post_id, $json['client']['os'], 'browser', true );
+            wp_set_post_terms( $post_id, $json['wp']['template'], 'phptemplate' );
+            foreach( $json['wp']['type'] as $t ) {
+                wp_set_post_terms( $post_id, $t, 'type' );
             }
-            $encoded = json_encode( $json['wp']['queriedObject'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
-            update_post_meta( $post_id, 'queriedObject', $encoded );           
-        }
+            // consider: active plugins as a taxonomy?
+            update_post_meta( $post_id, 'screenshot', $json['screenshot'] );
+            update_post_meta( $post_id, 'screenwidth', $json['client']['browser']['width'] );
+            update_post_meta( $post_id, 'screenheight', $json['client']['browser']['height'] );
+            update_post_meta( $post_id, 'URL', $json['server']['REQUEST_URI'] );
 
-        if( in_array( 'singular', $json['wp']['type'] ) ) {
-            wp_update_post( array(
-                'ID' => $post_id,
-                'post_parent' => $json['wp']['queriedObject']['ID']
-            ));
+            if( isset( $json['wp']['queriedObject'] ) ) {
+                if( isset( $json['wp']['queriedObject']['post_content'] ) ) {
+                    unset( $json['wp']['queriedObject']['post_content'] );
+                    // todo: how to handle post_content (if we think we need it)
+                }
+                $encoded = json_encode( $json['wp']['queriedObject'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
+                update_post_meta( $post_id, 'queriedObject', $encoded );           
+            }
+
+            if( in_array( 'singular', $json['wp']['type'] ) ) {
+                wp_update_post( array(
+                    'ID' => $post_id,
+                    'post_parent' => $json['wp']['queriedObject']['ID']
+                ));
+            }
         }
 
         return new WP_REST_Response(

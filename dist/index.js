@@ -756,20 +756,21 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _snapdomHandlerJs = require("./snapdom-handler.js");
 var _snapdomHandlerJsDefault = parcelHelpers.interopDefault(_snapdomHandlerJs);
-const { Button, Modal, TextareaControl, RangeControl, BaseControl, Spinner } = wp.components;
+const { Button, Modal, TextareaControl, Spinner, CheckboxControl } = wp.components;
 const { useState, useRef, useEffect, useCallback } = wp.element;
 const AlpacaModal = ()=>{
     const [isOpen, setOpen] = useState(false);
-    const [severity, setSeverity] = useState("2");
     const [status, setStatus] = useState("idle"); // idle, submitting, success, error
     const [message, setMessage] = useState("");
     const [feedback, setFeedback] = useState("");
+    const [includeContext, setIncludeContext] = useState(true); // <-- new state
     const textareaRef = useRef(null);
     const closeBtnRef = useRef(null);
     const openModal = useCallback(()=>{
         setMessage("");
         setStatus("idle");
         setFeedback("");
+        setIncludeContext(true); // reset to default each time modal opens
         setOpen(true);
     }, []);
     const closeModal = ()=>{
@@ -786,18 +787,14 @@ const AlpacaModal = ()=>{
     ]);
     // Focus textarea when modal opens
     useEffect(()=>{
-        if (isOpen && status === "idle" && textareaRef.current) setTimeout(()=>{
-            textareaRef.current.focus();
-        }, 10);
+        if (isOpen && status === "idle" && textareaRef.current) setTimeout(()=>textareaRef.current.focus(), 10);
     }, [
         isOpen,
         status
     ]);
     // Focus close button on success or error
     useEffect(()=>{
-        if ((status === "success" || status === "error") && closeBtnRef.current) setTimeout(()=>{
-            closeBtnRef.current.focus();
-        }, 10);
+        if ((status === "success" || status === "error") && closeBtnRef.current) setTimeout(()=>closeBtnRef.current.focus(), 10);
     }, [
         status
     ]);
@@ -810,7 +807,7 @@ const AlpacaModal = ()=>{
             const submitted = {
                 userinput: {
                     feedback,
-                    severity
+                    includeContext
                 },
                 client: alpaca_data.device,
                 screenshot
@@ -833,7 +830,6 @@ const AlpacaModal = ()=>{
             if (!response.ok || !responseData.success) throw new Error(responseData.message || `HTTP ${response.status}`);
             setStatus("success");
             setMessage("Your issue has been submitted successfully.");
-            // If on the board page, dispatch an event to add the new issue
             if (document.getElementById("alpaca-board")) document.dispatchEvent(new CustomEvent("alpaca:issue-submitted", {
                 detail: {
                     issue: responseData.issue,
@@ -856,7 +852,7 @@ const AlpacaModal = ()=>{
         },
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 113,
+            lineNumber: 112,
             columnNumber: 7
         },
         __self: undefined
@@ -868,14 +864,14 @@ const AlpacaModal = ()=>{
         isDismissible: false,
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 125,
+            lineNumber: 124,
             columnNumber: 9
         },
         __self: undefined
     }, status === "success" || status === "error" ? /*#__PURE__*/ React.createElement(React.Fragment, null, /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 140,
+            lineNumber: 139,
             columnNumber: 15
         },
         __self: undefined
@@ -885,7 +881,7 @@ const AlpacaModal = ()=>{
         ref: closeBtnRef,
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 141,
+            lineNumber: 140,
             columnNumber: 15
         },
         __self: undefined
@@ -898,7 +894,7 @@ const AlpacaModal = ()=>{
         ref: textareaRef,
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 147,
+            lineNumber: 146,
             columnNumber: 15
         },
         __self: undefined
@@ -906,22 +902,28 @@ const AlpacaModal = ()=>{
         className: "small-wrapper",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 156,
+            lineNumber: 155,
             columnNumber: 15
         },
         __self: undefined
-    }, /*#__PURE__*/ React.createElement("small", {
+    }, /*#__PURE__*/ React.createElement(CheckboxControl, {
+        id: "alpaca-include-context",
+        checked: includeContext,
+        onChange: (val)=>setIncludeContext(val),
+        label: "Include full context with report?",
+        help: "Always do this, unless you are sure it is not relevant",
+        disabled: status === "submitting",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 157,
+            lineNumber: 156,
             columnNumber: 17
         },
         __self: undefined
-    }, "Detailed technical information will also be shared with the development team.")), /*#__PURE__*/ React.createElement("div", {
+    })), /*#__PURE__*/ React.createElement("div", {
         className: "alpaca-actions",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 163,
+            lineNumber: 166,
             columnNumber: 15
         },
         __self: undefined
@@ -931,14 +933,14 @@ const AlpacaModal = ()=>{
         disabled: status === "submitting",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 164,
+            lineNumber: 167,
             columnNumber: 17
         },
         __self: undefined
     }, status === "submitting" ? /*#__PURE__*/ React.createElement(Spinner, {
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 169,
+            lineNumber: 172,
             columnNumber: 46
         },
         __self: undefined
@@ -948,7 +950,7 @@ const AlpacaModal = ()=>{
         disabled: status === "submitting",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 171,
+            lineNumber: 174,
             columnNumber: 17
         },
         __self: undefined
