@@ -1658,7 +1658,7 @@ var _boardMain = require("./BoardMain");
 var _boardMainDefault = parcelHelpers.interopDefault(_boardMain);
 var _cookies = require("../utils/cookies");
 const { useState, useEffect, useRef } = wp.element;
-const { ComboboxControl, Popover, Button } = wp.components;
+const { ComboboxControl, Popover, Button, RadioControl } = wp.components;
 function AlpacaBoard() {
     return /*#__PURE__*/ React.createElement((0, _boardMainDefault.default), {
         __source: {
@@ -1673,6 +1673,7 @@ function AlpacaBoardControls() {
     const [allAssignees, setAllAssignees] = useState([]);
     const [filteredAssignee, setFilteredAssignee] = useState("");
     const [showStarredOnly, setShowStarredOnly] = useState(false);
+    const [deadlineFilter, setDeadlineFilter] = useState("none");
     useEffect(()=>{
         // On mount, check for assignee data that may have been set globally
         // to win a race condition with the event firing.
@@ -1691,7 +1692,7 @@ function AlpacaBoardControls() {
     // This effect generates and injects the CSS for assignee filtering.
     useEffect(()=>{
         if (allAssignees.length > 0) {
-            const styleId = "alpaca-assignee-filter-styles";
+            const styleId = "alpaca-filter-assignee-styles";
             let styleElement = document.getElementById(styleId);
             if (!styleElement) {
                 styleElement = document.createElement("style");
@@ -1699,13 +1700,13 @@ function AlpacaBoardControls() {
                 document.head.appendChild(styleElement);
             }
             let rules = `
-        #alpaca-board[class*="assignee-filter-"] .alpaca-item {
+        #alpaca-board[class*="filter-assignee-"] .alpaca-item {
           opacity: 0.2;
         }
       `;
             allAssignees.forEach((assignee)=>{
                 rules += `
-          #alpaca-board.assignee-filter-${assignee.id} .alpaca-item[data-assignee-${assignee.id}] {
+          #alpaca-board.filter-assignee-${assignee.id} .alpaca-item[data-assignee-${assignee.id}] {
             opacity: 1;
           }
         `;
@@ -1719,8 +1720,8 @@ function AlpacaBoardControls() {
     useEffect(()=>{
         if (boardElement) {
             // Remove previous assignee filters
-            boardElement.className = boardElement.className.replace(/\s*assignee-filter-\S*/g, "");
-            if (filteredAssignee) boardElement.classList.add(`assignee-filter-${filteredAssignee}`);
+            boardElement.className = boardElement.className.replace(/\s*filter-assignee-\S*/g, "");
+            if (filteredAssignee) boardElement.classList.add(`filter-assignee-${filteredAssignee}`);
         }
     }, [
         filteredAssignee,
@@ -1746,6 +1747,31 @@ function AlpacaBoardControls() {
         showStarredOnly,
         boardElement
     ]);
+    useEffect(()=>{
+        if (boardElement) {
+            // Remove previous deadline filters
+            boardElement.className = boardElement.className.replace(/\s*filter-deadline-\S*/g, "");
+            boardElement.classList.remove("filter-deadline");
+            if (deadlineFilter && deadlineFilter !== "none") boardElement.classList.add(`filter-deadline`, `filter-deadline-${deadlineFilter}`);
+            const deadlineConditions = {
+                today: (diffDays)=>diffDays <= 0,
+                week: (diffDays)=>diffDays >= 0 && diffDays <= 7,
+                late: (diffDays)=>diffDays < 0
+            };
+            const items = boardElement.querySelectorAll(".alpaca-item");
+            const condition = deadlineConditions[deadlineFilter];
+            items.forEach((item)=>{
+                item.classList.remove("item-highlight");
+                if (condition) {
+                    const diffDays = parseInt(item.dataset.diffDays, 10);
+                    if (condition(diffDays)) item.classList.add("item-highlight");
+                }
+            });
+        }
+    }, [
+        deadlineFilter,
+        boardElement
+    ]);
     const assigneeOptions = (allAssignees || []).filter((assignee)=>assignee && assignee.id).map((assignee)=>({
             value: assignee.id.toString(),
             label: assignee.display_name || assignee.slug || "Unnamed"
@@ -1759,11 +1785,26 @@ function AlpacaBoardControls() {
     const onClosePopover = ()=>{
         setIsPopoverOpen(false);
     };
+    const handleShowStarredOnlyChange = ()=>{
+        setShowStarredOnly(!showStarredOnly);
+        setFilteredAssignee("");
+        setDeadlineFilter("none");
+    };
+    const handleFilteredAssigneeChange = (value)=>{
+        setFilteredAssignee(value);
+        setShowStarredOnly(false);
+        setDeadlineFilter("none");
+    };
+    const handleDeadlineFilterChange = (value)=>{
+        setDeadlineFilter(value);
+        setShowStarredOnly(false);
+        setFilteredAssignee("");
+    };
     return /*#__PURE__*/ React.createElement("div", {
         className: "alpaca-board-controls",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 132,
+            lineNumber: 188,
             columnNumber: 5
         },
         __self: this
@@ -1774,7 +1815,7 @@ function AlpacaBoardControls() {
         label: "Open Filters",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 133,
+            lineNumber: 189,
             columnNumber: 7
         },
         __self: this
@@ -1783,7 +1824,7 @@ function AlpacaBoardControls() {
         onClose: onClosePopover,
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 142,
+            lineNumber: 198,
             columnNumber: 9
         },
         __self: this
@@ -1791,7 +1832,7 @@ function AlpacaBoardControls() {
         className: "alpaca-control-popover",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 143,
+            lineNumber: 199,
             columnNumber: 11
         },
         __self: this
@@ -1799,31 +1840,59 @@ function AlpacaBoardControls() {
         className: "alpaca-control alpaca-control-starred",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 144,
+            lineNumber: 200,
             columnNumber: 13
         },
         __self: this
     }, /*#__PURE__*/ React.createElement(Button, {
-        onClick: ()=>setShowStarredOnly(!showStarredOnly),
+        onClick: handleShowStarredOnlyChange,
         isPressed: showStarredOnly,
         icon: showStarredOnly ? "star-filled" : "star-empty",
         label: "Toggle Starred Items",
         variant: "secondary",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 145,
+            lineNumber: 201,
             columnNumber: 15
         },
         __self: this
     }, "Starred Items")), /*#__PURE__*/ React.createElement(ComboboxControl, {
         label: "Filter by Assignee",
         value: filteredAssignee,
-        onChange: setFilteredAssignee,
+        onChange: handleFilteredAssigneeChange,
         options: assigneeOptions,
         className: "alpaca-control",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 156,
+            lineNumber: 212,
+            columnNumber: 13
+        },
+        __self: this
+    }), /*#__PURE__*/ React.createElement(RadioControl, {
+        label: "Deadlines",
+        options: [
+            {
+                label: "All Items",
+                value: "none"
+            },
+            {
+                label: "Today",
+                value: "today"
+            },
+            {
+                label: "Next 7 days",
+                value: "week"
+            },
+            {
+                label: "Overdue",
+                value: "late"
+            }
+        ],
+        selected: deadlineFilter,
+        onChange: handleDeadlineFilterChange,
+        __source: {
+            fileName: "src/components/BoardFrame.jsx",
+            lineNumber: 220,
             columnNumber: 13
         },
         __self: this
@@ -8885,7 +8954,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         if (assignee && assignee.id) acc[`data-assignee-${assignee.id}`] = "";
         return acc;
     }, {});
-    const watchedClass = isWatched ? "is-watched" : "";
+    const watchedClass = isWatched ? "is-watched item-highlight" : "";
     const deadline = meta && meta.deadline && meta.deadline[0] ? new Date(meta.deadline[0]) : null;
     const isValidDeadline = deadline && !isNaN(deadline);
     let diffDays = null;
@@ -8895,16 +8964,18 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         deadline.setHours(0, 0, 0, 0);
         diffDays = Math.ceil((deadline - today) / 86400000);
     }
+    const lateClass = diffDays < 0 ? "is-late" : "";
     return /*#__PURE__*/ React.createElement("div", {
         ref: ref,
-        className: `${className} ${watchedClass}`,
+        className: `${className} ${watchedClass} ${lateClass}`.trim(),
         style: style,
         "data-id": id,
+        "data-diff-days": diffDays,
         ...assigneeDataAttributes,
         ...props,
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 65,
+            lineNumber: 67,
             columnNumber: 7
         },
         __self: undefined
@@ -8912,7 +8983,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         className: "alpaca-item-upper",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 73,
+            lineNumber: 76,
             columnNumber: 9
         },
         __self: undefined
@@ -8920,7 +8991,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         className: "alpaca-item-content",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 74,
+            lineNumber: 77,
             columnNumber: 11
         },
         __self: undefined
@@ -8928,7 +8999,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         className: "alpaca-item-controls",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 75,
+            lineNumber: 78,
             columnNumber: 11
         },
         __self: undefined
@@ -8937,7 +9008,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         onClick: toggleWatch,
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 76,
+            lineNumber: 79,
             columnNumber: 13
         },
         __self: undefined
@@ -8945,7 +9016,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         className: "alpaca-item-meta",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 82,
+            lineNumber: 85,
             columnNumber: 9
         },
         __self: undefined
@@ -8955,7 +9026,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         title: assignees.length === 1 ? assignees[0].display_name || assignees[0].name : assignees.map((a)=>a.display_name || a.name).join(", "),
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 85,
+            lineNumber: 88,
             columnNumber: 13
         },
         __self: undefined
@@ -8964,7 +9035,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
             user: assignee,
             __source: {
                 fileName: "src/components/Item.jsx",
-                lineNumber: 95,
+                lineNumber: 98,
                 columnNumber: 17
             },
             __self: undefined
@@ -8972,7 +9043,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         className: "alpaca-item-comment-count has-dashicon",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 102,
+            lineNumber: 105,
             columnNumber: 13
         },
         __self: undefined
@@ -8981,16 +9052,15 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         "aria-hidden": "true",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 103,
+            lineNumber: 106,
             columnNumber: 15
         },
         __self: undefined
     }), comment_count), isValidDeadline && /*#__PURE__*/ React.createElement("div", {
         className: "alpaca-item-deadline has-dashicon",
-        "data-diff-days": diffDays,
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 113,
+            lineNumber: 116,
             columnNumber: 13
         },
         __self: undefined

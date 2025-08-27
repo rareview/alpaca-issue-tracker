@@ -45,7 +45,7 @@ const Item = forwardRef(
       return acc;
     }, {});
 
-    const watchedClass = isWatched ? "is-watched" : "";
+    const watchedClass = isWatched ? "is-watched item-highlight" : "";
 
     const deadline =
       meta && meta.deadline && meta.deadline[0]
@@ -61,12 +61,15 @@ const Item = forwardRef(
       diffDays = Math.ceil((deadline - today) / (1000 * 60 * 60 * 24));
     }
 
+    const lateClass = diffDays < 0 ? "is-late" : "";
+
     return (
       <div
         ref={ref}
-        className={`${className} ${watchedClass}`}
+        className={`${className} ${watchedClass} ${lateClass}`.trim()}
         style={style}
         data-id={id}
+        data-diff-days={diffDays}
         {...assigneeDataAttributes}
         {...props}
       >
@@ -110,10 +113,7 @@ const Item = forwardRef(
 
           {/* --- Deadline --- */}
           {isValidDeadline && (
-            <div
-              className="alpaca-item-deadline has-dashicon"
-              data-diff-days={diffDays}
-            >
+            <div className="alpaca-item-deadline has-dashicon">
               <span
                 className="dashicons dashicons-calendar"
                 aria-hidden="true"

@@ -1,5 +1,5 @@
 const { useState, useEffect, useRef } = wp.element;
-const { ComboboxControl, Popover, Button } = wp.components;
+const { ComboboxControl, Popover, Button, RadioControl } = wp.components;
 import Board from "./BoardMain";
 import { getCookie, setCookie } from "../utils/cookies";
 
@@ -11,6 +11,7 @@ export function AlpacaBoardControls() {
   const [allAssignees, setAllAssignees] = useState([]);
   const [filteredAssignee, setFilteredAssignee] = useState("");
   const [showStarredOnly, setShowStarredOnly] = useState(false);
+  const [deadlineFilter, setDeadlineFilter] = useState("none");
 
   useEffect(() => {
     // On mount, check for assignee data that may have been set globally
@@ -42,7 +43,7 @@ export function AlpacaBoardControls() {
   // This effect generates and injects the CSS for assignee filtering.
   useEffect(() => {
     if (allAssignees.length > 0) {
-      const styleId = "alpaca-assignee-filter-styles";
+      const styleId = "alpaca-filter-assignee-styles";
       let styleElement = document.getElementById(styleId);
       if (!styleElement) {
         styleElement = document.createElement("style");
@@ -51,14 +52,14 @@ export function AlpacaBoardControls() {
       }
 
       let rules = `
-        #alpaca-board[class*="assignee-filter-"] .alpaca-item {
+        #alpaca-board[class*="filter-assignee-"] .alpaca-item {
           opacity: 0.2;
         }
       `;
 
       allAssignees.forEach((assignee) => {
         rules += `
-          #alpaca-board.assignee-filter-${assignee.id} .alpaca-item[data-assignee-${assignee.id}] {
+          #alpaca-board.filter-assignee-${assignee.id} .alpaca-item[data-assignee-${assignee.id}] {
             opacity: 1;
           }
         `;
@@ -74,11 +75,11 @@ export function AlpacaBoardControls() {
     if (boardElement) {
       // Remove previous assignee filters
       boardElement.className = boardElement.className.replace(
-        /\s*assignee-filter-\S*/g,
+        /\s*filter-assignee-\S*/g,
         ""
       );
       if (filteredAssignee) {
-        boardElement.classList.add(`assignee-filter-${filteredAssignee}`);
+        boardElement.classList.add(`filter-assignee-${filteredAssignee}`);
       }
     }
   }, [filteredAssignee, boardElement]);
@@ -106,6 +107,43 @@ export function AlpacaBoardControls() {
     }
   }, [showStarredOnly, boardElement]);
 
+  useEffect(() => {
+    if (boardElement) {
+      // Remove previous deadline filters
+      boardElement.className = boardElement.className.replace(
+        /\s*filter-deadline-\S*/g,
+        ""
+      );
+      boardElement.classList.remove("filter-deadline");
+
+      if (deadlineFilter && deadlineFilter !== "none") {
+        boardElement.classList.add(
+          `filter-deadline`,
+          `filter-deadline-${deadlineFilter}`
+        );
+      }
+
+      const deadlineConditions = {
+        today: (diffDays) => diffDays <= 0,
+        week: (diffDays) => diffDays >= 0 && diffDays <= 7,
+        late: (diffDays) => diffDays < 0,
+      };
+
+      const items = boardElement.querySelectorAll(".alpaca-item");
+      const condition = deadlineConditions[deadlineFilter];
+
+      items.forEach((item) => {
+        item.classList.remove("item-highlight");
+        if (condition) {
+          const diffDays = parseInt(item.dataset.diffDays, 10);
+          if (condition(diffDays)) {
+            item.classList.add("item-highlight");
+          }
+        }
+      });
+    }
+  }, [deadlineFilter, boardElement]);
+
   const assigneeOptions = (allAssignees || [])
     .filter((assignee) => assignee && assignee.id)
     .map((assignee) => ({
@@ -128,6 +166,24 @@ export function AlpacaBoardControls() {
     setIsPopoverOpen(false);
   };
 
+  const handleShowStarredOnlyChange = () => {
+    setShowStarredOnly(!showStarredOnly);
+    setFilteredAssignee("");
+    setDeadlineFilter("none");
+  };
+
+  const handleFilteredAssigneeChange = (value) => {
+    setFilteredAssignee(value);
+    setShowStarredOnly(false);
+    setDeadlineFilter("none");
+  };
+
+  const handleDeadlineFilterChange = (value) => {
+    setDeadlineFilter(value);
+    setShowStarredOnly(false);
+    setFilteredAssignee("");
+  };
+
   return (
     <div className="alpaca-board-controls">
       <Button
@@ -143,7 +199,7 @@ export function AlpacaBoardControls() {
           <div className="alpaca-control-popover">
             <div className="alpaca-control alpaca-control-starred">
               <Button
-                onClick={() => setShowStarredOnly(!showStarredOnly)}
+                onClick={handleShowStarredOnlyChange}
                 isPressed={showStarredOnly}
                 icon={showStarredOnly ? "star-filled" : "star-empty"}
                 label="Toggle Starred Items"
@@ -156,9 +212,33 @@ export function AlpacaBoardControls() {
             <ComboboxControl
               label="Filter by Assignee"
               value={filteredAssignee}
-              onChange={setFilteredAssignee}
+              onChange={handleFilteredAssigneeChange}
               options={assigneeOptions}
               className="alpaca-control"
+            />
+
+            <RadioControl
+              label="Deadlines"
+              options={[
+                {
+                  label: "All Items",
+                  value: "none",
+                },
+                {
+                  label: "Today",
+                  value: "today",
+                },
+                {
+                  label: "Next 7 days",
+                  value: "week",
+                },
+                {
+                  label: "Overdue",
+                  value: "late",
+                },
+              ]}
+              selected={deadlineFilter}
+              onChange={handleDeadlineFilterChange}
             />
           </div>
         </Popover>
