@@ -266,18 +266,8 @@
   display: none;
 }
 
-.wp-admin .alpaca-issue-details {
-  grid-template-columns: 1fr 260px;
-  gap: 1rem;
-  display: grid;
-}
-
-.wp-admin .alpaca-issue-details .alpaca-issue-sidebar {
-  grid-area: 1 / 2;
-}
-
-.wp-admin .alpaca-issue-details .alpaca-issue-main {
-  grid-area: 1 / 1;
+.wp-admin .components-modal__frame.alpaca-details-modal {
+  margin: 3rem auto 0;
 }
 
 .wp-admin .alpaca-issue-details .alpaca-issue-main .alpaca-issue-slug {
@@ -336,6 +326,10 @@
   align-items: center;
   gap: 1rem;
   display: flex;
+}
+
+.wp-admin .alpaca-issue-details .components-tab-panel__tab-content {
+  padding: 1em 0;
 }
 
 .wp-admin .alpaca-issue-details .alpaca-screenshot {

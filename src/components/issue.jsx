@@ -9,6 +9,7 @@ const {
   Panel,
   PanelBody,
   PanelRow,
+  TabPanel,
 } = wp.components;
 const { decodeEntities } = wp.htmlEntities;
 import User from "./User";
@@ -137,7 +138,7 @@ const AlpacaIssue = ({
 
   return (
     <Modal
-      size="large"
+      size="medium"
       onRequestClose={onClose}
       className="alpaca-details-modal"
     >
@@ -154,7 +155,7 @@ const AlpacaIssue = ({
                 <User user={issueDetails.post_data.post_author} />
               </div>
               <h3 className="alpaca-issue-title">
-                {decodeEntities(issueDetails.post_data.post_title)}
+                {decodeEntities(issueDetails.post_data.post_content)}
               </h3>
             </div>
             <div className="alpaca-issue-main-controls">
@@ -312,133 +313,153 @@ const AlpacaIssue = ({
                 </div>
               </BaseControl>
             </div>
-            <AlpacaCommenting
-              issueId={issueId}
-              onCommentCountChange={onCommentCountChange}
-              commentRefreshKey={commentRefreshKey}
-            />
-          </div>
 
-          <div className="alpaca-issue-sidebar column">
-            <Panel>
-              <PanelBody title="Report" initialOpen={true}>
-                {issueDetails.meta.screenshot && (
-                  <PanelRow>
-                    <div>
-                      <p>
-                        <img
-                          src={issueDetails.meta.screenshot}
-                          className="alpaca-screenshot"
-                          alt="Screenshot"
-                          style={{ cursor: "zoom-in", maxWidth: "100%" }}
-                          onClick={() =>
-                            setLightboxSrc(issueDetails.meta.screenshot)
-                          }
-                        />
-                      </p>
-                      <p>
-                        <button
-                          type="button"
-                          className="button-link-delete"
-                          disabled={isSaving}
-                          onClick={() => {
-                            setIsSaving(true);
-                            wp.apiFetch({
-                              path: `/issue/v1/update/${issueId}`,
-                              method: "POST",
-                              data: {
-                                meta: {
-                                  screenshot: "",
-                                },
-                              },
-                            })
-                              .then(() => {
-                                setIssueDetails((prev) => ({
-                                  ...prev,
-                                  meta: {
-                                    ...prev.meta,
-                                    screenshot: "",
-                                  },
-                                }));
-                              })
-                              .finally(() => setIsSaving(false));
-                          }}
-                        >
-                          Delete
-                        </button>
-                      </p>
-                    </div>
-                  </PanelRow>
-                )}
-                <PanelRow>
-                  <table className="">
-                    <tbody>
-                      <tr>
-                        <th scope="row">Reported</th>
-                        <td>
-                          {date.format(
-                            datesettings.formats.datetimeAbbreviated,
-                            new Date(issueDetails.post_data.post_date)
-                          )}
-                        </td>
-                      </tr>
-                      <tr>
-                        <th scope="row">Last edit</th>
-                        <td>
-                          {date.format(
-                            datesettings.formats.datetimeAbbreviated,
-                            new Date(issueDetails.post_data.post_date)
-                          )}
-                        </td>
-                      </tr>
-                      <tr>
-                        <th scope="row">URL</th>
-                        <td>
-                          {issueDetails.meta.URL ? (
-                            <a
-                              href={issueDetails.meta.URL}
-                              target="_blank"
-                              rel="noopener noreferrer"
+            <TabPanel
+              className="alpaca-issue-tabs"
+              initialTabName="comments"
+              tabs={[
+                { name: "comments", title: "Comments", className: "comments" },
+                { name: "report", title: "Report", className: "report" },
+                ...(issueDetails?.meta?.queriedObject &&
+                issueDetails.meta.queriedObject !== "null" // todo: remove this check when no longer needed
+                  ? [
+                      {
+                        name: "queriedobject",
+                        title: "Queried Object",
+                        className: "queried-object",
+                      },
+                    ]
+                  : []),
+              ]}
+            >
+              {(tab) => {
+                if (tab.name === "comments") {
+                  return (
+                    <AlpacaCommenting
+                      issueId={issueId}
+                      onCommentCountChange={onCommentCountChange}
+                      commentRefreshKey={commentRefreshKey}
+                    />
+                  );
+                }
+
+                if (tab.name === "report") {
+                  return (
+                    <div className="alpaca-report-tab">
+                      {issueDetails.meta.screenshot && (
+                        <div>
+                          <p>
+                            <img
+                              src={issueDetails.meta.screenshot}
+                              className="alpaca-screenshot"
+                              alt="Screenshot"
+                              style={{ cursor: "zoom-in", maxWidth: "100%" }}
+                              onClick={() =>
+                                setLightboxSrc(issueDetails.meta.screenshot)
+                              }
+                            />
+                          </p>
+                          <p>
+                            <button
+                              type="button"
+                              className="button-link-delete"
+                              disabled={isSaving}
+                              onClick={() => {
+                                setIsSaving(true);
+                                wp.apiFetch({
+                                  path: `/issue/v1/update/${issueId}`,
+                                  method: "POST",
+                                  data: { meta: { screenshot: "" } },
+                                })
+                                  .then(() => {
+                                    setIssueDetails((prev) => ({
+                                      ...prev,
+                                      meta: { ...prev.meta, screenshot: "" },
+                                    }));
+                                  })
+                                  .finally(() => setIsSaving(false));
+                              }}
                             >
-                              {issueDetails.meta.URL}
-                            </a>
-                          ) : (
-                            "N/A"
-                          )}
-                        </td>
-                      </tr>
-                      <tr>
-                        <th scope="row">Screen</th>
-                        <td>
-                          {issueDetails.meta.screenwidth &&
-                          issueDetails.meta.screenheight
-                            ? `${issueDetails.meta.screenwidth} x ${issueDetails.meta.screenheight}`
-                            : "N/A"}
-                        </td>
-                      </tr>
-                      {Object.entries(issueDetails.taxonomies)
-                        .filter(([taxonomy]) => taxonomy !== "assignee")
-                        .map(([taxonomy, terms]) => (
-                          <tr key={taxonomy}>
-                            <th
-                              scope="row"
-                              style={{ textTransform: "capitalize" }}
-                            >
-                              {taxonomy}
-                            </th>
-                            <td>{terms.map((term) => term.name).join(", ")}</td>
+                              Delete
+                            </button>
+                          </p>
+                        </div>
+                      )}
+
+                      <table>
+                        <tbody>
+                          <tr>
+                            <th scope="row">Reported</th>
+                            <td>
+                              {date.format(
+                                datesettings.formats.datetimeAbbreviated,
+                                new Date(issueDetails.post_data.post_date)
+                              )}
+                            </td>
                           </tr>
-                        ))}
-                    </tbody>
-                  </table>
-                </PanelRow>
-              </PanelBody>
-              <PanelBody title="Queried Object" initialOpen={false}>
-                <PanelRow>
-                  <JsonTable data={issueDetails.meta.queriedObject} />
-                </PanelRow>
-              </PanelBody>
-            </Panel>
+                          <tr>
+                            <th scope="row">Last edit</th>
+                            <td>
+                              {date.format(
+                                datesettings.formats.datetimeAbbreviated,
+                                new Date(issueDetails.post_data.post_modified)
+                              )}
+                            </td>
+                          </tr>
+                          <tr>
+                            <th scope="row">URL</th>
+                            <td>
+                              {issueDetails.meta.URL ? (
+                                <a
+                                  href={issueDetails.meta.URL}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  {issueDetails.meta.URL}
+                                </a>
+                              ) : (
+                                "N/A"
+                              )}
+                            </td>
+                          </tr>
+                          <tr>
+                            <th scope="row">Screen</th>
+                            <td>
+                              {issueDetails.meta.screenwidth &&
+                              issueDetails.meta.screenheight
+                                ? `${issueDetails.meta.screenwidth} x ${issueDetails.meta.screenheight}`
+                                : "N/A"}
+                            </td>
+                          </tr>
+                          {Object.entries(issueDetails.taxonomies)
+                            .filter(([taxonomy]) => taxonomy !== "assignee")
+                            .map(([taxonomy, terms]) => (
+                              <tr key={taxonomy}>
+                                <th style={{ textTransform: "capitalize" }}>
+                                  {taxonomy}
+                                </th>
+                                <td>
+                                  {terms.map((term) => term.name).join(", ")}
+                                </td>
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  );
+                }
+
+                if (tab.name === "queriedobject") {
+                  return (
+                    <div className="alpaca-queriedobject-tab">
+                      <JsonTable data={issueDetails.meta.queriedObject} />
+                    </div>
+                  );
+                }
+
+                return null;
+              }}
+            </TabPanel>
           </div>
         </div>
       ) : (
