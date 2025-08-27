@@ -120,11 +120,10 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 
         if( isset( $json['wp']['queriedObject'] ) ) {
             if( isset( $json['wp']['queriedObject']['post_content'] ) ) {
-                $raw = $json['wp']['queriedObject']['post_content'];
-                $escaped = htmlspecialchars( $raw );
-                $json['wp']['queriedObject']['post_content'] = $escaped;
+                unset( $json['wp']['queriedObject']['post_content'] );
+                // todo: how to handle post_content (if we think we need it)
             }
-            $encoded = json_encode( $json['wp']['queriedObject'] );
+            $encoded = json_encode( $json['wp']['queriedObject'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
             update_post_meta( $post_id, 'queriedObject', $encoded );           
         }
 

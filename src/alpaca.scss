@@ -249,18 +249,17 @@
   }
 
   .alpaca-issue-details {
+    display: grid;
+    grid-template-columns: 1fr 260px;
+    gap: 1rem;
     .alpaca-issue-sidebar {
-      position: fixed;
-      top: 72px;
-      right: 1rem;
-      margin-right: 1rem;
-      width: 260px;
-      max-height: 100%;
-      overflow-x: hidden;
+      grid-row: 1;
+      grid-column: 2;
     }
 
     .alpaca-issue-main {
-      margin-right: 270px;
+      grid-row: 1;
+      grid-column: 1;
       .alpaca-issue-slug {
         font-family: monospace;
       }
