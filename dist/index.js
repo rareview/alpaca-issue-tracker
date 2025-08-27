@@ -6223,7 +6223,7 @@ function JsonTable({ data }) {
     console.log(data);
     const parsedData = JSON.parse(data);
     return /*#__PURE__*/ React.createElement("table", {
-        className: "alpaca-json-table",
+        className: "alpaca-json-table widefat striped",
         style: {
             borderCollapse: "collapse",
             width: "100%"
@@ -6697,6 +6697,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, triggerRef, onCommentCountChang
             },
             __self: undefined
         }, "Delete"))), /*#__PURE__*/ React.createElement("table", {
+            className: "widefat striped",
             __source: {
                 fileName: "src/components/issue.jsx",
                 lineNumber: 390,

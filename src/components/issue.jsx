@@ -24,7 +24,7 @@ function JsonTable({ data }) {
 
   return (
     <table
-      className="alpaca-json-table"
+      className="alpaca-json-table widefat striped"
       style={{ borderCollapse: "collapse", width: "100%" }}
     >
       <tbody>
@@ -387,7 +387,7 @@ const AlpacaIssue = ({
                         </div>
                       )}
 
-                      <table>
+                      <table className="widefat striped">
                         <tbody>
                           <tr>
                             <th scope="row">Reported</th>
