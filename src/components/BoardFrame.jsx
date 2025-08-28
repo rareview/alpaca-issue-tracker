@@ -124,7 +124,7 @@ export function AlpacaBoardControls() {
       }
 
       const deadlineConditions = {
-        today: (diffDays) => diffDays <= 0,
+        today: (diffDays) => diffDays === 0,
         week: (diffDays) => diffDays >= 0 && diffDays <= 7,
         late: (diffDays) => diffDays < 0,
       };

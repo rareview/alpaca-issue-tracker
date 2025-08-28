@@ -10,6 +10,8 @@ const {
   PanelBody,
   PanelRow,
   TabPanel,
+  Button,
+  Tooltip,
 } = wp.components;
 const { decodeEntities } = wp.htmlEntities;
 import User from "./User";
@@ -43,6 +45,7 @@ const AlpacaIssue = ({
   issueId,
   isOpen,
   onClose,
+  onDelete,
   triggerRef,
   onCommentCountChange,
   onAssigneesChange,
@@ -141,6 +144,24 @@ const AlpacaIssue = ({
       size="medium"
       onRequestClose={onClose}
       className="alpaca-details-modal"
+      headerActions={
+        <Tooltip text="Delete issue">
+          <Button
+            type="button"
+            className="alpaca-modal-delete-button components-button has-icon"
+            isDestructive
+            onClick={() => {
+              if (
+                window.confirm("Are you sure you want to delete this issue?")
+              ) {
+                onDelete(issueId);
+              }
+            }}
+          >
+            <span className="dashicons dashicons-trash"></span>
+          </Button>
+        </Tooltip>
+      }
     >
       {isLoadingDetails ? (
         <p>Loading...</p>

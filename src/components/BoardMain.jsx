@@ -404,6 +404,26 @@ function Board() {
     setSelectedItem(null);
   };
 
+  const handleDeleteIssue = (issueId) => {
+    // Optimistically remove the issue from the UI
+    const originalContainers = containers;
+    const newContainers = containers.map((c) => ({
+      ...c,
+      items: c.items.filter((item) => item.id !== issueId.toString()),
+    }));
+    setContainers(newContainers);
+    closeModal();
+
+    wp.apiFetch({
+      path: `/issue/v1/delete/${issueId}`,
+      method: "DELETE",
+    }).catch((err) => {
+      // Revert if the delete fails
+      console.error("Error deleting issue:", err);
+      setContainers(originalContainers);
+    });
+  };
+
   useEffect(() => {
     if (!selectedItem && triggerRef.current) {
       triggerRef.current.focus();
@@ -520,6 +540,7 @@ function Board() {
         issueId={selectedItem?.id}
         isOpen={!!selectedItem}
         onClose={closeModal}
+        onDelete={handleDeleteIssue}
         triggerRef={triggerRef}
         onCommentCountChange={onCommentCountChangeForIssue}
         onAssigneesChange={handleAssigneesChange}

@@ -28,7 +28,6 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
     $getbody = $req->get_body();
     if ( isset($getbody) ) {
         $json = json_decode( $getbody,true );
-        error_log($getbody);
 
         $post_args = array(
             'post_type' => 'issue',
@@ -685,6 +684,64 @@ function alpaca_update_status_callback( WP_REST_Request $request ) {
         array(
             'success' => true,
             'message' => 'Status updated successfully.',
+        ),
+        200
+    );
+}
+
+add_action( 'rest_api_init', 'alpaca_delete_issue' );
+function alpaca_delete_issue() {
+    register_rest_route(
+        'issue/v1',
+        '/delete/(?P<id>\d+)',
+        array(
+            'methods'  => 'DELETE',
+            'callback' => 'alpaca_delete_issue_callback',
+            'permission_callback' => function ( WP_REST_Request $request ) {
+                $post_id = (int) $request['id'];
+                return current_user_can( 'delete_post', $post_id );
+            },
+            'args' => array(
+                'id' => array(
+                    'validate_callback' => function ( $param ) {
+                        return is_numeric( $param ) && $param > 0;
+                    }
+                )
+            )
+        )
+    );
+}
+
+function alpaca_delete_issue_callback( WP_REST_Request $request ) {
+    $issue_id = (int) $request['id'];
+    $post = get_post( $issue_id );
+
+    if ( ! $post || $post->post_type !== 'issue' ) {
+        return new WP_REST_Response(
+            array(
+                'success' => false,
+                'message' => 'Issue not found.',
+            ),
+            404
+        );
+    }
+
+    $result = wp_delete_post( $issue_id, true ); // true to force delete, false to move to trash
+
+    if ( ! $result ) {
+        return new WP_REST_Response(
+            array(
+                'success' => false,
+                'message' => 'Failed to delete the issue.',
+            ),
+            500
+        );
+    }
+
+    return new WP_REST_Response(
+        array(
+            'success' => true,
+            'message' => 'Issue deleted successfully.',
         ),
         200
     );
