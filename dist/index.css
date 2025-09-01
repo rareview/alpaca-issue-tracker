@@ -391,6 +391,10 @@
   padding: 1em 0;
 }
 
+.wp-admin .alpaca-checklist-container .alpaca-checklist {
+  padding-bottom: .5rem;
+}
+
 .wp-admin .alpaca-checklist-container .alpaca-checklist-item {
   align-items: center;
   display: flex;

@@ -364,6 +364,9 @@
   }
 
   .alpaca-checklist-container {
+    .alpaca-checklist {
+      padding-bottom: 0.5rem;
+    }
     padding: 1em 0;
     .alpaca-checklist-item {
       display: flex;
