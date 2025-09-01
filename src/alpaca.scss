@@ -377,6 +377,12 @@
       input[type="text"] {
         border-color: transparent;
       }
+      .alpaca-textinput {
+        width: 100%;
+        input[type="text"] {
+          width: 100%;
+        }
+      }
       &.checked {
         input[type="text"] {
           text-decoration: line-through;

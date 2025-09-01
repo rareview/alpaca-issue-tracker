@@ -408,6 +408,10 @@
   border-color: #0000;
 }
 
+.wp-admin .alpaca-checklist-container .alpaca-checklist-item .alpaca-textinput, .wp-admin .alpaca-checklist-container .alpaca-checklist-item .alpaca-textinput input[type="text"] {
+  width: 100%;
+}
+
 .wp-admin .alpaca-checklist-container .alpaca-checklist-item.checked input[type="text"] {
   text-decoration: line-through;
 }

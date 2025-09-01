@@ -9045,7 +9045,7 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
         saveChecklist(newItems);
     };
     const handleChecklistItemKeyDown = (e, index)=>{
-        if (e.key === 'Enter') {
+        if (e.key === "Enter") {
             e.preventDefault();
             addChecklistItem();
         }
@@ -9053,7 +9053,7 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
     const handleChecklistItemBlur = (index)=>{
         setActiveIndex(null);
         const item = checklistItems[index];
-        if (item.label.trim() === '') {
+        if (item.label.trim() === "") {
             const newItems = checklistItems.filter((_, i)=>i !== index);
             setChecklistItems(newItems);
             saveChecklist(newItems);
@@ -9062,7 +9062,7 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
     useEffect(()=>{
         if (checklistItems.length > prevChecklistLength.current) {
             if (checklistContainerRef.current) {
-                const textInputs = checklistContainerRef.current.querySelectorAll('.components-text-control__input');
+                const textInputs = checklistContainerRef.current.querySelectorAll(".components-text-control__input");
                 if (textInputs.length > 0) {
                     const lastInput = textInputs[textInputs.length - 1];
                     if (lastInput) lastInput.focus();
@@ -9077,7 +9077,7 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
         className: "alpaca-checklist-container",
         __source: {
             fileName: "src/components/checklist.jsx",
-            lineNumber: 98,
+            lineNumber: 111,
             columnNumber: 5
         },
         __self: undefined
@@ -9086,7 +9086,7 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
         className: "alpaca-checklist-label",
         __source: {
             fileName: "src/components/checklist.jsx",
-            lineNumber: 99,
+            lineNumber: 112,
             columnNumber: 7
         },
         __self: undefined
@@ -9095,16 +9095,16 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
         ref: checklistContainerRef,
         __source: {
             fileName: "src/components/checklist.jsx",
-            lineNumber: 103,
+            lineNumber: 113,
             columnNumber: 7
         },
         __self: undefined
     }, checklistItems.map((item, index)=>/*#__PURE__*/ React.createElement("div", {
-            className: `alpaca-checklist-item ${item.checked !== 0 ? 'checked' : ''} ${activeIndex === index ? 'active' : ''}`,
+            className: `alpaca-checklist-item ${item.checked !== 0 ? "checked" : ""} ${activeIndex === index ? "active" : ""}`,
             key: item.id,
             __source: {
                 fileName: "src/components/checklist.jsx",
-                lineNumber: 105,
+                lineNumber: 115,
                 columnNumber: 11
             },
             __self: undefined
@@ -9113,11 +9113,12 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
             onChange: ()=>toggleChecklistItem(index),
             __source: {
                 fileName: "src/components/checklist.jsx",
-                lineNumber: 106,
+                lineNumber: 121,
                 columnNumber: 13
             },
             __self: undefined
         }), /*#__PURE__*/ React.createElement(TextControl, {
+            className: "alpaca-textinput",
             value: item.label,
             onChange: (newLabel)=>updateChecklistItemLabel(index, newLabel),
             onFocus: ()=>setActiveIndex(index),
@@ -9126,7 +9127,7 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
             placeholder: "Add an item...",
             __source: {
                 fileName: "src/components/checklist.jsx",
-                lineNumber: 110,
+                lineNumber: 125,
                 columnNumber: 13
             },
             __self: undefined
@@ -9137,7 +9138,7 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
             showTooltip: "true",
             __source: {
                 fileName: "src/components/checklist.jsx",
-                lineNumber: 120,
+                lineNumber: 134,
                 columnNumber: 13
             },
             __self: undefined
@@ -9148,7 +9149,7 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
         onClick: addChecklistItem,
         __source: {
             fileName: "src/components/checklist.jsx",
-            lineNumber: 129,
+            lineNumber: 143,
             columnNumber: 7
         },
         __self: undefined
