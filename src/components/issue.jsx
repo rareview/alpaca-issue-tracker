@@ -65,6 +65,8 @@ const AlpacaIssue = ({
   const [isEditingDeadline, setIsEditingDeadline] = useState(false);
   const [lightboxSrc, setLightboxSrc] = useState(null);
   const [checklistItems, setChecklistItems] = useState([]);
+  const checklistContainerRef = useRef(null);
+  const prevChecklistLength = useRef(checklistItems.length);
 
   const { currentUser } = useSelect((select) => ({
     currentUser: select("core").getCurrentUser(),
@@ -85,9 +87,7 @@ const AlpacaIssue = ({
       label: "",
       checked: 0,
     };
-    const newItems = [...checklistItems, newItem];
-    setChecklistItems(newItems);
-    saveChecklist(newItems);
+    setChecklistItems((prevItems) => [...prevItems, newItem]);
   };
 
   const updateChecklistItemLabel = (index, newLabel) => {
@@ -110,6 +110,24 @@ const AlpacaIssue = ({
     saveChecklist(newItems);
   };
 
+  const handleChecklistItemKeyDown = (e, index) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addChecklistItem();
+    }
+  };
+
+  const handleChecklistItemBlur = (index) => {
+    const item = checklistItems[index];
+    if (item.label.trim() === '') {
+      const newItems = checklistItems.filter((_, i) => i !== index);
+      setChecklistItems(newItems);
+      saveChecklist(newItems);
+    } else {
+      saveChecklist(checklistItems);
+    }
+  };
+
   const calendarButtonRef = useRef();
 
   // Close lightbox on Escape
@@ -120,6 +138,21 @@ const AlpacaIssue = ({
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
+
+  useEffect(() => {
+    if (checklistItems.length > prevChecklistLength.current) {
+      if (checklistContainerRef.current) {
+        const textInputs = checklistContainerRef.current.querySelectorAll('.components-text-control__input');
+        if (textInputs.length > 0) {
+          const lastInput = textInputs[textInputs.length - 1];
+          if (lastInput) {
+            lastInput.focus();
+          }
+        }
+      }
+    }
+    prevChecklistLength.current = checklistItems.length;
+  }, [checklistItems.length]);
 
   // Fetch all users and issue details concurrently
   useEffect(() => {
@@ -404,7 +437,7 @@ const AlpacaIssue = ({
                 label="Checklist"
                 className="alpaca-checklist-label"
               />
-              <div className="alpaca-checklist">
+              <div className="alpaca-checklist" ref={checklistContainerRef}>
                 {checklistItems.map((item, index) => (
                   <div className="alpaca-checklist-item" key={item.id}>
                     <CheckboxControl
@@ -416,12 +449,8 @@ const AlpacaIssue = ({
                       onChange={(newLabel) =>
                         updateChecklistItemLabel(index, newLabel)
                       }
-                      onBlur={() => saveChecklist(checklistItems)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          saveChecklist(checklistItems);
-                        }
-                      }}
+                      onBlur={() => handleChecklistItemBlur(index)}
+                      onKeyDown={(e) => handleChecklistItemKeyDown(e, index)}
                       placeholder="Add an item..."
                     />
                     <button onClick={() => deleteChecklistItem(index)}>
