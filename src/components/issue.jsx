@@ -14,8 +14,8 @@ const {
 } = wp.components;
 const { decodeEntities } = wp.htmlEntities;
 import User from "./User";
-const { format, getSettings } = wp.date;
-const datesettings = getSettings();
+const { date } = wp;
+const datesettings = wp.date.getSettings();
 const { useSelect } = wp.data;
 const { useDebounce } = wp.compose;
 
@@ -513,7 +513,7 @@ const AlpacaIssue = ({
                           <tr>
                             <th scope="row">Reported</th>
                             <td>
-                              {format(
+                              {date.format(
                                 datesettings.formats.datetimeAbbreviated,
                                 new Date(issueDetails.post_data.post_date)
                               )}
@@ -522,7 +522,7 @@ const AlpacaIssue = ({
                           <tr>
                             <th scope="row">Last edit</th>
                             <td>
-                              {format(
+                              {date.format(
                                 datesettings.formats.datetimeAbbreviated,
                                 new Date(issueDetails.post_data.post_modified)
                               )}

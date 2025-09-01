@@ -6304,8 +6304,8 @@ var _userDefault = parcelHelpers.interopDefault(_user);
 const { useState, useEffect, useRef, createPortal } = wp.element;
 const { Modal, FormTokenField, DatePicker, Popover, BaseControl, TabPanel, Button, Tooltip, CheckboxControl, TextControl } = wp.components;
 const { decodeEntities } = wp.htmlEntities;
-const { format, getSettings } = wp.date;
-const datesettings = getSettings();
+const { date } = wp;
+const datesettings = wp.date.getSettings();
 const { useSelect } = wp.data;
 const { useDebounce } = wp.compose;
 function JsonTable({ data }) {
@@ -6978,7 +6978,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
                 columnNumber: 29
             },
             __self: undefined
-        }, format(datesettings.formats.datetimeAbbreviated, new Date(issueDetails.post_data.post_date)))), /*#__PURE__*/ React.createElement("tr", {
+        }, date.format(datesettings.formats.datetimeAbbreviated, new Date(issueDetails.post_data.post_date)))), /*#__PURE__*/ React.createElement("tr", {
             __source: {
                 fileName: "src/components/issue.jsx",
                 lineNumber: 522,
@@ -7000,7 +7000,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
                 columnNumber: 29
             },
             __self: undefined
-        }, format(datesettings.formats.datetimeAbbreviated, new Date(issueDetails.post_data.post_modified)))), /*#__PURE__*/ React.createElement("tr", {
+        }, date.format(datesettings.formats.datetimeAbbreviated, new Date(issueDetails.post_data.post_modified)))), /*#__PURE__*/ React.createElement("tr", {
             __source: {
                 fileName: "src/components/issue.jsx",
                 lineNumber: 531,
