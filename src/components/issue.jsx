@@ -326,7 +326,9 @@ const AlpacaIssue = ({
                   )}
 
                   {deadline && (
-                    <button
+                    <Button
+                      icon="trash"
+                      label="Clear deadline"
                       onClick={() => {
                         setDeadline(null);
                         setIsSaving(true);
@@ -344,16 +346,18 @@ const AlpacaIssue = ({
                           })
                           .finally(() => setIsSaving(false));
                       }}
-                      className="button-link"
-                    >
-                      <span className="dashicons dashicons-trash"></span>
-                    </button>
+                    />
                   )}
                 </div>
               </BaseControl>
             </div>
 
-            <Checklist issueId={issueId} initialChecklistItems={checklistItems} isSaving={isSaving} setIsSaving={setIsSaving} />
+            <Checklist
+              issueId={issueId}
+              initialChecklistItems={checklistItems}
+              isSaving={isSaving}
+              setIsSaving={setIsSaving}
+            />
 
             <TabPanel
               className="alpaca-issue-tabs"
