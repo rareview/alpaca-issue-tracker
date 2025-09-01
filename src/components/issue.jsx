@@ -151,6 +151,18 @@ const AlpacaIssue = ({
     }
   }, [issueId, isOpen]);
 
+  const handleChecklistComment = (issueId, commentContent) => {
+    if (createIssueComment) {
+      createIssueComment(issueId, commentContent)
+        .then(() => {
+          setCommentRefreshKey((prevKey) => prevKey + 1);
+        })
+        .catch((err) => {
+          console.error("Error creating checklist comment:", err);
+        });
+    }
+  };
+
   if (!isOpen) {
     return null;
   }
@@ -357,6 +369,7 @@ const AlpacaIssue = ({
               initialChecklistItems={checklistItems}
               isSaving={isSaving}
               setIsSaving={setIsSaving}
+              createIssueComment={handleChecklistComment}
             />
 
             <TabPanel

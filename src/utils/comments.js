@@ -33,8 +33,23 @@ const generateAssigneeChangeComment = (user, isAssigned) => {
   return `${assigneeSpan} is no longer assigned to this issue.`;
 };
 
+/**
+ * Generates a comment for a checked checklist item.
+ * @param {object} item The checklist item object.
+ * @param {object} user The user who checked the item.
+ * @returns {string} HTML string.
+ */
+const generateCheckedItemComment = (item, user) => {
+  if (!user) {
+    return `Checklist item "${item.label}" has been checked`;
+  }
+  const userSpan = generateAssigneeSpan(user);
+  return `Checklist item "${item.label}" has been checked by ${userSpan}`;
+};
+
 export {
   generateAssigneeSpan,
   generateStatusChangeComment,
   generateAssigneeChangeComment,
+  generateCheckedItemComment,
 };

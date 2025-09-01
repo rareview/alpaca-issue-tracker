@@ -368,7 +368,9 @@
     .alpaca-checklist-item {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      .components-base-control__field {
+        margin: 0;
+      }
       input[type="text"] {
         border-color: transparent;
       }
@@ -381,6 +383,11 @@
         input[type="text"] {
           border-color: inherit;
         }
+      }
+      button {
+        padding: 0;
+        height: auto;
+        min-width: auto;
       }
     }
   }
