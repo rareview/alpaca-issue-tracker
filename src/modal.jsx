@@ -2,6 +2,7 @@ import handleSnapdomCapture from "./snapdom-handler.js";
 
 const { Button, Modal, TextareaControl, Spinner, CheckboxControl } =
   wp.components;
+const { doAction } = wp.hooks;
 const { useState, useRef, useEffect, useCallback } = wp.element;
 
 const AlpacaModal = () => {
@@ -87,6 +88,14 @@ const AlpacaModal = () => {
 
       setStatus("success");
       setMessage("Your issue has been submitted successfully.");
+
+      console.log("responseData.issue is: " + responseData.issue);
+
+      doAction(
+        "alpaca.issueSubmitted",
+        responseData.issue,
+        responseData.statusId
+      );
 
       if (document.getElementById("alpaca-board")) {
         document.dispatchEvent(

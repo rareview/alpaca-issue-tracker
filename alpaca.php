@@ -47,6 +47,17 @@ function enqueue_alpaca_scripts() {
 		true
 	);
 
+    wp_enqueue_script(
+		'alpaca-issue-comment-handler',
+		$plugin_url . 'src/utils/issue-comment-handler.js',
+		array(
+			'wp-hooks',
+			'wp-api-fetch',
+		),
+		'1.00',
+		true
+	);
+
     wp_enqueue_style(
 		'alpaca',
 		$plugin_url . 'dist/index.css',
