@@ -9034,8 +9034,8 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
         currentItem.checked = isBeingChecked ? currentUser.id : 0;
         setChecklistItems(newItems);
         saveChecklist(newItems);
-        if (isBeingChecked) {
-            addChecklistItem();
+        if (isBeingChecked) // addChecklistItem();
+        {
             if (createIssueComment) createIssueComment(issueId, (0, _commentsJs.generateCheckedItemComment)(currentItem, currentUser));
         }
     };
