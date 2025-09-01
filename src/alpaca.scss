@@ -365,6 +365,10 @@
 
   .alpaca-checklist-container {
     padding: 1em 0;
+    .alpaca-checklist-item {
+      display: flex;
+      align-items: baseline;
+    }
   }
 
   #alpaca-comments {

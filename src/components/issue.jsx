@@ -341,7 +341,12 @@ const AlpacaIssue = ({
                 className="alpaca-checklist-label"
               />
               <div class="alpaca-checklist">
-                <CheckboxControl label="Checklist item" />
+                <div class="alpaca-checklist-item">
+                  <CheckboxControl label="Checklist item" />
+                  <button>
+                    <span className="dashicons dashicons-trash"></span>
+                  </button>
+                </div>
               </div>
               <Button variant="secondary" icon="plus" iconPosition="left">
                 Add Checklist Item
