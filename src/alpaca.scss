@@ -367,7 +367,21 @@
     padding: 1em 0;
     .alpaca-checklist-item {
       display: flex;
-      align-items: baseline;
+      align-items: center;
+      gap: 0.5rem;
+      input[type="text"] {
+        border-color: transparent;
+      }
+      &.checked {
+        input[type="text"] {
+          text-decoration: line-through;
+        }
+      }
+      &.active {
+        input[type="text"] {
+          border-color: inherit;
+        }
+      }
     }
   }
 
