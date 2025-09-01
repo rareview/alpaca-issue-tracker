@@ -387,18 +387,6 @@
     }
   }
 
-  #alpaca-comments {
-    .alpaca-comment {
-      ul li {
-        list-style: disc inside;
-      }
-    }
-    .alpaca-status-comment,
-    .alpaca-status-assignee {
-      font-weight: bold;
-    }
-  }
-
   .alpaca-item .alpaca-item-controls .dashicons,
   .alpaca-item-dragging .alpaca-item-controls .dashicons {
     opacity: 0;
@@ -444,10 +432,23 @@
       gap: 1em;
     }
     .alpaca-row {
-      margin: 1em 0 0 0;
+      padding: 1em 0 0.5em 0;
+      border-bottom: 1px solid #ccc;
       padding: 1em 0;
-      border-top: 1px solid #ccc;
-      padding: 1em 0;
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+    .alpaca-status-comment,
+    .alpaca-status-assignee {
+      font-weight: bold;
+    }
+    .alpaca-comment-content {
+      padding: 0 1em;
+      ul li {
+        list-style: disc outside;
+        margin-left: 1.3em;
+      }
     }
   }
 

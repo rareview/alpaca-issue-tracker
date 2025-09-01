@@ -171,9 +171,24 @@ const Commenting = ({ issueId, onCommentCountChange, commentRefreshKey }) => {
                     avatar: comment.author_avatar_urls[96],
                   }}
                 />
-                <span className="alpaca-comment-date">
+                <div className="alpaca-comment-date">
                   {new Date(comment.date).toLocaleString()}
-                </span>
+                </div>
+                <div class="alpaca-comment-buttons">
+                  <Button
+                    label="Edit"
+                    showToolip="true"
+                    icon="edit"
+                    onClick={() => startEditing(comment)}
+                  />
+                  <Button
+                    icon="trash"
+                    label="Delete"
+                    showToolip="true"
+                    className="button-link-delete"
+                    onClick={() => confirmDeleteComment(comment.id)}
+                  />
+                </div>
               </div>
               <div className="alpaca-comment">
                 {editingCommentId === comment.id ? (
@@ -197,23 +212,13 @@ const Commenting = ({ issueId, onCommentCountChange, commentRefreshKey }) => {
                 ) : (
                   <>
                     <div
+                      className="alpaca-comment-content"
                       dangerouslySetInnerHTML={{
                         __html: comment.content.raw
                           ? marked(comment.content.raw)
                           : comment.content.rendered,
                       }}
                     />
-                    <div>
-                      <button onClick={() => startEditing(comment)}>
-                        Edit
-                      </button>{" "}
-                      <button
-                        className="button-link-delete"
-                        onClick={() => confirmDeleteComment(comment.id)}
-                      >
-                        Delete
-                      </button>
-                    </div>
                   </>
                 )}
               </div>
