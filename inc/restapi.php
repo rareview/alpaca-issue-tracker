@@ -746,3 +746,63 @@ function alpaca_delete_issue_callback( WP_REST_Request $request ) {
         200
     );
 }
+
+add_action( 'rest_api_init', 'alpaca_update_checklist_endpoint' );
+function alpaca_update_checklist_endpoint() {
+    register_rest_route(
+        'issue/v1',
+        '/checklist/(?P<id>\d+)',
+        array(
+            'methods'  => 'POST',
+            'callback' => 'alpaca_update_checklist_callback',
+            'permission_callback' => function ( WP_REST_Request $request ) {
+                $post_id = (int) $request['id'];
+                return current_user_can( 'edit_post', $post_id );
+            },
+            'args' => array(
+                'id' => array(
+                    'validate_callback' => function ( $param ) {
+                        return is_numeric( $param ) && $param > 0;
+                    }
+                )
+            )
+        )
+    );
+}
+
+function alpaca_update_checklist_callback( WP_REST_Request $request ) {
+    $issue_id = (int) $request['id'];
+    $checklist_data = $request->get_json_params();
+
+    $post = get_post( $issue_id );
+    if ( ! $post || $post->post_type !== 'issue' ) {
+        return new WP_REST_Response(
+            array(
+                'success' => false,
+                'message' => 'Issue not found.',
+            ),
+            404
+        );
+    }
+
+    if ( ! is_array( $checklist_data ) ) {
+        return new WP_REST_Response(
+            array(
+                'success' => false,
+                'message' => 'Invalid checklist data.',
+            ),
+            400
+        );
+    }
+
+    // The checklist is stored as a single JSON object.
+    update_post_meta( $issue_id, 'checklist', wp_json_encode( $checklist_data ) );
+
+    return new WP_REST_Response(
+        array(
+            'success' => true,
+            'message' => 'Checklist updated successfully.',
+        ),
+        200
+    );
+}

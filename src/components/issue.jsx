@@ -10,11 +10,14 @@ const {
   Button,
   Tooltip,
   CheckboxControl,
+  TextControl,
 } = wp.components;
 const { decodeEntities } = wp.htmlEntities;
 import User from "./User";
-const { date } = wp;
-const datesettings = wp.date.getSettings();
+const { format, getSettings } = wp.date;
+const datesettings = getSettings();
+const { useSelect } = wp.data;
+const { useDebounce } = wp.compose;
 
 function JsonTable({ data }) {
   if (!data) return null;
@@ -62,6 +65,52 @@ const AlpacaIssue = ({
   const [deadline, setDeadline] = useState(null);
   const [isEditingDeadline, setIsEditingDeadline] = useState(false);
   const [lightboxSrc, setLightboxSrc] = useState(null);
+  const [checklistItems, setChecklistItems] = useState([]);
+
+  const { currentUser } = useSelect((select) => ({
+    currentUser: select("core").getCurrentUser(),
+  }));
+
+  const debouncedSaveChecklist = useDebounce((items) => {
+    setIsSaving(true);
+    wp.apiFetch({
+      path: `/issue/v1/checklist/${issueId}`,
+      method: "POST",
+      data: items,
+    }).finally(() => setIsSaving(false));
+  }, 500);
+
+  const handleChecklistChange = (newItems) => {
+    setChecklistItems(newItems);
+    debouncedSaveChecklist(newItems);
+  };
+
+  const addChecklistItem = () => {
+    const newItem = {
+      id: Date.now(), // temporary unique ID
+      label: "",
+      checked: 0,
+    };
+    handleChecklistChange([...checklistItems, newItem]);
+  };
+
+  const updateChecklistItemLabel = (index, newLabel) => {
+    const newItems = [...checklistItems];
+    newItems[index].label = newLabel;
+    handleChecklistChange(newItems);
+  };
+
+  const toggleChecklistItem = (index) => {
+    const newItems = [...checklistItems];
+    const currentItem = newItems[index];
+    currentItem.checked = currentItem.checked === 0 ? currentUser.id : 0;
+    handleChecklistChange(newItems);
+  };
+
+  const deleteChecklistItem = (index) => {
+    const newItems = checklistItems.filter((_, i) => i !== index);
+    handleChecklistChange(newItems);
+  };
 
   const calendarButtonRef = useRef();
 
@@ -105,6 +154,23 @@ const AlpacaIssue = ({
           // 2. Process issue details
           setIssueDetails(issueData);
           setDeadline(issueData.meta.deadline || null);
+
+          if (issueData.meta.checklist) {
+            try {
+              const parsedChecklist =
+                typeof issueData.meta.checklist === "string"
+                  ? JSON.parse(issueData.meta.checklist)
+                  : issueData.meta.checklist;
+
+              if (Array.isArray(parsedChecklist)) {
+                setChecklistItems(parsedChecklist);
+              }
+            } catch (e) {
+              console.error("Error parsing checklist", e);
+            }
+          } else {
+            setChecklistItems([]);
+          }
 
           // 3. Now that the user map is guaranteed to exist, populate assignees
           if (
@@ -335,20 +401,37 @@ const AlpacaIssue = ({
               </BaseControl>
             </div>
 
-            <div class="alpaca-checklist-container">
+            <div className="alpaca-checklist-container">
               <BaseControl
                 label="Checklist"
                 className="alpaca-checklist-label"
               />
-              <div class="alpaca-checklist">
-                <div class="alpaca-checklist-item">
-                  <CheckboxControl label="Checklist item" />
-                  <button>
-                    <span className="dashicons dashicons-trash"></span>
-                  </button>
-                </div>
+              <div className="alpaca-checklist">
+                {checklistItems.map((item, index) => (
+                  <div className="alpaca-checklist-item" key={item.id}>
+                    <CheckboxControl
+                      checked={item.checked !== 0}
+                      onChange={() => toggleChecklistItem(index)}
+                    />
+                    <TextControl
+                      value={item.label}
+                      onChange={(newLabel) =>
+                        updateChecklistItemLabel(index, newLabel)
+                      }
+                      placeholder="Add an item..."
+                    />
+                    <button onClick={() => deleteChecklistItem(index)}>
+                      <span className="dashicons dashicons-trash"></span>
+                    </button>
+                  </div>
+                ))}
               </div>
-              <Button variant="secondary" icon="plus" iconPosition="left">
+              <Button
+                variant="secondary"
+                icon="plus"
+                iconPosition="left"
+                onClick={addChecklistItem}
+              >
                 Add Checklist Item
               </Button>
             </div>
@@ -430,7 +513,7 @@ const AlpacaIssue = ({
                           <tr>
                             <th scope="row">Reported</th>
                             <td>
-                              {date.format(
+                              {format(
                                 datesettings.formats.datetimeAbbreviated,
                                 new Date(issueDetails.post_data.post_date)
                               )}
@@ -439,7 +522,7 @@ const AlpacaIssue = ({
                           <tr>
                             <th scope="row">Last edit</th>
                             <td>
-                              {date.format(
+                              {format(
                                 datesettings.formats.datetimeAbbreviated,
                                 new Date(issueDetails.post_data.post_modified)
                               )}
