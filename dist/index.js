@@ -6307,7 +6307,6 @@ const { decodeEntities } = wp.htmlEntities;
 const { date } = wp;
 const datesettings = wp.date.getSettings();
 const { useSelect } = wp.data;
-const { useDebounce } = wp.compose;
 function JsonTable({ data }) {
     if (!data) return null;
     console.log(data);
@@ -6320,14 +6319,14 @@ function JsonTable({ data }) {
         },
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 29,
+            lineNumber: 28,
             columnNumber: 5
         },
         __self: this
     }, /*#__PURE__*/ React.createElement("tbody", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 33,
+            lineNumber: 32,
             columnNumber: 7
         },
         __self: this
@@ -6335,21 +6334,21 @@ function JsonTable({ data }) {
             key: key,
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 35,
+                lineNumber: 34,
                 columnNumber: 11
             },
             __self: this
         }, /*#__PURE__*/ React.createElement("th", {
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 36,
+                lineNumber: 35,
                 columnNumber: 13
             },
             __self: this
         }, key), /*#__PURE__*/ React.createElement("td", {
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 37,
+                lineNumber: 36,
                 columnNumber: 13
             },
             __self: this
@@ -6371,17 +6370,13 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
     const { currentUser } = useSelect((select)=>({
             currentUser: select("core").getCurrentUser()
         }));
-    const debouncedSaveChecklist = useDebounce((items)=>{
+    const saveChecklist = (items)=>{
         setIsSaving(true);
         wp.apiFetch({
             path: `/issue/v1/checklist/${issueId}`,
             method: "POST",
             data: items
         }).finally(()=>setIsSaving(false));
-    }, 500);
-    const handleChecklistChange = (newItems)=>{
-        setChecklistItems(newItems);
-        debouncedSaveChecklist(newItems);
     };
     const addChecklistItem = ()=>{
         const newItem = {
@@ -6389,17 +6384,19 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
             label: "",
             checked: 0
         };
-        handleChecklistChange([
+        const newItems = [
             ...checklistItems,
             newItem
-        ]);
+        ];
+        setChecklistItems(newItems);
+        saveChecklist(newItems);
     };
     const updateChecklistItemLabel = (index, newLabel)=>{
         const newItems = [
             ...checklistItems
         ];
         newItems[index].label = newLabel;
-        handleChecklistChange(newItems);
+        setChecklistItems(newItems);
     };
     const toggleChecklistItem = (index)=>{
         const newItems = [
@@ -6407,11 +6404,13 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
         ];
         const currentItem = newItems[index];
         currentItem.checked = currentItem.checked === 0 ? currentUser.id : 0;
-        handleChecklistChange(newItems);
+        setChecklistItems(newItems);
+        saveChecklist(newItems);
     };
     const deleteChecklistItem = (index)=>{
         const newItems = checklistItems.filter((_, i)=>i !== index);
-        handleChecklistChange(newItems);
+        setChecklistItems(newItems);
+        saveChecklist(newItems);
     };
     const calendarButtonRef = useRef();
     // Close lightbox on Escape
@@ -6489,7 +6488,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
             text: "Delete issue",
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 212,
+                lineNumber: 210,
                 columnNumber: 9
             }
         }, /*#__PURE__*/ React.createElement(Button, {
@@ -6501,27 +6500,27 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
             },
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 213,
+                lineNumber: 211,
                 columnNumber: 11
             }
         }, /*#__PURE__*/ React.createElement("span", {
             className: "dashicons dashicons-trash",
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 225,
+                lineNumber: 223,
                 columnNumber: 13
             }
         }))),
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 207,
+            lineNumber: 205,
             columnNumber: 5
         },
         __self: undefined
     }, isLoadingDetails ? /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 231,
+            lineNumber: 229,
             columnNumber: 9
         },
         __self: undefined
@@ -6529,7 +6528,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
         className: "alpaca-issue-details",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 233,
+            lineNumber: 231,
             columnNumber: 9
         },
         __self: undefined
@@ -6537,7 +6536,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
         className: "alpaca-issue-main column",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 234,
+            lineNumber: 232,
             columnNumber: 11
         },
         __self: undefined
@@ -6545,7 +6544,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
         className: "alpaca-issue-slug",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 235,
+            lineNumber: 233,
             columnNumber: 13
         },
         __self: undefined
@@ -6553,7 +6552,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
         className: "alpaca-issue-identity",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 238,
+            lineNumber: 236,
             columnNumber: 13
         },
         __self: undefined
@@ -6561,7 +6560,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
         className: "alpaca-issue-author",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 239,
+            lineNumber: 237,
             columnNumber: 15
         },
         __self: undefined
@@ -6569,7 +6568,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
         user: issueDetails.post_data.post_author,
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 240,
+            lineNumber: 238,
             columnNumber: 17
         },
         __self: undefined
@@ -6577,7 +6576,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
         className: "alpaca-issue-title",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 242,
+            lineNumber: 240,
             columnNumber: 15
         },
         __self: undefined
@@ -6585,7 +6584,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
         className: "alpaca-issue-main-controls",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 246,
+            lineNumber: 244,
             columnNumber: 13
         },
         __self: undefined
@@ -6636,7 +6635,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
         },
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 247,
+            lineNumber: 245,
             columnNumber: 15
         },
         __self: undefined
@@ -6645,7 +6644,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
         className: "alpaca-deadline-control",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 326,
+            lineNumber: 324,
             columnNumber: 15
         },
         __self: undefined
@@ -6653,7 +6652,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
         className: "alpaca-deadline",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 327,
+            lineNumber: 325,
             columnNumber: 17
         },
         __self: undefined
@@ -6661,7 +6660,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
         className: "alpaca-deadline-date",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 328,
+            lineNumber: 326,
             columnNumber: 19
         },
         __self: undefined
@@ -6673,7 +6672,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
         ref: calendarButtonRef,
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 329,
+            lineNumber: 327,
             columnNumber: 21
         },
         __self: undefined
@@ -6685,7 +6684,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
         className: "alpaca-deadline-popover",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 343,
+            lineNumber: 341,
             columnNumber: 21
         },
         __self: undefined
@@ -6711,7 +6710,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
         },
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 350,
+            lineNumber: 348,
             columnNumber: 23
         },
         __self: undefined
@@ -6734,7 +6733,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
         className: "button-link",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 377,
+            lineNumber: 375,
             columnNumber: 21
         },
         __self: undefined
@@ -6742,7 +6741,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
         className: "dashicons dashicons-trash",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 397,
+            lineNumber: 395,
             columnNumber: 23
         },
         __self: undefined
@@ -6750,7 +6749,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
         className: "alpaca-checklist-container",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 404,
+            lineNumber: 402,
             columnNumber: 13
         },
         __self: undefined
@@ -6759,7 +6758,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
         className: "alpaca-checklist-label",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 405,
+            lineNumber: 403,
             columnNumber: 15
         },
         __self: undefined
@@ -6767,7 +6766,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
         className: "alpaca-checklist",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 409,
+            lineNumber: 407,
             columnNumber: 15
         },
         __self: undefined
@@ -6776,7 +6775,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
             key: item.id,
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 411,
+                lineNumber: 409,
                 columnNumber: 19
             },
             __self: undefined
@@ -6785,17 +6784,21 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
             onChange: ()=>toggleChecklistItem(index),
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 412,
+                lineNumber: 410,
                 columnNumber: 21
             },
             __self: undefined
         }), /*#__PURE__*/ React.createElement(TextControl, {
             value: item.label,
             onChange: (newLabel)=>updateChecklistItemLabel(index, newLabel),
+            onBlur: ()=>saveChecklist(checklistItems),
+            onKeyDown: (e)=>{
+                if (e.key === 'Enter') saveChecklist(checklistItems);
+            },
             placeholder: "Add an item...",
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 416,
+                lineNumber: 414,
                 columnNumber: 21
             },
             __self: undefined
@@ -6803,7 +6806,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
             onClick: ()=>deleteChecklistItem(index),
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 423,
+                lineNumber: 427,
                 columnNumber: 21
             },
             __self: undefined
@@ -6811,7 +6814,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
             className: "dashicons dashicons-trash",
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 424,
+                lineNumber: 428,
                 columnNumber: 23
             },
             __self: undefined
@@ -6822,7 +6825,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
         onClick: addChecklistItem,
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 429,
+            lineNumber: 433,
             columnNumber: 15
         },
         __self: undefined
@@ -6851,7 +6854,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
         ],
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 439,
+            lineNumber: 443,
             columnNumber: 13
         },
         __self: undefined
@@ -6862,7 +6865,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
             commentRefreshKey: commentRefreshKey,
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 460,
+                lineNumber: 464,
                 columnNumber: 21
             },
             __self: undefined
@@ -6871,21 +6874,21 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
             className: "alpaca-report-tab",
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 470,
+                lineNumber: 474,
                 columnNumber: 21
             },
             __self: undefined
         }, issueDetails.meta.screenshot && /*#__PURE__*/ React.createElement("div", {
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 472,
+                lineNumber: 476,
                 columnNumber: 25
             },
             __self: undefined
         }, /*#__PURE__*/ React.createElement("p", {
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 473,
+                lineNumber: 477,
                 columnNumber: 27
             },
             __self: undefined
@@ -6900,14 +6903,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
             onClick: ()=>setLightboxSrc(issueDetails.meta.screenshot),
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 474,
+                lineNumber: 478,
                 columnNumber: 29
             },
             __self: undefined
         })), /*#__PURE__*/ React.createElement("p", {
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 484,
+                lineNumber: 488,
                 columnNumber: 27
             },
             __self: undefined
@@ -6937,7 +6940,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
             },
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 485,
+                lineNumber: 489,
                 columnNumber: 29
             },
             __self: undefined
@@ -6945,21 +6948,21 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
             className: "widefat striped",
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 511,
+                lineNumber: 515,
                 columnNumber: 23
             },
             __self: undefined
         }, /*#__PURE__*/ React.createElement("tbody", {
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 512,
+                lineNumber: 516,
                 columnNumber: 25
             },
             __self: undefined
         }, /*#__PURE__*/ React.createElement("tr", {
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 513,
+                lineNumber: 517,
                 columnNumber: 27
             },
             __self: undefined
@@ -6967,21 +6970,21 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
             scope: "row",
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 514,
+                lineNumber: 518,
                 columnNumber: 29
             },
             __self: undefined
         }, "Reported"), /*#__PURE__*/ React.createElement("td", {
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 515,
+                lineNumber: 519,
                 columnNumber: 29
             },
             __self: undefined
         }, date.format(datesettings.formats.datetimeAbbreviated, new Date(issueDetails.post_data.post_date)))), /*#__PURE__*/ React.createElement("tr", {
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 522,
+                lineNumber: 526,
                 columnNumber: 27
             },
             __self: undefined
@@ -6989,21 +6992,21 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
             scope: "row",
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 523,
+                lineNumber: 527,
                 columnNumber: 29
             },
             __self: undefined
         }, "Last edit"), /*#__PURE__*/ React.createElement("td", {
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 524,
+                lineNumber: 528,
                 columnNumber: 29
             },
             __self: undefined
         }, date.format(datesettings.formats.datetimeAbbreviated, new Date(issueDetails.post_data.post_modified)))), /*#__PURE__*/ React.createElement("tr", {
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 531,
+                lineNumber: 535,
                 columnNumber: 27
             },
             __self: undefined
@@ -7011,14 +7014,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
             scope: "row",
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 532,
+                lineNumber: 536,
                 columnNumber: 29
             },
             __self: undefined
         }, "URL"), /*#__PURE__*/ React.createElement("td", {
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 533,
+                lineNumber: 537,
                 columnNumber: 29
             },
             __self: undefined
@@ -7028,14 +7031,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
             rel: "noopener noreferrer",
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 535,
+                lineNumber: 539,
                 columnNumber: 33
             },
             __self: undefined
         }, issueDetails.meta.URL) : "N/A")), /*#__PURE__*/ React.createElement("tr", {
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 547,
+                lineNumber: 551,
                 columnNumber: 27
             },
             __self: undefined
@@ -7043,14 +7046,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
             scope: "row",
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 548,
+                lineNumber: 552,
                 columnNumber: 29
             },
             __self: undefined
         }, "Screen"), /*#__PURE__*/ React.createElement("td", {
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 549,
+                lineNumber: 553,
                 columnNumber: 29
             },
             __self: undefined
@@ -7058,7 +7061,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
                 key: taxonomy,
                 __source: {
                     fileName: "src/components/issue.jsx",
-                    lineNumber: 559,
+                    lineNumber: 563,
                     columnNumber: 31
                 },
                 __self: undefined
@@ -7068,14 +7071,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
                 },
                 __source: {
                     fileName: "src/components/issue.jsx",
-                    lineNumber: 560,
+                    lineNumber: 564,
                     columnNumber: 33
                 },
                 __self: undefined
             }, taxonomy), /*#__PURE__*/ React.createElement("td", {
                 __source: {
                     fileName: "src/components/issue.jsx",
-                    lineNumber: 563,
+                    lineNumber: 567,
                     columnNumber: 33
                 },
                 __self: undefined
@@ -7084,7 +7087,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
             className: "alpaca-queriedobject-tab",
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 576,
+                lineNumber: 580,
                 columnNumber: 21
             },
             __self: undefined
@@ -7092,7 +7095,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
             data: issueDetails.meta.queriedObject,
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 577,
+                lineNumber: 581,
                 columnNumber: 23
             },
             __self: undefined
@@ -7101,7 +7104,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
     }))) : /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 588,
+            lineNumber: 592,
             columnNumber: 9
         },
         __self: undefined
@@ -7121,7 +7124,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
         onClick: ()=>setLightboxSrc(null),
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 593,
+            lineNumber: 597,
             columnNumber: 11
         },
         __self: undefined
@@ -7135,7 +7138,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
         },
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 608,
+            lineNumber: 612,
             columnNumber: 13
         },
         __self: undefined

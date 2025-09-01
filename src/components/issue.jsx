@@ -17,7 +17,6 @@ import User from "./User";
 const { date } = wp;
 const datesettings = wp.date.getSettings();
 const { useSelect } = wp.data;
-const { useDebounce } = wp.compose;
 
 function JsonTable({ data }) {
   if (!data) return null;
@@ -71,18 +70,13 @@ const AlpacaIssue = ({
     currentUser: select("core").getCurrentUser(),
   }));
 
-  const debouncedSaveChecklist = useDebounce((items) => {
+  const saveChecklist = (items) => {
     setIsSaving(true);
     wp.apiFetch({
       path: `/issue/v1/checklist/${issueId}`,
       method: "POST",
       data: items,
     }).finally(() => setIsSaving(false));
-  }, 500);
-
-  const handleChecklistChange = (newItems) => {
-    setChecklistItems(newItems);
-    debouncedSaveChecklist(newItems);
   };
 
   const addChecklistItem = () => {
@@ -91,25 +85,29 @@ const AlpacaIssue = ({
       label: "",
       checked: 0,
     };
-    handleChecklistChange([...checklistItems, newItem]);
+    const newItems = [...checklistItems, newItem];
+    setChecklistItems(newItems);
+    saveChecklist(newItems);
   };
 
   const updateChecklistItemLabel = (index, newLabel) => {
     const newItems = [...checklistItems];
     newItems[index].label = newLabel;
-    handleChecklistChange(newItems);
+    setChecklistItems(newItems);
   };
 
   const toggleChecklistItem = (index) => {
     const newItems = [...checklistItems];
     const currentItem = newItems[index];
     currentItem.checked = currentItem.checked === 0 ? currentUser.id : 0;
-    handleChecklistChange(newItems);
+    setChecklistItems(newItems);
+    saveChecklist(newItems);
   };
 
   const deleteChecklistItem = (index) => {
     const newItems = checklistItems.filter((_, i) => i !== index);
-    handleChecklistChange(newItems);
+    setChecklistItems(newItems);
+    saveChecklist(newItems);
   };
 
   const calendarButtonRef = useRef();
@@ -418,6 +416,12 @@ const AlpacaIssue = ({
                       onChange={(newLabel) =>
                         updateChecklistItemLabel(index, newLabel)
                       }
+                      onBlur={() => saveChecklist(checklistItems)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          saveChecklist(checklistItems);
+                        }
+                      }}
                       placeholder="Add an item..."
                     />
                     <button onClick={() => deleteChecklistItem(index)}>
