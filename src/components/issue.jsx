@@ -270,16 +270,10 @@ const AlpacaIssue = ({
                           ? date.format(datesettings.formats.date, deadline)
                           : "No deadline set."
                       }
+                      onClick={() => setIsEditingDeadline((prev) => !prev)}
+                      ref={calendarButtonRef}
                     />
                   </div>
-
-                  <button
-                    ref={calendarButtonRef}
-                    onClick={() => setIsEditingDeadline((prev) => !prev)}
-                    className="button-link"
-                  >
-                    <span className="dashicons dashicons-calendar"></span>
-                  </button>
 
                   {isEditingDeadline && (
                     <Popover
@@ -287,6 +281,7 @@ const AlpacaIssue = ({
                       onClose={() => setIsEditingDeadline(false)}
                       anchor={calendarButtonRef.current}
                       focusOnMount={false}
+                      className="alpaca-deadline-popover"
                     >
                       <DatePicker
                         current={deadline}

@@ -255,6 +255,13 @@
   .components-modal__frame.alpaca-details-modal {
     margin: 3rem auto 0 auto;
   }
+
+  .alpaca-deadline-popover {
+    .components-popover__content {
+      padding: 1em;
+    }
+  }
+
   .alpaca-issue-details {
     .alpaca-issue-main {
       .alpaca-issue-slug {
@@ -286,11 +293,11 @@
     .alpaca-issue-main-controls {
       display: flex;
       flex-direction: row;
-      gap: 1em;
+      gap: 0.5rem;
       align-items: start;
       padding: 1rem 0;
       & > div {
-        fle: 0 0 50%;
+        flex: 0 0 50%;
       }
       input {
         width: 100%;
@@ -307,6 +314,9 @@
             text-decoration: none;
           }
         }
+      }
+      .components-form-token-field__help {
+        display: none;
       }
     }
 

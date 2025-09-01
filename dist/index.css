@@ -275,6 +275,10 @@
   margin: 3rem auto 0;
 }
 
+.wp-admin .alpaca-deadline-popover .components-popover__content {
+  padding: 1em;
+}
+
 .wp-admin .alpaca-issue-details .alpaca-issue-main .alpaca-issue-slug {
   font-family: monospace;
 }
@@ -306,13 +310,13 @@
 .wp-admin .alpaca-issue-details .alpaca-issue-main-controls {
   flex-direction: row;
   align-items: start;
-  gap: 1em;
+  gap: .5rem;
   padding: 1rem 0;
   display: flex;
 }
 
 .wp-admin .alpaca-issue-details .alpaca-issue-main-controls > div {
-  fle: 0 0 50%;
+  flex: 0 0 50%;
 }
 
 .wp-admin .alpaca-issue-details .alpaca-issue-main-controls input {
@@ -331,6 +335,10 @@
 
 .wp-admin .alpaca-issue-details .alpaca-issue-main-controls .alpaca-deadline button span {
   text-decoration: none;
+}
+
+.wp-admin .alpaca-issue-details .alpaca-issue-main-controls .components-form-token-field__help {
+  display: none;
 }
 
 .wp-admin .alpaca-issue-details .alpaca-align-controls {
