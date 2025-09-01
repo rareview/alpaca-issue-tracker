@@ -55,7 +55,6 @@ const Checklist = ({
     saveChecklist(newItems);
 
     if (isBeingChecked) {
-      // addChecklistItem();
       if (createIssueComment) {
         createIssueComment(
           issueId,
