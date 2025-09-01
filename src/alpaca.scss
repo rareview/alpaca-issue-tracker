@@ -285,17 +285,22 @@
 
     .alpaca-issue-main-controls {
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
+      gap: 1em;
       align-items: start;
       padding: 1rem 0;
+      & > div {
+        fle: 0 0 50%;
+      }
+      input {
+        width: 100%;
+      }
       .alpaca-deadline {
         display: flex;
         flex-direction: row;
         gap: 1em;
-        .alpaca-deadline-date {
-          border: 1px solid;
-          padding: 7px 10px 8px;
-          min-width: 200px;
+        input {
+          padding: 2px 7px;
         }
         button {
           span {

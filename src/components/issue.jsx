@@ -262,9 +262,15 @@ const AlpacaIssue = ({
               <BaseControl label="Deadline" className="alpaca-deadline-control">
                 <div className="alpaca-deadline">
                   <div className="alpaca-deadline-date">
-                    {deadline
-                      ? date.format(datesettings.formats.date, deadline)
-                      : "No deadline set."}
+                    <input
+                      readOnly
+                      type="text"
+                      value={
+                        deadline
+                          ? date.format(datesettings.formats.date, deadline)
+                          : "No deadline set."
+                      }
+                    />
                   </div>
 
                   <button
