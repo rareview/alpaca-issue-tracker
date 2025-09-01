@@ -228,7 +228,6 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 				'author_id'     => $post_args['post_author'],
 				'author_name'   => get_the_author_meta( 'display_name', $post_args['post_author'] ),
 				'author_img'    => alpaca_avatar( $post_args['post_author'], 24 ),
-				'comment_count' => 0,
 			),
 			'statusId' => $status_term_id,
 		),

@@ -489,8 +489,7 @@ const AlpacaIssue = ({
             },
           ]
         : []),
-      ...(issueDetails?.meta?.headers &&
-      issueDetails.meta.headers !== "null"
+      ...(issueDetails?.meta?.headers && issueDetails.meta.headers !== "null"
         ? [
             {
               name: "headers",
@@ -742,14 +741,9 @@ const AlpacaIssue = ({
               <div className="alpaca-issue-slug">
                 {issueDetails.post_data.post_name}
               </div>
-              <div className="alpaca-issue-identity">
-                <div className="alpaca-issue-author">
-                  <User user={issueDetails.post_data.post_author} />
-                </div>
-                <h3 className="alpaca-issue-title">
-                  {decodeEntities(issueDetails.post_data.post_content)}
-                </h3>
-              </div>
+              <h3 className="alpaca-issue-title">
+                {decodeEntities(issueDetails.post_data.post_content)}
+              </h3>
               <div className="alpaca-issue-main-controls">
                 <AssigneeSelector
                   assignees={assignees}

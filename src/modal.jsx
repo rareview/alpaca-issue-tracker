@@ -89,8 +89,6 @@ const AlpacaModal = () => {
       setStatus("success");
       setMessage("Your issue has been submitted successfully.");
 
-      console.log("responseData.issue is: " + responseData.issue);
-
       doAction(
         "alpaca.issueSubmitted",
         responseData.issue,
