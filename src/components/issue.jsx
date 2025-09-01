@@ -391,6 +391,8 @@ const TabContent = ReactMemo(
         );
       case "queriedobject":
         return <JsonTable data={issueDetails.meta.queriedObject} />;
+      case "headers":
+        return <JsonTable data={issueDetails.meta.headers} />;
       default:
         return null;
     }
@@ -487,8 +489,18 @@ const AlpacaIssue = ({
             },
           ]
         : []),
+      ...(issueDetails?.meta?.headers &&
+      issueDetails.meta.headers !== "null"
+        ? [
+            {
+              name: "headers",
+              title: "Headers",
+              className: "headers",
+            },
+          ]
+        : []),
     ],
-    [issueDetails?.meta?.queriedObject]
+    [issueDetails?.meta?.queriedObject, issueDetails?.meta?.headers]
   );
 
   // Debounced API calls

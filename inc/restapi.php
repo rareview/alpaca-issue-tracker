@@ -194,6 +194,15 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 			);
 		}
 
+		$headers = alpaca_arr_get( $payload, array( 'headers' ), null );
+		if ( is_array( $headers ) ) {
+			update_post_meta(
+				$post_id,
+				'headers',
+				wp_json_encode( $headers, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE )
+			);
+		}
+
 		// Parent link when singular
 		if ( in_array( 'singular', $wp_types, true ) ) {
 			$parent_id = (int) alpaca_arr_get( $payload, array( 'wp', 'queriedObject', 'ID' ), 0 );

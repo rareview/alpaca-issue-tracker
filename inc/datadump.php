@@ -71,6 +71,7 @@ add_action('admin_footer', 'alpaca_add_datadump', 9999);
         "time" => time(),
         "user" => $user_data,
         "server" => $_SERVER,
+        "headers" => function_exists('getallheaders') ? getallheaders() : [],
         "wp" => $wp_data,
     );
 
