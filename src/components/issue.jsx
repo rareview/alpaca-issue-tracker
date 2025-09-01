@@ -6,12 +6,10 @@ const {
   DatePicker,
   Popover,
   BaseControl,
-  Panel,
-  PanelBody,
-  PanelRow,
   TabPanel,
   Button,
   Tooltip,
+  CheckboxControl,
 } = wp.components;
 const { decodeEntities } = wp.htmlEntities;
 import User from "./User";
@@ -335,6 +333,19 @@ const AlpacaIssue = ({
                   )}
                 </div>
               </BaseControl>
+            </div>
+
+            <div class="alpaca-checklist-container">
+              <BaseControl
+                label="Checklist"
+                className="alpaca-checklist-label"
+              />
+              <div class="alpaca-checklist">
+                <CheckboxControl label="Checklist item" />
+              </div>
+              <Button variant="secondary" icon="plus" iconPosition="left">
+                Add Checklist Item
+              </Button>
             </div>
 
             <TabPanel

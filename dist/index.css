@@ -387,6 +387,10 @@
   overflow: hidden scroll;
 }
 
+.wp-admin .alpaca-checklist-container {
+  padding: 1em 0;
+}
+
 .wp-admin #alpaca-comments .alpaca-comment ul li {
   list-style: inside;
 }
