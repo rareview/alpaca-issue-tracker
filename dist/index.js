@@ -6303,130 +6303,61 @@ var _checklistJsx = require("./checklist.jsx");
 var _checklistJsxDefault = parcelHelpers.interopDefault(_checklistJsx);
 var _user = require("./User");
 var _userDefault = parcelHelpers.interopDefault(_user);
-const { useState, useEffect, useRef, createPortal } = wp.element;
+const { useState, useEffect, useRef, createPortal, useMemo, useCallback, memo: ReactMemo } = wp.element;
 const { Modal, FormTokenField, DatePicker, Popover, BaseControl, TabPanel, Button, Tooltip } = wp.components;
 const { decodeEntities } = wp.htmlEntities;
 const { date } = wp;
 const datesettings = wp.date.getSettings();
-function JsonTable({ data }) {
-    if (!data) return null;
-    console.log(data);
-    const parsedData = JSON.parse(data);
-    return /*#__PURE__*/ React.createElement("table", {
-        className: "alpaca-json-table widefat striped",
-        style: {
-            borderCollapse: "collapse",
-            width: "100%"
-        },
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 26,
-            columnNumber: 5
-        },
-        __self: this
-    }, /*#__PURE__*/ React.createElement("tbody", {
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 30,
-            columnNumber: 7
-        },
-        __self: this
-    }, Object.entries(parsedData).map(([key, value])=>/*#__PURE__*/ React.createElement("tr", {
-            key: key,
-            __source: {
-                fileName: "src/components/issue.jsx",
-                lineNumber: 32,
-                columnNumber: 11
-            },
-            __self: this
-        }, /*#__PURE__*/ React.createElement("th", {
-            __source: {
-                fileName: "src/components/issue.jsx",
-                lineNumber: 33,
-                columnNumber: 13
-            },
-            __self: this
-        }, key), /*#__PURE__*/ React.createElement("td", {
-            __source: {
-                fileName: "src/components/issue.jsx",
-                lineNumber: 34,
-                columnNumber: 13
-            },
-            __self: this
-        }, String(value))))));
-}
-const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onCommentCountChange, onAssigneesChange, onDeadlineChange, createIssueComment, generateAssigneeChangeComment })=>{
+// Utility functions
+const processAssigneeChanges = (oldAssignees, newAssignees)=>{
+    const added = newAssignees.filter((name)=>!oldAssignees.includes(name));
+    const removed = oldAssignees.filter((name)=>!newAssignees.includes(name));
+    return {
+        added,
+        removed
+    };
+};
+const createAssigneeComments = async (added, removed, allUserObjects, createComment, generateComment, issueId)=>{
+    const commentPromises = [];
+    added.forEach((name)=>{
+        const user = allUserObjects.find((u)=>u.name === name);
+        if (user) commentPromises.push(createComment(issueId, generateComment(user, true)));
+    });
+    removed.forEach((name)=>{
+        const user = allUserObjects.find((u)=>u.name === name);
+        if (user) commentPromises.push(createComment(issueId, generateComment(user, false)));
+    });
+    if (commentPromises.length > 0) return Promise.all(commentPromises);
+    return Promise.resolve();
+};
+const debounce = (func, wait)=>{
+    let timeout;
+    return function executedFunction(...args) {
+        const later = ()=>{
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+};
+// Custom hooks
+const useIssueData = (issueId, isOpen)=>{
     const [issueDetails, setIssueDetails] = useState(null);
     const [isLoadingDetails, setIsLoadingDetails] = useState(false);
-    const [allUsers, setAllUsers] = useState([]); // display names for suggestions
-    const [allUserObjects, setAllUserObjects] = useState([]); // full user objects
-    const [assignees, setAssignees] = useState([]);
-    const [isSaving, setIsSaving] = useState(false);
-    const [userMap, setUserMap] = useState({}); // Map display name -> slug
-    const [commentRefreshKey, setCommentRefreshKey] = useState(0);
-    const [deadline, setDeadline] = useState(null);
-    const [isEditingDeadline, setIsEditingDeadline] = useState(false);
-    const [lightboxSrc, setLightboxSrc] = useState(null);
-    const [checklistItems, setChecklistItems] = useState([]);
-    const calendarButtonRef = useRef();
-    // Close lightbox on Escape
-    useEffect(()=>{
-        function handleKeyDown(e) {
-            if (e.key === "Escape") setLightboxSrc(null);
-        }
-        document.addEventListener("keydown", handleKeyDown);
-        return ()=>document.removeEventListener("keydown", handleKeyDown);
-    }, []);
-    // Fetch all users and issue details concurrently
+    const [error, setError] = useState(null);
     useEffect(()=>{
         if (issueId && isOpen) {
             setIsLoadingDetails(true);
-            const usersPromise = wp.apiFetch({
-                path: "/alpaca/v1/users"
-            });
-            const issuePromise = wp.apiFetch({
+            setError(null);
+            wp.apiFetch({
                 path: `/issue/v1/get/${issueId}`
-            });
-            Promise.all([
-                usersPromise,
-                issuePromise
-            ]).then(([users, issueData])=>{
-                // 1. Process users first to build the map
-                const usersWithAvatar = users.map((u)=>({
-                        ...u,
-                        avatar: u.avatar_urls?.["48"] || u.avatar_urls?.["96"] || u.avatar_urls?.["24"] || ""
-                    }));
-                const localUserMap = {};
-                usersWithAvatar.forEach((u)=>{
-                    localUserMap[u.name] = u.slug;
-                    localUserMap[u.slug] = u.slug; // For reverse lookup if needed
-                });
-                setUserMap(localUserMap);
-                setAllUsers(usersWithAvatar.map((u)=>u.name));
-                setAllUserObjects(usersWithAvatar);
-                // 2. Process issue details
+            }).then((issueData)=>{
                 setIssueDetails(issueData);
-                setDeadline(issueData.meta.deadline || null);
-                if (issueData.meta.checklist) try {
-                    const parsedChecklist = typeof issueData.meta.checklist === "string" ? JSON.parse(issueData.meta.checklist) : issueData.meta.checklist;
-                    if (Array.isArray(parsedChecklist)) setChecklistItems(parsedChecklist);
-                } catch (e) {
-                    console.error("Error parsing checklist", e);
-                }
-                else setChecklistItems([]);
-                // 3. Now that the user map is guaranteed to exist, populate assignees
-                if (issueData.taxonomies && issueData.taxonomies.assignee && Array.isArray(issueData.taxonomies.assignee)) {
-                    const assigneeNames = issueData.taxonomies.assignee.map((t)=>{
-                        const userObject = usersWithAvatar.find((user)=>user.slug === t.slug);
-                        return userObject ? userObject.name : t.name;
-                    });
-                    setAssignees(assigneeNames);
-                } else setAssignees([]);
             }).catch((err)=>{
                 console.error("Error fetching issue data:", err);
-                setIssueDetails({
-                    error: "Failed to load details."
-                });
+                setError("Failed to load issue details. Please try again.");
+                setIssueDetails(null);
             }).finally(()=>{
                 setIsLoadingDetails(false);
             });
@@ -6435,152 +6366,545 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
         issueId,
         isOpen
     ]);
-    const handleChecklistComment = (issueId, commentContent)=>{
-        if (createIssueComment) createIssueComment(issueId, commentContent).then(()=>{
-            setCommentRefreshKey((prevKey)=>prevKey + 1);
-        }).catch((err)=>{
-            console.error("Error creating checklist comment:", err);
-        });
+    const refetchData = useCallback(()=>{
+        if (issueId && isOpen) {
+            setIsLoadingDetails(true);
+            setError(null);
+            wp.apiFetch({
+                path: `/issue/v1/get/${issueId}`
+            }).then(setIssueDetails).catch((err)=>{
+                console.error("Error refetching issue data:", err);
+                setError("Failed to load issue details. Please try again.");
+            }).finally(()=>setIsLoadingDetails(false));
+        }
+    }, [
+        issueId,
+        isOpen
+    ]);
+    return {
+        issueDetails,
+        setIssueDetails,
+        isLoadingDetails,
+        error,
+        refetchData
     };
-    if (!isOpen) return null;
-    return /*#__PURE__*/ React.createElement(Modal, {
-        size: "medium",
-        onRequestClose: onClose,
-        className: "alpaca-details-modal",
-        headerActions: /*#__PURE__*/ React.createElement(Tooltip, {
-            text: "Delete issue",
+};
+const useUserManagement = ()=>{
+    const [allUsers, setAllUsers] = useState([]);
+    const [allUserObjects, setAllUserObjects] = useState([]);
+    const [userMap, setUserMap] = useState({});
+    useEffect(()=>{
+        wp.apiFetch({
+            path: "/alpaca/v1/users"
+        }).then((users)=>{
+            const usersWithAvatar = users.map((u)=>({
+                    ...u,
+                    avatar: u.avatar_urls?.["48"] || u.avatar_urls?.["96"] || u.avatar_urls?.["24"] || ""
+                }));
+            const localUserMap = {};
+            usersWithAvatar.forEach((u)=>{
+                localUserMap[u.name] = u.slug;
+                localUserMap[u.slug] = u.slug;
+            });
+            setUserMap(localUserMap);
+            setAllUsers(usersWithAvatar.map((u)=>u.name));
+            setAllUserObjects(usersWithAvatar);
+        }).catch((err)=>{
+            console.error("Error fetching users:", err);
+        });
+    }, []);
+    return {
+        allUsers,
+        allUserObjects,
+        userMap
+    };
+};
+const useLoadingStates = ()=>{
+    const [loadingStates, setLoadingStates] = useState({
+        assignees: false,
+        deadline: false,
+        screenshot: false
+    });
+    const setLoading = useCallback((key, value)=>{
+        setLoadingStates((prev)=>({
+                ...prev,
+                [key]: value
+            }));
+    }, []);
+    return {
+        loadingStates,
+        setLoading
+    };
+};
+// Memoized components
+const JsonTable = ReactMemo(({ data })=>{
+    if (!data) return null;
+    let parsedData;
+    try {
+        parsedData = JSON.parse(data);
+    } catch (e) {
+        return /*#__PURE__*/ React.createElement("p", {
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 176,
-                columnNumber: 9
-            }
-        }, /*#__PURE__*/ React.createElement(Button, {
-            type: "button",
-            className: "alpaca-modal-delete-button components-button has-icon",
-            isDestructive: true,
-            onClick: ()=>{
-                if (window.confirm("Are you sure you want to delete this issue?")) onDelete(issueId);
+                lineNumber: 190,
+                columnNumber: 12
             },
-            __source: {
-                fileName: "src/components/issue.jsx",
-                lineNumber: 177,
-                columnNumber: 11
-            }
-        }, /*#__PURE__*/ React.createElement("span", {
-            className: "dashicons dashicons-trash",
-            __source: {
-                fileName: "src/components/issue.jsx",
-                lineNumber: 189,
-                columnNumber: 13
-            }
-        }))),
+            __self: undefined
+        }, "Error parsing JSON data");
+    }
+    return /*#__PURE__*/ React.createElement("table", {
+        className: "alpaca-json-table widefat striped",
+        style: {
+            borderCollapse: "collapse",
+            width: "100%"
+        },
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 171,
+            lineNumber: 194,
             columnNumber: 5
         },
         __self: undefined
-    }, isLoadingDetails ? /*#__PURE__*/ React.createElement("p", {
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 195,
-            columnNumber: 9
-        },
-        __self: undefined
-    }, "Loading...") : issueDetails && issueDetails.success ? /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-issue-details",
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 197,
-            columnNumber: 9
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-issue-main column",
+    }, /*#__PURE__*/ React.createElement("tbody", {
         __source: {
             fileName: "src/components/issue.jsx",
             lineNumber: 198,
-            columnNumber: 11
+            columnNumber: 7
         },
         __self: undefined
-    }, /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-issue-slug",
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 199,
-            columnNumber: 13
-        },
-        __self: undefined
-    }, issueDetails.post_data.post_name), /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-issue-identity",
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 202,
-            columnNumber: 13
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-issue-author",
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 203,
-            columnNumber: 15
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement((0, _userDefault.default), {
-        user: issueDetails.post_data.post_author,
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 204,
-            columnNumber: 17
-        },
-        __self: undefined
-    })), /*#__PURE__*/ React.createElement("h3", {
-        className: "alpaca-issue-title",
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 206,
-            columnNumber: 15
-        },
-        __self: undefined
-    }, decodeEntities(issueDetails.post_data.post_content))), /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-issue-main-controls",
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 210,
-            columnNumber: 13
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement(FormTokenField, {
+    }, Object.entries(parsedData).map(([key, value])=>/*#__PURE__*/ React.createElement("tr", {
+            key: key,
+            __source: {
+                fileName: "src/components/issue.jsx",
+                lineNumber: 200,
+                columnNumber: 11
+            },
+            __self: undefined
+        }, /*#__PURE__*/ React.createElement("th", {
+            __source: {
+                fileName: "src/components/issue.jsx",
+                lineNumber: 201,
+                columnNumber: 13
+            },
+            __self: undefined
+        }, key), /*#__PURE__*/ React.createElement("td", {
+            __source: {
+                fileName: "src/components/issue.jsx",
+                lineNumber: 202,
+                columnNumber: 13
+            },
+            __self: undefined
+        }, String(value))))));
+});
+const AssigneeSelector = ReactMemo(({ assignees, allUsers, onChange, isLoading })=>/*#__PURE__*/ React.createElement(FormTokenField, {
         label: "Assigned To",
         placeholder: "Nobody",
         value: assignees,
         suggestions: allUsers,
-        onChange: (newAssignees)=>{
-            const oldAssignees = [
-                ...assignees
-            ];
-            const added = newAssignees.filter((name)=>!oldAssignees.includes(name));
-            const removed = oldAssignees.filter((name)=>!newAssignees.includes(name));
-            if (createIssueComment && generateAssigneeChangeComment) {
-                const commentPromises = [];
-                added.forEach((name)=>{
-                    const user = allUserObjects.find((u)=>u.name === name);
-                    if (user) commentPromises.push(createIssueComment(issueId, generateAssigneeChangeComment(user, true)));
-                });
-                removed.forEach((name)=>{
-                    const user = allUserObjects.find((u)=>u.name === name);
-                    if (user) commentPromises.push(createIssueComment(issueId, generateAssigneeChangeComment(user, false)));
-                });
-                if (commentPromises.length > 0) Promise.all(commentPromises).then(()=>{
-                    setCommentRefreshKey((prevKey)=>prevKey + 1);
-                }).catch((err)=>{
-                    console.error("Failed to create one or more assignee comments", err);
-                });
-            }
-            setAssignees(newAssignees);
-            const slugs = newAssignees.map((a)=>userMap[a] || a);
-            setIsSaving(true);
+        onChange: onChange,
+        disabled: isLoading,
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 212,
+            columnNumber: 5
+        },
+        __self: undefined
+    }));
+const DeadlineControl = ReactMemo(({ deadline, onChange, onClear, isLoading })=>{
+    const [isEditingDeadline, setIsEditingDeadline] = useState(false);
+    const calendarButtonRef = useRef();
+    return /*#__PURE__*/ React.createElement(BaseControl, {
+        label: "Deadline",
+        className: "alpaca-deadline-control",
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 229,
+            columnNumber: 7
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-deadline",
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 230,
+            columnNumber: 9
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-deadline-date",
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 231,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("input", {
+        readOnly: true,
+        type: "text",
+        value: deadline ? date.format(datesettings.formats.date, deadline) : "No deadline set.",
+        onClick: ()=>setIsEditingDeadline((prev)=>!prev),
+        ref: calendarButtonRef,
+        disabled: isLoading,
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 232,
+            columnNumber: 13
+        },
+        __self: undefined
+    })), isEditingDeadline && /*#__PURE__*/ React.createElement(Popover, {
+        placement: "bottom-start",
+        onClose: ()=>setIsEditingDeadline(false),
+        anchor: calendarButtonRef.current,
+        focusOnMount: false,
+        className: "alpaca-deadline-popover",
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 247,
+            columnNumber: 13
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement(DatePicker, {
+        current: deadline,
+        onChange: (newDate)=>{
+            onChange(newDate);
+            setIsEditingDeadline(false);
+        },
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 254,
+            columnNumber: 15
+        },
+        __self: undefined
+    })), deadline && /*#__PURE__*/ React.createElement(Button, {
+        icon: "trash",
+        label: "Clear deadline",
+        onClick: onClear,
+        disabled: isLoading,
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 265,
+            columnNumber: 13
+        },
+        __self: undefined
+    })));
+});
+const ReportTab = ReactMemo(({ issueDetails, onScreenshotDelete, isLoading, onScreenshotClick })=>/*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-report-tab",
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 280,
+            columnNumber: 5
+        },
+        __self: undefined
+    }, issueDetails.meta.screenshot && /*#__PURE__*/ React.createElement("div", {
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 282,
+            columnNumber: 9
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("p", {
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 283,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("img", {
+        src: issueDetails.meta.screenshot,
+        className: "alpaca-screenshot",
+        alt: "Screenshot",
+        style: {
+            cursor: "zoom-in",
+            maxWidth: "100%"
+        },
+        onClick: ()=>onScreenshotClick(issueDetails.meta.screenshot),
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 284,
+            columnNumber: 13
+        },
+        __self: undefined
+    })), /*#__PURE__*/ React.createElement("p", {
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 292,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("button", {
+        type: "button",
+        className: "button-link-delete",
+        disabled: isLoading,
+        onClick: onScreenshotDelete,
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 293,
+            columnNumber: 13
+        },
+        __self: undefined
+    }, "Delete"))), /*#__PURE__*/ React.createElement("table", {
+        className: "widefat striped",
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 305,
+            columnNumber: 7
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("tbody", {
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 306,
+            columnNumber: 9
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("tr", {
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 307,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("th", {
+        scope: "row",
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 308,
+            columnNumber: 13
+        },
+        __self: undefined
+    }, "Reported"), /*#__PURE__*/ React.createElement("td", {
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 309,
+            columnNumber: 13
+        },
+        __self: undefined
+    }, date.format(datesettings.formats.datetimeAbbreviated, new Date(issueDetails.post_data.post_date)))), /*#__PURE__*/ React.createElement("tr", {
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 316,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("th", {
+        scope: "row",
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 317,
+            columnNumber: 13
+        },
+        __self: undefined
+    }, "Last edit"), /*#__PURE__*/ React.createElement("td", {
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 318,
+            columnNumber: 13
+        },
+        __self: undefined
+    }, date.format(datesettings.formats.datetimeAbbreviated, new Date(issueDetails.post_data.post_modified)))), /*#__PURE__*/ React.createElement("tr", {
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 325,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("th", {
+        scope: "row",
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 326,
+            columnNumber: 13
+        },
+        __self: undefined
+    }, "URL"), /*#__PURE__*/ React.createElement("td", {
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 327,
+            columnNumber: 13
+        },
+        __self: undefined
+    }, issueDetails.meta.URL ? /*#__PURE__*/ React.createElement("a", {
+        href: issueDetails.meta.URL,
+        target: "_blank",
+        rel: "noopener noreferrer",
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 329,
+            columnNumber: 17
+        },
+        __self: undefined
+    }, issueDetails.meta.URL) : "N/A")), /*#__PURE__*/ React.createElement("tr", {
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 341,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("th", {
+        scope: "row",
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 342,
+            columnNumber: 13
+        },
+        __self: undefined
+    }, "Screen"), /*#__PURE__*/ React.createElement("td", {
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 343,
+            columnNumber: 13
+        },
+        __self: undefined
+    }, issueDetails.meta.screenwidth && issueDetails.meta.screenheight ? `${issueDetails.meta.screenwidth} x ${issueDetails.meta.screenheight}` : "N/A")), Object.entries(issueDetails.taxonomies).filter(([taxonomy])=>taxonomy !== "assignee").map(([taxonomy, terms])=>/*#__PURE__*/ React.createElement("tr", {
+            key: taxonomy,
+            __source: {
+                fileName: "src/components/issue.jsx",
+                lineNumber: 352,
+                columnNumber: 15
+            },
+            __self: undefined
+        }, /*#__PURE__*/ React.createElement("th", {
+            style: {
+                textTransform: "capitalize"
+            },
+            __source: {
+                fileName: "src/components/issue.jsx",
+                lineNumber: 353,
+                columnNumber: 17
+            },
+            __self: undefined
+        }, taxonomy), /*#__PURE__*/ React.createElement("td", {
+            __source: {
+                fileName: "src/components/issue.jsx",
+                lineNumber: 354,
+                columnNumber: 17
+            },
+            __self: undefined
+        }, terms.map((term)=>term.name).join(", "))))))));
+const TabContent = ReactMemo(({ tab, issueDetails, issueId, onCommentCountChange, commentRefreshKey, onScreenshotDelete, loadingStates, onScreenshotClick })=>{
+    switch(tab.name){
+        case "comments":
+            return /*#__PURE__*/ React.createElement((0, _commentingJsxDefault.default), {
+                issueId: issueId,
+                onCommentCountChange: onCommentCountChange,
+                commentRefreshKey: commentRefreshKey,
+                __source: {
+                    fileName: "src/components/issue.jsx",
+                    lineNumber: 377,
+                    columnNumber: 11
+                },
+                __self: undefined
+            });
+        case "report":
+            return /*#__PURE__*/ React.createElement(ReportTab, {
+                issueDetails: issueDetails,
+                onScreenshotDelete: onScreenshotDelete,
+                isLoading: loadingStates.screenshot,
+                onScreenshotClick: onScreenshotClick,
+                __source: {
+                    fileName: "src/components/issue.jsx",
+                    lineNumber: 385,
+                    columnNumber: 11
+                },
+                __self: undefined
+            });
+        case "queriedobject":
+            return /*#__PURE__*/ React.createElement(JsonTable, {
+                data: issueDetails.meta.queriedObject,
+                __source: {
+                    fileName: "src/components/issue.jsx",
+                    lineNumber: 393,
+                    columnNumber: 16
+                },
+                __self: undefined
+            });
+        default:
+            return null;
+    }
+});
+const Lightbox = ReactMemo(({ src, onClose })=>{
+    useEffect(()=>{
+        const handleKeyDown = (e)=>{
+            if (e.key === "Escape") onClose();
+        };
+        document.addEventListener("keydown", handleKeyDown);
+        return ()=>document.removeEventListener("keydown", handleKeyDown);
+    }, [
+        onClose
+    ]);
+    return createPortal(/*#__PURE__*/ React.createElement("div", {
+        style: {
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            background: "rgba(0,0,0,0.85)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 99999999999999
+        },
+        onClick: onClose,
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 410,
+            columnNumber: 5
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("img", {
+        src: src,
+        alt: "Enlarged screenshot",
+        style: {
+            maxWidth: "90%",
+            maxHeight: "90%",
+            boxShadow: "0 0 20px rgba(0,0,0,0.5)"
+        },
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 425,
+            columnNumber: 7
+        },
+        __self: undefined
+    })), document.body);
+});
+const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onCommentCountChange, onAssigneesChange, onDeadlineChange, createIssueComment, generateAssigneeChangeComment })=>{
+    const { issueDetails, setIssueDetails, isLoadingDetails, error, refetchData } = useIssueData(issueId, isOpen);
+    const { allUsers, allUserObjects, userMap } = useUserManagement();
+    const { loadingStates, setLoading } = useLoadingStates();
+    const [assignees, setAssignees] = useState([]);
+    const [commentRefreshKey, setCommentRefreshKey] = useState(0);
+    const [deadline, setDeadline] = useState(null);
+    const [lightboxSrc, setLightboxSrc] = useState(null);
+    const [checklistItems, setChecklistItems] = useState([]);
+    // Memoized values
+    const assigneeObjects = useMemo(()=>allUserObjects.filter((u)=>assignees.includes(u.name) || assignees.includes(u.slug)), [
+        allUserObjects,
+        assignees
+    ]);
+    const tabsConfig = useMemo(()=>[
+            {
+                name: "comments",
+                title: "Comments",
+                className: "comments"
+            },
+            {
+                name: "report",
+                title: "Report",
+                className: "report"
+            },
+            ...issueDetails?.meta?.queriedObject && issueDetails.meta.queriedObject !== "null" ? [
+                {
+                    name: "queriedobject",
+                    title: "Queried Object",
+                    className: "queried-object"
+                }
+            ] : []
+        ], [
+        issueDetails?.meta?.queriedObject
+    ]);
+    // Debounced API calls
+    const debouncedUpdateAssignees = useMemo(()=>debounce((issueId, slugs, newAssignees)=>{
             wp.apiFetch({
                 path: `/issue/v1/update/${issueId}`,
                 method: "POST",
@@ -6594,68 +6918,13 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
                     const assigneeObjects = allUserObjects.filter((u)=>newAssignees.includes(u.name) || newAssignees.includes(u.slug));
                     onAssigneesChange(issueId, assigneeObjects);
                 }
-            }).finally(()=>setIsSaving(false));
-        },
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 211,
-            columnNumber: 15
-        },
-        __self: undefined
-    }), /*#__PURE__*/ React.createElement(BaseControl, {
-        label: "Deadline",
-        className: "alpaca-deadline-control",
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 290,
-            columnNumber: 15
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-deadline",
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 291,
-            columnNumber: 17
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-deadline-date",
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 292,
-            columnNumber: 19
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("input", {
-        readOnly: true,
-        type: "text",
-        value: deadline ? date.format(datesettings.formats.date, deadline) : "No deadline set.",
-        onClick: ()=>setIsEditingDeadline((prev)=>!prev),
-        ref: calendarButtonRef,
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 293,
-            columnNumber: 21
-        },
-        __self: undefined
-    })), isEditingDeadline && /*#__PURE__*/ React.createElement(Popover, {
-        placement: "bottom-start",
-        onClose: ()=>setIsEditingDeadline(false),
-        anchor: calendarButtonRef.current,
-        focusOnMount: false,
-        className: "alpaca-deadline-popover",
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 307,
-            columnNumber: 21
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement(DatePicker, {
-        current: deadline,
-        onChange: (newDate)=>{
-            setDeadline(newDate);
-            setIsSaving(true);
+            }).finally(()=>setLoading("assignees", false));
+        }, 300), [
+        allUserObjects,
+        onAssigneesChange,
+        setLoading
+    ]);
+    const debouncedUpdateDeadline = useMemo(()=>debounce((issueId, newDate)=>{
             wp.apiFetch({
                 path: `/issue/v1/update/${issueId}`,
                 method: "POST",
@@ -6666,367 +6935,336 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onComment
                 }
             }).then(()=>{
                 if (typeof onDeadlineChange === "function") onDeadlineChange(issueId, newDate);
-            }).finally(()=>{
-                setIsSaving(false);
-                setIsEditingDeadline(false);
-            });
-        },
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 314,
-            columnNumber: 23
-        },
-        __self: undefined
-    })), deadline && /*#__PURE__*/ React.createElement(Button, {
-        icon: "trash",
-        label: "Clear deadline",
-        onClick: ()=>{
-            setDeadline(null);
-            setIsSaving(true);
-            wp.apiFetch({
-                path: `/issue/v1/update/${issueId}`,
-                method: "POST",
-                data: {
-                    meta: {
-                        deadline: ""
-                    }
+            }).finally(()=>setLoading("deadline", false));
+        }, 300), [
+        onDeadlineChange,
+        setLoading
+    ]);
+    // Process issue details when they change
+    useEffect(()=>{
+        if (issueDetails && issueDetails.success && allUserObjects.length > 0) {
+            setDeadline(issueDetails.meta.deadline || null);
+            // Handle checklist
+            if (issueDetails.meta.checklist) try {
+                const parsedChecklist = typeof issueDetails.meta.checklist === "string" ? JSON.parse(issueDetails.meta.checklist) : issueDetails.meta.checklist;
+                if (Array.isArray(parsedChecklist)) setChecklistItems(parsedChecklist);
+            } catch (e) {
+                console.error("Error parsing checklist", e);
+                setChecklistItems([]);
+            }
+            else setChecklistItems([]);
+            // Handle assignees
+            if (issueDetails.taxonomies && issueDetails.taxonomies.assignee && Array.isArray(issueDetails.taxonomies.assignee)) {
+                const assigneeNames = issueDetails.taxonomies.assignee.map((t)=>{
+                    const userObject = allUserObjects.find((user)=>user.slug === t.slug);
+                    return userObject ? userObject.name : t.name;
+                });
+                setAssignees(assigneeNames);
+            } else setAssignees([]);
+        }
+    }, [
+        issueDetails,
+        allUserObjects
+    ]);
+    // Event handlers
+    const handleAssigneeChange = useCallback(async (newAssignees)=>{
+        const oldAssignees = [
+            ...assignees
+        ];
+        const { added, removed } = processAssigneeChanges(oldAssignees, newAssignees);
+        // Handle comments for assignee changes
+        if (createIssueComment && generateAssigneeChangeComment) try {
+            await createAssigneeComments(added, removed, allUserObjects, createIssueComment, generateAssigneeChangeComment, issueId);
+            setCommentRefreshKey((prevKey)=>prevKey + 1);
+        } catch (err) {
+            console.error("Failed to create assignee comments", err);
+        }
+        setAssignees(newAssignees);
+        const slugs = newAssignees.map((a)=>userMap[a] || a);
+        setLoading("assignees", true);
+        debouncedUpdateAssignees(issueId, slugs, newAssignees);
+    }, [
+        assignees,
+        allUserObjects,
+        createIssueComment,
+        generateAssigneeChangeComment,
+        issueId,
+        userMap,
+        debouncedUpdateAssignees,
+        setLoading
+    ]);
+    const handleDeadlineChange = useCallback((newDate)=>{
+        setDeadline(newDate);
+        setLoading("deadline", true);
+        debouncedUpdateDeadline(issueId, newDate);
+    }, [
+        issueId,
+        debouncedUpdateDeadline,
+        setLoading
+    ]);
+    const handleDeadlineClear = useCallback(()=>{
+        setDeadline(null);
+        setLoading("deadline", true);
+        wp.apiFetch({
+            path: `/issue/v1/update/${issueId}`,
+            method: "POST",
+            data: {
+                meta: {
+                    deadline: ""
                 }
-            }).then(()=>{
-                if (typeof onDeadlineChange === "function") onDeadlineChange(issueId, null);
-            }).finally(()=>setIsSaving(false));
-        },
+            }
+        }).then(()=>{
+            if (typeof onDeadlineChange === "function") onDeadlineChange(issueId, null);
+        }).finally(()=>setLoading("deadline", false));
+    }, [
+        issueId,
+        onDeadlineChange,
+        setLoading
+    ]);
+    const handleScreenshotDelete = useCallback(()=>{
+        setLoading("screenshot", true);
+        wp.apiFetch({
+            path: `/issue/v1/update/${issueId}`,
+            method: "POST",
+            data: {
+                meta: {
+                    screenshot: ""
+                }
+            }
+        }).then(()=>{
+            setIssueDetails((prev)=>({
+                    ...prev,
+                    meta: {
+                        ...prev.meta,
+                        screenshot: ""
+                    }
+                }));
+        }).finally(()=>setLoading("screenshot", false));
+    }, [
+        issueId,
+        setIssueDetails,
+        setLoading
+    ]);
+    const handleChecklistComment = useCallback((issueId, commentContent)=>{
+        if (createIssueComment) createIssueComment(issueId, commentContent).then(()=>{
+            setCommentRefreshKey((prevKey)=>prevKey + 1);
+        }).catch((err)=>{
+            console.error("Error creating checklist comment:", err);
+        });
+    }, [
+        createIssueComment
+    ]);
+    const handleLightboxClose = useCallback(()=>{
+        setLightboxSrc(null);
+    }, []);
+    if (!isOpen) return null;
+    return /*#__PURE__*/ React.createElement(React.Fragment, null, /*#__PURE__*/ React.createElement(Modal, {
+        size: "medium",
+        onRequestClose: onClose,
+        className: "alpaca-details-modal",
+        headerActions: /*#__PURE__*/ React.createElement(Tooltip, {
+            text: "Delete issue",
+            __source: {
+                fileName: "src/components/issue.jsx",
+                lineNumber: 700,
+                columnNumber: 11
+            }
+        }, /*#__PURE__*/ React.createElement(Button, {
+            type: "button",
+            className: "alpaca-modal-delete-button components-button has-icon",
+            isDestructive: true,
+            onClick: ()=>{
+                if (window.confirm("Are you sure you want to delete this issue?")) onDelete(issueId);
+            },
+            __source: {
+                fileName: "src/components/issue.jsx",
+                lineNumber: 701,
+                columnNumber: 13
+            }
+        }, /*#__PURE__*/ React.createElement("span", {
+            className: "dashicons dashicons-trash",
+            __source: {
+                fileName: "src/components/issue.jsx",
+                lineNumber: 713,
+                columnNumber: 15
+            }
+        }))),
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 341,
-            columnNumber: 21
+            lineNumber: 695,
+            columnNumber: 7
         },
         __self: undefined
-    })))), /*#__PURE__*/ React.createElement((0, _checklistJsxDefault.default), {
+    }, error && /*#__PURE__*/ React.createElement("div", {
+        className: "notice notice-error",
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 719,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("p", {
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 720,
+            columnNumber: 13
+        },
+        __self: undefined
+    }, error), /*#__PURE__*/ React.createElement(Button, {
+        onClick: refetchData,
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 721,
+            columnNumber: 13
+        },
+        __self: undefined
+    }, "Retry")), isLoadingDetails ? /*#__PURE__*/ React.createElement("p", {
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 726,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, "Loading...") : issueDetails && issueDetails.success ? /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-issue-details",
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 728,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-issue-main column",
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 729,
+            columnNumber: 13
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-issue-slug",
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 730,
+            columnNumber: 15
+        },
+        __self: undefined
+    }, issueDetails.post_data.post_name), /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-issue-identity",
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 733,
+            columnNumber: 15
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-issue-author",
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 734,
+            columnNumber: 17
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement((0, _userDefault.default), {
+        user: issueDetails.post_data.post_author,
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 735,
+            columnNumber: 19
+        },
+        __self: undefined
+    })), /*#__PURE__*/ React.createElement("h3", {
+        className: "alpaca-issue-title",
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 737,
+            columnNumber: 17
+        },
+        __self: undefined
+    }, decodeEntities(issueDetails.post_data.post_content))), /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-issue-main-controls",
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 741,
+            columnNumber: 15
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement(AssigneeSelector, {
+        assignees: assignees,
+        allUsers: allUsers,
+        onChange: handleAssigneeChange,
+        isLoading: loadingStates.assignees,
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 742,
+            columnNumber: 17
+        },
+        __self: undefined
+    }), /*#__PURE__*/ React.createElement(DeadlineControl, {
+        deadline: deadline,
+        onChange: handleDeadlineChange,
+        onClear: handleDeadlineClear,
+        isLoading: loadingStates.deadline,
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 749,
+            columnNumber: 17
+        },
+        __self: undefined
+    })), /*#__PURE__*/ React.createElement((0, _checklistJsxDefault.default), {
         issueId: issueId,
         initialChecklistItems: checklistItems,
-        isSaving: isSaving,
-        setIsSaving: setIsSaving,
+        isSaving: loadingStates.assignees || loadingStates.deadline,
+        setIsSaving: (value)=>setLoading("checklist", value),
         createIssueComment: handleChecklistComment,
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 367,
-            columnNumber: 13
+            lineNumber: 757,
+            columnNumber: 15
         },
         __self: undefined
     }), /*#__PURE__*/ React.createElement(TabPanel, {
         className: "alpaca-issue-tabs",
         initialTabName: "comments",
-        tabs: [
-            {
-                name: "comments",
-                title: "Comments",
-                className: "comments"
-            },
-            {
-                name: "report",
-                title: "Report",
-                className: "report"
-            },
-            ...issueDetails?.meta?.queriedObject && issueDetails.meta.queriedObject !== "null" // todo: remove this check when no longer needed
-             ? [
-                {
-                    name: "queriedobject",
-                    title: "Queried Object",
-                    className: "queried-object"
-                }
-            ] : []
-        ],
+        tabs: tabsConfig,
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 375,
-            columnNumber: 13
+            lineNumber: 765,
+            columnNumber: 15
         },
         __self: undefined
-    }, (tab)=>{
-        if (tab.name === "comments") return /*#__PURE__*/ React.createElement((0, _commentingJsxDefault.default), {
+    }, (tab)=>/*#__PURE__*/ React.createElement(TabContent, {
+            tab: tab,
+            issueDetails: issueDetails,
             issueId: issueId,
             onCommentCountChange: onCommentCountChange,
             commentRefreshKey: commentRefreshKey,
+            onScreenshotDelete: handleScreenshotDelete,
+            loadingStates: loadingStates,
+            onScreenshotClick: setLightboxSrc,
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 396,
-                columnNumber: 21
+                lineNumber: 771,
+                columnNumber: 19
             },
             __self: undefined
-        });
-        if (tab.name === "report") return /*#__PURE__*/ React.createElement("div", {
-            className: "alpaca-report-tab",
-            __source: {
-                fileName: "src/components/issue.jsx",
-                lineNumber: 406,
-                columnNumber: 21
-            },
-            __self: undefined
-        }, issueDetails.meta.screenshot && /*#__PURE__*/ React.createElement("div", {
-            __source: {
-                fileName: "src/components/issue.jsx",
-                lineNumber: 408,
-                columnNumber: 25
-            },
-            __self: undefined
-        }, /*#__PURE__*/ React.createElement("p", {
-            __source: {
-                fileName: "src/components/issue.jsx",
-                lineNumber: 409,
-                columnNumber: 27
-            },
-            __self: undefined
-        }, /*#__PURE__*/ React.createElement("img", {
-            src: issueDetails.meta.screenshot,
-            className: "alpaca-screenshot",
-            alt: "Screenshot",
-            style: {
-                cursor: "zoom-in",
-                maxWidth: "100%"
-            },
-            onClick: ()=>setLightboxSrc(issueDetails.meta.screenshot),
-            __source: {
-                fileName: "src/components/issue.jsx",
-                lineNumber: 410,
-                columnNumber: 29
-            },
-            __self: undefined
-        })), /*#__PURE__*/ React.createElement("p", {
-            __source: {
-                fileName: "src/components/issue.jsx",
-                lineNumber: 420,
-                columnNumber: 27
-            },
-            __self: undefined
-        }, /*#__PURE__*/ React.createElement("button", {
-            type: "button",
-            className: "button-link-delete",
-            disabled: isSaving,
-            onClick: ()=>{
-                setIsSaving(true);
-                wp.apiFetch({
-                    path: `/issue/v1/update/${issueId}`,
-                    method: "POST",
-                    data: {
-                        meta: {
-                            screenshot: ""
-                        }
-                    }
-                }).then(()=>{
-                    setIssueDetails((prev)=>({
-                            ...prev,
-                            meta: {
-                                ...prev.meta,
-                                screenshot: ""
-                            }
-                        }));
-                }).finally(()=>setIsSaving(false));
-            },
-            __source: {
-                fileName: "src/components/issue.jsx",
-                lineNumber: 421,
-                columnNumber: 29
-            },
-            __self: undefined
-        }, "Delete"))), /*#__PURE__*/ React.createElement("table", {
-            className: "widefat striped",
-            __source: {
-                fileName: "src/components/issue.jsx",
-                lineNumber: 447,
-                columnNumber: 23
-            },
-            __self: undefined
-        }, /*#__PURE__*/ React.createElement("tbody", {
-            __source: {
-                fileName: "src/components/issue.jsx",
-                lineNumber: 448,
-                columnNumber: 25
-            },
-            __self: undefined
-        }, /*#__PURE__*/ React.createElement("tr", {
-            __source: {
-                fileName: "src/components/issue.jsx",
-                lineNumber: 449,
-                columnNumber: 27
-            },
-            __self: undefined
-        }, /*#__PURE__*/ React.createElement("th", {
-            scope: "row",
-            __source: {
-                fileName: "src/components/issue.jsx",
-                lineNumber: 450,
-                columnNumber: 29
-            },
-            __self: undefined
-        }, "Reported"), /*#__PURE__*/ React.createElement("td", {
-            __source: {
-                fileName: "src/components/issue.jsx",
-                lineNumber: 451,
-                columnNumber: 29
-            },
-            __self: undefined
-        }, date.format(datesettings.formats.datetimeAbbreviated, new Date(issueDetails.post_data.post_date)))), /*#__PURE__*/ React.createElement("tr", {
-            __source: {
-                fileName: "src/components/issue.jsx",
-                lineNumber: 458,
-                columnNumber: 27
-            },
-            __self: undefined
-        }, /*#__PURE__*/ React.createElement("th", {
-            scope: "row",
-            __source: {
-                fileName: "src/components/issue.jsx",
-                lineNumber: 459,
-                columnNumber: 29
-            },
-            __self: undefined
-        }, "Last edit"), /*#__PURE__*/ React.createElement("td", {
-            __source: {
-                fileName: "src/components/issue.jsx",
-                lineNumber: 460,
-                columnNumber: 29
-            },
-            __self: undefined
-        }, date.format(datesettings.formats.datetimeAbbreviated, new Date(issueDetails.post_data.post_modified)))), /*#__PURE__*/ React.createElement("tr", {
-            __source: {
-                fileName: "src/components/issue.jsx",
-                lineNumber: 467,
-                columnNumber: 27
-            },
-            __self: undefined
-        }, /*#__PURE__*/ React.createElement("th", {
-            scope: "row",
-            __source: {
-                fileName: "src/components/issue.jsx",
-                lineNumber: 468,
-                columnNumber: 29
-            },
-            __self: undefined
-        }, "URL"), /*#__PURE__*/ React.createElement("td", {
-            __source: {
-                fileName: "src/components/issue.jsx",
-                lineNumber: 469,
-                columnNumber: 29
-            },
-            __self: undefined
-        }, issueDetails.meta.URL ? /*#__PURE__*/ React.createElement("a", {
-            href: issueDetails.meta.URL,
-            target: "_blank",
-            rel: "noopener noreferrer",
-            __source: {
-                fileName: "src/components/issue.jsx",
-                lineNumber: 471,
-                columnNumber: 33
-            },
-            __self: undefined
-        }, issueDetails.meta.URL) : "N/A")), /*#__PURE__*/ React.createElement("tr", {
-            __source: {
-                fileName: "src/components/issue.jsx",
-                lineNumber: 483,
-                columnNumber: 27
-            },
-            __self: undefined
-        }, /*#__PURE__*/ React.createElement("th", {
-            scope: "row",
-            __source: {
-                fileName: "src/components/issue.jsx",
-                lineNumber: 484,
-                columnNumber: 29
-            },
-            __self: undefined
-        }, "Screen"), /*#__PURE__*/ React.createElement("td", {
-            __source: {
-                fileName: "src/components/issue.jsx",
-                lineNumber: 485,
-                columnNumber: 29
-            },
-            __self: undefined
-        }, issueDetails.meta.screenwidth && issueDetails.meta.screenheight ? `${issueDetails.meta.screenwidth} x ${issueDetails.meta.screenheight}` : "N/A")), Object.entries(issueDetails.taxonomies).filter(([taxonomy])=>taxonomy !== "assignee").map(([taxonomy, terms])=>/*#__PURE__*/ React.createElement("tr", {
-                key: taxonomy,
-                __source: {
-                    fileName: "src/components/issue.jsx",
-                    lineNumber: 495,
-                    columnNumber: 31
-                },
-                __self: undefined
-            }, /*#__PURE__*/ React.createElement("th", {
-                style: {
-                    textTransform: "capitalize"
-                },
-                __source: {
-                    fileName: "src/components/issue.jsx",
-                    lineNumber: 496,
-                    columnNumber: 33
-                },
-                __self: undefined
-            }, taxonomy), /*#__PURE__*/ React.createElement("td", {
-                __source: {
-                    fileName: "src/components/issue.jsx",
-                    lineNumber: 499,
-                    columnNumber: 33
-                },
-                __self: undefined
-            }, terms.map((term)=>term.name).join(", ")))))));
-        if (tab.name === "queriedobject") return /*#__PURE__*/ React.createElement("div", {
-            className: "alpaca-queriedobject-tab",
-            __source: {
-                fileName: "src/components/issue.jsx",
-                lineNumber: 512,
-                columnNumber: 21
-            },
-            __self: undefined
-        }, /*#__PURE__*/ React.createElement(JsonTable, {
-            data: issueDetails.meta.queriedObject,
-            __source: {
-                fileName: "src/components/issue.jsx",
-                lineNumber: 513,
-                columnNumber: 23
-            },
-            __self: undefined
-        }));
-        return null;
-    }))) : /*#__PURE__*/ React.createElement("p", {
+        })))) : /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 524,
-            columnNumber: 9
-        },
-        __self: undefined
-    }, issueDetails?.message || "Could not load issue details."), lightboxSrc && createPortal(/*#__PURE__*/ React.createElement("div", {
-        style: {
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            background: "rgba(0,0,0,0.85)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 99999999999999
-        },
-        onClick: ()=>setLightboxSrc(null),
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 529,
+            lineNumber: 786,
             columnNumber: 11
         },
         __self: undefined
-    }, /*#__PURE__*/ React.createElement("img", {
+    }, issueDetails?.message || "Could not load issue details.")), lightboxSrc && /*#__PURE__*/ React.createElement(Lightbox, {
         src: lightboxSrc,
-        alt: "Enlarged screenshot",
-        style: {
-            maxWidth: "90%",
-            maxHeight: "90%",
-            boxShadow: "0 0 20px rgba(0,0,0,0.5)"
-        },
+        onClose: handleLightboxClose,
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 544,
-            columnNumber: 13
+            lineNumber: 791,
+            columnNumber: 9
         },
         __self: undefined
-    })), document.body));
+    }));
 };
 exports.default = AlpacaIssue;
 
@@ -9035,7 +9273,6 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
         setChecklistItems(newItems);
         saveChecklist(newItems);
         if (isBeingChecked) {
-            addChecklistItem();
             if (createIssueComment) createIssueComment(issueId, (0, _commentsJs.generateCheckedItemComment)(currentItem, currentUser));
         }
     };
@@ -9077,7 +9314,7 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
         className: "alpaca-checklist-container",
         __source: {
             fileName: "src/components/checklist.jsx",
-            lineNumber: 111,
+            lineNumber: 110,
             columnNumber: 5
         },
         __self: undefined
@@ -9086,7 +9323,7 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
         className: "alpaca-checklist-label",
         __source: {
             fileName: "src/components/checklist.jsx",
-            lineNumber: 112,
+            lineNumber: 111,
             columnNumber: 7
         },
         __self: undefined
@@ -9095,7 +9332,7 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
         ref: checklistContainerRef,
         __source: {
             fileName: "src/components/checklist.jsx",
-            lineNumber: 113,
+            lineNumber: 112,
             columnNumber: 7
         },
         __self: undefined
@@ -9104,7 +9341,7 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
             key: item.id,
             __source: {
                 fileName: "src/components/checklist.jsx",
-                lineNumber: 115,
+                lineNumber: 114,
                 columnNumber: 11
             },
             __self: undefined
@@ -9113,7 +9350,7 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
             onChange: ()=>toggleChecklistItem(index),
             __source: {
                 fileName: "src/components/checklist.jsx",
-                lineNumber: 121,
+                lineNumber: 120,
                 columnNumber: 13
             },
             __self: undefined
@@ -9127,7 +9364,7 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
             placeholder: "Add an item...",
             __source: {
                 fileName: "src/components/checklist.jsx",
-                lineNumber: 125,
+                lineNumber: 124,
                 columnNumber: 13
             },
             __self: undefined
@@ -9138,7 +9375,7 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
             showTooltip: "true",
             __source: {
                 fileName: "src/components/checklist.jsx",
-                lineNumber: 134,
+                lineNumber: 133,
                 columnNumber: 13
             },
             __self: undefined
@@ -9149,7 +9386,7 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
         onClick: addChecklistItem,
         __source: {
             fileName: "src/components/checklist.jsx",
-            lineNumber: 143,
+            lineNumber: 142,
             columnNumber: 7
         },
         __self: undefined
