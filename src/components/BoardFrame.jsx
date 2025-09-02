@@ -1,4 +1,4 @@
-const { useState, useEffect, useRef } = wp.element;
+const { useState, useEffect, useRef, useCallback } = wp.element;
 const { ComboboxControl, Popover, Button, RadioControl } = wp.components;
 import Board from "./BoardMain";
 import { getCookie, setCookie } from "../utils/cookies";
@@ -157,14 +157,42 @@ export function AlpacaBoardControls() {
 
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const popoverAnchorRef = useRef();
+  const popoverContentRef = useRef(); // New ref for popover content
 
-  const togglePopover = () => {
-    setIsPopoverOpen(!isPopoverOpen);
-  };
+  const togglePopover = useCallback(() => {
+    setIsPopoverOpen((prevIsPopoverOpen) => {
+      const newState = !prevIsPopoverOpen;
+      return newState;
+    });
+  }, [isPopoverOpen]);
 
   const onClosePopover = () => {
     setIsPopoverOpen(false);
   };
+
+  // New useEffect for global click-outside detection
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // If popover is open AND
+      // click is NOT on the button AND
+      // click is NOT inside the popover content
+      if (
+        isPopoverOpen &&
+        popoverAnchorRef.current &&
+        !popoverAnchorRef.current.contains(event.target) &&
+        popoverContentRef.current &&
+        !popoverContentRef.current.contains(event.target)
+      ) {
+        onClosePopover();
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isPopoverOpen, popoverAnchorRef, popoverContentRef, onClosePopover]); // Dependencies
 
   const handleShowStarredOnlyChange = () => {
     setShowStarredOnly(!showStarredOnly);
@@ -188,15 +216,19 @@ export function AlpacaBoardControls() {
     <div className="alpaca-board-controls">
       <Button
         ref={popoverAnchorRef}
-        onClick={togglePopover}
+        onClick={() => {
+          togglePopover();
+        }}
         isSecondary
         label="Open Filters"
       >
         Open Filters
       </Button>
       {isPopoverOpen && (
-        <Popover anchor={popoverAnchorRef.current} onClose={onClosePopover}>
-          <div className="alpaca-control-popover">
+        <Popover anchor={popoverAnchorRef.current}>
+          <div className="alpaca-control-popover" ref={popoverContentRef}>
+            {" "}
+            {/* Assign ref here */}
             <div className="alpaca-control alpaca-control-starred">
               <Button
                 onClick={handleShowStarredOnlyChange}
@@ -208,7 +240,6 @@ export function AlpacaBoardControls() {
                 Starred Items
               </Button>
             </div>
-
             <ComboboxControl
               label="Filter by Assignee"
               value={filteredAssignee}
@@ -216,7 +247,6 @@ export function AlpacaBoardControls() {
               options={assigneeOptions}
               className="alpaca-control"
             />
-
             <RadioControl
               label="Deadlines"
               options={[

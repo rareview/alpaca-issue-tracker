@@ -11787,7 +11787,7 @@ parcelHelpers.export(exports, "AlpacaBoardControls", ()=>AlpacaBoardControls);
 var _boardMain = require("./BoardMain");
 var _boardMainDefault = parcelHelpers.interopDefault(_boardMain);
 var _cookies = require("../utils/cookies");
-const { useState, useEffect, useRef } = wp.element;
+const { useState, useEffect, useRef, useCallback } = wp.element;
 const { ComboboxControl, Popover, Button, RadioControl } = wp.components;
 function AlpacaBoard() {
     return /*#__PURE__*/ React.createElement((0, _boardMainDefault.default), {
@@ -11909,12 +11909,36 @@ function AlpacaBoardControls() {
     if (typeof alpacaUserData === "undefined" || !alpacaUserData.currentUserId) return null; // Don't render if we don't know the current user
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     const popoverAnchorRef = useRef();
-    const togglePopover = ()=>{
-        setIsPopoverOpen(!isPopoverOpen);
-    };
+    const popoverContentRef = useRef(); // New ref for popover content
+    const togglePopover = useCallback(()=>{
+        setIsPopoverOpen((prevIsPopoverOpen)=>{
+            const newState = !prevIsPopoverOpen;
+            return newState;
+        });
+    }, [
+        isPopoverOpen
+    ]);
     const onClosePopover = ()=>{
         setIsPopoverOpen(false);
     };
+    // New useEffect for global click-outside detection
+    useEffect(()=>{
+        const handleClickOutside = (event)=>{
+            // If popover is open AND
+            // click is NOT on the button AND
+            // click is NOT inside the popover content
+            if (isPopoverOpen && popoverAnchorRef.current && !popoverAnchorRef.current.contains(event.target) && popoverContentRef.current && !popoverContentRef.current.contains(event.target)) onClosePopover();
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return ()=>{
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [
+        isPopoverOpen,
+        popoverAnchorRef,
+        popoverContentRef,
+        onClosePopover
+    ]); // Dependencies
     const handleShowStarredOnlyChange = ()=>{
         setShowStarredOnly(!showStarredOnly);
         setFilteredAssignee("");
@@ -11934,43 +11958,45 @@ function AlpacaBoardControls() {
         className: "alpaca-board-controls",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 188,
+            lineNumber: 216,
             columnNumber: 5
         },
         __self: this
     }, /*#__PURE__*/ React.createElement(Button, {
         ref: popoverAnchorRef,
-        onClick: togglePopover,
+        onClick: ()=>{
+            togglePopover();
+        },
         isSecondary: true,
         label: "Open Filters",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 189,
+            lineNumber: 217,
             columnNumber: 7
         },
         __self: this
     }, "Open Filters"), isPopoverOpen && /*#__PURE__*/ React.createElement(Popover, {
         anchor: popoverAnchorRef.current,
-        onClose: onClosePopover,
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 198,
+            lineNumber: 228,
             columnNumber: 9
         },
         __self: this
     }, /*#__PURE__*/ React.createElement("div", {
         className: "alpaca-control-popover",
+        ref: popoverContentRef,
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 199,
+            lineNumber: 229,
             columnNumber: 11
         },
         __self: this
-    }, /*#__PURE__*/ React.createElement("div", {
+    }, " ", /*#__PURE__*/ React.createElement("div", {
         className: "alpaca-control alpaca-control-starred",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 200,
+            lineNumber: 232,
             columnNumber: 13
         },
         __self: this
@@ -11982,7 +12008,7 @@ function AlpacaBoardControls() {
         variant: "secondary",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 201,
+            lineNumber: 233,
             columnNumber: 15
         },
         __self: this
@@ -11994,7 +12020,7 @@ function AlpacaBoardControls() {
         className: "alpaca-control",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 212,
+            lineNumber: 243,
             columnNumber: 13
         },
         __self: this
@@ -12022,7 +12048,7 @@ function AlpacaBoardControls() {
         onChange: handleDeadlineFilterChange,
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 220,
+            lineNumber: 250,
             columnNumber: 13
         },
         __self: this
