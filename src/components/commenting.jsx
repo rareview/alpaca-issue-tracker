@@ -1,3 +1,4 @@
+import { getUser } from '../utils/usercache';
 const { useState, useEffect, useRef, useCallback } = wp.element;
 import User from "./User";
 const { TextareaControl, Button, Spinner, Modal } = wp.components;
@@ -19,7 +20,7 @@ const Commenting = ({ issueId, onCommentCountChange, commentRefreshKey }) => {
   const [deleteCommentId, setDeleteCommentId] = useState(null); // New state for modal
 
   useEffect(() => {
-    wp.apiFetch({ path: "/wp/v2/users/me" }).then((user) => {
+    getUser().then((user) => {
       setCurrentUser(user);
     });
   }, []);

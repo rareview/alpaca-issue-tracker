@@ -1,6 +1,6 @@
 const cache = new Map();
 
-export async function getUser(id) {
+export async function getUser(id = 'me') {
   if (cache.has(id)) {
     return cache.get(id);
   }

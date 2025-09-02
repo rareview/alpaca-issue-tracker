@@ -1,3 +1,4 @@
+import { getUser } from './usercache';
 /**
  * Handles automatic commenting on issues, such as when an issue is created.
  * This script hooks into WordPress actions to add comments via the REST API.
@@ -11,7 +12,7 @@ addAction(
   async (issue, statusId) => {
     try {
       // Get the current user's display name
-      const currentUser = await apiFetch({ path: "/wp/v2/users/me" });
+      const currentUser = await getUser();
       const userName = currentUser.name || "Unknown User";
 
       const commentContent = `Issue created by ${userName}`;

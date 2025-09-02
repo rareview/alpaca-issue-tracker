@@ -3282,6 +3282,7 @@ exports.default = AlpacaIssue;
 },{"./commenting.jsx":"321JG","./checklist.jsx":"dnVUA","./User":"enwL1","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"321JG":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
+var _usercache = require("../utils/usercache");
 var _user = require("./User");
 var _userDefault = parcelHelpers.interopDefault(_user);
 var _marked = require("marked");
@@ -3299,9 +3300,7 @@ const Commenting = ({ issueId, onCommentCountChange, commentRefreshKey })=>{
     const editingRef = useRef(null);
     const [deleteCommentId, setDeleteCommentId] = useState(null); // New state for modal
     useEffect(()=>{
-        wp.apiFetch({
-            path: "/wp/v2/users/me"
-        }).then((user)=>{
+        (0, _usercache.getUser)().then((user)=>{
             setCurrentUser(user);
         });
     }, []);
@@ -3408,7 +3407,7 @@ const Commenting = ({ issueId, onCommentCountChange, commentRefreshKey })=>{
         className: "alpaca-grid",
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 144,
+            lineNumber: 145,
             columnNumber: 7
         },
         __self: undefined
@@ -3419,7 +3418,7 @@ const Commenting = ({ issueId, onCommentCountChange, commentRefreshKey })=>{
         disabled: isSubmitting,
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 146,
+            lineNumber: 147,
             columnNumber: 9
         },
         __self: undefined
@@ -3429,14 +3428,14 @@ const Commenting = ({ issueId, onCommentCountChange, commentRefreshKey })=>{
         disabled: isSubmitting,
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 152,
+            lineNumber: 153,
             columnNumber: 9
         },
         __self: undefined
     }, isSubmitting ? "Submitting..." : "Submit Comment"), isLoadingComments && /*#__PURE__*/ React.createElement(Spinner, {
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 156,
+            lineNumber: 157,
             columnNumber: 31
         },
         __self: undefined
@@ -3444,14 +3443,14 @@ const Commenting = ({ issueId, onCommentCountChange, commentRefreshKey })=>{
         className: "alpaca-error",
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 157,
+            lineNumber: 158,
             columnNumber: 19
         },
         __self: undefined
     }, error), !isLoadingComments && !error && comments.length === 0 && /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 159,
+            lineNumber: 160,
             columnNumber: 11
         },
         __self: undefined
@@ -3460,7 +3459,7 @@ const Commenting = ({ issueId, onCommentCountChange, commentRefreshKey })=>{
             key: comment.id,
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 165,
+                lineNumber: 166,
                 columnNumber: 13
             },
             __self: undefined
@@ -3468,7 +3467,7 @@ const Commenting = ({ issueId, onCommentCountChange, commentRefreshKey })=>{
             className: "alpaca-meta",
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 166,
+                lineNumber: 167,
                 columnNumber: 15
             },
             __self: undefined
@@ -3480,7 +3479,7 @@ const Commenting = ({ issueId, onCommentCountChange, commentRefreshKey })=>{
             },
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 167,
+                lineNumber: 168,
                 columnNumber: 17
             },
             __self: undefined
@@ -3488,7 +3487,7 @@ const Commenting = ({ issueId, onCommentCountChange, commentRefreshKey })=>{
             className: "alpaca-comment-date",
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 174,
+                lineNumber: 175,
                 columnNumber: 17
             },
             __self: undefined
@@ -3496,7 +3495,7 @@ const Commenting = ({ issueId, onCommentCountChange, commentRefreshKey })=>{
             class: "alpaca-comment-buttons",
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 177,
+                lineNumber: 178,
                 columnNumber: 17
             },
             __self: undefined
@@ -3507,7 +3506,7 @@ const Commenting = ({ issueId, onCommentCountChange, commentRefreshKey })=>{
             onClick: ()=>startEditing(comment),
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 178,
+                lineNumber: 179,
                 columnNumber: 19
             },
             __self: undefined
@@ -3519,7 +3518,7 @@ const Commenting = ({ issueId, onCommentCountChange, commentRefreshKey })=>{
             onClick: ()=>confirmDeleteComment(comment.id),
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 184,
+                lineNumber: 185,
                 columnNumber: 19
             },
             __self: undefined
@@ -3527,7 +3526,7 @@ const Commenting = ({ issueId, onCommentCountChange, commentRefreshKey })=>{
             className: "alpaca-comment",
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 193,
+                lineNumber: 194,
                 columnNumber: 15
             },
             __self: undefined
@@ -3537,7 +3536,7 @@ const Commenting = ({ issueId, onCommentCountChange, commentRefreshKey })=>{
             ref: editingRef,
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 196,
+                lineNumber: 197,
                 columnNumber: 21
             },
             __self: undefined
@@ -3547,7 +3546,7 @@ const Commenting = ({ issueId, onCommentCountChange, commentRefreshKey })=>{
             disabled: isSubmitting,
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 201,
+                lineNumber: 202,
                 columnNumber: 21
             },
             __self: undefined
@@ -3556,7 +3555,7 @@ const Commenting = ({ issueId, onCommentCountChange, commentRefreshKey })=>{
             disabled: isSubmitting,
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 208,
+                lineNumber: 209,
                 columnNumber: 21
             },
             __self: undefined
@@ -3567,7 +3566,7 @@ const Commenting = ({ issueId, onCommentCountChange, commentRefreshKey })=>{
             },
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 214,
+                lineNumber: 215,
                 columnNumber: 21
             },
             __self: undefined
@@ -3577,14 +3576,14 @@ const Commenting = ({ issueId, onCommentCountChange, commentRefreshKey })=>{
         className: "alpaca-modal",
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 230,
+            lineNumber: 231,
             columnNumber: 11
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 235,
+            lineNumber: 236,
             columnNumber: 13
         },
         __self: undefined
@@ -3593,7 +3592,7 @@ const Commenting = ({ issueId, onCommentCountChange, commentRefreshKey })=>{
         onClick: deleteComment,
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 236,
+            lineNumber: 237,
             columnNumber: 13
         },
         __self: undefined
@@ -3601,7 +3600,7 @@ const Commenting = ({ issueId, onCommentCountChange, commentRefreshKey })=>{
         onClick: cancelDelete,
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 239,
+            lineNumber: 240,
             columnNumber: 13
         },
         __self: undefined
@@ -3609,7 +3608,7 @@ const Commenting = ({ issueId, onCommentCountChange, commentRefreshKey })=>{
 };
 exports.default = Commenting;
 
-},{"./User":"enwL1","marked":"4duqf","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"enwL1":[function(require,module,exports,__globalThis) {
+},{"./User":"enwL1","marked":"4duqf","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../utils/usercache":"gUv4D"}],"enwL1":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _usercache = require("../utils/usercache");
@@ -3686,7 +3685,7 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "getUser", ()=>getUser);
 const cache = new Map();
-async function getUser(id) {
+async function getUser(id = 'me') {
     if (cache.has(id)) return cache.get(id);
     const user = await wp.apiFetch({
         path: `/wp/v2/users/${id}`
