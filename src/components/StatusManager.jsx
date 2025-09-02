@@ -1,11 +1,8 @@
 const { useState, useEffect, useRef } = wp.element;
 const { Button, Spinner, Modal, TextControl } = wp.components;
 
-import {
-  DragDropContext,
-  Droppable,
-  Draggable,
-} from "@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration";
+import { DragDropContext, Droppable, Draggable, } from "@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration";
+import DragHandleIcon from "./icons/DragHandleIcon";
 
 const StatusManager = ({
   statuses,
@@ -297,21 +294,7 @@ const StatusRow = React.forwardRef(
               className="drag-handle"
               title="Drag to reorder"
             >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 16 16"
-                fill="currentColor"
-                xmlns="http://www.w3.org/2000/svg"
-                style={{ verticalAlign: "middle" }}
-              >
-                <circle cx="4" cy="3" r="1.5" />
-                <circle cx="8" cy="3" r="1.5" />
-                <circle cx="4" cy="8" r="1.5" />
-                <circle cx="8" cy="8" r="1.5" />
-                <circle cx="4" cy="13" r="1.5" />
-                <circle cx="8" cy="13" r="1.5" />
-              </svg>
+              <DragHandleIcon />
             </div>
             {isRenaming ? (
               <TextControl

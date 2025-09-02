@@ -2,6 +2,12 @@ import { generateCheckedItemComment } from "../utils/comments.js";
 const { useState, useEffect, useRef } = wp.element;
 const { useSelect } = wp.data;
 const { Button, BaseControl, CheckboxControl, TextControl } = wp.components;
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+} from "@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration";
+import DragHandleIcon from "./icons/DragHandleIcon";
 
 const Checklist = ({
   issueId,
@@ -70,6 +76,22 @@ const Checklist = ({
     saveChecklist(newItems);
   };
 
+  const handleDragEnd = (result) => {
+    const { destination, source } = result;
+
+    // If item is dropped outside a droppable area or in the same position
+    if (!destination || destination.index === source.index) {
+      return;
+    }
+
+    const newItems = Array.from(checklistItems);
+    const [reorderedItem] = newItems.splice(source.index, 1);
+    newItems.splice(destination.index, 0, reorderedItem);
+
+    setChecklistItems(newItems);
+    saveChecklist(newItems);
+  };
+
   const handleChecklistItemKeyDown = (e, index) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -109,36 +131,64 @@ const Checklist = ({
   return (
     <div className="alpaca-checklist-container">
       <BaseControl label="Checklist" className="alpaca-checklist-label" />
-      <div className="alpaca-checklist" ref={checklistContainerRef}>
-        {checklistItems.map((item, index) => (
-          <div
-            className={`alpaca-checklist-item ${
-              item.checked !== 0 ? "checked" : ""
-            } ${activeIndex === index ? "active" : ""}`}
-            key={item.id}
-          >
-            <CheckboxControl
-              checked={item.checked !== 0}
-              onChange={() => toggleChecklistItem(index)}
-            />
-            <TextControl
-              className="alpaca-textinput"
-              value={item.label}
-              onChange={(newLabel) => updateChecklistItemLabel(index, newLabel)}
-              onFocus={() => setActiveIndex(index)}
-              onBlur={() => handleChecklistItemBlur(index)}
-              onKeyDown={(e) => handleChecklistItemKeyDown(e, index)}
-              placeholder="Add an item..."
-            />
-            <Button
-              icon="trash"
-              onClick={() => deleteChecklistItem(index)}
-              label="Delete item"
-              showTooltip="true"
-            />
-          </div>
-        ))}
-      </div>
+      <DragDropContext onDragEnd={handleDragEnd}>
+        <Droppable droppableId="checklist">
+          {(provided) => (
+            <div
+              className="alpaca-checklist"
+              {...provided.droppableProps}
+              ref={provided.innerRef}
+            >
+              {checklistItems.map((item, index) => (
+                <Draggable
+                  key={item.id}
+                  draggableId={item.id.toString()}
+                  index={index}
+                >
+                  {(provided) => (
+                    <div
+                      className={`alpaca-checklist-item ${
+                        item.checked !== 0 ? "checked" : ""
+                      } ${activeIndex === index ? "active" : ""}`}
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                    >
+                      <CheckboxControl
+                        checked={item.checked !== 0}
+                        onChange={() => toggleChecklistItem(index)}
+                      />
+                      <TextControl
+                        className="alpaca-textinput"
+                        value={item.label}
+                        onChange={(newLabel) =>
+                          updateChecklistItemLabel(index, newLabel)
+                        }
+                        onFocus={() => setActiveIndex(index)}
+                        onBlur={() => handleChecklistItemBlur(index)}
+                        onKeyDown={(e) => handleChecklistItemKeyDown(e, index)}
+                        placeholder="Add an item..."
+                      />
+                      <Button
+                        icon="trash"
+                        onClick={() => deleteChecklistItem(index)}
+                        label="Delete item"
+                        showTooltip="true"
+                      />
+                      <div
+                        {...provided.dragHandleProps}
+                        className="alpaca-drag-handle"
+                      >
+                        <DragHandleIcon />
+                      </div>
+                    </div>
+                  )}
+                </Draggable>
+              ))}
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </DragDropContext>
       <Button
         variant="secondary"
         icon="plus"
