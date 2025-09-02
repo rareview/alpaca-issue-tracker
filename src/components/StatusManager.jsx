@@ -160,81 +160,84 @@ const StatusManager = ({
   if (error) return <p>Error: {error}</p>;
 
   return (
-    <div className="alpaca-status-manager">
-      <div className="status-grid">
-        {/* Grid header */}
-        <div className="status-grid-header">
-          <div className="status-grid-cell">
-            <strong>Name</strong>
+    <>
+      <h2>Status Manager</h2>
+      <div className="alpaca-status-manager">
+        <div className="status-grid">
+          {/* Grid header */}
+          <div className="status-grid-header">
+            <div className="status-grid-cell">
+              <strong>Name</strong>
+            </div>
+            <div className="status-grid-cell actions-cell">
+              <strong>Actions</strong>
+            </div>
           </div>
-          <div className="status-grid-cell actions-cell">
-            <strong>Actions</strong>
-          </div>
+
+          {/* Draggable grid body */}
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <Droppable droppableId="status-list">
+              {(provided) => (
+                <div
+                  {...provided.droppableProps}
+                  ref={provided.innerRef}
+                  className="status-grid-body"
+                >
+                  {localStatuses.map((status, index) => (
+                    <Draggable
+                      key={status.term_id.toString()}
+                      draggableId={status.term_id.toString()}
+                      index={index}
+                    >
+                      {(provided, snapshot) => (
+                        <StatusRow
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          dragHandleProps={provided.dragHandleProps}
+                          status={status}
+                          onRename={handleRename}
+                          onDelete={handleDelete}
+                          isDragging={snapshot.isDragging}
+                        />
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}{" "}
+                  {/* ✅ keep this last inside the droppable */}
+                </div>
+              )}
+            </Droppable>
+          </DragDropContext>
         </div>
 
-        {/* Draggable grid body */}
-        <DragDropContext onDragEnd={handleDragEnd}>
-          <Droppable droppableId="status-list">
-            {(provided) => (
-              <div
-                {...provided.droppableProps}
-                ref={provided.innerRef}
-                className="status-grid-body"
-              >
-                {localStatuses.map((status, index) => (
-                  <Draggable
-                    key={status.term_id.toString()}
-                    draggableId={status.term_id.toString()}
-                    index={index}
-                  >
-                    {(provided, snapshot) => (
-                      <StatusRow
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        dragHandleProps={provided.dragHandleProps}
-                        status={status}
-                        onRename={handleRename}
-                        onDelete={handleDelete}
-                        isDragging={snapshot.isDragging}
-                      />
-                    )}
-                  </Draggable>
-                ))}
-                {provided.placeholder}{" "}
-                {/* ✅ keep this last inside the droppable */}
-              </div>
-            )}
-          </Droppable>
-        </DragDropContext>
+        <p>
+          <Button isPrimary onClick={handleAddStatus}>
+            New Status
+          </Button>
+        </p>
+
+        {statusToDelete && (
+          <Modal
+            title="Delete Status?"
+            onRequestClose={cancelDelete}
+            className="alpaca-modal"
+          >
+            <p>
+              Are you sure you want to delete the status "
+              <strong>{statusToDelete.name}</strong>"? This cannot be undone.
+            </p>
+            <div className="alpaca-actions">
+              <Button variant="primary" isDestructive onClick={performDelete}>
+                Delete
+              </Button>
+              <Button isSecondary onClick={cancelDelete}>
+                Cancel
+              </Button>
+            </div>
+          </Modal>
+        )}
       </div>
-
-      <p>
-        <Button isPrimary onClick={handleAddStatus}>
-          New Status
-        </Button>
-      </p>
-
-      {statusToDelete && (
-        <Modal
-          title="Delete Status?"
-          onRequestClose={cancelDelete}
-          className="alpaca-modal"
-        >
-          <p>
-            Are you sure you want to delete the status "
-            <strong>{statusToDelete.name}</strong>"? This cannot be undone.
-          </p>
-          <div className="alpaca-actions">
-            <Button variant="primary" isDestructive onClick={performDelete}>
-              Delete
-            </Button>
-            <Button isSecondary onClick={cancelDelete}>
-              Cancel
-            </Button>
-          </div>
-        </Modal>
-      )}
-    </div>
+    </>
   );
 };
 

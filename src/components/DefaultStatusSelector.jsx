@@ -75,7 +75,7 @@ const DefaultStatusSelector = ({ statuses, onDefaultChange }) => {
 
   return (
     <div style={{ marginTop: "2rem" }}>
-      <h3>Default Status for New Issues</h3>
+      <h2>Default Status for New Issues</h2>
       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
         <SelectControl
           label="Default Status"

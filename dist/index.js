@@ -1074,14 +1074,7 @@ const AlpacaSettings = ()=>{
     const handleDefaultStatusChange = useCallback((newDefaultId)=>{
         setDefaultStatusId(newDefaultId);
     }, []);
-    return /*#__PURE__*/ React.createElement(React.Fragment, null, /*#__PURE__*/ React.createElement("h2", {
-        __source: {
-            fileName: "src/settings.jsx",
-            lineNumber: 42,
-            columnNumber: 7
-        },
-        __self: undefined
-    }, "Status Management"), /*#__PURE__*/ React.createElement((0, _statusManagerDefault.default), {
+    return /*#__PURE__*/ React.createElement(React.Fragment, null, /*#__PURE__*/ React.createElement((0, _statusManagerDefault.default), {
         statuses: statuses,
         fetchStatuses: fetchStatuses,
         isLoading: isLoading,
@@ -1090,7 +1083,7 @@ const AlpacaSettings = ()=>{
         defaultStatusId: defaultStatusId,
         __source: {
             fileName: "src/settings.jsx",
-            lineNumber: 43,
+            lineNumber: 42,
             columnNumber: 7
         },
         __self: undefined
@@ -1100,7 +1093,7 @@ const AlpacaSettings = ()=>{
         },
         __source: {
             fileName: "src/settings.jsx",
-            lineNumber: 51,
+            lineNumber: 50,
             columnNumber: 7
         },
         __self: undefined
@@ -1109,7 +1102,7 @@ const AlpacaSettings = ()=>{
         onDefaultChange: handleDefaultStatusChange,
         __source: {
             fileName: "src/settings.jsx",
-            lineNumber: 52,
+            lineNumber: 51,
             columnNumber: 7
         },
         __self: undefined
@@ -1248,24 +1241,23 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error, onStatusesCh
         },
         __self: undefined
     }, "Error: ", error);
-    return /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-status-manager",
-        __source: {
-            fileName: "src/components/StatusManager.jsx",
-            lineNumber: 163,
-            columnNumber: 5
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("div", {
-        className: "status-grid",
+    return /*#__PURE__*/ React.createElement(React.Fragment, null, /*#__PURE__*/ React.createElement("h2", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
             lineNumber: 164,
             columnNumber: 7
         },
         __self: undefined
+    }, "Status Manager"), /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-status-manager",
+        __source: {
+            fileName: "src/components/StatusManager.jsx",
+            lineNumber: 165,
+            columnNumber: 7
+        },
+        __self: undefined
     }, /*#__PURE__*/ React.createElement("div", {
-        className: "status-grid-header",
+        className: "status-grid",
         __source: {
             fileName: "src/components/StatusManager.jsx",
             lineNumber: 166,
@@ -1273,49 +1265,57 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error, onStatusesCh
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("div", {
+        className: "status-grid-header",
+        __source: {
+            fileName: "src/components/StatusManager.jsx",
+            lineNumber: 168,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("div", {
         className: "status-grid-cell",
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 167,
-            columnNumber: 11
+            lineNumber: 169,
+            columnNumber: 13
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("strong", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 168,
-            columnNumber: 13
+            lineNumber: 170,
+            columnNumber: 15
         },
         __self: undefined
     }, "Name")), /*#__PURE__*/ React.createElement("div", {
         className: "status-grid-cell actions-cell",
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 170,
-            columnNumber: 11
+            lineNumber: 172,
+            columnNumber: 13
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("strong", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 171,
-            columnNumber: 13
+            lineNumber: 173,
+            columnNumber: 15
         },
         __self: undefined
     }, "Actions"))), /*#__PURE__*/ React.createElement((0, _pragmaticDragAndDropReactBeautifulDndMigration.DragDropContext), {
         onDragEnd: handleDragEnd,
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 176,
-            columnNumber: 9
+            lineNumber: 178,
+            columnNumber: 11
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement((0, _pragmaticDragAndDropReactBeautifulDndMigration.Droppable), {
         droppableId: "status-list",
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 177,
-            columnNumber: 11
+            lineNumber: 179,
+            columnNumber: 13
         },
         __self: undefined
     }, (provided)=>/*#__PURE__*/ React.createElement("div", {
@@ -1324,8 +1324,8 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error, onStatusesCh
             className: "status-grid-body",
             __source: {
                 fileName: "src/components/StatusManager.jsx",
-                lineNumber: 179,
-                columnNumber: 15
+                lineNumber: 181,
+                columnNumber: 17
             },
             __self: undefined
         }, localStatuses.map((status, index)=>/*#__PURE__*/ React.createElement((0, _pragmaticDragAndDropReactBeautifulDndMigration.Draggable), {
@@ -1334,8 +1334,8 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error, onStatusesCh
                 index: index,
                 __source: {
                     fileName: "src/components/StatusManager.jsx",
-                    lineNumber: 185,
-                    columnNumber: 19
+                    lineNumber: 187,
+                    columnNumber: 21
                 },
                 __self: undefined
             }, (provided, snapshot)=>/*#__PURE__*/ React.createElement(StatusRow, {
@@ -1348,15 +1348,15 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error, onStatusesCh
                     isDragging: snapshot.isDragging,
                     __source: {
                         fileName: "src/components/StatusManager.jsx",
-                        lineNumber: 191,
-                        columnNumber: 23
+                        lineNumber: 193,
+                        columnNumber: 25
                     },
                     __self: undefined
                 }))), provided.placeholder, " ")))), /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 211,
-            columnNumber: 7
+            lineNumber: 213,
+            columnNumber: 9
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement(Button, {
@@ -1364,8 +1364,8 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error, onStatusesCh
         onClick: handleAddStatus,
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 212,
-            columnNumber: 9
+            lineNumber: 214,
+            columnNumber: 11
         },
         __self: undefined
     }, "New Status")), statusToDelete && /*#__PURE__*/ React.createElement(Modal, {
@@ -1374,30 +1374,30 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error, onStatusesCh
         className: "alpaca-modal",
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 218,
-            columnNumber: 9
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("p", {
-        __source: {
-            fileName: "src/components/StatusManager.jsx",
-            lineNumber: 223,
+            lineNumber: 220,
             columnNumber: 11
         },
         __self: undefined
-    }, 'Are you sure you want to delete the status "', /*#__PURE__*/ React.createElement("strong", {
+    }, /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/StatusManager.jsx",
             lineNumber: 225,
             columnNumber: 13
         },
         __self: undefined
+    }, 'Are you sure you want to delete the status "', /*#__PURE__*/ React.createElement("strong", {
+        __source: {
+            fileName: "src/components/StatusManager.jsx",
+            lineNumber: 227,
+            columnNumber: 15
+        },
+        __self: undefined
     }, statusToDelete.name), '"? This cannot be undone.'), /*#__PURE__*/ React.createElement("div", {
         className: "alpaca-actions",
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 227,
-            columnNumber: 11
+            lineNumber: 229,
+            columnNumber: 13
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement(Button, {
@@ -1406,8 +1406,8 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error, onStatusesCh
         onClick: performDelete,
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 228,
-            columnNumber: 13
+            lineNumber: 230,
+            columnNumber: 15
         },
         __self: undefined
     }, "Delete"), /*#__PURE__*/ React.createElement(Button, {
@@ -1415,11 +1415,11 @@ const StatusManager = ({ statuses, fetchStatuses, isLoading, error, onStatusesCh
         onClick: cancelDelete,
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 231,
-            columnNumber: 13
+            lineNumber: 233,
+            columnNumber: 15
         },
         __self: undefined
-    }, "Cancel"))));
+    }, "Cancel")))));
 };
 // StatusRow using grid cell display
 const StatusRow = React.forwardRef(({ status, onRename, onDelete, isDragging, dragHandleProps, ...props }, ref)=>{
@@ -1456,7 +1456,7 @@ const StatusRow = React.forwardRef(({ status, onRename, onDelete, isDragging, dr
         className: `status-grid-row ${isDragging ? "is-dragging" : ""}`,
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 285,
+            lineNumber: 288,
             columnNumber: 7
         },
         __self: undefined
@@ -1464,7 +1464,7 @@ const StatusRow = React.forwardRef(({ status, onRename, onDelete, isDragging, dr
         className: "status-grid-cell",
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 290,
+            lineNumber: 293,
             columnNumber: 9
         },
         __self: undefined
@@ -1472,7 +1472,7 @@ const StatusRow = React.forwardRef(({ status, onRename, onDelete, isDragging, dr
         className: "status-row-content",
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 291,
+            lineNumber: 294,
             columnNumber: 11
         },
         __self: undefined
@@ -1482,7 +1482,7 @@ const StatusRow = React.forwardRef(({ status, onRename, onDelete, isDragging, dr
         title: "Drag to reorder",
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 292,
+            lineNumber: 295,
             columnNumber: 13
         },
         __self: undefined
@@ -1497,7 +1497,7 @@ const StatusRow = React.forwardRef(({ status, onRename, onDelete, isDragging, dr
         },
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 297,
+            lineNumber: 300,
             columnNumber: 15
         },
         __self: undefined
@@ -1507,7 +1507,7 @@ const StatusRow = React.forwardRef(({ status, onRename, onDelete, isDragging, dr
         r: "1.5",
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 305,
+            lineNumber: 308,
             columnNumber: 17
         },
         __self: undefined
@@ -1517,47 +1517,47 @@ const StatusRow = React.forwardRef(({ status, onRename, onDelete, isDragging, dr
         r: "1.5",
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 306,
-            columnNumber: 17
-        },
-        __self: undefined
-    }), /*#__PURE__*/ React.createElement("circle", {
-        cx: "4",
-        cy: "8",
-        r: "1.5",
-        __source: {
-            fileName: "src/components/StatusManager.jsx",
-            lineNumber: 307,
-            columnNumber: 17
-        },
-        __self: undefined
-    }), /*#__PURE__*/ React.createElement("circle", {
-        cx: "8",
-        cy: "8",
-        r: "1.5",
-        __source: {
-            fileName: "src/components/StatusManager.jsx",
-            lineNumber: 308,
-            columnNumber: 17
-        },
-        __self: undefined
-    }), /*#__PURE__*/ React.createElement("circle", {
-        cx: "4",
-        cy: "13",
-        r: "1.5",
-        __source: {
-            fileName: "src/components/StatusManager.jsx",
             lineNumber: 309,
             columnNumber: 17
         },
         __self: undefined
     }), /*#__PURE__*/ React.createElement("circle", {
+        cx: "4",
+        cy: "8",
+        r: "1.5",
+        __source: {
+            fileName: "src/components/StatusManager.jsx",
+            lineNumber: 310,
+            columnNumber: 17
+        },
+        __self: undefined
+    }), /*#__PURE__*/ React.createElement("circle", {
+        cx: "8",
+        cy: "8",
+        r: "1.5",
+        __source: {
+            fileName: "src/components/StatusManager.jsx",
+            lineNumber: 311,
+            columnNumber: 17
+        },
+        __self: undefined
+    }), /*#__PURE__*/ React.createElement("circle", {
+        cx: "4",
+        cy: "13",
+        r: "1.5",
+        __source: {
+            fileName: "src/components/StatusManager.jsx",
+            lineNumber: 312,
+            columnNumber: 17
+        },
+        __self: undefined
+    }), /*#__PURE__*/ React.createElement("circle", {
         cx: "8",
         cy: "13",
         r: "1.5",
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 310,
+            lineNumber: 313,
             columnNumber: 17
         },
         __self: undefined
@@ -1569,7 +1569,7 @@ const StatusRow = React.forwardRef(({ status, onRename, onDelete, isDragging, dr
         onKeyDown: handleKeyDown,
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 314,
+            lineNumber: 317,
             columnNumber: 15
         },
         __self: undefined
@@ -1581,7 +1581,7 @@ const StatusRow = React.forwardRef(({ status, onRename, onDelete, isDragging, dr
         onClick: handleStartRename,
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 322,
+            lineNumber: 325,
             columnNumber: 15
         },
         __self: undefined
@@ -1589,7 +1589,7 @@ const StatusRow = React.forwardRef(({ status, onRename, onDelete, isDragging, dr
         className: "status-grid-cell actions-cell",
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 334,
+            lineNumber: 337,
             columnNumber: 9
         },
         __self: undefined
@@ -1599,7 +1599,7 @@ const StatusRow = React.forwardRef(({ status, onRename, onDelete, isDragging, dr
         onClick: ()=>onDelete(status.term_id),
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 335,
+            lineNumber: 338,
             columnNumber: 11
         },
         __self: undefined
@@ -11650,7 +11650,7 @@ const DefaultStatusSelector = ({ statuses, onDefaultChange })=>{
             columnNumber: 5
         },
         __self: undefined
-    }, /*#__PURE__*/ React.createElement("h3", {
+    }, /*#__PURE__*/ React.createElement("h2", {
         __source: {
             fileName: "src/components/DefaultStatusSelector.jsx",
             lineNumber: 78,

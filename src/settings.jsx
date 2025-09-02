@@ -39,7 +39,6 @@ const AlpacaSettings = () => {
 
   return (
     <>
-      <h2>Status Management</h2>
       <StatusManager
         statuses={statuses}
         fetchStatuses={fetchStatuses}
