@@ -13,6 +13,7 @@ import {
   generateStatusChangeComment,
   generateAssigneeChangeComment,
 } from "../utils/comments";
+import { getUser } from "../utils/usercache";
 
 /**
  * Main board component.
@@ -272,7 +273,7 @@ function Board() {
       newAssignees.map(async (assignee) => {
         if (assignee && assignee.id && !assignee.display_name) {
           try {
-            const fullUser = await wp.apiFetch({ path: `/wp/v2/users/${assignee.id}` });
+            const fullUser = await getUser(assignee.id);
             return { ...assignee, display_name: fullUser.name, slug: fullUser.slug };
           } catch (error) {
             console.error(`Error fetching user data for ID ${assignee.id}:`, error);
