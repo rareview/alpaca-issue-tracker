@@ -453,44 +453,96 @@
   }
 
   .alpaca-status-manager {
-    table {
-      max-width: 50vw;
-      th {
-        font-weight: bold;
-      }
-      tr {
-        td {
-          vertical-align: middle;
+    .status-grid {
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      overflow: hidden;
+      font-size: 14px;
+
+      .status-grid-header {
+        display: grid;
+        grid-template-columns: 1fr 150px; // name + actions
+        background: #f7f7f7;
+        border-bottom: 1px solid #ddd;
+        font-weight: 600;
+
+        .status-grid-cell {
+          padding: 8px 12px;
+        }
+
+        .actions-cell {
+          text-align: right;
         }
       }
-      .alpaca-status-manager-name {
-        line-height: 1.5em;
-        font-size: 1rem;
-        div {
-          margin: 0;
+
+      .status-grid-body {
+        display: flex;
+        flex-direction: column; // ✅ allows placeholder to insert space
+        min-height: 1px; // prevents collapse when empty
+      }
+
+      .status-grid-row {
+        display: grid;
+        grid-template-columns: 1fr 150px; // name + actions
+        align-items: center;
+        border-bottom: 1px solid #eee;
+        background: #fff;
+        transition: background 0.2s;
+
+        &:last-child {
+          border-bottom: none;
         }
-        button .dashicons {
-          opacity: 0;
+
+        &.is-dragging {
+          background: #e6f0ff;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         }
-        input {
-          margin: 0;
-          padding: 0;
-          background: transparent;
-          border: none;
-          &:focus {
-            outline: none;
-            box-shadow: none;
+
+        .status-grid-cell {
+          padding: 8px 12px;
+
+          &.actions-cell {
+            text-align: right;
+            white-space: nowrap;
           }
         }
-        &:hover button .dashicons {
-          opacity: 1;
-          cursor: pointer;
+
+        .status-row-content {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+
+          .drag-handle {
+            cursor: grab;
+            display: flex;
+            align-items: center;
+            padding: 4px;
+            color: #777;
+          }
+
+          button.button-link {
+            background: none;
+            border: none;
+            color: #0073aa;
+            padding: 0;
+            cursor: pointer;
+            font-size: inherit;
+
+            .dashicons-edit {
+              margin-left: 4px;
+              font-size: 14px;
+              color: #777;
+            }
+          }
         }
       }
-      .alpaca-status-manager-actions {
-        width: 10rem;
-        text-align: center;
-      }
+    }
+
+    .alpaca-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 16px;
     }
   }
 }

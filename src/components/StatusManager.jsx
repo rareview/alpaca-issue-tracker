@@ -1,6 +1,12 @@
 const { useState, useEffect, useRef } = wp.element;
 const { Button, Spinner, Modal, TextControl } = wp.components;
 
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+} from "@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration";
+
 const StatusManager = ({
   statuses,
   fetchStatuses,
@@ -12,8 +18,6 @@ const StatusManager = ({
   const [statusToDelete, setStatusToDelete] = useState(null);
   const [localStatuses, setLocalStatuses] = useState(statuses);
   const [isUpdatingScores, setIsUpdatingScores] = useState(false);
-
-  // fix: table flashes when statuses move
 
   useEffect(() => {
     setLocalStatuses(statuses);
@@ -68,16 +72,17 @@ const StatusManager = ({
     }
   };
 
-  const handleMove = (id, direction) => {
-    const oldIndex = localStatuses.findIndex((s) => s.term_id === id);
-    if (oldIndex === -1) return;
+  const handleDragEnd = (result) => {
+    if (!result.destination) return;
 
-    const newIndex = oldIndex + direction;
-    if (newIndex < 0 || newIndex >= localStatuses.length) return;
+    const sourceIndex = result.source.index;
+    const destinationIndex = result.destination.index;
 
-    const newStatuses = [...localStatuses];
-    const [movedItem] = newStatuses.splice(oldIndex, 1);
-    newStatuses.splice(newIndex, 0, movedItem);
+    if (sourceIndex === destinationIndex) return;
+
+    const newStatuses = Array.from(localStatuses);
+    const [reorderedItem] = newStatuses.splice(sourceIndex, 1);
+    newStatuses.splice(destinationIndex, 0, reorderedItem);
 
     setLocalStatuses(newStatuses);
 
@@ -156,27 +161,52 @@ const StatusManager = ({
 
   return (
     <div className="alpaca-status-manager">
-      <table className="wp-list-table widefat striped">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th className="alpaca-status-manager-actions">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {localStatuses.map((status, index) => (
-            <StatusRow
-              key={status.term_id}
-              status={status}
-              onRename={handleRename}
-              onDelete={handleDelete}
-              onMove={handleMove}
-              isFirst={index === 0}
-              isLast={index === localStatuses.length - 1}
-            />
-          ))}
-        </tbody>
-      </table>
+      <div className="status-grid">
+        {/* Grid header */}
+        <div className="status-grid-header">
+          <div className="status-grid-cell">
+            <strong>Name</strong>
+          </div>
+          <div className="status-grid-cell actions-cell">
+            <strong>Actions</strong>
+          </div>
+        </div>
+
+        {/* Draggable grid body */}
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <Droppable droppableId="status-list">
+            {(provided) => (
+              <div
+                {...provided.droppableProps}
+                ref={provided.innerRef}
+                className="status-grid-body"
+              >
+                {localStatuses.map((status, index) => (
+                  <Draggable
+                    key={status.term_id.toString()}
+                    draggableId={status.term_id.toString()}
+                    index={index}
+                  >
+                    {(provided, snapshot) => (
+                      <StatusRow
+                        ref={provided.innerRef}
+                        {...provided.draggableProps}
+                        dragHandleProps={provided.dragHandleProps}
+                        status={status}
+                        onRename={handleRename}
+                        onDelete={handleDelete}
+                        isDragging={snapshot.isDragging}
+                      />
+                    )}
+                  </Draggable>
+                ))}
+                {provided.placeholder}{" "}
+                {/* ✅ keep this last inside the droppable */}
+              </div>
+            )}
+          </Droppable>
+        </DragDropContext>
+      </div>
 
       <p>
         <Button isPrimary onClick={handleAddStatus}>
@@ -208,86 +238,95 @@ const StatusManager = ({
   );
 };
 
-// Simple StatusRow component without drag-and-drop
-const StatusRow = ({ status, onRename, onDelete, onMove, isFirst, isLast }) => {
-  const [isRenaming, setIsRenaming] = useState(false);
-  const [name, setName] = useState(status.name);
-  const inputRef = useRef(null);
+// StatusRow using grid cell display
+const StatusRow = React.forwardRef(
+  (
+    { status, onRename, onDelete, isDragging, dragHandleProps, ...props },
+    ref
+  ) => {
+    const [isRenaming, setIsRenaming] = useState(false);
+    const [name, setName] = useState(status.name);
+    const inputRef = useRef(null);
 
-  useEffect(() => {
-    if (isRenaming && inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.select();
-    }
-  }, [isRenaming]);
+    useEffect(() => {
+      if (isRenaming && inputRef.current) {
+        inputRef.current.focus();
+        inputRef.current.select();
+      }
+    }, [isRenaming]);
 
-  const handleStartRename = () => {
-    setIsRenaming(true);
-  };
+    const handleStartRename = () => {
+      setIsRenaming(true);
+    };
 
-  const handleCancelRename = () => {
-    setIsRenaming(false);
-    setName(status.name);
-  };
-
-  const handleSaveRename = () => {
-    setIsRenaming(false);
-    if (name.trim() && name !== status.name) {
-      onRename(status.term_id, name);
-    } else {
+    const handleCancelRename = () => {
+      setIsRenaming(false);
       setName(status.name);
-    }
-  };
+    };
 
-  const handleKeyDown = (event) => {
-    if (event.key === "Enter") {
-      handleSaveRename();
-    } else if (event.key === "Escape") {
-      handleCancelRename();
-    }
-  };
+    const handleSaveRename = () => {
+      setIsRenaming(false);
+      if (name.trim() && name !== status.name) {
+        onRename(status.term_id, name);
+      } else {
+        setName(status.name);
+      }
+    };
 
-  return (
-    <tr>
-      <td className="alpaca-status-manager-name">
-        {isRenaming ? (
-          <TextControl
-            ref={inputRef}
-            value={name}
-            onChange={setName}
-            onBlur={handleSaveRename}
-            onKeyDown={handleKeyDown}
+    const handleKeyDown = (event) => {
+      if (event.key === "Enter") {
+        handleSaveRename();
+      } else if (event.key === "Escape") {
+        handleCancelRename();
+      }
+    };
+
+    return (
+      <div
+        ref={ref}
+        {...props}
+        className={`status-grid-row ${isDragging ? "is-dragging" : ""}`}
+      >
+        <div className="status-grid-cell">
+          <div className="status-row-content">
+            <div
+              {...dragHandleProps}
+              className="drag-handle"
+              title="Drag to reorder"
+            >
+              <span className="dashicons dashicons-menu"></span>
+            </div>
+            {isRenaming ? (
+              <TextControl
+                ref={inputRef}
+                value={name}
+                onChange={setName}
+                onBlur={handleSaveRename}
+                onKeyDown={handleKeyDown}
+              />
+            ) : (
+              <Button
+                isTertiary
+                icon="edit"
+                iconPosition="right"
+                className=""
+                onClick={handleStartRename}
+              >
+                {status.name}
+              </Button>
+            )}
+          </div>
+        </div>
+        <div className="status-grid-cell actions-cell">
+          <Button
+            icon="trash"
+            label="Delete"
+            onClick={() => onDelete(status.term_id)}
           />
-        ) : (
-          <button className="button-link" onClick={handleStartRename}>
-            {status.name} <span className="dashicons dashicons-edit"></span>
-          </button>
-        )}
-      </td>
-      <td className="alpaca-status-manager-actions">
-        <Button
-          icon="arrow-up-alt2"
-          label="Move Up"
-          onClick={() => onMove(status.term_id, -1)}
-          disabled={isFirst}
-        />
-        <Button
-          icon="arrow-down-alt2"
-          label="Move Down"
-          onClick={() => onMove(status.term_id, 1)}
-          disabled={isLast}
-        />
-        <Button
-          icon="trash"
-          label="Delete"
-          // isDestructive
-          onClick={() => onDelete(status.term_id)}
-        />
-        <Button icon="hidden" label="Toggle Visibility" />
-      </td>
-    </tr>
-  );
-};
-// todo: option to make status (in)visible
+        </div>
+      </div>
+    );
+  }
+);
 
 export default StatusManager;
