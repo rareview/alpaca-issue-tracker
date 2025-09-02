@@ -1,15 +1,6 @@
 const { useState, useRef, useEffect, useCallback } = wp.element;
 
-import {
-  DndContext,
-  closestCenter,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  DragOverlay,
-} from "@dnd-kit/core";
-
-import { arrayMove } from "@dnd-kit/sortable";
+import { DragDropContext } from "@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration";
 
 import AlpacaIssue from "./issue";
 import Item from "./Item";
@@ -34,18 +25,9 @@ function Board() {
     return [];
   });
 
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: { distance: 5 },
-    })
-  );
-
-  const [activeId, setActiveId] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
   const triggerRef = useRef(null);
-  const [draggedItem, setDraggedItem] = useState(null);
   const [needsSave, setNeedsSave] = useState(false);
-  const [originalContainerId, setOriginalContainerId] = useState(null);
   const [hiddenContainerIds, setHiddenContainerIds] = useState(() => {
     const cookie = getCookie("alpaca_hidden_containers");
     return cookie ? cookie.split(",").filter(Boolean) : [];
@@ -126,108 +108,55 @@ function Board() {
     return null;
   }
 
-  function handleDragStart(event) {
-    const { active } = event;
-    setActiveId(active.id);
-    setDraggedItem(getItemById(active.id));
-    const container = findContainerByItemId(active.id);
-    if (container) {
-      setOriginalContainerId(container.id);
-    }
-  }
+  function handleDragEnd(result) {
+    const { source, destination, draggableId } = result;
 
-  function handleDragOver(event) {
-    const { active, over } = event;
-    if (!over) return;
-
-    const activeContainer = findContainerByItemId(active.id);
-    const overContainer =
-      findContainerByItemId(over.id) || findContainerById(over.id);
-
-    if (
-      !activeContainer ||
-      !overContainer ||
-      activeContainer.id === overContainer.id
-    ) {
+    if (!destination) {
       return;
     }
 
-    setContainers((prev) => {
-      const newContainers = prev.map((c) => ({ ...c, items: [...c.items] }));
+    const sourceContainer = findContainerById(source.droppableId);
+    const destinationContainer = findContainerById(destination.droppableId);
 
-      const source = newContainers.find((c) => c.id === activeContainer.id);
-      const destination = newContainers.find((c) => c.id === overContainer.id);
+    if (sourceContainer.id === destinationContainer.id) {
+      const items = Array.from(sourceContainer.items);
+      const [reorderedItem] = items.splice(source.index, 1);
+      items.splice(destination.index, 0, reorderedItem);
 
-      const activeIndex = source.items.findIndex(
-        (item) => item.id === active.id
+      setContainers((prev) =>
+        prev.map((c) =>
+          c.id === sourceContainer.id ? { ...c, items: items } : c
+        )
       );
-      const [movedItem] = source.items.splice(activeIndex, 1);
+    } else {
+      const sourceItems = Array.from(sourceContainer.items);
+      const destItems = Array.from(destinationContainer.items);
+      const [movedItem] = sourceItems.splice(source.index, 1);
+      destItems.splice(destination.index, 0, movedItem);
 
-      let newIndex;
-      if (over.id === overContainer.id) {
-        newIndex = destination.items.length;
-      } else {
-        newIndex = destination.items.findIndex((item) => item.id === over.id);
-        if (newIndex === -1) newIndex = destination.items.length;
-      }
+      setContainers((prev) =>
+        prev.map((c) => {
+          if (c.id === sourceContainer.id) {
+            return { ...c, items: sourceItems };
+          } else if (c.id === destinationContainer.id) {
+            return { ...c, items: destItems };
+          } else {
+            return c;
+          }
+        })
+      );
 
-      destination.items.splice(newIndex, 0, movedItem);
-
-      return newContainers;
-    });
-  }
-
-  function handleDragEnd(event) {
-    const { active, over } = event;
-
-    if (over && originalContainerId) {
-      const overContainer =
-        findContainerByItemId(over.id) || findContainerById(over.id);
-
-      if (overContainer && overContainer.id !== originalContainerId) {
-        const originalContainer = findContainerById(originalContainerId);
-        if (originalContainer) {
-          const commentContent = generateStatusChangeComment(
-            originalContainer.title,
-            overContainer.title
-          );
-          createIssueComment(active.id, commentContent);
-        }
-      }
-    }
-
-    setActiveId(null);
-    setDraggedItem(null);
-    setOriginalContainerId(null);
-
-    if (!over) return;
-
-    const activeContainer = findContainerByItemId(active.id);
-    const overContainer =
-      findContainerByItemId(over.id) || findContainerById(over.id);
-
-    if (!activeContainer || !overContainer) return;
-
-    if (activeContainer.id === overContainer.id) {
-      const items = activeContainer.items;
-      const oldIndex = items.findIndex((i) => i.id === active.id);
-      const newIndex = items.findIndex((i) => i.id === over.id);
-
-      if (oldIndex !== newIndex) {
-        setContainers((prev) =>
-          prev.map((c) =>
-            c.id === activeContainer.id
-              ? { ...c, items: arrayMove(items, oldIndex, newIndex) }
-              : c
-          )
-        );
-      }
+      const commentContent = generateStatusChangeComment(
+        sourceContainer.title,
+        destinationContainer.title
+      );
+      createIssueComment(draggableId, commentContent);
     }
 
     saveBoardOrder();
 
-    const movedItemId = parseInt(active.id, 10);
-    const newStatusTermId = parseInt(overContainer.id, 10);
+    const movedItemId = parseInt(draggableId, 10);
+    const newStatusTermId = parseInt(destination.droppableId, 10);
 
     wp.apiFetch({
       path: `/issue/v1/update/${movedItemId}`,
@@ -500,13 +429,7 @@ function Board() {
   }, [containers]);
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragStart={handleDragStart}
-      onDragOver={handleDragOver}
-      onDragEnd={handleDragEnd}
-    >
+    <DragDropContext onDragEnd={handleDragEnd}>
       <div className="alpaca-wrap">
         {containers.map((container, index) => (
           <Container
@@ -523,18 +446,6 @@ function Board() {
           />
         ))}
       </div>
-      <DragOverlay dropAnimation={null}>
-        {activeId && draggedItem ? (
-          <Item
-            id={draggedItem.id}
-            content={draggedItem.content}
-            assignees={draggedItem.assignees}
-            comment_count={draggedItem.comment_count}
-            meta={draggedItem.meta}
-            className="alpaca-item-dragging"
-          />
-        ) : null}
-      </DragOverlay>
 
       <AlpacaIssue
         issueId={selectedItem?.id}
@@ -548,7 +459,7 @@ function Board() {
         createIssueComment={createIssueComment}
         generateAssigneeChangeComment={generateAssigneeChangeComment}
       />
-    </DndContext>
+    </DragDropContext>
   );
 }
 

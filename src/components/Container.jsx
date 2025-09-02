@@ -1,10 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 const { DropdownMenu, TextControl } = wp.components;
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import SortableItem from "./SortableItem";
+import { Droppable } from "@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration";
+import DraggableItem from "./DraggableItem";
 
 /**
  * Container component (delegates rename to parent via onRename).
@@ -121,34 +118,33 @@ function Container({
           <DropdownMenu icon="menu" label="Options" controls={menuControls} />
         </div>
       </div>
-      <SortableContext
-        id={id}
-        items={hasItems ? items.map((item) => item.id) : [id]}
-        strategy={verticalListSortingStrategy}
-      >
-        {hasItems ? (
-          items.map((item) => (
-            <SortableItem
-              className="alpaca-item"
-              key={item.id}
-              id={item.id}
-              content={item.content}
-              assignees={item.assignees}
-              comment_count={item.comment_count}
-              meta={item.meta}
-              onClick={onItemClick}
-            />
-          ))
-        ) : (
-          <SortableItem
-            key={id}
-            id={id}
-            className="alpaca-item empty"
-            content={"Drop items here"}
-            isDragDisabled={true}
-          />
+      <Droppable droppableId={id}>
+        {(provided, snapshot) => (
+          <div
+            ref={provided.innerRef}
+            {...provided.droppableProps}
+            className={`alpaca-items ${snapshot.isDraggingOver ? "dragging-over" : ""}`}>
+            {hasItems ? (
+              items.map((item, index) => (
+                <DraggableItem
+                  className="alpaca-item"
+                  key={item.id}
+                  id={item.id}
+                  index={index}
+                  content={item.content}
+                  assignees={item.assignees}
+                  comment_count={item.comment_count}
+                  meta={item.meta}
+                  onClick={onItemClick}
+                />
+              ))
+            ) : (
+              <div className="alpaca-item empty">Drop items here</div>
+            )}
+            {provided.placeholder}
+          </div>
         )}
-      </SortableContext>
+      </Droppable>
     </div>
   );
 }

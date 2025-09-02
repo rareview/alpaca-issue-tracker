@@ -7,10 +7,13 @@ const unstable_batchedUpdates =
     return fn(...args);
   };
 
-export { render, createPortal, unstable_batchedUpdates };
+const version = '18.2.0';
+
+export { render, createPortal, unstable_batchedUpdates, version };
 
 export default {
   render,
   createPortal,
   unstable_batchedUpdates,
+  version
 };

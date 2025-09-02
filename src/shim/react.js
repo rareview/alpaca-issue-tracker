@@ -13,5 +13,7 @@ export const useReducer = wp.element.useReducer;
 export const cloneElement = wp.element.cloneElement;
 export const forwardRef = wp.element.forwardRef;
 export const useLayoutEffect = wp.element.useLayoutEffect;
+export const Fragment = wp.element.Fragment;
+export const useInsertionEffect = wp.element.useLayoutEffect;
 
 export default wp.element; // default export is the whole wp.element
