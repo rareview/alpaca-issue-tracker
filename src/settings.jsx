@@ -40,10 +40,6 @@ const AlpacaSettings = () => {
   return (
     <>
       <h2>Status Management</h2>
-      <p>
-        Define the statuses (columns) for your project board. Use the arrow
-        buttons to reorder.
-      </p>
       <StatusManager
         statuses={statuses}
         fetchStatuses={fetchStatuses}

@@ -1081,14 +1081,7 @@ const AlpacaSettings = ()=>{
             columnNumber: 7
         },
         __self: undefined
-    }, "Status Management"), /*#__PURE__*/ React.createElement("p", {
-        __source: {
-            fileName: "src/settings.jsx",
-            lineNumber: 43,
-            columnNumber: 7
-        },
-        __self: undefined
-    }, "Define the statuses (columns) for your project board. Use the arrow buttons to reorder."), /*#__PURE__*/ React.createElement((0, _statusManagerDefault.default), {
+    }, "Status Management"), /*#__PURE__*/ React.createElement((0, _statusManagerDefault.default), {
         statuses: statuses,
         fetchStatuses: fetchStatuses,
         isLoading: isLoading,
@@ -1097,7 +1090,7 @@ const AlpacaSettings = ()=>{
         defaultStatusId: defaultStatusId,
         __source: {
             fileName: "src/settings.jsx",
-            lineNumber: 47,
+            lineNumber: 43,
             columnNumber: 7
         },
         __self: undefined
@@ -1107,7 +1100,7 @@ const AlpacaSettings = ()=>{
         },
         __source: {
             fileName: "src/settings.jsx",
-            lineNumber: 55,
+            lineNumber: 51,
             columnNumber: 7
         },
         __self: undefined
@@ -1116,7 +1109,7 @@ const AlpacaSettings = ()=>{
         onDefaultChange: handleDefaultStatusChange,
         __source: {
             fileName: "src/settings.jsx",
-            lineNumber: 56,
+            lineNumber: 52,
             columnNumber: 7
         },
         __self: undefined
@@ -11597,14 +11590,7 @@ const DefaultStatusSelector = ({ statuses, onDefaultChange })=>{
             columnNumber: 7
         },
         __self: undefined
-    }, "Default Status for New Issues"), /*#__PURE__*/ React.createElement("p", {
-        __source: {
-            fileName: "src/components/DefaultStatusSelector.jsx",
-            lineNumber: 79,
-            columnNumber: 7
-        },
-        __self: undefined
-    }, "Choose which status new issues should be assigned to by default."), /*#__PURE__*/ React.createElement("div", {
+    }, "Default Status for New Issues"), /*#__PURE__*/ React.createElement("div", {
         style: {
             display: "flex",
             alignItems: "center",
@@ -11612,7 +11598,7 @@ const DefaultStatusSelector = ({ statuses, onDefaultChange })=>{
         },
         __source: {
             fileName: "src/components/DefaultStatusSelector.jsx",
-            lineNumber: 80,
+            lineNumber: 79,
             columnNumber: 7
         },
         __self: undefined
@@ -11625,14 +11611,14 @@ const DefaultStatusSelector = ({ statuses, onDefaultChange })=>{
         disabled: isSaving || isFetching,
         __source: {
             fileName: "src/components/DefaultStatusSelector.jsx",
-            lineNumber: 81,
+            lineNumber: 80,
             columnNumber: 9
         },
         __self: undefined
     }), (isFetching || isSaving) && /*#__PURE__*/ React.createElement(Spinner, {
         __source: {
             fileName: "src/components/DefaultStatusSelector.jsx",
-            lineNumber: 89,
+            lineNumber: 88,
             columnNumber: 38
         },
         __self: undefined
