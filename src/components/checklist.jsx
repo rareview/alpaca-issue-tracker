@@ -60,13 +60,11 @@ const Checklist = ({
     setChecklistItems(newItems);
     saveChecklist(newItems);
 
-    if (isBeingChecked) {
-      if (createIssueComment) {
-        createIssueComment(
-          issueId,
-          generateCheckedItemComment(currentItem, currentUser)
-        );
-      }
+    if (isBeingChecked && createIssueComment) {
+      createIssueComment(
+        issueId,
+        generateCheckedItemComment(currentItem, currentUser)
+      );
     }
   };
 
@@ -79,10 +77,7 @@ const Checklist = ({
   const handleDragEnd = (result) => {
     const { destination, source } = result;
 
-    // If item is dropped outside a droppable area or in the same position
-    if (!destination || destination.index === source.index) {
-      return;
-    }
+    if (!destination || destination.index === source.index) return;
 
     const newItems = Array.from(checklistItems);
     const [reorderedItem] = newItems.splice(source.index, 1);
@@ -119,9 +114,7 @@ const Checklist = ({
         );
         if (textInputs.length > 0) {
           const lastInput = textInputs[textInputs.length - 1];
-          if (lastInput) {
-            lastInput.focus();
-          }
+          if (lastInput) lastInput.focus();
         }
       }
     }
@@ -129,10 +122,55 @@ const Checklist = ({
   }, [checklistItems.length]);
 
   return (
-    <div className="alpaca-checklist-container">
+    <div className="alpaca-checklist-container" ref={checklistContainerRef}>
       <BaseControl label="Checklist" className="alpaca-checklist-label" />
       <DragDropContext onDragEnd={handleDragEnd}>
-        <Droppable droppableId="checklist">
+        <Droppable
+          droppableId="checklist"
+          renderClone={(provided, snapshot, rubric) => {
+            const item = checklistItems[rubric.source.index];
+            return (
+              <div
+                ref={provided.innerRef}
+                {...provided.draggableProps}
+                {...provided.dragHandleProps}
+                className={`alpaca-checklist-item ${
+                  item.checked !== 0 ? "checked" : ""
+                } alpaca-checklist-item--dragging`}
+                style={{
+                  ...provided.draggableProps.style,
+                  left: 0, // lock X relative to container
+                  // width: "100%",
+                  boxSizing: "border-box",
+                }}
+              >
+                <CheckboxControl
+                  checked={item.checked !== 0}
+                  onChange={() => toggleChecklistItem(rubric.source.index)}
+                />
+                <TextControl
+                  className="alpaca-textinput"
+                  value={item.label}
+                  onChange={(newLabel) =>
+                    updateChecklistItemLabel(rubric.source.index, newLabel)
+                  }
+                  onFocus={() => setActiveIndex(rubric.source.index)}
+                  onBlur={() => handleChecklistItemBlur(rubric.source.index)}
+                  placeholder="Add an item..."
+                />
+                <Button
+                  icon="trash"
+                  onClick={() => deleteChecklistItem(rubric.source.index)}
+                  label="Delete item"
+                  showTooltip="true"
+                />
+                <div className="alpaca-drag-handle">
+                  <DragHandleIcon />
+                </div>
+              </div>
+            );
+          }}
+        >
           {(provided) => (
             <div
               className="alpaca-checklist"
@@ -147,11 +185,12 @@ const Checklist = ({
                 >
                   {(provided) => (
                     <div
+                      ref={provided.innerRef}
+                      {...provided.draggableProps}
+                      {...provided.dragHandleProps}
                       className={`alpaca-checklist-item ${
                         item.checked !== 0 ? "checked" : ""
                       } ${activeIndex === index ? "active" : ""}`}
-                      ref={provided.innerRef}
-                      {...provided.draggableProps}
                     >
                       <CheckboxControl
                         checked={item.checked !== 0}
@@ -174,10 +213,7 @@ const Checklist = ({
                         label="Delete item"
                         showTooltip="true"
                       />
-                      <div
-                        {...provided.dragHandleProps}
-                        className="alpaca-drag-handle"
-                      >
+                      <div className="alpaca-drag-handle">
                         <DragHandleIcon />
                       </div>
                     </div>

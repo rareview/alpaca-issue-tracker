@@ -12,6 +12,7 @@ const Item = forwardRef(
       meta,
       className,
       style,
+      onClick,
       ...props
     },
     ref
@@ -53,6 +54,7 @@ const Item = forwardRef(
         data-diff-days={diffDays}
         {...assigneeDataAttributes}
         {...props}
+        onClick={onClick}
       >
         <div className="alpaca-item-upper">
           <div className="alpaca-item-content">{content}</div>
@@ -67,7 +69,6 @@ const Item = forwardRef(
           </div>
         </div>
         <div className="alpaca-item-meta">
-          {/* --- Assignees --- */}
           {assignees.length > 0 && (
             <div
               className="alpaca-item-assignees"
@@ -83,7 +84,6 @@ const Item = forwardRef(
               ))}
             </div>
           )}
-          {/* If no assignees, show nothing */}
 
           {typeof comment_count !== "undefined" && comment_count > 0 && (
             <div className="alpaca-item-comment-count has-dashicon">
@@ -95,21 +95,17 @@ const Item = forwardRef(
             </div>
           )}
 
-          {/* --- Deadline --- */}
           {isValidDeadline && (
             <div className="alpaca-item-deadline has-dashicon">
               <span
                 className="dashicons dashicons-calendar"
                 aria-hidden="true"
               ></span>
-              {/* deadline.toLocaleDateString(undefined, { month: "short", day: "numeric", }) */}
               {diffDays > 0
                 ? `${diffDays} day${diffDays > 1 ? "s" : ""} left`
                 : diffDays === 0
                 ? "Today"
-                : `${Math.abs(diffDays)} day${
-                    diffDays < -1 ? "s" : ""
-                  } ago`}
+                : `${Math.abs(diffDays)} day${diffDays < -1 ? "s" : ""} ago`}
             </div>
           )}
         </div>

@@ -17755,9 +17755,7 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
         currentItem.checked = isBeingChecked ? currentUser.id : 0;
         setChecklistItems(newItems);
         saveChecklist(newItems);
-        if (isBeingChecked) {
-            if (createIssueComment) createIssueComment(issueId, (0, _commentsJs.generateCheckedItemComment)(currentItem, currentUser));
-        }
+        if (isBeingChecked && createIssueComment) createIssueComment(issueId, (0, _commentsJs.generateCheckedItemComment)(currentItem, currentUser));
     };
     const deleteChecklistItem = (index)=>{
         const newItems = checklistItems.filter((_, i)=>i !== index);
@@ -17766,7 +17764,6 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
     };
     const handleDragEnd = (result)=>{
         const { destination, source } = result;
-        // If item is dropped outside a droppable area or in the same position
         if (!destination || destination.index === source.index) return;
         const newItems = Array.from(checklistItems);
         const [reorderedItem] = newItems.splice(source.index, 1);
@@ -17805,9 +17802,10 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
     ]);
     return /*#__PURE__*/ React.createElement("div", {
         className: "alpaca-checklist-container",
+        ref: checklistContainerRef,
         __source: {
             fileName: "src/components/checklist.jsx",
-            lineNumber: 132,
+            lineNumber: 125,
             columnNumber: 5
         },
         __self: undefined
@@ -17816,7 +17814,7 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
         className: "alpaca-checklist-label",
         __source: {
             fileName: "src/components/checklist.jsx",
-            lineNumber: 133,
+            lineNumber: 126,
             columnNumber: 7
         },
         __self: undefined
@@ -17824,15 +17822,78 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
         onDragEnd: handleDragEnd,
         __source: {
             fileName: "src/components/checklist.jsx",
-            lineNumber: 134,
+            lineNumber: 127,
             columnNumber: 7
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement((0, _pragmaticDragAndDropReactBeautifulDndMigration.Droppable), {
         droppableId: "checklist",
+        renderClone: (provided, snapshot, rubric)=>{
+            const item = checklistItems[rubric.source.index];
+            return /*#__PURE__*/ React.createElement("div", {
+                ref: provided.innerRef,
+                ...provided.draggableProps,
+                ...provided.dragHandleProps,
+                className: `alpaca-checklist-item ${item.checked !== 0 ? "checked" : ""} alpaca-checklist-item--dragging`,
+                style: {
+                    ...provided.draggableProps.style,
+                    left: 0,
+                    // width: "100%",
+                    boxSizing: "border-box"
+                },
+                __source: {
+                    fileName: "src/components/checklist.jsx",
+                    lineNumber: 133,
+                    columnNumber: 15
+                }
+            }, /*#__PURE__*/ React.createElement(CheckboxControl, {
+                checked: item.checked !== 0,
+                onChange: ()=>toggleChecklistItem(rubric.source.index),
+                __source: {
+                    fileName: "src/components/checklist.jsx",
+                    lineNumber: 147,
+                    columnNumber: 17
+                }
+            }), /*#__PURE__*/ React.createElement(TextControl, {
+                className: "alpaca-textinput",
+                value: item.label,
+                onChange: (newLabel)=>updateChecklistItemLabel(rubric.source.index, newLabel),
+                onFocus: ()=>setActiveIndex(rubric.source.index),
+                onBlur: ()=>handleChecklistItemBlur(rubric.source.index),
+                placeholder: "Add an item...",
+                __source: {
+                    fileName: "src/components/checklist.jsx",
+                    lineNumber: 151,
+                    columnNumber: 17
+                }
+            }), /*#__PURE__*/ React.createElement(Button, {
+                icon: "trash",
+                onClick: ()=>deleteChecklistItem(rubric.source.index),
+                label: "Delete item",
+                showTooltip: "true",
+                __source: {
+                    fileName: "src/components/checklist.jsx",
+                    lineNumber: 161,
+                    columnNumber: 17
+                }
+            }), /*#__PURE__*/ React.createElement("div", {
+                className: "alpaca-drag-handle",
+                __source: {
+                    fileName: "src/components/checklist.jsx",
+                    lineNumber: 167,
+                    columnNumber: 17
+                }
+            }, /*#__PURE__*/ React.createElement((0, _dragHandleIconDefault.default), {
+                __source: {
+                    fileName: "src/components/checklist.jsx",
+                    lineNumber: 168,
+                    columnNumber: 19
+                }
+            })));
+        },
         __source: {
             fileName: "src/components/checklist.jsx",
-            lineNumber: 135,
+            lineNumber: 128,
             columnNumber: 9
         },
         __self: undefined
@@ -17842,7 +17903,7 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
             ref: provided.innerRef,
             __source: {
                 fileName: "src/components/checklist.jsx",
-                lineNumber: 137,
+                lineNumber: 175,
                 columnNumber: 13
             },
             __self: undefined
@@ -17852,17 +17913,18 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
                 index: index,
                 __source: {
                     fileName: "src/components/checklist.jsx",
-                    lineNumber: 143,
+                    lineNumber: 181,
                     columnNumber: 17
                 },
                 __self: undefined
             }, (provided)=>/*#__PURE__*/ React.createElement("div", {
-                    className: `alpaca-checklist-item ${item.checked !== 0 ? "checked" : ""} ${activeIndex === index ? "active" : ""}`,
                     ref: provided.innerRef,
                     ...provided.draggableProps,
+                    ...provided.dragHandleProps,
+                    className: `alpaca-checklist-item ${item.checked !== 0 ? "checked" : ""} ${activeIndex === index ? "active" : ""}`,
                     __source: {
                         fileName: "src/components/checklist.jsx",
-                        lineNumber: 149,
+                        lineNumber: 187,
                         columnNumber: 21
                     },
                     __self: undefined
@@ -17871,7 +17933,7 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
                     onChange: ()=>toggleChecklistItem(index),
                     __source: {
                         fileName: "src/components/checklist.jsx",
-                        lineNumber: 156,
+                        lineNumber: 195,
                         columnNumber: 23
                     },
                     __self: undefined
@@ -17885,7 +17947,7 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
                     placeholder: "Add an item...",
                     __source: {
                         fileName: "src/components/checklist.jsx",
-                        lineNumber: 160,
+                        lineNumber: 199,
                         columnNumber: 23
                     },
                     __self: undefined
@@ -17896,23 +17958,22 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
                     showTooltip: "true",
                     __source: {
                         fileName: "src/components/checklist.jsx",
-                        lineNumber: 171,
+                        lineNumber: 210,
                         columnNumber: 23
                     },
                     __self: undefined
                 }), /*#__PURE__*/ React.createElement("div", {
-                    ...provided.dragHandleProps,
                     className: "alpaca-drag-handle",
                     __source: {
                         fileName: "src/components/checklist.jsx",
-                        lineNumber: 177,
+                        lineNumber: 216,
                         columnNumber: 23
                     },
                     __self: undefined
                 }, /*#__PURE__*/ React.createElement((0, _dragHandleIconDefault.default), {
                     __source: {
                         fileName: "src/components/checklist.jsx",
-                        lineNumber: 181,
+                        lineNumber: 217,
                         columnNumber: 25
                     },
                     __self: undefined
@@ -17923,7 +17984,7 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
         onClick: addChecklistItem,
         __source: {
             fileName: "src/components/checklist.jsx",
-            lineNumber: 192,
+            lineNumber: 228,
             columnNumber: 7
         },
         __self: undefined
@@ -17983,7 +18044,7 @@ var _watchlistContext = require("../context/WatchlistContext");
 var _user = require("./User");
 var _userDefault = parcelHelpers.interopDefault(_user);
 const { forwardRef } = wp.element;
-const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, className, style, ...props }, ref)=>{
+const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, className, style, onClick, ...props }, ref)=>{
     const { isWatched, toggleWatch } = (0, _watchlistContext.useWatchlist)();
     const watched = isWatched(id);
     const assigneeDataAttributes = assignees.reduce((acc, assignee)=>{
@@ -18009,9 +18070,10 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         "data-diff-days": diffDays,
         ...assigneeDataAttributes,
         ...props,
+        onClick: onClick,
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 48,
+            lineNumber: 49,
             columnNumber: 7
         },
         __self: undefined
@@ -18019,7 +18081,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         className: "alpaca-item-upper",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 57,
+            lineNumber: 59,
             columnNumber: 9
         },
         __self: undefined
@@ -18027,7 +18089,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         className: "alpaca-item-content",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 58,
+            lineNumber: 60,
             columnNumber: 11
         },
         __self: undefined
@@ -18035,7 +18097,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         className: "alpaca-item-controls",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 59,
+            lineNumber: 61,
             columnNumber: 11
         },
         __self: undefined
@@ -18047,7 +18109,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         },
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 60,
+            lineNumber: 62,
             columnNumber: 13
         },
         __self: undefined
@@ -18055,7 +18117,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         className: "alpaca-item-meta",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 69,
+            lineNumber: 71,
             columnNumber: 9
         },
         __self: undefined
@@ -18065,7 +18127,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         title: assignees.length === 1 ? assignees[0].display_name || assignees[0].name : assignees.map((a)=>a.display_name || a.name).join(", "),
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 72,
+            lineNumber: 73,
             columnNumber: 13
         },
         __self: undefined
@@ -18074,7 +18136,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
             user: assignee,
             __source: {
                 fileName: "src/components/Item.jsx",
-                lineNumber: 82,
+                lineNumber: 83,
                 columnNumber: 17
             },
             __self: undefined
@@ -18099,7 +18161,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         className: "alpaca-item-deadline has-dashicon",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 100,
+            lineNumber: 99,
             columnNumber: 13
         },
         __self: undefined
@@ -18108,7 +18170,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         "aria-hidden": "true",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 101,
+            lineNumber: 100,
             columnNumber: 15
         },
         __self: undefined
@@ -18319,7 +18381,7 @@ var _pragmaticDragAndDropReactBeautifulDndMigration = require("@atlaskit/pragmat
 var _item = require("./Item");
 var _itemDefault = parcelHelpers.interopDefault(_item);
 /**
- * Draggable item component.
+ * Draggable item wrapper.
  */ function DraggableItem({ id, index, content, className, isDragDisabled = false, onClick, assignees = [], comment_count, meta }) {
     const handleClick = (event)=>{
         if (onClick) onClick(event, id);
@@ -18334,7 +18396,14 @@ var _itemDefault = parcelHelpers.interopDefault(_item);
             columnNumber: 5
         },
         __self: this
-    }, (provided, snapshot)=>/*#__PURE__*/ React.createElement((0, _itemDefault.default), {
+    }, (provided, snapshot)=>{
+        const combinedStyle = {
+            ...provided.draggableProps.style,
+            ...snapshot.isDragging ? {
+                opacity: 0.5
+            } : {}
+        };
+        return /*#__PURE__*/ React.createElement((0, _itemDefault.default), {
             ref: provided.innerRef,
             ...provided.draggableProps,
             ...provided.dragHandleProps,
@@ -18345,13 +18414,15 @@ var _itemDefault = parcelHelpers.interopDefault(_item);
             meta: meta,
             className: `${className} ${snapshot.isDragging ? "dragging" : ""}`,
             onClick: handleClick,
+            style: combinedStyle,
             __source: {
                 fileName: "src/components/DraggableItem.jsx",
-                lineNumber: 27,
-                columnNumber: 9
+                lineNumber: 33,
+                columnNumber: 11
             },
             __self: this
-        }));
+        });
+    });
 }
 exports.default = DraggableItem;
 

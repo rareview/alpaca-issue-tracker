@@ -354,37 +354,44 @@
       padding-bottom: 0.5rem;
     }
     padding: 1em 0;
-    .alpaca-checklist-item {
-      display: flex;
-      align-items: center;
-      .components-base-control__field {
-        margin: 0;
-      }
+  }
+
+  .alpaca-checklist-item,
+  .alpaca-checklist-item--dragging {
+    display: flex;
+    align-items: center;
+    .components-base-control__field {
+      margin: 0;
+    }
+    input[type="text"] {
+      border-color: transparent;
+    }
+    .alpaca-textinput {
+      width: 100%;
       input[type="text"] {
-        border-color: transparent;
-      }
-      .alpaca-textinput {
         width: 100%;
-        input[type="text"] {
-          width: 100%;
-        }
-      }
-      &.checked {
-        input[type="text"] {
-          text-decoration: line-through;
-        }
-      }
-      &.active {
-        input[type="text"] {
-          border-color: inherit;
-        }
-      }
-      button {
-        padding: 0;
-        height: auto;
-        min-width: auto;
       }
     }
+    &.checked {
+      input[type="text"] {
+        text-decoration: line-through;
+      }
+    }
+    &.active {
+      input[type="text"] {
+        border-color: inherit;
+      }
+    }
+    button {
+      padding: 0;
+      height: auto;
+      min-width: auto;
+    }
+  }
+
+  .alpaca-checklist-item--dragging {
+    z-index: 99900000 !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
 
   .alpaca-item .alpaca-item-controls .dashicons,

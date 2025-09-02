@@ -379,35 +379,40 @@
   padding-bottom: .5rem;
 }
 
-.wp-admin .alpaca-checklist-container .alpaca-checklist-item {
+.wp-admin .alpaca-checklist-item, .wp-admin .alpaca-checklist-item--dragging {
   align-items: center;
   display: flex;
 }
 
-.wp-admin .alpaca-checklist-container .alpaca-checklist-item .components-base-control__field {
+.wp-admin .alpaca-checklist-item .components-base-control__field, .wp-admin .alpaca-checklist-item--dragging .components-base-control__field {
   margin: 0;
 }
 
-.wp-admin .alpaca-checklist-container .alpaca-checklist-item input[type="text"] {
+.wp-admin .alpaca-checklist-item input[type="text"], .wp-admin .alpaca-checklist-item--dragging input[type="text"] {
   border-color: #0000;
 }
 
-.wp-admin .alpaca-checklist-container .alpaca-checklist-item .alpaca-textinput, .wp-admin .alpaca-checklist-container .alpaca-checklist-item .alpaca-textinput input[type="text"] {
+.wp-admin .alpaca-checklist-item .alpaca-textinput, .wp-admin .alpaca-checklist-item--dragging .alpaca-textinput, .wp-admin .alpaca-checklist-item .alpaca-textinput input[type="text"], .wp-admin .alpaca-checklist-item--dragging .alpaca-textinput input[type="text"] {
   width: 100%;
 }
 
-.wp-admin .alpaca-checklist-container .alpaca-checklist-item.checked input[type="text"] {
+.wp-admin .alpaca-checklist-item.checked input[type="text"], .wp-admin .alpaca-checklist-item--dragging.checked input[type="text"] {
   text-decoration: line-through;
 }
 
-.wp-admin .alpaca-checklist-container .alpaca-checklist-item.active input[type="text"] {
+.wp-admin .alpaca-checklist-item.active input[type="text"], .wp-admin .alpaca-checklist-item--dragging.active input[type="text"] {
   border-color: inherit;
 }
 
-.wp-admin .alpaca-checklist-container .alpaca-checklist-item button {
+.wp-admin .alpaca-checklist-item button, .wp-admin .alpaca-checklist-item--dragging button {
   min-width: auto;
   height: auto;
   padding: 0;
+}
+
+.wp-admin .alpaca-checklist-item--dragging {
+  box-shadow: 0 4px 8px #0000001a;
+  z-index: 99900000 !important;
 }
 
 .wp-admin .alpaca-item .alpaca-item-controls .dashicons, .wp-admin .alpaca-item-dragging .alpaca-item-controls .dashicons {
