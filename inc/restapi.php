@@ -378,7 +378,7 @@ function alpaca_update_issue_callback( WP_REST_Request $request ) {
 							'assignee',
 							array(
 								'slug'        => $user->user_nicename,
-								'description' => $user->user_login,
+							'description' => $user->user_login,
 							)
 						);
 						$term_id = is_wp_error( $inserted ) ? 0 : (int) ( is_array( $inserted ) ? $inserted['term_id'] : $inserted );
@@ -628,13 +628,15 @@ function alpaca_get_watchlist_callback() {
 	$watchlist = get_user_meta( $user_id, 'alpaca_watchlist', true );
 	$watchlist = alpaca_to_int_ids( is_array( $watchlist ) ? $watchlist : array() );
 
-	return alpaca_rest_response( $watchlist, 200 );
+	return alpaca_rest_response( array( 'success' => true, 'watchlist' => $watchlist ), 200 );
 }
 function alpaca_update_watchlist_callback( WP_REST_Request $request ) {
-	$issue_id  = (int) $request->get_param( 'issue_id' );
-	$user_id   = get_current_user_id();
-	$watchlist = get_user_meta( $user_id, 'alpaca_watchlist', true );
-	$watchlist = alpaca_to_int_ids( is_array( $watchlist ) ? $watchlist : array() );
+	$params             = $request->get_json_params();
+	$issue_id           = isset( $params['issue_id'] ) ? (int) $params['issue_id'] : 0;
+	$user_id            = get_current_user_id();
+	$original_watchlist = get_user_meta( $user_id, 'alpaca_watchlist', true );
+	$original_watchlist = is_array( $original_watchlist ) ? $original_watchlist : array();
+	$watchlist          = alpaca_to_int_ids( $original_watchlist );
 
 	if ( $issue_id > 0 ) {
 		if ( in_array( $issue_id, $watchlist, true ) ) {
@@ -642,7 +644,7 @@ function alpaca_update_watchlist_callback( WP_REST_Request $request ) {
 		} else {
 			$watchlist[] = $issue_id;
 		}
-		update_user_meta( $user_id, 'alpaca_watchlist', $watchlist );
+		update_user_meta( $user_id, 'alpaca_watchlist', $watchlist, $original_watchlist );
 	}
 
 	return alpaca_rest_response( array( 'success' => true, 'watchlist' => $watchlist ), 200 );

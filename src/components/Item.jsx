@@ -18,9 +18,11 @@ const Item = forwardRef(
     const [isWatched, setIsWatched] = useState(false);
 
     useEffect(() => {
-      wp.apiFetch({ path: "/alpaca/v1/watchlist" }).then((watchlist) => {
-        if (watchlist && Array.isArray(watchlist) && watchlist.includes(id)) {
-          setIsWatched(true);
+      wp.apiFetch({ path: "/alpaca/v1/watchlist" }).then((response) => {
+        if (response.watchlist && Array.isArray(response.watchlist)) {
+          setIsWatched(response.watchlist.includes(Number(id)));
+        } else if (Array.isArray(response)) {
+          setIsWatched(response.includes(Number(id)));
         }
       });
     }, [id]);
@@ -33,7 +35,7 @@ const Item = forwardRef(
         data: { issue_id: id },
       }).then((response) => {
         if (response.success) {
-          setIsWatched(response.watchlist.includes(id));
+          setIsWatched(response.watchlist.includes(Number(id)));
         }
       });
     };
