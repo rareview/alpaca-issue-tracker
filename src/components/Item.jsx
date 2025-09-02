@@ -1,4 +1,5 @@
-const { forwardRef, useState, useEffect } = wp.element;
+const { forwardRef } = wp.element;
+import { useWatchlist } from "../context/WatchlistContext";
 import User from "./User";
 
 const Item = forwardRef(
@@ -15,30 +16,8 @@ const Item = forwardRef(
     },
     ref
   ) => {
-    const [isWatched, setIsWatched] = useState(false);
-
-    useEffect(() => {
-      wp.apiFetch({ path: "/alpaca/v1/watchlist" }).then((response) => {
-        if (response.watchlist && Array.isArray(response.watchlist)) {
-          setIsWatched(response.watchlist.includes(Number(id)));
-        } else if (Array.isArray(response)) {
-          setIsWatched(response.includes(Number(id)));
-        }
-      });
-    }, [id]);
-
-    const toggleWatch = (e) => {
-      e.stopPropagation();
-      wp.apiFetch({
-        path: "/alpaca/v1/watchlist",
-        method: "POST",
-        data: { issue_id: id },
-      }).then((response) => {
-        if (response.success) {
-          setIsWatched(response.watchlist.includes(Number(id)));
-        }
-      });
-    };
+    const { isWatched, toggleWatch } = useWatchlist();
+    const watched = isWatched(id);
 
     const assigneeDataAttributes = assignees.reduce((acc, assignee) => {
       if (assignee && assignee.id) {
@@ -47,7 +26,7 @@ const Item = forwardRef(
       return acc;
     }, {});
 
-    const watchedClass = isWatched ? "is-watched item-highlight" : "";
+    const watchedClass = watched ? "is-watched item-highlight" : "";
 
     const deadline =
       meta && meta.deadline && meta.deadline[0]
@@ -80,7 +59,10 @@ const Item = forwardRef(
           <div className="alpaca-item-controls">
             <div
               className="dashicons dashicons-star-filled"
-              onClick={toggleWatch}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleWatch(id);
+              }}
             ></div>
           </div>
         </div>
@@ -125,7 +107,9 @@ const Item = forwardRef(
                 ? `${diffDays} day${diffDays > 1 ? "s" : ""} left`
                 : diffDays === 0
                 ? "Today"
-                : `${Math.abs(diffDays)} day${diffDays < -1 ? "s" : ""} ago`}
+                : `${Math.abs(diffDays)} day${
+                    diffDays < -1 ? "s" : ""
+                  } ago`}
             </div>
           )}
         </div>
