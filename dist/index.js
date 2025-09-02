@@ -11992,11 +11992,23 @@ function AlpacaBoardControls() {
             columnNumber: 11
         },
         __self: this
-    }, " ", /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-control alpaca-control-starred",
+    }, " ", /*#__PURE__*/ React.createElement(Button, {
+        onClick: ()=>{
+            setFilteredAssignee("");
+            setShowStarredOnly(false);
+            setDeadlineFilter("none");
+        },
         __source: {
             fileName: "src/components/BoardFrame.jsx",
             lineNumber: 232,
+            columnNumber: 13
+        },
+        __self: this
+    }, "Show All Items"), /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-control alpaca-control-starred",
+        __source: {
+            fileName: "src/components/BoardFrame.jsx",
+            lineNumber: 241,
             columnNumber: 13
         },
         __self: this
@@ -12008,7 +12020,7 @@ function AlpacaBoardControls() {
         variant: "secondary",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 233,
+            lineNumber: 242,
             columnNumber: 15
         },
         __self: this
@@ -12020,17 +12032,13 @@ function AlpacaBoardControls() {
         className: "alpaca-control",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 243,
+            lineNumber: 252,
             columnNumber: 13
         },
         __self: this
     }), /*#__PURE__*/ React.createElement(RadioControl, {
         label: "Deadlines",
         options: [
-            {
-                label: "All Items",
-                value: "none"
-            },
             {
                 label: "Today",
                 value: "today"
@@ -12048,7 +12056,7 @@ function AlpacaBoardControls() {
         onChange: handleDeadlineFilterChange,
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 250,
+            lineNumber: 259,
             columnNumber: 13
         },
         __self: this

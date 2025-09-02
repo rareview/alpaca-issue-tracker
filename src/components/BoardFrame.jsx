@@ -229,6 +229,15 @@ export function AlpacaBoardControls() {
           <div className="alpaca-control-popover" ref={popoverContentRef}>
             {" "}
             {/* Assign ref here */}
+            <Button
+              onClick={() => {
+                setFilteredAssignee("");
+                setShowStarredOnly(false);
+                setDeadlineFilter("none");
+              }}
+            >
+              Show All Items
+            </Button>
             <div className="alpaca-control alpaca-control-starred">
               <Button
                 onClick={handleShowStarredOnlyChange}
@@ -250,10 +259,6 @@ export function AlpacaBoardControls() {
             <RadioControl
               label="Deadlines"
               options={[
-                {
-                  label: "All Items",
-                  value: "none",
-                },
                 {
                   label: "Today",
                   value: "today",
