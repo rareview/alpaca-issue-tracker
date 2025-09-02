@@ -1,4 +1,4 @@
-import { getUser } from './usercache';
+import { getUser } from "./usercache.js";
 /**
  * Handles automatic commenting on issues, such as when an issue is created.
  * This script hooks into WordPress actions to add comments via the REST API.

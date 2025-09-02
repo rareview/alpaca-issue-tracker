@@ -47,7 +47,7 @@ function enqueue_alpaca_scripts() {
 		true
 	);
 
-    wp_enqueue_script(
+    wp_enqueue_script_module(
 		'alpaca-issue-comment-handler',
 		$plugin_url . 'src/utils/issue-comment-handler.js',
 		array(
