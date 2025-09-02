@@ -458,6 +458,7 @@
       border-radius: 6px;
       overflow: hidden;
       font-size: 14px;
+      max-width: 600px;
 
       .status-grid-header {
         display: grid;
@@ -493,11 +494,6 @@
           border-bottom: none;
         }
 
-        &.is-dragging {
-          background: #e6f0ff;
-          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-        }
-
         .status-grid-cell {
           padding: 8px 12px;
 
@@ -518,21 +514,6 @@
             align-items: center;
             padding: 4px;
             color: #777;
-          }
-
-          button.button-link {
-            background: none;
-            border: none;
-            color: #0073aa;
-            padding: 0;
-            cursor: pointer;
-            font-size: inherit;
-
-            .dashicons-edit {
-              margin-left: 4px;
-              font-size: 14px;
-              color: #777;
-            }
           }
         }
       }
