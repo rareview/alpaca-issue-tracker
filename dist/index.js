@@ -1486,15 +1486,82 @@ const StatusRow = React.forwardRef(({ status, onRename, onDelete, isDragging, dr
             columnNumber: 13
         },
         __self: undefined
-    }, /*#__PURE__*/ React.createElement("span", {
-        className: "dashicons dashicons-menu",
+    }, /*#__PURE__*/ React.createElement("svg", {
+        width: "16",
+        height: "16",
+        viewBox: "0 0 16 16",
+        fill: "currentColor",
+        xmlns: "http://www.w3.org/2000/svg",
+        style: {
+            verticalAlign: "middle"
+        },
         __source: {
             fileName: "src/components/StatusManager.jsx",
             lineNumber: 297,
             columnNumber: 15
         },
         __self: undefined
-    })), isRenaming ? /*#__PURE__*/ React.createElement(TextControl, {
+    }, /*#__PURE__*/ React.createElement("circle", {
+        cx: "4",
+        cy: "3",
+        r: "1.5",
+        __source: {
+            fileName: "src/components/StatusManager.jsx",
+            lineNumber: 305,
+            columnNumber: 17
+        },
+        __self: undefined
+    }), /*#__PURE__*/ React.createElement("circle", {
+        cx: "8",
+        cy: "3",
+        r: "1.5",
+        __source: {
+            fileName: "src/components/StatusManager.jsx",
+            lineNumber: 306,
+            columnNumber: 17
+        },
+        __self: undefined
+    }), /*#__PURE__*/ React.createElement("circle", {
+        cx: "4",
+        cy: "8",
+        r: "1.5",
+        __source: {
+            fileName: "src/components/StatusManager.jsx",
+            lineNumber: 307,
+            columnNumber: 17
+        },
+        __self: undefined
+    }), /*#__PURE__*/ React.createElement("circle", {
+        cx: "8",
+        cy: "8",
+        r: "1.5",
+        __source: {
+            fileName: "src/components/StatusManager.jsx",
+            lineNumber: 308,
+            columnNumber: 17
+        },
+        __self: undefined
+    }), /*#__PURE__*/ React.createElement("circle", {
+        cx: "4",
+        cy: "13",
+        r: "1.5",
+        __source: {
+            fileName: "src/components/StatusManager.jsx",
+            lineNumber: 309,
+            columnNumber: 17
+        },
+        __self: undefined
+    }), /*#__PURE__*/ React.createElement("circle", {
+        cx: "8",
+        cy: "13",
+        r: "1.5",
+        __source: {
+            fileName: "src/components/StatusManager.jsx",
+            lineNumber: 310,
+            columnNumber: 17
+        },
+        __self: undefined
+    }))), isRenaming ? /*#__PURE__*/ React.createElement(TextControl, {
         ref: inputRef,
         value: name,
         onChange: setName,
@@ -1502,7 +1569,7 @@ const StatusRow = React.forwardRef(({ status, onRename, onDelete, isDragging, dr
         onKeyDown: handleKeyDown,
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 300,
+            lineNumber: 314,
             columnNumber: 15
         },
         __self: undefined
@@ -1514,7 +1581,7 @@ const StatusRow = React.forwardRef(({ status, onRename, onDelete, isDragging, dr
         onClick: handleStartRename,
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 308,
+            lineNumber: 322,
             columnNumber: 15
         },
         __self: undefined
@@ -1522,7 +1589,7 @@ const StatusRow = React.forwardRef(({ status, onRename, onDelete, isDragging, dr
         className: "status-grid-cell actions-cell",
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 320,
+            lineNumber: 334,
             columnNumber: 9
         },
         __self: undefined
@@ -1532,7 +1599,7 @@ const StatusRow = React.forwardRef(({ status, onRename, onDelete, isDragging, dr
         onClick: ()=>onDelete(status.term_id),
         __source: {
             fileName: "src/components/StatusManager.jsx",
-            lineNumber: 321,
+            lineNumber: 335,
             columnNumber: 11
         },
         __self: undefined
