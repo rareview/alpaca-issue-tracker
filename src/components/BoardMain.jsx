@@ -1,4 +1,5 @@
 const { useState, useRef, useEffect, useCallback } = wp.element;
+const { decodeEntities } = wp.htmlEntities;
 
 import { DragDropContext } from "@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration";
 
@@ -426,7 +427,7 @@ function Board() {
         if (targetContainer) {
           targetContainer.items.unshift({
             id: issue.id.toString(),
-            content: issue.title,
+            content: decodeEntities(issue.title),
             author_name: issue.author_name,
             author_img: issue.author_img,
             assignees: [],

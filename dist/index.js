@@ -14386,6 +14386,7 @@ var _data = require("../utils/data");
 var _comments = require("../utils/comments");
 var _usercache = require("../utils/usercache");
 const { useState, useRef, useEffect, useCallback } = wp.element;
+const { decodeEntities } = wp.htmlEntities;
 /**
  * Main board component.
  */ function Board() {
@@ -14720,7 +14721,7 @@ const { useState, useRef, useEffect, useCallback } = wp.element;
                 const targetContainer = newContainers.find((c)=>c.id === statusId.toString());
                 if (targetContainer) targetContainer.items.unshift({
                     id: issue.id.toString(),
-                    content: issue.title,
+                    content: decodeEntities(issue.title),
                     author_name: issue.author_name,
                     author_img: issue.author_img,
                     assignees: [],
@@ -14761,7 +14762,7 @@ const { useState, useRef, useEffect, useCallback } = wp.element;
         onDragEnd: handleDragEnd,
         __source: {
             fileName: "src/components/BoardMain.jsx",
-            lineNumber: 481,
+            lineNumber: 482,
             columnNumber: 5
         },
         __self: this
@@ -14769,7 +14770,7 @@ const { useState, useRef, useEffect, useCallback } = wp.element;
         className: "alpaca-wrap",
         __source: {
             fileName: "src/components/BoardMain.jsx",
-            lineNumber: 482,
+            lineNumber: 483,
             columnNumber: 7
         },
         __self: this
@@ -14786,7 +14787,7 @@ const { useState, useRef, useEffect, useCallback } = wp.element;
             onRename: handleRenameContainer,
             __source: {
                 fileName: "src/components/BoardMain.jsx",
-                lineNumber: 484,
+                lineNumber: 485,
                 columnNumber: 11
             },
             __self: this
@@ -14803,7 +14804,7 @@ const { useState, useRef, useEffect, useCallback } = wp.element;
         onStatusChange: handleStatusChange,
         __source: {
             fileName: "src/components/BoardMain.jsx",
-            lineNumber: 499,
+            lineNumber: 500,
             columnNumber: 7
         },
         __self: this
