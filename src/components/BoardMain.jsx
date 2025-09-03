@@ -81,12 +81,6 @@ function Board() {
           comment_type: "issuecomment",
         },
       })
-      .then(() => {
-        const item = getItemById(issueId);
-        if (item && typeof item.comment_count !== "undefined") {
-          handleCommentCountChange(issueId, item.comment_count + 1);
-        }
-      })
       .catch((err) => {
         console.error("Error creating status change comment:", err);
         throw err;
@@ -202,11 +196,19 @@ function Board() {
     );
   }, []);
 
-  const onCommentCountChangeForIssue = useCallback(
-    (newCount) =>
-      selectedItem?.id && handleCommentCountChange(selectedItem.id, newCount),
-    [selectedItem, handleCommentCountChange]
-  );
+  useEffect(() => {
+    const handleCommentCountChanged = (event) => {
+      const { issueId, newCount } = event.detail;
+      handleCommentCountChange(issueId, newCount);
+    };
+
+    document.addEventListener("alpaca:comment-count-changed", handleCommentCountChanged);
+    return () =>
+      document.removeEventListener(
+        "alpaca:comment-count-changed",
+        handleCommentCountChanged
+      );
+  }, [handleCommentCountChange]);
 
   const moveAllItemsToNextContainer = (sourceContainerId) => {
     const containersCopy = containers.map((c) => ({
@@ -500,7 +502,6 @@ function Board() {
         onClose={closeModal}
         onDelete={handleDeleteIssue}
         triggerRef={triggerRef}
-        onCommentCountChange={onCommentCountChangeForIssue}
         onAssigneesChange={handleAssigneesChange}
         onDeadlineChange={handleDeadlineChange}
         createIssueComment={createIssueComment}

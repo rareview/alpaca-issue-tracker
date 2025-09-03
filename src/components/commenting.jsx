@@ -5,7 +5,7 @@ const { TextareaControl, Button, Spinner, Modal } = wp.components;
 
 import { marked } from "marked";
 
-const Commenting = ({ issueId, onCommentCountChange, commentRefreshKey }) => {
+const Commenting = ({ issueId, commentRefreshKey }) => {
   const [comments, setComments] = useState([]);
   const [isLoadingComments, setIsLoadingComments] = useState(true);
   const [error, setError] = useState(null);
@@ -35,16 +35,21 @@ const Commenting = ({ issueId, onCommentCountChange, commentRefreshKey }) => {
     })
       .then((fetchedComments) => {
         setComments(fetchedComments);
-        if (onCommentCountChange) {
-          onCommentCountChange(fetchedComments.length);
-        }
+        document.dispatchEvent(
+          new CustomEvent("alpaca:comment-count-changed", {
+            detail: {
+              issueId: issueId,
+              newCount: fetchedComments.length,
+            },
+          })
+        );
       })
       .catch((err) => {
         console.error("Error fetching comments:", err);
         setError("Could not load comments.");
       })
       .finally(() => setIsLoadingComments(false));
-  }, [issueId, onCommentCountChange]);
+  }, [issueId]);
 
   useEffect(() => {
     fetchComments();

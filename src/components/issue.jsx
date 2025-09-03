@@ -366,7 +366,6 @@ const TabContent = ReactMemo(
     tab,
     issueDetails,
     issueId,
-    onCommentCountChange,
     commentRefreshKey,
     onScreenshotDelete,
     loadingStates,
@@ -377,7 +376,6 @@ const TabContent = ReactMemo(
         return (
           <AlpacaCommenting
             issueId={issueId}
-            onCommentCountChange={onCommentCountChange}
             commentRefreshKey={commentRefreshKey}
           />
         );
@@ -445,7 +443,6 @@ const AlpacaIssue = ({
   onClose,
   onDelete,
   triggerRef,
-  onCommentCountChange,
   onAssigneesChange,
   onDeadlineChange,
   createIssueComment,
@@ -877,7 +874,6 @@ const AlpacaIssue = ({
                     tab={tab}
                     issueDetails={issueDetails}
                     issueId={issueId}
-                    onCommentCountChange={onCommentCountChange}
                     commentRefreshKey={commentRefreshKey}
                     onScreenshotDelete={handleScreenshotDelete}
                     loadingStates={loadingStates}

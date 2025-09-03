@@ -18,7 +18,7 @@ addAction(
 
       const commentContent = `Issue created by ${generateAssigneeSpan(currentUser)}`;
 
-      const response = await apiFetch({
+      await apiFetch({
         path: "/wp/v2/comments",
         method: "POST",
         data: {
@@ -27,6 +27,15 @@ addAction(
           comment_type: "issuecomment",
           status: "approve",
         },
+      }).then(() => {
+        document.dispatchEvent(
+          new CustomEvent("alpaca:comment-count-changed", {
+            detail: {
+              issueId: issue.id.toString(),
+              newCount: 1,
+            },
+          })
+        );
       });
     } catch (error) {
       console.error("issue-comment-handler.js: Error adding comment:", error);
