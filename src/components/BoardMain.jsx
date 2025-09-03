@@ -274,9 +274,16 @@ function Board() {
         if (assignee && assignee.id && !assignee.display_name) {
           try {
             const fullUser = await getUser(assignee.id);
-            return { ...assignee, display_name: fullUser.name, slug: fullUser.slug };
+            return {
+              ...assignee,
+              display_name: fullUser.name,
+              slug: fullUser.slug,
+            };
           } catch (error) {
-            console.error(`Error fetching user data for ID ${assignee.id}:`, error);
+            console.error(
+              `Error fetching user data for ID ${assignee.id}:`,
+              error
+            );
             return assignee;
           }
         }
@@ -328,6 +335,42 @@ function Board() {
         return { ...container, items: newItems };
       })
     );
+  }, []);
+
+  const handleStatusChange = useCallback((issueId, newStatusTerm) => {
+    setContainers((prevContainers) => {
+      const newContainers = prevContainers.map((container) => ({ ...container, items: [...container.items] }));
+
+      let movedItem = null;
+      let oldContainerId = null;
+
+      // Find the item and remove it from its current container
+      for (const container of newContainers) {
+        const itemIndex = container.items.findIndex((item) => item.id === issueId.toString());
+        if (itemIndex !== -1) {
+          movedItem = container.items.splice(itemIndex, 1)[0];
+          oldContainerId = container.id;
+          break;
+        }
+      }
+
+      if (movedItem) {
+        // Update the item's status taxonomy
+        movedItem.taxonomies = {
+          ...movedItem.taxonomies,
+          status: [newStatusTerm],
+        };
+
+        // Add the item to the new container
+        const targetContainer = newContainers.find((container) => container.id === newStatusTerm.term_id.toString());
+        if (targetContainer) {
+          targetContainer.items.push(movedItem);
+        }
+      }
+
+      return newContainers;
+    });
+    setNeedsSave(true);
   }, []);
 
   const closeModal = () => {
@@ -411,7 +454,10 @@ function Board() {
             if (assignee && assignee.id) {
               const assigneeId = assignee.id.toString();
               const existing = allAssignees.get(assigneeId);
-              if (!existing || (!existing.display_name && assignee.display_name)) {
+              if (
+                !existing ||
+                (!existing.display_name && assignee.display_name)
+              ) {
                 allAssignees.set(assigneeId, assignee);
               }
             }
@@ -459,6 +505,7 @@ function Board() {
         onDeadlineChange={handleDeadlineChange}
         createIssueComment={createIssueComment}
         generateAssigneeChangeComment={generateAssigneeChangeComment}
+        onStatusChange={handleStatusChange}
       />
     </DragDropContext>
   );

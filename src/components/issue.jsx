@@ -1,6 +1,7 @@
 import AlpacaCommenting from "./commenting.jsx";
 import Checklist from "./checklist.jsx";
 import User from "./User";
+import { generateStatusChangeComment } from "../utils/comments.js";
 
 const {
   useState,
@@ -449,6 +450,7 @@ const AlpacaIssue = ({
   onDeadlineChange,
   createIssueComment,
   generateAssigneeChangeComment,
+  onStatusChange,
 }) => {
   const {
     issueDetails,
@@ -465,6 +467,15 @@ const AlpacaIssue = ({
   const [deadline, setDeadline] = useState(null);
   const [lightboxSrc, setLightboxSrc] = useState(null);
   const [checklistItems, setChecklistItems] = useState([]);
+  const [allStatuses, setAllStatuses] = useState([]);
+
+  useEffect(() => {
+    wp.apiFetch({ path: "/alpaca/v1/statuses" })
+      .then(setAllStatuses)
+      .catch((err) => {
+        console.error("Error fetching statuses:", err);
+      });
+  }, []);
 
   // Memoized values
   const assigneeObjects = useMemo(
@@ -697,6 +708,82 @@ const AlpacaIssue = ({
     setLightboxSrc(null);
   }, []);
 
+  const handleProgressIssue = useCallback(async () => {
+    if (!issueDetails || !allStatuses.length) return;
+
+    const currentStatusTerm = issueDetails.taxonomies?.status?.[0];
+    if (!currentStatusTerm) return;
+
+    const currentIndex = allStatuses.findIndex(
+      (s) => s.term_id === currentStatusTerm.term_id
+    );
+
+    if (currentIndex === -1 || currentIndex === allStatuses.length - 1) {
+      // Already the last status or not found
+      return;
+    }
+
+    const nextStatus = allStatuses[currentIndex + 1];
+
+    setLoading("status", true);
+    try {
+      await wp.apiFetch({
+        path: `/issue/v1/update/${issueId}`,
+        method: "POST",
+        data: {
+          taxonomies: {
+            status: [nextStatus.term_id],
+          },
+        },
+      });
+
+      // Update local state to reflect the change
+      setIssueDetails((prev) => ({
+        ...prev,
+        taxonomies: {
+          ...prev.taxonomies,
+          status: [nextStatus],
+        },
+      }));
+
+      // Notify parent component about the status change
+      if (typeof onStatusChange === 'function') {
+        onStatusChange(issueId, nextStatus);
+      }
+
+      // Optionally, add a comment for status change
+      if (createIssueComment) {
+        const commentContent = generateStatusChangeComment(
+          currentStatusTerm.name,
+          nextStatus.name
+        );
+        await createIssueComment(issueId, commentContent);
+        setCommentRefreshKey((prevKey) => prevKey + 1);
+      }
+    } catch (error) {
+      console.error("Failed to progress issue status:", error);
+      // Handle error, e.g., show a notice to the user
+    } finally {
+      setLoading("status", false);
+    }
+  }, [
+    issueDetails,
+    allStatuses,
+    issueId,
+    createIssueComment,
+    setIssueDetails,
+    setLoading,
+  ]);
+
+  const currentStatus = issueDetails?.taxonomies?.status?.[0];
+  const isLastStatus = useMemo(() => {
+    if (!currentStatus || !allStatuses.length) return true;
+    const currentIndex = allStatuses.findIndex(
+      (s) => s.term_id === currentStatus.term_id
+    );
+    return currentIndex === allStatuses.length - 1;
+  }, [currentStatus, allStatuses]);
+
   if (!isOpen) {
     return null;
   }
@@ -707,7 +794,19 @@ const AlpacaIssue = ({
         size="medium"
         onRequestClose={onClose}
         className="alpaca-details-modal"
-        headerActions={
+        headerActions={[
+          !isLastStatus && (
+            <Tooltip text="Progress issue to next status">
+              <Button
+                type="button"
+                className="components-button has-icon"
+                onClick={handleProgressIssue}
+                disabled={loadingStates.status}
+              >
+                <span className="dashicons dashicons-arrow-right-alt"></span>
+              </Button>
+            </Tooltip>
+          ),
           <Tooltip text="Delete issue">
             <Button
               type="button"
@@ -723,8 +822,8 @@ const AlpacaIssue = ({
             >
               <span className="dashicons dashicons-trash"></span>
             </Button>
-          </Tooltip>
-        }
+          </Tooltip>,
+        ].filter(Boolean)}
       >
         {error && (
           <div className="notice notice-error">

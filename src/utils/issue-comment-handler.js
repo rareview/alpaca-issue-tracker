@@ -1,4 +1,5 @@
 import { getUser } from "./usercache.js";
+import { generateAssigneeSpan } from "./comments.js";
 /**
  * Handles automatic commenting on issues, such as when an issue is created.
  * This script hooks into WordPress actions to add comments via the REST API.
@@ -15,7 +16,7 @@ addAction(
       const currentUser = await getUser();
       const userName = currentUser.name || "Unknown User";
 
-      const commentContent = `Issue created by ${userName}`;
+      const commentContent = `Issue created by ${generateAssigneeSpan(currentUser)}`;
 
       const response = await apiFetch({
         path: "/wp/v2/comments",
