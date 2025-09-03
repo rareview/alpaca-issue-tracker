@@ -1,5 +1,3 @@
-import React from 'react';
-
 const DragHandleIcon = (props) => (
   <svg
     width="16"

@@ -1,5 +1,6 @@
 const { useState, useEffect, useRef, useCallback } = wp.element;
-const { ComboboxControl, Popover, Button, RadioControl } = wp.components;
+const { Popover, Button, ComboboxControl, RadioControl, MenuGroup, MenuItem } =
+  wp.components;
 import Board from "./BoardMain";
 import { getCookie, setCookie } from "../utils/cookies";
 
@@ -229,52 +230,51 @@ export function AlpacaBoardControls() {
           <div className="alpaca-control-popover" ref={popoverContentRef}>
             {" "}
             {/* Assign ref here */}
-            <Button
-              onClick={() => {
-                setFilteredAssignee("");
-                setShowStarredOnly(false);
-                setDeadlineFilter("none");
-              }}
-            >
-              Show All Items
-            </Button>
-            <div className="alpaca-control alpaca-control-starred">
-              <Button
+            <MenuGroup>
+              <MenuItem
+                onClick={() => {
+                  setFilteredAssignee("");
+                  setShowStarredOnly(false);
+                  setDeadlineFilter("none");
+                }}
+              >
+                Show All Items
+              </MenuItem>
+              <MenuItem
                 onClick={handleShowStarredOnlyChange}
-                isPressed={showStarredOnly}
                 icon={showStarredOnly ? "star-filled" : "star-empty"}
-                label="Toggle Starred Items"
-                variant="secondary"
               >
                 Starred Items
-              </Button>
-            </div>
-            <ComboboxControl
-              label="Filter by Assignee"
-              value={filteredAssignee}
-              onChange={handleFilteredAssigneeChange}
-              options={assigneeOptions}
-              className="alpaca-control"
-            />
-            <RadioControl
-              label="Deadlines"
-              options={[
-                {
-                  label: "Today",
-                  value: "today",
-                },
-                {
-                  label: "Next 7 days",
-                  value: "week",
-                },
-                {
-                  label: "Overdue",
-                  value: "late",
-                },
-              ]}
-              selected={deadlineFilter}
-              onChange={handleDeadlineFilterChange}
-            />
+              </MenuItem>
+            </MenuGroup>
+            <MenuGroup label="Filter by Assignee">
+              <ComboboxControl
+                value={filteredAssignee}
+                onChange={handleFilteredAssigneeChange}
+                options={assigneeOptions}
+                className="alpaca-control"
+              />
+            </MenuGroup>
+            <MenuGroup label="Deadlines">
+              <MenuItem
+                onClick={() => handleDeadlineFilterChange("today")}
+                icon={deadlineFilter === "today" ? "yes" : ""}
+              >
+                Today
+              </MenuItem>
+              <MenuItem
+                onClick={() => handleDeadlineFilterChange("week")}
+                icon={deadlineFilter === "week" ? "yes" : ""}
+              >
+                Next 7 days
+              </MenuItem>
+              <MenuItem
+                onClick={() => handleDeadlineFilterChange("late")}
+                icon={deadlineFilter === "late" ? "yes" : ""}
+              >
+                Overdue
+              </MenuItem>
+            </MenuGroup>
           </div>
         </Popover>
       )}
