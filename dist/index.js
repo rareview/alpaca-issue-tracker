@@ -12169,26 +12169,12 @@ const { decodeEntities } = wp.htmlEntities;
                     comment_type: "issuecomment"
                 }
             });
-            console.log("Create Comment Response:", createCommentResponse);
-            console.log("Issue ID for comment count fetch:", issueId);
             if (!createCommentResponse || !createCommentResponse.id) {
                 console.error("Comment creation failed or returned invalid response:", createCommentResponse);
                 throw new Error("Comment creation failed.");
             }
-            const postIdForCommentCount = createCommentResponse.post;
-            let newCount = 0;
-            let retries = 0;
-            const maxRetries = 5;
-            const retryDelay = 500; // milliseconds
-            console.log(`Attempting to fetch post for comment count for postId: ${postIdForCommentCount} with retries...`);
-            while(newCount === 0 && retries < maxRetries){
-                await new Promise((resolve)=>setTimeout(resolve, retryDelay));
-                const postResponse = (0, _issueApi.fetchIssue)(postIdForCommentCount);
-                newCount = postResponse.comment_count || 0;
-                console.log(`Retry ${retries + 1}: Fetched post for comment count for post ${postIdForCommentCount}:`, postResponse);
-                retries++;
-            }
-            console.log("Final New Comment Count:", newCount);
+            const commentCountResponse = await (0, _issueApi.fetchIssueCommentCount)(issueId);
+            const newCount = commentCountResponse.comment_count || 0;
             // Dispatch the custom event to update the comment count in the UI
             document.dispatchEvent(new CustomEvent("alpaca:comment-count-changed", {
                 detail: {
@@ -12216,9 +12202,6 @@ const { decodeEntities } = wp.htmlEntities;
     }
     async function handleDragEnd(result) {
         const { source, destination, draggableId } = result;
-        console.log("handleDragEnd called");
-        console.log("Source:", source);
-        console.log("Destination:", destination);
         if (!destination) {
             console.log("No destination, returning.");
             return;
@@ -12537,7 +12520,7 @@ const { decodeEntities } = wp.htmlEntities;
         onDragEnd: handleDragEnd,
         __source: {
             fileName: "src/components/BoardMain.jsx",
-            lineNumber: 564,
+            lineNumber: 537,
             columnNumber: 5
         },
         __self: this
@@ -12545,7 +12528,7 @@ const { decodeEntities } = wp.htmlEntities;
         className: "alpaca-wrap",
         __source: {
             fileName: "src/components/BoardMain.jsx",
-            lineNumber: 565,
+            lineNumber: 538,
             columnNumber: 7
         },
         __self: this
@@ -12562,7 +12545,7 @@ const { decodeEntities } = wp.htmlEntities;
             onRename: handleRenameContainer,
             __source: {
                 fileName: "src/components/BoardMain.jsx",
-                lineNumber: 567,
+                lineNumber: 540,
                 columnNumber: 11
             },
             __self: this
@@ -12580,7 +12563,7 @@ const { decodeEntities } = wp.htmlEntities;
         onIssueTitleChange: handleIssueTitleChange,
         __source: {
             fileName: "src/components/BoardMain.jsx",
-            lineNumber: 582,
+            lineNumber: 555,
             columnNumber: 7
         },
         __self: this
@@ -15545,6 +15528,7 @@ parcelHelpers.export(exports, "fetchIssue", ()=>fetchIssue);
 parcelHelpers.export(exports, "updateIssue", ()=>updateIssue);
 parcelHelpers.export(exports, "fetchStatuses", ()=>fetchStatuses);
 parcelHelpers.export(exports, "fetchUsers", ()=>fetchUsers);
+parcelHelpers.export(exports, "fetchIssueCommentCount", ()=>fetchIssueCommentCount);
 const fetchIssue = (id)=>wp.apiFetch({
         path: `/issue/v1/get/${id}`
     });
@@ -15558,6 +15542,9 @@ const fetchStatuses = ()=>wp.apiFetch({
     });
 const fetchUsers = ()=>wp.apiFetch({
         path: "/alpaca/v1/users"
+    });
+const fetchIssueCommentCount = (id)=>wp.apiFetch({
+        path: `/issue/v1/comment-count/${id}`
     });
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7BGvE":[function(require,module,exports,__globalThis) {

@@ -441,7 +441,7 @@ function alpaca_register_options_endpoints() {
 					'value' => array(
 						'required'          => true,
 						'validate_callback' => function ( $param ) {
-							return is_numeric( $param ) || $param === '';
+							return is_numeric( $param ) || $param === "";
 						},
 					),
 				),
@@ -548,6 +548,51 @@ function alpaca_get_issue_data_callback( WP_REST_Request $request ) {
 			'post_data'     => $post_data,
 			'meta'          => $formatted_meta,
 			'taxonomies'    => $terms_data,
+			'comment_count' => (int) $issue_comment_count,
+		),
+		200
+	);
+}
+
+/* -------------------------------------------------------------
+ * Issue: comment count
+ * ----------------------------------------------------------- */
+add_action( 'rest_api_init', 'alpaca_get_issue_comment_count_endpoint' );
+function alpaca_get_issue_comment_count_endpoint() {
+	register_rest_route(
+		'issue/v1',
+		'/comment-count/(?P<id>\d+)',
+		array(
+			'methods'             => 'GET',
+			'callback'            => 'alpaca_get_issue_comment_count_callback',
+			'permission_callback' => function () {
+				return current_user_can( 'edit_posts' ); // Or a more appropriate capability if needed
+			},
+			'args'                => array(
+				'id' => array(
+					'validate_callback' => function ( $param ) {
+						return is_numeric( $param ) && $param > 0;
+					},
+				),
+			),
+		)
+	);
+}
+
+function alpaca_get_issue_comment_count_callback( WP_REST_Request $request ) {
+	$issue_id = (int) $request['id'];
+
+	global $wpdb;
+	$issue_comment_count = $wpdb->get_var( $wpdb->prepare(
+		"SELECT COUNT(*) FROM {$wpdb->comments} 
+		WHERE comment_post_ID = %d AND comment_type = %s AND comment_approved = 1",
+		$issue_id, 'issuecomment'
+	) );
+
+	return alpaca_rest_response(
+		array(
+			'success'       => true,
+			'post_id'       => $issue_id,
 			'comment_count' => (int) $issue_comment_count,
 		),
 		200

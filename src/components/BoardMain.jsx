@@ -15,7 +15,7 @@ import {
   generateAssigneeChangeComment,
 } from "../utils/comments";
 import { getUser } from "../utils/usercache";
-import { fetchIssue } from "../services/issueApi";
+import { fetchIssue, fetchIssueCommentCount } from "../services/issueApi";
 
 /**
  * Main board component.
@@ -83,8 +83,6 @@ function Board() {
           comment_type: "issuecomment",
         },
       });
-      console.log("Create Comment Response:", createCommentResponse);
-      console.log("Issue ID for comment count fetch:", issueId);
 
       if (!createCommentResponse || !createCommentResponse.id) {
         console.error(
@@ -94,30 +92,8 @@ function Board() {
         throw new Error("Comment creation failed.");
       }
 
-      const postIdForCommentCount = createCommentResponse.post;
-      let newCount = 0;
-      let retries = 0;
-      const maxRetries = 5;
-      const retryDelay = 500; // milliseconds
-
-      console.log(
-        `Attempting to fetch post for comment count for postId: ${postIdForCommentCount} with retries...`
-      );
-
-      while (newCount === 0 && retries < maxRetries) {
-        await new Promise((resolve) => setTimeout(resolve, retryDelay));
-        const postResponse = fetchIssue(postIdForCommentCount);
-        newCount = postResponse.comment_count || 0;
-        console.log(
-          `Retry ${
-            retries + 1
-          }: Fetched post for comment count for post ${postIdForCommentCount}:`,
-          postResponse
-        );
-        retries++;
-      }
-
-      console.log("Final New Comment Count:", newCount);
+      const commentCountResponse = await fetchIssueCommentCount(issueId);
+      const newCount = commentCountResponse.comment_count || 0;
 
       // Dispatch the custom event to update the comment count in the UI
       document.dispatchEvent(
@@ -152,9 +128,6 @@ function Board() {
 
   async function handleDragEnd(result) {
     const { source, destination, draggableId } = result;
-    console.log("handleDragEnd called");
-    console.log("Source:", source);
-    console.log("Destination:", destination);
 
     if (!destination) {
       console.log("No destination, returning.");

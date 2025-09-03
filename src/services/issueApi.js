@@ -13,3 +13,6 @@ export const fetchStatuses = () =>
 
 export const fetchUsers = () =>
   wp.apiFetch({ path: "/alpaca/v1/users" });
+
+export const fetchIssueCommentCount = (id) =>
+  wp.apiFetch({ path: `/issue/v1/comment-count/${id}` });
