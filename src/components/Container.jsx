@@ -12,6 +12,7 @@ function Container({
   items,
   onItemClick,
   onMoveAllToNext,
+  onDeleteAll,
   isLastContainer,
   isHidden,
   onToggleHidden,
@@ -88,9 +89,17 @@ function Container({
   if (!isLastContainer) {
     menuControls.push({
       icon: "arrow-right-alt",
-      title: "Move all to next column",
+      title: "Move All To Next Column",
       onClick: () => onMoveAllToNext(id),
       disabled: !hasItems,
+    });
+  }
+
+  if (isLastContainer) {
+    menuControls.push({
+      icon: "trash",
+      title: "Delete All",
+      onClick: () => onDeleteAll(id),
     });
   }
 
@@ -123,7 +132,10 @@ function Container({
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
-            className={`alpaca-items ${snapshot.isDraggingOver ? "dragging-over" : ""}`}>
+            className={`alpaca-items ${
+              snapshot.isDraggingOver ? "dragging-over" : ""
+            }`}
+          >
             {hasItems ? (
               items.map((item, index) => (
                 <DraggableItem

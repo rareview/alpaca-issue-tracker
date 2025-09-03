@@ -297,6 +297,41 @@ function Board() {
     setNeedsSave(true);
   };
 
+  const handleDeleteAll = (containerId) => {
+    const originalContainers = containers;
+    const containerToDeleteFrom = containers.find((c) => c.id === containerId);
+
+    if (!containerToDeleteFrom) {
+      console.warn(`Container with ID ${containerId} not found.`);
+      return;
+    }
+
+    const itemsToDelete = containerToDeleteFrom.items.map((item) => item.id);
+
+    // Optimistically update UI
+    setContainers((prevContainers) =>
+      prevContainers.map((c) =>
+        c.id === containerId ? { ...c, items: [] } : c
+      )
+    );
+
+    // API call to delete all issues in the container
+    Promise.all(
+      itemsToDelete.map((issueId) =>
+        wp.apiFetch({
+          path: `/issue/v1/delete/${issueId}`,
+          method: "DELETE",
+        })
+      )
+    ).catch((err) => {
+      console.error(
+        `Error deleting issues from container ${containerId}:`,
+        err
+      );
+      setContainers(originalContainers); // Revert UI on error
+    });
+  };
+
   const handleAssigneesChange = async (issueId, newAssignees) => {
     const enrichedAssignees = await Promise.all(
       newAssignees.map(async (assignee) => {
@@ -548,6 +583,7 @@ function Board() {
             isHidden={hiddenContainerIds.includes(container.id)}
             onToggleHidden={handleToggleHidden}
             onRename={handleRenameContainer} // 🔹 pass down rename handler
+            onDeleteAll={handleDeleteAll}
           />
         ))}
       </div>

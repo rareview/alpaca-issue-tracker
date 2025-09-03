@@ -12328,6 +12328,28 @@ const { decodeEntities } = wp.htmlEntities;
         setContainers(containersCopy);
         setNeedsSave(true);
     };
+    const handleDeleteAll = (containerId)=>{
+        const originalContainers = containers;
+        const containerToDeleteFrom = containers.find((c)=>c.id === containerId);
+        if (!containerToDeleteFrom) {
+            console.warn(`Container with ID ${containerId} not found.`);
+            return;
+        }
+        const itemsToDelete = containerToDeleteFrom.items.map((item)=>item.id);
+        // Optimistically update UI
+        setContainers((prevContainers)=>prevContainers.map((c)=>c.id === containerId ? {
+                    ...c,
+                    items: []
+                } : c));
+        // API call to delete all issues in the container
+        Promise.all(itemsToDelete.map((issueId)=>wp.apiFetch({
+                path: `/issue/v1/delete/${issueId}`,
+                method: "DELETE"
+            }))).catch((err)=>{
+            console.error(`Error deleting issues from container ${containerId}:`, err);
+            setContainers(originalContainers); // Revert UI on error
+        });
+    };
     const handleAssigneesChange = async (issueId, newAssignees)=>{
         const enrichedAssignees = await Promise.all(newAssignees.map(async (assignee)=>{
             if (assignee && assignee.id && !assignee.display_name) try {
@@ -12520,7 +12542,7 @@ const { decodeEntities } = wp.htmlEntities;
         onDragEnd: handleDragEnd,
         __source: {
             fileName: "src/components/BoardMain.jsx",
-            lineNumber: 537,
+            lineNumber: 572,
             columnNumber: 5
         },
         __self: this
@@ -12528,7 +12550,7 @@ const { decodeEntities } = wp.htmlEntities;
         className: "alpaca-wrap",
         __source: {
             fileName: "src/components/BoardMain.jsx",
-            lineNumber: 538,
+            lineNumber: 573,
             columnNumber: 7
         },
         __self: this
@@ -12543,9 +12565,10 @@ const { decodeEntities } = wp.htmlEntities;
             isHidden: hiddenContainerIds.includes(container.id),
             onToggleHidden: handleToggleHidden,
             onRename: handleRenameContainer,
+            onDeleteAll: handleDeleteAll,
             __source: {
                 fileName: "src/components/BoardMain.jsx",
-                lineNumber: 540,
+                lineNumber: 575,
                 columnNumber: 11
             },
             __self: this
@@ -12563,7 +12586,7 @@ const { decodeEntities } = wp.htmlEntities;
         onIssueTitleChange: handleIssueTitleChange,
         __source: {
             fileName: "src/components/BoardMain.jsx",
-            lineNumber: 555,
+            lineNumber: 591,
             columnNumber: 7
         },
         __self: this
@@ -16301,7 +16324,7 @@ var _draggableItemDefault = parcelHelpers.interopDefault(_draggableItem);
 const { DropdownMenu, TextControl } = wp.components;
 /**
  * Container component (delegates rename to parent via onRename).
- */ function Container({ id, title, items, onItemClick, onMoveAllToNext, isLastContainer, isHidden, onToggleHidden, onRename }) {
+ */ function Container({ id, title, items, onItemClick, onMoveAllToNext, onDeleteAll, isLastContainer, isHidden, onToggleHidden, onRename }) {
     const [isRenaming, setIsRenaming] = (0, _react.useState)(false);
     const [newTitle, setNewTitle] = (0, _react.useState)(title);
     const inputRef = (0, _react.useRef)(null);
@@ -16361,16 +16384,21 @@ const { DropdownMenu, TextControl } = wp.components;
     ];
     if (!isLastContainer) menuControls.push({
         icon: "arrow-right-alt",
-        title: "Move all to next column",
+        title: "Move All To Next Column",
         onClick: ()=>onMoveAllToNext(id),
         disabled: !hasItems
+    });
+    if (isLastContainer) menuControls.push({
+        icon: "trash",
+        title: "Delete All",
+        onClick: ()=>onDeleteAll(id)
     });
     return /*#__PURE__*/ React.createElement("div", {
         className: `alpaca-container ${isHidden ? "hidden" : ""}`,
         "data-id": id,
         __source: {
             fileName: "src/components/Container.jsx",
-            lineNumber: 98,
+            lineNumber: 107,
             columnNumber: 5
         },
         __self: this
@@ -16378,7 +16406,7 @@ const { DropdownMenu, TextControl } = wp.components;
         className: "alpaca-container-header",
         __source: {
             fileName: "src/components/Container.jsx",
-            lineNumber: 102,
+            lineNumber: 111,
             columnNumber: 7
         },
         __self: this
@@ -16391,7 +16419,7 @@ const { DropdownMenu, TextControl } = wp.components;
         ref: inputRef,
         __source: {
             fileName: "src/components/Container.jsx",
-            lineNumber: 104,
+            lineNumber: 113,
             columnNumber: 11
         },
         __self: this
@@ -16399,7 +16427,7 @@ const { DropdownMenu, TextControl } = wp.components;
         className: "alpaca-container-title",
         __source: {
             fileName: "src/components/Container.jsx",
-            lineNumber: 113,
+            lineNumber: 122,
             columnNumber: 11
         },
         __self: this
@@ -16407,7 +16435,7 @@ const { DropdownMenu, TextControl } = wp.components;
         className: "alpaca-item-count",
         __source: {
             fileName: "src/components/Container.jsx",
-            lineNumber: 114,
+            lineNumber: 123,
             columnNumber: 21
         },
         __self: this
@@ -16415,7 +16443,7 @@ const { DropdownMenu, TextControl } = wp.components;
         className: "alpaca-container-controls",
         __source: {
             fileName: "src/components/Container.jsx",
-            lineNumber: 117,
+            lineNumber: 126,
             columnNumber: 9
         },
         __self: this
@@ -16425,7 +16453,7 @@ const { DropdownMenu, TextControl } = wp.components;
         controls: menuControls,
         __source: {
             fileName: "src/components/Container.jsx",
-            lineNumber: 118,
+            lineNumber: 127,
             columnNumber: 11
         },
         __self: this
@@ -16433,7 +16461,7 @@ const { DropdownMenu, TextControl } = wp.components;
         droppableId: id,
         __source: {
             fileName: "src/components/Container.jsx",
-            lineNumber: 121,
+            lineNumber: 130,
             columnNumber: 7
         },
         __self: this
@@ -16443,7 +16471,7 @@ const { DropdownMenu, TextControl } = wp.components;
             className: `alpaca-items ${snapshot.isDraggingOver ? "dragging-over" : ""}`,
             __source: {
                 fileName: "src/components/Container.jsx",
-                lineNumber: 123,
+                lineNumber: 132,
                 columnNumber: 11
             },
             __self: this
@@ -16459,7 +16487,7 @@ const { DropdownMenu, TextControl } = wp.components;
                 onClick: onItemClick,
                 __source: {
                     fileName: "src/components/Container.jsx",
-                    lineNumber: 129,
+                    lineNumber: 141,
                     columnNumber: 17
                 },
                 __self: this
@@ -16467,7 +16495,7 @@ const { DropdownMenu, TextControl } = wp.components;
             className: "alpaca-item empty",
             __source: {
                 fileName: "src/components/Container.jsx",
-                lineNumber: 142,
+                lineNumber: 154,
                 columnNumber: 15
             },
             __self: this
