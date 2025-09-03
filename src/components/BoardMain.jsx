@@ -15,6 +15,7 @@ import {
   generateAssigneeChangeComment,
 } from "../utils/comments";
 import { getUser } from "../utils/usercache";
+import { fetchIssue } from "../services/issueApi";
 
 /**
  * Main board component.
@@ -71,9 +72,9 @@ function Board() {
     });
   };
 
-  const createIssueComment = (issueId, commentContent) => {
-    return wp
-      .apiFetch({
+  const createIssueComment = async (issueId, commentContent) => {
+    try {
+      const createCommentResponse = await wp.apiFetch({
         path: `/wp/v2/comments`,
         method: "POST",
         data: {
@@ -81,11 +82,56 @@ function Board() {
           post: issueId,
           comment_type: "issuecomment",
         },
-      })
-      .catch((err) => {
-        console.error("Error creating status change comment:", err);
-        throw err;
       });
+      console.log("Create Comment Response:", createCommentResponse);
+      console.log("Issue ID for comment count fetch:", issueId);
+
+      if (!createCommentResponse || !createCommentResponse.id) {
+        console.error(
+          "Comment creation failed or returned invalid response:",
+          createCommentResponse
+        );
+        throw new Error("Comment creation failed.");
+      }
+
+      const postIdForCommentCount = createCommentResponse.post;
+      let newCount = 0;
+      let retries = 0;
+      const maxRetries = 5;
+      const retryDelay = 500; // milliseconds
+
+      console.log(
+        `Attempting to fetch post for comment count for postId: ${postIdForCommentCount} with retries...`
+      );
+
+      while (newCount === 0 && retries < maxRetries) {
+        await new Promise((resolve) => setTimeout(resolve, retryDelay));
+        const postResponse = fetchIssue(postIdForCommentCount);
+        newCount = postResponse.comment_count || 0;
+        console.log(
+          `Retry ${
+            retries + 1
+          }: Fetched post for comment count for post ${postIdForCommentCount}:`,
+          postResponse
+        );
+        retries++;
+      }
+
+      console.log("Final New Comment Count:", newCount);
+
+      // Dispatch the custom event to update the comment count in the UI
+      document.dispatchEvent(
+        new CustomEvent("alpaca:comment-count-changed", {
+          detail: {
+            issueId: issueId,
+            newCount: newCount,
+          },
+        })
+      );
+    } catch (err) {
+      console.error("Error creating status change comment:", err);
+      throw err;
+    }
   };
 
   function findContainerByItemId(itemId) {
@@ -104,10 +150,14 @@ function Board() {
     return null;
   }
 
-  function handleDragEnd(result) {
+  async function handleDragEnd(result) {
     const { source, destination, draggableId } = result;
+    console.log("handleDragEnd called");
+    console.log("Source:", source);
+    console.log("Destination:", destination);
 
     if (!destination) {
+      console.log("No destination, returning.");
       return;
     }
 
@@ -146,7 +196,7 @@ function Board() {
         sourceContainer.title,
         destinationContainer.title
       );
-      createIssueComment(draggableId, commentContent);
+      await createIssueComment(draggableId, commentContent);
     }
 
     saveBoardOrder();
@@ -203,7 +253,10 @@ function Board() {
       handleCommentCountChange(issueId, newCount);
     };
 
-    document.addEventListener("alpaca:comment-count-changed", handleCommentCountChanged);
+    document.addEventListener(
+      "alpaca:comment-count-changed",
+      handleCommentCountChanged
+    );
     return () =>
       document.removeEventListener(
         "alpaca:comment-count-changed",
@@ -342,14 +395,19 @@ function Board() {
 
   const handleStatusChange = useCallback((issueId, newStatusTerm) => {
     setContainers((prevContainers) => {
-      const newContainers = prevContainers.map((container) => ({ ...container, items: [...container.items] }));
+      const newContainers = prevContainers.map((container) => ({
+        ...container,
+        items: [...container.items],
+      }));
 
       let movedItem = null;
       let oldContainerId = null;
 
       // Find the item and remove it from its current container
       for (const container of newContainers) {
-        const itemIndex = container.items.findIndex((item) => item.id === issueId.toString());
+        const itemIndex = container.items.findIndex(
+          (item) => item.id === issueId.toString()
+        );
         if (itemIndex !== -1) {
           movedItem = container.items.splice(itemIndex, 1)[0];
           oldContainerId = container.id;
@@ -365,7 +423,9 @@ function Board() {
         };
 
         // Add the item to the new container
-        const targetContainer = newContainers.find((container) => container.id === newStatusTerm.term_id.toString());
+        const targetContainer = newContainers.find(
+          (container) => container.id === newStatusTerm.term_id.toString()
+        );
         if (targetContainer) {
           targetContainer.items.push(movedItem);
         }

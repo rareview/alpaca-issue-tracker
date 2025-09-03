@@ -1,444 +1,36 @@
 import AlpacaCommenting from "./commenting.jsx";
-import Checklist from "./checklist.jsx";
-import User from "./User";
+import Checklist from "./issue/checklist.jsx";
 import { generateStatusChangeComment } from "../utils/comments.js";
 
-const {
-  useState,
-  useEffect,
-  useRef,
-  createPortal,
-  useMemo,
-  useCallback,
-  memo: ReactMemo,
-} = wp.element;
-
+const { useState, useEffect, useRef, useMemo, useCallback } = wp.element;
+import { getTabsConfig } from "../utils/tabsConfig";
 const { useDebounce } = wp.compose;
+const { Modal, TabPanel, Button, Tooltip } = wp.components;
 
-const {
-  Modal,
-  FormTokenField,
-  DatePicker,
-  Popover,
-  BaseControl,
-  TabPanel,
-  Button,
-  Tooltip,
-} = wp.components;
+import useIssueData from "../hooks/useIssueData";
+import useUserManagement from "../hooks/useUserManagement";
+import useLoadingStates from "../hooks/useLoadingStates";
+
+import {
+  processAssigneeChanges,
+  createAssigneeComments,
+} from "../utils/assigneeUtils";
+import { parseChecklist } from "../utils/checklistUtils";
+import { fetchStatuses, updateIssue } from "../services/issueApi";
+
+import AssigneeSelector from "./issue/AssigneeSelector";
+import DeadlineControl from "./issue/DeadlineControl";
+import JsonTable from "./issue/JsonTable";
+import ReportTab from "./issue/ReportTab";
+import TabContent from "./issue/TabContent";
+import Lightbox from "./issue/Lightbox";
 const { decodeEntities } = wp.htmlEntities;
 const { date } = wp;
 const datesettings = wp.date.getSettings();
 
-// Utility functions
-const processAssigneeChanges = (oldAssignees, newAssignees) => {
-  const added = newAssignees.filter((name) => !oldAssignees.includes(name));
-  const removed = oldAssignees.filter((name) => !newAssignees.includes(name));
-  return { added, removed };
-};
-
-const createAssigneeComments = async (
-  added,
-  removed,
-  allUserObjects,
-  createComment,
-  generateComment,
-  issueId
-) => {
-  const commentPromises = [];
-
-  added.forEach((name) => {
-    const user = allUserObjects.find((u) => u.name === name);
-    if (user) {
-      commentPromises.push(createComment(issueId, generateComment(user, true)));
-    }
-  });
-
-  removed.forEach((name) => {
-    const user = allUserObjects.find((u) => u.name === name);
-    if (user) {
-      commentPromises.push(
-        createComment(issueId, generateComment(user, false))
-      );
-    }
-  });
-
-  if (commentPromises.length > 0) {
-    return Promise.all(commentPromises);
-  }
-  return Promise.resolve();
-};
-
-const debounce = (func, wait) => {
-  let timeout;
-  return function executedFunction(...args) {
-    const later = () => {
-      clearTimeout(timeout);
-      func(...args);
-    };
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-  };
-};
-
 // Custom hooks
-const useIssueData = (issueId, isOpen) => {
-  const [issueDetails, setIssueDetails] = useState(null);
-  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    if (issueId && isOpen) {
-      setIsLoadingDetails(true);
-      setError(null);
-
-      wp.apiFetch({ path: `/issue/v1/get/${issueId}` })
-        .then((issueData) => {
-          setIssueDetails(issueData);
-        })
-        .catch((err) => {
-          console.error("Error fetching issue data:", err);
-          setError("Failed to load issue details. Please try again.");
-          setIssueDetails(null);
-        })
-        .finally(() => {
-          setIsLoadingDetails(false);
-        });
-    }
-  }, [issueId, isOpen]);
-
-  const refetchData = useCallback(() => {
-    if (issueId && isOpen) {
-      setIsLoadingDetails(true);
-      setError(null);
-
-      wp.apiFetch({ path: `/issue/v1/get/${issueId}` })
-        .then(setIssueDetails)
-        .catch((err) => {
-          console.error("Error refetching issue data:", err);
-          setError("Failed to load issue details. Please try again.");
-        })
-        .finally(() => setIsLoadingDetails(false));
-    }
-  }, [issueId, isOpen]);
-
-  return {
-    issueDetails,
-    setIssueDetails,
-    isLoadingDetails,
-    error,
-    refetchData,
-  };
-};
-
-const useUserManagement = () => {
-  const [allUsers, setAllUsers] = useState([]);
-  const [allUserObjects, setAllUserObjects] = useState([]);
-  const [userMap, setUserMap] = useState({});
-
-  useEffect(() => {
-    wp.apiFetch({ path: "/alpaca/v1/users" })
-      .then((users) => {
-        const usersWithAvatar = users.map((u) => ({
-          ...u,
-          avatar:
-            u.avatar_urls?.["48"] ||
-            u.avatar_urls?.["96"] ||
-            u.avatar_urls?.["24"] ||
-            "",
-        }));
-
-        const localUserMap = {};
-        usersWithAvatar.forEach((u) => {
-          localUserMap[u.name] = u.slug;
-          localUserMap[u.slug] = u.slug;
-        });
-
-        setUserMap(localUserMap);
-        setAllUsers(usersWithAvatar.map((u) => u.name));
-        setAllUserObjects(usersWithAvatar);
-      })
-      .catch((err) => {
-        console.error("Error fetching users:", err);
-      });
-  }, []);
-
-  return { allUsers, allUserObjects, userMap };
-};
-
-const useLoadingStates = () => {
-  const [loadingStates, setLoadingStates] = useState({
-    assignees: false,
-    deadline: false,
-    screenshot: false,
-    title: false,
-  });
-
-  const setLoading = useCallback((key, value) => {
-    setLoadingStates((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
-  }, []);
-
-  return { loadingStates, setLoading };
-};
 
 // Memoized components
-const JsonTable = ReactMemo(({ data }) => {
-  if (!data) return null;
-
-  let parsedData;
-  try {
-    parsedData = JSON.parse(data);
-  } catch (e) {
-    return <p>Error parsing JSON data</p>;
-  }
-
-  return (
-    <table
-      className="alpaca-json-table widefat striped"
-      style={{ borderCollapse: "collapse", width: "100%" }}
-    >
-      <tbody>
-        {Object.entries(parsedData).map(([key, value]) => (
-          <tr key={key}>
-            <th>{key}</th>
-            <td>{String(value)}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
-});
-
-const AssigneeSelector = ReactMemo(
-  ({ assignees, allUsers, onChange, isLoading }) => (
-    <FormTokenField
-      label="Assigned To"
-      placeholder="Nobody"
-      value={assignees}
-      suggestions={allUsers}
-      onChange={onChange}
-      disabled={isLoading}
-    />
-  )
-);
-
-const DeadlineControl = ReactMemo(
-  ({ deadline, onChange, onClear, isLoading }) => {
-    const [isEditingDeadline, setIsEditingDeadline] = useState(false);
-    const calendarButtonRef = useRef();
-
-    return (
-      <BaseControl label="Deadline" className="alpaca-deadline-control">
-        <div className="alpaca-deadline">
-          <div className="alpaca-deadline-date">
-            <input
-              readOnly
-              type="text"
-              value={
-                deadline
-                  ? date.format(datesettings.formats.date, deadline)
-                  : "No deadline set."
-              }
-              onClick={() => setIsEditingDeadline((prev) => !prev)}
-              ref={calendarButtonRef}
-              disabled={isLoading}
-            />
-          </div>
-
-          {isEditingDeadline && (
-            <Popover
-              placement="bottom-start"
-              onClose={() => setIsEditingDeadline(false)}
-              anchor={calendarButtonRef.current}
-              focusOnMount={false}
-              className="alpaca-deadline-popover"
-            >
-              <DatePicker
-                current={deadline}
-                onChange={(newDate) => {
-                  onChange(newDate);
-                  setIsEditingDeadline(false);
-                }}
-              />
-            </Popover>
-          )}
-
-          {deadline && (
-            <Button
-              icon="trash"
-              label="Clear deadline"
-              onClick={onClear}
-              disabled={isLoading}
-            />
-          )}
-        </div>
-      </BaseControl>
-    );
-  }
-);
-
-const ReportTab = ReactMemo(
-  ({ issueDetails, onScreenshotDelete, isLoading, onScreenshotClick }) => (
-    <div className="alpaca-report-tab">
-      {issueDetails.meta.screenshot && (
-        <div>
-          <p>
-            <img
-              src={issueDetails.meta.screenshot}
-              className="alpaca-screenshot"
-              alt="Screenshot"
-              style={{ cursor: "zoom-in", maxWidth: "100%" }}
-              onClick={() => onScreenshotClick(issueDetails.meta.screenshot)}
-            />
-          </p>
-          <p>
-            <button
-              type="button"
-              className="button-link-delete"
-              disabled={isLoading}
-              onClick={onScreenshotDelete}
-            >
-              Delete
-            </button>
-          </p>
-        </div>
-      )}
-
-      <table className="widefat striped">
-        <tbody>
-          <tr>
-            <th scope="row">Reported</th>
-            <td>
-              {date.format(
-                datesettings.formats.datetimeAbbreviated,
-                new Date(issueDetails.post_data.post_date)
-              )}
-            </td>
-          </tr>
-          <tr>
-            <th scope="row">Last edit</th>
-            <td>
-              {date.format(
-                datesettings.formats.datetimeAbbreviated,
-                new Date(issueDetails.post_data.post_modified)
-              )}
-            </td>
-          </tr>
-          <tr>
-            <th scope="row">URL</th>
-            <td>
-              {issueDetails.meta.URL ? (
-                <a
-                  href={issueDetails.meta.URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {issueDetails.meta.URL}
-                </a>
-              ) : (
-                "N/A"
-              )}
-            </td>
-          </tr>
-          <tr>
-            <th scope="row">Screen</th>
-            <td>
-              {issueDetails.meta.screenwidth && issueDetails.meta.screenheight
-                ? `${issueDetails.meta.screenwidth} x ${issueDetails.meta.screenheight}`
-                : "N/A"}
-            </td>
-          </tr>
-          {Object.entries(issueDetails.taxonomies)
-            .filter(([taxonomy]) => taxonomy !== "assignee")
-            .map(([taxonomy, terms]) => (
-              <tr key={taxonomy}>
-                <th style={{ textTransform: "capitalize" }}>{taxonomy}</th>
-                <td>{terms.map((term) => term.name).join(", ")}</td>
-              </tr>
-            ))}
-        </tbody>
-      </table>
-    </div>
-  )
-);
-
-const TabContent = ReactMemo(
-  ({
-    tab,
-    issueDetails,
-    issueId,
-    commentRefreshKey,
-    onScreenshotDelete,
-    loadingStates,
-    onScreenshotClick,
-  }) => {
-    switch (tab.name) {
-      case "comments":
-        return (
-          <AlpacaCommenting
-            issueId={issueId}
-            commentRefreshKey={commentRefreshKey}
-          />
-        );
-      case "report":
-        return (
-          <ReportTab
-            issueDetails={issueDetails}
-            onScreenshotDelete={onScreenshotDelete}
-            isLoading={loadingStates.screenshot}
-            onScreenshotClick={onScreenshotClick}
-          />
-        );
-      case "queriedobject":
-        return <JsonTable data={issueDetails.meta.queriedObject} />;
-      case "headers":
-        return <JsonTable data={issueDetails.meta.headers} />;
-      default:
-        return null;
-    }
-  }
-);
-
-const Lightbox = ReactMemo(({ src, onClose }) => {
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === "Escape") onClose();
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
-
-  return createPortal(
-    <div
-      style={{
-        position: "fixed",
-        top: 0,
-        left: 0,
-        width: "100vw",
-        height: "100vh",
-        background: "rgba(0,0,0,0.85)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        zIndex: 99999999999999,
-      }}
-      onClick={onClose}
-    >
-      <img
-        src={src}
-        alt="Enlarged screenshot"
-        style={{
-          maxWidth: "90%",
-          maxHeight: "90%",
-          boxShadow: "0 0 20px rgba(0,0,0,0.5)",
-        }}
-      />
-    </div>,
-    document.body
-  );
-});
 
 const AlpacaIssue = ({
   issueId,
@@ -472,12 +64,19 @@ const AlpacaIssue = ({
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState("");
   const titleInputRef = useRef(null);
+  const [notificationMessage, setNotificationMessage] = useState(null);
+
+  const showNotification = (message, type = "error") => {
+    setNotificationMessage({ message, type });
+    setTimeout(() => setNotificationMessage(null), 5000); // Clear after 5 seconds
+  };
 
   useEffect(() => {
-    wp.apiFetch({ path: "/alpaca/v1/statuses" })
+    fetchStatuses()
       .then(setAllStatuses)
       .catch((err) => {
         console.error("Error fetching statuses:", err);
+        showNotification("Failed to load statuses.", "error");
       });
   }, []);
 
@@ -496,79 +95,41 @@ const AlpacaIssue = ({
     [allUserObjects, assignees]
   );
 
-  const tabsConfig = useMemo(
-    () => [
-      { name: "comments", title: "Comments", className: "comments" },
-      { name: "report", title: "Report", className: "report" },
-      ...(issueDetails?.meta?.queriedObject &&
-      issueDetails.meta.queriedObject !== "null"
-        ? [
-            {
-              name: "queriedobject",
-              title: "Queried Object",
-              className: "queried-object",
-            },
-          ]
-        : []),
-      ...(issueDetails?.meta?.headers && issueDetails.meta.headers !== "null"
-        ? [
-            {
-              name: "headers",
-              title: "Headers",
-              className: "headers",
-            },
-          ]
-        : []),
-    ],
-    [issueDetails?.meta?.queriedObject, issueDetails?.meta?.headers]
-  );
+  const tabsConfig = getTabsConfig(issueDetails);
 
   // Debounced API calls
-  const debouncedUpdateAssignees = useMemo(
-    () =>
-      debounce((issueId, slugs, newAssignees) => {
-        wp.apiFetch({
-          path: `/issue/v1/update/${issueId}`,
-          method: "POST",
-          data: {
-            taxonomies: {
-              assignee: slugs,
-            },
-          },
+  const debouncedUpdateAssignees = useDebounce(
+    async (issueId, slugs, newAssignees) => {
+      await updateIssue(issueId, {
+        taxonomies: {
+          assignee: slugs,
+        },
+      })
+        .then(() => {
+          if (typeof onAssigneesChange === "function") {
+            const assigneeObjects = allUserObjects.filter(
+              (u) =>
+                newAssignees.includes(u.name) || newAssignees.includes(u.slug)
+            );
+            onAssigneesChange(issueId, assigneeObjects);
+          }
         })
-          .then(() => {
-            if (typeof onAssigneesChange === "function") {
-              const assigneeObjects = allUserObjects.filter(
-                (u) =>
-                  newAssignees.includes(u.name) || newAssignees.includes(u.slug)
-              );
-              onAssigneesChange(issueId, assigneeObjects);
-            }
-          })
-          .finally(() => setLoading("assignees", false));
-      }, 300),
-    [allUserObjects, onAssigneesChange, setLoading]
+        .finally(() => setLoading("assignees", false));
+    },
+    300
   );
 
-  const debouncedUpdateDeadline = useMemo(
-    () =>
-      debounce((issueId, newDate) => {
-        wp.apiFetch({
-          path: `/issue/v1/update/${issueId}`,
-          method: "POST",
-          data: {
-            meta: { deadline: newDate },
-          },
-        })
-          .then(() => {
-            if (typeof onDeadlineChange === "function") {
-              onDeadlineChange(issueId, newDate);
-            }
-          })
-          .finally(() => setLoading("deadline", false));
-      }, 300),
-    [onDeadlineChange, setLoading]
-  );
+  const debouncedUpdateDeadline = useDebounce(async (issueId, newDate) => {
+    await updateIssue(issueId, {
+      meta: { deadline: newDate },
+    })
+      .then(() => {
+        if (typeof onDeadlineChange === "function") {
+          onDeadlineChange(issueId, newDate);
+        }
+      })
+      .finally(() => setLoading("deadline", false));
+  }, 300);
 
   // Process issue details when they change
   useEffect(() => {
@@ -577,18 +138,9 @@ const AlpacaIssue = ({
 
       // Handle checklist
       if (issueDetails.meta.checklist) {
-        try {
-          const parsedChecklist =
-            typeof issueDetails.meta.checklist === "string"
-              ? JSON.parse(issueDetails.meta.checklist)
-              : issueDetails.meta.checklist;
-
-          if (Array.isArray(parsedChecklist)) {
-            setChecklistItems(parsedChecklist);
-          }
-        } catch (e) {
-          console.error("Error parsing checklist", e);
-          setChecklistItems([]);
+        const parsedChecklist = parseChecklist(issueDetails.meta.checklist);
+        if (Array.isArray(parsedChecklist)) {
+          setChecklistItems(parsedChecklist);
         }
       } else {
         setChecklistItems([]);
@@ -628,6 +180,7 @@ const AlpacaIssue = ({
           await createAssigneeComments(
             added,
             removed,
+
             allUserObjects,
             createIssueComment,
             generateAssigneeChangeComment,
@@ -635,7 +188,7 @@ const AlpacaIssue = ({
           );
           setCommentRefreshKey((prevKey) => prevKey + 1);
         } catch (err) {
-          console.error("Failed to create assignee comments", err);
+          showNotification("Failed to create assignee comments.", "error");
         }
       }
 
@@ -668,12 +221,8 @@ const AlpacaIssue = ({
   const handleDeadlineClear = useCallback(() => {
     setDeadline(null);
     setLoading("deadline", true);
-    wp.apiFetch({
-      path: `/issue/v1/update/${issueId}`,
-      method: "POST",
-      data: {
-        meta: { deadline: "" },
-      },
+    updateIssue(issueId, {
+      meta: { deadline: "" },
     })
       .then(() => {
         if (typeof onDeadlineChange === "function") {
@@ -685,11 +234,7 @@ const AlpacaIssue = ({
 
   const handleScreenshotDelete = useCallback(() => {
     setLoading("screenshot", true);
-    wp.apiFetch({
-      path: `/issue/v1/update/${issueId}`,
-      method: "POST",
-      data: { meta: { screenshot: "" } },
-    })
+    updateIssue(issueId, { meta: { screenshot: "" } })
       .then(() => {
         setIssueDetails((prev) => ({
           ...prev,
@@ -707,7 +252,7 @@ const AlpacaIssue = ({
             setCommentRefreshKey((prevKey) => prevKey + 1);
           })
           .catch((err) => {
-            console.error("Error creating checklist comment:", err);
+            showNotification("Error creating checklist comment.", "error");
           });
       }
     },
@@ -737,13 +282,9 @@ const AlpacaIssue = ({
 
     setLoading("status", true);
     try {
-      await wp.apiFetch({
-        path: `/issue/v1/update/${issueId}`,
-        method: "POST",
-        data: {
-          taxonomies: {
-            status: [nextStatus.term_id],
-          },
+      await updateIssue(issueId, {
+        taxonomies: {
+          status: [nextStatus.term_id],
         },
       });
 
@@ -771,8 +312,7 @@ const AlpacaIssue = ({
         setCommentRefreshKey((prevKey) => prevKey + 1);
       }
     } catch (error) {
-      console.error("Failed to progress issue status:", error);
-      // Handle error, e.g., show a notice to the user
+      showNotification("Failed to progress issue status.", "error");
     } finally {
       setLoading("status", false);
     }
@@ -793,12 +333,8 @@ const AlpacaIssue = ({
 
     setLoading("title", true);
     try {
-      await wp.apiFetch({
-        path: `/issue/v1/update/${issueId}`,
-        method: "POST",
-        data: {
-          content: editedTitle,
-        },
+      await updateIssue(issueId, {
+        content: editedTitle,
       });
 
       setIssueDetails((prev) => ({
@@ -813,12 +349,19 @@ const AlpacaIssue = ({
         onIssueTitleChange(issueId, editedTitle);
       }
     } catch (error) {
-      console.error("Failed to update issue title:", error);
+      showNotification("Failed to update issue title.", "error");
     } finally {
       setLoading("title", false);
       setIsEditingTitle(false);
     }
-  }, [editedTitle, issueDetails, issueId, setIssueDetails, setLoading, onIssueTitleChange]);
+  }, [
+    editedTitle,
+    issueDetails,
+    issueId,
+    setIssueDetails,
+    setLoading,
+    onIssueTitleChange,
+  ]);
 
   const currentStatus = issueDetails?.taxonomies?.status?.[0];
   const isLastStatus = useMemo(() => {
@@ -874,6 +417,12 @@ const AlpacaIssue = ({
           <div className="notice notice-error">
             <p>{error}</p>
             <Button onClick={refetchData}>Retry</Button>
+          </div>
+        )}
+
+        {notificationMessage && (
+          <div className={`notice notice-${notificationMessage.type}`}>
+            <p>{notificationMessage.message}</p>
           </div>
         )}
 
@@ -941,6 +490,7 @@ const AlpacaIssue = ({
                 isSaving={loadingStates.assignees || loadingStates.deadline}
                 setIsSaving={(value) => setLoading("checklist", value)}
                 createIssueComment={handleChecklistComment}
+                setCommentRefreshKey={setCommentRefreshKey} // Add this line
               />
 
               <TabPanel

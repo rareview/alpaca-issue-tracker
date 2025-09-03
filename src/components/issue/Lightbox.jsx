@@ -1,0 +1,43 @@
+const { useEffect, memo } = wp.element;
+import { createPortal } from "react-dom";
+
+const Lightbox = memo(({ src, onClose }) => {
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
+  return createPortal(
+    <div
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100vw",
+        height: "100vh",
+        background: "rgba(0,0,0,0.85)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 99999999999999,
+      }}
+      onClick={onClose}
+    >
+      <img
+        src={src}
+        alt="Enlarged screenshot"
+        style={{
+          maxWidth: "90%",
+          maxHeight: "90%",
+          boxShadow: "0 0 20px rgba(0,0,0,0.5)",
+        }}
+      />
+    </div>,
+    document.body
+  );
+});
+
+export default Lightbox;

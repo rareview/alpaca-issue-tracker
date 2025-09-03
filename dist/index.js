@@ -12107,6 +12107,7 @@ var _cookies = require("../utils/cookies");
 var _data = require("../utils/data");
 var _comments = require("../utils/comments");
 var _usercache = require("../utils/usercache");
+var _issueApi = require("../services/issueApi");
 const { useState, useRef, useEffect, useCallback } = wp.element;
 const { decodeEntities } = wp.htmlEntities;
 /**
@@ -12157,19 +12158,48 @@ const { decodeEntities } = wp.htmlEntities;
             setContainers(original); // revert on failure
         });
     };
-    const createIssueComment = (issueId, commentContent)=>{
-        return wp.apiFetch({
-            path: `/wp/v2/comments`,
-            method: "POST",
-            data: {
-                content: commentContent,
-                post: issueId,
-                comment_type: "issuecomment"
+    const createIssueComment = async (issueId, commentContent)=>{
+        try {
+            const createCommentResponse = await wp.apiFetch({
+                path: `/wp/v2/comments`,
+                method: "POST",
+                data: {
+                    content: commentContent,
+                    post: issueId,
+                    comment_type: "issuecomment"
+                }
+            });
+            console.log("Create Comment Response:", createCommentResponse);
+            console.log("Issue ID for comment count fetch:", issueId);
+            if (!createCommentResponse || !createCommentResponse.id) {
+                console.error("Comment creation failed or returned invalid response:", createCommentResponse);
+                throw new Error("Comment creation failed.");
             }
-        }).catch((err)=>{
+            const postIdForCommentCount = createCommentResponse.post;
+            let newCount = 0;
+            let retries = 0;
+            const maxRetries = 5;
+            const retryDelay = 500; // milliseconds
+            console.log(`Attempting to fetch post for comment count for postId: ${postIdForCommentCount} with retries...`);
+            while(newCount === 0 && retries < maxRetries){
+                await new Promise((resolve)=>setTimeout(resolve, retryDelay));
+                const postResponse = (0, _issueApi.fetchIssue)(postIdForCommentCount);
+                newCount = postResponse.comment_count || 0;
+                console.log(`Retry ${retries + 1}: Fetched post for comment count for post ${postIdForCommentCount}:`, postResponse);
+                retries++;
+            }
+            console.log("Final New Comment Count:", newCount);
+            // Dispatch the custom event to update the comment count in the UI
+            document.dispatchEvent(new CustomEvent("alpaca:comment-count-changed", {
+                detail: {
+                    issueId: issueId,
+                    newCount: newCount
+                }
+            }));
+        } catch (err) {
             console.error("Error creating status change comment:", err);
             throw err;
-        });
+        }
     };
     function findContainerByItemId(itemId) {
         return containers.find((c)=>c.items.some((item)=>item.id === itemId));
@@ -12184,9 +12214,15 @@ const { decodeEntities } = wp.htmlEntities;
         }
         return null;
     }
-    function handleDragEnd(result) {
+    async function handleDragEnd(result) {
         const { source, destination, draggableId } = result;
-        if (!destination) return;
+        console.log("handleDragEnd called");
+        console.log("Source:", source);
+        console.log("Destination:", destination);
+        if (!destination) {
+            console.log("No destination, returning.");
+            return;
+        }
         const sourceContainer = findContainerById(source.droppableId);
         const destinationContainer = findContainerById(destination.droppableId);
         if (sourceContainer.id === destinationContainer.id) {
@@ -12214,7 +12250,7 @@ const { decodeEntities } = wp.htmlEntities;
                     else return c;
                 }));
             const commentContent = (0, _comments.generateStatusChangeComment)(sourceContainer.title, destinationContainer.title);
-            createIssueComment(draggableId, commentContent);
+            await createIssueComment(draggableId, commentContent);
         }
         (0, _data.saveBoardOrder)();
         const movedItemId = parseInt(draggableId, 10);
@@ -12501,7 +12537,7 @@ const { decodeEntities } = wp.htmlEntities;
         onDragEnd: handleDragEnd,
         __source: {
             fileName: "src/components/BoardMain.jsx",
-            lineNumber: 504,
+            lineNumber: 564,
             columnNumber: 5
         },
         __self: this
@@ -12509,7 +12545,7 @@ const { decodeEntities } = wp.htmlEntities;
         className: "alpaca-wrap",
         __source: {
             fileName: "src/components/BoardMain.jsx",
-            lineNumber: 505,
+            lineNumber: 565,
             columnNumber: 7
         },
         __self: this
@@ -12526,7 +12562,7 @@ const { decodeEntities } = wp.htmlEntities;
             onRename: handleRenameContainer,
             __source: {
                 fileName: "src/components/BoardMain.jsx",
-                lineNumber: 507,
+                lineNumber: 567,
                 columnNumber: 11
             },
             __self: this
@@ -12544,7 +12580,7 @@ const { decodeEntities } = wp.htmlEntities;
         onIssueTitleChange: handleIssueTitleChange,
         __source: {
             fileName: "src/components/BoardMain.jsx",
-            lineNumber: 522,
+            lineNumber: 582,
             columnNumber: 7
         },
         __self: this
@@ -12552,596 +12588,48 @@ const { decodeEntities } = wp.htmlEntities;
 }
 exports.default = Board;
 
-},{"@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration":"iD7mF","./issue":"l6q71","./Item":"2yEr4","./Container":"QNfzH","../utils/cookies":"4qoXW","../utils/data":"j8lWA","../utils/comments":"hPhNI","../utils/usercache":"gUv4D","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"l6q71":[function(require,module,exports,__globalThis) {
+},{"@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration":"iD7mF","./issue":"l6q71","./Item":"2yEr4","./Container":"QNfzH","../utils/cookies":"4qoXW","../utils/data":"j8lWA","../utils/comments":"hPhNI","../utils/usercache":"gUv4D","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","../services/issueApi":"bebt9"}],"l6q71":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _commentingJsx = require("./commenting.jsx");
 var _commentingJsxDefault = parcelHelpers.interopDefault(_commentingJsx);
-var _checklistJsx = require("./checklist.jsx");
+var _checklistJsx = require("./issue/checklist.jsx");
 var _checklistJsxDefault = parcelHelpers.interopDefault(_checklistJsx);
-var _user = require("./User");
-var _userDefault = parcelHelpers.interopDefault(_user);
 var _commentsJs = require("../utils/comments.js");
-const { useState, useEffect, useRef, createPortal, useMemo, useCallback, memo: ReactMemo } = wp.element;
+var _tabsConfig = require("../utils/tabsConfig");
+var _useIssueData = require("../hooks/useIssueData");
+var _useIssueDataDefault = parcelHelpers.interopDefault(_useIssueData);
+var _useUserManagement = require("../hooks/useUserManagement");
+var _useUserManagementDefault = parcelHelpers.interopDefault(_useUserManagement);
+var _useLoadingStates = require("../hooks/useLoadingStates");
+var _useLoadingStatesDefault = parcelHelpers.interopDefault(_useLoadingStates);
+var _assigneeUtils = require("../utils/assigneeUtils");
+var _checklistUtils = require("../utils/checklistUtils");
+var _issueApi = require("../services/issueApi");
+var _assigneeSelector = require("./issue/AssigneeSelector");
+var _assigneeSelectorDefault = parcelHelpers.interopDefault(_assigneeSelector);
+var _deadlineControl = require("./issue/DeadlineControl");
+var _deadlineControlDefault = parcelHelpers.interopDefault(_deadlineControl);
+var _jsonTable = require("./issue/JsonTable");
+var _jsonTableDefault = parcelHelpers.interopDefault(_jsonTable);
+var _reportTab = require("./issue/ReportTab");
+var _reportTabDefault = parcelHelpers.interopDefault(_reportTab);
+var _tabContent = require("./issue/TabContent");
+var _tabContentDefault = parcelHelpers.interopDefault(_tabContent);
+var _lightbox = require("./issue/Lightbox");
+var _lightboxDefault = parcelHelpers.interopDefault(_lightbox);
+const { useState, useEffect, useRef, useMemo, useCallback } = wp.element;
 const { useDebounce } = wp.compose;
-const { Modal, FormTokenField, DatePicker, Popover, BaseControl, TabPanel, Button, Tooltip } = wp.components;
+const { Modal, TabPanel, Button, Tooltip } = wp.components;
 const { decodeEntities } = wp.htmlEntities;
 const { date } = wp;
 const datesettings = wp.date.getSettings();
-// Utility functions
-const processAssigneeChanges = (oldAssignees, newAssignees)=>{
-    const added = newAssignees.filter((name)=>!oldAssignees.includes(name));
-    const removed = oldAssignees.filter((name)=>!newAssignees.includes(name));
-    return {
-        added,
-        removed
-    };
-};
-const createAssigneeComments = async (added, removed, allUserObjects, createComment, generateComment, issueId)=>{
-    const commentPromises = [];
-    added.forEach((name)=>{
-        const user = allUserObjects.find((u)=>u.name === name);
-        if (user) commentPromises.push(createComment(issueId, generateComment(user, true)));
-    });
-    removed.forEach((name)=>{
-        const user = allUserObjects.find((u)=>u.name === name);
-        if (user) commentPromises.push(createComment(issueId, generateComment(user, false)));
-    });
-    if (commentPromises.length > 0) return Promise.all(commentPromises);
-    return Promise.resolve();
-};
-const debounce = (func, wait)=>{
-    let timeout;
-    return function executedFunction(...args) {
-        const later = ()=>{
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-};
 // Custom hooks
-const useIssueData = (issueId, isOpen)=>{
-    const [issueDetails, setIssueDetails] = useState(null);
-    const [isLoadingDetails, setIsLoadingDetails] = useState(false);
-    const [error, setError] = useState(null);
-    useEffect(()=>{
-        if (issueId && isOpen) {
-            setIsLoadingDetails(true);
-            setError(null);
-            wp.apiFetch({
-                path: `/issue/v1/get/${issueId}`
-            }).then((issueData)=>{
-                setIssueDetails(issueData);
-            }).catch((err)=>{
-                console.error("Error fetching issue data:", err);
-                setError("Failed to load issue details. Please try again.");
-                setIssueDetails(null);
-            }).finally(()=>{
-                setIsLoadingDetails(false);
-            });
-        }
-    }, [
-        issueId,
-        isOpen
-    ]);
-    const refetchData = useCallback(()=>{
-        if (issueId && isOpen) {
-            setIsLoadingDetails(true);
-            setError(null);
-            wp.apiFetch({
-                path: `/issue/v1/get/${issueId}`
-            }).then(setIssueDetails).catch((err)=>{
-                console.error("Error refetching issue data:", err);
-                setError("Failed to load issue details. Please try again.");
-            }).finally(()=>setIsLoadingDetails(false));
-        }
-    }, [
-        issueId,
-        isOpen
-    ]);
-    return {
-        issueDetails,
-        setIssueDetails,
-        isLoadingDetails,
-        error,
-        refetchData
-    };
-};
-const useUserManagement = ()=>{
-    const [allUsers, setAllUsers] = useState([]);
-    const [allUserObjects, setAllUserObjects] = useState([]);
-    const [userMap, setUserMap] = useState({});
-    useEffect(()=>{
-        wp.apiFetch({
-            path: "/alpaca/v1/users"
-        }).then((users)=>{
-            const usersWithAvatar = users.map((u)=>({
-                    ...u,
-                    avatar: u.avatar_urls?.["48"] || u.avatar_urls?.["96"] || u.avatar_urls?.["24"] || ""
-                }));
-            const localUserMap = {};
-            usersWithAvatar.forEach((u)=>{
-                localUserMap[u.name] = u.slug;
-                localUserMap[u.slug] = u.slug;
-            });
-            setUserMap(localUserMap);
-            setAllUsers(usersWithAvatar.map((u)=>u.name));
-            setAllUserObjects(usersWithAvatar);
-        }).catch((err)=>{
-            console.error("Error fetching users:", err);
-        });
-    }, []);
-    return {
-        allUsers,
-        allUserObjects,
-        userMap
-    };
-};
-const useLoadingStates = ()=>{
-    const [loadingStates, setLoadingStates] = useState({
-        assignees: false,
-        deadline: false,
-        screenshot: false,
-        title: false
-    });
-    const setLoading = useCallback((key, value)=>{
-        setLoadingStates((prev)=>({
-                ...prev,
-                [key]: value
-            }));
-    }, []);
-    return {
-        loadingStates,
-        setLoading
-    };
-};
 // Memoized components
-const JsonTable = ReactMemo(({ data })=>{
-    if (!data) return null;
-    let parsedData;
-    try {
-        parsedData = JSON.parse(data);
-    } catch (e) {
-        return /*#__PURE__*/ React.createElement("p", {
-            __source: {
-                fileName: "src/components/issue.jsx",
-                lineNumber: 194,
-                columnNumber: 12
-            },
-            __self: undefined
-        }, "Error parsing JSON data");
-    }
-    return /*#__PURE__*/ React.createElement("table", {
-        className: "alpaca-json-table widefat striped",
-        style: {
-            borderCollapse: "collapse",
-            width: "100%"
-        },
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 198,
-            columnNumber: 5
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("tbody", {
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 202,
-            columnNumber: 7
-        },
-        __self: undefined
-    }, Object.entries(parsedData).map(([key, value])=>/*#__PURE__*/ React.createElement("tr", {
-            key: key,
-            __source: {
-                fileName: "src/components/issue.jsx",
-                lineNumber: 204,
-                columnNumber: 11
-            },
-            __self: undefined
-        }, /*#__PURE__*/ React.createElement("th", {
-            __source: {
-                fileName: "src/components/issue.jsx",
-                lineNumber: 205,
-                columnNumber: 13
-            },
-            __self: undefined
-        }, key), /*#__PURE__*/ React.createElement("td", {
-            __source: {
-                fileName: "src/components/issue.jsx",
-                lineNumber: 206,
-                columnNumber: 13
-            },
-            __self: undefined
-        }, String(value))))));
-});
-const AssigneeSelector = ReactMemo(({ assignees, allUsers, onChange, isLoading })=>/*#__PURE__*/ React.createElement(FormTokenField, {
-        label: "Assigned To",
-        placeholder: "Nobody",
-        value: assignees,
-        suggestions: allUsers,
-        onChange: onChange,
-        disabled: isLoading,
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 216,
-            columnNumber: 5
-        },
-        __self: undefined
-    }));
-const DeadlineControl = ReactMemo(({ deadline, onChange, onClear, isLoading })=>{
-    const [isEditingDeadline, setIsEditingDeadline] = useState(false);
-    const calendarButtonRef = useRef();
-    return /*#__PURE__*/ React.createElement(BaseControl, {
-        label: "Deadline",
-        className: "alpaca-deadline-control",
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 233,
-            columnNumber: 7
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-deadline",
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 234,
-            columnNumber: 9
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-deadline-date",
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 235,
-            columnNumber: 11
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("input", {
-        readOnly: true,
-        type: "text",
-        value: deadline ? date.format(datesettings.formats.date, deadline) : "No deadline set.",
-        onClick: ()=>setIsEditingDeadline((prev)=>!prev),
-        ref: calendarButtonRef,
-        disabled: isLoading,
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 236,
-            columnNumber: 13
-        },
-        __self: undefined
-    })), isEditingDeadline && /*#__PURE__*/ React.createElement(Popover, {
-        placement: "bottom-start",
-        onClose: ()=>setIsEditingDeadline(false),
-        anchor: calendarButtonRef.current,
-        focusOnMount: false,
-        className: "alpaca-deadline-popover",
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 251,
-            columnNumber: 13
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement(DatePicker, {
-        current: deadline,
-        onChange: (newDate)=>{
-            onChange(newDate);
-            setIsEditingDeadline(false);
-        },
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 258,
-            columnNumber: 15
-        },
-        __self: undefined
-    })), deadline && /*#__PURE__*/ React.createElement(Button, {
-        icon: "trash",
-        label: "Clear deadline",
-        onClick: onClear,
-        disabled: isLoading,
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 269,
-            columnNumber: 13
-        },
-        __self: undefined
-    })));
-});
-const ReportTab = ReactMemo(({ issueDetails, onScreenshotDelete, isLoading, onScreenshotClick })=>/*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-report-tab",
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 284,
-            columnNumber: 5
-        },
-        __self: undefined
-    }, issueDetails.meta.screenshot && /*#__PURE__*/ React.createElement("div", {
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 286,
-            columnNumber: 9
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("p", {
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 287,
-            columnNumber: 11
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("img", {
-        src: issueDetails.meta.screenshot,
-        className: "alpaca-screenshot",
-        alt: "Screenshot",
-        style: {
-            cursor: "zoom-in",
-            maxWidth: "100%"
-        },
-        onClick: ()=>onScreenshotClick(issueDetails.meta.screenshot),
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 288,
-            columnNumber: 13
-        },
-        __self: undefined
-    })), /*#__PURE__*/ React.createElement("p", {
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 296,
-            columnNumber: 11
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("button", {
-        type: "button",
-        className: "button-link-delete",
-        disabled: isLoading,
-        onClick: onScreenshotDelete,
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 297,
-            columnNumber: 13
-        },
-        __self: undefined
-    }, "Delete"))), /*#__PURE__*/ React.createElement("table", {
-        className: "widefat striped",
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 309,
-            columnNumber: 7
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("tbody", {
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 310,
-            columnNumber: 9
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("tr", {
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 311,
-            columnNumber: 11
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("th", {
-        scope: "row",
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 312,
-            columnNumber: 13
-        },
-        __self: undefined
-    }, "Reported"), /*#__PURE__*/ React.createElement("td", {
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 313,
-            columnNumber: 13
-        },
-        __self: undefined
-    }, date.format(datesettings.formats.datetimeAbbreviated, new Date(issueDetails.post_data.post_date)))), /*#__PURE__*/ React.createElement("tr", {
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 320,
-            columnNumber: 11
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("th", {
-        scope: "row",
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 321,
-            columnNumber: 13
-        },
-        __self: undefined
-    }, "Last edit"), /*#__PURE__*/ React.createElement("td", {
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 322,
-            columnNumber: 13
-        },
-        __self: undefined
-    }, date.format(datesettings.formats.datetimeAbbreviated, new Date(issueDetails.post_data.post_modified)))), /*#__PURE__*/ React.createElement("tr", {
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 329,
-            columnNumber: 11
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("th", {
-        scope: "row",
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 330,
-            columnNumber: 13
-        },
-        __self: undefined
-    }, "URL"), /*#__PURE__*/ React.createElement("td", {
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 331,
-            columnNumber: 13
-        },
-        __self: undefined
-    }, issueDetails.meta.URL ? /*#__PURE__*/ React.createElement("a", {
-        href: issueDetails.meta.URL,
-        target: "_blank",
-        rel: "noopener noreferrer",
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 333,
-            columnNumber: 17
-        },
-        __self: undefined
-    }, issueDetails.meta.URL) : "N/A")), /*#__PURE__*/ React.createElement("tr", {
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 345,
-            columnNumber: 11
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("th", {
-        scope: "row",
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 346,
-            columnNumber: 13
-        },
-        __self: undefined
-    }, "Screen"), /*#__PURE__*/ React.createElement("td", {
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 347,
-            columnNumber: 13
-        },
-        __self: undefined
-    }, issueDetails.meta.screenwidth && issueDetails.meta.screenheight ? `${issueDetails.meta.screenwidth} x ${issueDetails.meta.screenheight}` : "N/A")), Object.entries(issueDetails.taxonomies).filter(([taxonomy])=>taxonomy !== "assignee").map(([taxonomy, terms])=>/*#__PURE__*/ React.createElement("tr", {
-            key: taxonomy,
-            __source: {
-                fileName: "src/components/issue.jsx",
-                lineNumber: 356,
-                columnNumber: 15
-            },
-            __self: undefined
-        }, /*#__PURE__*/ React.createElement("th", {
-            style: {
-                textTransform: "capitalize"
-            },
-            __source: {
-                fileName: "src/components/issue.jsx",
-                lineNumber: 357,
-                columnNumber: 17
-            },
-            __self: undefined
-        }, taxonomy), /*#__PURE__*/ React.createElement("td", {
-            __source: {
-                fileName: "src/components/issue.jsx",
-                lineNumber: 358,
-                columnNumber: 17
-            },
-            __self: undefined
-        }, terms.map((term)=>term.name).join(", "))))))));
-const TabContent = ReactMemo(({ tab, issueDetails, issueId, commentRefreshKey, onScreenshotDelete, loadingStates, onScreenshotClick })=>{
-    switch(tab.name){
-        case "comments":
-            return /*#__PURE__*/ React.createElement((0, _commentingJsxDefault.default), {
-                issueId: issueId,
-                commentRefreshKey: commentRefreshKey,
-                __source: {
-                    fileName: "src/components/issue.jsx",
-                    lineNumber: 380,
-                    columnNumber: 11
-                },
-                __self: undefined
-            });
-        case "report":
-            return /*#__PURE__*/ React.createElement(ReportTab, {
-                issueDetails: issueDetails,
-                onScreenshotDelete: onScreenshotDelete,
-                isLoading: loadingStates.screenshot,
-                onScreenshotClick: onScreenshotClick,
-                __source: {
-                    fileName: "src/components/issue.jsx",
-                    lineNumber: 387,
-                    columnNumber: 11
-                },
-                __self: undefined
-            });
-        case "queriedobject":
-            return /*#__PURE__*/ React.createElement(JsonTable, {
-                data: issueDetails.meta.queriedObject,
-                __source: {
-                    fileName: "src/components/issue.jsx",
-                    lineNumber: 395,
-                    columnNumber: 16
-                },
-                __self: undefined
-            });
-        case "headers":
-            return /*#__PURE__*/ React.createElement(JsonTable, {
-                data: issueDetails.meta.headers,
-                __source: {
-                    fileName: "src/components/issue.jsx",
-                    lineNumber: 397,
-                    columnNumber: 16
-                },
-                __self: undefined
-            });
-        default:
-            return null;
-    }
-});
-const Lightbox = ReactMemo(({ src, onClose })=>{
-    useEffect(()=>{
-        const handleKeyDown = (e)=>{
-            if (e.key === "Escape") onClose();
-        };
-        document.addEventListener("keydown", handleKeyDown);
-        return ()=>document.removeEventListener("keydown", handleKeyDown);
-    }, [
-        onClose
-    ]);
-    return createPortal(/*#__PURE__*/ React.createElement("div", {
-        style: {
-            position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
-            background: "rgba(0,0,0,0.85)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 99999999999999
-        },
-        onClick: onClose,
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 414,
-            columnNumber: 5
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("img", {
-        src: src,
-        alt: "Enlarged screenshot",
-        style: {
-            maxWidth: "90%",
-            maxHeight: "90%",
-            boxShadow: "0 0 20px rgba(0,0,0,0.5)"
-        },
-        __source: {
-            fileName: "src/components/issue.jsx",
-            lineNumber: 429,
-            columnNumber: 7
-        },
-        __self: undefined
-    })), document.body);
-});
 const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigneesChange, onDeadlineChange, createIssueComment, generateAssigneeChangeComment, onStatusChange, onIssueTitleChange })=>{
-    const { issueDetails, setIssueDetails, isLoadingDetails, error, refetchData } = useIssueData(issueId, isOpen);
-    const { allUsers, allUserObjects, userMap } = useUserManagement();
-    const { loadingStates, setLoading } = useLoadingStates();
+    const { issueDetails, setIssueDetails, isLoadingDetails, error, refetchData } = (0, _useIssueDataDefault.default)(issueId, isOpen);
+    const { allUsers, allUserObjects, userMap } = (0, _useUserManagementDefault.default)();
+    const { loadingStates, setLoading } = (0, _useLoadingStatesDefault.default)();
     const [assignees, setAssignees] = useState([]);
     const [commentRefreshKey, setCommentRefreshKey] = useState(0);
     const [deadline, setDeadline] = useState(null);
@@ -13151,11 +12639,18 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
     const [isEditingTitle, setIsEditingTitle] = useState(false);
     const [editedTitle, setEditedTitle] = useState("");
     const titleInputRef = useRef(null);
+    const [notificationMessage, setNotificationMessage] = useState(null);
+    const showNotification = (message, type = "error")=>{
+        setNotificationMessage({
+            message,
+            type
+        });
+        setTimeout(()=>setNotificationMessage(null), 5000); // Clear after 5 seconds
+    };
     useEffect(()=>{
-        wp.apiFetch({
-            path: "/alpaca/v1/statuses"
-        }).then(setAllStatuses).catch((err)=>{
+        (0, _issueApi.fetchStatuses)().then(setAllStatuses).catch((err)=>{
             console.error("Error fetching statuses:", err);
+            showNotification("Failed to load statuses.", "error");
         });
     }, []);
     useEffect(()=>{
@@ -13168,85 +12663,38 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         allUserObjects,
         assignees
     ]);
-    const tabsConfig = useMemo(()=>[
-            {
-                name: "comments",
-                title: "Comments",
-                className: "comments"
-            },
-            {
-                name: "report",
-                title: "Report",
-                className: "report"
-            },
-            ...issueDetails?.meta?.queriedObject && issueDetails.meta.queriedObject !== "null" ? [
-                {
-                    name: "queriedobject",
-                    title: "Queried Object",
-                    className: "queried-object"
-                }
-            ] : [],
-            ...issueDetails?.meta?.headers && issueDetails.meta.headers !== "null" ? [
-                {
-                    name: "headers",
-                    title: "Headers",
-                    className: "headers"
-                }
-            ] : []
-        ], [
-        issueDetails?.meta?.queriedObject,
-        issueDetails?.meta?.headers
-    ]);
+    const tabsConfig = (0, _tabsConfig.getTabsConfig)(issueDetails);
     // Debounced API calls
-    const debouncedUpdateAssignees = useMemo(()=>debounce((issueId, slugs, newAssignees)=>{
-            wp.apiFetch({
-                path: `/issue/v1/update/${issueId}`,
-                method: "POST",
-                data: {
-                    taxonomies: {
-                        assignee: slugs
-                    }
-                }
-            }).then(()=>{
-                if (typeof onAssigneesChange === "function") {
-                    const assigneeObjects = allUserObjects.filter((u)=>newAssignees.includes(u.name) || newAssignees.includes(u.slug));
-                    onAssigneesChange(issueId, assigneeObjects);
-                }
-            }).finally(()=>setLoading("assignees", false));
-        }, 300), [
-        allUserObjects,
-        onAssigneesChange,
-        setLoading
-    ]);
-    const debouncedUpdateDeadline = useMemo(()=>debounce((issueId, newDate)=>{
-            wp.apiFetch({
-                path: `/issue/v1/update/${issueId}`,
-                method: "POST",
-                data: {
-                    meta: {
-                        deadline: newDate
-                    }
-                }
-            }).then(()=>{
-                if (typeof onDeadlineChange === "function") onDeadlineChange(issueId, newDate);
-            }).finally(()=>setLoading("deadline", false));
-        }, 300), [
-        onDeadlineChange,
-        setLoading
-    ]);
+    const debouncedUpdateAssignees = useDebounce(async (issueId, slugs, newAssignees)=>{
+        await (0, _issueApi.updateIssue)(issueId, {
+            taxonomies: {
+                assignee: slugs
+            }
+        }).then(()=>{
+            if (typeof onAssigneesChange === "function") {
+                const assigneeObjects = allUserObjects.filter((u)=>newAssignees.includes(u.name) || newAssignees.includes(u.slug));
+                onAssigneesChange(issueId, assigneeObjects);
+            }
+        }).finally(()=>setLoading("assignees", false));
+    }, 300);
+    const debouncedUpdateDeadline = useDebounce(async (issueId, newDate)=>{
+        await (0, _issueApi.updateIssue)(issueId, {
+            meta: {
+                deadline: newDate
+            }
+        }).then(()=>{
+            if (typeof onDeadlineChange === "function") onDeadlineChange(issueId, newDate);
+        }).finally(()=>setLoading("deadline", false));
+    }, 300);
     // Process issue details when they change
     useEffect(()=>{
         if (issueDetails && issueDetails.success && allUserObjects.length > 0) {
             setDeadline(issueDetails.meta.deadline || null);
             // Handle checklist
-            if (issueDetails.meta.checklist) try {
-                const parsedChecklist = typeof issueDetails.meta.checklist === "string" ? JSON.parse(issueDetails.meta.checklist) : issueDetails.meta.checklist;
+            if (issueDetails.meta.checklist) {
+                const parsedChecklist = (0, _checklistUtils.parseChecklist)(issueDetails.meta.checklist);
                 if (Array.isArray(parsedChecklist)) setChecklistItems(parsedChecklist);
-            } catch (e) {
-                console.error("Error parsing checklist", e);
-                setChecklistItems([]);
-            }
-            else setChecklistItems([]);
+            } else setChecklistItems([]);
             // Handle assignees
             if (issueDetails.taxonomies && issueDetails.taxonomies.assignee && Array.isArray(issueDetails.taxonomies.assignee)) {
                 const assigneeNames = issueDetails.taxonomies.assignee.map((t)=>{
@@ -13265,13 +12713,13 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         const oldAssignees = [
             ...assignees
         ];
-        const { added, removed } = processAssigneeChanges(oldAssignees, newAssignees);
+        const { added, removed } = (0, _assigneeUtils.processAssigneeChanges)(oldAssignees, newAssignees);
         // Handle comments for assignee changes
         if (createIssueComment && generateAssigneeChangeComment) try {
-            await createAssigneeComments(added, removed, allUserObjects, createIssueComment, generateAssigneeChangeComment, issueId);
+            await (0, _assigneeUtils.createAssigneeComments)(added, removed, allUserObjects, createIssueComment, generateAssigneeChangeComment, issueId);
             setCommentRefreshKey((prevKey)=>prevKey + 1);
         } catch (err) {
-            console.error("Failed to create assignee comments", err);
+            showNotification("Failed to create assignee comments.", "error");
         }
         setAssignees(newAssignees);
         const slugs = newAssignees.map((a)=>userMap[a] || a);
@@ -13299,13 +12747,9 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
     const handleDeadlineClear = useCallback(()=>{
         setDeadline(null);
         setLoading("deadline", true);
-        wp.apiFetch({
-            path: `/issue/v1/update/${issueId}`,
-            method: "POST",
-            data: {
-                meta: {
-                    deadline: ""
-                }
+        (0, _issueApi.updateIssue)(issueId, {
+            meta: {
+                deadline: ""
             }
         }).then(()=>{
             if (typeof onDeadlineChange === "function") onDeadlineChange(issueId, null);
@@ -13317,13 +12761,9 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
     ]);
     const handleScreenshotDelete = useCallback(()=>{
         setLoading("screenshot", true);
-        wp.apiFetch({
-            path: `/issue/v1/update/${issueId}`,
-            method: "POST",
-            data: {
-                meta: {
-                    screenshot: ""
-                }
+        (0, _issueApi.updateIssue)(issueId, {
+            meta: {
+                screenshot: ""
             }
         }).then(()=>{
             setIssueDetails((prev)=>({
@@ -13343,7 +12783,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         if (createIssueComment) createIssueComment(issueId, commentContent).then(()=>{
             setCommentRefreshKey((prevKey)=>prevKey + 1);
         }).catch((err)=>{
-            console.error("Error creating checklist comment:", err);
+            showNotification("Error creating checklist comment.", "error");
         });
     }, [
         createIssueComment
@@ -13361,15 +12801,11 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         const nextStatus = allStatuses[currentIndex + 1];
         setLoading("status", true);
         try {
-            await wp.apiFetch({
-                path: `/issue/v1/update/${issueId}`,
-                method: "POST",
-                data: {
-                    taxonomies: {
-                        status: [
-                            nextStatus.term_id
-                        ]
-                    }
+            await (0, _issueApi.updateIssue)(issueId, {
+                taxonomies: {
+                    status: [
+                        nextStatus.term_id
+                    ]
                 }
             });
             // Update local state to reflect the change
@@ -13391,8 +12827,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
                 setCommentRefreshKey((prevKey)=>prevKey + 1);
             }
         } catch (error) {
-            console.error("Failed to progress issue status:", error);
-        // Handle error, e.g., show a notice to the user
+            showNotification("Failed to progress issue status.", "error");
         } finally{
             setLoading("status", false);
         }
@@ -13411,12 +12846,8 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         }
         setLoading("title", true);
         try {
-            await wp.apiFetch({
-                path: `/issue/v1/update/${issueId}`,
-                method: "POST",
-                data: {
-                    content: editedTitle
-                }
+            await (0, _issueApi.updateIssue)(issueId, {
+                content: editedTitle
             });
             setIssueDetails((prev)=>({
                     ...prev,
@@ -13427,7 +12858,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
                 }));
             if (typeof onIssueTitleChange === "function") onIssueTitleChange(issueId, editedTitle);
         } catch (error) {
-            console.error("Failed to update issue title:", error);
+            showNotification("Failed to update issue title.", "error");
         } finally{
             setLoading("title", false);
             setIsEditingTitle(false);
@@ -13459,7 +12890,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
                 text: "Progress issue to next status",
                 __source: {
                     fileName: "src/components/issue.jsx",
-                    lineNumber: 844,
+                    lineNumber: 387,
                     columnNumber: 13
                 }
             }, /*#__PURE__*/ React.createElement(Button, {
@@ -13469,14 +12900,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
                 disabled: loadingStates.status,
                 __source: {
                     fileName: "src/components/issue.jsx",
-                    lineNumber: 845,
+                    lineNumber: 388,
                     columnNumber: 15
                 }
             }, /*#__PURE__*/ React.createElement("span", {
                 className: "dashicons dashicons-arrow-right-alt",
                 __source: {
                     fileName: "src/components/issue.jsx",
-                    lineNumber: 851,
+                    lineNumber: 394,
                     columnNumber: 17
                 }
             }))),
@@ -13484,7 +12915,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
                 text: "Delete issue",
                 __source: {
                     fileName: "src/components/issue.jsx",
-                    lineNumber: 855,
+                    lineNumber: 398,
                     columnNumber: 11
                 }
             }, /*#__PURE__*/ React.createElement(Button, {
@@ -13496,21 +12927,21 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
                 },
                 __source: {
                     fileName: "src/components/issue.jsx",
-                    lineNumber: 856,
+                    lineNumber: 399,
                     columnNumber: 13
                 }
             }, /*#__PURE__*/ React.createElement("span", {
                 className: "dashicons dashicons-trash",
                 __source: {
                     fileName: "src/components/issue.jsx",
-                    lineNumber: 868,
+                    lineNumber: 411,
                     columnNumber: 15
                 }
             })))
         ].filter(Boolean),
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 838,
+            lineNumber: 381,
             columnNumber: 7
         },
         __self: undefined
@@ -13518,14 +12949,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         className: "notice notice-error",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 874,
+            lineNumber: 417,
             columnNumber: 11
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 875,
+            lineNumber: 418,
             columnNumber: 13
         },
         __self: undefined
@@ -13533,14 +12964,29 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         onClick: refetchData,
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 876,
+            lineNumber: 419,
             columnNumber: 13
         },
         __self: undefined
-    }, "Retry")), isLoadingDetails ? /*#__PURE__*/ React.createElement("p", {
+    }, "Retry")), notificationMessage && /*#__PURE__*/ React.createElement("div", {
+        className: `notice notice-${notificationMessage.type}`,
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 881,
+            lineNumber: 424,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("p", {
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 425,
+            columnNumber: 13
+        },
+        __self: undefined
+    }, notificationMessage.message)), isLoadingDetails ? /*#__PURE__*/ React.createElement("p", {
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 430,
             columnNumber: 11
         },
         __self: undefined
@@ -13548,7 +12994,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         className: "alpaca-issue-details",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 883,
+            lineNumber: 432,
             columnNumber: 11
         },
         __self: undefined
@@ -13556,7 +13002,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         className: "alpaca-issue-main column",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 884,
+            lineNumber: 433,
             columnNumber: 13
         },
         __self: undefined
@@ -13564,7 +13010,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         className: "alpaca-issue-slug",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 885,
+            lineNumber: 434,
             columnNumber: 15
         },
         __self: undefined
@@ -13581,7 +13027,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         ref: titleInputRef,
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 889,
+            lineNumber: 438,
             columnNumber: 17
         },
         __self: undefined
@@ -13589,7 +13035,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         className: "alpaca-issue-title-wrapper",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 904,
+            lineNumber: 453,
             columnNumber: 17
         },
         __self: undefined
@@ -13597,7 +13043,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         className: "alpaca-issue-title",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 905,
+            lineNumber: 454,
             columnNumber: 19
         },
         __self: undefined
@@ -13605,7 +13051,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         text: "Edit title",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 908,
+            lineNumber: 457,
             columnNumber: 19
         },
         __self: undefined
@@ -13618,7 +13064,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         },
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 909,
+            lineNumber: 458,
             columnNumber: 21
         },
         __self: undefined
@@ -13626,29 +13072,29 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         className: "alpaca-issue-main-controls",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 922,
+            lineNumber: 471,
             columnNumber: 15
         },
         __self: undefined
-    }, /*#__PURE__*/ React.createElement(AssigneeSelector, {
+    }, /*#__PURE__*/ React.createElement((0, _assigneeSelectorDefault.default), {
         assignees: assignees,
         allUsers: allUsers,
         onChange: handleAssigneeChange,
         isLoading: loadingStates.assignees,
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 923,
+            lineNumber: 472,
             columnNumber: 17
         },
         __self: undefined
-    }), /*#__PURE__*/ React.createElement(DeadlineControl, {
+    }), /*#__PURE__*/ React.createElement((0, _deadlineControlDefault.default), {
         deadline: deadline,
         onChange: handleDeadlineChange,
         onClear: handleDeadlineClear,
         isLoading: loadingStates.deadline,
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 930,
+            lineNumber: 479,
             columnNumber: 17
         },
         __self: undefined
@@ -13658,9 +13104,10 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         isSaving: loadingStates.assignees || loadingStates.deadline,
         setIsSaving: (value)=>setLoading("checklist", value),
         createIssueComment: handleChecklistComment,
+        setCommentRefreshKey: setCommentRefreshKey,
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 938,
+            lineNumber: 487,
             columnNumber: 15
         },
         __self: undefined
@@ -13670,11 +13117,11 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         tabs: tabsConfig,
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 946,
+            lineNumber: 496,
             columnNumber: 15
         },
         __self: undefined
-    }, (tab)=>/*#__PURE__*/ React.createElement(TabContent, {
+    }, (tab)=>/*#__PURE__*/ React.createElement((0, _tabContentDefault.default), {
             tab: tab,
             issueDetails: issueDetails,
             issueId: issueId,
@@ -13684,23 +13131,23 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
             onScreenshotClick: setLightboxSrc,
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 952,
+                lineNumber: 502,
                 columnNumber: 19
             },
             __self: undefined
         })))) : /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 966,
+            lineNumber: 516,
             columnNumber: 11
         },
         __self: undefined
-    }, issueDetails?.message || "Could not load issue details.")), lightboxSrc && /*#__PURE__*/ React.createElement(Lightbox, {
+    }, issueDetails?.message || "Could not load issue details.")), lightboxSrc && /*#__PURE__*/ React.createElement((0, _lightboxDefault.default), {
         src: lightboxSrc,
         onClose: handleLightboxClose,
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 971,
+            lineNumber: 521,
             columnNumber: 9
         },
         __self: undefined
@@ -13708,7 +13155,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
 };
 exports.default = AlpacaIssue;
 
-},{"./commenting.jsx":"321JG","./checklist.jsx":"dnVUA","./User":"enwL1","../utils/comments.js":"hPhNI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"321JG":[function(require,module,exports,__globalThis) {
+},{"./commenting.jsx":"321JG","./issue/checklist.jsx":"iTYG6","../utils/comments.js":"hPhNI","../utils/tabsConfig":"kaOzJ","../hooks/useIssueData":"5IBQX","../hooks/useUserManagement":"7BGvE","../hooks/useLoadingStates":"haQEY","../utils/assigneeUtils":"9o8NF","../utils/checklistUtils":"h8W9N","../services/issueApi":"bebt9","./issue/AssigneeSelector":"lBLYZ","./issue/DeadlineControl":"63IRX","./issue/JsonTable":"jh4NY","./issue/ReportTab":"f6zxb","./issue/TabContent":"14ymM","./issue/Lightbox":"krnYi","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"321JG":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _usercache = require("../utils/usercache");
@@ -15673,17 +15120,17 @@ Please report this to https://github.com/markedjs/marked.`, e) {
     return module1.exports;
 });
 
-},{}],"dnVUA":[function(require,module,exports,__globalThis) {
+},{}],"iTYG6":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
-var _commentsJs = require("../utils/comments.js");
+var _commentsJs = require("../../utils/comments.js");
 var _pragmaticDragAndDropReactBeautifulDndMigration = require("@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration");
-var _dragHandleIcon = require("./icons/DragHandleIcon");
-var _dragHandleIconDefault = parcelHelpers.interopDefault(_dragHandleIcon);
-const { useState, useEffect, useRef } = wp.element;
+var _dragHandleIconJsx = require("../icons/DragHandleIcon.jsx");
+var _dragHandleIconJsxDefault = parcelHelpers.interopDefault(_dragHandleIconJsx);
+const { useState, useEffect, useRef, memo } = wp.element;
 const { useSelect } = wp.data;
 const { Button, BaseControl, CheckboxControl, TextControl } = wp.components;
-const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, createIssueComment })=>{
+const Checklist = memo(({ issueId, initialChecklistItems, isSaving, setIsSaving, createIssueComment })=>{
     const [checklistItems, setChecklistItems] = useState(initialChecklistItems || []);
     const [activeIndex, setActiveIndex] = useState(null);
     const checklistContainerRef = useRef(null);
@@ -15775,26 +15222,26 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
         className: "alpaca-checklist-container",
         ref: checklistContainerRef,
         __source: {
-            fileName: "src/components/checklist.jsx",
-            lineNumber: 125,
-            columnNumber: 5
+            fileName: "src/components/issue/checklist.jsx",
+            lineNumber: 126,
+            columnNumber: 7
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement(BaseControl, {
         label: "Checklist",
         className: "alpaca-checklist-label",
         __source: {
-            fileName: "src/components/checklist.jsx",
-            lineNumber: 126,
-            columnNumber: 7
+            fileName: "src/components/issue/checklist.jsx",
+            lineNumber: 127,
+            columnNumber: 9
         },
         __self: undefined
     }), /*#__PURE__*/ React.createElement((0, _pragmaticDragAndDropReactBeautifulDndMigration.DragDropContext), {
         onDragEnd: handleDragEnd,
         __source: {
-            fileName: "src/components/checklist.jsx",
-            lineNumber: 127,
-            columnNumber: 7
+            fileName: "src/components/issue/checklist.jsx",
+            lineNumber: 128,
+            columnNumber: 9
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement((0, _pragmaticDragAndDropReactBeautifulDndMigration.Droppable), {
@@ -15813,17 +15260,17 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
                     boxSizing: "border-box"
                 },
                 __source: {
-                    fileName: "src/components/checklist.jsx",
-                    lineNumber: 133,
-                    columnNumber: 15
+                    fileName: "src/components/issue/checklist.jsx",
+                    lineNumber: 134,
+                    columnNumber: 17
                 }
             }, /*#__PURE__*/ React.createElement(CheckboxControl, {
                 checked: item.checked !== 0,
                 onChange: ()=>toggleChecklistItem(rubric.source.index),
                 __source: {
-                    fileName: "src/components/checklist.jsx",
-                    lineNumber: 147,
-                    columnNumber: 17
+                    fileName: "src/components/issue/checklist.jsx",
+                    lineNumber: 148,
+                    columnNumber: 19
                 }
             }), /*#__PURE__*/ React.createElement(TextControl, {
                 className: "alpaca-textinput",
@@ -15833,9 +15280,9 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
                 onBlur: ()=>handleChecklistItemBlur(rubric.source.index),
                 placeholder: "Add an item...",
                 __source: {
-                    fileName: "src/components/checklist.jsx",
-                    lineNumber: 151,
-                    columnNumber: 17
+                    fileName: "src/components/issue/checklist.jsx",
+                    lineNumber: 152,
+                    columnNumber: 19
                 }
             }), /*#__PURE__*/ React.createElement(Button, {
                 icon: "trash",
@@ -15843,29 +15290,29 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
                 label: "Delete item",
                 showTooltip: "true",
                 __source: {
-                    fileName: "src/components/checklist.jsx",
-                    lineNumber: 161,
-                    columnNumber: 17
+                    fileName: "src/components/issue/checklist.jsx",
+                    lineNumber: 162,
+                    columnNumber: 19
                 }
             }), /*#__PURE__*/ React.createElement("div", {
                 className: "alpaca-drag-handle",
                 __source: {
-                    fileName: "src/components/checklist.jsx",
-                    lineNumber: 167,
-                    columnNumber: 17
-                }
-            }, /*#__PURE__*/ React.createElement((0, _dragHandleIconDefault.default), {
-                __source: {
-                    fileName: "src/components/checklist.jsx",
+                    fileName: "src/components/issue/checklist.jsx",
                     lineNumber: 168,
                     columnNumber: 19
+                }
+            }, /*#__PURE__*/ React.createElement((0, _dragHandleIconJsxDefault.default), {
+                __source: {
+                    fileName: "src/components/issue/checklist.jsx",
+                    lineNumber: 169,
+                    columnNumber: 21
                 }
             })));
         },
         __source: {
-            fileName: "src/components/checklist.jsx",
-            lineNumber: 128,
-            columnNumber: 9
+            fileName: "src/components/issue/checklist.jsx",
+            lineNumber: 129,
+            columnNumber: 11
         },
         __self: undefined
     }, (provided)=>/*#__PURE__*/ React.createElement("div", {
@@ -15873,9 +15320,9 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
             ...provided.droppableProps,
             ref: provided.innerRef,
             __source: {
-                fileName: "src/components/checklist.jsx",
-                lineNumber: 175,
-                columnNumber: 13
+                fileName: "src/components/issue/checklist.jsx",
+                lineNumber: 176,
+                columnNumber: 15
             },
             __self: undefined
         }, checklistItems.map((item, index)=>/*#__PURE__*/ React.createElement((0, _pragmaticDragAndDropReactBeautifulDndMigration.Draggable), {
@@ -15883,9 +15330,9 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
                 draggableId: item.id.toString(),
                 index: index,
                 __source: {
-                    fileName: "src/components/checklist.jsx",
-                    lineNumber: 181,
-                    columnNumber: 17
+                    fileName: "src/components/issue/checklist.jsx",
+                    lineNumber: 182,
+                    columnNumber: 19
                 },
                 __self: undefined
             }, (provided)=>/*#__PURE__*/ React.createElement("div", {
@@ -15894,18 +15341,18 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
                     ...provided.dragHandleProps,
                     className: `alpaca-checklist-item ${item.checked !== 0 ? "checked" : ""} ${activeIndex === index ? "active" : ""}`,
                     __source: {
-                        fileName: "src/components/checklist.jsx",
-                        lineNumber: 187,
-                        columnNumber: 21
+                        fileName: "src/components/issue/checklist.jsx",
+                        lineNumber: 188,
+                        columnNumber: 23
                     },
                     __self: undefined
                 }, /*#__PURE__*/ React.createElement(CheckboxControl, {
                     checked: item.checked !== 0,
                     onChange: ()=>toggleChecklistItem(index),
                     __source: {
-                        fileName: "src/components/checklist.jsx",
-                        lineNumber: 195,
-                        columnNumber: 23
+                        fileName: "src/components/issue/checklist.jsx",
+                        lineNumber: 196,
+                        columnNumber: 25
                     },
                     __self: undefined
                 }), /*#__PURE__*/ React.createElement(TextControl, {
@@ -15917,9 +15364,9 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
                     onKeyDown: (e)=>handleChecklistItemKeyDown(e, index),
                     placeholder: "Add an item...",
                     __source: {
-                        fileName: "src/components/checklist.jsx",
-                        lineNumber: 199,
-                        columnNumber: 23
+                        fileName: "src/components/issue/checklist.jsx",
+                        lineNumber: 200,
+                        columnNumber: 25
                     },
                     __self: undefined
                 }), /*#__PURE__*/ React.createElement(Button, {
@@ -15928,24 +15375,24 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
                     label: "Delete item",
                     showTooltip: "true",
                     __source: {
-                        fileName: "src/components/checklist.jsx",
-                        lineNumber: 210,
-                        columnNumber: 23
+                        fileName: "src/components/issue/checklist.jsx",
+                        lineNumber: 213,
+                        columnNumber: 25
                     },
                     __self: undefined
                 }), /*#__PURE__*/ React.createElement("div", {
                     className: "alpaca-drag-handle",
                     __source: {
-                        fileName: "src/components/checklist.jsx",
-                        lineNumber: 216,
-                        columnNumber: 23
+                        fileName: "src/components/issue/checklist.jsx",
+                        lineNumber: 219,
+                        columnNumber: 25
                     },
                     __self: undefined
-                }, /*#__PURE__*/ React.createElement((0, _dragHandleIconDefault.default), {
+                }, /*#__PURE__*/ React.createElement((0, _dragHandleIconJsxDefault.default), {
                     __source: {
-                        fileName: "src/components/checklist.jsx",
-                        lineNumber: 217,
-                        columnNumber: 25
+                        fileName: "src/components/issue/checklist.jsx",
+                        lineNumber: 220,
+                        columnNumber: 27
                     },
                     __self: undefined
                 }))))), provided.placeholder))), /*#__PURE__*/ React.createElement(Button, {
@@ -15954,16 +15401,16 @@ const Checklist = ({ issueId, initialChecklistItems, isSaving, setIsSaving, crea
         iconPosition: "left",
         onClick: addChecklistItem,
         __source: {
-            fileName: "src/components/checklist.jsx",
-            lineNumber: 228,
-            columnNumber: 7
+            fileName: "src/components/issue/checklist.jsx",
+            lineNumber: 231,
+            columnNumber: 9
         },
         __self: undefined
     }, "Add Checklist Item"));
-};
+});
 exports.default = Checklist;
 
-},{"../utils/comments.js":"hPhNI","@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration":"iD7mF","./icons/DragHandleIcon":"lhUj1","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hPhNI":[function(require,module,exports,__globalThis) {
+},{"../../utils/comments.js":"hPhNI","@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration":"iD7mF","../icons/DragHandleIcon.jsx":"lhUj1","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hPhNI":[function(require,module,exports,__globalThis) {
 /**
  * Generates HTML for an assignee span to be used in comments.
  * @param {object} user The user object for the assignee.
@@ -16008,7 +15455,700 @@ const generateAssigneeSpan = (user)=>{
     return `Checklist item "${item.label}" has been checked by ${userSpan}`;
 };
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2yEr4":[function(require,module,exports,__globalThis) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"kaOzJ":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "getTabsConfig", ()=>getTabsConfig);
+const getTabsConfig = (issueDetails)=>{
+    return [
+        {
+            name: "comments",
+            title: "Comments",
+            className: "comments"
+        },
+        {
+            name: "report",
+            title: "Report",
+            className: "report"
+        },
+        ...issueDetails?.meta?.queriedObject && issueDetails.meta.queriedObject !== "null" ? [
+            {
+                name: "queriedobject",
+                title: "Queried Object",
+                className: "queried-object"
+            }
+        ] : [],
+        ...issueDetails?.meta?.headers && issueDetails.meta.headers !== "null" ? [
+            {
+                name: "headers",
+                title: "Headers",
+                className: "headers"
+            }
+        ] : []
+    ];
+};
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"5IBQX":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _issueApi = require("../services/issueApi"); // Assuming this will be created
+const { useState, useEffect, useCallback } = wp.element;
+const useIssueData = (issueId, isOpen)=>{
+    const [issueDetails, setIssueDetails] = useState(null);
+    const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+    const [error, setError] = useState(null);
+    useEffect(()=>{
+        if (issueId && isOpen) {
+            setIsLoadingDetails(true);
+            setError(null);
+            (0, _issueApi.fetchIssue)(issueId).then((issueData)=>{
+                setIssueDetails(issueData);
+            }).catch((err)=>{
+                console.error("Error fetching issue data:", err);
+                setError("Failed to load issue details. Please try again.");
+                setIssueDetails(null);
+            }).finally(()=>{
+                setIsLoadingDetails(false);
+            });
+        }
+    }, [
+        issueId,
+        isOpen
+    ]);
+    const refetchData = useCallback(()=>{
+        if (issueId && isOpen) {
+            setIsLoadingDetails(true);
+            setError(null);
+            (0, _issueApi.fetchIssue)(issueId).then(setIssueDetails).catch((err)=>{
+                console.error("Error refetching issue data:", err);
+                setError("Failed to load issue details. Please try again.");
+            }).finally(()=>setIsLoadingDetails(false));
+        }
+    }, [
+        issueId,
+        isOpen
+    ]);
+    return {
+        issueDetails,
+        setIssueDetails,
+        isLoadingDetails,
+        error,
+        refetchData
+    };
+};
+exports.default = useIssueData;
+
+},{"../services/issueApi":"bebt9","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"bebt9":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "fetchIssue", ()=>fetchIssue);
+parcelHelpers.export(exports, "updateIssue", ()=>updateIssue);
+parcelHelpers.export(exports, "fetchStatuses", ()=>fetchStatuses);
+parcelHelpers.export(exports, "fetchUsers", ()=>fetchUsers);
+const fetchIssue = (id)=>wp.apiFetch({
+        path: `/issue/v1/get/${id}`
+    });
+const updateIssue = (id, data)=>wp.apiFetch({
+        path: `/issue/v1/update/${id}`,
+        method: "POST",
+        data
+    });
+const fetchStatuses = ()=>wp.apiFetch({
+        path: "/alpaca/v1/statuses"
+    });
+const fetchUsers = ()=>wp.apiFetch({
+        path: "/alpaca/v1/users"
+    });
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7BGvE":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _issueApi = require("../services/issueApi"); // Assuming this will be created
+const { useState, useEffect } = wp.element;
+const useUserManagement = ()=>{
+    const [allUsers, setAllUsers] = useState([]);
+    const [allUserObjects, setAllUserObjects] = useState([]);
+    const [userMap, setUserMap] = useState({});
+    useEffect(()=>{
+        (0, _issueApi.fetchUsers)().then((users)=>{
+            const usersWithAvatar = users.map((u)=>({
+                    ...u,
+                    avatar: u.avatar_urls?.["48"] || u.avatar_urls?.["96"] || u.avatar_urls?.["24"] || ""
+                }));
+            const localUserMap = {};
+            usersWithAvatar.forEach((u)=>{
+                localUserMap[u.name] = u.slug;
+                localUserMap[u.slug] = u.slug;
+            });
+            setUserMap(localUserMap);
+            setAllUsers(usersWithAvatar.map((u)=>u.name));
+            setAllUserObjects(usersWithAvatar);
+        }).catch((err)=>{
+            console.error("Error fetching users:", err);
+        });
+    }, []);
+    return {
+        allUsers,
+        allUserObjects,
+        userMap
+    };
+};
+exports.default = useUserManagement;
+
+},{"../services/issueApi":"bebt9","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"haQEY":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+const { useState, useCallback } = wp.element;
+const useLoadingStates = ()=>{
+    const [loadingStates, setLoadingStates] = useState({
+        assignees: false,
+        deadline: false,
+        screenshot: false,
+        title: false
+    });
+    const setLoading = useCallback((key, value)=>{
+        setLoadingStates((prev)=>({
+                ...prev,
+                [key]: value
+            }));
+    }, []);
+    return {
+        loadingStates,
+        setLoading
+    };
+};
+exports.default = useLoadingStates;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"9o8NF":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "processAssigneeChanges", ()=>processAssigneeChanges);
+parcelHelpers.export(exports, "createAssigneeComments", ()=>createAssigneeComments);
+const processAssigneeChanges = (oldAssignees, newAssignees)=>{
+    const added = newAssignees.filter((name)=>!oldAssignees.includes(name));
+    const removed = oldAssignees.filter((name)=>!newAssignees.includes(name));
+    return {
+        added,
+        removed
+    };
+};
+const createAssigneeComments = async (added, removed, allUserObjects, createComment, generateComment, issueId)=>{
+    const commentPromises = [];
+    added.forEach((name)=>{
+        const user = allUserObjects.find((u)=>u.name === name);
+        if (user) commentPromises.push(createComment(issueId, generateComment(user, true)));
+    });
+    removed.forEach((name)=>{
+        const user = allUserObjects.find((u)=>u.name === name);
+        if (user) commentPromises.push(createComment(issueId, generateComment(user, false)));
+    });
+    if (commentPromises.length > 0) return Promise.all(commentPromises);
+    return Promise.resolve();
+};
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"h8W9N":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "parseChecklist", ()=>parseChecklist);
+const parseChecklist = (metaChecklist)=>{
+    if (!metaChecklist) return [];
+    try {
+        return typeof metaChecklist === "string" ? JSON.parse(metaChecklist) : Array.isArray(metaChecklist) ? metaChecklist : [];
+    } catch  {
+        return [];
+    }
+};
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"lBLYZ":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+const { FormTokenField } = wp.components;
+const { memo } = wp.element;
+const AssigneeSelector = memo(({ assignees, allUsers, onChange, isLoading })=>/*#__PURE__*/ React.createElement(FormTokenField, {
+        label: "Assigned To",
+        placeholder: "Nobody",
+        value: assignees,
+        suggestions: allUsers,
+        onChange: onChange,
+        disabled: isLoading,
+        __source: {
+            fileName: "src/components/issue/AssigneeSelector.jsx",
+            lineNumber: 6,
+            columnNumber: 5
+        },
+        __self: undefined
+    }));
+exports.default = AssigneeSelector;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"63IRX":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+const { useState, useRef, memo } = wp.element;
+const { BaseControl, Popover, DatePicker, Button } = wp.components;
+const { date } = wp;
+const datesettings = wp.date.getSettings();
+const DeadlineControl = memo(({ deadline, onChange, onClear, isLoading })=>{
+    const [isEditingDeadline, setIsEditingDeadline] = useState(false);
+    const calendarButtonRef = useRef();
+    return /*#__PURE__*/ React.createElement(BaseControl, {
+        label: "Deadline",
+        className: "alpaca-deadline-control",
+        __source: {
+            fileName: "src/components/issue/DeadlineControl.jsx",
+            lineNumber: 12,
+            columnNumber: 5
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-deadline",
+        __source: {
+            fileName: "src/components/issue/DeadlineControl.jsx",
+            lineNumber: 13,
+            columnNumber: 7
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-deadline-date",
+        __source: {
+            fileName: "src/components/issue/DeadlineControl.jsx",
+            lineNumber: 14,
+            columnNumber: 9
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("input", {
+        readOnly: true,
+        type: "text",
+        value: deadline ? date.format(datesettings.formats.date, deadline) : "No deadline set.",
+        onClick: ()=>setIsEditingDeadline((prev)=>!prev),
+        ref: calendarButtonRef,
+        disabled: isLoading,
+        __source: {
+            fileName: "src/components/issue/DeadlineControl.jsx",
+            lineNumber: 15,
+            columnNumber: 11
+        },
+        __self: undefined
+    })), isEditingDeadline && /*#__PURE__*/ React.createElement(Popover, {
+        placement: "bottom-start",
+        onClose: ()=>setIsEditingDeadline(false),
+        anchor: calendarButtonRef.current,
+        focusOnMount: false,
+        className: "alpaca-deadline-popover",
+        __source: {
+            fileName: "src/components/issue/DeadlineControl.jsx",
+            lineNumber: 30,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement(DatePicker, {
+        current: deadline,
+        onChange: (newDate)=>{
+            onChange(newDate);
+            setIsEditingDeadline(false);
+        },
+        __source: {
+            fileName: "src/components/issue/DeadlineControl.jsx",
+            lineNumber: 37,
+            columnNumber: 13
+        },
+        __self: undefined
+    })), deadline && /*#__PURE__*/ React.createElement(Button, {
+        icon: "trash",
+        label: "Clear deadline",
+        onClick: onClear,
+        disabled: isLoading,
+        __source: {
+            fileName: "src/components/issue/DeadlineControl.jsx",
+            lineNumber: 48,
+            columnNumber: 11
+        },
+        __self: undefined
+    })));
+});
+exports.default = DeadlineControl;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"jh4NY":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+const { memo } = wp.element;
+const JsonTable = memo(({ data })=>{
+    if (!data) return null;
+    let parsedData;
+    try {
+        parsedData = JSON.parse(data);
+    } catch (e) {
+        return /*#__PURE__*/ React.createElement("p", {
+            __source: {
+                fileName: "src/components/issue/JsonTable.jsx",
+                lineNumber: 10,
+                columnNumber: 12
+            },
+            __self: undefined
+        }, "Error parsing JSON data");
+    }
+    return /*#__PURE__*/ React.createElement("table", {
+        className: "alpaca-json-table widefat striped",
+        style: {
+            borderCollapse: "collapse",
+            width: "100%"
+        },
+        __source: {
+            fileName: "src/components/issue/JsonTable.jsx",
+            lineNumber: 14,
+            columnNumber: 5
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("tbody", {
+        __source: {
+            fileName: "src/components/issue/JsonTable.jsx",
+            lineNumber: 18,
+            columnNumber: 7
+        },
+        __self: undefined
+    }, Object.entries(parsedData).map(([key, value])=>/*#__PURE__*/ React.createElement("tr", {
+            key: key,
+            __source: {
+                fileName: "src/components/issue/JsonTable.jsx",
+                lineNumber: 20,
+                columnNumber: 11
+            },
+            __self: undefined
+        }, /*#__PURE__*/ React.createElement("th", {
+            __source: {
+                fileName: "src/components/issue/JsonTable.jsx",
+                lineNumber: 21,
+                columnNumber: 13
+            },
+            __self: undefined
+        }, key), /*#__PURE__*/ React.createElement("td", {
+            __source: {
+                fileName: "src/components/issue/JsonTable.jsx",
+                lineNumber: 22,
+                columnNumber: 13
+            },
+            __self: undefined
+        }, String(value))))));
+});
+exports.default = JsonTable;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"f6zxb":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+const { memo } = wp.element;
+const { date } = wp;
+const datesettings = wp.date.getSettings();
+const ReportTab = memo(({ issueDetails, onScreenshotDelete, isLoading, onScreenshotClick })=>/*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-report-tab",
+        __source: {
+            fileName: "src/components/issue/ReportTab.jsx",
+            lineNumber: 8,
+            columnNumber: 5
+        },
+        __self: undefined
+    }, issueDetails.meta.screenshot && /*#__PURE__*/ React.createElement("div", {
+        __source: {
+            fileName: "src/components/issue/ReportTab.jsx",
+            lineNumber: 10,
+            columnNumber: 9
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("p", {
+        __source: {
+            fileName: "src/components/issue/ReportTab.jsx",
+            lineNumber: 11,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("img", {
+        src: issueDetails.meta.screenshot,
+        className: "alpaca-screenshot",
+        alt: "Screenshot",
+        style: {
+            cursor: "zoom-in",
+            maxWidth: "100%"
+        },
+        onClick: ()=>onScreenshotClick(issueDetails.meta.screenshot),
+        __source: {
+            fileName: "src/components/issue/ReportTab.jsx",
+            lineNumber: 12,
+            columnNumber: 13
+        },
+        __self: undefined
+    })), /*#__PURE__*/ React.createElement("p", {
+        __source: {
+            fileName: "src/components/issue/ReportTab.jsx",
+            lineNumber: 20,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("button", {
+        type: "button",
+        className: "button-link-delete",
+        disabled: isLoading,
+        onClick: onScreenshotDelete,
+        __source: {
+            fileName: "src/components/issue/ReportTab.jsx",
+            lineNumber: 21,
+            columnNumber: 13
+        },
+        __self: undefined
+    }, "Delete"))), /*#__PURE__*/ React.createElement("table", {
+        className: "widefat striped",
+        __source: {
+            fileName: "src/components/issue/ReportTab.jsx",
+            lineNumber: 33,
+            columnNumber: 7
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("tbody", {
+        __source: {
+            fileName: "src/components/issue/ReportTab.jsx",
+            lineNumber: 34,
+            columnNumber: 9
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("tr", {
+        __source: {
+            fileName: "src/components/issue/ReportTab.jsx",
+            lineNumber: 35,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("th", {
+        scope: "row",
+        __source: {
+            fileName: "src/components/issue/ReportTab.jsx",
+            lineNumber: 36,
+            columnNumber: 13
+        },
+        __self: undefined
+    }, "Reported"), /*#__PURE__*/ React.createElement("td", {
+        __source: {
+            fileName: "src/components/issue/ReportTab.jsx",
+            lineNumber: 37,
+            columnNumber: 13
+        },
+        __self: undefined
+    }, date.format(datesettings.formats.datetimeAbbreviated, new Date(issueDetails.post_data.post_date)))), /*#__PURE__*/ React.createElement("tr", {
+        __source: {
+            fileName: "src/components/issue/ReportTab.jsx",
+            lineNumber: 44,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("th", {
+        scope: "row",
+        __source: {
+            fileName: "src/components/issue/ReportTab.jsx",
+            lineNumber: 45,
+            columnNumber: 13
+        },
+        __self: undefined
+    }, "Last edit"), /*#__PURE__*/ React.createElement("td", {
+        __source: {
+            fileName: "src/components/issue/ReportTab.jsx",
+            lineNumber: 46,
+            columnNumber: 13
+        },
+        __self: undefined
+    }, date.format(datesettings.formats.datetimeAbbreviated, new Date(issueDetails.post_data.post_modified)))), /*#__PURE__*/ React.createElement("tr", {
+        __source: {
+            fileName: "src/components/issue/ReportTab.jsx",
+            lineNumber: 53,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("th", {
+        scope: "row",
+        __source: {
+            fileName: "src/components/issue/ReportTab.jsx",
+            lineNumber: 54,
+            columnNumber: 13
+        },
+        __self: undefined
+    }, "URL"), /*#__PURE__*/ React.createElement("td", {
+        __source: {
+            fileName: "src/components/issue/ReportTab.jsx",
+            lineNumber: 55,
+            columnNumber: 13
+        },
+        __self: undefined
+    }, issueDetails.meta.URL ? /*#__PURE__*/ React.createElement("a", {
+        href: issueDetails.meta.URL,
+        target: "_blank",
+        rel: "noopener noreferrer",
+        __source: {
+            fileName: "src/components/issue/ReportTab.jsx",
+            lineNumber: 57,
+            columnNumber: 17
+        },
+        __self: undefined
+    }, issueDetails.meta.URL) : "N/A")), /*#__PURE__*/ React.createElement("tr", {
+        __source: {
+            fileName: "src/components/issue/ReportTab.jsx",
+            lineNumber: 69,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("th", {
+        scope: "row",
+        __source: {
+            fileName: "src/components/issue/ReportTab.jsx",
+            lineNumber: 70,
+            columnNumber: 13
+        },
+        __self: undefined
+    }, "Screen"), /*#__PURE__*/ React.createElement("td", {
+        __source: {
+            fileName: "src/components/issue/ReportTab.jsx",
+            lineNumber: 71,
+            columnNumber: 13
+        },
+        __self: undefined
+    }, issueDetails.meta.screenwidth && issueDetails.meta.screenheight ? `${issueDetails.meta.screenwidth} x ${issueDetails.meta.screenheight}` : "N/A")), Object.entries(issueDetails.taxonomies).filter(([taxonomy])=>taxonomy !== "assignee").map(([taxonomy, terms])=>/*#__PURE__*/ React.createElement("tr", {
+            key: taxonomy,
+            __source: {
+                fileName: "src/components/issue/ReportTab.jsx",
+                lineNumber: 80,
+                columnNumber: 15
+            },
+            __self: undefined
+        }, /*#__PURE__*/ React.createElement("th", {
+            style: {
+                textTransform: "capitalize"
+            },
+            __source: {
+                fileName: "src/components/issue/ReportTab.jsx",
+                lineNumber: 81,
+                columnNumber: 17
+            },
+            __self: undefined
+        }, taxonomy), /*#__PURE__*/ React.createElement("td", {
+            __source: {
+                fileName: "src/components/issue/ReportTab.jsx",
+                lineNumber: 82,
+                columnNumber: 17
+            },
+            __self: undefined
+        }, terms.map((term)=>term.name).join(", "))))))));
+exports.default = ReportTab;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"14ymM":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _commentingJsx = require("../commenting.jsx");
+var _commentingJsxDefault = parcelHelpers.interopDefault(_commentingJsx);
+var _jsonTable = require("./JsonTable");
+var _jsonTableDefault = parcelHelpers.interopDefault(_jsonTable);
+var _reportTab = require("./ReportTab");
+var _reportTabDefault = parcelHelpers.interopDefault(_reportTab);
+const { memo } = wp.element;
+const TabContent = memo(({ tab, issueDetails, issueId, commentRefreshKey, onScreenshotDelete, loadingStates, onScreenshotClick })=>{
+    switch(tab.name){
+        case "comments":
+            return /*#__PURE__*/ React.createElement((0, _commentingJsxDefault.default), {
+                issueId: issueId,
+                commentRefreshKey: commentRefreshKey,
+                __source: {
+                    fileName: "src/components/issue/TabContent.jsx",
+                    lineNumber: 19,
+                    columnNumber: 11
+                },
+                __self: undefined
+            });
+        case "report":
+            return /*#__PURE__*/ React.createElement((0, _reportTabDefault.default), {
+                issueDetails: issueDetails,
+                onScreenshotDelete: onScreenshotDelete,
+                isLoading: loadingStates.screenshot,
+                onScreenshotClick: onScreenshotClick,
+                __source: {
+                    fileName: "src/components/issue/TabContent.jsx",
+                    lineNumber: 26,
+                    columnNumber: 11
+                },
+                __self: undefined
+            });
+        case "queriedobject":
+            return /*#__PURE__*/ React.createElement((0, _jsonTableDefault.default), {
+                data: issueDetails.meta.queriedObject,
+                __source: {
+                    fileName: "src/components/issue/TabContent.jsx",
+                    lineNumber: 34,
+                    columnNumber: 16
+                },
+                __self: undefined
+            });
+        case "headers":
+            return /*#__PURE__*/ React.createElement((0, _jsonTableDefault.default), {
+                data: issueDetails.meta.headers,
+                __source: {
+                    fileName: "src/components/issue/TabContent.jsx",
+                    lineNumber: 36,
+                    columnNumber: 16
+                },
+                __self: undefined
+            });
+        default:
+            return null;
+    }
+});
+exports.default = TabContent;
+
+},{"../commenting.jsx":"321JG","./JsonTable":"jh4NY","./ReportTab":"f6zxb","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"krnYi":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+var _reactDom = require("react-dom");
+const { useEffect, memo } = wp.element;
+const Lightbox = memo(({ src, onClose })=>{
+    useEffect(()=>{
+        const handleKeyDown = (e)=>{
+            if (e.key === "Escape") onClose();
+        };
+        document.addEventListener("keydown", handleKeyDown);
+        return ()=>document.removeEventListener("keydown", handleKeyDown);
+    }, [
+        onClose
+    ]);
+    return /*#__PURE__*/ (0, _reactDom.createPortal)(/*#__PURE__*/ React.createElement("div", {
+        style: {
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            background: "rgba(0,0,0,0.85)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 99999999999999
+        },
+        onClick: onClose,
+        __source: {
+            fileName: "src/components/issue/Lightbox.jsx",
+            lineNumber: 14,
+            columnNumber: 5
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("img", {
+        src: src,
+        alt: "Enlarged screenshot",
+        style: {
+            maxWidth: "90%",
+            maxHeight: "90%",
+            boxShadow: "0 0 20px rgba(0,0,0,0.5)"
+        },
+        __source: {
+            fileName: "src/components/issue/Lightbox.jsx",
+            lineNumber: 29,
+            columnNumber: 7
+        },
+        __self: undefined
+    })), document.body);
+});
+exports.default = Lightbox;
+
+},{"react-dom":"fc7O8","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2yEr4":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _watchlistContext = require("../context/WatchlistContext");
