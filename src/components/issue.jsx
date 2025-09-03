@@ -119,17 +119,22 @@ const AlpacaIssue = ({
     300
   );
 
-  const debouncedUpdateDeadline = useDebounce(async (issueId, newDate) => {
-    await updateIssue(issueId, {
-      meta: { deadline: newDate },
-    })
-      .then(() => {
-        if (typeof onDeadlineChange === "function") {
-          onDeadlineChange(issueId, newDate);
-        }
-      })
-      .finally(() => setLoading("deadline", false));
-  }, 300);
+  const updateDeadline = useCallback(async (issueId, newDate) => {
+    setLoading("deadline", true);
+    try {
+      await updateIssue(issueId, {
+        meta: { deadline: newDate },
+      });
+      if (typeof onDeadlineChange === "function") {
+        onDeadlineChange(issueId, newDate);
+      }
+    } catch (error) {
+      console.error("Failed to update deadline:", error);
+      showNotification("Failed to update deadline.", "error");
+    } finally {
+      setLoading("deadline", false);
+    }
+  }, [onDeadlineChange, setLoading, showNotification]);
 
   // Process issue details when they change
   useEffect(() => {
@@ -212,10 +217,9 @@ const AlpacaIssue = ({
   const handleDeadlineChange = useCallback(
     (newDate) => {
       setDeadline(newDate);
-      setLoading("deadline", true);
-      debouncedUpdateDeadline(issueId, newDate);
+      updateDeadline(issueId, newDate);
     },
-    [issueId, debouncedUpdateDeadline, setLoading]
+    [issueId, updateDeadline]
   );
 
   const handleDeadlineClear = useCallback(() => {
