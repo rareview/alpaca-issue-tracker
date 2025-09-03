@@ -296,7 +296,16 @@
       .alpaca-issue-slug {
         font-family: monospace;
       }
+      .alpaca-issue-title-wrapper {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 0.5rem;
+        align-items: flex-end;
+      }
+      .alpaca-issue-title-input,
       h3 {
+        font-weight: bold;
         font-size: xx-large;
         line-height: 1.3;
         margin: 5px 0;

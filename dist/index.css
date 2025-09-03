@@ -305,10 +305,18 @@
   font-family: monospace;
 }
 
-.wp-admin .alpaca-issue-details .alpaca-issue-main h3 {
+.wp-admin .alpaca-issue-details .alpaca-issue-main .alpaca-issue-title-wrapper {
+  flex-direction: row;
+  align-items: flex-end;
+  gap: .5rem;
+  display: flex;
+}
+
+.wp-admin .alpaca-issue-details .alpaca-issue-main .alpaca-issue-title-input, .wp-admin .alpaca-issue-details .alpaca-issue-main h3 {
   text-wrap: balance;
   margin: 5px 0;
   font-size: xx-large;
+  font-weight: bold;
   line-height: 1.3;
 }
 
