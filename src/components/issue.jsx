@@ -13,6 +13,8 @@ const {
   memo: ReactMemo,
 } = wp.element;
 
+const { useDebounce } = wp.compose;
+
 const {
   Modal,
   FormTokenField,
@@ -168,6 +170,7 @@ const useLoadingStates = () => {
     assignees: false,
     deadline: false,
     screenshot: false,
+    title: false,
   });
 
   const setLoading = useCallback((key, value) => {
@@ -448,6 +451,7 @@ const AlpacaIssue = ({
   createIssueComment,
   generateAssigneeChangeComment,
   onStatusChange,
+  onIssueTitleChange,
 }) => {
   const {
     issueDetails,
@@ -465,6 +469,9 @@ const AlpacaIssue = ({
   const [lightboxSrc, setLightboxSrc] = useState(null);
   const [checklistItems, setChecklistItems] = useState([]);
   const [allStatuses, setAllStatuses] = useState([]);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editedTitle, setEditedTitle] = useState("");
+  const titleInputRef = useRef(null);
 
   useEffect(() => {
     wp.apiFetch({ path: "/alpaca/v1/statuses" })
@@ -473,6 +480,12 @@ const AlpacaIssue = ({
         console.error("Error fetching statuses:", err);
       });
   }, []);
+
+  useEffect(() => {
+    if (isEditingTitle && titleInputRef.current) {
+      titleInputRef.current.focus();
+    }
+  }, [isEditingTitle]);
 
   // Memoized values
   const assigneeObjects = useMemo(
@@ -744,7 +757,7 @@ const AlpacaIssue = ({
       }));
 
       // Notify parent component about the status change
-      if (typeof onStatusChange === 'function') {
+      if (typeof onStatusChange === "function") {
         onStatusChange(issueId, nextStatus);
       }
 
@@ -771,6 +784,41 @@ const AlpacaIssue = ({
     setIssueDetails,
     setLoading,
   ]);
+
+  const handleTitleSave = useCallback(async () => {
+    if (editedTitle === decodeEntities(issueDetails.post_data.post_content)) {
+      setIsEditingTitle(false);
+      return;
+    }
+
+    setLoading("title", true);
+    try {
+      await wp.apiFetch({
+        path: `/issue/v1/update/${issueId}`,
+        method: "POST",
+        data: {
+          content: editedTitle,
+        },
+      });
+
+      setIssueDetails((prev) => ({
+        ...prev,
+        post_data: {
+          ...prev.post_data,
+          post_content: editedTitle,
+        },
+      }));
+
+      if (typeof onIssueTitleChange === "function") {
+        onIssueTitleChange(issueId, editedTitle);
+      }
+    } catch (error) {
+      console.error("Failed to update issue title:", error);
+    } finally {
+      setLoading("title", false);
+      setIsEditingTitle(false);
+    }
+  }, [editedTitle, issueDetails, issueId, setIssueDetails, setLoading, onIssueTitleChange]);
 
   const currentStatus = issueDetails?.taxonomies?.status?.[0];
   const isLastStatus = useMemo(() => {
@@ -837,9 +885,40 @@ const AlpacaIssue = ({
               <div className="alpaca-issue-slug">
                 {issueDetails.post_data.post_name}
               </div>
-              <h3 className="alpaca-issue-title">
-                {decodeEntities(issueDetails.post_data.post_content)}
-              </h3>
+              {isEditingTitle ? (
+                <input
+                  type="text"
+                  className="alpaca-issue-title-input"
+                  value={editedTitle}
+                  onChange={(e) => setEditedTitle(e.target.value)}
+                  onBlur={handleTitleSave}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleTitleSave();
+                    }
+                  }}
+                  disabled={loadingStates.title}
+                  ref={titleInputRef}
+                />
+              ) : (
+                <div className="alpaca-issue-title-wrapper">
+                  <h3 className="alpaca-issue-title">
+                    {decodeEntities(issueDetails.post_data.post_content)}
+                  </h3>
+                  <Tooltip text="Edit title">
+                    <Button
+                      className="alpaca-edit-title-button"
+                      icon="edit"
+                      onClick={() => {
+                        setIsEditingTitle(true);
+                        setEditedTitle(
+                          decodeEntities(issueDetails.post_data.post_content)
+                        );
+                      }}
+                    />
+                  </Tooltip>
+                </div>
+              )}
               <div className="alpaca-issue-main-controls">
                 <AssigneeSelector
                   assignees={assignees}

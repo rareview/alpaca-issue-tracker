@@ -99,7 +99,7 @@
     .alpaca-container {
       margin: 0 10px 0px 0;
       padding: 0 10px 10px 10px;
-      width: 220px;
+      width: 16vw;
       background: #f9f9f9;
       border: 2px solid #e4e4e4;
       border-radius: 4px;
@@ -440,17 +440,14 @@
   }
   // fix: flash on star when you start dragging
 
-  #alpaca-board.filter-watchlist .alpaca-item {
-    opacity: 0.2;
-    &.is-watched {
-      opacity: 1;
-    }
-  }
+  #alpaca-board.filter-watchlist .alpaca-item,
   #alpaca-board.filter-deadline .alpaca-item {
     opacity: 0.2;
-    &.item-highlight {
-      opacity: 1;
-    }
+    background: white;
+  }
+  #alpaca-board.filter-watchlist .alpaca-item.is-watched,
+  #alpaca-board.filter-deadline .alpaca-item.item-highlight {
+    opacity: 1;
   }
 
   .alpaca-issue-tabs {
@@ -486,6 +483,13 @@
         margin-left: 1.3em;
       }
     }
+  }
+
+  #alpaca-comments .components-textarea-control__input,
+  .alpaca-comment-content p,
+  .alpaca-comment-content li {
+    font-size: 15px;
+    line-height: 1.5em;
   }
 
   .alpaca-status-manager {

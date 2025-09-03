@@ -12397,6 +12397,23 @@ const { decodeEntities } = wp.htmlEntities;
         });
         setNeedsSave(true);
     }, []);
+    const handleIssueTitleChange = useCallback((issueId, newTitle)=>{
+        setContainers((prevContainers)=>prevContainers.map((container)=>{
+                const itemIndex = container.items.findIndex((item)=>item.id === issueId.toString());
+                if (itemIndex === -1) return container;
+                const newItems = [
+                    ...container.items
+                ];
+                newItems[itemIndex] = {
+                    ...newItems[itemIndex],
+                    content: newTitle
+                };
+                return {
+                    ...container,
+                    items: newItems
+                };
+            }));
+    }, []);
     const closeModal = ()=>{
         setSelectedItem(null);
     };
@@ -12484,7 +12501,7 @@ const { decodeEntities } = wp.htmlEntities;
         onDragEnd: handleDragEnd,
         __source: {
             fileName: "src/components/BoardMain.jsx",
-            lineNumber: 482,
+            lineNumber: 504,
             columnNumber: 5
         },
         __self: this
@@ -12492,7 +12509,7 @@ const { decodeEntities } = wp.htmlEntities;
         className: "alpaca-wrap",
         __source: {
             fileName: "src/components/BoardMain.jsx",
-            lineNumber: 483,
+            lineNumber: 505,
             columnNumber: 7
         },
         __self: this
@@ -12509,7 +12526,7 @@ const { decodeEntities } = wp.htmlEntities;
             onRename: handleRenameContainer,
             __source: {
                 fileName: "src/components/BoardMain.jsx",
-                lineNumber: 485,
+                lineNumber: 507,
                 columnNumber: 11
             },
             __self: this
@@ -12524,9 +12541,10 @@ const { decodeEntities } = wp.htmlEntities;
         createIssueComment: createIssueComment,
         generateAssigneeChangeComment: (0, _comments.generateAssigneeChangeComment),
         onStatusChange: handleStatusChange,
+        onIssueTitleChange: handleIssueTitleChange,
         __source: {
             fileName: "src/components/BoardMain.jsx",
-            lineNumber: 500,
+            lineNumber: 522,
             columnNumber: 7
         },
         __self: this
@@ -12545,6 +12563,7 @@ var _user = require("./User");
 var _userDefault = parcelHelpers.interopDefault(_user);
 var _commentsJs = require("../utils/comments.js");
 const { useState, useEffect, useRef, createPortal, useMemo, useCallback, memo: ReactMemo } = wp.element;
+const { useDebounce } = wp.compose;
 const { Modal, FormTokenField, DatePicker, Popover, BaseControl, TabPanel, Button, Tooltip } = wp.components;
 const { decodeEntities } = wp.htmlEntities;
 const { date } = wp;
@@ -12664,7 +12683,8 @@ const useLoadingStates = ()=>{
     const [loadingStates, setLoadingStates] = useState({
         assignees: false,
         deadline: false,
-        screenshot: false
+        screenshot: false,
+        title: false
     });
     const setLoading = useCallback((key, value)=>{
         setLoadingStates((prev)=>({
@@ -12687,7 +12707,7 @@ const JsonTable = ReactMemo(({ data })=>{
         return /*#__PURE__*/ React.createElement("p", {
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 191,
+                lineNumber: 194,
                 columnNumber: 12
             },
             __self: undefined
@@ -12701,14 +12721,14 @@ const JsonTable = ReactMemo(({ data })=>{
         },
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 195,
+            lineNumber: 198,
             columnNumber: 5
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("tbody", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 199,
+            lineNumber: 202,
             columnNumber: 7
         },
         __self: undefined
@@ -12716,21 +12736,21 @@ const JsonTable = ReactMemo(({ data })=>{
             key: key,
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 201,
+                lineNumber: 204,
                 columnNumber: 11
             },
             __self: undefined
         }, /*#__PURE__*/ React.createElement("th", {
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 202,
+                lineNumber: 205,
                 columnNumber: 13
             },
             __self: undefined
         }, key), /*#__PURE__*/ React.createElement("td", {
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 203,
+                lineNumber: 206,
                 columnNumber: 13
             },
             __self: undefined
@@ -12745,7 +12765,7 @@ const AssigneeSelector = ReactMemo(({ assignees, allUsers, onChange, isLoading }
         disabled: isLoading,
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 213,
+            lineNumber: 216,
             columnNumber: 5
         },
         __self: undefined
@@ -12758,7 +12778,7 @@ const DeadlineControl = ReactMemo(({ deadline, onChange, onClear, isLoading })=>
         className: "alpaca-deadline-control",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 230,
+            lineNumber: 233,
             columnNumber: 7
         },
         __self: undefined
@@ -12766,7 +12786,7 @@ const DeadlineControl = ReactMemo(({ deadline, onChange, onClear, isLoading })=>
         className: "alpaca-deadline",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 231,
+            lineNumber: 234,
             columnNumber: 9
         },
         __self: undefined
@@ -12774,7 +12794,7 @@ const DeadlineControl = ReactMemo(({ deadline, onChange, onClear, isLoading })=>
         className: "alpaca-deadline-date",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 232,
+            lineNumber: 235,
             columnNumber: 11
         },
         __self: undefined
@@ -12787,7 +12807,7 @@ const DeadlineControl = ReactMemo(({ deadline, onChange, onClear, isLoading })=>
         disabled: isLoading,
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 233,
+            lineNumber: 236,
             columnNumber: 13
         },
         __self: undefined
@@ -12799,7 +12819,7 @@ const DeadlineControl = ReactMemo(({ deadline, onChange, onClear, isLoading })=>
         className: "alpaca-deadline-popover",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 248,
+            lineNumber: 251,
             columnNumber: 13
         },
         __self: undefined
@@ -12811,7 +12831,7 @@ const DeadlineControl = ReactMemo(({ deadline, onChange, onClear, isLoading })=>
         },
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 255,
+            lineNumber: 258,
             columnNumber: 15
         },
         __self: undefined
@@ -12822,7 +12842,7 @@ const DeadlineControl = ReactMemo(({ deadline, onChange, onClear, isLoading })=>
         disabled: isLoading,
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 266,
+            lineNumber: 269,
             columnNumber: 13
         },
         __self: undefined
@@ -12832,21 +12852,21 @@ const ReportTab = ReactMemo(({ issueDetails, onScreenshotDelete, isLoading, onSc
         className: "alpaca-report-tab",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 281,
+            lineNumber: 284,
             columnNumber: 5
         },
         __self: undefined
     }, issueDetails.meta.screenshot && /*#__PURE__*/ React.createElement("div", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 283,
+            lineNumber: 286,
             columnNumber: 9
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 284,
+            lineNumber: 287,
             columnNumber: 11
         },
         __self: undefined
@@ -12861,14 +12881,14 @@ const ReportTab = ReactMemo(({ issueDetails, onScreenshotDelete, isLoading, onSc
         onClick: ()=>onScreenshotClick(issueDetails.meta.screenshot),
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 285,
+            lineNumber: 288,
             columnNumber: 13
         },
         __self: undefined
     })), /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 293,
+            lineNumber: 296,
             columnNumber: 11
         },
         __self: undefined
@@ -12879,7 +12899,7 @@ const ReportTab = ReactMemo(({ issueDetails, onScreenshotDelete, isLoading, onSc
         onClick: onScreenshotDelete,
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 294,
+            lineNumber: 297,
             columnNumber: 13
         },
         __self: undefined
@@ -12887,21 +12907,21 @@ const ReportTab = ReactMemo(({ issueDetails, onScreenshotDelete, isLoading, onSc
         className: "widefat striped",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 306,
+            lineNumber: 309,
             columnNumber: 7
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("tbody", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 307,
+            lineNumber: 310,
             columnNumber: 9
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 308,
+            lineNumber: 311,
             columnNumber: 11
         },
         __self: undefined
@@ -12909,21 +12929,21 @@ const ReportTab = ReactMemo(({ issueDetails, onScreenshotDelete, isLoading, onSc
         scope: "row",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 309,
+            lineNumber: 312,
             columnNumber: 13
         },
         __self: undefined
     }, "Reported"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 310,
+            lineNumber: 313,
             columnNumber: 13
         },
         __self: undefined
     }, date.format(datesettings.formats.datetimeAbbreviated, new Date(issueDetails.post_data.post_date)))), /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 317,
+            lineNumber: 320,
             columnNumber: 11
         },
         __self: undefined
@@ -12931,21 +12951,21 @@ const ReportTab = ReactMemo(({ issueDetails, onScreenshotDelete, isLoading, onSc
         scope: "row",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 318,
+            lineNumber: 321,
             columnNumber: 13
         },
         __self: undefined
     }, "Last edit"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 319,
+            lineNumber: 322,
             columnNumber: 13
         },
         __self: undefined
     }, date.format(datesettings.formats.datetimeAbbreviated, new Date(issueDetails.post_data.post_modified)))), /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 326,
+            lineNumber: 329,
             columnNumber: 11
         },
         __self: undefined
@@ -12953,14 +12973,14 @@ const ReportTab = ReactMemo(({ issueDetails, onScreenshotDelete, isLoading, onSc
         scope: "row",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 327,
+            lineNumber: 330,
             columnNumber: 13
         },
         __self: undefined
     }, "URL"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 328,
+            lineNumber: 331,
             columnNumber: 13
         },
         __self: undefined
@@ -12970,14 +12990,14 @@ const ReportTab = ReactMemo(({ issueDetails, onScreenshotDelete, isLoading, onSc
         rel: "noopener noreferrer",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 330,
+            lineNumber: 333,
             columnNumber: 17
         },
         __self: undefined
     }, issueDetails.meta.URL) : "N/A")), /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 342,
+            lineNumber: 345,
             columnNumber: 11
         },
         __self: undefined
@@ -12985,14 +13005,14 @@ const ReportTab = ReactMemo(({ issueDetails, onScreenshotDelete, isLoading, onSc
         scope: "row",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 343,
+            lineNumber: 346,
             columnNumber: 13
         },
         __self: undefined
     }, "Screen"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 344,
+            lineNumber: 347,
             columnNumber: 13
         },
         __self: undefined
@@ -13000,7 +13020,7 @@ const ReportTab = ReactMemo(({ issueDetails, onScreenshotDelete, isLoading, onSc
             key: taxonomy,
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 353,
+                lineNumber: 356,
                 columnNumber: 15
             },
             __self: undefined
@@ -13010,14 +13030,14 @@ const ReportTab = ReactMemo(({ issueDetails, onScreenshotDelete, isLoading, onSc
             },
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 354,
+                lineNumber: 357,
                 columnNumber: 17
             },
             __self: undefined
         }, taxonomy), /*#__PURE__*/ React.createElement("td", {
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 355,
+                lineNumber: 358,
                 columnNumber: 17
             },
             __self: undefined
@@ -13030,7 +13050,7 @@ const TabContent = ReactMemo(({ tab, issueDetails, issueId, commentRefreshKey, o
                 commentRefreshKey: commentRefreshKey,
                 __source: {
                     fileName: "src/components/issue.jsx",
-                    lineNumber: 377,
+                    lineNumber: 380,
                     columnNumber: 11
                 },
                 __self: undefined
@@ -13043,7 +13063,7 @@ const TabContent = ReactMemo(({ tab, issueDetails, issueId, commentRefreshKey, o
                 onScreenshotClick: onScreenshotClick,
                 __source: {
                     fileName: "src/components/issue.jsx",
-                    lineNumber: 384,
+                    lineNumber: 387,
                     columnNumber: 11
                 },
                 __self: undefined
@@ -13053,7 +13073,7 @@ const TabContent = ReactMemo(({ tab, issueDetails, issueId, commentRefreshKey, o
                 data: issueDetails.meta.queriedObject,
                 __source: {
                     fileName: "src/components/issue.jsx",
-                    lineNumber: 392,
+                    lineNumber: 395,
                     columnNumber: 16
                 },
                 __self: undefined
@@ -13063,7 +13083,7 @@ const TabContent = ReactMemo(({ tab, issueDetails, issueId, commentRefreshKey, o
                 data: issueDetails.meta.headers,
                 __source: {
                     fileName: "src/components/issue.jsx",
-                    lineNumber: 394,
+                    lineNumber: 397,
                     columnNumber: 16
                 },
                 __self: undefined
@@ -13098,7 +13118,7 @@ const Lightbox = ReactMemo(({ src, onClose })=>{
         onClick: onClose,
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 411,
+            lineNumber: 414,
             columnNumber: 5
         },
         __self: undefined
@@ -13112,13 +13132,13 @@ const Lightbox = ReactMemo(({ src, onClose })=>{
         },
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 426,
+            lineNumber: 429,
             columnNumber: 7
         },
         __self: undefined
     })), document.body);
 });
-const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigneesChange, onDeadlineChange, createIssueComment, generateAssigneeChangeComment, onStatusChange })=>{
+const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigneesChange, onDeadlineChange, createIssueComment, generateAssigneeChangeComment, onStatusChange, onIssueTitleChange })=>{
     const { issueDetails, setIssueDetails, isLoadingDetails, error, refetchData } = useIssueData(issueId, isOpen);
     const { allUsers, allUserObjects, userMap } = useUserManagement();
     const { loadingStates, setLoading } = useLoadingStates();
@@ -13128,6 +13148,9 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
     const [lightboxSrc, setLightboxSrc] = useState(null);
     const [checklistItems, setChecklistItems] = useState([]);
     const [allStatuses, setAllStatuses] = useState([]);
+    const [isEditingTitle, setIsEditingTitle] = useState(false);
+    const [editedTitle, setEditedTitle] = useState("");
+    const titleInputRef = useRef(null);
     useEffect(()=>{
         wp.apiFetch({
             path: "/alpaca/v1/statuses"
@@ -13135,6 +13158,11 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
             console.error("Error fetching statuses:", err);
         });
     }, []);
+    useEffect(()=>{
+        if (isEditingTitle && titleInputRef.current) titleInputRef.current.focus();
+    }, [
+        isEditingTitle
+    ]);
     // Memoized values
     const assigneeObjects = useMemo(()=>allUserObjects.filter((u)=>assignees.includes(u.name) || assignees.includes(u.slug)), [
         allUserObjects,
@@ -13355,7 +13383,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
                     }
                 }));
             // Notify parent component about the status change
-            if (typeof onStatusChange === 'function') onStatusChange(issueId, nextStatus);
+            if (typeof onStatusChange === "function") onStatusChange(issueId, nextStatus);
             // Optionally, add a comment for status change
             if (createIssueComment) {
                 const commentContent = (0, _commentsJs.generateStatusChangeComment)(currentStatusTerm.name, nextStatus.name);
@@ -13376,6 +13404,42 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         setIssueDetails,
         setLoading
     ]);
+    const handleTitleSave = useCallback(async ()=>{
+        if (editedTitle === decodeEntities(issueDetails.post_data.post_content)) {
+            setIsEditingTitle(false);
+            return;
+        }
+        setLoading("title", true);
+        try {
+            await wp.apiFetch({
+                path: `/issue/v1/update/${issueId}`,
+                method: "POST",
+                data: {
+                    content: editedTitle
+                }
+            });
+            setIssueDetails((prev)=>({
+                    ...prev,
+                    post_data: {
+                        ...prev.post_data,
+                        post_content: editedTitle
+                    }
+                }));
+            if (typeof onIssueTitleChange === "function") onIssueTitleChange(issueId, editedTitle);
+        } catch (error) {
+            console.error("Failed to update issue title:", error);
+        } finally{
+            setLoading("title", false);
+            setIsEditingTitle(false);
+        }
+    }, [
+        editedTitle,
+        issueDetails,
+        issueId,
+        setIssueDetails,
+        setLoading,
+        onIssueTitleChange
+    ]);
     const currentStatus = issueDetails?.taxonomies?.status?.[0];
     const isLastStatus = useMemo(()=>{
         if (!currentStatus || !allStatuses.length) return true;
@@ -13395,7 +13459,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
                 text: "Progress issue to next status",
                 __source: {
                     fileName: "src/components/issue.jsx",
-                    lineNumber: 796,
+                    lineNumber: 844,
                     columnNumber: 13
                 }
             }, /*#__PURE__*/ React.createElement(Button, {
@@ -13405,14 +13469,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
                 disabled: loadingStates.status,
                 __source: {
                     fileName: "src/components/issue.jsx",
-                    lineNumber: 797,
+                    lineNumber: 845,
                     columnNumber: 15
                 }
             }, /*#__PURE__*/ React.createElement("span", {
                 className: "dashicons dashicons-arrow-right-alt",
                 __source: {
                     fileName: "src/components/issue.jsx",
-                    lineNumber: 803,
+                    lineNumber: 851,
                     columnNumber: 17
                 }
             }))),
@@ -13420,7 +13484,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
                 text: "Delete issue",
                 __source: {
                     fileName: "src/components/issue.jsx",
-                    lineNumber: 807,
+                    lineNumber: 855,
                     columnNumber: 11
                 }
             }, /*#__PURE__*/ React.createElement(Button, {
@@ -13432,21 +13496,21 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
                 },
                 __source: {
                     fileName: "src/components/issue.jsx",
-                    lineNumber: 808,
+                    lineNumber: 856,
                     columnNumber: 13
                 }
             }, /*#__PURE__*/ React.createElement("span", {
                 className: "dashicons dashicons-trash",
                 __source: {
                     fileName: "src/components/issue.jsx",
-                    lineNumber: 820,
+                    lineNumber: 868,
                     columnNumber: 15
                 }
             })))
         ].filter(Boolean),
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 790,
+            lineNumber: 838,
             columnNumber: 7
         },
         __self: undefined
@@ -13454,14 +13518,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         className: "notice notice-error",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 826,
+            lineNumber: 874,
             columnNumber: 11
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 827,
+            lineNumber: 875,
             columnNumber: 13
         },
         __self: undefined
@@ -13469,14 +13533,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         onClick: refetchData,
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 828,
+            lineNumber: 876,
             columnNumber: 13
         },
         __self: undefined
     }, "Retry")), isLoadingDetails ? /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 833,
+            lineNumber: 881,
             columnNumber: 11
         },
         __self: undefined
@@ -13484,7 +13548,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         className: "alpaca-issue-details",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 835,
+            lineNumber: 883,
             columnNumber: 11
         },
         __self: undefined
@@ -13492,7 +13556,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         className: "alpaca-issue-main column",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 836,
+            lineNumber: 884,
             columnNumber: 13
         },
         __self: undefined
@@ -13500,23 +13564,69 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         className: "alpaca-issue-slug",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 837,
+            lineNumber: 885,
             columnNumber: 15
         },
         __self: undefined
-    }, issueDetails.post_data.post_name), /*#__PURE__*/ React.createElement("h3", {
+    }, issueDetails.post_data.post_name), isEditingTitle ? /*#__PURE__*/ React.createElement("input", {
+        type: "text",
+        className: "alpaca-issue-title-input",
+        value: editedTitle,
+        onChange: (e)=>setEditedTitle(e.target.value),
+        onBlur: handleTitleSave,
+        onKeyDown: (e)=>{
+            if (e.key === "Enter") handleTitleSave();
+        },
+        disabled: loadingStates.title,
+        ref: titleInputRef,
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 889,
+            columnNumber: 17
+        },
+        __self: undefined
+    }) : /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-issue-title-wrapper",
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 904,
+            columnNumber: 17
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("h3", {
         className: "alpaca-issue-title",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 840,
-            columnNumber: 15
+            lineNumber: 905,
+            columnNumber: 19
         },
         __self: undefined
-    }, decodeEntities(issueDetails.post_data.post_content)), /*#__PURE__*/ React.createElement("div", {
+    }, decodeEntities(issueDetails.post_data.post_content)), /*#__PURE__*/ React.createElement(Tooltip, {
+        text: "Edit title",
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 908,
+            columnNumber: 19
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement(Button, {
+        className: "alpaca-edit-title-button",
+        icon: "edit",
+        onClick: ()=>{
+            setIsEditingTitle(true);
+            setEditedTitle(decodeEntities(issueDetails.post_data.post_content));
+        },
+        __source: {
+            fileName: "src/components/issue.jsx",
+            lineNumber: 909,
+            columnNumber: 21
+        },
+        __self: undefined
+    }))), /*#__PURE__*/ React.createElement("div", {
         className: "alpaca-issue-main-controls",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 843,
+            lineNumber: 922,
             columnNumber: 15
         },
         __self: undefined
@@ -13527,7 +13637,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         isLoading: loadingStates.assignees,
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 844,
+            lineNumber: 923,
             columnNumber: 17
         },
         __self: undefined
@@ -13538,7 +13648,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         isLoading: loadingStates.deadline,
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 851,
+            lineNumber: 930,
             columnNumber: 17
         },
         __self: undefined
@@ -13550,7 +13660,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         createIssueComment: handleChecklistComment,
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 859,
+            lineNumber: 938,
             columnNumber: 15
         },
         __self: undefined
@@ -13560,7 +13670,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         tabs: tabsConfig,
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 867,
+            lineNumber: 946,
             columnNumber: 15
         },
         __self: undefined
@@ -13574,14 +13684,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
             onScreenshotClick: setLightboxSrc,
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 873,
+                lineNumber: 952,
                 columnNumber: 19
             },
             __self: undefined
         })))) : /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 887,
+            lineNumber: 966,
             columnNumber: 11
         },
         __self: undefined
@@ -13590,7 +13700,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         onClose: handleLightboxClose,
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 892,
+            lineNumber: 971,
             columnNumber: 9
         },
         __self: undefined

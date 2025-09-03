@@ -105,7 +105,7 @@
   border: 2px solid #e4e4e4;
   border-radius: 4px;
   flex-direction: column;
-  width: 220px;
+  width: 16vw;
   height: 75vh;
   margin: 0 10px 0 0;
   padding: 0 10px 10px;
@@ -454,19 +454,12 @@
   cursor: pointer;
 }
 
-.wp-admin #alpaca-board.filter-watchlist .alpaca-item {
+.wp-admin #alpaca-board.filter-watchlist .alpaca-item, .wp-admin #alpaca-board.filter-deadline .alpaca-item {
   opacity: .2;
+  background: #fff;
 }
 
-.wp-admin #alpaca-board.filter-watchlist .alpaca-item.is-watched {
-  opacity: 1;
-}
-
-.wp-admin #alpaca-board.filter-deadline .alpaca-item {
-  opacity: .2;
-}
-
-.wp-admin #alpaca-board.filter-deadline .alpaca-item.item-highlight {
+.wp-admin #alpaca-board.filter-watchlist .alpaca-item.is-watched, .wp-admin #alpaca-board.filter-deadline .alpaca-item.item-highlight {
   opacity: 1;
 }
 
@@ -497,6 +490,11 @@
 .wp-admin #alpaca-comments .alpaca-comment-content ul li {
   margin-left: 1.3em;
   list-style: outside;
+}
+
+.wp-admin #alpaca-comments .components-textarea-control__input, .wp-admin .alpaca-comment-content p, .wp-admin .alpaca-comment-content li {
+  font-size: 15px;
+  line-height: 1.5em;
 }
 
 .wp-admin .alpaca-status-manager .status-grid {

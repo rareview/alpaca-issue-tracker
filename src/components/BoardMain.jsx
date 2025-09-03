@@ -376,6 +376,28 @@ function Board() {
     setNeedsSave(true);
   }, []);
 
+  const handleIssueTitleChange = useCallback((issueId, newTitle) => {
+    setContainers((prevContainers) =>
+      prevContainers.map((container) => {
+        const itemIndex = container.items.findIndex(
+          (item) => item.id === issueId.toString()
+        );
+
+        if (itemIndex === -1) {
+          return container;
+        }
+
+        const newItems = [...container.items];
+        newItems[itemIndex] = {
+          ...newItems[itemIndex],
+          content: newTitle,
+        };
+
+        return { ...container, items: newItems };
+      })
+    );
+  }, []);
+
   const closeModal = () => {
     setSelectedItem(null);
   };
@@ -508,6 +530,7 @@ function Board() {
         createIssueComment={createIssueComment}
         generateAssigneeChangeComment={generateAssigneeChangeComment}
         onStatusChange={handleStatusChange}
+        onIssueTitleChange={handleIssueTitleChange}
       />
     </DragDropContext>
   );
