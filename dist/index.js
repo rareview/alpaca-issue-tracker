@@ -12830,13 +12830,15 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         setLoading("title", true);
         try {
             await (0, _issueApi.updateIssue)(issueId, {
-                content: editedTitle
+                content: editedTitle,
+                title: editedTitle
             });
             setIssueDetails((prev)=>({
                     ...prev,
                     post_data: {
                         ...prev.post_data,
-                        post_content: editedTitle
+                        post_content: editedTitle,
+                        post_title: editedTitle
                     }
                 }));
             if (typeof onIssueTitleChange === "function") onIssueTitleChange(issueId, editedTitle);
@@ -12873,7 +12875,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
                 text: "Progress issue to next status",
                 __source: {
                     fileName: "src/components/issue.jsx",
-                    lineNumber: 387,
+                    lineNumber: 389,
                     columnNumber: 13
                 }
             }, /*#__PURE__*/ React.createElement(Button, {
@@ -12883,14 +12885,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
                 disabled: loadingStates.status,
                 __source: {
                     fileName: "src/components/issue.jsx",
-                    lineNumber: 388,
+                    lineNumber: 390,
                     columnNumber: 15
                 }
             }, /*#__PURE__*/ React.createElement("span", {
                 className: "dashicons dashicons-arrow-right-alt",
                 __source: {
                     fileName: "src/components/issue.jsx",
-                    lineNumber: 394,
+                    lineNumber: 396,
                     columnNumber: 17
                 }
             }))),
@@ -12898,7 +12900,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
                 text: "Delete issue",
                 __source: {
                     fileName: "src/components/issue.jsx",
-                    lineNumber: 398,
+                    lineNumber: 400,
                     columnNumber: 11
                 }
             }, /*#__PURE__*/ React.createElement(Button, {
@@ -12910,21 +12912,21 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
                 },
                 __source: {
                     fileName: "src/components/issue.jsx",
-                    lineNumber: 399,
+                    lineNumber: 401,
                     columnNumber: 13
                 }
             }, /*#__PURE__*/ React.createElement("span", {
                 className: "dashicons dashicons-trash",
                 __source: {
                     fileName: "src/components/issue.jsx",
-                    lineNumber: 411,
+                    lineNumber: 413,
                     columnNumber: 15
                 }
             })))
         ].filter(Boolean),
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 381,
+            lineNumber: 383,
             columnNumber: 7
         },
         __self: undefined
@@ -12932,14 +12934,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         className: "notice notice-error",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 417,
+            lineNumber: 419,
             columnNumber: 11
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 418,
+            lineNumber: 420,
             columnNumber: 13
         },
         __self: undefined
@@ -12947,7 +12949,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         onClick: refetchData,
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 419,
+            lineNumber: 421,
             columnNumber: 13
         },
         __self: undefined
@@ -12955,21 +12957,21 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         className: `notice notice-${notificationMessage.type}`,
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 424,
+            lineNumber: 426,
             columnNumber: 11
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 425,
+            lineNumber: 427,
             columnNumber: 13
         },
         __self: undefined
     }, notificationMessage.message)), isLoadingDetails ? /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 430,
+            lineNumber: 432,
             columnNumber: 11
         },
         __self: undefined
@@ -12977,7 +12979,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         className: "alpaca-issue-details",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 432,
+            lineNumber: 434,
             columnNumber: 11
         },
         __self: undefined
@@ -12985,7 +12987,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         className: "alpaca-issue-main column",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 433,
+            lineNumber: 435,
             columnNumber: 13
         },
         __self: undefined
@@ -12993,7 +12995,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         className: "alpaca-issue-slug",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 434,
+            lineNumber: 436,
             columnNumber: 15
         },
         __self: undefined
@@ -13010,7 +13012,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         ref: titleInputRef,
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 438,
+            lineNumber: 440,
             columnNumber: 17
         },
         __self: undefined
@@ -13018,7 +13020,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         className: "alpaca-issue-title-wrapper",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 453,
+            lineNumber: 455,
             columnNumber: 17
         },
         __self: undefined
@@ -13026,7 +13028,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         className: "alpaca-issue-title",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 454,
+            lineNumber: 456,
             columnNumber: 19
         },
         __self: undefined
@@ -13034,7 +13036,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         text: "Edit title",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 457,
+            lineNumber: 459,
             columnNumber: 19
         },
         __self: undefined
@@ -13047,7 +13049,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         },
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 458,
+            lineNumber: 460,
             columnNumber: 21
         },
         __self: undefined
@@ -13055,7 +13057,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         className: "alpaca-issue-main-controls",
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 471,
+            lineNumber: 473,
             columnNumber: 15
         },
         __self: undefined
@@ -13066,7 +13068,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         isLoading: loadingStates.assignees,
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 472,
+            lineNumber: 474,
             columnNumber: 17
         },
         __self: undefined
@@ -13077,7 +13079,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         isLoading: loadingStates.deadline,
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 479,
+            lineNumber: 481,
             columnNumber: 17
         },
         __self: undefined
@@ -13090,7 +13092,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         setCommentRefreshKey: setCommentRefreshKey,
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 487,
+            lineNumber: 489,
             columnNumber: 15
         },
         __self: undefined
@@ -13100,7 +13102,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         tabs: tabsConfig,
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 496,
+            lineNumber: 498,
             columnNumber: 15
         },
         __self: undefined
@@ -13114,14 +13116,14 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
             onScreenshotClick: setLightboxSrc,
             __source: {
                 fileName: "src/components/issue.jsx",
-                lineNumber: 502,
+                lineNumber: 504,
                 columnNumber: 19
             },
             __self: undefined
         })))) : /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 516,
+            lineNumber: 518,
             columnNumber: 11
         },
         __self: undefined
@@ -13130,7 +13132,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
         onClose: handleLightboxClose,
         __source: {
             fileName: "src/components/issue.jsx",
-            lineNumber: 521,
+            lineNumber: 523,
             columnNumber: 9
         },
         __self: undefined
@@ -13138,7 +13140,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
 };
 exports.default = AlpacaIssue;
 
-},{"./commenting.jsx":"321JG","./issue/checklist.jsx":"iTYG6","../utils/comments.js":"hPhNI","../utils/tabsConfig":"kaOzJ","../hooks/useIssueData":"5IBQX","../hooks/useUserManagement":"7BGvE","../hooks/useLoadingStates":"haQEY","../utils/assigneeUtils":"9o8NF","../utils/checklistUtils":"h8W9N","../services/issueApi":"bebt9","./issue/AssigneeSelector":"lBLYZ","./issue/DeadlineControl":"63IRX","./issue/JsonTable":"jh4NY","./issue/ReportTab":"f6zxb","./issue/TabContent":"14ymM","./issue/Lightbox":"krnYi","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"321JG":[function(require,module,exports,__globalThis) {
+},{"./commenting.jsx":"321JG","../utils/comments.js":"hPhNI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./issue/checklist.jsx":"iTYG6","../utils/tabsConfig":"kaOzJ","../hooks/useIssueData":"5IBQX","../hooks/useUserManagement":"7BGvE","../hooks/useLoadingStates":"haQEY","../utils/assigneeUtils":"9o8NF","../utils/checklistUtils":"h8W9N","../services/issueApi":"bebt9","./issue/AssigneeSelector":"lBLYZ","./issue/DeadlineControl":"63IRX","./issue/JsonTable":"jh4NY","./issue/ReportTab":"f6zxb","./issue/TabContent":"14ymM","./issue/Lightbox":"krnYi"}],"321JG":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _usercache = require("../utils/usercache");
@@ -15103,7 +15105,52 @@ Please report this to https://github.com/markedjs/marked.`, e) {
     return module1.exports;
 });
 
-},{}],"iTYG6":[function(require,module,exports,__globalThis) {
+},{}],"hPhNI":[function(require,module,exports,__globalThis) {
+/**
+ * Generates HTML for an assignee span to be used in comments.
+ * @param {object} user The user object for the assignee.
+ * @returns {string} HTML string.
+ */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "generateAssigneeSpan", ()=>generateAssigneeSpan);
+parcelHelpers.export(exports, "generateStatusChangeComment", ()=>generateStatusChangeComment);
+parcelHelpers.export(exports, "generateAssigneeChangeComment", ()=>generateAssigneeChangeComment);
+parcelHelpers.export(exports, "generateCheckedItemComment", ()=>generateCheckedItemComment);
+const generateAssigneeSpan = (user)=>{
+    if (!user) return "";
+    const avatarAttr = user.avatar ? ` data-avatar="${user.avatar}"` : "";
+    return `<span class="alpaca-status-assignee" data-userid="${user.id}"${avatarAttr}>${user.name}</span>`;
+};
+/**
+ * Generates HTML for a status change comment.
+ * @param {string} fromStatus The title of the original status.
+ * @param {string} toStatus The title of the new status.
+ * @returns {string} HTML string.
+ */ const generateStatusChangeComment = (fromStatus, toStatus)=>{
+    return `Item moved from status <span class="alpaca-status-comment">${fromStatus}</span> to <span class="alpaca-status-comment">${toStatus}</span>`;
+};
+/**
+ * Generates HTML for an assignee change comment.
+ * @param {object} user The user object for the assignee.
+ * @param {boolean} isAssigned True if the user was assigned, false if unassigned.
+ * @returns {string} HTML string.
+ */ const generateAssigneeChangeComment = (user, isAssigned)=>{
+    const assigneeSpan = generateAssigneeSpan(user);
+    if (isAssigned) return `${assigneeSpan} has been assigned to this issue.`;
+    return `${assigneeSpan} is no longer assigned to this issue.`;
+};
+/**
+ * Generates a comment for a checked checklist item.
+ * @param {object} item The checklist item object.
+ * @param {object} user The user who checked the item.
+ * @returns {string} HTML string.
+ */ const generateCheckedItemComment = (item, user)=>{
+    if (!user) return `Checklist item "${item.label}" has been checked`;
+    const userSpan = generateAssigneeSpan(user);
+    return `Checklist item "${item.label}" has been checked by ${userSpan}`;
+};
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"iTYG6":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _commentsJs = require("../../utils/comments.js");
@@ -15393,52 +15440,7 @@ const Checklist = memo(({ issueId, initialChecklistItems, isSaving, setIsSaving,
 });
 exports.default = Checklist;
 
-},{"../../utils/comments.js":"hPhNI","@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration":"iD7mF","../icons/DragHandleIcon.jsx":"lhUj1","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hPhNI":[function(require,module,exports,__globalThis) {
-/**
- * Generates HTML for an assignee span to be used in comments.
- * @param {object} user The user object for the assignee.
- * @returns {string} HTML string.
- */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "generateAssigneeSpan", ()=>generateAssigneeSpan);
-parcelHelpers.export(exports, "generateStatusChangeComment", ()=>generateStatusChangeComment);
-parcelHelpers.export(exports, "generateAssigneeChangeComment", ()=>generateAssigneeChangeComment);
-parcelHelpers.export(exports, "generateCheckedItemComment", ()=>generateCheckedItemComment);
-const generateAssigneeSpan = (user)=>{
-    if (!user) return "";
-    const avatarAttr = user.avatar ? ` data-avatar="${user.avatar}"` : "";
-    return `<span class="alpaca-status-assignee" data-userid="${user.id}"${avatarAttr}>${user.name}</span>`;
-};
-/**
- * Generates HTML for a status change comment.
- * @param {string} fromStatus The title of the original status.
- * @param {string} toStatus The title of the new status.
- * @returns {string} HTML string.
- */ const generateStatusChangeComment = (fromStatus, toStatus)=>{
-    return `Item moved from status <span class="alpaca-status-comment">${fromStatus}</span> to <span class="alpaca-status-comment">${toStatus}</span>`;
-};
-/**
- * Generates HTML for an assignee change comment.
- * @param {object} user The user object for the assignee.
- * @param {boolean} isAssigned True if the user was assigned, false if unassigned.
- * @returns {string} HTML string.
- */ const generateAssigneeChangeComment = (user, isAssigned)=>{
-    const assigneeSpan = generateAssigneeSpan(user);
-    if (isAssigned) return `${assigneeSpan} has been assigned to this issue.`;
-    return `${assigneeSpan} is no longer assigned to this issue.`;
-};
-/**
- * Generates a comment for a checked checklist item.
- * @param {object} item The checklist item object.
- * @param {object} user The user who checked the item.
- * @returns {string} HTML string.
- */ const generateCheckedItemComment = (item, user)=>{
-    if (!user) return `Checklist item "${item.label}" has been checked`;
-    const userSpan = generateAssigneeSpan(user);
-    return `Checklist item "${item.label}" has been checked by ${userSpan}`;
-};
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"kaOzJ":[function(require,module,exports,__globalThis) {
+},{"../../utils/comments.js":"hPhNI","@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration":"iD7mF","../icons/DragHandleIcon.jsx":"lhUj1","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"kaOzJ":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "getTabsConfig", ()=>getTabsConfig);

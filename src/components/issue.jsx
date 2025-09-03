@@ -335,6 +335,7 @@ const AlpacaIssue = ({
     try {
       await updateIssue(issueId, {
         content: editedTitle,
+        title: editedTitle,
       });
 
       setIssueDetails((prev) => ({
@@ -342,6 +343,7 @@ const AlpacaIssue = ({
         post_data: {
           ...prev.post_data,
           post_content: editedTitle,
+          post_title: editedTitle,
         },
       }));
 
