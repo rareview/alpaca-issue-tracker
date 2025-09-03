@@ -85,6 +85,14 @@
   padding: 8px 0;
 }
 
+.wp-admin .alpaca-control-popover .components-menu-group {
+  border: none;
+}
+
+.wp-admin .alpaca-control-popover .components-menu-group__label {
+  margin: 0;
+}
+
 .wp-admin #alpaca-board .alpaca-wrap {
   flex-direction: row;
   padding: 10px 0;
@@ -205,9 +213,23 @@
   display: grid;
 }
 
-.wp-admin #alpaca-board .alpaca-item.is-late, .wp-admin #alpaca-board .alpaca-item-dragging.is-late {
-  background-color: pink;
-  border: 1px solid red;
+.wp-admin #alpaca-board .alpaca-item .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-deadline {
+  border-radius: 8px;
+  padding: 2px 8px;
+}
+
+.wp-admin #alpaca-board .alpaca-item .alpaca-item-deadline .dashicons, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-deadline .dashicons {
+  margin-right: 4px;
+}
+
+.wp-admin #alpaca-board .alpaca-item.is-late .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item-dragging.is-late .alpaca-item-deadline {
+  color: #fff;
+  background-color: red;
+}
+
+.wp-admin #alpaca-board .alpaca-item[data-diff-days="1"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item[data-diff-days="2"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item[data-diff-days="3"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item[data-diff-days="4"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item[data-diff-days="5"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item[data-diff-days="6"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item[data-diff-days="7"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item-dragging[data-diff-days="1"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item-dragging[data-diff-days="2"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item-dragging[data-diff-days="3"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item-dragging[data-diff-days="4"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item-dragging[data-diff-days="5"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item-dragging[data-diff-days="6"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item-dragging[data-diff-days="7"] .alpaca-item-deadline {
+  color: #000;
+  background-color: orange;
 }
 
 .wp-admin #alpaca-board .alpaca-item .alpaca-item-content, .wp-admin #alpaca-board .alpaca-item-dragging .alpaca-item-content {

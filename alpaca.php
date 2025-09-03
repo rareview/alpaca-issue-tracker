@@ -121,7 +121,6 @@ add_action('admin_enqueue_scripts', function() {
             .wp-admin #alpaca-board .alpaca-item[data-assignee-$me],
             .wp-admin #alpaca-board .alpaca-item-dragging[data-assignee-$me] {
                 background-color: #eee;
-                border: 1px solid #999;
             }
             .wp-admin #alpaca-board.filter-mine .alpaca-item:not([data-assignee-{$me}]) {
                 opacity: 0.2;

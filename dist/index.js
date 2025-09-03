@@ -15905,6 +15905,8 @@ var _watchlistContext = require("../context/WatchlistContext");
 var _user = require("./User");
 var _userDefault = parcelHelpers.interopDefault(_user);
 const { forwardRef } = wp.element;
+const { date } = wp;
+const datesettings = wp.date.getSettings();
 const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, className, style, onClick, ...props }, ref)=>{
     const { isWatched, toggleWatch } = (0, _watchlistContext.useWatchlist)();
     const watched = isWatched(id);
@@ -15915,6 +15917,10 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
     const watchedClass = watched ? "is-watched item-highlight" : "";
     const deadline = meta && meta.deadline && meta.deadline[0] ? new Date(meta.deadline[0]) : null;
     const isValidDeadline = deadline && !isNaN(deadline);
+    const deadlineFormatted = new Intl.DateTimeFormat(undefined, {
+        month: "short",
+        day: "numeric"
+    }).format(deadline);
     let diffDays = null;
     if (isValidDeadline) {
         const today = new Date();
@@ -15934,7 +15940,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         onClick: onClick,
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 49,
+            lineNumber: 57,
             columnNumber: 7
         },
         __self: undefined
@@ -15942,7 +15948,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         className: "alpaca-item-upper",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 59,
+            lineNumber: 67,
             columnNumber: 9
         },
         __self: undefined
@@ -15950,7 +15956,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         className: "alpaca-item-content",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 60,
+            lineNumber: 68,
             columnNumber: 11
         },
         __self: undefined
@@ -15958,7 +15964,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         className: "alpaca-item-controls",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 61,
+            lineNumber: 69,
             columnNumber: 11
         },
         __self: undefined
@@ -15970,7 +15976,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         },
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 62,
+            lineNumber: 70,
             columnNumber: 13
         },
         __self: undefined
@@ -15978,7 +15984,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         className: "alpaca-item-meta",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 71,
+            lineNumber: 79,
             columnNumber: 9
         },
         __self: undefined
@@ -15988,7 +15994,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         title: assignees.length === 1 ? assignees[0].display_name || assignees[0].name : assignees.map((a)=>a.display_name || a.name).join(", "),
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 73,
+            lineNumber: 81,
             columnNumber: 13
         },
         __self: undefined
@@ -15997,7 +16003,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
             user: assignee,
             __source: {
                 fileName: "src/components/Item.jsx",
-                lineNumber: 83,
+                lineNumber: 91,
                 columnNumber: 17
             },
             __self: undefined
@@ -16005,7 +16011,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         className: "alpaca-item-comment-count has-dashicon",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 89,
+            lineNumber: 97,
             columnNumber: 13
         },
         __self: undefined
@@ -16014,28 +16020,19 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         "aria-hidden": "true",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 90,
+            lineNumber: 98,
             columnNumber: 15
         },
         __self: undefined
     }), comment_count), isValidDeadline && /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-item-deadline has-dashicon",
+        className: "alpaca-item-deadline",
         __source: {
             fileName: "src/components/Item.jsx",
-            lineNumber: 99,
+            lineNumber: 107,
             columnNumber: 13
         },
         __self: undefined
-    }, /*#__PURE__*/ React.createElement("span", {
-        className: "dashicons dashicons-calendar",
-        "aria-hidden": "true",
-        __source: {
-            fileName: "src/components/Item.jsx",
-            lineNumber: 100,
-            columnNumber: 15
-        },
-        __self: undefined
-    }), diffDays > 0 ? `${diffDays} day${diffDays > 1 ? "s" : ""} left` : diffDays === 0 ? "Today" : `${Math.abs(diffDays)} day${diffDays < -1 ? "s" : ""} ago`)));
+    }, diffDays > 0 ? deadlineFormatted : diffDays === 0 ? "Today" : diffDays === 1 ? "Tomorrow" : diffDays === -1 ? "Yesterday" : deadlineFormatted)));
 });
 exports.default = Item;
 

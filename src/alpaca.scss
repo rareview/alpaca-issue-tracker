@@ -81,6 +81,12 @@
     .alpaca-control {
       padding: 8px 0;
     }
+    .components-menu-group {
+      border: none;
+    }
+    .components-menu-group__label {
+      margin: 0;
+    }
   }
 
   #alpaca-board {
@@ -187,10 +193,33 @@
       padding: 8px 12px;
       margin: 8px 0;
       background-color: white;
-      &.is-late {
-        border: 1px solid red;
-        background-color: pink;
+
+      .alpaca-item-deadline {
+        padding: 2px 8px;
+        border-radius: 8px;
+        .dashicons {
+          margin-right: 4px;
+        }
       }
+      &.is-late {
+        .alpaca-item-deadline {
+          background-color: red;
+          color: white;
+        }
+      }
+      &[data-diff-days="1"],
+      &[data-diff-days="2"],
+      &[data-diff-days="3"],
+      &[data-diff-days="4"],
+      &[data-diff-days="5"],
+      &[data-diff-days="6"],
+      &[data-diff-days="7"] {
+        .alpaca-item-deadline {
+          background-color: orange;
+          color: black;
+        }
+      }
+
       .alpaca-item-content {
         grid-column: 1;
         grid-row: 1;

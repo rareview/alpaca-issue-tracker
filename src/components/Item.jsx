@@ -2,6 +2,9 @@ const { forwardRef } = wp.element;
 import { useWatchlist } from "../context/WatchlistContext";
 import User from "./User";
 
+const { date } = wp;
+const datesettings = wp.date.getSettings();
+
 const Item = forwardRef(
   (
     {
@@ -34,6 +37,11 @@ const Item = forwardRef(
         ? new Date(meta.deadline[0])
         : null;
     const isValidDeadline = deadline && !isNaN(deadline);
+
+    const deadlineFormatted = new Intl.DateTimeFormat(undefined, {
+      month: "short",
+      day: "numeric",
+    }).format(deadline);
 
     let diffDays = null;
     if (isValidDeadline) {
@@ -96,16 +104,16 @@ const Item = forwardRef(
           )}
 
           {isValidDeadline && (
-            <div className="alpaca-item-deadline has-dashicon">
-              <span
-                className="dashicons dashicons-calendar"
-                aria-hidden="true"
-              ></span>
+            <div className="alpaca-item-deadline">
               {diffDays > 0
-                ? `${diffDays} day${diffDays > 1 ? "s" : ""} left`
+                ? deadlineFormatted
                 : diffDays === 0
                 ? "Today"
-                : `${Math.abs(diffDays)} day${diffDays < -1 ? "s" : ""} ago`}
+                : diffDays === 1
+                ? "Tomorrow"
+                : diffDays === -1
+                ? "Yesterday"
+                : deadlineFormatted}
             </div>
           )}
         </div>
