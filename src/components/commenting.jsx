@@ -1,4 +1,5 @@
 import { getUser } from "../hooks/useUser";
+import { fetchIssueCommentCount } from "../services/issueApi";
 const { useState, useEffect, useRef, useCallback } = wp.element;
 import User from "./User";
 const { TextareaControl, Button, Spinner, Modal } = wp.components;
@@ -93,9 +94,26 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
         comment_type: "issuecomment",
       },
     })
-      .then(() => {
+      .then((newlyCreatedComment) => {
         setNewComment("");
         fetchComments();
+
+        // Dispatch event to update comment count
+        const postId = newlyCreatedComment.post;
+        fetchIssueCommentCount(postId).then((response) => {
+          if (response && typeof response.comment_count !== "undefined") {
+            document.dispatchEvent(
+              new CustomEvent("alpaca:comment-count-changed", {
+                detail: {
+                  issueId: postId.toString(),
+                  newCount: response.comment_count,
+                },
+              })
+            );
+          }
+        }).catch((err) => {
+          console.error("Error fetching updated comment count after adding:", err);
+        });
       })
       .catch((err) => {
         console.error(err);
@@ -150,9 +168,29 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
       method: "DELETE",
       data: { force: true },
     })
-      .then(() => {
+      .then((deletedComment) => {
         fetchComments();
         setDeleteCommentId(null);
+
+        // Dispatch event to update comment count
+        // The deletedComment object contains the post ID
+        console.log("deletedComment object:", deletedComment);
+        const postId = deletedComment.previous.post;
+        console.log("postId from deletedComment:", postId);
+        fetchIssueCommentCount(postId).then((response) => {
+          if (response && typeof response.comment_count !== "undefined") {
+            document.dispatchEvent(
+              new CustomEvent("alpaca:comment-count-changed", {
+                detail: {
+                  issueId: postId.toString(),
+                  newCount: response.comment_count,
+                },
+              })
+            );
+          }
+        }).catch((err) => {
+          console.error("Error fetching updated comment count:", err);
+        });
       })
       .catch((err) => {
         console.error(err);
