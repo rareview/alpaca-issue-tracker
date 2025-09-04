@@ -99,7 +99,8 @@ const AlpacaIssue = ({
 
   // Debounced API calls
   const updateAssignees = useCallback(
-    async (issueId, slugs, newAssignees) => {
+    async (issueId, slugs, newAssignees, added, removed) => {
+      // Added added, removed
       await updateIssue(issueId, {
         taxonomies: {
           assignee: slugs,
@@ -114,6 +115,27 @@ const AlpacaIssue = ({
             onAssigneesChange(issueId, assigneeObjects);
           }
           refetchData();
+
+          // Moved from handleAssigneeChange
+          added.forEach((assignee) => {
+            const user = allUserObjects.find((u) => u.name === assignee);
+            wp.hooks.doAction(
+              "alpaca.assigneeChanged",
+              issueDetails,
+              user,
+              true
+            );
+          });
+
+          removed.forEach((assignee) => {
+            const user = allUserObjects.find((u) => u.name === assignee);
+            wp.hooks.doAction(
+              "alpaca.assigneeChanged",
+              issueDetails,
+              user,
+              false
+            );
+          });
         })
         .catch((error) => {
           console.error("updateAssignees: updateIssue failed:", error);
@@ -121,7 +143,7 @@ const AlpacaIssue = ({
         })
         .finally(() => setLoading("assignees", false));
     },
-    [onAssigneesChange, refetchData, setLoading, allUserObjects]
+    [onAssigneesChange, refetchData, setLoading, allUserObjects, issueDetails] // Added issueDetails
   );
 
   const updateDeadline = useCallback(
@@ -187,20 +209,10 @@ const AlpacaIssue = ({
         newAssignees
       );
 
-      added.forEach((assignee) => {
-        const user = allUserObjects.find((u) => u.name === assignee);
-        wp.hooks.doAction("alpaca.assigneeChanged", issueDetails, user, true);
-      });
-
-      removed.forEach((assignee) => {
-        const user = allUserObjects.find((u) => u.name === assignee);
-        wp.hooks.doAction("alpaca.assigneeChanged", issueDetails, user, false);
-      });
-
       setAssignees(newAssignees);
       const slugs = newAssignees.map((a) => userMap[a] || a);
       setLoading("assignees", true);
-      updateAssignees(issueId, slugs, newAssignees);
+      updateAssignees(issueId, slugs, newAssignees, added, removed); // Added added, removed
     },
     [
       assignees,
