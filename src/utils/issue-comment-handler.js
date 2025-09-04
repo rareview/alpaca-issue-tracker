@@ -39,7 +39,6 @@ const postComment = async (issueOrId, content) => {
         status: "approve",
       },
     }).then(async () => {
-      console.log("Calling fetchIssueCommentCount with postId:", postId);
       const response = await fetchIssueCommentCount(postId);
       if (response && typeof response.comment_count !== "undefined") {
         document.dispatchEvent(
