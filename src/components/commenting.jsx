@@ -1,4 +1,4 @@
-import { getUser } from '../utils/usercache';
+import { getUser } from '../hooks/useUser';
 const { useState, useEffect, useRef, useCallback } = wp.element;
 import User from "./User";
 const { TextareaControl, Button, Spinner, Modal } = wp.components;

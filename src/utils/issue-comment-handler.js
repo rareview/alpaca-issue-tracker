@@ -1,4 +1,4 @@
-import { getUser } from "./usercache.js";
+import { getUser } from "../hooks/useUser.js";
 import { generateAssigneeSpan } from "./comments.js";
 /**
  * Handles automatic commenting on issues, such as when an issue is created.

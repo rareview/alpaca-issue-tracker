@@ -14,7 +14,7 @@ import {
   generateStatusChangeComment,
   generateAssigneeChangeComment,
 } from "../utils/comments";
-import { getUser } from "../utils/usercache";
+import { getUser } from "../hooks/useUser";
 import { fetchIssue, fetchIssueCommentCount } from "../services/issueApi";
 
 /**

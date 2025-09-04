@@ -1,39 +1,19 @@
-const { useState, useEffect } = wp.element;
-import { getUser } from "../utils/usercache";
+const { useMemo } = wp.element;
+import { useUser } from '../hooks/useUser';
 
-const User = ({ user }) => {
-  const [userData, setUserData] = useState(
-    typeof user === "object" ? user : null
-  );
-  const [loading, setLoading] = useState(typeof user === "number");
+const User = ({ user: userProp }) => {
+  const { user, loading } = useUser(userProp);
 
-  useEffect(() => {
-    if (
-      typeof user === "number" ||
-      (typeof user === "string" && !isNaN(user))
-    ) {
-      const userId = parseInt(user, 10);
-      setLoading(true);
-      getUser(userId)
-        .then(setUserData)
-        .catch((err) => {
-          console.error("Error fetching user:", err);
-          setUserData(null);
-        })
-        .finally(() => setLoading(false));
-    } else if (typeof user === "object") {
-      setUserData(user);
-    } else {
-      setUserData(null);
-    }
+  const { userName, avatarUrl } = useMemo(() => {
+    if (!user) return { userName: null, avatarUrl: null };
+    const { name, avatar, display_name, avatar_urls } = user;
+    const userName = display_name || name;
+    const avatarUrl = avatar || (avatar_urls && avatar_urls[96]);
+    return { userName, avatarUrl };
   }, [user]);
 
   if (loading) return <div className="alpaca-user">Loading...</div>;
-  if (!userData) return null;
-
-  const { name, avatar, display_name, avatar_urls } = userData;
-  const userName = display_name || name;
-  const avatarUrl = avatar || (avatar_urls && avatar_urls[96]);
+  if (!user) return null;
 
   return (
     <div className="alpaca-user" title={userName}>
