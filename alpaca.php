@@ -131,9 +131,7 @@ add_action('admin_enqueue_scripts', function() {
             .wp-admin #alpaca-board .alpaca-item-dragging[data-assignee-$me] {
                 background-color: #eee;
             }
-            .wp-admin #alpaca-board.filter-mine .alpaca-item:not([data-assignee-{$me}]) {
-                opacity: 0.2;
-            }";
+		";
 
         if ( function_exists('expose_admin_colors') ) {
             $custom_css .= "

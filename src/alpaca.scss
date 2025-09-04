@@ -186,7 +186,6 @@
         grid-template-rows: auto;
         gap: 0;
       }
-      opacity: 1;
       transition: opacity 0.2s ease-in-out;
       box-shadow: 0 0 2px #888;
       border-radius: 8px;
@@ -449,14 +448,9 @@
   }
   // fix: flash on star when you start dragging
 
-  #alpaca-board.filter-watchlist .alpaca-item,
-  #alpaca-board.filter-deadline .alpaca-item {
-    opacity: 0.2;
-    background: white;
-  }
-  #alpaca-board.filter-watchlist .alpaca-item.is-watched,
-  #alpaca-board.filter-deadline .alpaca-item.item-highlight {
-    opacity: 1;
+  #alpaca-board .alpaca-item.is-filtered-out {
+    display: none; // because there is a really weird bug arising when I use opacity
+    pointer-events: none;
   }
 
   .alpaca-issue-tabs {

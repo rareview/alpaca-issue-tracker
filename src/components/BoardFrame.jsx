@@ -1,6 +1,5 @@
 const { useState, useEffect, useRef, useCallback } = wp.element;
-const { Popover, Button, ComboboxControl, RadioControl, MenuGroup, MenuItem } =
-  wp.components;
+const { Popover, Button, ComboboxControl, MenuGroup, MenuItem } = wp.components;
 import Board from "./BoardMain";
 import { getCookie, setCookie } from "../utils/cookies";
 
@@ -14,9 +13,8 @@ export function AlpacaBoardControls() {
   const [showStarredOnly, setShowStarredOnly] = useState(false);
   const [deadlineFilter, setDeadlineFilter] = useState("none");
 
+  // --- Load assignee data on mount ---
   useEffect(() => {
-    // On mount, check for assignee data that may have been set globally
-    // to win a race condition with the event firing.
     if (window.alpacaAssignees && window.alpacaAssignees.length > 0) {
       setAllAssignees(window.alpacaAssignees);
     }
@@ -32,7 +30,6 @@ export function AlpacaBoardControls() {
       "alpaca:assignees-updated",
       handleAssigneesUpdated
     );
-
     return () => {
       document.removeEventListener(
         "alpaca:assignees-updated",
@@ -41,110 +38,80 @@ export function AlpacaBoardControls() {
     };
   }, []);
 
-  // This effect generates and injects the CSS for assignee filtering.
+  // --- Unified filtering logic ---
   useEffect(() => {
-    if (allAssignees.length > 0) {
-      const styleId = "alpaca-filter-assignee-styles";
-      let styleElement = document.getElementById(styleId);
-      if (!styleElement) {
-        styleElement = document.createElement("style");
-        styleElement.id = styleId;
-        document.head.appendChild(styleElement);
-      }
+    const boardElement = document.querySelector("#alpaca-board");
+    if (!boardElement) return;
 
-      let rules = `
-        #alpaca-board[class*="filter-assignee-"] .alpaca-item {
-          opacity: 0.2;
-        }
-      `;
+    const items = boardElement.querySelectorAll(".alpaca-item");
 
-      allAssignees.forEach((assignee) => {
-        rules += `
-          #alpaca-board.filter-assignee-${assignee.id} .alpaca-item[data-assignee-${assignee.id}] {
-            opacity: 1;
-          }
-        `;
-      });
+    items.forEach((item) => {
+      let visible = true;
 
-      styleElement.innerHTML = rules;
-    }
-  }, [allAssignees]);
-
-  const boardElement = document.querySelector("#alpaca-board");
-
-  useEffect(() => {
-    if (boardElement) {
-      // Remove previous assignee filters
-      boardElement.className = boardElement.className.replace(
-        /\s*filter-assignee-\S*/g,
-        ""
-      );
+      // Assignee filter
       if (filteredAssignee) {
-        boardElement.classList.add(`filter-assignee-${filteredAssignee}`);
-      }
-    }
-  }, [filteredAssignee, boardElement]);
+        const matchesByDataAssignee = item.hasAttribute(
+          `data-assignee-${filteredAssignee}`
+        );
+        const matchesByList = (item.dataset.assignees || "")
+          .split(" ")
+          .includes(filteredAssignee);
 
-  // Clear the assignee filter if the selected assignee is no longer valid.
+        if (!matchesByDataAssignee && !matchesByList) {
+          visible = false;
+        }
+      }
+
+      // Starred filter
+      if (showStarredOnly && !item.classList.contains("is-watched")) {
+        visible = false;
+      }
+
+      // Deadline filter
+      if (deadlineFilter !== "none") {
+        const diffDays = parseInt(item.dataset.diffDays, 10);
+        const conditions = {
+          today: (d) => d === 0,
+          week: (d) => d >= 0 && d <= 7,
+          late: (d) => d < 0,
+        };
+        if (!conditions[deadlineFilter]?.(diffDays)) {
+          visible = false;
+        }
+      }
+
+      // Apply filter result
+      item.classList.toggle("is-filtered-out", !visible);
+
+      // Highlight deadline matches
+      item.classList.remove("item-highlight");
+      if (visible && deadlineFilter !== "none") {
+        const diffDays = parseInt(item.dataset.diffDays, 10);
+        const conditions = {
+          today: (d) => d === 0,
+          week: (d) => d >= 0 && d <= 7,
+          late: (d) => d < 0,
+        };
+        if (conditions[deadlineFilter]?.(diffDays)) {
+          item.classList.add("item-highlight");
+        }
+      }
+    });
+  }, [filteredAssignee, showStarredOnly, deadlineFilter]);
+
+  // --- Reset assignee filter if invalid ---
   useEffect(() => {
     if (filteredAssignee && allAssignees.length > 0) {
-      const isFilteredAssigneeStillPresent = allAssignees.some(
+      const isStillPresent = allAssignees.some(
         (assignee) => assignee.id.toString() === filteredAssignee
       );
-      if (!isFilteredAssigneeStillPresent) {
+      if (!isStillPresent) {
         setFilteredAssignee("");
       }
     }
   }, [allAssignees, filteredAssignee]);
 
-  // Update board classes based on showStarredOnly
-  useEffect(() => {
-    if (boardElement) {
-      if (showStarredOnly) {
-        boardElement.classList.add("filter-watchlist");
-      } else {
-        boardElement.classList.remove("filter-watchlist");
-      }
-    }
-  }, [showStarredOnly, boardElement]);
-
-  useEffect(() => {
-    if (boardElement) {
-      // Remove previous deadline filters
-      boardElement.className = boardElement.className.replace(
-        /\s*filter-deadline-\S*/g,
-        ""
-      );
-      boardElement.classList.remove("filter-deadline");
-
-      if (deadlineFilter && deadlineFilter !== "none") {
-        boardElement.classList.add(
-          `filter-deadline`,
-          `filter-deadline-${deadlineFilter}`
-        );
-      }
-
-      const deadlineConditions = {
-        today: (diffDays) => diffDays === 0,
-        week: (diffDays) => diffDays >= 0 && diffDays <= 7,
-        late: (diffDays) => diffDays < 0,
-      };
-
-      const items = boardElement.querySelectorAll(".alpaca-item");
-      const condition = deadlineConditions[deadlineFilter];
-
-      items.forEach((item) => {
-        item.classList.remove("item-highlight");
-        if (condition) {
-          const diffDays = parseInt(item.dataset.diffDays, 10);
-          if (condition(diffDays)) {
-            item.classList.add("item-highlight");
-          }
-        }
-      });
-    }
-  }, [deadlineFilter, boardElement]);
-
+  // --- Build assignee options for combobox ---
   const assigneeOptions = (allAssignees || [])
     .filter((assignee) => assignee && assignee.id)
     .map((assignee) => ({
@@ -156,27 +123,22 @@ export function AlpacaBoardControls() {
     return null; // Don't render if we don't know the current user
   }
 
+  // --- Popover state ---
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const popoverAnchorRef = useRef();
-  const popoverContentRef = useRef(); // New ref for popover content
+  const popoverContentRef = useRef();
 
   const togglePopover = useCallback(() => {
-    setIsPopoverOpen((prevIsPopoverOpen) => {
-      const newState = !prevIsPopoverOpen;
-      return newState;
-    });
-  }, [isPopoverOpen]);
+    setIsPopoverOpen((prev) => !prev);
+  }, []);
 
   const onClosePopover = () => {
     setIsPopoverOpen(false);
   };
 
-  // New useEffect for global click-outside detection
+  // --- Click outside detection for popover ---
   useEffect(() => {
     const handleClickOutside = (event) => {
-      // If popover is open AND
-      // click is NOT on the button AND
-      // click is NOT inside the popover content
       if (
         isPopoverOpen &&
         popoverAnchorRef.current &&
@@ -189,12 +151,12 @@ export function AlpacaBoardControls() {
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isPopoverOpen, popoverAnchorRef, popoverContentRef, onClosePopover]); // Dependencies
+  }, [isPopoverOpen]);
 
+  // --- Handlers ---
   const handleShowStarredOnlyChange = () => {
     setShowStarredOnly(!showStarredOnly);
     setFilteredAssignee("");
@@ -213,13 +175,12 @@ export function AlpacaBoardControls() {
     setFilteredAssignee("");
   };
 
+  // --- Render ---
   return (
     <div className="alpaca-board-controls">
       <Button
         ref={popoverAnchorRef}
-        onClick={() => {
-          togglePopover();
-        }}
+        onClick={togglePopover}
         isSecondary
         label="Open Filters"
       >
@@ -228,8 +189,6 @@ export function AlpacaBoardControls() {
       {isPopoverOpen && (
         <Popover anchor={popoverAnchorRef.current}>
           <div className="alpaca-control-popover" ref={popoverContentRef}>
-            {" "}
-            {/* Assign ref here */}
             <MenuGroup>
               <MenuItem
                 onClick={() => {
