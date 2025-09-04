@@ -248,11 +248,26 @@ export function AlpacaBoardControls() {
               </MenuItem>
             </MenuGroup>
             <MenuGroup label="Filter by Assignee">
+              <MenuItem
+                onClick={() =>
+                  handleFilteredAssigneeChange(
+                    alpacaUserData.currentUserId.toString()
+                  )
+                }
+                icon={
+                  filteredAssignee === alpacaUserData.currentUserId.toString()
+                    ? "yes"
+                    : ""
+                }
+              >
+                Assigned to me
+              </MenuItem>
               <ComboboxControl
                 value={filteredAssignee}
                 onChange={handleFilteredAssigneeChange}
                 options={assigneeOptions}
                 className="alpaca-control"
+                placeholder="Search for a user"
               />
             </MenuGroup>
             <MenuGroup label="Deadlines">
