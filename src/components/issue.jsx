@@ -100,19 +100,12 @@ const AlpacaIssue = ({
   // Debounced API calls
   const updateAssignees = useCallback(
     async (issueId, slugs, newAssignees) => {
-      console.log(
-        "updateAssignees: Updating issue",
-        issueId,
-        "with slugs:",
-        slugs
-      );
       await updateIssue(issueId, {
         taxonomies: {
           assignee: slugs,
         },
       })
         .then(() => {
-          console.log("updateAssignees: updateIssue successful.");
           if (typeof onAssigneesChange === "function") {
             const assigneeObjects = allUserObjects.filter(
               (u) =>
@@ -179,10 +172,8 @@ const AlpacaIssue = ({
           return userObject ? userObject.name : t.name;
         });
         setAssignees(assigneeNames);
-        console.log("useEffect: Initial assignees set to", assigneeNames);
       } else {
         setAssignees([]);
-        console.log("useEffect: Initial assignees set to empty array");
       }
     }
   }, [issueDetails, allUserObjects]);
@@ -206,17 +197,8 @@ const AlpacaIssue = ({
         wp.hooks.doAction("alpaca.assigneeChanged", issueDetails, user, false);
       });
 
-      console.log(
-        "handleAssigneeChange: newAssignees before setAssignees",
-        newAssignees
-      );
       setAssignees(newAssignees);
-      console.log(
-        "handleAssigneeChange: assignees state after setAssignees (may not reflect immediately)",
-        assignees
-      );
       const slugs = newAssignees.map((a) => userMap[a] || a);
-      console.log("handleAssigneeChange: slugs being sent", slugs);
       setLoading("assignees", true);
       updateAssignees(issueId, slugs, newAssignees);
     },

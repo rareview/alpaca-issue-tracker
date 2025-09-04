@@ -1,7 +1,6 @@
 export const fetchIssue = (id) => wp.apiFetch({ path: `/issue/v1/get/${id}` });
 
 export const updateIssue = (id, data) => {
-  console.log("updateIssue: Sending data to backend:", id, data);
   return wp.apiFetch({
     path: `/issue/v1/update/${id}`,
     method: "POST",
