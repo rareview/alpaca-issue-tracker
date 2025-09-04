@@ -35,10 +35,6 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
     })
       .then((fetchedComments) => {
         setComments(fetchedComments);
-        // const event = new CustomEvent("alpaca:comment-count-changed", {
-        //   detail: { issueId: issueId, newCount: fetchedComments.length },
-        // });
-        // document.dispatchEvent(event);
       })
       .catch((err) => {
         console.error("Error fetching comments:", err);
