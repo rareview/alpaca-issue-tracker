@@ -35,6 +35,10 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
     })
       .then((fetchedComments) => {
         setComments(fetchedComments);
+        // const event = new CustomEvent("alpaca:comment-count-changed", {
+        //   detail: { issueId: issueId, newCount: fetchedComments.length },
+        // });
+        // document.dispatchEvent(event);
       })
       .catch((err) => {
         console.error("Error fetching comments:", err);
@@ -195,19 +199,25 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
                 <div className="alpaca-comment-date">
                   {new Date(comment.date).toLocaleString()}
                 </div>
-                <div class="alpaca-comment-buttons">
+                <div className="alpaca-comment-buttons">
                   <Button
                     label="Edit"
-                    showToolip="true"
+                    showTooltip="true"
                     icon="edit"
-                    onClick={() => startEditing(comment)}
+                    onClick={() => {
+                      startEditing(comment);
+                      console.log("Start editing");
+                    }}
                   />
                   <Button
                     icon="trash"
                     label="Delete"
-                    showToolip="true"
+                    showTooltip="true"
                     className="button-link-delete"
-                    onClick={() => confirmDeleteComment(comment.id)}
+                    onClick={() => {
+                      console.log("Confirm delete");
+                      confirmDeleteComment(comment.id);
+                    }}
                   />
                 </div>
               </div>
