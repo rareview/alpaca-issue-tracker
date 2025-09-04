@@ -70,13 +70,20 @@ const DefaultStatusSelector = ({ statuses, onDefaultChange }) => {
   );
 
   if (error) {
-    return <p className="alpaca-error">{error}</p>;
+    return (
+      <tr>
+        <th>Default Status for New Issues</th>
+        <td>
+          <p className="alpaca-error">{error}</p>
+        </td>
+      </tr>
+    );
   }
 
   return (
-    <div style={{ marginTop: "2rem" }}>
-      <h2>Default Status for New Issues</h2>
-      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+    <tr>
+      <th>Default Status for New Issues</th>
+      <td>
         <SelectControl
           label="Default Status"
           hideLabelFromVision={true}
@@ -86,8 +93,8 @@ const DefaultStatusSelector = ({ statuses, onDefaultChange }) => {
           disabled={isSaving || isFetching}
         />
         {(isFetching || isSaving) && <Spinner />}
-      </div>
-    </div>
+      </td>
+    </tr>
   );
 };
 

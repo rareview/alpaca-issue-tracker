@@ -48,10 +48,17 @@ const AlpacaSettings = () => {
         defaultStatusId={defaultStatusId}
       />
       <hr style={{ marginTop: "2rem" }} />
-      <DefaultStatusSelector
-        statuses={currentStatuses}
-        onDefaultChange={handleDefaultStatusChange}
-      />
+
+      <h3>Settings</h3>
+
+      <table className="form-table">
+        <tbody>
+          <DefaultStatusSelector
+            statuses={currentStatuses}
+            onDefaultChange={handleDefaultStatusChange}
+          />
+        </tbody>
+      </table>
     </>
   );
 };

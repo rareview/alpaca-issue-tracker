@@ -575,6 +575,12 @@
       margin-top: 16px;
     }
   }
+
+  #alpaca-settings {
+    .components-input-control__container {
+      max-width: 25em;
+    }
+  }
 }
 
 @media (min-width: 825px) {

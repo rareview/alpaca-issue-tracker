@@ -1097,16 +1097,38 @@ const AlpacaSettings = ()=>{
             columnNumber: 7
         },
         __self: undefined
-    }), /*#__PURE__*/ React.createElement((0, _defaultStatusSelectorDefault.default), {
+    }), /*#__PURE__*/ React.createElement("h3", {
+        __source: {
+            fileName: "src/settings.jsx",
+            lineNumber: 52,
+            columnNumber: 7
+        },
+        __self: undefined
+    }, "Settings"), /*#__PURE__*/ React.createElement("table", {
+        className: "form-table",
+        __source: {
+            fileName: "src/settings.jsx",
+            lineNumber: 54,
+            columnNumber: 7
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("tbody", {
+        __source: {
+            fileName: "src/settings.jsx",
+            lineNumber: 55,
+            columnNumber: 9
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement((0, _defaultStatusSelectorDefault.default), {
         statuses: currentStatuses,
         onDefaultChange: handleDefaultStatusChange,
         __source: {
             fileName: "src/settings.jsx",
-            lineNumber: 51,
-            columnNumber: 7
+            lineNumber: 56,
+            columnNumber: 11
         },
         __self: undefined
-    }));
+    }))));
 };
 exports.default = AlpacaSettings;
 
@@ -11647,41 +11669,54 @@ const DefaultStatusSelector = ({ statuses, onDefaultChange })=>{
         ], [
         statuses
     ]);
-    if (error) return /*#__PURE__*/ React.createElement("p", {
-        className: "alpaca-error",
+    if (error) return /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/components/DefaultStatusSelector.jsx",
-            lineNumber: 73,
-            columnNumber: 12
-        },
-        __self: undefined
-    }, error);
-    return /*#__PURE__*/ React.createElement("div", {
-        style: {
-            marginTop: "2rem"
-        },
-        __source: {
-            fileName: "src/components/DefaultStatusSelector.jsx",
-            lineNumber: 77,
-            columnNumber: 5
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("h2", {
-        __source: {
-            fileName: "src/components/DefaultStatusSelector.jsx",
-            lineNumber: 78,
+            lineNumber: 74,
             columnNumber: 7
         },
         __self: undefined
-    }, "Default Status for New Issues"), /*#__PURE__*/ React.createElement("div", {
-        style: {
-            display: "flex",
-            alignItems: "center",
-            gap: "8px"
-        },
+    }, /*#__PURE__*/ React.createElement("th", {
         __source: {
             fileName: "src/components/DefaultStatusSelector.jsx",
-            lineNumber: 79,
+            lineNumber: 75,
+            columnNumber: 9
+        },
+        __self: undefined
+    }, "Default Status for New Issues"), /*#__PURE__*/ React.createElement("td", {
+        __source: {
+            fileName: "src/components/DefaultStatusSelector.jsx",
+            lineNumber: 76,
+            columnNumber: 9
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("p", {
+        className: "alpaca-error",
+        __source: {
+            fileName: "src/components/DefaultStatusSelector.jsx",
+            lineNumber: 77,
+            columnNumber: 11
+        },
+        __self: undefined
+    }, error)));
+    return /*#__PURE__*/ React.createElement("tr", {
+        __source: {
+            fileName: "src/components/DefaultStatusSelector.jsx",
+            lineNumber: 84,
+            columnNumber: 5
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("th", {
+        __source: {
+            fileName: "src/components/DefaultStatusSelector.jsx",
+            lineNumber: 85,
+            columnNumber: 7
+        },
+        __self: undefined
+    }, "Default Status for New Issues"), /*#__PURE__*/ React.createElement("td", {
+        __source: {
+            fileName: "src/components/DefaultStatusSelector.jsx",
+            lineNumber: 86,
             columnNumber: 7
         },
         __self: undefined
@@ -11694,14 +11729,14 @@ const DefaultStatusSelector = ({ statuses, onDefaultChange })=>{
         disabled: isSaving || isFetching,
         __source: {
             fileName: "src/components/DefaultStatusSelector.jsx",
-            lineNumber: 80,
+            lineNumber: 87,
             columnNumber: 9
         },
         __self: undefined
     }), (isFetching || isSaving) && /*#__PURE__*/ React.createElement(Spinner, {
         __source: {
             fileName: "src/components/DefaultStatusSelector.jsx",
-            lineNumber: 88,
+            lineNumber: 95,
             columnNumber: 38
         },
         __self: undefined
@@ -13172,7 +13207,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
 };
 exports.default = AlpacaIssue;
 
-},{"./commenting.jsx":"321JG","../utils/comments.js":"hPhNI","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./issue/checklist.jsx":"iTYG6","../utils/tabsConfig":"kaOzJ","../hooks/useIssueData":"5IBQX","../hooks/useUserManagement":"7BGvE","../hooks/useLoadingStates":"haQEY","../utils/assigneeUtils":"9o8NF","../utils/checklistUtils":"h8W9N","../services/issueApi":"bebt9","./issue/AssigneeSelector":"lBLYZ","./issue/DeadlineControl":"63IRX","./issue/JsonTable":"jh4NY","./issue/ReportTab":"f6zxb","./issue/TabContent":"14ymM","./issue/Lightbox":"krnYi"}],"321JG":[function(require,module,exports,__globalThis) {
+},{"./commenting.jsx":"321JG","./issue/checklist.jsx":"iTYG6","../utils/comments.js":"hPhNI","../utils/tabsConfig":"kaOzJ","../hooks/useIssueData":"5IBQX","../hooks/useUserManagement":"7BGvE","../hooks/useLoadingStates":"haQEY","../utils/assigneeUtils":"9o8NF","../utils/checklistUtils":"h8W9N","../services/issueApi":"bebt9","./issue/AssigneeSelector":"lBLYZ","./issue/DeadlineControl":"63IRX","./issue/JsonTable":"jh4NY","./issue/ReportTab":"f6zxb","./issue/TabContent":"14ymM","./issue/Lightbox":"krnYi","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"321JG":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _usercache = require("../utils/usercache");
@@ -15137,52 +15172,7 @@ Please report this to https://github.com/markedjs/marked.`, e) {
     return module1.exports;
 });
 
-},{}],"hPhNI":[function(require,module,exports,__globalThis) {
-/**
- * Generates HTML for an assignee span to be used in comments.
- * @param {object} user The user object for the assignee.
- * @returns {string} HTML string.
- */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
-parcelHelpers.defineInteropFlag(exports);
-parcelHelpers.export(exports, "generateAssigneeSpan", ()=>generateAssigneeSpan);
-parcelHelpers.export(exports, "generateStatusChangeComment", ()=>generateStatusChangeComment);
-parcelHelpers.export(exports, "generateAssigneeChangeComment", ()=>generateAssigneeChangeComment);
-parcelHelpers.export(exports, "generateCheckedItemComment", ()=>generateCheckedItemComment);
-const generateAssigneeSpan = (user)=>{
-    if (!user) return "";
-    const avatarAttr = user.avatar ? ` data-avatar="${user.avatar}"` : "";
-    return `<span class="alpaca-status-assignee" data-userid="${user.id}"${avatarAttr}>${user.name}</span>`;
-};
-/**
- * Generates HTML for a status change comment.
- * @param {string} fromStatus The title of the original status.
- * @param {string} toStatus The title of the new status.
- * @returns {string} HTML string.
- */ const generateStatusChangeComment = (fromStatus, toStatus)=>{
-    return `Item moved from status <span class="alpaca-status-comment">${fromStatus}</span> to <span class="alpaca-status-comment">${toStatus}</span>`;
-};
-/**
- * Generates HTML for an assignee change comment.
- * @param {object} user The user object for the assignee.
- * @param {boolean} isAssigned True if the user was assigned, false if unassigned.
- * @returns {string} HTML string.
- */ const generateAssigneeChangeComment = (user, isAssigned)=>{
-    const assigneeSpan = generateAssigneeSpan(user);
-    if (isAssigned) return `${assigneeSpan} has been assigned to this issue.`;
-    return `${assigneeSpan} is no longer assigned to this issue.`;
-};
-/**
- * Generates a comment for a checked checklist item.
- * @param {object} item The checklist item object.
- * @param {object} user The user who checked the item.
- * @returns {string} HTML string.
- */ const generateCheckedItemComment = (item, user)=>{
-    if (!user) return `Checklist item "${item.label}" has been checked`;
-    const userSpan = generateAssigneeSpan(user);
-    return `Checklist item "${item.label}" has been checked by ${userSpan}`;
-};
-
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"iTYG6":[function(require,module,exports,__globalThis) {
+},{}],"iTYG6":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _commentsJs = require("../../utils/comments.js");
@@ -15472,7 +15462,52 @@ const Checklist = memo(({ issueId, initialChecklistItems, isSaving, setIsSaving,
 });
 exports.default = Checklist;
 
-},{"../../utils/comments.js":"hPhNI","@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration":"iD7mF","../icons/DragHandleIcon.jsx":"lhUj1","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"kaOzJ":[function(require,module,exports,__globalThis) {
+},{"../../utils/comments.js":"hPhNI","@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration":"iD7mF","../icons/DragHandleIcon.jsx":"lhUj1","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"hPhNI":[function(require,module,exports,__globalThis) {
+/**
+ * Generates HTML for an assignee span to be used in comments.
+ * @param {object} user The user object for the assignee.
+ * @returns {string} HTML string.
+ */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "generateAssigneeSpan", ()=>generateAssigneeSpan);
+parcelHelpers.export(exports, "generateStatusChangeComment", ()=>generateStatusChangeComment);
+parcelHelpers.export(exports, "generateAssigneeChangeComment", ()=>generateAssigneeChangeComment);
+parcelHelpers.export(exports, "generateCheckedItemComment", ()=>generateCheckedItemComment);
+const generateAssigneeSpan = (user)=>{
+    if (!user) return "";
+    const avatarAttr = user.avatar ? ` data-avatar="${user.avatar}"` : "";
+    return `<span class="alpaca-status-assignee" data-userid="${user.id}"${avatarAttr}>${user.name}</span>`;
+};
+/**
+ * Generates HTML for a status change comment.
+ * @param {string} fromStatus The title of the original status.
+ * @param {string} toStatus The title of the new status.
+ * @returns {string} HTML string.
+ */ const generateStatusChangeComment = (fromStatus, toStatus)=>{
+    return `Item moved from status <span class="alpaca-status-comment">${fromStatus}</span> to <span class="alpaca-status-comment">${toStatus}</span>`;
+};
+/**
+ * Generates HTML for an assignee change comment.
+ * @param {object} user The user object for the assignee.
+ * @param {boolean} isAssigned True if the user was assigned, false if unassigned.
+ * @returns {string} HTML string.
+ */ const generateAssigneeChangeComment = (user, isAssigned)=>{
+    const assigneeSpan = generateAssigneeSpan(user);
+    if (isAssigned) return `${assigneeSpan} has been assigned to this issue.`;
+    return `${assigneeSpan} is no longer assigned to this issue.`;
+};
+/**
+ * Generates a comment for a checked checklist item.
+ * @param {object} item The checklist item object.
+ * @param {object} user The user who checked the item.
+ * @returns {string} HTML string.
+ */ const generateCheckedItemComment = (item, user)=>{
+    if (!user) return `Checklist item "${item.label}" has been checked`;
+    const userSpan = generateAssigneeSpan(user);
+    return `Checklist item "${item.label}" has been checked by ${userSpan}`;
+};
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"kaOzJ":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "getTabsConfig", ()=>getTabsConfig);

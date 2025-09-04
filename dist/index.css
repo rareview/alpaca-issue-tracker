@@ -577,4 +577,8 @@
   margin-top: 16px;
   display: flex;
 }
+
+.wp-admin #alpaca-settings .components-input-control__container {
+  max-width: 25em;
+}
 /*# sourceMappingURL=index.css.map */
