@@ -1,5 +1,5 @@
 import { getUser } from "../hooks/useUser.js";
-import { generateAssigneeSpan } from "./comments.js";
+import { generateAssigneeSpan } from "../hooks/useUser.js";
 import { fetchIssueCommentCount } from "../services/issueApi.js";
 
 /**
