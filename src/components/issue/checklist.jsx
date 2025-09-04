@@ -10,13 +10,7 @@ import {
 import DragHandleIcon from "../icons/DragHandleIcon.jsx";
 
 const Checklist = memo(
-  ({
-    issueId,
-    initialChecklistItems,
-    isSaving,
-    setIsSaving,
-    createIssueComment,
-  }) => {
+  ({ issueId, initialChecklistItems, isSaving, setIsSaving }) => {
     const [checklistItems, setChecklistItems] = useState(
       initialChecklistItems || []
     );
@@ -61,11 +55,8 @@ const Checklist = memo(
       setChecklistItems(newItems);
       saveChecklist(newItems);
 
-      if (isBeingChecked && createIssueComment) {
-        createIssueComment(
-          issueId,
-          generateCheckedItemComment(currentItem, currentUser)
-        );
+      if (isBeingChecked) {
+        wp.hooks.doAction("alpaca.checklistItemChecked", issueId, currentItem, currentUser);
       }
     };
 

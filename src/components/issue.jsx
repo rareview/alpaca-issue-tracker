@@ -98,14 +98,21 @@ const AlpacaIssue = ({
   const tabsConfig = getTabsConfig(issueDetails);
 
   // Debounced API calls
-  const debouncedUpdateAssignees = useDebounce(
+  const updateAssignees = useCallback(
     async (issueId, slugs, newAssignees) => {
+      console.log(
+        "updateAssignees: Updating issue",
+        issueId,
+        "with slugs:",
+        slugs
+      );
       await updateIssue(issueId, {
         taxonomies: {
           assignee: slugs,
         },
       })
         .then(() => {
+          console.log("updateAssignees: updateIssue successful.");
           if (typeof onAssigneesChange === "function") {
             const assigneeObjects = allUserObjects.filter(
               (u) =>
@@ -113,28 +120,36 @@ const AlpacaIssue = ({
             );
             onAssigneesChange(issueId, assigneeObjects);
           }
+          refetchData();
+        })
+        .catch((error) => {
+          console.error("updateAssignees: updateIssue failed:", error);
+          showNotification("Failed to update assignees.", "error");
         })
         .finally(() => setLoading("assignees", false));
     },
-    300
+    [onAssigneesChange, refetchData, setLoading, allUserObjects]
   );
 
-  const updateDeadline = useCallback(async (issueId, newDate) => {
-    setLoading("deadline", true);
-    try {
-      await updateIssue(issueId, {
-        meta: { deadline: newDate },
-      });
-      if (typeof onDeadlineChange === "function") {
-        onDeadlineChange(issueId, newDate);
+  const updateDeadline = useCallback(
+    async (issueId, newDate) => {
+      setLoading("deadline", true);
+      try {
+        await updateIssue(issueId, {
+          meta: { deadline: newDate },
+        });
+        if (typeof onDeadlineChange === "function") {
+          onDeadlineChange(issueId, newDate);
+        }
+      } catch (error) {
+        console.error("Failed to update deadline:", error);
+        showNotification("Failed to update deadline.", "error");
+      } finally {
+        setLoading("deadline", false);
       }
-    } catch (error) {
-      console.error("Failed to update deadline:", error);
-      showNotification("Failed to update deadline.", "error");
-    } finally {
-      setLoading("deadline", false);
-    }
-  }, [onDeadlineChange, setLoading, showNotification]);
+    },
+    [onDeadlineChange, setLoading, showNotification]
+  );
 
   // Process issue details when they change
   useEffect(() => {
@@ -164,8 +179,10 @@ const AlpacaIssue = ({
           return userObject ? userObject.name : t.name;
         });
         setAssignees(assigneeNames);
+        console.log("useEffect: Initial assignees set to", assigneeNames);
       } else {
         setAssignees([]);
+        console.log("useEffect: Initial assignees set to empty array");
       }
     }
   }, [issueDetails, allUserObjects]);
@@ -179,37 +196,37 @@ const AlpacaIssue = ({
         newAssignees
       );
 
-      // Handle comments for assignee changes
-      if (createIssueComment && generateAssigneeChangeComment) {
-        try {
-          await createAssigneeComments(
-            added,
-            removed,
+      added.forEach((assignee) => {
+        const user = allUserObjects.find((u) => u.name === assignee);
+        wp.hooks.doAction("alpaca.assigneeChanged", issueDetails, user, true);
+      });
 
-            allUserObjects,
-            createIssueComment,
-            generateAssigneeChangeComment,
-            issueId
-          );
-          setCommentRefreshKey((prevKey) => prevKey + 1);
-        } catch (err) {
-          showNotification("Failed to create assignee comments.", "error");
-        }
-      }
+      removed.forEach((assignee) => {
+        const user = allUserObjects.find((u) => u.name === assignee);
+        wp.hooks.doAction("alpaca.assigneeChanged", issueDetails, user, false);
+      });
 
+      console.log(
+        "handleAssigneeChange: newAssignees before setAssignees",
+        newAssignees
+      );
       setAssignees(newAssignees);
+      console.log(
+        "handleAssigneeChange: assignees state after setAssignees (may not reflect immediately)",
+        assignees
+      );
       const slugs = newAssignees.map((a) => userMap[a] || a);
+      console.log("handleAssigneeChange: slugs being sent", slugs);
       setLoading("assignees", true);
-      debouncedUpdateAssignees(issueId, slugs, newAssignees);
+      updateAssignees(issueId, slugs, newAssignees);
     },
     [
       assignees,
       allUserObjects,
-      createIssueComment,
-      generateAssigneeChangeComment,
+      issueDetails,
       issueId,
       userMap,
-      debouncedUpdateAssignees,
+      updateAssignees,
       setLoading,
     ]
   );
@@ -247,21 +264,6 @@ const AlpacaIssue = ({
       })
       .finally(() => setLoading("screenshot", false));
   }, [issueId, setIssueDetails, setLoading]);
-
-  const handleChecklistComment = useCallback(
-    (issueId, commentContent) => {
-      if (createIssueComment) {
-        createIssueComment(issueId, commentContent)
-          .then(() => {
-            setCommentRefreshKey((prevKey) => prevKey + 1);
-          })
-          .catch((err) => {
-            showNotification("Error creating checklist comment.", "error");
-          });
-      }
-    },
-    [createIssueComment]
-  );
 
   const handleLightboxClose = useCallback(() => {
     setLightboxSrc(null);
@@ -306,28 +308,18 @@ const AlpacaIssue = ({
         onStatusChange(issueId, nextStatus);
       }
 
-      // Optionally, add a comment for status change
-      if (createIssueComment) {
-        const commentContent = generateStatusChangeComment(
-          currentStatusTerm.name,
-          nextStatus.name
-        );
-        await createIssueComment(issueId, commentContent);
-        setCommentRefreshKey((prevKey) => prevKey + 1);
-      }
+      wp.hooks.doAction(
+        "alpaca.statusChanged",
+        issueDetails,
+        currentStatusTerm.name,
+        nextStatus.name
+      );
     } catch (error) {
       showNotification("Failed to progress issue status.", "error");
     } finally {
       setLoading("status", false);
     }
-  }, [
-    issueDetails,
-    allStatuses,
-    issueId,
-    createIssueComment,
-    setIssueDetails,
-    setLoading,
-  ]);
+  }, [issueDetails, allStatuses, issueId, setIssueDetails, setLoading]);
 
   const handleTitleSave = useCallback(async () => {
     if (editedTitle === decodeEntities(issueDetails.post_data.post_content)) {
@@ -388,7 +380,7 @@ const AlpacaIssue = ({
         size="medium"
         onRequestClose={onClose}
         className="alpaca-details-modal"
-        headerActions={[
+        headerActions={
           !isLastStatus && (
             <Tooltip text="Progress issue to next status">
               <Button
@@ -400,24 +392,8 @@ const AlpacaIssue = ({
                 <span className="dashicons dashicons-arrow-right-alt"></span>
               </Button>
             </Tooltip>
-          ),
-          <Tooltip text="Delete issue">
-            <Button
-              type="button"
-              className="alpaca-modal-delete-button components-button has-icon"
-              isDestructive
-              onClick={() => {
-                if (
-                  window.confirm("Are you sure you want to delete this issue?")
-                ) {
-                  onDelete(issueId);
-                }
-              }}
-            >
-              <span className="dashicons dashicons-trash"></span>
-            </Button>
-          </Tooltip>,
-        ].filter(Boolean)}
+          )
+        }
       >
         {error && (
           <div className="notice notice-error">
@@ -495,7 +471,6 @@ const AlpacaIssue = ({
                 initialChecklistItems={checklistItems}
                 isSaving={loadingStates.assignees || loadingStates.deadline}
                 setIsSaving={(value) => setLoading("checklist", value)}
-                createIssueComment={handleChecklistComment}
                 setCommentRefreshKey={setCommentRefreshKey} // Add this line
               />
 

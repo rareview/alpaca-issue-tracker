@@ -1,4 +1,4 @@
-import { getUser } from '../hooks/useUser';
+import { getUser } from "../hooks/useUser";
 const { useState, useEffect, useRef, useCallback } = wp.element;
 import User from "./User";
 const { TextareaControl, Button, Spinner, Modal } = wp.components;
@@ -35,14 +35,6 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
     })
       .then((fetchedComments) => {
         setComments(fetchedComments);
-        document.dispatchEvent(
-          new CustomEvent("alpaca:comment-count-changed", {
-            detail: {
-              issueId: issueId,
-              newCount: fetchedComments.length,
-            },
-          })
-        );
       })
       .catch((err) => {
         console.error("Error fetching comments:", err);
@@ -54,6 +46,29 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
   useEffect(() => {
     fetchComments();
   }, [fetchComments, commentRefreshKey]);
+
+  useEffect(() => {
+    const handleCommentCountChanged = (event) => {
+      const { issueId: eventIssueId } = event.detail;
+      if (eventIssueId.toString() === issueId.toString()) {
+        fetchComments();
+      } else {
+        console.log("commenting.jsx: issueId mismatch", eventIssueId, issueId);
+      }
+    };
+
+    document.addEventListener(
+      "alpaca:comment-count-changed",
+      handleCommentCountChanged
+    );
+
+    return () => {
+      document.removeEventListener(
+        "alpaca:comment-count-changed",
+        handleCommentCountChanged
+      );
+    };
+  }, [issueId, fetchComments]);
 
   useEffect(() => {
     if (editingRef.current) editingRef.current.focus();

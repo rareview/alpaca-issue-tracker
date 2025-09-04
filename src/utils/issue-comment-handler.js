@@ -1,5 +1,7 @@
 import { getUser } from "../hooks/useUser.js";
 import { generateAssigneeSpan } from "./comments.js";
+import { fetchIssueCommentCount } from "../services/issueApi.js";
+
 /**
  * Handles automatic commenting on issues, such as when an issue is created.
  * This script hooks into WordPress actions to add comments via the REST API.
@@ -7,40 +9,89 @@ import { generateAssigneeSpan } from "./comments.js";
 const { addAction } = wp.hooks;
 const apiFetch = wp.apiFetch;
 
-addAction(
-  "alpaca.issueSubmitted",
-  "alpaca/addIssueComment",
-  async (issue, statusId) => {
-    try {
-      // Get the current user's display name
-      const currentUser = await getUser();
-      const userName = currentUser.name || "Unknown User";
+const postComment = async (issueOrId, content) => {
+  let postId;
+  if (issueOrId && typeof issueOrId === "object") {
+    // Prioritize issue.post_id if available (for full issue objects)
+    // Otherwise, assume issue.id is the post ID (for simplified board items)
+    postId = issueOrId.post_id || issueOrId.id;
+  } else {
+    // If issueOrId is not an object, assume it's already the post ID
+    postId = issueOrId;
+  }
 
-      const commentContent = `Issue created by ${generateAssigneeSpan(currentUser)}`;
+  if (!postId) {
+    console.error(
+      "postComment: No valid post ID found for comment.",
+      issueOrId
+    );
+    return;
+  }
 
-      await apiFetch({
-        path: "/wp/v2/comments",
-        method: "POST",
-        data: {
-          post: issue.id,
-          content: commentContent,
-          comment_type: "issuecomment",
-          status: "approve",
-        },
-      }).then(() => {
+  try {
+    await apiFetch({
+      path: "/wp/v2/comments",
+      method: "POST",
+      data: {
+        post: postId,
+        content: content,
+        comment_type: "issuecomment",
+        status: "approve",
+      },
+    }).then(async () => {
+      const response = await fetchIssueCommentCount(postId);
+      if (response && typeof response.comment_count !== "undefined") {
         document.dispatchEvent(
           new CustomEvent("alpaca:comment-count-changed", {
             detail: {
-              issueId: issue.id.toString(),
-              newCount: 1,
+              issueId: postId.toString(),
+              newCount: response.comment_count,
             },
           })
         );
-      });
-    } catch (error) {
-      console.error("issue-comment-handler.js: Error adding comment:", error);
-    }
+      }
+    });
+  } catch (error) {
+    console.error("issue-comment-handler.js: Error adding comment:", error);
+  }
+};
+
+addAction("alpaca.issueSubmitted", "alpaca/addIssueComment", async (issue) => {
+  const currentUser = await getUser();
+  const commentContent = `Issue created by ${generateAssigneeSpan(
+    currentUser
+  )}`;
+  await postComment(issue, commentContent); // Pass issue object
+});
+
+addAction(
+  "alpaca.statusChanged",
+  "alpaca/addStatusChangeComment",
+  async (issue, fromStatus, toStatus) => {
+    const commentContent = `Status changed from **${fromStatus}** to **${toStatus}**`;
+    await postComment(issue, commentContent); // Pass issue object
   }
 );
 
-// todo: rationalise this? can probably combine with comments.js somehow
+addAction(
+  "alpaca.assigneeChanged",
+  "alpaca/addAssigneeChangeComment",
+  async (issue, user, isAssigned) => {
+    const actionText = isAssigned ? "assigned to" : "unassigned from";
+    const commentContent = `${generateAssigneeSpan(
+      user
+    )} ${actionText} this issue`;
+    await postComment(issue, commentContent); // Pass issue object
+  }
+);
+
+addAction(
+  "alpaca.checklistItemChecked",
+  "alpaca/addChecklistItemCheckedComment",
+  async (issueId, item, currentUser) => {
+    const commentContent = `Checklist item \"${
+      item.label
+    }\" checked by ${generateAssigneeSpan(currentUser)}`;
+    await postComment(issueId, commentContent); // issueId is already the post ID
+  }
+);

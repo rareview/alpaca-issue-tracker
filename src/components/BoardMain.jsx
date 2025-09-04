@@ -9,11 +9,6 @@ import Container from "./Container";
 
 import { setCookie, getCookie } from "../utils/cookies";
 import { transformDataForBoard, saveBoardOrder } from "../utils/data";
-import {
-  generateAssigneeSpan,
-  generateStatusChangeComment,
-  generateAssigneeChangeComment,
-} from "../utils/comments";
 import { getUser } from "../hooks/useUser";
 import { fetchIssue, fetchIssueCommentCount } from "../services/issueApi";
 
@@ -72,44 +67,6 @@ function Board() {
     });
   };
 
-  const createIssueComment = async (issueId, commentContent) => {
-    try {
-      const createCommentResponse = await wp.apiFetch({
-        path: `/wp/v2/comments`,
-        method: "POST",
-        data: {
-          content: commentContent,
-          post: issueId,
-          comment_type: "issuecomment",
-        },
-      });
-
-      if (!createCommentResponse || !createCommentResponse.id) {
-        console.error(
-          "Comment creation failed or returned invalid response:",
-          createCommentResponse
-        );
-        throw new Error("Comment creation failed.");
-      }
-
-      const commentCountResponse = await fetchIssueCommentCount(issueId);
-      const newCount = commentCountResponse.comment_count || 0;
-
-      // Dispatch the custom event to update the comment count in the UI
-      document.dispatchEvent(
-        new CustomEvent("alpaca:comment-count-changed", {
-          detail: {
-            issueId: issueId,
-            newCount: newCount,
-          },
-        })
-      );
-    } catch (err) {
-      console.error("Error creating status change comment:", err);
-      throw err;
-    }
-  };
-
   function findContainerByItemId(itemId) {
     return containers.find((c) => c.items.some((item) => item.id === itemId));
   }
@@ -165,11 +122,7 @@ function Board() {
         })
       );
 
-      const commentContent = generateStatusChangeComment(
-        sourceContainer.title,
-        destinationContainer.title
-      );
-      await createIssueComment(draggableId, commentContent);
+      wp.hooks.doAction("alpaca.statusChanged", movedItem, sourceContainer.title, destinationContainer.title);
     }
 
     saveBoardOrder();
@@ -262,25 +215,8 @@ function Board() {
     sourceContainer.items = [];
     nextContainer.items.push(...itemsToMove);
 
-    const commentContent = generateStatusChangeComment(
-      sourceContainer.title,
-      nextContainer.title
-    );
     itemsToMove.forEach((item) => {
-      wp.apiFetch({
-        path: `/wp/v2/comments`,
-        method: "POST",
-        data: {
-          content: commentContent,
-          post: item.id,
-          comment_type: "issuecomment",
-        },
-      }).catch((err) =>
-        console.error(
-          `Error creating status change comment for issue ${item.id}:`,
-          err
-        )
-      );
+      wp.hooks.doAction("alpaca.statusChanged", item, sourceContainer.title, nextContainer.title);
 
       wp.apiFetch({
         path: `/issue/v1/update/${item.id}`,
@@ -596,8 +532,6 @@ function Board() {
         triggerRef={triggerRef}
         onAssigneesChange={handleAssigneesChange}
         onDeadlineChange={handleDeadlineChange}
-        createIssueComment={createIssueComment}
-        generateAssigneeChangeComment={generateAssigneeChangeComment}
         onStatusChange={handleStatusChange}
         onIssueTitleChange={handleIssueTitleChange}
       />
