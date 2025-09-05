@@ -11839,12 +11839,12 @@ var _boardMain = require("./BoardMain");
 var _boardMainDefault = parcelHelpers.interopDefault(_boardMain);
 var _cookies = require("../utils/cookies");
 const { useState, useEffect, useRef, useCallback } = wp.element;
-const { Popover, Button, ComboboxControl, RadioControl, MenuGroup, MenuItem } = wp.components;
+const { Popover, Button, ComboboxControl, MenuGroup, MenuItem } = wp.components;
 function AlpacaBoard() {
     return /*#__PURE__*/ React.createElement((0, _boardMainDefault.default), {
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 8,
+            lineNumber: 7,
             columnNumber: 10
         },
         __self: this
@@ -11855,9 +11855,8 @@ function AlpacaBoardControls() {
     const [filteredAssignee, setFilteredAssignee] = useState("");
     const [showStarredOnly, setShowStarredOnly] = useState(false);
     const [deadlineFilter, setDeadlineFilter] = useState("none");
+    // --- Load assignee data on mount ---
     useEffect(()=>{
-        // On mount, check for assignee data that may have been set globally
-        // to win a race condition with the event firing.
         if (window.alpacaAssignees && window.alpacaAssignees.length > 0) setAllAssignees(window.alpacaAssignees);
         const handleAssigneesUpdated = (event)=>{
             const { assignees } = event.detail;
@@ -11870,114 +11869,71 @@ function AlpacaBoardControls() {
             document.removeEventListener("alpaca:assignees-updated", handleAssigneesUpdated);
         };
     }, []);
-    // This effect generates and injects the CSS for assignee filtering.
+    // --- Unified filtering logic ---
     useEffect(()=>{
-        if (allAssignees.length > 0) {
-            const styleId = "alpaca-filter-assignee-styles";
-            let styleElement = document.getElementById(styleId);
-            if (!styleElement) {
-                styleElement = document.createElement("style");
-                styleElement.id = styleId;
-                document.head.appendChild(styleElement);
+        const boardElement = document.querySelector("#alpaca-board");
+        if (!boardElement) return;
+        const items = boardElement.querySelectorAll(".alpaca-item");
+        const deadlineConditions = {
+            today: (d)=>d === 0,
+            week: (d)=>d >= 0 && d <= 7,
+            late: (d)=>d < 0
+        };
+        items.forEach((item)=>{
+            let isVisible = true;
+            // Assignee filter
+            if (filteredAssignee) {
+                const matchesByDataAssignee = item.hasAttribute(`data-assignee-${filteredAssignee}`);
+                const matchesByList = (item.dataset.assignees || "").split(" ").includes(filteredAssignee);
+                if (!matchesByDataAssignee && !matchesByList) isVisible = false;
             }
-            let rules = `
-        #alpaca-board[class*="filter-assignee-"] .alpaca-item {
-          opacity: 0.2;
-        }
-      `;
-            allAssignees.forEach((assignee)=>{
-                rules += `
-          #alpaca-board.filter-assignee-${assignee.id} .alpaca-item[data-assignee-${assignee.id}] {
-            opacity: 1;
-          }
-        `;
-            });
-            styleElement.innerHTML = rules;
-        }
-    }, [
-        allAssignees
-    ]);
-    const boardElement = document.querySelector("#alpaca-board");
-    useEffect(()=>{
-        if (boardElement) {
-            // Remove previous assignee filters
-            boardElement.className = boardElement.className.replace(/\s*filter-assignee-\S*/g, "");
-            if (filteredAssignee) boardElement.classList.add(`filter-assignee-${filteredAssignee}`);
-        }
+            // Starred filter
+            if (showStarredOnly && !item.classList.contains("is-watched")) isVisible = false;
+            // Deadline filter
+            const diffDays = parseInt(item.dataset.diffDays, 10);
+            const deadlineCheck = deadlineConditions[deadlineFilter];
+            const matchesDeadline = !isNaN(diffDays) && deadlineCheck && deadlineCheck(diffDays);
+            if (deadlineFilter !== "none" && !matchesDeadline) isVisible = false;
+            // Apply filter result
+            item.classList.toggle("is-filtered-out", !isVisible);
+            // Highlight deadline matches
+            item.classList.remove("item-highlight");
+            if (isVisible && deadlineFilter !== "none" && matchesDeadline) item.classList.add("item-highlight");
+        });
     }, [
         filteredAssignee,
-        boardElement
+        showStarredOnly,
+        deadlineFilter
     ]);
-    // Clear the assignee filter if the selected assignee is no longer valid.
+    // --- Reset assignee filter if invalid ---
     useEffect(()=>{
         if (filteredAssignee && allAssignees.length > 0) {
-            const isFilteredAssigneeStillPresent = allAssignees.some((assignee)=>assignee.id.toString() === filteredAssignee);
-            if (!isFilteredAssigneeStillPresent) setFilteredAssignee("");
+            const isStillPresent = allAssignees.some((assignee)=>assignee.id.toString() === filteredAssignee);
+            if (!isStillPresent) setFilteredAssignee("");
         }
     }, [
         allAssignees,
         filteredAssignee
     ]);
-    // Update board classes based on showStarredOnly
-    useEffect(()=>{
-        if (boardElement) {
-            if (showStarredOnly) boardElement.classList.add("filter-watchlist");
-            else boardElement.classList.remove("filter-watchlist");
-        }
-    }, [
-        showStarredOnly,
-        boardElement
-    ]);
-    useEffect(()=>{
-        if (boardElement) {
-            // Remove previous deadline filters
-            boardElement.className = boardElement.className.replace(/\s*filter-deadline-\S*/g, "");
-            boardElement.classList.remove("filter-deadline");
-            if (deadlineFilter && deadlineFilter !== "none") boardElement.classList.add(`filter-deadline`, `filter-deadline-${deadlineFilter}`);
-            const deadlineConditions = {
-                today: (diffDays)=>diffDays === 0,
-                week: (diffDays)=>diffDays >= 0 && diffDays <= 7,
-                late: (diffDays)=>diffDays < 0
-            };
-            const items = boardElement.querySelectorAll(".alpaca-item");
-            const condition = deadlineConditions[deadlineFilter];
-            items.forEach((item)=>{
-                item.classList.remove("item-highlight");
-                if (condition) {
-                    const diffDays = parseInt(item.dataset.diffDays, 10);
-                    if (condition(diffDays)) item.classList.add("item-highlight");
-                }
-            });
-        }
-    }, [
-        deadlineFilter,
-        boardElement
-    ]);
+    // --- Build assignee options for combobox ---
     const assigneeOptions = (allAssignees || []).filter((assignee)=>assignee && assignee.id).map((assignee)=>({
             value: assignee.id.toString(),
             label: assignee.display_name || assignee.slug || "Unnamed"
         }));
     if (typeof alpacaUserData === "undefined" || !alpacaUserData.currentUserId) return null; // Don't render if we don't know the current user
+    // --- Popover state ---
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     const popoverAnchorRef = useRef();
-    const popoverContentRef = useRef(); // New ref for popover content
+    const popoverContentRef = useRef();
     const togglePopover = useCallback(()=>{
-        setIsPopoverOpen((prevIsPopoverOpen)=>{
-            const newState = !prevIsPopoverOpen;
-            return newState;
-        });
-    }, [
-        isPopoverOpen
-    ]);
+        setIsPopoverOpen((prev)=>!prev);
+    }, []);
     const onClosePopover = ()=>{
         setIsPopoverOpen(false);
     };
-    // New useEffect for global click-outside detection
+    // --- Click outside detection for popover ---
     useEffect(()=>{
         const handleClickOutside = (event)=>{
-            // If popover is open AND
-            // click is NOT on the button AND
-            // click is NOT inside the popover content
             if (isPopoverOpen && popoverAnchorRef.current && !popoverAnchorRef.current.contains(event.target) && popoverContentRef.current && !popoverContentRef.current.contains(event.target)) onClosePopover();
         };
         document.addEventListener("mousedown", handleClickOutside);
@@ -11985,11 +11941,9 @@ function AlpacaBoardControls() {
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, [
-        isPopoverOpen,
-        popoverAnchorRef,
-        popoverContentRef,
-        onClosePopover
-    ]); // Dependencies
+        isPopoverOpen
+    ]);
+    // --- Handlers ---
     const handleShowStarredOnlyChange = ()=>{
         setShowStarredOnly(!showStarredOnly);
         setFilteredAssignee("");
@@ -12005,24 +11959,23 @@ function AlpacaBoardControls() {
         setShowStarredOnly(false);
         setFilteredAssignee("");
     };
+    // --- Render ---
     return /*#__PURE__*/ React.createElement("div", {
         className: "alpaca-board-controls",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 217,
+            lineNumber: 175,
             columnNumber: 5
         },
         __self: this
     }, /*#__PURE__*/ React.createElement(Button, {
         ref: popoverAnchorRef,
-        onClick: ()=>{
-            togglePopover();
-        },
+        onClick: togglePopover,
         isSecondary: true,
         label: "Open Filters",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 218,
+            lineNumber: 176,
             columnNumber: 7
         },
         __self: this
@@ -12030,7 +11983,7 @@ function AlpacaBoardControls() {
         anchor: popoverAnchorRef.current,
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 229,
+            lineNumber: 185,
             columnNumber: 9
         },
         __self: this
@@ -12039,14 +11992,14 @@ function AlpacaBoardControls() {
         ref: popoverContentRef,
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 230,
+            lineNumber: 186,
             columnNumber: 11
         },
         __self: this
-    }, " ", /*#__PURE__*/ React.createElement(MenuGroup, {
+    }, /*#__PURE__*/ React.createElement(MenuGroup, {
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 233,
+            lineNumber: 187,
             columnNumber: 13
         },
         __self: this
@@ -12058,7 +12011,7 @@ function AlpacaBoardControls() {
         },
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 234,
+            lineNumber: 188,
             columnNumber: 15
         },
         __self: this
@@ -12067,7 +12020,7 @@ function AlpacaBoardControls() {
         icon: showStarredOnly ? "star-filled" : "star-empty",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 243,
+            lineNumber: 197,
             columnNumber: 15
         },
         __self: this
@@ -12075,7 +12028,7 @@ function AlpacaBoardControls() {
         label: "Filter by Assignee",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 250,
+            lineNumber: 204,
             columnNumber: 13
         },
         __self: this
@@ -12084,7 +12037,7 @@ function AlpacaBoardControls() {
         icon: filteredAssignee === alpacaUserData.currentUserId.toString() ? "yes" : "",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 251,
+            lineNumber: 205,
             columnNumber: 15
         },
         __self: this
@@ -12096,7 +12049,7 @@ function AlpacaBoardControls() {
         placeholder: "Search for a user",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 265,
+            lineNumber: 219,
             columnNumber: 15
         },
         __self: this
@@ -12104,7 +12057,7 @@ function AlpacaBoardControls() {
         label: "Deadlines",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 273,
+            lineNumber: 227,
             columnNumber: 13
         },
         __self: this
@@ -12113,7 +12066,7 @@ function AlpacaBoardControls() {
         icon: deadlineFilter === "today" ? "yes" : "",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 274,
+            lineNumber: 228,
             columnNumber: 15
         },
         __self: this
@@ -12122,7 +12075,7 @@ function AlpacaBoardControls() {
         icon: deadlineFilter === "week" ? "yes" : "",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 280,
+            lineNumber: 234,
             columnNumber: 15
         },
         __self: this
@@ -12131,7 +12084,7 @@ function AlpacaBoardControls() {
         icon: deadlineFilter === "late" ? "yes" : "",
         __source: {
             fileName: "src/components/BoardFrame.jsx",
-            lineNumber: 286,
+            lineNumber: 240,
             columnNumber: 15
         },
         __self: this

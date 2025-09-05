@@ -821,6 +821,7 @@ function alpaca_delete_issue_callback( WP_REST_Request $request ) {
 	}
 
 	$result = wp_trash_post( $issue_id );
+	// note: restoring from Trash puts the issue in Draft
 	if ( ! $result ) {
 		return alpaca_rest_response(
 			array( 'success' => false, 'message' => 'Failed to trash the issue.' ),

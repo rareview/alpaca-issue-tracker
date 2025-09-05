@@ -45,8 +45,14 @@ export function AlpacaBoardControls() {
 
     const items = boardElement.querySelectorAll(".alpaca-item");
 
+    const deadlineConditions = {
+      today: (d) => d === 0,
+      week: (d) => d >= 0 && d <= 7,
+      late: (d) => d < 0,
+    };
+
     items.forEach((item) => {
-      let visible = true;
+      let isVisible = true;
 
       // Assignee filter
       if (filteredAssignee) {
@@ -58,43 +64,32 @@ export function AlpacaBoardControls() {
           .includes(filteredAssignee);
 
         if (!matchesByDataAssignee && !matchesByList) {
-          visible = false;
+          isVisible = false;
         }
       }
 
       // Starred filter
       if (showStarredOnly && !item.classList.contains("is-watched")) {
-        visible = false;
+        isVisible = false;
       }
 
       // Deadline filter
-      if (deadlineFilter !== "none") {
-        const diffDays = parseInt(item.dataset.diffDays, 10);
-        const conditions = {
-          today: (d) => d === 0,
-          week: (d) => d >= 0 && d <= 7,
-          late: (d) => d < 0,
-        };
-        if (!conditions[deadlineFilter]?.(diffDays)) {
-          visible = false;
-        }
+      const diffDays = parseInt(item.dataset.diffDays, 10);
+      const deadlineCheck = deadlineConditions[deadlineFilter];
+      const matchesDeadline =
+        !isNaN(diffDays) && deadlineCheck && deadlineCheck(diffDays);
+
+      if (deadlineFilter !== "none" && !matchesDeadline) {
+        isVisible = false;
       }
 
       // Apply filter result
-      item.classList.toggle("is-filtered-out", !visible);
+      item.classList.toggle("is-filtered-out", !isVisible);
 
       // Highlight deadline matches
       item.classList.remove("item-highlight");
-      if (visible && deadlineFilter !== "none") {
-        const diffDays = parseInt(item.dataset.diffDays, 10);
-        const conditions = {
-          today: (d) => d === 0,
-          week: (d) => d >= 0 && d <= 7,
-          late: (d) => d < 0,
-        };
-        if (conditions[deadlineFilter]?.(diffDays)) {
-          item.classList.add("item-highlight");
-        }
+      if (isVisible && deadlineFilter !== "none" && matchesDeadline) {
+        item.classList.add("item-highlight");
       }
     });
   }, [filteredAssignee, showStarredOnly, deadlineFilter]);
