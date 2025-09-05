@@ -1,4 +1,5 @@
 const { memo } = wp.element;
+const { Button } = wp.components;
 
 const { date } = wp;
 const datesettings = wp.date.getSettings();
@@ -7,26 +8,25 @@ const ReportTab = memo(
   ({ issueDetails, onScreenshotDelete, isLoading, onScreenshotClick }) => (
     <div className="alpaca-report-tab">
       {issueDetails.meta.screenshot && (
-        <div>
-          <p>
-            <img
-              src={issueDetails.meta.screenshot}
-              className="alpaca-screenshot"
-              alt="Screenshot"
-              style={{ cursor: "zoom-in", maxWidth: "100%" }}
-              onClick={() => onScreenshotClick(issueDetails.meta.screenshot)}
-            />
-          </p>
-          <p>
-            <button
-              type="button"
-              className="button-link-delete"
-              disabled={isLoading}
-              onClick={onScreenshotDelete}
-            >
-              Delete
-            </button>
-          </p>
+        <div className="alpaca-screenshot-wrapper">
+          <img
+            src={issueDetails.meta.screenshot}
+            className="alpaca-screenshot"
+            alt="Screenshot"
+            style={{ cursor: "zoom-in", maxWidth: "100%" }}
+            onClick={() => onScreenshotClick(issueDetails.meta.screenshot)}
+          />
+          <Button
+            disabled={isLoading}
+            onClick={onScreenshotDelete}
+            label="Delete"
+            showTooltip="true"
+            tooltipPosition="middle left"
+            icon="trash"
+            isDestructive
+            className="alpaca-screenshot-delete"
+            variant="primary"
+          />
         </div>
       )}
 

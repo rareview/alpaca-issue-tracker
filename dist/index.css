@@ -369,9 +369,19 @@
   padding: 1em 0;
 }
 
-.wp-admin .alpaca-issue-details .alpaca-screenshot {
+.wp-admin .alpaca-issue-details .alpaca-screenshot-wrapper {
+  position: relative;
+}
+
+.wp-admin .alpaca-issue-details .alpaca-screenshot-wrapper .alpaca-screenshot {
   width: 100%;
   height: auto;
+}
+
+.wp-admin .alpaca-issue-details .alpaca-screenshot-wrapper .alpaca-screenshot-delete {
+  position: absolute;
+  top: 0;
+  right: 0;
 }
 
 .wp-admin .alpaca-issue-details table {

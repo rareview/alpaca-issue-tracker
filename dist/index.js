@@ -16032,28 +16032,23 @@ exports.default = JsonTable;
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 const { memo } = wp.element;
+const { Button } = wp.components;
 const { date } = wp;
 const datesettings = wp.date.getSettings();
 const ReportTab = memo(({ issueDetails, onScreenshotDelete, isLoading, onScreenshotClick })=>/*#__PURE__*/ React.createElement("div", {
         className: "alpaca-report-tab",
         __source: {
             fileName: "src/components/issue/ReportTab.jsx",
-            lineNumber: 8,
+            lineNumber: 9,
             columnNumber: 5
         },
         __self: undefined
     }, issueDetails.meta.screenshot && /*#__PURE__*/ React.createElement("div", {
-        __source: {
-            fileName: "src/components/issue/ReportTab.jsx",
-            lineNumber: 10,
-            columnNumber: 9
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("p", {
+        className: "alpaca-screenshot-wrapper",
         __source: {
             fileName: "src/components/issue/ReportTab.jsx",
             lineNumber: 11,
-            columnNumber: 11
+            columnNumber: 9
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("img", {
@@ -16068,28 +16063,26 @@ const ReportTab = memo(({ issueDetails, onScreenshotDelete, isLoading, onScreens
         __source: {
             fileName: "src/components/issue/ReportTab.jsx",
             lineNumber: 12,
-            columnNumber: 13
-        },
-        __self: undefined
-    })), /*#__PURE__*/ React.createElement("p", {
-        __source: {
-            fileName: "src/components/issue/ReportTab.jsx",
-            lineNumber: 20,
             columnNumber: 11
         },
         __self: undefined
-    }, /*#__PURE__*/ React.createElement("button", {
-        type: "button",
-        className: "button-link-delete",
+    }), /*#__PURE__*/ React.createElement(Button, {
         disabled: isLoading,
         onClick: onScreenshotDelete,
+        label: "Delete",
+        showTooltip: "true",
+        tooltipPosition: "middle left",
+        icon: "trash",
+        isDestructive: true,
+        className: "alpaca-screenshot-delete",
+        variant: "primary",
         __source: {
             fileName: "src/components/issue/ReportTab.jsx",
-            lineNumber: 21,
-            columnNumber: 13
+            lineNumber: 19,
+            columnNumber: 11
         },
         __self: undefined
-    }, "Delete"))), /*#__PURE__*/ React.createElement("table", {
+    })), /*#__PURE__*/ React.createElement("table", {
         className: "widefat striped",
         __source: {
             fileName: "src/components/issue/ReportTab.jsx",
