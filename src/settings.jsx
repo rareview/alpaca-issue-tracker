@@ -1,5 +1,6 @@
 import StatusManager from "./components/StatusManager";
 import DefaultStatusSelector from "./components/DefaultStatusSelector";
+import EnableTestLogsControl from "./components/EnableTestLogsControl";
 const { useState, useEffect, useCallback } = wp.element;
 
 const AlpacaSettings = () => {
@@ -57,6 +58,7 @@ const AlpacaSettings = () => {
             statuses={currentStatuses}
             onDefaultChange={handleDefaultStatusChange}
           />
+          <EnableTestLogsControl />
         </tbody>
       </table>
     </>

@@ -1,4 +1,5 @@
 import handleSnapdomCapture from "./snapdom-handler.js";
+import { useTestLogger } from "./utils/test-logger.js";
 
 const { Button, Modal, TextareaControl, Spinner, CheckboxControl } =
   wp.components;
@@ -14,6 +15,30 @@ const AlpacaModal = () => {
 
   const textareaRef = useRef(null);
   const closeBtnRef = useRef(null);
+
+  const [enableTestLogs, setEnableTestLogs] = useState(false);
+
+  useEffect(() => {
+    wp.apiFetch({ path: "/wp/v2/settings" }).then((settings) => {
+      setEnableTestLogs(settings.alpaca_enable_test_logs === "1");
+    });
+
+    const handleTestLogSettingChange = (value) => {
+      setEnableTestLogs(value);
+    };
+
+    wp.hooks.addAction(
+      "alpaca.enableTestLogsChanged",
+      "alpaca/modal",
+      handleTestLogSettingChange
+    );
+
+    return () => {
+      wp.hooks.removeAction("alpaca.enableTestLogsChanged", "alpaca/modal");
+    };
+  }, []);
+
+  useTestLogger(enableTestLogs);
 
   const openModal = useCallback(() => {
     setMessage("");
@@ -94,17 +119,6 @@ const AlpacaModal = () => {
         responseData.issue,
         responseData.statusId
       );
-
-      if (document.getElementById("alpaca-board")) {
-        document.dispatchEvent(
-          new CustomEvent("alpaca:issue-submitted", {
-            detail: {
-              issue: responseData.issue,
-              statusId: responseData.statusId,
-            },
-          })
-        );
-      }
 
       setTimeout(closeModal, 1500);
     } catch (error) {

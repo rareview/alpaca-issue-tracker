@@ -191,10 +191,7 @@ function Board() {
     );
 
     return () => {
-      wp.hooks.removeAction(
-        "alpaca.commentCountChanged",
-        "alpaca/boardmain"
-      );
+      wp.hooks.removeAction("alpaca.commentCountChanged", "alpaca/boardmain");
     };
   }, [handleCommentCountChange]);
 
@@ -470,8 +467,7 @@ function Board() {
   }, [needsSave, containers]);
 
   useEffect(() => {
-    const handleIssueSubmitted = (event) => {
-      const { issue, statusId } = event.detail;
+    const handleIssueSubmitted = (issue, statusId) => {
       if (!issue || !statusId) return;
 
       setContainers((prevContainers) => {
@@ -496,12 +492,15 @@ function Board() {
       setNeedsSave(true);
     };
 
-    document.addEventListener("alpaca:issue-submitted", handleIssueSubmitted);
-    return () =>
-      document.removeEventListener(
-        "alpaca:issue-submitted",
-        handleIssueSubmitted
-      );
+    wp.hooks.addAction(
+      "alpaca.issueSubmitted",
+      "alpaca/boardmain",
+      handleIssueSubmitted
+    );
+
+    return () => {
+      wp.hooks.removeAction("alpaca.issueSubmitted", "alpaca/boardmain");
+    };
   }, []);
 
   useEffect(() => {
@@ -529,33 +528,6 @@ function Board() {
 
     wp.hooks.doAction("alpaca.allAssigneesUpdated", assigneesArray);
   }, [containers]);
-
-  // useEffect(() => {
-  //   const logAssigneesChange = (issueId, assignees) => {
-  //     console.log(`Assignees changed for issue ${issueId}:`, assignees);
-  //   };
-
-  //   const logAssigneesUpdated = (assignees) => {
-  //     console.log("Global assignees list updated:", assignees);
-  //   };
-
-  //   wp.hooks.addAction(
-  //     "alpaca.issueAssigneesChanged",
-  //     "alpaca/test",
-  //     logAssigneesChange
-  //   );
-  //   wp.hooks.addAction(
-  //     "alpaca.allAssigneesUpdated",
-  //     "alpaca/test",
-  //     logAssigneesUpdated
-  //   );
-
-  //   return () => {
-  //     wp.hooks.removeAction("alpaca.statusChanged", "alpaca/test");
-  //     wp.hooks.removeAction("alpaca.issueAssigneesChanged", "alpaca/test");
-  //     wp.hooks.removeAction("alpaca.allAssigneesUpdated", "alpaca/test");
-  //   };
-  // }, []);
 
   return (
     <DragDropContext onDragEnd={handleDragEnd}>

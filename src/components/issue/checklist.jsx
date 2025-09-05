@@ -9,18 +9,6 @@ import {
 } from "@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration";
 import DragHandleIcon from "../icons/DragHandleIcon.jsx";
 
-wp.hooks.addAction(
-  "alpaca.checklistItemUpdated",
-  "alpaca/logChecklistItemUpdated",
-  (oldLabel, newLabel) => {
-    if (!oldLabel) {
-      // console.log(`Checklist item created: ${newLabel}`);
-    } else {
-      // console.log(`Checklist item updated from "${oldLabel}" to "${newLabel}"`);
-    }
-  }
-);
-
 const Checklist = memo(
   ({ issueId, initialChecklistItems, isSaving, setIsSaving }) => {
     const [checklistItems, setChecklistItems] = useState(

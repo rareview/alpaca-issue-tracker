@@ -38,7 +38,8 @@ const postComment = async (issueOrId, content) => {
         comment_type: "issuecomment",
         status: "approve",
       },
-    }).then(async () => {
+    }).then(async (newlyCreatedComment) => {
+      wp.hooks.doAction("alpaca.commentPosted", newlyCreatedComment);
       const response = await fetchIssueCommentCount(postId);
       if (response && typeof response.comment_count !== "undefined") {
         doAction("alpaca.commentCountChanged", {

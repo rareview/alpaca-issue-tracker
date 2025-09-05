@@ -150,3 +150,17 @@ add_action('admin_enqueue_scripts', function() {
         wp_add_inline_style( $handle, $custom_css );
     }
 }, 501);
+
+add_action( 'rest_api_init', __NAMESPACE__ . '\alpaca_register_settings' );
+function alpaca_register_settings() {
+    register_setting(
+        'alpaca_options',
+        'alpaca_enable_test_logs',
+        array(
+            'type' => 'string',
+            'description' => 'Enable console messages for testing purposes.',
+            'show_in_rest' => true,
+            'default' => '0'
+        )
+    );
+}

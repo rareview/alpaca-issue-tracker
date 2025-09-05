@@ -764,6 +764,7 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _snapdomHandlerJs = require("./snapdom-handler.js");
 var _snapdomHandlerJsDefault = parcelHelpers.interopDefault(_snapdomHandlerJs);
+var _testLoggerJs = require("./utils/test-logger.js");
 const { Button, Modal, TextareaControl, Spinner, CheckboxControl } = wp.components;
 const { doAction } = wp.hooks;
 const { useState, useRef, useEffect, useCallback } = wp.element;
@@ -775,6 +776,22 @@ const AlpacaModal = ()=>{
     const [includeContext, setIncludeContext] = useState(true); // <-- new state
     const textareaRef = useRef(null);
     const closeBtnRef = useRef(null);
+    const [enableTestLogs, setEnableTestLogs] = useState(false);
+    useEffect(()=>{
+        wp.apiFetch({
+            path: "/wp/v2/settings"
+        }).then((settings)=>{
+            setEnableTestLogs(settings.alpaca_enable_test_logs === "1");
+        });
+        const handleTestLogSettingChange = (value)=>{
+            setEnableTestLogs(value);
+        };
+        wp.hooks.addAction("alpaca.enableTestLogsChanged", "alpaca/modal", handleTestLogSettingChange);
+        return ()=>{
+            wp.hooks.removeAction("alpaca.enableTestLogsChanged", "alpaca/modal");
+        };
+    }, []);
+    (0, _testLoggerJs.useTestLogger)(enableTestLogs);
     const openModal = useCallback(()=>{
         setMessage("");
         setStatus("idle");
@@ -840,12 +857,6 @@ const AlpacaModal = ()=>{
             setStatus("success");
             setMessage("Your issue has been submitted successfully.");
             doAction("alpaca.issueSubmitted", responseData.issue, responseData.statusId);
-            if (document.getElementById("alpaca-board")) document.dispatchEvent(new CustomEvent("alpaca:issue-submitted", {
-                detail: {
-                    issue: responseData.issue,
-                    statusId: responseData.statusId
-                }
-            }));
             setTimeout(closeModal, 1500);
         } catch (error) {
             console.error("Submission error:", error);
@@ -862,7 +873,7 @@ const AlpacaModal = ()=>{
         },
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 119,
+            lineNumber: 133,
             columnNumber: 7
         },
         __self: undefined
@@ -874,14 +885,14 @@ const AlpacaModal = ()=>{
         isDismissible: false,
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 131,
+            lineNumber: 145,
             columnNumber: 9
         },
         __self: undefined
     }, status === "success" || status === "error" ? /*#__PURE__*/ React.createElement(React.Fragment, null, /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 146,
+            lineNumber: 160,
             columnNumber: 15
         },
         __self: undefined
@@ -891,7 +902,7 @@ const AlpacaModal = ()=>{
         ref: closeBtnRef,
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 147,
+            lineNumber: 161,
             columnNumber: 15
         },
         __self: undefined
@@ -904,7 +915,7 @@ const AlpacaModal = ()=>{
         ref: textareaRef,
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 153,
+            lineNumber: 167,
             columnNumber: 15
         },
         __self: undefined
@@ -912,7 +923,7 @@ const AlpacaModal = ()=>{
         className: "small-wrapper",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 162,
+            lineNumber: 176,
             columnNumber: 15
         },
         __self: undefined
@@ -925,7 +936,7 @@ const AlpacaModal = ()=>{
         disabled: status === "submitting",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 163,
+            lineNumber: 177,
             columnNumber: 17
         },
         __self: undefined
@@ -933,7 +944,7 @@ const AlpacaModal = ()=>{
         className: "alpaca-actions",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 173,
+            lineNumber: 187,
             columnNumber: 15
         },
         __self: undefined
@@ -943,14 +954,14 @@ const AlpacaModal = ()=>{
         disabled: status === "submitting",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 174,
+            lineNumber: 188,
             columnNumber: 17
         },
         __self: undefined
     }, status === "submitting" ? /*#__PURE__*/ React.createElement(Spinner, {
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 179,
+            lineNumber: 193,
             columnNumber: 46
         },
         __self: undefined
@@ -960,7 +971,7 @@ const AlpacaModal = ()=>{
         disabled: status === "submitting",
         __source: {
             fileName: "src/modal.jsx",
-            lineNumber: 181,
+            lineNumber: 195,
             columnNumber: 17
         },
         __self: undefined
@@ -968,7 +979,7 @@ const AlpacaModal = ()=>{
 };
 exports.default = AlpacaModal;
 
-},{"./snapdom-handler.js":"4FHYR","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"4FHYR":[function(require,module,exports,__globalThis) {
+},{"./snapdom-handler.js":"4FHYR","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./utils/test-logger.js":"e3DQN"}],"4FHYR":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 const handleSnapdomCapture = async ()=>{
@@ -1034,13 +1045,71 @@ exports.export = function(dest, destName, get) {
     });
 };
 
-},{}],"aIYcP":[function(require,module,exports,__globalThis) {
+},{}],"e3DQN":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+parcelHelpers.export(exports, "useTestLogger", ()=>useTestLogger);
+const { useEffect } = wp.element;
+const useTestLogger = (enable)=>{
+    useEffect(()=>{
+        if (!enable) return;
+        const logStatusChange = (movedItem, sourceContainerTitle, destinationContainerTitle)=>{
+            console.log(`Item "${movedItem.content}" moved from "${sourceContainerTitle}" to "${destinationContainerTitle}"`);
+        };
+        const logAssigneesChange = (issueId, assignees)=>{
+            console.log(`Assignees changed for issue ${issueId}:`, assignees);
+        };
+        const logAssigneesUpdated = (assignees)=>{
+            console.log("Global assignees list updated:", assignees);
+        };
+        const logIssueSubmitted = (issue, statusId)=>{
+            console.log(`Issue submitted:`, issue, `with status ID:`, statusId);
+        };
+        const logChecklistItemUpdated = (oldLabel, newLabel)=>{
+            if (!oldLabel) console.log(`Checklist item created: ${newLabel}`);
+            else console.log(`Checklist item updated from "${oldLabel}" to "${newLabel}"`);
+        };
+        const logCommentPosted = (comment)=>{
+            console.log(`Comment posted:`, comment);
+        };
+        const logCommentUpdated = (comment)=>{
+            console.log(`Comment updated:`, comment);
+        };
+        const logCommentDeleted = (comment)=>{
+            console.log(`Comment deleted:`, comment);
+        };
+        wp.hooks.addAction("alpaca.statusChanged", "alpaca/test", logStatusChange);
+        wp.hooks.addAction("alpaca.issueAssigneesChanged", "alpaca/test", logAssigneesChange);
+        wp.hooks.addAction("alpaca.allAssigneesUpdated", "alpaca/test", logAssigneesUpdated);
+        wp.hooks.addAction("alpaca.issueSubmitted", "alpaca/test", logIssueSubmitted);
+        wp.hooks.addAction("alpaca.checklistItemUpdated", "alpaca/test", logChecklistItemUpdated);
+        wp.hooks.addAction("alpaca.commentPosted", "alpaca/test", logCommentPosted);
+        wp.hooks.addAction("alpaca.commentUpdated", "alpaca/test", logCommentUpdated);
+        wp.hooks.addAction("alpaca.commentDeleted", "alpaca/test", logCommentDeleted);
+        return ()=>{
+            wp.hooks.removeAction("alpaca.statusChanged", "alpaca/test");
+            wp.hooks.removeAction("alpaca.issueAssigneesChanged", "alpaca/test");
+            wp.hooks.removeAction("alpaca.allAssigneesUpdated", "alpaca/test");
+            wp.hooks.removeAction("alpaca.issueSubmitted", "alpaca/test");
+            wp.hooks.removeAction("alpaca.checklistItemUpdated", "alpaca/test");
+            wp.hooks.removeAction("alpaca.commentPosted", "alpaca/test");
+            wp.hooks.removeAction("alpaca.commentUpdated", "alpaca/test");
+            wp.hooks.removeAction("alpaca.commentDeleted", "alpaca/test");
+        };
+    }, [
+        enable
+    ]);
+};
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"aIYcP":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _statusManager = require("./components/StatusManager");
 var _statusManagerDefault = parcelHelpers.interopDefault(_statusManager);
 var _defaultStatusSelector = require("./components/DefaultStatusSelector");
 var _defaultStatusSelectorDefault = parcelHelpers.interopDefault(_defaultStatusSelector);
+var _enableTestLogsControl = require("./components/EnableTestLogsControl");
+var _enableTestLogsControlDefault = parcelHelpers.interopDefault(_enableTestLogsControl);
 const { useState, useEffect, useCallback } = wp.element;
 const AlpacaSettings = ()=>{
     const [statuses, setStatuses] = useState([]);
@@ -1083,7 +1152,7 @@ const AlpacaSettings = ()=>{
         defaultStatusId: defaultStatusId,
         __source: {
             fileName: "src/settings.jsx",
-            lineNumber: 42,
+            lineNumber: 43,
             columnNumber: 7
         },
         __self: undefined
@@ -1093,14 +1162,14 @@ const AlpacaSettings = ()=>{
         },
         __source: {
             fileName: "src/settings.jsx",
-            lineNumber: 50,
+            lineNumber: 51,
             columnNumber: 7
         },
         __self: undefined
     }), /*#__PURE__*/ React.createElement("h3", {
         __source: {
             fileName: "src/settings.jsx",
-            lineNumber: 52,
+            lineNumber: 53,
             columnNumber: 7
         },
         __self: undefined
@@ -1108,14 +1177,14 @@ const AlpacaSettings = ()=>{
         className: "form-table",
         __source: {
             fileName: "src/settings.jsx",
-            lineNumber: 54,
+            lineNumber: 55,
             columnNumber: 7
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("tbody", {
         __source: {
             fileName: "src/settings.jsx",
-            lineNumber: 55,
+            lineNumber: 56,
             columnNumber: 9
         },
         __self: undefined
@@ -1124,7 +1193,14 @@ const AlpacaSettings = ()=>{
         onDefaultChange: handleDefaultStatusChange,
         __source: {
             fileName: "src/settings.jsx",
-            lineNumber: 56,
+            lineNumber: 57,
+            columnNumber: 11
+        },
+        __self: undefined
+    }), /*#__PURE__*/ React.createElement((0, _enableTestLogsControlDefault.default), {
+        __source: {
+            fileName: "src/settings.jsx",
+            lineNumber: 61,
             columnNumber: 11
         },
         __self: undefined
@@ -1132,7 +1208,7 @@ const AlpacaSettings = ()=>{
 };
 exports.default = AlpacaSettings;
 
-},{"./components/StatusManager":"4cgN2","./components/DefaultStatusSelector":"8A2rp","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"4cgN2":[function(require,module,exports,__globalThis) {
+},{"./components/StatusManager":"4cgN2","./components/DefaultStatusSelector":"8A2rp","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./components/EnableTestLogsControl":"7kyCE"}],"4cgN2":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _pragmaticDragAndDropReactBeautifulDndMigration = require("@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration");
@@ -11744,6 +11820,84 @@ const DefaultStatusSelector = ({ statuses, onDefaultChange })=>{
 };
 exports.default = DefaultStatusSelector;
 
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"7kyCE":[function(require,module,exports,__globalThis) {
+var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+const { useState, useEffect, useCallback } = wp.element;
+const { CheckboxControl, Spinner } = wp.components;
+const EnableTestLogsControl = ()=>{
+    const [isEnabled, setIsEnabled] = useState(false);
+    const [isFetching, setIsFetching] = useState(true);
+    const [isSaving, setIsSaving] = useState(false);
+    const fetchOption = useCallback(()=>{
+        setIsFetching(true);
+        wp.apiFetch({
+            path: "/wp/v2/settings"
+        }).then((settings)=>{
+            setIsEnabled(settings.alpaca_enable_test_logs === '1');
+        }).finally(()=>setIsFetching(false));
+    }, []);
+    useEffect(()=>{
+        fetchOption();
+    }, [
+        fetchOption
+    ]);
+    const handleChange = (value)=>{
+        setIsSaving(true);
+        setIsEnabled(value);
+        wp.apiFetch({
+            path: "/wp/v2/settings",
+            method: "POST",
+            data: {
+                alpaca_enable_test_logs: value ? '1' : '0'
+            }
+        }).then(()=>{
+            wp.hooks.doAction("alpaca.enableTestLogsChanged", value);
+        }).finally(()=>setIsSaving(false));
+    };
+    return /*#__PURE__*/ React.createElement("tr", {
+        __source: {
+            fileName: "src/components/EnableTestLogsControl.jsx",
+            lineNumber: 35,
+            columnNumber: 5
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement("th", {
+        __source: {
+            fileName: "src/components/EnableTestLogsControl.jsx",
+            lineNumber: 36,
+            columnNumber: 7
+        },
+        __self: undefined
+    }, "Enable Console Messages"), /*#__PURE__*/ React.createElement("td", {
+        __source: {
+            fileName: "src/components/EnableTestLogsControl.jsx",
+            lineNumber: 37,
+            columnNumber: 7
+        },
+        __self: undefined
+    }, /*#__PURE__*/ React.createElement(CheckboxControl, {
+        label: "Enable console messages for testing purposes?",
+        checked: isEnabled,
+        onChange: handleChange,
+        disabled: isFetching || isSaving,
+        __source: {
+            fileName: "src/components/EnableTestLogsControl.jsx",
+            lineNumber: 38,
+            columnNumber: 9
+        },
+        __self: undefined
+    }), (isFetching || isSaving) && /*#__PURE__*/ React.createElement(Spinner, {
+        __source: {
+            fileName: "src/components/EnableTestLogsControl.jsx",
+            lineNumber: 44,
+            columnNumber: 38
+        },
+        __self: undefined
+    })));
+};
+exports.default = EnableTestLogsControl;
+
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"WrED9":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
@@ -12456,8 +12610,7 @@ const { decodeEntities } = wp.htmlEntities;
         containers
     ]);
     useEffect(()=>{
-        const handleIssueSubmitted = (event)=>{
-            const { issue, statusId } = event.detail;
+        const handleIssueSubmitted = (issue, statusId)=>{
             if (!issue || !statusId) return;
             setContainers((prevContainers)=>{
                 const newContainers = [
@@ -12476,8 +12629,10 @@ const { decodeEntities } = wp.htmlEntities;
             });
             setNeedsSave(true);
         };
-        document.addEventListener("alpaca:issue-submitted", handleIssueSubmitted);
-        return ()=>document.removeEventListener("alpaca:issue-submitted", handleIssueSubmitted);
+        wp.hooks.addAction("alpaca.issueSubmitted", "alpaca/boardmain", handleIssueSubmitted);
+        return ()=>{
+            wp.hooks.removeAction("alpaca.issueSubmitted", "alpaca/boardmain");
+        };
     }, []);
     useEffect(()=>{
         const allAssignees = new Map();
@@ -12497,34 +12652,11 @@ const { decodeEntities } = wp.htmlEntities;
     }, [
         containers
     ]);
-    // useEffect(() => {
-    //   const logAssigneesChange = (issueId, assignees) => {
-    //     console.log(`Assignees changed for issue ${issueId}:`, assignees);
-    //   };
-    //   const logAssigneesUpdated = (assignees) => {
-    //     console.log("Global assignees list updated:", assignees);
-    //   };
-    //   wp.hooks.addAction(
-    //     "alpaca.issueAssigneesChanged",
-    //     "alpaca/test",
-    //     logAssigneesChange
-    //   );
-    //   wp.hooks.addAction(
-    //     "alpaca.allAssigneesUpdated",
-    //     "alpaca/test",
-    //     logAssigneesUpdated
-    //   );
-    //   return () => {
-    //     wp.hooks.removeAction("alpaca.statusChanged", "alpaca/test");
-    //     wp.hooks.removeAction("alpaca.issueAssigneesChanged", "alpaca/test");
-    //     wp.hooks.removeAction("alpaca.allAssigneesUpdated", "alpaca/test");
-    //   };
-    // }, []);
     return /*#__PURE__*/ React.createElement((0, _pragmaticDragAndDropReactBeautifulDndMigration.DragDropContext), {
         onDragEnd: handleDragEnd,
         __source: {
             fileName: "src/components/BoardMain.jsx",
-            lineNumber: 561,
+            lineNumber: 533,
             columnNumber: 5
         },
         __self: this
@@ -12532,7 +12664,7 @@ const { decodeEntities } = wp.htmlEntities;
         className: "alpaca-wrap",
         __source: {
             fileName: "src/components/BoardMain.jsx",
-            lineNumber: 562,
+            lineNumber: 534,
             columnNumber: 7
         },
         __self: this
@@ -12550,7 +12682,7 @@ const { decodeEntities } = wp.htmlEntities;
             onDeleteAll: handleDeleteAll,
             __source: {
                 fileName: "src/components/BoardMain.jsx",
-                lineNumber: 564,
+                lineNumber: 536,
                 columnNumber: 11
             },
             __self: this
@@ -12566,7 +12698,7 @@ const { decodeEntities } = wp.htmlEntities;
         onIssueTitleChange: handleIssueTitleChange,
         __source: {
             fileName: "src/components/BoardMain.jsx",
-            lineNumber: 580,
+            lineNumber: 552,
             columnNumber: 7
         },
         __self: this
@@ -13224,11 +13356,13 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
             data: {
                 content: newComment,
                 post: issueId,
-                comment_type: "issuecomment"
+                comment_type: "issuecomment",
+                status: "approve"
             }
         }).then((newlyCreatedComment)=>{
             setNewComment("");
             fetchComments();
+            wp.hooks.doAction("alpaca.commentPosted", newlyCreatedComment); // New doAction
             // Dispatch event to update comment count
             const postId = newlyCreatedComment.post;
             (0, _issueApi.fetchIssueCommentCount)(postId).then((response)=>{
@@ -13261,10 +13395,11 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
             data: {
                 content: editingContent
             }
-        }).then(()=>{
+        }).then((updatedComment)=>{
             setEditingCommentId(null);
             setEditingContent("");
             fetchComments();
+            wp.hooks.doAction("alpaca.commentUpdated", updatedComment); // New doAction
         }).catch((err)=>{
             console.error(err);
             alert(`Failed to update comment: ${err.message || "Unknown error"}`);
@@ -13285,6 +13420,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
         }).then((deletedComment)=>{
             fetchComments();
             setDeleteCommentId(null);
+            wp.hooks.doAction("alpaca.commentDeleted", deletedComment); // New doAction
             // Dispatch event to update comment count
             // The deletedComment object contains the post ID
             const postId = deletedComment.previous.post;
@@ -13306,7 +13442,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
         className: "alpaca-grid",
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 192,
+            lineNumber: 199,
             columnNumber: 7
         },
         __self: undefined
@@ -13317,7 +13453,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
         disabled: isSubmitting,
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 194,
+            lineNumber: 201,
             columnNumber: 9
         },
         __self: undefined
@@ -13327,14 +13463,14 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
         disabled: isSubmitting,
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 200,
+            lineNumber: 207,
             columnNumber: 9
         },
         __self: undefined
     }, isSubmitting ? "Submitting..." : "Submit Comment"), isLoadingComments && /*#__PURE__*/ React.createElement(Spinner, {
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 204,
+            lineNumber: 211,
             columnNumber: 31
         },
         __self: undefined
@@ -13342,14 +13478,14 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
         className: "alpaca-error",
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 205,
+            lineNumber: 212,
             columnNumber: 19
         },
         __self: undefined
     }, error), !isLoadingComments && !error && comments.length === 0 && /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 207,
+            lineNumber: 214,
             columnNumber: 11
         },
         __self: undefined
@@ -13358,7 +13494,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
             key: comment.id,
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 213,
+                lineNumber: 220,
                 columnNumber: 13
             },
             __self: undefined
@@ -13366,7 +13502,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
             className: "alpaca-meta",
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 214,
+                lineNumber: 221,
                 columnNumber: 15
             },
             __self: undefined
@@ -13378,7 +13514,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
             },
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 215,
+                lineNumber: 222,
                 columnNumber: 17
             },
             __self: undefined
@@ -13386,7 +13522,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
             className: "alpaca-comment-date",
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 222,
+                lineNumber: 229,
                 columnNumber: 17
             },
             __self: undefined
@@ -13394,7 +13530,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
             className: "alpaca-comment-buttons",
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 225,
+                lineNumber: 232,
                 columnNumber: 17
             },
             __self: undefined
@@ -13408,7 +13544,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
             },
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 226,
+                lineNumber: 233,
                 columnNumber: 19
             },
             __self: undefined
@@ -13423,7 +13559,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
             },
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 235,
+                lineNumber: 242,
                 columnNumber: 19
             },
             __self: undefined
@@ -13431,7 +13567,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
             className: "alpaca-comment",
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 247,
+                lineNumber: 254,
                 columnNumber: 15
             },
             __self: undefined
@@ -13441,7 +13577,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
             ref: editingRef,
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 250,
+                lineNumber: 257,
                 columnNumber: 21
             },
             __self: undefined
@@ -13451,7 +13587,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
             disabled: isSubmitting,
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 255,
+                lineNumber: 262,
                 columnNumber: 21
             },
             __self: undefined
@@ -13460,7 +13596,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
             disabled: isSubmitting,
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 262,
+                lineNumber: 269,
                 columnNumber: 21
             },
             __self: undefined
@@ -13471,7 +13607,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
             },
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 268,
+                lineNumber: 275,
                 columnNumber: 21
             },
             __self: undefined
@@ -13481,14 +13617,14 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
         className: "alpaca-modal",
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 284,
+            lineNumber: 291,
             columnNumber: 11
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 289,
+            lineNumber: 296,
             columnNumber: 13
         },
         __self: undefined
@@ -13497,7 +13633,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
         onClick: deleteComment,
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 290,
+            lineNumber: 297,
             columnNumber: 13
         },
         __self: undefined
@@ -13505,7 +13641,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
         onClick: cancelDelete,
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 293,
+            lineNumber: 300,
             columnNumber: 13
         },
         __self: undefined
@@ -15220,9 +15356,6 @@ var _dragHandleIconJsxDefault = parcelHelpers.interopDefault(_dragHandleIconJsx)
 const { useState, useEffect, useRef, memo } = wp.element;
 const { useSelect } = wp.data;
 const { Button, BaseControl, CheckboxControl, TextControl } = wp.components;
-wp.hooks.addAction("alpaca.checklistItemUpdated", "alpaca/logChecklistItemUpdated", (oldLabel, newLabel)=>{
-    oldLabel;
-});
 const Checklist = memo(({ issueId, initialChecklistItems, isSaving, setIsSaving })=>{
     const [checklistItems, setChecklistItems] = useState(initialChecklistItems || []);
     const [activeIndex, setActiveIndex] = useState(null);
@@ -15321,7 +15454,7 @@ const Checklist = memo(({ issueId, initialChecklistItems, isSaving, setIsSaving 
         ref: checklistContainerRef,
         __source: {
             fileName: "src/components/issue/checklist.jsx",
-            lineNumber: 140,
+            lineNumber: 128,
             columnNumber: 7
         },
         __self: undefined
@@ -15330,7 +15463,7 @@ const Checklist = memo(({ issueId, initialChecklistItems, isSaving, setIsSaving 
         className: "alpaca-checklist-label",
         __source: {
             fileName: "src/components/issue/checklist.jsx",
-            lineNumber: 141,
+            lineNumber: 129,
             columnNumber: 9
         },
         __self: undefined
@@ -15338,7 +15471,7 @@ const Checklist = memo(({ issueId, initialChecklistItems, isSaving, setIsSaving 
         onDragEnd: handleDragEnd,
         __source: {
             fileName: "src/components/issue/checklist.jsx",
-            lineNumber: 142,
+            lineNumber: 130,
             columnNumber: 9
         },
         __self: undefined
@@ -15360,7 +15493,7 @@ const Checklist = memo(({ issueId, initialChecklistItems, isSaving, setIsSaving 
                 },
                 __source: {
                     fileName: "src/components/issue/checklist.jsx",
-                    lineNumber: 149,
+                    lineNumber: 137,
                     columnNumber: 17
                 }
             }, /*#__PURE__*/ React.createElement(CheckboxControl, {
@@ -15368,7 +15501,7 @@ const Checklist = memo(({ issueId, initialChecklistItems, isSaving, setIsSaving 
                 onChange: ()=>toggleChecklistItem(index),
                 __source: {
                     fileName: "src/components/issue/checklist.jsx",
-                    lineNumber: 163,
+                    lineNumber: 151,
                     columnNumber: 19
                 }
             }), /*#__PURE__*/ React.createElement(TextControl, {
@@ -15383,7 +15516,7 @@ const Checklist = memo(({ issueId, initialChecklistItems, isSaving, setIsSaving 
                 placeholder: "Add an item...",
                 __source: {
                     fileName: "src/components/issue/checklist.jsx",
-                    lineNumber: 167,
+                    lineNumber: 155,
                     columnNumber: 19
                 }
             }), /*#__PURE__*/ React.createElement(Button, {
@@ -15393,27 +15526,27 @@ const Checklist = memo(({ issueId, initialChecklistItems, isSaving, setIsSaving 
                 showTooltip: "true",
                 __source: {
                     fileName: "src/components/issue/checklist.jsx",
-                    lineNumber: 182,
+                    lineNumber: 170,
                     columnNumber: 19
                 }
             }), /*#__PURE__*/ React.createElement("div", {
                 className: "alpaca-drag-handle",
                 __source: {
                     fileName: "src/components/issue/checklist.jsx",
-                    lineNumber: 188,
+                    lineNumber: 176,
                     columnNumber: 19
                 }
             }, /*#__PURE__*/ React.createElement((0, _dragHandleIconJsxDefault.default), {
                 __source: {
                     fileName: "src/components/issue/checklist.jsx",
-                    lineNumber: 189,
+                    lineNumber: 177,
                     columnNumber: 21
                 }
             })));
         },
         __source: {
             fileName: "src/components/issue/checklist.jsx",
-            lineNumber: 143,
+            lineNumber: 131,
             columnNumber: 11
         },
         __self: undefined
@@ -15423,7 +15556,7 @@ const Checklist = memo(({ issueId, initialChecklistItems, isSaving, setIsSaving 
             ref: provided.innerRef,
             __source: {
                 fileName: "src/components/issue/checklist.jsx",
-                lineNumber: 196,
+                lineNumber: 184,
                 columnNumber: 15
             },
             __self: undefined
@@ -15433,7 +15566,7 @@ const Checklist = memo(({ issueId, initialChecklistItems, isSaving, setIsSaving 
                 index: index,
                 __source: {
                     fileName: "src/components/issue/checklist.jsx",
-                    lineNumber: 202,
+                    lineNumber: 190,
                     columnNumber: 19
                 },
                 __self: undefined
@@ -15444,7 +15577,7 @@ const Checklist = memo(({ issueId, initialChecklistItems, isSaving, setIsSaving 
                     className: `alpaca-checklist-item ${item.checked !== 0 ? "checked" : ""} ${activeIndex === index ? "active" : ""}`,
                     __source: {
                         fileName: "src/components/issue/checklist.jsx",
-                        lineNumber: 208,
+                        lineNumber: 196,
                         columnNumber: 23
                     },
                     __self: undefined
@@ -15453,7 +15586,7 @@ const Checklist = memo(({ issueId, initialChecklistItems, isSaving, setIsSaving 
                     onChange: ()=>toggleChecklistItem(index),
                     __source: {
                         fileName: "src/components/issue/checklist.jsx",
-                        lineNumber: 216,
+                        lineNumber: 204,
                         columnNumber: 25
                     },
                     __self: undefined
@@ -15470,7 +15603,7 @@ const Checklist = memo(({ issueId, initialChecklistItems, isSaving, setIsSaving 
                     placeholder: "Add an item...",
                     __source: {
                         fileName: "src/components/issue/checklist.jsx",
-                        lineNumber: 220,
+                        lineNumber: 208,
                         columnNumber: 25
                     },
                     __self: undefined
@@ -15481,7 +15614,7 @@ const Checklist = memo(({ issueId, initialChecklistItems, isSaving, setIsSaving 
                     showTooltip: "true",
                     __source: {
                         fileName: "src/components/issue/checklist.jsx",
-                        lineNumber: 241,
+                        lineNumber: 229,
                         columnNumber: 25
                     },
                     __self: undefined
@@ -15489,14 +15622,14 @@ const Checklist = memo(({ issueId, initialChecklistItems, isSaving, setIsSaving 
                     className: "alpaca-drag-handle",
                     __source: {
                         fileName: "src/components/issue/checklist.jsx",
-                        lineNumber: 247,
+                        lineNumber: 235,
                         columnNumber: 25
                     },
                     __self: undefined
                 }, /*#__PURE__*/ React.createElement((0, _dragHandleIconJsxDefault.default), {
                     __source: {
                         fileName: "src/components/issue/checklist.jsx",
-                        lineNumber: 248,
+                        lineNumber: 236,
                         columnNumber: 27
                     },
                     __self: undefined
@@ -15507,7 +15640,7 @@ const Checklist = memo(({ issueId, initialChecklistItems, isSaving, setIsSaving 
         onClick: addChecklistItem,
         __source: {
             fileName: "src/components/issue/checklist.jsx",
-            lineNumber: 259,
+            lineNumber: 247,
             columnNumber: 9
         },
         __self: undefined

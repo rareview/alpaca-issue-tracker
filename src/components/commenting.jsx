@@ -91,11 +91,14 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
         content: newComment,
         post: issueId,
         comment_type: "issuecomment",
+        status: "approve",
       },
     })
       .then((newlyCreatedComment) => {
         setNewComment("");
         fetchComments();
+
+        wp.hooks.doAction("alpaca.commentPosted", newlyCreatedComment); // New doAction
 
         // Dispatch event to update comment count
         const postId = newlyCreatedComment.post;
@@ -138,10 +141,12 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
       method: "POST",
       data: { content: editingContent },
     })
-      .then(() => {
+      .then((updatedComment) => { // Add updatedComment parameter
         setEditingCommentId(null);
         setEditingContent("");
         fetchComments();
+
+        wp.hooks.doAction("alpaca.commentUpdated", updatedComment); // New doAction
       })
       .catch((err) => {
         console.error(err);
@@ -166,6 +171,8 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
       .then((deletedComment) => {
         fetchComments();
         setDeleteCommentId(null);
+
+        wp.hooks.doAction("alpaca.commentDeleted", deletedComment); // New doAction
 
         // Dispatch event to update comment count
         // The deletedComment object contains the post ID
