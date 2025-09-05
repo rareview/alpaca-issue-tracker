@@ -2,6 +2,7 @@ const { useState, useEffect, useRef, useCallback } = wp.element;
 const { Popover, Button, ComboboxControl, MenuGroup, MenuItem } = wp.components;
 import Board from "./BoardMain";
 import { getCookie, setCookie } from "../utils/cookies";
+import { fetchAllAssignees } from "../services/userApi";
 
 export function AlpacaBoard() {
   return <Board />;
@@ -15,25 +16,31 @@ export function AlpacaBoardControls() {
 
   // --- Load assignee data on mount ---
   useEffect(() => {
-    if (window.alpacaAssignees && window.alpacaAssignees.length > 0) {
+    // If window.alpacaAssignees is not available (meaning BoardMain is not present),
+    // fetch assignees directly.
+    if (typeof window.alpacaAssignees === 'undefined' || window.alpacaAssignees.length === 0) {
+      fetchAllAssignees().then(setAllAssignees);
+    } else {
+      // Initial load from window.alpacaAssignees if available
       setAllAssignees(window.alpacaAssignees);
     }
 
-    const handleAssigneesUpdated = (event) => {
-      const { assignees } = event.detail;
-      if (assignees && Array.isArray(assignees)) {
-        setAllAssignees([...assignees]);
+    const handleAssigneesUpdated = (assigneesArray) => {
+      if (assigneesArray && Array.isArray(assigneesArray)) {
+        setAllAssignees([...assigneesArray]);
       }
     };
 
-    document.addEventListener(
-      "alpaca:assignees-updated",
+    wp.hooks.addAction(
+      "alpaca.allAssigneesUpdated",
+      "alpaca/boardframe",
       handleAssigneesUpdated
     );
+
     return () => {
-      document.removeEventListener(
-        "alpaca:assignees-updated",
-        handleAssigneesUpdated
+      wp.hooks.removeAction(
+        "alpaca.allAssigneesUpdated",
+        "alpaca/boardframe"
       );
     };
   }, []);
