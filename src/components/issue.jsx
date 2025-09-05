@@ -375,18 +375,36 @@ const AlpacaIssue = ({
         onRequestClose={onClose}
         className="alpaca-details-modal"
         headerActions={
-          !isLastStatus && (
-            <Tooltip text="Progress issue to next status">
+          <>
+            {!isLastStatus && (
+              <Tooltip text="Progress issue to next status">
+                <Button
+                  type="button"
+                  className="components-button has-icon"
+                  onClick={handleProgressIssue}
+                  disabled={loadingStates.status}
+                >
+                  <span className="dashicons dashicons-arrow-right-alt"></span>
+                </Button>
+              </Tooltip>
+            )}
+            <Tooltip text="Delete issue">
               <Button
                 type="button"
-                className="components-button has-icon"
-                onClick={handleProgressIssue}
-                disabled={loadingStates.status}
+                className="alpaca-modal-delete-button components-button has-icon"
+                isDestructive
+                onClick={() => {
+                  if (
+                    window.confirm("Are you sure you want to delete this issue?")
+                  ) {
+                    onDelete(issueId);
+                  }
+                }}
               >
-                <span className="dashicons dashicons-arrow-right-alt"></span>
+                <span className="dashicons dashicons-trash"></span>
               </Button>
             </Tooltip>
-          )
+          </>
         }
       >
         {error && (
