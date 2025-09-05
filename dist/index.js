@@ -12019,7 +12019,7 @@ function AlpacaBoardControls() {
     useEffect(()=>{
         // If window.alpacaAssignees is not available (meaning BoardMain is not present),
         // fetch assignees directly.
-        if (typeof window.alpacaAssignees === 'undefined' || window.alpacaAssignees.length === 0) (0, _userApi.fetchAllAssignees)().then(setAllAssignees);
+        if (typeof window.alpacaAssignees === "undefined" || window.alpacaAssignees.length === 0) (0, _userApi.fetchAllAssignees)().then(setAllAssignees);
         else // Initial load from window.alpacaAssignees if available
         setAllAssignees(window.alpacaAssignees);
         const handleAssigneesUpdated = (assigneesArray)=>{
@@ -12053,7 +12053,7 @@ function AlpacaBoardControls() {
             // Starred filter
             if (showStarredOnly && !item.classList.contains("is-watched")) isVisible = false;
             // Deadline filter
-            const diffDays = parseInt(item.dataset.diffDays, 10);
+            const diffDays = parseInt(item.dataset.daysLeft, 10);
             const deadlineCheck = deadlineConditions[deadlineFilter];
             const matchesDeadline = !isNaN(diffDays) && deadlineCheck && deadlineCheck(diffDays);
             if (deadlineFilter !== "none" && !matchesDeadline) isVisible = false;

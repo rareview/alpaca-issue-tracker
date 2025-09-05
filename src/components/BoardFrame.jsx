@@ -18,7 +18,10 @@ export function AlpacaBoardControls() {
   useEffect(() => {
     // If window.alpacaAssignees is not available (meaning BoardMain is not present),
     // fetch assignees directly.
-    if (typeof window.alpacaAssignees === 'undefined' || window.alpacaAssignees.length === 0) {
+    if (
+      typeof window.alpacaAssignees === "undefined" ||
+      window.alpacaAssignees.length === 0
+    ) {
       fetchAllAssignees().then(setAllAssignees);
     } else {
       // Initial load from window.alpacaAssignees if available
@@ -38,10 +41,7 @@ export function AlpacaBoardControls() {
     );
 
     return () => {
-      wp.hooks.removeAction(
-        "alpaca.allAssigneesUpdated",
-        "alpaca/boardframe"
-      );
+      wp.hooks.removeAction("alpaca.allAssigneesUpdated", "alpaca/boardframe");
     };
   }, []);
 
@@ -81,7 +81,7 @@ export function AlpacaBoardControls() {
       }
 
       // Deadline filter
-      const diffDays = parseInt(item.dataset.diffDays, 10);
+      const diffDays = parseInt(item.dataset.daysLeft, 10);
       const deadlineCheck = deadlineConditions[deadlineFilter];
       const matchesDeadline =
         !isNaN(diffDays) && deadlineCheck && deadlineCheck(diffDays);
