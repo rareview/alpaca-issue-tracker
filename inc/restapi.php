@@ -820,16 +820,16 @@ function alpaca_delete_issue_callback( WP_REST_Request $request ) {
 		);
 	}
 
-	$result = wp_delete_post( $issue_id, true );
+	$result = wp_trash_post( $issue_id );
 	if ( ! $result ) {
 		return alpaca_rest_response(
-			array( 'success' => false, 'message' => 'Failed to delete the issue.' ),
+			array( 'success' => false, 'message' => 'Failed to trash the issue.' ),
 			500
 		);
 	}
 
 	return alpaca_rest_response(
-		array( 'success' => true, 'message' => 'Issue deleted successfully.' ),
+		array( 'success' => true, 'message' => 'Issue trashed successfully.' ),
 		200
 	);
 }

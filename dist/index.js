@@ -12928,7 +12928,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
                 columnNumber: 19
             }
         }))), /*#__PURE__*/ React.createElement(Tooltip, {
-            text: "Delete issue",
+            text: "Trash issue",
             __source: {
                 fileName: "src/components/issue.jsx",
                 lineNumber: 391,
@@ -12939,7 +12939,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
             className: "alpaca-modal-delete-button components-button has-icon",
             isDestructive: true,
             onClick: ()=>{
-                if (window.confirm("Are you sure you want to delete this issue?")) onDelete(issueId);
+                if (window.confirm("Are you sure you want to trash this issue?")) onDelete(issueId);
             },
             __source: {
                 fileName: "src/components/issue.jsx",

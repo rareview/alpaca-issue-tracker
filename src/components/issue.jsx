@@ -388,14 +388,14 @@ const AlpacaIssue = ({
                 </Button>
               </Tooltip>
             )}
-            <Tooltip text="Delete issue">
+            <Tooltip text="Trash issue">
               <Button
                 type="button"
                 className="alpaca-modal-delete-button components-button has-icon"
                 isDestructive
                 onClick={() => {
                   if (
-                    window.confirm("Are you sure you want to delete this issue?")
+                    window.confirm("Are you sure you want to trash this issue?")
                   ) {
                     onDelete(issueId);
                   }
