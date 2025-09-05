@@ -16374,7 +16374,7 @@ const Item = forwardRef(({ id, content, assignees = [], comment_count, meta, cla
         className: `${className} ${watchedClass} ${lateClass}`.trim(),
         style: style,
         "data-id": id,
-        "data-diff-days": diffDays,
+        "data-days-left": diffDays,
         ...assigneeDataAttributes,
         ...props,
         onClick: onClick,

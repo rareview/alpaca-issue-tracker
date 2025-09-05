@@ -206,19 +206,19 @@
           color: white;
         }
       }
-      &[data-diff-days="0"] {
+      &[data-days-left="0"] {
         .alpaca-item-deadline {
           background-color: black;
           color: white;
         }
       }
-      &[data-diff-days="1"],
-      &[data-diff-days="2"],
-      &[data-diff-days="3"],
-      &[data-diff-days="4"],
-      &[data-diff-days="5"],
-      &[data-diff-days="6"],
-      &[data-diff-days="7"] {
+      &[data-days-left="1"],
+      &[data-days-left="2"],
+      &[data-days-left="3"],
+      &[data-days-left="4"],
+      &[data-days-left="5"],
+      &[data-days-left="6"],
+      &[data-days-left="7"] {
         .alpaca-item-deadline {
           background-color: orange;
           color: black;

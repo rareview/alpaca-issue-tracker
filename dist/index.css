@@ -226,12 +226,12 @@
   background-color: red;
 }
 
-.wp-admin #alpaca-board .alpaca-item[data-diff-days="0"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item-dragging[data-diff-days="0"] .alpaca-item-deadline {
+.wp-admin #alpaca-board .alpaca-item[data-days-left="0"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item-dragging[data-days-left="0"] .alpaca-item-deadline {
   color: #fff;
   background-color: #000;
 }
 
-.wp-admin #alpaca-board .alpaca-item[data-diff-days="1"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item[data-diff-days="2"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item[data-diff-days="3"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item[data-diff-days="4"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item[data-diff-days="5"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item[data-diff-days="6"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item[data-diff-days="7"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item-dragging[data-diff-days="1"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item-dragging[data-diff-days="2"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item-dragging[data-diff-days="3"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item-dragging[data-diff-days="4"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item-dragging[data-diff-days="5"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item-dragging[data-diff-days="6"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item-dragging[data-diff-days="7"] .alpaca-item-deadline {
+.wp-admin #alpaca-board .alpaca-item[data-days-left="1"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item[data-days-left="2"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item[data-days-left="3"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item[data-days-left="4"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item[data-days-left="5"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item[data-days-left="6"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item[data-days-left="7"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item-dragging[data-days-left="1"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item-dragging[data-days-left="2"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item-dragging[data-days-left="3"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item-dragging[data-days-left="4"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item-dragging[data-days-left="5"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item-dragging[data-days-left="6"] .alpaca-item-deadline, .wp-admin #alpaca-board .alpaca-item-dragging[data-days-left="7"] .alpaca-item-deadline {
   color: #000;
   background-color: orange;
 }

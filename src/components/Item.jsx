@@ -59,7 +59,7 @@ const Item = forwardRef(
         className={`${className} ${watchedClass} ${lateClass}`.trim()}
         style={style}
         data-id={id}
-        data-diff-days={diffDays}
+        data-days-left={diffDays}
         {...assigneeDataAttributes}
         {...props}
         onClick={onClick}
