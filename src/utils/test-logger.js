@@ -49,6 +49,10 @@ export const useTestLogger = (enable) => {
       console.log(`Comment deleted:`, comment);
     };
 
+    const logIssueDeleted = (issueId) => {
+      console.log(`Issue ${issueId} deleted`);
+    };
+
     wp.hooks.addAction("alpaca.statusChanged", "alpaca/test", logStatusChange);
     wp.hooks.addAction(
       "alpaca.issueAssigneesChanged",
@@ -73,6 +77,7 @@ export const useTestLogger = (enable) => {
     wp.hooks.addAction("alpaca.commentPosted", "alpaca/test", logCommentPosted);
     wp.hooks.addAction("alpaca.commentUpdated", "alpaca/test", logCommentUpdated);
     wp.hooks.addAction("alpaca.commentDeleted", "alpaca/test", logCommentDeleted);
+    wp.hooks.addAction("alpaca.issueDeleted", "alpaca/test", logIssueDeleted);
 
     return () => {
       wp.hooks.removeAction("alpaca.statusChanged", "alpaca/test");
@@ -83,6 +88,7 @@ export const useTestLogger = (enable) => {
       wp.hooks.removeAction("alpaca.commentPosted", "alpaca/test");
       wp.hooks.removeAction("alpaca.commentUpdated", "alpaca/test");
       wp.hooks.removeAction("alpaca.commentDeleted", "alpaca/test");
+      wp.hooks.removeAction("alpaca.issueDeleted", "alpaca/test");
     };
   }, [enable]);
 };

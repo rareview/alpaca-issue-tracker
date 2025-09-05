@@ -446,6 +446,8 @@ function Board() {
     wp.apiFetch({
       path: `/issue/v1/delete/${issueId}`,
       method: "DELETE",
+    }).then(() => {
+      wp.hooks.doAction("alpaca.issueDeleted", issueId);
     }).catch((err) => {
       // Revert if the delete fails
       console.error("Error deleting issue:", err);
