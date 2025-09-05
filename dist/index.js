@@ -15148,11 +15148,15 @@ var _dragHandleIconJsxDefault = parcelHelpers.interopDefault(_dragHandleIconJsx)
 const { useState, useEffect, useRef, memo } = wp.element;
 const { useSelect } = wp.data;
 const { Button, BaseControl, CheckboxControl, TextControl } = wp.components;
+wp.hooks.addAction("alpaca.checklistItemUpdated", "alpaca/logChecklistItemUpdated", (oldLabel, newLabel)=>{
+    oldLabel;
+});
 const Checklist = memo(({ issueId, initialChecklistItems, isSaving, setIsSaving })=>{
     const [checklistItems, setChecklistItems] = useState(initialChecklistItems || []);
     const [activeIndex, setActiveIndex] = useState(null);
     const checklistContainerRef = useRef(null);
     const prevChecklistLength = useRef(checklistItems.length);
+    const originalLabelRef = useRef(null);
     const { currentUser } = useSelect((select)=>({
             currentUser: select("core").getCurrentUser()
         }));
@@ -15213,14 +15217,18 @@ const Checklist = memo(({ issueId, initialChecklistItems, isSaving, setIsSaving 
             addChecklistItem();
         }
     };
-    const handleChecklistItemBlur = (index)=>{
+    const handleChecklistItemBlur = (index, oldLabel)=>{
         setActiveIndex(null);
         const item = checklistItems[index];
-        if (item.label.trim() === "") {
+        const newLabel = item.label;
+        if (newLabel.trim() === "") {
             const newItems = checklistItems.filter((_, i)=>i !== index);
             setChecklistItems(newItems);
             saveChecklist(newItems);
-        } else saveChecklist(checklistItems);
+        } else {
+            if (oldLabel !== newLabel) wp.hooks.doAction("alpaca.checklistItemUpdated", oldLabel, newLabel);
+            saveChecklist(checklistItems);
+        }
     };
     useEffect(()=>{
         if (checklistItems.length > prevChecklistLength.current) {
@@ -15241,7 +15249,7 @@ const Checklist = memo(({ issueId, initialChecklistItems, isSaving, setIsSaving 
         ref: checklistContainerRef,
         __source: {
             fileName: "src/components/issue/checklist.jsx",
-            lineNumber: 117,
+            lineNumber: 140,
             columnNumber: 7
         },
         __self: undefined
@@ -15250,7 +15258,7 @@ const Checklist = memo(({ issueId, initialChecklistItems, isSaving, setIsSaving 
         className: "alpaca-checklist-label",
         __source: {
             fileName: "src/components/issue/checklist.jsx",
-            lineNumber: 118,
+            lineNumber: 141,
             columnNumber: 9
         },
         __self: undefined
@@ -15258,7 +15266,7 @@ const Checklist = memo(({ issueId, initialChecklistItems, isSaving, setIsSaving 
         onDragEnd: handleDragEnd,
         __source: {
             fileName: "src/components/issue/checklist.jsx",
-            lineNumber: 119,
+            lineNumber: 142,
             columnNumber: 9
         },
         __self: undefined
@@ -15266,6 +15274,7 @@ const Checklist = memo(({ issueId, initialChecklistItems, isSaving, setIsSaving 
         droppableId: "checklist",
         renderClone: (provided, snapshot, rubric)=>{
             const item = checklistItems[rubric.source.index];
+            const index = rubric.source.index;
             return /*#__PURE__*/ React.createElement("div", {
                 ref: provided.innerRef,
                 ...provided.draggableProps,
@@ -15279,57 +15288,60 @@ const Checklist = memo(({ issueId, initialChecklistItems, isSaving, setIsSaving 
                 },
                 __source: {
                     fileName: "src/components/issue/checklist.jsx",
-                    lineNumber: 125,
+                    lineNumber: 149,
                     columnNumber: 17
                 }
             }, /*#__PURE__*/ React.createElement(CheckboxControl, {
                 checked: item.checked !== 0,
-                onChange: ()=>toggleChecklistItem(rubric.source.index),
+                onChange: ()=>toggleChecklistItem(index),
                 __source: {
                     fileName: "src/components/issue/checklist.jsx",
-                    lineNumber: 139,
+                    lineNumber: 163,
                     columnNumber: 19
                 }
             }), /*#__PURE__*/ React.createElement(TextControl, {
                 className: "alpaca-textinput",
                 value: item.label,
-                onChange: (newLabel)=>updateChecklistItemLabel(rubric.source.index, newLabel),
-                onFocus: ()=>setActiveIndex(rubric.source.index),
-                onBlur: ()=>handleChecklistItemBlur(rubric.source.index),
+                onChange: (newLabel)=>updateChecklistItemLabel(index, newLabel),
+                onFocus: ()=>{
+                    setActiveIndex(index);
+                    originalLabelRef.current = item.label;
+                },
+                onBlur: ()=>handleChecklistItemBlur(index, originalLabelRef.current),
                 placeholder: "Add an item...",
                 __source: {
                     fileName: "src/components/issue/checklist.jsx",
-                    lineNumber: 143,
+                    lineNumber: 167,
                     columnNumber: 19
                 }
             }), /*#__PURE__*/ React.createElement(Button, {
                 icon: "trash",
-                onClick: ()=>deleteChecklistItem(rubric.source.index),
+                onClick: ()=>deleteChecklistItem(index),
                 label: "Delete item",
                 showTooltip: "true",
                 __source: {
                     fileName: "src/components/issue/checklist.jsx",
-                    lineNumber: 153,
+                    lineNumber: 182,
                     columnNumber: 19
                 }
             }), /*#__PURE__*/ React.createElement("div", {
                 className: "alpaca-drag-handle",
                 __source: {
                     fileName: "src/components/issue/checklist.jsx",
-                    lineNumber: 159,
+                    lineNumber: 188,
                     columnNumber: 19
                 }
             }, /*#__PURE__*/ React.createElement((0, _dragHandleIconJsxDefault.default), {
                 __source: {
                     fileName: "src/components/issue/checklist.jsx",
-                    lineNumber: 160,
+                    lineNumber: 189,
                     columnNumber: 21
                 }
             })));
         },
         __source: {
             fileName: "src/components/issue/checklist.jsx",
-            lineNumber: 120,
+            lineNumber: 143,
             columnNumber: 11
         },
         __self: undefined
@@ -15339,7 +15351,7 @@ const Checklist = memo(({ issueId, initialChecklistItems, isSaving, setIsSaving 
             ref: provided.innerRef,
             __source: {
                 fileName: "src/components/issue/checklist.jsx",
-                lineNumber: 167,
+                lineNumber: 196,
                 columnNumber: 15
             },
             __self: undefined
@@ -15349,7 +15361,7 @@ const Checklist = memo(({ issueId, initialChecklistItems, isSaving, setIsSaving 
                 index: index,
                 __source: {
                     fileName: "src/components/issue/checklist.jsx",
-                    lineNumber: 173,
+                    lineNumber: 202,
                     columnNumber: 19
                 },
                 __self: undefined
@@ -15360,7 +15372,7 @@ const Checklist = memo(({ issueId, initialChecklistItems, isSaving, setIsSaving 
                     className: `alpaca-checklist-item ${item.checked !== 0 ? "checked" : ""} ${activeIndex === index ? "active" : ""}`,
                     __source: {
                         fileName: "src/components/issue/checklist.jsx",
-                        lineNumber: 179,
+                        lineNumber: 208,
                         columnNumber: 23
                     },
                     __self: undefined
@@ -15369,7 +15381,7 @@ const Checklist = memo(({ issueId, initialChecklistItems, isSaving, setIsSaving 
                     onChange: ()=>toggleChecklistItem(index),
                     __source: {
                         fileName: "src/components/issue/checklist.jsx",
-                        lineNumber: 187,
+                        lineNumber: 216,
                         columnNumber: 25
                     },
                     __self: undefined
@@ -15377,13 +15389,16 @@ const Checklist = memo(({ issueId, initialChecklistItems, isSaving, setIsSaving 
                     className: "alpaca-textinput",
                     value: item.label,
                     onChange: (newLabel)=>updateChecklistItemLabel(index, newLabel),
-                    onFocus: ()=>setActiveIndex(index),
-                    onBlur: ()=>handleChecklistItemBlur(index),
+                    onFocus: ()=>{
+                        setActiveIndex(index);
+                        originalLabelRef.current = item.label;
+                    },
+                    onBlur: ()=>handleChecklistItemBlur(index, originalLabelRef.current),
                     onKeyDown: (e)=>handleChecklistItemKeyDown(e, index),
                     placeholder: "Add an item...",
                     __source: {
                         fileName: "src/components/issue/checklist.jsx",
-                        lineNumber: 191,
+                        lineNumber: 220,
                         columnNumber: 25
                     },
                     __self: undefined
@@ -15394,7 +15409,7 @@ const Checklist = memo(({ issueId, initialChecklistItems, isSaving, setIsSaving 
                     showTooltip: "true",
                     __source: {
                         fileName: "src/components/issue/checklist.jsx",
-                        lineNumber: 204,
+                        lineNumber: 241,
                         columnNumber: 25
                     },
                     __self: undefined
@@ -15402,14 +15417,14 @@ const Checklist = memo(({ issueId, initialChecklistItems, isSaving, setIsSaving 
                     className: "alpaca-drag-handle",
                     __source: {
                         fileName: "src/components/issue/checklist.jsx",
-                        lineNumber: 210,
+                        lineNumber: 247,
                         columnNumber: 25
                     },
                     __self: undefined
                 }, /*#__PURE__*/ React.createElement((0, _dragHandleIconJsxDefault.default), {
                     __source: {
                         fileName: "src/components/issue/checklist.jsx",
-                        lineNumber: 211,
+                        lineNumber: 248,
                         columnNumber: 27
                     },
                     __self: undefined
@@ -15420,7 +15435,7 @@ const Checklist = memo(({ issueId, initialChecklistItems, isSaving, setIsSaving 
         onClick: addChecklistItem,
         __source: {
             fileName: "src/components/issue/checklist.jsx",
-            lineNumber: 222,
+            lineNumber: 259,
             columnNumber: 9
         },
         __self: undefined

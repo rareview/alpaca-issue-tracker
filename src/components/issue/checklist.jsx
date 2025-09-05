@@ -9,6 +9,18 @@ import {
 } from "@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration";
 import DragHandleIcon from "../icons/DragHandleIcon.jsx";
 
+wp.hooks.addAction(
+  "alpaca.checklistItemUpdated",
+  "alpaca/logChecklistItemUpdated",
+  (oldLabel, newLabel) => {
+    if (!oldLabel) {
+      // console.log(`Checklist item created: ${newLabel}`);
+    } else {
+      // console.log(`Checklist item updated from "${oldLabel}" to "${newLabel}"`);
+    }
+  }
+);
+
 const Checklist = memo(
   ({ issueId, initialChecklistItems, isSaving, setIsSaving }) => {
     const [checklistItems, setChecklistItems] = useState(
@@ -17,6 +29,7 @@ const Checklist = memo(
     const [activeIndex, setActiveIndex] = useState(null);
     const checklistContainerRef = useRef(null);
     const prevChecklistLength = useRef(checklistItems.length);
+    const originalLabelRef = useRef(null);
 
     const { currentUser } = useSelect((select) => ({
       currentUser: select("core").getCurrentUser(),
@@ -56,7 +69,12 @@ const Checklist = memo(
       saveChecklist(newItems);
 
       if (isBeingChecked) {
-        wp.hooks.doAction("alpaca.checklistItemChecked", issueId, currentItem, currentUser);
+        wp.hooks.doAction(
+          "alpaca.checklistItemChecked",
+          issueId,
+          currentItem,
+          currentUser
+        );
       }
     };
 
@@ -86,14 +104,19 @@ const Checklist = memo(
       }
     };
 
-    const handleChecklistItemBlur = (index) => {
+    const handleChecklistItemBlur = (index, oldLabel) => {
       setActiveIndex(null);
       const item = checklistItems[index];
-      if (item.label.trim() === "") {
+      const newLabel = item.label;
+
+      if (newLabel.trim() === "") {
         const newItems = checklistItems.filter((_, i) => i !== index);
         setChecklistItems(newItems);
         saveChecklist(newItems);
       } else {
+        if (oldLabel !== newLabel) {
+          wp.hooks.doAction("alpaca.checklistItemUpdated", oldLabel, newLabel);
+        }
         saveChecklist(checklistItems);
       }
     };
@@ -121,6 +144,7 @@ const Checklist = memo(
             droppableId="checklist"
             renderClone={(provided, snapshot, rubric) => {
               const item = checklistItems[rubric.source.index];
+              const index = rubric.source.index;
               return (
                 <div
                   ref={provided.innerRef}
@@ -138,21 +162,26 @@ const Checklist = memo(
                 >
                   <CheckboxControl
                     checked={item.checked !== 0}
-                    onChange={() => toggleChecklistItem(rubric.source.index)}
+                    onChange={() => toggleChecklistItem(index)}
                   />
                   <TextControl
                     className="alpaca-textinput"
                     value={item.label}
                     onChange={(newLabel) =>
-                      updateChecklistItemLabel(rubric.source.index, newLabel)
+                      updateChecklistItemLabel(index, newLabel)
                     }
-                    onFocus={() => setActiveIndex(rubric.source.index)}
-                    onBlur={() => handleChecklistItemBlur(rubric.source.index)}
+                    onFocus={() => {
+                      setActiveIndex(index);
+                      originalLabelRef.current = item.label;
+                    }}
+                    onBlur={() =>
+                      handleChecklistItemBlur(index, originalLabelRef.current)
+                    }
                     placeholder="Add an item..."
                   />
                   <Button
                     icon="trash"
-                    onClick={() => deleteChecklistItem(rubric.source.index)}
+                    onClick={() => deleteChecklistItem(index)}
                     label="Delete item"
                     showTooltip="true"
                   />
@@ -194,8 +223,16 @@ const Checklist = memo(
                           onChange={(newLabel) =>
                             updateChecklistItemLabel(index, newLabel)
                           }
-                          onFocus={() => setActiveIndex(index)}
-                          onBlur={() => handleChecklistItemBlur(index)}
+                          onFocus={() => {
+                            setActiveIndex(index);
+                            originalLabelRef.current = item.label;
+                          }}
+                          onBlur={() =>
+                            handleChecklistItemBlur(
+                              index,
+                              originalLabelRef.current
+                            )
+                          }
                           onKeyDown={(e) =>
                             handleChecklistItemKeyDown(e, index)
                           }

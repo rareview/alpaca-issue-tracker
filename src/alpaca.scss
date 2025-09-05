@@ -206,6 +206,12 @@
           color: white;
         }
       }
+      &[data-diff-days="0"] {
+        .alpaca-item-deadline {
+          background-color: black;
+          color: white;
+        }
+      }
       &[data-diff-days="1"],
       &[data-diff-days="2"],
       &[data-diff-days="3"],
