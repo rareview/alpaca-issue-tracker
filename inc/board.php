@@ -21,7 +21,7 @@ function project_board_page() {
 			if (addIssueButton) {
 				addIssueButton.addEventListener('click', function(e) {
 					e.preventDefault();
-					document.dispatchEvent(new CustomEvent('alpaca:open-modal'));
+					wp.hooks.doAction('alpaca.openModal');
 				});
 			}
 		});

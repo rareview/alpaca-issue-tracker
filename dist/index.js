@@ -806,8 +806,8 @@ const AlpacaModal = ()=>{
     // Listen for a global event to open the modal
     useEffect(()=>{
         const handleOpen = ()=>openModal();
-        document.addEventListener("alpaca:open-modal", handleOpen);
-        return ()=>document.removeEventListener("alpaca:open-modal", handleOpen);
+        wp.hooks.addAction("alpaca.openModal", "alpaca/modal", handleOpen);
+        return ()=>wp.hooks.removeAction("alpaca.openModal", "alpaca/modal");
     }, [
         openModal
     ]);
@@ -11834,7 +11834,7 @@ const EnableTestLogsControl = ()=>{
         wp.apiFetch({
             path: "/wp/v2/settings"
         }).then((settings)=>{
-            setIsEnabled(settings.alpaca_enable_test_logs === '1');
+            setIsEnabled(settings.alpaca_enable_test_logs === "1");
         }).finally(()=>setIsFetching(false));
     }, []);
     useEffect(()=>{
@@ -11849,7 +11849,7 @@ const EnableTestLogsControl = ()=>{
             path: "/wp/v2/settings",
             method: "POST",
             data: {
-                alpaca_enable_test_logs: value ? '1' : '0'
+                alpaca_enable_test_logs: value ? "1" : "0"
             }
         }).then(()=>{
             wp.hooks.doAction("alpaca.enableTestLogsChanged", value);
@@ -11858,39 +11858,39 @@ const EnableTestLogsControl = ()=>{
     return /*#__PURE__*/ React.createElement("tr", {
         __source: {
             fileName: "src/components/EnableTestLogsControl.jsx",
-            lineNumber: 35,
+            lineNumber: 37,
             columnNumber: 5
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("th", {
         __source: {
             fileName: "src/components/EnableTestLogsControl.jsx",
-            lineNumber: 36,
+            lineNumber: 38,
             columnNumber: 7
         },
         __self: undefined
-    }, "Enable Console Messages"), /*#__PURE__*/ React.createElement("td", {
+    }, "Debugging"), /*#__PURE__*/ React.createElement("td", {
         __source: {
             fileName: "src/components/EnableTestLogsControl.jsx",
-            lineNumber: 37,
+            lineNumber: 39,
             columnNumber: 7
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement(CheckboxControl, {
-        label: "Enable console messages for testing purposes?",
+        label: "Enable Browser Console Messages",
         checked: isEnabled,
         onChange: handleChange,
         disabled: isFetching || isSaving,
         __source: {
             fileName: "src/components/EnableTestLogsControl.jsx",
-            lineNumber: 38,
+            lineNumber: 40,
             columnNumber: 9
         },
         __self: undefined
     }), (isFetching || isSaving) && /*#__PURE__*/ React.createElement(Spinner, {
         __source: {
             fileName: "src/components/EnableTestLogsControl.jsx",
-            lineNumber: 44,
+            lineNumber: 46,
             columnNumber: 38
         },
         __self: undefined
@@ -13396,6 +13396,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
                 content: editingContent
             }
         }).then((updatedComment)=>{
+            // Add updatedComment parameter
             setEditingCommentId(null);
             setEditingContent("");
             fetchComments();
@@ -13442,7 +13443,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
         className: "alpaca-grid",
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 199,
+            lineNumber: 204,
             columnNumber: 7
         },
         __self: undefined
@@ -13453,7 +13454,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
         disabled: isSubmitting,
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 201,
+            lineNumber: 206,
             columnNumber: 9
         },
         __self: undefined
@@ -13463,14 +13464,14 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
         disabled: isSubmitting,
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 207,
+            lineNumber: 212,
             columnNumber: 9
         },
         __self: undefined
     }, isSubmitting ? "Submitting..." : "Submit Comment"), isLoadingComments && /*#__PURE__*/ React.createElement(Spinner, {
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 211,
+            lineNumber: 216,
             columnNumber: 31
         },
         __self: undefined
@@ -13478,14 +13479,14 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
         className: "alpaca-error",
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 212,
+            lineNumber: 217,
             columnNumber: 19
         },
         __self: undefined
     }, error), !isLoadingComments && !error && comments.length === 0 && /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 214,
+            lineNumber: 219,
             columnNumber: 11
         },
         __self: undefined
@@ -13494,7 +13495,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
             key: comment.id,
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 220,
+                lineNumber: 225,
                 columnNumber: 13
             },
             __self: undefined
@@ -13502,7 +13503,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
             className: "alpaca-meta",
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 221,
+                lineNumber: 226,
                 columnNumber: 15
             },
             __self: undefined
@@ -13514,7 +13515,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
             },
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 222,
+                lineNumber: 227,
                 columnNumber: 17
             },
             __self: undefined
@@ -13522,7 +13523,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
             className: "alpaca-comment-date",
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 229,
+                lineNumber: 234,
                 columnNumber: 17
             },
             __self: undefined
@@ -13530,7 +13531,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
             className: "alpaca-comment-buttons",
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 232,
+                lineNumber: 237,
                 columnNumber: 17
             },
             __self: undefined
@@ -13540,11 +13541,10 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
             icon: "edit",
             onClick: ()=>{
                 startEditing(comment);
-                console.log("Start editing");
             },
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 233,
+                lineNumber: 238,
                 columnNumber: 19
             },
             __self: undefined
@@ -13554,12 +13554,11 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
             showTooltip: "true",
             className: "button-link-delete",
             onClick: ()=>{
-                console.log("Confirm delete");
                 confirmDeleteComment(comment.id);
             },
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 242,
+                lineNumber: 246,
                 columnNumber: 19
             },
             __self: undefined
@@ -13567,7 +13566,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
             className: "alpaca-comment",
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 254,
+                lineNumber: 257,
                 columnNumber: 15
             },
             __self: undefined
@@ -13577,7 +13576,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
             ref: editingRef,
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 257,
+                lineNumber: 260,
                 columnNumber: 21
             },
             __self: undefined
@@ -13587,7 +13586,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
             disabled: isSubmitting,
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 262,
+                lineNumber: 265,
                 columnNumber: 21
             },
             __self: undefined
@@ -13596,7 +13595,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
             disabled: isSubmitting,
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 269,
+                lineNumber: 272,
                 columnNumber: 21
             },
             __self: undefined
@@ -13607,7 +13606,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
             },
             __source: {
                 fileName: "src/components/commenting.jsx",
-                lineNumber: 275,
+                lineNumber: 278,
                 columnNumber: 21
             },
             __self: undefined
@@ -13617,14 +13616,14 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
         className: "alpaca-modal",
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 291,
+            lineNumber: 294,
             columnNumber: 11
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 296,
+            lineNumber: 299,
             columnNumber: 13
         },
         __self: undefined
@@ -13633,7 +13632,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
         onClick: deleteComment,
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 297,
+            lineNumber: 300,
             columnNumber: 13
         },
         __self: undefined
@@ -13641,7 +13640,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
         onClick: cancelDelete,
         __source: {
             fileName: "src/components/commenting.jsx",
-            lineNumber: 300,
+            lineNumber: 303,
             columnNumber: 13
         },
         __self: undefined

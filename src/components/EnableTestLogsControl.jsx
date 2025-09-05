@@ -10,7 +10,7 @@ const EnableTestLogsControl = () => {
     setIsFetching(true);
     wp.apiFetch({ path: "/wp/v2/settings" })
       .then((settings) => {
-        setIsEnabled(settings.alpaca_enable_test_logs === '1');
+        setIsEnabled(settings.alpaca_enable_test_logs === "1");
       })
       .finally(() => setIsFetching(false));
   }, []);
@@ -25,18 +25,20 @@ const EnableTestLogsControl = () => {
     wp.apiFetch({
       path: "/wp/v2/settings",
       method: "POST",
-      data: { alpaca_enable_test_logs: value ? '1' : '0' },
-    }).then(() => {
+      data: { alpaca_enable_test_logs: value ? "1" : "0" },
+    })
+      .then(() => {
         wp.hooks.doAction("alpaca.enableTestLogsChanged", value);
-    }).finally(() => setIsSaving(false));
+      })
+      .finally(() => setIsSaving(false));
   };
 
   return (
     <tr>
-      <th>Enable Console Messages</th>
+      <th>Debugging</th>
       <td>
         <CheckboxControl
-          label="Enable console messages for testing purposes?"
+          label="Enable Browser Console Messages"
           checked={isEnabled}
           onChange={handleChange}
           disabled={isFetching || isSaving}

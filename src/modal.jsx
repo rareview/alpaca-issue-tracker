@@ -56,8 +56,8 @@ const AlpacaModal = () => {
   // Listen for a global event to open the modal
   useEffect(() => {
     const handleOpen = () => openModal();
-    document.addEventListener("alpaca:open-modal", handleOpen);
-    return () => document.removeEventListener("alpaca:open-modal", handleOpen);
+    wp.hooks.addAction("alpaca.openModal", "alpaca/modal", handleOpen);
+    return () => wp.hooks.removeAction("alpaca.openModal", "alpaca/modal");
   }, [openModal]);
 
   // Focus textarea when modal opens

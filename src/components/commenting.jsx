@@ -63,10 +63,7 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
     );
 
     return () => {
-      wp.hooks.removeAction(
-        "alpaca.commentCountChanged",
-        "alpaca/commenting"
-      );
+      wp.hooks.removeAction("alpaca.commentCountChanged", "alpaca/commenting");
     };
   }, [issueId, fetchComments]);
 
@@ -102,16 +99,21 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
 
         // Dispatch event to update comment count
         const postId = newlyCreatedComment.post;
-        fetchIssueCommentCount(postId).then((response) => {
-          if (response && typeof response.comment_count !== "undefined") {
-            wp.hooks.doAction("alpaca.commentCountChanged", {
-              issueId: postId.toString(),
-              newCount: response.comment_count,
-            });
-          }
-        }).catch((err) => {
-          console.error("Error fetching updated comment count after adding:", err);
-        });
+        fetchIssueCommentCount(postId)
+          .then((response) => {
+            if (response && typeof response.comment_count !== "undefined") {
+              wp.hooks.doAction("alpaca.commentCountChanged", {
+                issueId: postId.toString(),
+                newCount: response.comment_count,
+              });
+            }
+          })
+          .catch((err) => {
+            console.error(
+              "Error fetching updated comment count after adding:",
+              err
+            );
+          });
       })
       .catch((err) => {
         console.error(err);
@@ -141,7 +143,8 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
       method: "POST",
       data: { content: editingContent },
     })
-      .then((updatedComment) => { // Add updatedComment parameter
+      .then((updatedComment) => {
+        // Add updatedComment parameter
         setEditingCommentId(null);
         setEditingContent("");
         fetchComments();
@@ -177,16 +180,18 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
         // Dispatch event to update comment count
         // The deletedComment object contains the post ID
         const postId = deletedComment.previous.post;
-        fetchIssueCommentCount(postId).then((response) => {
-          if (response && typeof response.comment_count !== "undefined") {
-            wp.hooks.doAction("alpaca.commentCountChanged", {
-              issueId: postId.toString(),
-              newCount: response.comment_count,
-            });
-          }
-        }).catch((err) => {
-          console.error("Error fetching updated comment count:", err);
-        });
+        fetchIssueCommentCount(postId)
+          .then((response) => {
+            if (response && typeof response.comment_count !== "undefined") {
+              wp.hooks.doAction("alpaca.commentCountChanged", {
+                issueId: postId.toString(),
+                newCount: response.comment_count,
+              });
+            }
+          })
+          .catch((err) => {
+            console.error("Error fetching updated comment count:", err);
+          });
       })
       .catch((err) => {
         console.error(err);
@@ -236,7 +241,6 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
                     icon="edit"
                     onClick={() => {
                       startEditing(comment);
-                      console.log("Start editing");
                     }}
                   />
                   <Button
@@ -245,7 +249,6 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
                     showTooltip="true"
                     className="button-link-delete"
                     onClick={() => {
-                      console.log("Confirm delete");
                       confirmDeleteComment(comment.id);
                     }}
                   />
