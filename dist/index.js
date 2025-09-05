@@ -12338,6 +12338,7 @@ const { decodeEntities } = wp.htmlEntities;
                     items: newItems
                 };
             }));
+        wp.hooks.doAction("alpaca.issueAssigneesChanged", issueId, enrichedAssignees);
     };
     const handleDeadlineChange = useCallback((issueId, newDeadline)=>{
         setContainers((prevContainers)=>prevContainers.map((container)=>{
@@ -12390,7 +12391,11 @@ const { decodeEntities } = wp.htmlEntities;
                 };
                 // Add the item to the new container
                 const targetContainer = newContainers.find((container)=>container.id === newStatusTerm.term_id.toString());
-                if (targetContainer) targetContainer.items.push(movedItem);
+                if (targetContainer) {
+                    targetContainer.items.push(movedItem);
+                    const sourceContainer = prevContainers.find((c)=>c.id === oldContainerId);
+                    if (sourceContainer) wp.hooks.doAction("alpaca.statusChanged", movedItem, sourceContainer.title, targetContainer.title);
+                }
             }
             return newContainers;
         });
@@ -12486,21 +12491,38 @@ const { decodeEntities } = wp.htmlEntities;
             });
         });
         const assigneesArray = Array.from(allAssignees.values());
-        window.alpacaAssignees = assigneesArray;
-        const event = new CustomEvent("alpaca:assignees-updated", {
-            detail: {
-                assignees: assigneesArray
-            }
-        });
-        document.dispatchEvent(event);
+        wp.hooks.doAction("alpaca.allAssigneesUpdated", assigneesArray);
     }, [
         containers
     ]);
+    // useEffect(() => {
+    //   const logAssigneesChange = (issueId, assignees) => {
+    //     console.log(`Assignees changed for issue ${issueId}:`, assignees);
+    //   };
+    //   const logAssigneesUpdated = (assignees) => {
+    //     console.log("Global assignees list updated:", assignees);
+    //   };
+    //   wp.hooks.addAction(
+    //     "alpaca.issueAssigneesChanged",
+    //     "alpaca/test",
+    //     logAssigneesChange
+    //   );
+    //   wp.hooks.addAction(
+    //     "alpaca.allAssigneesUpdated",
+    //     "alpaca/test",
+    //     logAssigneesUpdated
+    //   );
+    //   return () => {
+    //     wp.hooks.removeAction("alpaca.statusChanged", "alpaca/test");
+    //     wp.hooks.removeAction("alpaca.issueAssigneesChanged", "alpaca/test");
+    //     wp.hooks.removeAction("alpaca.allAssigneesUpdated", "alpaca/test");
+    //   };
+    // }, []);
     return /*#__PURE__*/ React.createElement((0, _pragmaticDragAndDropReactBeautifulDndMigration.DragDropContext), {
         onDragEnd: handleDragEnd,
         __source: {
             fileName: "src/components/BoardMain.jsx",
-            lineNumber: 508,
+            lineNumber: 558,
             columnNumber: 5
         },
         __self: this
@@ -12508,7 +12530,7 @@ const { decodeEntities } = wp.htmlEntities;
         className: "alpaca-wrap",
         __source: {
             fileName: "src/components/BoardMain.jsx",
-            lineNumber: 509,
+            lineNumber: 559,
             columnNumber: 7
         },
         __self: this
@@ -12526,7 +12548,7 @@ const { decodeEntities } = wp.htmlEntities;
             onDeleteAll: handleDeleteAll,
             __source: {
                 fileName: "src/components/BoardMain.jsx",
-                lineNumber: 511,
+                lineNumber: 561,
                 columnNumber: 11
             },
             __self: this
@@ -12542,7 +12564,7 @@ const { decodeEntities } = wp.htmlEntities;
         onIssueTitleChange: handleIssueTitleChange,
         __source: {
             fileName: "src/components/BoardMain.jsx",
-            lineNumber: 527,
+            lineNumber: 577,
             columnNumber: 7
         },
         __self: this

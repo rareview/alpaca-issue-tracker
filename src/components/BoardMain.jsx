@@ -122,7 +122,12 @@ function Board() {
         })
       );
 
-      wp.hooks.doAction("alpaca.statusChanged", movedItem, sourceContainer.title, destinationContainer.title);
+      wp.hooks.doAction(
+        "alpaca.statusChanged",
+        movedItem,
+        sourceContainer.title,
+        destinationContainer.title
+      );
     }
 
     saveBoardOrder();
@@ -216,7 +221,12 @@ function Board() {
     nextContainer.items.push(...itemsToMove);
 
     itemsToMove.forEach((item) => {
-      wp.hooks.doAction("alpaca.statusChanged", item, sourceContainer.title, nextContainer.title);
+      wp.hooks.doAction(
+        "alpaca.statusChanged",
+        item,
+        sourceContainer.title,
+        nextContainer.title
+      );
 
       wp.apiFetch({
         path: `/issue/v1/update/${item.id}`,
@@ -310,6 +320,12 @@ function Board() {
         return { ...container, items: newItems };
       })
     );
+
+    wp.hooks.doAction(
+      "alpaca.issueAssigneesChanged",
+      issueId,
+      enrichedAssignees
+    );
   };
 
   const handleDeadlineChange = useCallback((issueId, newDeadline) => {
@@ -372,6 +388,17 @@ function Board() {
         );
         if (targetContainer) {
           targetContainer.items.push(movedItem);
+          const sourceContainer = prevContainers.find(
+            (c) => c.id === oldContainerId
+          );
+          if (sourceContainer) {
+            wp.hooks.doAction(
+              "alpaca.statusChanged",
+              movedItem,
+              sourceContainer.title,
+              targetContainer.title
+            );
+          }
         }
       }
 
@@ -497,12 +524,35 @@ function Board() {
 
     const assigneesArray = Array.from(allAssignees.values());
 
-    window.alpacaAssignees = assigneesArray;
-    const event = new CustomEvent("alpaca:assignees-updated", {
-      detail: { assignees: assigneesArray },
-    });
-    document.dispatchEvent(event);
+    wp.hooks.doAction("alpaca.allAssigneesUpdated", assigneesArray);
   }, [containers]);
+
+  // useEffect(() => {
+  //   const logAssigneesChange = (issueId, assignees) => {
+  //     console.log(`Assignees changed for issue ${issueId}:`, assignees);
+  //   };
+
+  //   const logAssigneesUpdated = (assignees) => {
+  //     console.log("Global assignees list updated:", assignees);
+  //   };
+
+  //   wp.hooks.addAction(
+  //     "alpaca.issueAssigneesChanged",
+  //     "alpaca/test",
+  //     logAssigneesChange
+  //   );
+  //   wp.hooks.addAction(
+  //     "alpaca.allAssigneesUpdated",
+  //     "alpaca/test",
+  //     logAssigneesUpdated
+  //   );
+
+  //   return () => {
+  //     wp.hooks.removeAction("alpaca.statusChanged", "alpaca/test");
+  //     wp.hooks.removeAction("alpaca.issueAssigneesChanged", "alpaca/test");
+  //     wp.hooks.removeAction("alpaca.allAssigneesUpdated", "alpaca/test");
+  //   };
+  // }, []);
 
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
