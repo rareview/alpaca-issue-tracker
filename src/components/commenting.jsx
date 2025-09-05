@@ -245,7 +245,7 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
               <div className="alpaca-timeline-content">
                 <div className="alpaca-comment-header">
                   <div className="alpaca-comment-date">
-                    {new Date(comment.date).toLocaleString()}
+                    <small>{new Date(comment.date).toLocaleString()}</small>
                   </div>
                   <div className="alpaca-comment-buttons">
                     <Button

@@ -435,6 +435,10 @@
         border-color: inherit;
       }
     }
+    .alpaca-checklist-controls {
+      display: flex;
+      gap: 5px;
+    }
     button {
       padding: 0;
       height: auto;
@@ -534,26 +538,29 @@
 
   .alpaca-timeline-content {
     flex-grow: 1;
-    background-color: #f9f9f9; // Light background for comment content
-    border: 4px solid #eee; // Border for comment content
     border-radius: 5px;
+    // add background color and border if you think you need it
     padding: 4px 15px;
   }
 
   .alpaca-comment-form {
     width: 100%;
+    padding-left: 5px;
   }
 
   .alpaca-timeline-content,
   .alpaca-comment-form {
     margin-left: 20px;
   }
+  .alpaca-comment-content,
+  .alpaca-comment-form {
+    margin-right: 100px;
+  }
 
   .alpaca-comment-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.9em;
     color: #777;
   }
 

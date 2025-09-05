@@ -167,14 +167,16 @@ const Checklist = memo(
                     }
                     placeholder="Add an item..."
                   />
-                  <Button
-                    icon="trash"
-                    onClick={() => deleteChecklistItem(index)}
-                    label="Delete item"
-                    showTooltip="true"
-                  />
-                  <div className="alpaca-drag-handle">
-                    <DragHandleIcon />
+                  <div className="alpaca-checklist-controls">
+                    <Button
+                      icon="trash"
+                      onClick={() => deleteChecklistItem(index)}
+                      label="Delete item"
+                      showTooltip="true"
+                    />
+                    <div className="alpaca-drag-handle">
+                      <DragHandleIcon />
+                    </div>
                   </div>
                 </div>
               );
@@ -226,14 +228,16 @@ const Checklist = memo(
                           }
                           placeholder="Add an item..."
                         />
-                        <Button
-                          icon="trash"
-                          onClick={() => deleteChecklistItem(index)}
-                          label="Delete item"
-                          showTooltip="true"
-                        />
-                        <div className="alpaca-drag-handle">
-                          <DragHandleIcon />
+                        <div className="alpaca-checklist-controls">
+                          <Button
+                            icon="trash"
+                            onClick={() => deleteChecklistItem(index)}
+                            label="Delete item"
+                            showTooltip="true"
+                          />
+                          <div className="alpaca-drag-handle">
+                            <DragHandleIcon />
+                          </div>
                         </div>
                       </div>
                     )}
