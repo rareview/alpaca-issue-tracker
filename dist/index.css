@@ -1,3 +1,7 @@
+:root {
+  --timeline-width: 4px;
+}
+
 .alpaca-wrap {
   flex-wrap: nowrap;
   overflow-x: scroll;
@@ -479,36 +483,92 @@
   display: none;
 }
 
-.wp-admin #alpaca-comments .alpaca-meta, .wp-admin #alpaca-comments .alpaca-user {
-  flex-direction: row;
+.wp-admin .alpaca-comments-timeline {
+  padding: 10px 0 0 36px;
+  position: relative;
+}
+
+.wp-admin .alpaca-comments-timeline:before {
+  content: "";
+  width: var(--timeline-width);
+  background-color: #ccc;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 18px;
+}
+
+.wp-admin .alpaca-comments-timeline:after {
+  content: "";
+  width: 40px;
+  height: var(--timeline-width);
+  background-color: #ccc;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+}
+
+.wp-admin .alpaca-timeline-item {
+  margin-bottom: 18px;
+  display: flex;
+  position: relative;
+}
+
+.wp-admin .alpaca-timeline-marker {
+  z-index: 1;
+  justify-content: center;
   align-items: center;
-  gap: 1em;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  position: absolute;
+  top: 12px;
+  left: -28px;
+}
+
+.wp-admin .alpaca-timeline-marker .alpaca-user-avatar img {
+  width: 24px;
+  height: 24px;
+  box-shadow: 0 0 0 var(--timeline-width) #ccc;
+  border: 2px solid #fff;
+  border-radius: 50%;
+}
+
+.wp-admin .alpaca-timeline-marker .alpaca-user-name {
+  display: none;
+}
+
+.wp-admin .alpaca-timeline-content {
+  background-color: #f9f9f9;
+  border: 4px solid #eee;
+  border-radius: 5px;
+  flex-grow: 1;
+  padding: 4px 15px;
+}
+
+.wp-admin .alpaca-comment-form {
+  width: 100%;
+}
+
+.wp-admin .alpaca-timeline-content, .wp-admin .alpaca-comment-form {
+  margin-left: 20px;
+}
+
+.wp-admin .alpaca-comment-header {
+  color: #777;
+  justify-content: space-between;
+  align-items: center;
+  font-size: .9em;
   display: flex;
 }
 
-.wp-admin #alpaca-comments .alpaca-row {
-  border-bottom: 1px solid #ccc;
-  padding: 1em 0;
-}
-
-.wp-admin #alpaca-comments .alpaca-row:last-child {
-  border-bottom: none;
-}
-
-.wp-admin #alpaca-comments .alpaca-status-comment, .wp-admin #alpaca-comments .alpaca-status-assignee {
-  font-weight: bold;
-}
-
-.wp-admin #alpaca-comments .alpaca-comment-content {
-  padding: 0 1em;
-}
-
-.wp-admin #alpaca-comments .alpaca-comment-content ul li {
-  margin-left: 1.3em;
-  list-style: outside;
+.wp-admin .alpaca-comment-buttons {
+  gap: 5px;
+  display: flex;
 }
 
 .wp-admin #alpaca-comments .components-textarea-control__input, .wp-admin .alpaca-comment-content p, .wp-admin .alpaca-comment-content li {
+  margin-top: 0;
   font-size: 15px;
   line-height: 1.5em;
 }

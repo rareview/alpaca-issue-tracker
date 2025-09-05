@@ -201,17 +201,28 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
 
   return (
     <>
-      <div id="alpaca-comments" className="alpaca-grid">
-        {/* New comment input */}
-        <TextareaControl
-          placeholder="Add a comment..."
-          value={newComment}
-          onChange={setNewComment}
-          disabled={isSubmitting}
-        />
-        <Button isPrimary onClick={handleCommentSubmit} disabled={isSubmitting}>
-          {isSubmitting ? "Submitting..." : "Submit Comment"}
-        </Button>
+      <div id="alpaca-comments" className="alpaca-comments-timeline">
+        <div className="alpaca-timeline-item">
+          <div className="alpaca-timeline-marker">
+            <User user={currentUser} />
+          </div>
+
+          <div className="alpaca-comment-form">
+            <TextareaControl
+              placeholder="Add a comment..."
+              value={newComment}
+              onChange={setNewComment}
+              disabled={isSubmitting}
+            />
+            <Button
+              isPrimary
+              onClick={handleCommentSubmit}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Submitting..." : "Submit Comment"}
+            </Button>
+          </div>
+        </div>
 
         {isLoadingComments && <Spinner />}
         {error && <p className="alpaca-error">{error}</p>}
@@ -219,11 +230,10 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
           <p>No comments yet.</p>
         )}
 
-        {/* Comments list */}
         {!isLoadingComments &&
           comments.map((comment) => (
-            <div className="alpaca-row" key={comment.id}>
-              <div className="alpaca-meta">
+            <div className="alpaca-timeline-item" key={comment.id}>
+              <div className="alpaca-timeline-marker">
                 <User
                   user={{
                     ...comment.author_meta,
@@ -231,60 +241,64 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
                     avatar: comment.author_avatar_urls[96],
                   }}
                 />
-                <div className="alpaca-comment-date">
-                  {new Date(comment.date).toLocaleString()}
-                </div>
-                <div className="alpaca-comment-buttons">
-                  <Button
-                    label="Edit"
-                    showTooltip="true"
-                    icon="edit"
-                    onClick={() => {
-                      startEditing(comment);
-                    }}
-                  />
-                  <Button
-                    icon="trash"
-                    label="Delete"
-                    showTooltip="true"
-                    className="button-link-delete"
-                    onClick={() => {
-                      confirmDeleteComment(comment.id);
-                    }}
-                  />
-                </div>
               </div>
-              <div className="alpaca-comment">
-                {editingCommentId === comment.id ? (
-                  <>
-                    <TextareaControl
-                      value={editingContent}
-                      onChange={setEditingContent}
-                      ref={editingRef}
-                    />
+              <div className="alpaca-timeline-content">
+                <div className="alpaca-comment-header">
+                  <div className="alpaca-comment-date">
+                    {new Date(comment.date).toLocaleString()}
+                  </div>
+                  <div className="alpaca-comment-buttons">
                     <Button
-                      isPrimary
-                      onClick={() => saveEdit(comment.id)}
-                      disabled={isSubmitting}
-                    >
-                      Save
-                    </Button>
-                    <Button onClick={cancelEditing} disabled={isSubmitting}>
-                      Cancel
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <div
-                      className="alpaca-comment-content"
-                      dangerouslySetInnerHTML={{
-                        __html: comment.content.raw
-                          ? marked(comment.content.raw)
-                          : comment.content.rendered,
+                      label="Edit"
+                      showTooltip="true"
+                      icon="edit"
+                      onClick={() => {
+                        startEditing(comment);
                       }}
                     />
-                  </>
-                )}
+                    <Button
+                      icon="trash"
+                      label="Delete"
+                      showTooltip="true"
+                      className="button-link-delete"
+                      onClick={() => {
+                        confirmDeleteComment(comment.id);
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className="alpaca-comment-body">
+                  {editingCommentId === comment.id ? (
+                    <>
+                      <TextareaControl
+                        value={editingContent}
+                        onChange={setEditingContent}
+                        ref={editingRef}
+                      />
+                      <Button
+                        isPrimary
+                        onClick={() => saveEdit(comment.id)}
+                        disabled={isSubmitting}
+                      >
+                        Save
+                      </Button>
+                      <Button onClick={cancelEditing} disabled={isSubmitting}>
+                        Cancel
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <div
+                        className="alpaca-comment-content"
+                        dangerouslySetInnerHTML={{
+                          __html: comment.content.raw
+                            ? marked(comment.content.raw)
+                            : comment.content.rendered,
+                        }}
+                      />
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           ))}
