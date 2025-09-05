@@ -301,13 +301,6 @@ const AlpacaIssue = ({
       if (typeof onStatusChange === "function") {
         onStatusChange(issueId, nextStatus);
       }
-
-      wp.hooks.doAction(
-        "alpaca.statusChanged",
-        issueDetails,
-        currentStatusTerm.name,
-        nextStatus.name
-      );
     } catch (error) {
       showNotification("Failed to progress issue status.", "error");
     } finally {

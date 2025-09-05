@@ -6,7 +6,7 @@ import { fetchIssueCommentCount } from "../services/issueApi.js";
  * Handles automatic commenting on issues, such as when an issue is created.
  * This script hooks into WordPress actions to add comments via the REST API.
  */
-const { addAction } = wp.hooks;
+const { addAction, doAction } = wp.hooks;
 const apiFetch = wp.apiFetch;
 
 const postComment = async (issueOrId, content) => {
@@ -41,14 +41,10 @@ const postComment = async (issueOrId, content) => {
     }).then(async () => {
       const response = await fetchIssueCommentCount(postId);
       if (response && typeof response.comment_count !== "undefined") {
-        document.dispatchEvent(
-          new CustomEvent("alpaca:comment-count-changed", {
-            detail: {
-              issueId: postId.toString(),
-              newCount: response.comment_count,
-            },
-          })
-        );
+        doAction("alpaca.commentCountChanged", {
+          issueId: postId.toString(),
+          newCount: response.comment_count,
+        });
       }
     });
   } catch (error) {

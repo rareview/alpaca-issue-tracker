@@ -49,24 +49,23 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
   }, [fetchComments, commentRefreshKey]);
 
   useEffect(() => {
-    const handleCommentCountChanged = (event) => {
-      const { issueId: eventIssueId } = event.detail;
+    const handleCommentCountChanged = (data) => {
+      const { issueId: eventIssueId } = data;
       if (eventIssueId.toString() === issueId.toString()) {
         fetchComments();
-      } else {
-        console.log("commenting.jsx: issueId mismatch", eventIssueId, issueId);
       }
     };
 
-    document.addEventListener(
-      "alpaca:comment-count-changed",
+    wp.hooks.addAction(
+      "alpaca.commentCountChanged",
+      "alpaca/commenting",
       handleCommentCountChanged
     );
 
     return () => {
-      document.removeEventListener(
-        "alpaca:comment-count-changed",
-        handleCommentCountChanged
+      wp.hooks.removeAction(
+        "alpaca.commentCountChanged",
+        "alpaca/commenting"
       );
     };
   }, [issueId, fetchComments]);
@@ -102,14 +101,10 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
         const postId = newlyCreatedComment.post;
         fetchIssueCommentCount(postId).then((response) => {
           if (response && typeof response.comment_count !== "undefined") {
-            document.dispatchEvent(
-              new CustomEvent("alpaca:comment-count-changed", {
-                detail: {
-                  issueId: postId.toString(),
-                  newCount: response.comment_count,
-                },
-              })
-            );
+            wp.hooks.doAction("alpaca.commentCountChanged", {
+              issueId: postId.toString(),
+              newCount: response.comment_count,
+            });
           }
         }).catch((err) => {
           console.error("Error fetching updated comment count after adding:", err);
@@ -174,19 +169,13 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
 
         // Dispatch event to update comment count
         // The deletedComment object contains the post ID
-        console.log("deletedComment object:", deletedComment);
         const postId = deletedComment.previous.post;
-        console.log("postId from deletedComment:", postId);
         fetchIssueCommentCount(postId).then((response) => {
           if (response && typeof response.comment_count !== "undefined") {
-            document.dispatchEvent(
-              new CustomEvent("alpaca:comment-count-changed", {
-                detail: {
-                  issueId: postId.toString(),
-                  newCount: response.comment_count,
-                },
-              })
-            );
+            wp.hooks.doAction("alpaca.commentCountChanged", {
+              issueId: postId.toString(),
+              newCount: response.comment_count,
+            });
           }
         }).catch((err) => {
           console.error("Error fetching updated comment count:", err);

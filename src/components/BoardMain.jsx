@@ -179,20 +179,23 @@ function Board() {
   }, []);
 
   useEffect(() => {
-    const handleCommentCountChanged = (event) => {
-      const { issueId, newCount } = event.detail;
+    const handleCommentCountChanged = (data) => {
+      const { issueId, newCount } = data;
       handleCommentCountChange(issueId, newCount);
     };
 
-    document.addEventListener(
-      "alpaca:comment-count-changed",
+    wp.hooks.addAction(
+      "alpaca.commentCountChanged",
+      "alpaca/boardmain",
       handleCommentCountChanged
     );
-    return () =>
-      document.removeEventListener(
-        "alpaca:comment-count-changed",
-        handleCommentCountChanged
+
+    return () => {
+      wp.hooks.removeAction(
+        "alpaca.commentCountChanged",
+        "alpaca/boardmain"
       );
+    };
   }, [handleCommentCountChange]);
 
   const moveAllItemsToNextContainer = (sourceContainerId) => {
