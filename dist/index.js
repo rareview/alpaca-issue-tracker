@@ -13019,7 +13019,7 @@ const AlpacaIssue = ({ issueId, isOpen, onClose, onDelete, triggerRef, onAssigne
     ]);
     if (!isOpen) return null;
     return /*#__PURE__*/ React.createElement(React.Fragment, null, /*#__PURE__*/ React.createElement(Modal, {
-        size: "medium",
+        size: "large",
         onRequestClose: onClose,
         className: "alpaca-details-modal",
         headerActions: /*#__PURE__*/ React.createElement(React.Fragment, null, !isLastStatus && /*#__PURE__*/ React.createElement(Tooltip, {

@@ -364,7 +364,7 @@ const AlpacaIssue = ({
   return (
     <>
       <Modal
-        size="medium"
+        size="large"
         onRequestClose={onClose}
         className="alpaca-details-modal"
         headerActions={

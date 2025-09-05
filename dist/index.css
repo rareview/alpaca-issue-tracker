@@ -13,7 +13,6 @@
 }
 
 .alpaca-modal .small-wrapper {
-  text-wrap: balance;
   padding: .8rem 0 1rem;
 }
 
@@ -317,7 +316,6 @@
 }
 
 .wp-admin .alpaca-issue-details .alpaca-issue-main .alpaca-issue-title-input, .wp-admin .alpaca-issue-details .alpaca-issue-main h3 {
-  text-wrap: balance;
   margin: 5px 0;
   font-size: xx-large;
   font-weight: bold;
