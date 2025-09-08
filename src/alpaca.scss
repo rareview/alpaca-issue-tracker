@@ -553,7 +553,8 @@
     margin-left: 20px;
   }
   .alpaca-comment-content,
-  .alpaca-comment-form {
+  .alpaca-comment-form,
+  .alpaca-comment-body .components-textarea-control {
     margin-right: 100px;
   }
 
@@ -575,6 +576,20 @@
     font-size: 15px;
     line-height: 1.5em;
     margin-top: 0;
+  }
+  .alpaca-comment-content {
+    blockquote {
+      background: #eee;
+      padding: 1.5em 0.5em 0.5em 1.5em;
+      margin: 0 0 1.5em 0;
+      border-left: var(--timeline-width) solid #ccc;
+    }
+    ul {
+      padding-left: 1rem;
+      li {
+        list-style-type: disc;
+      }
+    }
   }
 
   .alpaca-status-manager {
