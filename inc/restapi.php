@@ -434,7 +434,7 @@ function alpaca_register_options_endpoints() {
 			array(
 				'methods'             => 'POST',
 				'callback'            => 'alpaca_update_default_status_option',
-				'permission_callback' => function () {
+			'permission_callback' => function () {
 					return current_user_can( 'manage_options' );
 				},
 				'args'                => array(
@@ -695,9 +695,11 @@ function alpaca_update_watchlist_callback( WP_REST_Request $request ) {
 	return alpaca_rest_response( array( 'success' => true, 'watchlist' => $watchlist ), 200 );
 }
 
+
 /* -------------------------------------------------------------
  * Statuses: list + update
  * ----------------------------------------------------------- */
+
 add_action( 'rest_api_init', 'alpaca_get_statuses_endpoint' );
 function alpaca_get_statuses_endpoint() {
 	register_rest_route(
@@ -885,4 +887,121 @@ function alpaca_update_checklist_callback( WP_REST_Request $request ) {
 		array( 'success' => true, 'message' => 'Checklist updated successfully.' ),
 		200
 	);
+}
+
+
+/* -------------------------------------------------------------
+ * Webhook Receiver
+ * ----------------------------------------------------------- */
+add_action( 'rest_api_init', 'alpaca_webhook_receiver_endpoint' );
+function alpaca_webhook_receiver_endpoint() {
+	register_rest_route(
+		'alpaca/v1',
+		'/webhook',
+		array(
+			'methods'             => 'POST',
+			'callback'            => 'alpaca_webhook_receiver_callback',
+			'permission_callback' => '__return_true', // Publicly accessible, secure with a token/HMAC later
+		)
+	);
+}
+
+function alpaca_webhook_receiver_callback( WP_REST_Request $request ) {
+	$body        = $request->get_body();
+	$params      = $request->get_params();
+	$data_to_log = $body;
+
+	// if it's a GitHub webhook...
+	// $signature = $_SERVER['HTTP_X_HUB_SIGNATURE_256'] ?? '';
+	$signature = get_option( 'alpaca_webhook_secret_github' );
+	if ( ! verify_github_payload( $body, $signature ) ) {
+		return new WP_REST_Response( [ 'error' => 'Invalid signature' ], 401 );
+	}
+
+	// Check if body is valid JSON
+	json_decode($body);
+	if (json_last_error() !== JSON_ERROR_NONE) {
+		// Fallback: log request params instead
+		$data_to_log = wp_json_encode($params, JSON_PRETTY_PRINT);
+	}
+	// for now: simple text log of whatever is received
+	$log_file  = plugin_dir_path(__DIR__) . 'webhook_log.txt';
+	$log_entry = sprintf(
+		"--- Logged at %s ---\n%s\n\n",
+		current_time('mysql'),
+		$data_to_log
+	);
+
+	// Safely append to log file
+	file_put_contents($log_file, $log_entry, FILE_APPEND | LOCK_EX);
+
+	return alpaca_rest_response( array( 'success' => true, 'message' => 'Webhook received.' ), 200 );
+}
+
+/* -------------------------------------------------------------
+ * Webhook Secrets
+ * ----------------------------------------------------------- */
+add_action( 'rest_api_init', 'alpaca_webhook_secrets_endpoint' );
+function alpaca_webhook_secrets_endpoint() {
+    register_rest_route(
+        'alpaca/v1',
+        '/webhook/secret/(?P<service>[a-zA-Z0-9_-]+)',
+        array(
+            'methods'             => 'GET',
+            'callback'            => 'alpaca_get_webhook_secret_callback',
+            'permission_callback' => function () {
+                return current_user_can( 'manage_options' );
+            },
+            'args'                => array(
+                'service' => array(
+                    'validate_callback' => function( $param ) {
+                        return is_string( $param ) && ! empty( trim( $param ) );
+                    },
+                ),
+            ),
+        )
+    );
+
+    register_rest_route(
+        'alpaca/v1',
+        '/webhook/secret/(?P<service>[a-zA-Z0-9_-]+)/regenerate',
+        array(
+            'methods'             => 'POST',
+            'callback'            => 'alpaca_regenerate_webhook_secret_callback',
+            'permission_callback' => function () {
+                return current_user_can( 'manage_options' );
+            },
+            'args'                => array(
+                'service' => array(
+                    'validate_callback' => function( $param ) {
+                        return is_string( $param ) && ! empty( trim( $param ) );
+                    },
+                ),
+            ),
+        )
+    );
+}
+
+function alpaca_get_or_generate_webhook_secret( $service_name, $regenerate = false ) {
+    $option_name = 'alpaca_webhook_secret_' . sanitize_key( $service_name );
+    $secret = get_option( $option_name );
+
+    if ( ! $secret || $regenerate ) {
+        $secret = wp_generate_password( 32, false ); // alphanumeric characters only
+        update_option( $option_name, $secret );
+    }
+
+    return $secret;
+}
+
+function alpaca_get_webhook_secret_callback( WP_REST_Request $request ) {
+    $service = $request->get_param('service');
+    $secret = alpaca_get_or_generate_webhook_secret( $service );
+    return alpaca_rest_response( array( 'success' => true, 'secret' => $secret ), 200 );
+}
+
+function alpaca_regenerate_webhook_secret_callback( WP_REST_Request $request ) {
+    $service = $request->get_param('service');
+    $secret = alpaca_get_or_generate_webhook_secret( $service, true );
+    return alpaca_rest_response( array( 'success' => true, 'secret' => $secret ), 200 );
 }

@@ -39,6 +39,10 @@
   margin-right: .5rem;
 }
 
+.wp-admin hr {
+  margin: 2em 0;
+}
+
 .wp-admin.post-type-issue .screenshot {
   margin: 1rem 0 -1rem;
 }
@@ -360,13 +364,6 @@
   display: none;
 }
 
-.wp-admin .alpaca-issue-details .alpaca-align-controls {
-  flex-direction: row;
-  align-items: center;
-  gap: 1rem;
-  display: flex;
-}
-
 .wp-admin .alpaca-issue-details .components-tab-panel__tab-content {
   padding: 1em 0;
 }
@@ -668,7 +665,14 @@
   display: flex;
 }
 
-.wp-admin #alpaca-settings .components-input-control__container {
+.wp-admin #alpaca-settings-internal .components-input-control__container {
   max-width: 25em;
+}
+
+.wp-admin .alpaca-align-controls {
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+  display: flex;
 }
 /*# sourceMappingURL=index.css.map */

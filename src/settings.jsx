@@ -1,6 +1,8 @@
 import StatusManager from "./components/StatusManager";
 import DefaultStatusSelector from "./components/DefaultStatusSelector";
 import EnableTestLogsControl from "./components/EnableTestLogsControl";
+import WebhookEndpointDisplay from "./components/WebhookEndpointDisplay";
+import WebhookServiceKey from "./components/WebhookServiceKey";
 const { useState, useEffect, useCallback } = wp.element;
 
 const AlpacaSettings = () => {
@@ -38,6 +40,8 @@ const AlpacaSettings = () => {
     setDefaultStatusId(newDefaultId);
   }, []);
 
+  const webhookServices = ["GitHub"];
+
   return (
     <>
       <StatusManager
@@ -48,7 +52,8 @@ const AlpacaSettings = () => {
         onStatusesChange={handleStatusesOrderChange}
         defaultStatusId={defaultStatusId}
       />
-      <hr style={{ marginTop: "2rem" }} />
+
+      <hr />
 
       <h3>Settings</h3>
 
@@ -59,6 +64,29 @@ const AlpacaSettings = () => {
             onDefaultChange={handleDefaultStatusChange}
           />
           <EnableTestLogsControl />
+        </tbody>
+      </table>
+
+      <hr />
+      <h3>Webhooks</h3>
+      <p>
+        Some cloud services can send a message back to your website when a
+        certain event occurs on their platform.
+      </p>
+      <table className="form-table">
+        <tbody>
+          <WebhookEndpointDisplay />
+        </tbody>
+      </table>
+      <p>
+        Some services will ask you to supply a 'secret' for security purposes.
+        Copy these random strings, and paste into the webhook creation screen.
+      </p>
+      <table className="form-table">
+        <tbody>
+          {webhookServices.map((service) => (
+            <WebhookServiceKey key={service} service={service} />
+          ))}
         </tbody>
       </table>
     </>

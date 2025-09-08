@@ -29,8 +29,13 @@ function alpaca_settings_page() {
 ?>
 	<div class="wrap">
 	<h1><?php echo esc_html__( 'Configure', 'alpaca' ); ?></h1>
-	<hr class="wp-header-end">
-	<div id="alpaca-settings"></div>
+
+	<div id="alpaca-settings-internal"></div>
+
+	<div id="alpaca-settings-plugin">
+	<?php do_action("alpaca-settings-plugin"); ?>
+	</div>
+
 	</div>
 	<?php
 }

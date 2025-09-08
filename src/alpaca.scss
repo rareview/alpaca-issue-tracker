@@ -38,6 +38,10 @@
 }
 
 .wp-admin {
+  hr {
+    margin: 2em 0;
+  }
+
   &.post-type-issue {
     .screenshot {
       margin: 1rem 0 -1rem 0;
@@ -350,13 +354,6 @@
       }
     }
 
-    .alpaca-align-controls {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      gap: 1rem;
-    }
-
     .components-tab-panel__tab-content {
       // any tab styling
       padding: 1em 0;
@@ -667,10 +664,17 @@
     }
   }
 
-  #alpaca-settings {
+  #alpaca-settings-internal {
     .components-input-control__container {
       max-width: 25em;
     }
+  }
+
+  .alpaca-align-controls {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1rem;
   }
 }
 

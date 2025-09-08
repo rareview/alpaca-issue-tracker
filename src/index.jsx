@@ -15,8 +15,11 @@ if (document.querySelector("#wp-admin-bar-alpaca-menu")) {
   );
 }
 
-if (document.querySelector("#alpaca-settings")) {
-  render(<AlpacaSettings />, document.querySelector("#alpaca-settings"));
+if (document.querySelector("#alpaca-settings-internal")) {
+  render(
+    <AlpacaSettings />,
+    document.querySelector("#alpaca-settings-internal")
+  );
 }
 
 if (document.querySelector("#alpaca-board")) {
