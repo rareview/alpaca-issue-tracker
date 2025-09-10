@@ -32,7 +32,7 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
     setError(null);
 
     wp.apiFetch({
-      path: `/wp/v2/comments?post=${issueId}&per_page=-1&orderby=date&order=desc&comment_type=issuecomment&show_hidden_comments=1&context=edit`,
+      path: `/wp/v2/comments?post=${issueId}&_embed=author&per_page=-1&orderby=date&order=desc&comment_type=issuecomment&show_hidden_comments=1&context=edit`,
     })
       .then((fetchedComments) => {
         setComments(fetchedComments);
@@ -234,16 +234,13 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
           comments.map((comment) => (
             <div className="alpaca-timeline-item" key={comment.id}>
               <div className="alpaca-timeline-marker">
-                <User
-                  user={{
-                    ...comment.author_meta,
-                    name: comment.author_name,
-                    avatar: comment.author_avatar_urls[96],
-                  }}
-                />
+                <User user={comment._embedded?.author?.[0]} showName={false} />
               </div>
               <div className="alpaca-timeline-content">
                 <div className="alpaca-comment-header">
+                  <div className="alpaca-comment-author">
+                    <strong>{comment.author_name}</strong>
+                  </div>
                   <div className="alpaca-comment-date">
                     <small>{new Date(comment.date).toLocaleString()}</small>
                   </div>

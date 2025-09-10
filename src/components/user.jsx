@@ -1,7 +1,7 @@
 const { useMemo } = wp.element;
 import { useUser } from '../hooks/useUser';
 
-const User = ({ user: userProp }) => {
+const User = ({ user: userProp, showAvatar = true, showName = true }) => {
   const { user, loading } = useUser(userProp);
 
   const { userName, avatarUrl } = useMemo(() => {
@@ -17,12 +17,12 @@ const User = ({ user: userProp }) => {
 
   return (
     <div className="alpaca-user" title={userName}>
-      {avatarUrl && (
+      {showAvatar && avatarUrl && (
         <div className="alpaca-user-avatar">
           <img src={avatarUrl} alt={`Avatar of ${userName}`} />
         </div>
       )}
-      <div className="alpaca-user-name">{userName}</div>
+      {showName && <div className="alpaca-user-name">{userName}</div>}
     </div>
   );
 };

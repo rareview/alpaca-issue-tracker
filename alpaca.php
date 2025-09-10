@@ -33,14 +33,11 @@ register_activation_hook( __FILE__, 'alpaca_activate' );
 function enqueue_alpaca_scripts() {
 
 	// because sometimes I get CORS issues when developing locally, due to port numbers
-	$scheme = ( ! empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] !== 'off' ) ? 'https' : 'http';
-	$host   = $_SERVER['HTTP_HOST']; // includes port if present (e.g. localhost:10005)
-	// Get plugin relative path
-	$plugin_path = str_replace( WP_PLUGIN_DIR, '', plugin_dir_path( __FILE__ ) );
-	// Build full URL with correct host:port
-	$plugin_url = $scheme . '://' . $host . '/wp-content/plugins' . $plugin_path;
-	// or if we trust the local server:
-	// $plugin_url = plugin_dir_url( __FILE__ );
+    $plugins_url_parts = parse_url( plugins_url( '/', __FILE__ ) );
+    $scheme = ( ! empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] !== 'off' ) ? 'https' : 'http';
+	$host   = $_SERVER['HTTP_HOST'];
+    $plugin_url = $scheme . '://' . $host . $plugins_url_parts['path'];
+	// todo: restore to: $plugin_url = plugin_dir_url( __FILE__ );
 
     wp_enqueue_script(
 		'alpaca',
@@ -51,6 +48,7 @@ function enqueue_alpaca_scripts() {
 			'wp-i18n',
 			'wp-components',
 			'wp-dom-ready',
+			'wp-data',
 		),
 		'1.00',
 		true

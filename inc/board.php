@@ -87,10 +87,7 @@ function alpaca_get_board_data() {
         ),
     ) );
 
-    if ( empty( $posts ) ) {
-        wp_cache_set( $cache_key, $board_data, $cache_group, MINUTE_IN_SECONDS );
-        return $board_data;
-    }
+    
 
     $post_ids = wp_list_pluck( $posts, 'ID' );
 
@@ -109,10 +106,12 @@ function alpaca_get_board_data() {
     }
 
     // Batch comment counts (only issuecomment type)
-    $placeholders   = implode( ',', array_fill( 0, count( $post_ids ), '%d' ) );
-    $comment_counts = $wpdb->get_results(
-        $wpdb->prepare(
-            "
+    $comment_counts = array();
+    if ( ! empty( $post_ids ) ) {
+        $placeholders   = implode( ',', array_fill( 0, count( $post_ids ), '%d' ) );
+        $comment_counts = $wpdb->get_results(
+            $wpdb->prepare(
+                "
             SELECT comment_post_ID as post_id, COUNT(*) as count
             FROM $wpdb->comments
             WHERE comment_post_ID IN ($placeholders)
@@ -120,10 +119,11 @@ function alpaca_get_board_data() {
               AND comment_approved = '1'
             GROUP BY comment_post_ID
             ",
-            array_merge( $post_ids, array( 'issuecomment' ) )
-        ),
-        OBJECT_K
-    );
+                array_merge( $post_ids, array( 'issuecomment' ) )
+            ),
+            OBJECT_K
+        );
+    }
 
     // Batch assignees
     $assignee_terms    = wp_get_object_terms( $post_ids, 'assignee', array( 'fields' => 'all_with_object_id' ) );

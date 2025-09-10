@@ -1,6 +1,6 @@
 import { generateCheckedItemComment } from "../../utils/comments.js";
 const { useState, useEffect, useRef, memo } = wp.element;
-const { useSelect } = wp.data;
+import { useUser } from "../../hooks/useUser.js";
 const { Button, BaseControl, CheckboxControl, TextControl } = wp.components;
 import {
   DragDropContext,
@@ -19,9 +19,7 @@ const Checklist = memo(
     const prevChecklistLength = useRef(checklistItems.length);
     const originalLabelRef = useRef(null);
 
-    const { currentUser } = useSelect((select) => ({
-      currentUser: select("core").getCurrentUser(),
-    }));
+    const { user: currentUser } = useUser(alpacaUserData.currentUserId);
 
     const saveChecklist = (items) => {
       setIsSaving(true);

@@ -1,5 +1,17 @@
 <?php
-add_action( 'init', function() {
+
+function alpaca_register_taxonomy( $slug, $customargs=array() ) {
+    $defaults = array(
+        'public'             => true,
+        'publicly_queryable' => false,
+        'label' => $slug,
+        'hierarchical' => false,
+    );
+    $args = array_merge( $defaults, $customargs );
+    register_taxonomy( $slug, 'issue', $args );
+}
+
+function alpaca_register_cpts_and_taxonomies() {
 
     register_term_meta( 'status', 'term_score', array(
         'type'         => 'number',
@@ -34,16 +46,6 @@ add_action( 'init', function() {
 		// ),
     ) );
 
-    function alpaca_register_taxonomy( $slug, $customargs=array() ) {
-        $defaults = array(
-            'public'             => true,
-            'publicly_queryable' => false,
-            'label' => $slug,
-            'hierarchical' => false,
-        );
-        $args = array_merge( $defaults, $customargs );
-        register_taxonomy( $slug, 'issue', $args );
-    }
     alpaca_register_taxonomy( 'browser' );
     alpaca_register_taxonomy( 'phptemplate' );
     alpaca_register_taxonomy( 'type' );
@@ -144,7 +146,8 @@ add_action( 'init', function() {
         echo '</div>';
     }
 
-});
+}
+add_action( 'init', 'alpaca_register_cpts_and_taxonomies' );
 
 add_filter('alpaca_board_statuses', function( $statuses ) {
     $desired_statuses = array();
@@ -196,6 +199,13 @@ function alpaca_get_statuses( $order = 'ASC' ) {
 		'orderby' => 'meta_value_num',
 		'order' => $order,
 	));
+    if ( 
+        empty( $terms )
+        || ! is_array( $terms )
+        || is_wp_error( $terms )
+    ) {
+        return array();
+    }
     foreach( $terms as $term ) {
         $score = get_term_meta( $term->term_id, 'term_score', true );
         $term->term_score = $score;
