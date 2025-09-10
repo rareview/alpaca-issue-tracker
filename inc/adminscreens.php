@@ -27,7 +27,7 @@ add_action( 'admin_menu', function() {
 function alpaca_settings_page() {
 	// https://developer.wordpress.org/news/2024/03/how-to-use-wordpress-react-components-for-plugin-pages/
 ?>
-	<div class="wrap">
+	<div class="alpaca-settings wrap">
 	<h1><?php echo esc_html__( 'Configure', 'alpaca' ); ?></h1>
 
 	<div id="alpaca-settings-internal"></div>

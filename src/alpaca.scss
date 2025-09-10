@@ -38,10 +38,6 @@
 }
 
 .wp-admin {
-  hr {
-    margin: 2em 0;
-  }
-
   &.post-type-issue {
     .screenshot {
       margin: 1rem 0 -1rem 0;
@@ -664,9 +660,15 @@
     }
   }
 
-  #alpaca-settings-internal {
-    .components-input-control__container {
-      max-width: 25em;
+  .alpaca-settings {
+    hr {
+      margin: 2em 0;
+    }
+
+    #alpaca-settings-internal {
+      .components-input-control__container {
+        max-width: 25em;
+      }
     }
   }
 
