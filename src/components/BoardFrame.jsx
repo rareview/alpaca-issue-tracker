@@ -1,7 +1,6 @@
 const { useState, useEffect, useRef, useCallback } = wp.element;
 const { Popover, Button, ComboboxControl, MenuGroup, MenuItem } = wp.components;
 import Board from "./BoardMain";
-import { getCookie, setCookie } from "../utils/cookies";
 import { fetchAllAssignees } from "../services/userApi";
 
 export function AlpacaBoard() {

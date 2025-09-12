@@ -1,32 +1,21 @@
-import AlpacaCommenting from "./commenting.jsx";
 import Checklist from "./issue/checklist.jsx";
-import { generateStatusChangeComment } from "../utils/comments.js";
-
 const { useState, useEffect, useRef, useMemo, useCallback } = wp.element;
 import { getTabsConfig } from "../utils/tabsConfig";
-const { useDebounce } = wp.compose;
 const { Modal, TabPanel, Button, Tooltip } = wp.components;
 
 import useIssueData from "../hooks/useIssueData";
 import useUserManagement from "../hooks/useUserManagement";
 import useLoadingStates from "../hooks/useLoadingStates";
 
-import {
-  processAssigneeChanges,
-  createAssigneeComments,
-} from "../utils/assigneeUtils";
+import { processAssigneeChanges } from "../utils/assigneeUtils";
 import { parseChecklist } from "../utils/checklistUtils";
 import { fetchStatuses, updateIssue } from "../services/issueApi";
 
 import AssigneeSelector from "./issue/AssigneeSelector";
 import DeadlineControl from "./issue/DeadlineControl";
-import JsonTable from "./issue/JsonTable";
-import ReportTab from "./issue/ReportTab";
 import TabContent from "./issue/TabContent";
 import Lightbox from "./issue/Lightbox";
 const { decodeEntities } = wp.htmlEntities;
-const { date } = wp;
-const datesettings = wp.date.getSettings();
 
 // Custom hooks
 

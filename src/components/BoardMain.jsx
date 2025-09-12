@@ -4,13 +4,11 @@ const { decodeEntities } = wp.htmlEntities;
 import { DragDropContext } from "@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration";
 
 import AlpacaIssue from "./issue";
-import Item from "./Item";
 import Container from "./Container";
 
 import { setCookie, getCookie } from "../utils/cookies";
 import { transformDataForBoard, saveBoardOrder } from "../utils/data";
 import { getUser } from "../hooks/useUser";
-import { fetchIssue, fetchIssueCommentCount } from "../services/issueApi";
 
 /**
  * Main board component.
@@ -488,13 +486,15 @@ function Board() {
     wp.apiFetch({
       path: `/issue/v1/delete/${issueId}`,
       method: "DELETE",
-    }).then(() => {
-      wp.hooks.doAction("alpaca.issueDeleted", issueId);
-    }).catch((err) => {
-      // Revert if the delete fails
-      console.error("Error deleting issue:", err);
-      setContainers(originalContainers);
-    });
+    })
+      .then(() => {
+        wp.hooks.doAction("alpaca.issueDeleted", issueId);
+      })
+      .catch((err) => {
+        // Revert if the delete fails
+        console.error("Error deleting issue:", err);
+        setContainers(originalContainers);
+      });
   };
 
   useEffect(() => {

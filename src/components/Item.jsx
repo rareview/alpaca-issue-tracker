@@ -5,9 +5,6 @@ import ChecklistIcon from "./icons/ChecklistIcon";
 import CommentIcon from "./icons/CommentIcon";
 import CalendarIcon from "./icons/CalendarIcon";
 
-const { date } = wp;
-const datesettings = wp.date.getSettings();
-
 const Item = forwardRef(
   (
     {

@@ -263,6 +263,9 @@
           }
         }
         .alpaca-item-icon {
+          text-wrap: nowrap;
+          display: flex;
+          align-items: center;
           svg {
             margin-right: 3px;
             vertical-align: middle;
