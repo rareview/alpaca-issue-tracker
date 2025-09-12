@@ -262,6 +262,15 @@
             }
           }
         }
+        .alpaca-item-comment-count,
+        .alpaca-item-checklist-count {
+          .dashicons,
+          svg {
+            margin-right: 3px;
+            vertical-align: middle;
+            margin-top: -2px;
+          }
+        }
         .alpaca-user {
           font-size: 0.8rem;
           color: #999;

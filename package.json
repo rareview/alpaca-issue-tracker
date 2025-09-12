@@ -3,7 +3,8 @@
   "scripts": {
     "start": "parcel src/index.jsx",
     "build": "parcel build src/index.jsx",
-    "watch": "parcel watch src/index.jsx"
+    "watch": "parcel watch src/index.jsx",
+    "zip": "zip -r alpaca.zip . -x '*.git*' '*.DS_Store*' '*node_modules*' '*src*' 'playground*' 'package.json' 'package-lock.json' '*.parcel-cache*' '*Sites*' 'payload-sample.json' 'webhook_log.txt' 'NOTES.md' '.cache*' 'dist/index.js.map' 'dist/index.css.map'"
   },
   "devDependencies": {
     "@parcel/transformer-sass": "^2.15.4",

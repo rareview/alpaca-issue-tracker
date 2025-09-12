@@ -185,12 +185,15 @@ function alpaca_get_board_data() {
                 }
             }
 
-            $meta_keys_for_card = [
-                'deadline',
-            ];
             $meta_vals_for_card = [];
-            foreach( $meta_keys_for_card as $meta ) {
-                $meta_vals_for_card[ $meta ] = get_post_meta( $post->ID, $meta );
+            $meta_vals_for_card['deadline'] = get_post_meta( $post->ID, 'deadline' );
+
+            $checklist_json = get_post_meta( $post->ID, 'checklist', true );
+            if ( $checklist_json ) {
+                $decoded_checklist = json_decode( $checklist_json, true );
+                if (is_array($decoded_checklist)) {
+                    $meta_vals_for_card['checklist'] = $decoded_checklist;
+                }
             }
 
             $issues[] = array(

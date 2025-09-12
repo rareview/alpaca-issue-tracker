@@ -1,6 +1,7 @@
 const { forwardRef } = wp.element;
 import { useWatchlist } from "../context/WatchlistContext";
 import User from "./User";
+import ChecklistIcon from "./icons/ChecklistIcon";
 
 const { date } = wp;
 const datesettings = wp.date.getSettings();
@@ -53,6 +54,12 @@ const Item = forwardRef(
 
     const lateClass = diffDays < 0 ? "is-late" : "";
 
+    const checklistItems = meta?.checklist || [];
+    const totalChecklistItems = checklistItems.length;
+    const checkedChecklistItems = checklistItems.filter(
+      (item) => item.checked !== 0
+    ).length;
+
     return (
       <div
         ref={ref}
@@ -100,6 +107,13 @@ const Item = forwardRef(
                 aria-hidden="true"
               ></span>
               {comment_count}
+            </div>
+          )}
+
+          {totalChecklistItems > 0 && (
+            <div className="alpaca-item-checklist-count has-dashicon">
+              <ChecklistIcon />
+              {`${checkedChecklistItems}/${totalChecklistItems}`}
             </div>
           )}
 
