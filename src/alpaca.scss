@@ -6,10 +6,6 @@
 
 .alpaca-wrap {
   flex-wrap: nowrap;
-  overflow-x: scroll;
-  .alpaca-container {
-    flex-shrink: 0;
-  }
 }
 
 .alpaca-modal {
@@ -95,21 +91,14 @@
   #alpaca-board {
     .alpaca-wrap {
       display: flex;
-      flex-direction: row;
-      padding: 10px 0;
-      overflow-x: auto;
     }
     .alpaca-container {
       margin: 0 10px 0px 0;
       padding: 0 10px 10px 10px;
-      width: 16vw;
       background: #f9f9f9;
       border: 2px solid #e4e4e4;
       border-radius: 4px;
-      height: 75vh;
-      overflow-y: auto;
       display: flex;
-      flex-direction: column;
       .alpaca-container-header {
         padding: 5px 0;
         display: grid;
@@ -158,31 +147,21 @@
         }
       }
       &.hidden {
-        width: auto;
-        padding: 0 0 10px 0;
         opacity: 0.5;
-        .alpaca-container-header {
-          height: 100%;
-          writing-mode: vertical-rl;
-          transform: rotate(180deg);
-          h2,
-          input {
-            height: 100%;
-          }
-          h2 {
-            margin: 5px 0;
-          }
-          input {
-            margin: 5px -1px;
-          }
-        }
-        .alpaca-item {
+        .alpaca-items {
           display: none;
         }
       }
     }
+    .alpaca-items {
+      padding: 0 1px;
+    }
     .alpaca-item,
     .alpaca-item-dragging {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5em;
+      line-height: 2em;
       .alpaca-item-upper {
         display: grid;
         grid-template-columns: 1fr 3em;
@@ -197,22 +176,22 @@
       background-color: white;
 
       .alpaca-item-deadline {
-        padding: 2px 8px;
         border-radius: 8px;
-        .dashicons {
-          margin-right: 4px;
-        }
       }
       &.is-late {
         .alpaca-item-deadline {
           background-color: red;
           color: white;
+          margin: 2px 0;
+          padding: 0 8px;
         }
       }
       &[data-days-left="0"] {
         .alpaca-item-deadline {
           background-color: black;
           color: white;
+          margin: 2px 0;
+          padding: 0 8px;
         }
       }
       &[data-days-left="1"],
@@ -225,6 +204,8 @@
         .alpaca-item-deadline {
           background-color: orange;
           color: black;
+          margin: 2px 0;
+          padding: 0 8px;
         }
       }
 
@@ -245,11 +226,12 @@
         display: flex;
         align-items: center;
         color: #999;
-        margin: 8px 0 4px 0;
+        margin: 4px 0;
+        flex-wrap: wrap;
         & > div {
           display: flex;
           align-items: center;
-          margin-right: 12px;
+          margin-right: 10px;
         }
         .alpaca-item-assignees {
           .alpaca-user-name {
@@ -690,6 +672,87 @@
   }
 }
 
-@media (min-width: 825px) {
-  // placeholder
+@media (min-width: 861px) {
+  .wp-admin {
+    #alpaca-board {
+      .alpaca-wrap {
+        overflow-x: scroll;
+        flex-direction: row;
+        padding: 10px 0;
+        overflow-x: auto;
+        .alpaca-container {
+          flex-shrink: 0;
+        }
+      }
+      .alpaca-container {
+        width: 16vw;
+        height: 75vh;
+        display: flex;
+        flex-direction: column;
+        &.hidden {
+          width: auto;
+          padding: 0 0 10px 0;
+          .alpaca-container-header {
+            height: 100%;
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+            h2,
+            input {
+              height: 100%;
+            }
+            h2 {
+              margin: 5px 0;
+            }
+            input {
+              margin: 5px -1px;
+            }
+          }
+        }
+        .alpaca-items {
+          overflow-y: auto;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 860px) {
+  .wp-admin {
+    #alpaca-board {
+      .alpaca-wrap {
+        flex-direction: column;
+      }
+      .alpaca-container {
+        width: calc(100% - 2em);
+        margin-top: 1em;
+        overflow-x: auto;
+        display: flex;
+        flex-direction: column;
+        height: auto;
+        .alpaca-items {
+          flex-direction: row;
+          display: flex;
+          gap: 1em;
+          overflow-x: auto;
+          .alpaca-item {
+            width: 200px;
+            height: 140px;
+            flex-shrink: 0;
+            .alpaca-item-assignees {
+              &[data-assignees="1"] {
+                .alpaca-user .alpaca-user-name {
+                  display: none;
+                  padding-left: 0;
+                }
+              }
+            }
+          }
+        }
+        &.hidden {
+          width: calc(100% - 2em);
+          padding: 0 10px 0 10px;
+        }
+      }
+    }
+  }
 }
