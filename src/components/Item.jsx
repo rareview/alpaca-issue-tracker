@@ -3,6 +3,7 @@ import { useWatchlist } from "../context/WatchlistContext";
 import User from "./User";
 import ChecklistIcon from "./icons/ChecklistIcon";
 import CommentIcon from "./icons/CommentIcon";
+import CalendarIcon from "./icons/CalendarIcon";
 
 const { date } = wp;
 const datesettings = wp.date.getSettings();
@@ -102,21 +103,22 @@ const Item = forwardRef(
           )}
 
           {typeof comment_count !== "undefined" && comment_count > 0 && (
-            <div className="alpaca-item-comment-count has-dashicon">
+            <div className="alpaca-item-icon alpaca-item-comment-count">
               <CommentIcon />
               {comment_count}
             </div>
           )}
 
           {totalChecklistItems > 0 && (
-            <div className="alpaca-item-checklist-count has-dashicon">
+            <div className="alpaca-item-icon alpaca-item-checklist-count">
               <ChecklistIcon />
               {`${checkedChecklistItems}/${totalChecklistItems}`}
             </div>
           )}
 
           {isValidDeadline && (
-            <div className="alpaca-item-deadline">
+            <div className="alpaca-item-icon alpaca-item-deadline">
+              <CalendarIcon />
               {diffDays > 0
                 ? deadlineFormatted
                 : diffDays === 0
