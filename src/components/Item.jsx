@@ -2,6 +2,7 @@ const { forwardRef } = wp.element;
 import { useWatchlist } from "../context/WatchlistContext";
 import User from "./User";
 import ChecklistIcon from "./icons/ChecklistIcon";
+import CommentIcon from "./icons/CommentIcon";
 
 const { date } = wp;
 const datesettings = wp.date.getSettings();
@@ -102,10 +103,7 @@ const Item = forwardRef(
 
           {typeof comment_count !== "undefined" && comment_count > 0 && (
             <div className="alpaca-item-comment-count has-dashicon">
-              <span
-                className="dashicons dashicons-admin-comments"
-                aria-hidden="true"
-              ></span>
+              <CommentIcon />
               {comment_count}
             </div>
           )}
