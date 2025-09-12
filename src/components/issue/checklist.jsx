@@ -1,4 +1,3 @@
-import { generateCheckedItemComment } from "../../utils/comments.js";
 const { useState, useEffect, useRef, memo } = wp.element;
 import { useUser } from "../../hooks/useUser.js";
 const { Button, BaseControl, CheckboxControl, TextControl } = wp.components;
@@ -27,7 +26,14 @@ const Checklist = memo(
         path: `/issue/v1/checklist/${issueId}`,
         method: "POST",
         data: items,
-      }).finally(() => setIsSaving(false));
+      })
+        .then(() => {
+          wp.hooks.doAction("alpaca.checklistChanged", {
+            issueId,
+            checklist: items,
+          });
+        })
+        .finally(() => setIsSaving(false));
     };
 
     const addChecklistItem = () => {
@@ -260,3 +266,24 @@ const Checklist = memo(
 );
 
 export default Checklist;
+
+wp.hooks.addFilter(
+  "alpaca.issueTabContent",
+  "alpaca/checklist",
+  (content, issueData) => {
+    const { id, meta, isSaving, setIsSaving } = issueData;
+    const checklistItems = meta.checklist || [];
+
+    return (
+      <>
+        {content}
+        <Checklist
+          issueId={id}
+          initialChecklistItems={checklistItems}
+          isSaving={isSaving}
+          setIsSaving={setIsSaving}
+        />
+      </>
+    );
+  }
+);

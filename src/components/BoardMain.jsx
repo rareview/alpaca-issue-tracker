@@ -195,6 +195,48 @@ function Board() {
     };
   }, [handleCommentCountChange]);
 
+  const handleChecklistChange = useCallback((issueId, newChecklist) => {
+    setContainers((prevContainers) =>
+      prevContainers.map((container) => {
+        const itemIndex = container.items.findIndex(
+          (item) => item.id === issueId.toString()
+        );
+
+        if (itemIndex === -1) {
+          return container;
+        }
+
+        const newItems = [...container.items];
+        newItems[itemIndex] = {
+          ...newItems[itemIndex],
+          meta: {
+            ...newItems[itemIndex].meta,
+            checklist: newChecklist,
+          },
+        };
+
+        return { ...container, items: newItems };
+      })
+    );
+  }, []);
+
+  useEffect(() => {
+    const checklistChangedCallback = (data) => {
+      const { issueId, checklist } = data;
+      handleChecklistChange(issueId, checklist);
+    };
+
+    wp.hooks.addAction(
+      "alpaca.checklistChanged",
+      "alpaca/boardmain",
+      checklistChangedCallback
+    );
+
+    return () => {
+      wp.hooks.removeAction("alpaca.checklistChanged", "alpaca/boardmain");
+    };
+  }, [handleChecklistChange]);
+
   const moveAllItemsToNextContainer = (sourceContainerId) => {
     const containersCopy = containers.map((c) => ({
       ...c,
