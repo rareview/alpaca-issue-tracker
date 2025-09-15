@@ -89,6 +89,7 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
         post: issueId,
         comment_type: "issuecomment",
         status: "approve",
+        author_user_agent: "human",
       },
     })
       .then((newlyCreatedComment) => {
@@ -231,74 +232,83 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
         )}
 
         {!isLoadingComments &&
-          comments.map((comment) => (
-            <div className="alpaca-timeline-item" key={comment.id}>
-              <div className="alpaca-timeline-marker">
-                <User user={comment._embedded?.author?.[0]} showName={false} />
-              </div>
-              <div className="alpaca-timeline-content">
-                <div className="alpaca-comment-header">
-                  <div className="alpaca-comment-author">
-                    <strong>{comment.author_name}</strong>
-                  </div>
-                  <div className="alpaca-comment-date">
-                    <small>{new Date(comment.date).toLocaleString()}</small>
-                  </div>
-                  <div className="alpaca-comment-buttons">
-                    <Button
-                      label="Edit"
-                      showTooltip="true"
-                      icon="edit"
-                      onClick={() => {
-                        startEditing(comment);
-                      }}
-                    />
-                    <Button
-                      icon="trash"
-                      label="Delete"
-                      showTooltip="true"
-                      className="button-link-delete"
-                      onClick={() => {
-                        confirmDeleteComment(comment.id);
-                      }}
-                    />
-                  </div>
+          comments.map((comment) => {
+            return (
+              <div
+                className="alpaca-timeline-item"
+                key={comment.id}
+                data-source={comment.author_user_agent}
+              >
+                <div className="alpaca-timeline-marker">
+                  <User
+                    user={comment._embedded?.author?.[0]}
+                    showName={false}
+                  />
                 </div>
-                <div className="alpaca-comment-body">
-                  {editingCommentId === comment.id ? (
-                    <>
-                      <TextareaControl
-                        value={editingContent}
-                        onChange={setEditingContent}
-                        ref={editingRef}
-                      />
+                <div className="alpaca-timeline-content">
+                  <div className="alpaca-comment-header">
+                    <div className="alpaca-comment-author">
+                      <strong>{comment.author_name}</strong>
+                    </div>
+                    <div className="alpaca-comment-date">
+                      <small>{new Date(comment.date).toLocaleString()}</small>
+                    </div>
+                    <div className="alpaca-comment-buttons">
                       <Button
-                        isPrimary
-                        onClick={() => saveEdit(comment.id)}
-                        disabled={isSubmitting}
-                      >
-                        Save
-                      </Button>
-                      <Button onClick={cancelEditing} disabled={isSubmitting}>
-                        Cancel
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <div
-                        className="alpaca-comment-content"
-                        dangerouslySetInnerHTML={{
-                          __html: comment.content.raw
-                            ? marked(comment.content.raw)
-                            : comment.content.rendered,
+                        label="Edit"
+                        showTooltip="true"
+                        icon="edit"
+                        onClick={() => {
+                          startEditing(comment);
                         }}
                       />
-                    </>
-                  )}
+                      <Button
+                        icon="trash"
+                        label="Delete"
+                        showTooltip="true"
+                        className="button-link-delete"
+                        onClick={() => {
+                          confirmDeleteComment(comment.id);
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div className="alpaca-comment-body">
+                    {editingCommentId === comment.id ? (
+                      <>
+                        <TextareaControl
+                          value={editingContent}
+                          onChange={setEditingContent}
+                          ref={editingRef}
+                        />
+                        <Button
+                          isPrimary
+                          onClick={() => saveEdit(comment.id)}
+                          disabled={isSubmitting}
+                        >
+                          Save
+                        </Button>
+                        <Button onClick={cancelEditing} disabled={isSubmitting}>
+                          Cancel
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <div
+                          className="alpaca-comment-content"
+                          dangerouslySetInnerHTML={{
+                            __html: comment.content.raw
+                              ? marked(comment.content.raw)
+                              : comment.content.rendered,
+                          }}
+                        />
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
         {/* Modal for delete */}
         {deleteCommentId && (

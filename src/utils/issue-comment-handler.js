@@ -37,6 +37,7 @@ const postComment = async (issueOrId, content) => {
         content: content,
         comment_type: "issuecomment",
         status: "approve",
+        author_user_agent: "audit",
       },
     }).then(async (newlyCreatedComment) => {
       wp.hooks.doAction("alpaca.commentPosted", newlyCreatedComment);
