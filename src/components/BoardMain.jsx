@@ -10,6 +10,8 @@ import { setCookie, getCookie } from "../utils/cookies";
 import { transformDataForBoard, saveBoardOrder } from "../utils/data";
 import { getUser } from "../hooks/useUser";
 
+import { fetchStatuses, updateIssue } from "../services/issueApi";
+
 /**
  * Main board component.
  */
@@ -133,13 +135,9 @@ function Board() {
     const movedItemId = parseInt(draggableId, 10);
     const newStatusTermId = parseInt(destination.droppableId, 10);
 
-    wp.apiFetch({
-      path: `/issue/v1/update/${movedItemId}`,
-      method: "POST",
-      data: {
-        taxonomies: {
-          status: [newStatusTermId],
-        },
+    updateIssue(movedItemId, {
+      taxonomies: {
+        status: [newStatusTermId],
       },
     }).catch((err) => {
       console.error("Error updating issue:", err);
@@ -268,13 +266,9 @@ function Board() {
         nextContainer.title
       );
 
-      wp.apiFetch({
-        path: `/issue/v1/update/${item.id}`,
-        method: "POST",
-        data: {
-          taxonomies: {
-            status: [parseInt(nextContainer.id, 10)],
-          },
+      updateIssue(item.id, {
+        taxonomies: {
+          status: [parseInt(nextContainer.id, 10)],
         },
       }).catch((err) => console.error(`Error updating issue ${item.id}:`, err));
     });
