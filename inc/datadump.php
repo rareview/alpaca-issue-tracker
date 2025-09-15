@@ -57,12 +57,15 @@ add_action('admin_footer', 'alpaca_add_datadump', 9999);
         "queryVars" => $wp_query->query_vars,
         "queriedObject" => $wp_query->get_queried_object(),
         "type" => $type,
-        "template" => basename($template),
         "bodyClasses" => get_body_class(),
     );
 
+    if( $template ) {
+        $wp_data['template'] = basename($template);
+    }
+
     $user_data = array(
-        "id" => $user->id,
+        "id" => $user->ID,
         "displayName" => $user->display_name
     );
 
