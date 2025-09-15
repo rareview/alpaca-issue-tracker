@@ -493,6 +493,10 @@
     display: flex;
     margin-bottom: 18px; // Space between timeline items
     position: relative; // For positioning the marker
+
+    &[data-source="audit"] {
+      font-style: italic;
+    }
   }
 
   .alpaca-timeline-marker {

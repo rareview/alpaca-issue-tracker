@@ -6,6 +6,99 @@ const { TextareaControl, Button, Spinner, Modal } = wp.components;
 
 import { marked } from "marked";
 
+const Comment = (props) => {
+  const {
+    comment,
+    startEditing,
+    confirmDeleteComment,
+    editingCommentId,
+    editingContent,
+    setEditingContent,
+    editingRef,
+    saveEdit,
+    cancelEditing,
+    isSubmitting,
+  } = props;
+
+  const processedContent = React.useMemo(() => {
+    return comment.content.raw
+      ? marked(comment.content.raw)
+      : comment.content.rendered;
+  }, [comment.content.raw, comment.content.rendered]);
+
+  return (
+    <div
+      className="alpaca-timeline-item"
+      data-source={comment.author_user_agent}
+    >
+      <div className="alpaca-timeline-marker">
+        <User user={comment._embedded?.author?.[0]} showName={false} />
+      </div>
+      <div className="alpaca-timeline-content">
+        <div className="alpaca-comment-header">
+          <div className="alpaca-comment-author">
+            <strong>{comment.author_name}</strong>
+          </div>
+          <div className="alpaca-comment-date">
+            <small>{new Date(comment.date).toLocaleString()}</small>
+          </div>
+          <div className="alpaca-comment-buttons">
+            <Button
+              label="Edit"
+              showTooltip="true"
+              icon="edit"
+              onClick={() => {
+                startEditing(comment);
+              }}
+            />
+            <Button
+              icon="trash"
+              label="Delete"
+              showTooltip="true"
+              className="button-link-delete"
+              onClick={() => {
+                confirmDeleteComment(comment.id);
+              }}
+            />
+          </div>
+        </div>
+        <div className="alpaca-comment-body">
+          {editingCommentId === comment.id ? (
+            <>
+              <TextareaControl
+                value={editingContent}
+                onChange={setEditingContent}
+                ref={editingRef}
+              />
+              <Button
+                isPrimary
+                onClick={() => saveEdit(comment.id)}
+                disabled={isSubmitting}
+              >
+                Save
+              </Button>
+              <Button onClick={cancelEditing} disabled={isSubmitting}>
+                Cancel
+              </Button>
+            </>
+          ) : (
+            <>
+              <div
+                className="alpaca-comment-content"
+                dangerouslySetInnerHTML={{
+                  __html: processedContent,
+                }}
+              />
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const MemoizedComment = React.memo(Comment);
+
 const Commenting = ({ issueId, commentRefreshKey }) => {
   const [comments, setComments] = useState([]);
   const [isLoadingComments, setIsLoadingComments] = useState(true);
@@ -232,83 +325,21 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
         )}
 
         {!isLoadingComments &&
-          comments.map((comment) => {
-            return (
-              <div
-                className="alpaca-timeline-item"
-                key={comment.id}
-                data-source={comment.author_user_agent}
-              >
-                <div className="alpaca-timeline-marker">
-                  <User
-                    user={comment._embedded?.author?.[0]}
-                    showName={false}
-                  />
-                </div>
-                <div className="alpaca-timeline-content">
-                  <div className="alpaca-comment-header">
-                    <div className="alpaca-comment-author">
-                      <strong>{comment.author_name}</strong>
-                    </div>
-                    <div className="alpaca-comment-date">
-                      <small>{new Date(comment.date).toLocaleString()}</small>
-                    </div>
-                    <div className="alpaca-comment-buttons">
-                      <Button
-                        label="Edit"
-                        showTooltip="true"
-                        icon="edit"
-                        onClick={() => {
-                          startEditing(comment);
-                        }}
-                      />
-                      <Button
-                        icon="trash"
-                        label="Delete"
-                        showTooltip="true"
-                        className="button-link-delete"
-                        onClick={() => {
-                          confirmDeleteComment(comment.id);
-                        }}
-                      />
-                    </div>
-                  </div>
-                  <div className="alpaca-comment-body">
-                    {editingCommentId === comment.id ? (
-                      <>
-                        <TextareaControl
-                          value={editingContent}
-                          onChange={setEditingContent}
-                          ref={editingRef}
-                        />
-                        <Button
-                          isPrimary
-                          onClick={() => saveEdit(comment.id)}
-                          disabled={isSubmitting}
-                        >
-                          Save
-                        </Button>
-                        <Button onClick={cancelEditing} disabled={isSubmitting}>
-                          Cancel
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <div
-                          className="alpaca-comment-content"
-                          dangerouslySetInnerHTML={{
-                            __html: comment.content.raw
-                              ? marked(comment.content.raw)
-                              : comment.content.rendered,
-                          }}
-                        />
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          comments.map((comment) => (
+            <MemoizedComment
+              key={comment.id}
+              comment={comment}
+              startEditing={startEditing}
+              confirmDeleteComment={confirmDeleteComment}
+              editingCommentId={editingCommentId}
+              editingContent={editingContent}
+              setEditingContent={setEditingContent}
+              editingRef={editingRef}
+              saveEdit={saveEdit}
+              cancelEditing={cancelEditing}
+              isSubmitting={isSubmitting}
+            />
+          ))}
 
         {/* Modal for delete */}
         {deleteCommentId && (
