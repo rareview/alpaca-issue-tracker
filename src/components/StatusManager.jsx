@@ -8,6 +8,8 @@ import {
 } from "@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration";
 import DragHandleIcon from "./icons/DragHandleIcon";
 
+import { fetchStatuses, updateIssue } from "../services/issueApi";
+
 const StatusManager = ({
   statuses,
   fetchStatuses,
@@ -120,7 +122,7 @@ const StatusManager = ({
   const performDelete = async () => {
     if (!statusToDelete) return;
 
-    const { term_id: id } = statusToDelete;
+    const { term_id: id, name: oldStatusName } = statusToDelete;
     setStatusToDelete(null); // Close modal immediately
 
     try {
@@ -143,6 +145,10 @@ const StatusManager = ({
           newStatusId = sortedStatuses[deletedIndex - 1].term_id;
         }
       }
+
+      const newStatus = localStatuses.find((s) => s.term_id === newStatusId);
+      const newStatusName = newStatus ? newStatus.name : "Unknown";
+
       console.log("New status ID for reassignment:", newStatusId);
 
       // Find all posts with the status to be deleted
@@ -158,15 +164,18 @@ const StatusManager = ({
         );
         const updatePromises = issuesToUpdate.map((issue) => {
           console.log(`Updating issue ${issue.id} to status ${newStatusId}`);
-          return wp
-            .apiFetch({
-              path: `/issue/v1/update/${issue.id}`,
-              method: "POST",
-              data: {
-                taxonomies: {
-                  status: [newStatusId],
-                },
-              },
+          return updateIssue(issue.id, {
+            taxonomies: {
+              status: [newStatusId],
+            },
+          })
+            .then(() => {
+              wp.hooks.doAction(
+                "alpaca.statusChanged",
+                issue,
+                oldStatusName,
+                newStatusName
+              );
             })
             .catch((err) => {
               console.error(`Failed to update issue ${issue.id}:`, err);
