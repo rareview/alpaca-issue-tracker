@@ -160,10 +160,12 @@ const StatusManager = ({
           console.log(`Updating issue ${issue.id} to status ${newStatusId}`);
           return wp
             .apiFetch({
-              path: `/wp/v2/issue/${issue.id}`,
+              path: `/issue/v1/update/${issue.id}`,
               method: "POST",
               data: {
-                status: [newStatusId],
+                taxonomies: {
+                  status: [newStatusId],
+                },
               },
             })
             .catch((err) => {
