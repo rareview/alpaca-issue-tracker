@@ -1,7 +1,11 @@
 const { useState, useEffect, useRef } = wp.element;
 const { Button, Spinner, Modal, TextControl } = wp.components;
 
-import { DragDropContext, Droppable, Draggable, } from "@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration";
+import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+} from "@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration";
 import DragHandleIcon from "./icons/DragHandleIcon";
 
 const StatusManager = ({
@@ -113,21 +117,78 @@ const StatusManager = ({
     setStatusToDelete(null);
   };
 
-  const performDelete = () => {
+  const performDelete = async () => {
     if (!statusToDelete) return;
 
     const { term_id: id } = statusToDelete;
     setStatusToDelete(null); // Close modal immediately
 
-    wp.apiFetch({
-      path: `/wp/v2/status/${id}?force=true`,
-      method: "DELETE",
-    })
-      .then(() => fetchStatuses())
-      .catch((err) => {
-        console.error("Error deleting status:", err);
-        alert("Error deleting status: " + err.message);
+    try {
+      // The localStatuses are already sorted by term_score
+      const sortedStatuses = localStatuses;
+      const deletedIndex = sortedStatuses.findIndex((s) => s.term_id === id);
+
+      if (deletedIndex === -1) {
+        throw new Error("Status to delete not found.");
+      }
+
+      // Determine the new status ID
+      let newStatusId = null;
+      if (sortedStatuses.length > 1) {
+        // If deleting the first status, assign to the next one
+        if (deletedIndex === 0) {
+          newStatusId = sortedStatuses[1].term_id;
+        } else {
+          // Otherwise, assign to the previous one
+          newStatusId = sortedStatuses[deletedIndex - 1].term_id;
+        }
+      }
+      console.log("New status ID for reassignment:", newStatusId);
+
+      // Find all posts with the status to be deleted
+      const issuesToUpdate = await wp.apiFetch({
+        path: `/wp/v2/issue?status=${id}&per_page=-1`,
       });
+      console.log("Issues to update:", issuesToUpdate);
+
+      // Re-categorize posts if a new status is determined
+      if (newStatusId && issuesToUpdate.length > 0) {
+        console.log(
+          `Found ${issuesToUpdate.length} issues to recategorize to status ${newStatusId}.`
+        );
+        const updatePromises = issuesToUpdate.map((issue) => {
+          console.log(`Updating issue ${issue.id} to status ${newStatusId}`);
+          return wp
+            .apiFetch({
+              path: `/wp/v2/issue/${issue.id}`,
+              method: "POST",
+              data: {
+                status: [newStatusId],
+              },
+            })
+            .catch((err) => {
+              console.error(`Failed to update issue ${issue.id}:`, err);
+              return null; // Don't let one failure stop others
+            });
+        });
+        await Promise.all(updatePromises);
+        console.log("Finished recategorizing issues.");
+      }
+
+      // Delete the status term
+      console.log(`Deleting status ${id}`);
+      await wp.apiFetch({
+        path: `/wp/v2/status/${id}?force=true`,
+        method: "DELETE",
+      });
+      console.log("Status deleted.");
+
+      // Refresh the statuses list
+      fetchStatuses();
+    } catch (err) {
+      console.error("Error during status deletion process:", err);
+      alert("Error deleting status: " + err.message);
+    }
   };
 
   const handleAddStatus = () => {
