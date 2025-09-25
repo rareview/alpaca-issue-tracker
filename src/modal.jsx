@@ -90,6 +90,7 @@ const AlpacaModal = () => {
         },
         client: alpaca_data.device,
         screenshot,
+        errors: alpaca_data.errors,
       };
 
       const payload = { ...submitted, ...server };

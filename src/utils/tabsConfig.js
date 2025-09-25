@@ -21,5 +21,15 @@ export const getTabsConfig = (issueDetails) => {
           },
         ]
       : []),
+    ...(issueDetails?.meta?.errors &&
+    issueDetails.meta.errors.length > 2 // >2 to avoid empty array '[]'
+      ? [
+          {
+            name: "errors",
+            title: "Errors",
+            className: "errors",
+          },
+        ]
+      : []),
   ];
 };

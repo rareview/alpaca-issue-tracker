@@ -34,6 +34,8 @@ const TabContent = memo(
         return <JsonTable data={issueDetails.meta.queriedObject} />;
       case "headers":
         return <JsonTable data={issueDetails.meta.headers} />;
+      case "jserrors":
+        return null;
       default:
         return null;
     }

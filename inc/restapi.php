@@ -217,6 +217,31 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 		}
 	}
 
+	// Save JavaScript errors if present
+	$errors = alpaca_arr_get( $payload, array( 'errors' ), null );
+	if ( ! empty( $errors ) && is_array( $errors ) ) {
+		// Basic sanitization of error fields
+		$sanitized_errors = array();
+		foreach ( $errors as $error ) {
+			if ( is_array( $error ) ) {
+				$sanitized_error = array(
+					'message'  => isset( $error['message'] ) ? sanitize_text_field( $error['message'] ) : '',
+					'filename' => isset( $error['filename'] ) ? sanitize_text_field( $error['filename'] ) : '',
+					'lineno'   => isset( $error['lineno'] ) ? (int) $error['lineno'] : 0,
+					'colno'    => isset( $error['colno'] ) ? (int) $error['colno'] : 0,
+					'stack'    => isset( $error['stack'] ) ? esc_textarea( $error['stack'] ) : '',
+				);
+				if ( ! empty( $error['reason'] ) ) {
+					$sanitized_error['reason'] = esc_textarea( is_string( $error['reason'] ) ? $error['reason'] : wp_json_encode( $error['reason'] ) );
+				}
+				$sanitized_errors[] = $sanitized_error;
+			}
+		}
+		if ( ! empty( $sanitized_errors ) ) {
+			update_post_meta( $post_id, 'errors', wp_json_encode( $sanitized_errors, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) );
+		}
+	}
+
 	return alpaca_rest_response(
 		array(
 			'success' => true,

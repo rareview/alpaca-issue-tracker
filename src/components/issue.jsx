@@ -15,6 +15,7 @@ import AssigneeSelector from "./issue/AssigneeSelector";
 import DeadlineControl from "./issue/DeadlineControl";
 import TabContent from "./issue/TabContent";
 import Lightbox from "./issue/Lightbox";
+import ErrorsTab from "./issue/ErrorsTab.jsx";
 const { decodeEntities } = wp.htmlEntities;
 
 // Custom hooks
@@ -473,17 +474,22 @@ const AlpacaIssue = ({
                 initialTabName="comments"
                 tabs={tabsConfig}
               >
-                {(tab) => (
-                  <TabContent
-                    tab={tab}
-                    issueDetails={issueDetails}
-                    issueId={issueId}
-                    commentRefreshKey={commentRefreshKey}
-                    onScreenshotDelete={handleScreenshotDelete}
-                    loadingStates={loadingStates}
-                    onScreenshotClick={setLightboxSrc}
-                  />
-                )}
+                {(tab) => {
+                  if (tab.name === "errors") {
+                    return <ErrorsTab errorsJson={issueDetails.meta.errors} />;
+                  }
+                  return (
+                    <TabContent
+                      tab={tab}
+                      issueDetails={issueDetails}
+                      issueId={issueId}
+                      commentRefreshKey={commentRefreshKey}
+                      onScreenshotDelete={handleScreenshotDelete}
+                      loadingStates={loadingStates}
+                      onScreenshotClick={setLightboxSrc}
+                    />
+                  );
+                }}
               </TabPanel>
             </div>
           </div>
