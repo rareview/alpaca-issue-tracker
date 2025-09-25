@@ -107,13 +107,54 @@ add_action('admin_footer', 'alpaca_add_datadump', 9999);
             "version": b.os.version,
             "versionName": b.os.versionName
         },
-        // "referrer": document.referrer,
+        "errors": [],
     };
 
+    // Track window resize
     window.addEventListener('resize', function() {
         alpaca_data.device.browser.width = window.innerWidth;
         alpaca_data.device.browser.height = window.innerHeight;
     });
+
+
+    // Catch uncaught JS runtime errors
+    window.addEventListener('error', function(event) {
+        const errorDetails = {
+            type: "error",
+            message: event.message,
+            filename: event.filename,
+            lineno: event.lineno,
+            colno: event.colno,
+        };
+        if (event.error && event.error.stack) {
+            errorDetails.stack = event.error.stack;
+        }
+        alpaca_data.errors.push(errorDetails);
+    });
+
+    // Catch unhandled promise rejections
+    window.addEventListener('unhandledrejection', function(event) {
+        const errorDetails = {
+            type: "unhandledrejection",
+            message: event.reason && event.reason.message ? event.reason.message : String(event.reason),
+            stack: event.reason && event.reason.stack ? event.reason.stack : null,
+        };
+        alpaca_data.errors.push(errorDetails);
+    });
+
+    // Capture console.error calls as well
+    (function() {
+        const origConsoleError = console.error;
+        console.error = function(...args) {
+            alpaca_data.errors.push({
+                type: "console.error",
+                message: args.map(a => (a instanceof Error ? a.message : String(a))).join(" "),
+                stack: args.find(a => a instanceof Error)?.stack || null,
+            });
+            origConsoleError.apply(console, args);
+        };
+    })();
+
 </script>
 
 <?php
