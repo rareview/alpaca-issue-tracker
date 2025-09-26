@@ -1,4 +1,18 @@
-# 👋 Hello!
+# ⏩ I just want to try the thing
+
+Quick and dirty 'just get it running' instructions:
+
+- Clone the repository
+- `npm install`
+- `npm run build`
+- `npm run zip`: you should now have `alpaca.zip` in your folder
+- Go to WordPress → wp-admin → Plugins → Add Plugin → Upload Plugin
+- Upload `alpaca.zip`
+- Activate
+- You should now have a Project Board in your `wp-admin` sidebar...
+- ... and an `Issues` menu in your admin toolbar along the top of the screen
+
+# 📚 Back story
 
 _(16 Sep 2025)_ It will probably help if I provide some context about what is (and isn't) happening here.
 
