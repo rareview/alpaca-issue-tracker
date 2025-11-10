@@ -1,20 +1,20 @@
-import StatusManager from "./components/StatusManager";
-import DefaultStatusSelector from "./components/DefaultStatusSelector";
-import EnableTestLogsControl from "./components/EnableTestLogsControl";
-import WebhookEndpointDisplay from "./components/WebhookEndpointDisplay";
-import WebhookServiceKey from "./components/WebhookServiceKey";
+import StatusManager from './components/StatusManager';
+import DefaultStatusSelector from './components/DefaultStatusSelector';
+import EnableTestLogsControl from './components/EnableTestLogsControl';
+import WebhookEndpointDisplay from './components/WebhookEndpointDisplay';
+import WebhookServiceKey from './components/WebhookServiceKey';
 const { useState, useEffect, useCallback } = wp.element;
 
 const AlpacaSettings = () => {
   const [statuses, setStatuses] = useState([]);
   const [currentStatuses, setCurrentStatuses] = useState([]); // Track current order
-  const [defaultStatusId, setDefaultStatusId] = useState(""); // Track default status
+  const [defaultStatusId, setDefaultStatusId] = useState(''); // Track default status
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const fetchStatuses = useCallback(() => {
     setIsLoading(true);
-    wp.apiFetch({ path: "/alpaca/v1/statuses" })
+    wp.apiFetch({ path: '/alpaca/v1/statuses' })
       .then((data) => {
         setStatuses(data);
         setCurrentStatuses(data); // Initialize current order
@@ -40,7 +40,7 @@ const AlpacaSettings = () => {
     setDefaultStatusId(newDefaultId);
   }, []);
 
-  const webhookServices = ["GitHub"];
+  const webhookServices = ['GitHub'];
 
   return (
     <>
@@ -79,8 +79,9 @@ const AlpacaSettings = () => {
         </tbody>
       </table>
       <p>
-        Some services will ask you to supply a 'secret' for security purposes.
-        Copy these random strings, and paste into the webhook creation screen.
+        Some services will ask you to supply a &apos;secret&apos; for security
+        purposes. Copy these random strings, and paste into the webhook creation
+        screen.
       </p>
       <table className="form-table">
         <tbody>

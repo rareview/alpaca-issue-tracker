@@ -19,15 +19,18 @@ export const useClipboard = () => {
       return;
     }
 
-    navigator.clipboard.writeText(text).then(() => {
-      if (onSuccess) {
-        onSuccess();
-      }
-    }).catch(err => {
-      if (onError) {
-        onError(err);
-      }
-    });
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        if (onSuccess) {
+          onSuccess();
+        }
+      })
+      .catch((err) => {
+        if (onError) {
+          onError(err);
+        }
+      });
   };
 
   return { isClipboardSupported, copyToClipboard };

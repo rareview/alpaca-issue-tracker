@@ -11,7 +11,7 @@ const AssigneeSelector = memo(
       onChange={onChange}
       disabled={isLoading}
     />
-  )
+  ),
 );
 
 export default AssigneeSelector;

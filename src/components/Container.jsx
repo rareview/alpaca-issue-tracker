@@ -1,10 +1,24 @@
-import { useState, useEffect, useRef } from "react";
+const { useState, useEffect, useRef } = wp.element;
 const { DropdownMenu, TextControl } = wp.components;
-import { Droppable } from "@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration";
-import DraggableItem from "./DraggableItem";
+import { Droppable } from '@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration';
+import DraggableItem from './DraggableItem';
+import PropTypes from 'prop-types';
 
 /**
  * Container component (delegates rename to parent via onRename).
+ *
+ * @param {Object}   root0                 - Props object
+ * @param {number}   root0.id              - Container ID
+ * @param {string}   root0.title           - Container title
+ * @param {Array}    root0.items           - Array of items in the container
+ * @param {Function} root0.onItemClick     - Callback when item is clicked
+ * @param {Function} root0.onMoveAllToNext - Callback to move all items to next container
+ * @param {Function} root0.onDeleteAll     - Callback to delete all items
+ * @param {boolean}  root0.isLastContainer - Whether this is the last container
+ * @param {boolean}  root0.isHidden        - Whether container is hidden
+ * @param {Function} root0.onToggleHidden  - Callback to toggle hidden state
+ * @param {Function} root0.onRename        - Callback to rename container
+ * @return {JSX.Element} Container component
  */
 function Container({
   id,
@@ -42,12 +56,13 @@ function Container({
 
   const handleRename = () => {
     setIsRenaming(false);
-    if (newTitle.trim() !== "" && newTitle !== title) {
-      if (typeof onRename === "function") {
+    if (newTitle.trim() !== '' && newTitle !== title) {
+      if (typeof onRename === 'function') {
         onRename(id, newTitle); // delegate to parent
       } else {
+        // eslint-disable-next-line no-console
         console.warn(
-          "Container: onRename prop is missing or not a function. Rename not applied."
+          'Container: onRename prop is missing or not a function. Rename not applied.',
         );
       }
     } else {
@@ -61,10 +76,10 @@ function Container({
   };
 
   const handleKeyDown = (event) => {
-    if (event.key === "Enter") {
+    if (event.key === 'Enter') {
       event.preventDefault();
       handleRename();
-    } else if (event.key === "Escape") {
+    } else if (event.key === 'Escape') {
       event.preventDefault();
       handleCancelRename();
     }
@@ -72,24 +87,24 @@ function Container({
 
   const menuControls = [
     {
-      icon: "edit",
-      title: "Rename",
+      icon: 'edit',
+      title: 'Rename',
       onClick: () => {
         setNewTitle(title); // ensure starting from current prop
         setIsRenaming(true);
       },
     },
     {
-      icon: isHidden ? "visibility" : "hidden",
-      title: isHidden ? "Expand Column" : "Collapse Column",
+      icon: isHidden ? 'visibility' : 'hidden',
+      title: isHidden ? 'Expand Column' : 'Collapse Column',
       onClick: toggleHidden,
     },
   ];
 
   if (!isLastContainer) {
     menuControls.push({
-      icon: "arrow-right-alt",
-      title: "Move All To Next Column",
+      icon: 'arrow-right-alt',
+      title: 'Move All To Next Column',
       onClick: () => onMoveAllToNext(id),
       disabled: !hasItems,
     });
@@ -97,15 +112,15 @@ function Container({
 
   if (isLastContainer) {
     menuControls.push({
-      icon: "trash",
-      title: "Delete All",
+      icon: 'trash',
+      title: 'Delete All',
       onClick: () => onDeleteAll(id),
     });
   }
 
   return (
     <div
-      className={`alpaca-container ${isHidden ? "hidden" : ""}`}
+      className={`alpaca-container ${isHidden ? 'hidden' : ''}`}
       data-id={id}
     >
       <div className="alpaca-container-header">
@@ -133,7 +148,7 @@ function Container({
             ref={provided.innerRef}
             {...provided.droppableProps}
             className={`alpaca-items ${
-              snapshot.isDraggingOver ? "dragging-over" : ""
+              snapshot.isDraggingOver ? 'dragging-over' : ''
             }`}
           >
             {hasItems ? (
@@ -160,5 +175,26 @@ function Container({
     </div>
   );
 }
+
+Container.propTypes = {
+  id: PropTypes.number.isRequired,
+  title: PropTypes.string.isRequired,
+  items: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      content: PropTypes.string,
+      assignees: PropTypes.array,
+      comment_count: PropTypes.number,
+      meta: PropTypes.object,
+    }),
+  ).isRequired,
+  onItemClick: PropTypes.func.isRequired,
+  onMoveAllToNext: PropTypes.func.isRequired,
+  onDeleteAll: PropTypes.func.isRequired,
+  isLastContainer: PropTypes.bool.isRequired,
+  isHidden: PropTypes.bool.isRequired,
+  onToggleHidden: PropTypes.func.isRequired,
+  onRename: PropTypes.func.isRequired,
+};
 
 export default Container;

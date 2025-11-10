@@ -1,15 +1,31 @@
 const { useState, useRef, memo } = wp.element;
+import PropTypes from 'prop-types';
+
 const { BaseControl, Popover, DatePicker, Button } = wp.components;
 
 const { date } = wp;
 const datesettings = wp.date.getSettings();
 
+/**
+ * DeadlineControl component for managing issue deadlines.
+ *
+ * @param {Object}   root0           - Props object
+ * @param {string}   root0.deadline  - Deadline date string
+ * @param {Function} root0.onChange  - Change handler
+ * @param {Function} root0.onClear   - Clear handler
+ * @param {boolean}  root0.isLoading - Loading state
+ * @return {JSX.Element} DeadlineControl component
+ */
 const DeadlineControl = memo(({ deadline, onChange, onClear, isLoading }) => {
   const [isEditingDeadline, setIsEditingDeadline] = useState(false);
   const calendarButtonRef = useRef();
 
   return (
-    <BaseControl label="Deadline" className="alpaca-deadline-control">
+    <BaseControl
+      label="Deadline"
+      id="alpaca-deadline-control"
+      className="alpaca-deadline-control"
+    >
       <div className="alpaca-deadline">
         <div className="alpaca-deadline-date">
           <input
@@ -18,7 +34,7 @@ const DeadlineControl = memo(({ deadline, onChange, onClear, isLoading }) => {
             value={
               deadline
                 ? date.format(datesettings.formats.date, deadline)
-                : "No deadline set."
+                : 'No deadline set.'
             }
             onClick={() => setIsEditingDeadline((prev) => !prev)}
             ref={calendarButtonRef}
@@ -56,5 +72,14 @@ const DeadlineControl = memo(({ deadline, onChange, onClear, isLoading }) => {
     </BaseControl>
   );
 });
+
+DeadlineControl.propTypes = {
+  deadline: PropTypes.string,
+  onChange: PropTypes.func.isRequired,
+  onClear: PropTypes.func.isRequired,
+  isLoading: PropTypes.bool,
+};
+
+DeadlineControl.displayName = 'DeadlineControl';
 
 export default DeadlineControl;

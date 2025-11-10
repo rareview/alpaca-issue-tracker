@@ -10,7 +10,7 @@ export const createAssigneeComments = async (
   allUserObjects,
   createComment,
   generateComment,
-  issueId
+  issueId,
 ) => {
   const commentPromises = [];
 
@@ -25,7 +25,7 @@ export const createAssigneeComments = async (
     const user = allUserObjects.find((u) => u.name === name);
     if (user) {
       commentPromises.push(
-        createComment(issueId, generateComment(user, false))
+        createComment(issueId, generateComment(user, false)),
       );
     }
   });

@@ -13,7 +13,7 @@ const transformDataForBoard = (data) => {
       id: issue.id.toString(),
       content: decodeEntities(issue.title),
       assignees: issue.assignees || [],
-      comment_count: issue.comment_count,
+      commentCount: issue.comment_count,
       meta: issue.meta,
     })),
   }));
@@ -23,19 +23,19 @@ const transformDataForBoard = (data) => {
  * Save board order in DOM order, including container IDs & titles.
  */
 const saveBoardOrder = () => {
-  const containersInDomOrder = document.querySelectorAll(".alpaca-container");
+  const containersInDomOrder = document.querySelectorAll('.alpaca-container');
 
   const data = Array.from(containersInDomOrder).map((containerEl) => {
     const id = parseInt(containerEl.dataset.id, 10);
-    const title = containerEl.querySelector("h2").textContent.trim();
+    const title = containerEl.querySelector('h2').textContent.trim();
     // Select all items except for the empty placeholder.
-    const items = containerEl.querySelectorAll(".alpaca-item:not(.empty)");
+    const items = containerEl.querySelectorAll('.alpaca-item:not(.empty)');
 
     return {
       id,
       title,
       issues: Array.from(items).map((itemEl) =>
-        parseInt(itemEl.dataset.id, 10)
+        parseInt(itemEl.dataset.id, 10),
       ),
     };
   });
@@ -43,15 +43,15 @@ const saveBoardOrder = () => {
   // Use wp.apiFetch to send data to the REST API endpoint.
   // It automatically handles nonces for authenticated requests.
   wp.apiFetch({
-    path: "/alpaca/v1/board",
-    method: "POST",
-    data: data,
+    path: '/alpaca/v1/board',
+    method: 'POST',
+    data,
   })
-    .then((res) => {
+    .then((_res) => {
       // saved successfully
     })
     .catch((err) => {
-      console.error("Error saving board order:", err);
+      console.error('Error saving board order:', err);
     });
 };
 

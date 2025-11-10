@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<ruleset name="Alpaca">
+  <description>WordPress Coding Standards for Alpaca Plugin</description>
+
+  <!-- Paths to check -->
+  <file>./alpaca.php</file>
+  <file>./includes</file>
+  <file>./lib</file>
+  <file>./uninstall.php</file>
+
+  <!-- Excluded paths -->
+  <exclude-pattern>/vendor/</exclude-pattern>
+  <exclude-pattern>/node_modules/</exclude-pattern>
+  <exclude-pattern>/dist/</exclude-pattern>
+
+  <!-- Use WordPress standard -->
+  <rule ref="WordPress">
+    <!-- Allow long lines for URLs -->
+    <exclude name="Generic.Files.LineLength"/>
+    <!-- Allow file operations for creating security files during activation -->
+    <exclude name="WordPress.WP.AlternativeFunctions"/>
+    <!-- Allow error_log for webhook debugging -->
+    <exclude name="WordPress.PHP.DevelopmentFunctions"/>
+    <!-- Allow commented out code in uninstall.php -->
+    <exclude name="Squiz.PHP.CommentedOutCode"/>
+  </rule>
+
+  <!-- Custom naming prefix requirement -->
+  <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+    <properties>
+      <property name="prefixes" value="alpaca"/>
+    </properties>
+  </rule>
+</ruleset>

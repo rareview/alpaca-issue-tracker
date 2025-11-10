@@ -1,7 +1,7 @@
 const { memo } = wp.element;
-import AlpacaCommenting from "../commenting.jsx";
-import JsonTable from "./JsonTable";
-import ReportTab from "./ReportTab";
+import Commenting from '../Comment';
+import JsonTable from './JsonTable';
+import ReportTab from './ReportTab';
 
 const TabContent = memo(
   ({
@@ -14,14 +14,11 @@ const TabContent = memo(
     onScreenshotClick,
   }) => {
     switch (tab.name) {
-      case "comments":
+      case 'comments':
         return (
-          <AlpacaCommenting
-            issueId={issueId}
-            commentRefreshKey={commentRefreshKey}
-          />
+          <Commenting issueId={issueId} commentRefreshKey={commentRefreshKey} />
         );
-      case "report":
+      case 'report':
         return (
           <ReportTab
             issueDetails={issueDetails}
@@ -30,16 +27,16 @@ const TabContent = memo(
             onScreenshotClick={onScreenshotClick}
           />
         );
-      case "queriedobject":
+      case 'queriedobject':
         return <JsonTable data={issueDetails.meta.queriedObject} />;
-      case "headers":
+      case 'headers':
         return <JsonTable data={issueDetails.meta.headers} />;
-      case "jserrors":
+      case 'jserrors':
         return null;
       default:
         return null;
     }
-  }
+  },
 );
 
 export default TabContent;

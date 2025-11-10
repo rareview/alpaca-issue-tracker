@@ -15,5 +15,5 @@ export default {
   render,
   createPortal,
   unstable_batchedUpdates,
-  version
+  version,
 };

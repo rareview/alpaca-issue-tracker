@@ -11,12 +11,15 @@
 .alpaca-modal {
   background: white;
   color: black;
+
   .small-wrapper {
     padding: 0.8rem 0 1rem;
   }
+
   small {
     font-size: 12px;
   }
+
   p {
     font-size: 0.8rem;
     margin-top: 0;
@@ -36,7 +39,8 @@
 .wp-admin {
   &.post-type-issue {
     .screenshot {
-      margin: 1rem 0 -1rem 0;
+      margin: 1rem 0 -1rem;
+
       img {
         max-width: 100%;
         height: auto;
@@ -60,15 +64,18 @@
       width: fit-content;
       background: transparent;
       border-width: 0;
+
       & > div {
         flex: none;
       }
+
       &:focus-within {
         outline: none;
         box-shadow: none;
         border-width: 0;
       }
     }
+
     .components-combobox-control {
       width: 300px;
     }
@@ -76,13 +83,16 @@
 
   .alpaca-control-popover {
     width: 300px;
-    padding: 8px 16px 16px 16px;
+    padding: 8px 16px 16px;
+
     .alpaca-control {
       padding: 8px 0;
     }
+
     .components-menu-group {
       border: none;
     }
+
     .components-menu-group__label {
       margin: 0;
     }
@@ -92,18 +102,21 @@
     .alpaca-wrap {
       display: flex;
     }
+
     .alpaca-container {
-      margin: 0 10px 0px 0;
-      padding: 0 10px 10px 10px;
+      margin: 0 10px 0 0;
+      padding: 0 10px 10px;
       background: #f9f9f9;
       border: 2px solid #e4e4e4;
       border-radius: 4px;
       display: flex;
+
       .alpaca-container-header {
         padding: 5px 0;
         display: grid;
         grid-template-columns: 1fr 40px;
         align-items: center;
+
         h2,
         .alpaca-container-title-input input {
           margin: 0;
@@ -112,33 +125,40 @@
           padding: 0;
           border: none;
           background: transparent;
+
           &:focus {
             outline: none;
             box-shadow: none;
           }
         }
+
         .alpaca-container-title-input > div {
-          margin: -1px 0 0 0;
+          margin: -1px 0 0;
           padding: 0;
         }
+
         .alpaca-item-count {
           font-size: smaller;
           font-weight: 200;
           margin: 0.5rem;
           opacity: 0.5;
         }
+
         .alpaca-container-controls {
           padding: 2px 0;
           display: flex;
           align-items: center;
           flex-direction: row;
+
           .components-button:focus:not(:disabled) {
             box-shadow: none;
           }
+
           button {
             margin-left: 2px;
             opacity: 0.2;
             transition: opacity 0.2s ease-in-out;
+
             &:hover {
               opacity: 1;
               cursor: pointer;
@@ -146,28 +166,34 @@
           }
         }
       }
+
       &.hidden {
         opacity: 0.5;
+
         .alpaca-items {
           display: none;
         }
       }
     }
+
     .alpaca-items {
       padding: 0 2px;
     }
+
     .alpaca-item,
     .alpaca-item-dragging {
       display: flex;
       flex-direction: column;
       gap: 0.5em;
       line-height: 2em;
+
       .alpaca-item-upper {
         display: grid;
         grid-template-columns: 1fr 3em;
         grid-template-rows: auto;
         gap: 0;
       }
+
       transition: opacity 0.2s ease-in-out;
       box-shadow: 0 0 2px #888;
       border-radius: 8px;
@@ -178,6 +204,7 @@
       .alpaca-item-deadline {
         border-radius: 8px;
       }
+
       &.is-late {
         .alpaca-item-deadline {
           background-color: red;
@@ -186,7 +213,8 @@
           padding: 0 8px;
         }
       }
-      &[data-days-left="0"] {
+
+      &[data-days-left='0'] {
         .alpaca-item-deadline {
           background-color: black;
           color: white;
@@ -194,13 +222,14 @@
           padding: 0 8px;
         }
       }
-      &[data-days-left="1"],
-      &[data-days-left="2"],
-      &[data-days-left="3"],
-      &[data-days-left="4"],
-      &[data-days-left="5"],
-      &[data-days-left="6"],
-      &[data-days-left="7"] {
+
+      &[data-days-left='1'],
+      &[data-days-left='2'],
+      &[data-days-left='3'],
+      &[data-days-left='4'],
+      &[data-days-left='5'],
+      &[data-days-left='6'],
+      &[data-days-left='7'] {
         .alpaca-item-deadline {
           background-color: orange;
           color: black;
@@ -215,11 +244,13 @@
         font-size: 0.9rem;
         line-height: 1.4;
       }
+
       .alpaca-item-controls {
         grid-column: 2;
         grid-row: 1;
         text-align: right;
       }
+
       .alpaca-item-meta {
         grid-column: 1;
         grid-row: 2;
@@ -228,53 +259,64 @@
         color: #999;
         margin: 4px 0;
         flex-wrap: wrap;
+
         & > div {
           display: flex;
           align-items: center;
           margin-right: 10px;
         }
+
         .alpaca-item-assignees {
           .alpaca-user-name {
             display: none;
           }
-          &[data-assignees="1"] {
+
+          &[data-assignees='1'] {
             .alpaca-user .alpaca-user-name {
               display: block;
               padding-left: 6px;
             }
           }
         }
+
         .alpaca-item-icon {
           text-wrap: nowrap;
           display: flex;
           align-items: center;
+
           svg {
             margin-right: 3px;
             vertical-align: middle;
             margin-top: -2px;
           }
         }
+
         .alpaca-user {
           font-size: 0.8rem;
           color: #999;
           display: flex;
           align-items: center;
           margin-left: -8px;
+
           &:first-child {
             margin-left: 0;
           }
         }
       }
     }
+
     .alpaca-item-dragging {
       cursor: grabbing;
       transform: rotate(3deg);
+
       // note: function to match admin colors in alpaca.php
     }
+
     .alpaca-item.empty {
       font-style: italic;
       background-color: transparent;
       border: 1px dashed #aaa;
+
       .alpaca-item-controls {
         display: none;
       }
@@ -282,7 +324,7 @@
   }
 
   .components-modal__frame.alpaca-details-modal {
-    margin: 3rem auto 0 auto;
+    margin: 3rem auto 0;
   }
 
   .alpaca-deadline-popover {
@@ -296,13 +338,14 @@
       .alpaca-issue-slug {
         font-family: monospace;
       }
+
       .alpaca-issue-title-wrapper {
         display: flex;
         flex-direction: row;
-        align-items: center;
         gap: 0.5rem;
         align-items: flex-end;
       }
+
       .alpaca-issue-title-input,
       h3 {
         font-weight: bold;
@@ -318,25 +361,31 @@
       gap: 0.5rem;
       align-items: start;
       padding: 1rem 0;
+
       & > div {
         flex: 0 0 50%;
       }
+
       input {
         width: 100%;
       }
+
       .alpaca-deadline {
         display: flex;
         flex-direction: row;
         gap: 1em;
+
         input {
           padding: 2px 7px;
         }
+
         button {
           span {
             text-decoration: none;
           }
         }
       }
+
       .components-form-token-field__help {
         display: none;
       }
@@ -349,40 +398,47 @@
 
     .alpaca-screenshot-wrapper {
       position: relative;
+
       .alpaca-screenshot {
         width: 100%;
         height: auto;
       }
+
       .alpaca-screenshot-delete {
         position: absolute;
         top: 0;
         right: 0;
       }
     }
+
     table {
       border: 0;
+
       th {
         font-weight: bold;
         text-align: left;
         vertical-align: top;
         padding: 5px 1rem 5px 0;
       }
+
       td {
         padding: 5px 0;
         word-break: break-all;
       }
     }
+
     .components-panel {
       margin-bottom: 1rem;
+
       .alpaca-modal-textarea {
         width: 100%;
       }
+
       textarea {
         width: 100%;
         font-family: monospace; /* Often good for preformatted text */
         white-space: pre;
-        overflow-x: hidden;
-        overflow-y: scroll;
+        overflow: hidden scroll;
       }
     }
   }
@@ -391,6 +447,7 @@
     .alpaca-checklist {
       padding-bottom: 0.5rem;
     }
+
     padding: 1em 0;
   }
 
@@ -398,32 +455,40 @@
   .alpaca-checklist-item--dragging {
     display: flex;
     align-items: center;
+
     .components-base-control__field {
       margin: 0;
     }
-    input[type="text"] {
+
+    input[type='text'] {
       border-color: transparent;
     }
+
     .alpaca-textinput {
       width: 100%;
-      input[type="text"] {
+
+      input[type='text'] {
         width: 100%;
       }
     }
+
     &.checked {
-      input[type="text"] {
+      input[type='text'] {
         text-decoration: line-through;
       }
     }
+
     &.active {
-      input[type="text"] {
+      input[type='text'] {
         border-color: inherit;
       }
     }
+
     .alpaca-checklist-controls {
       display: flex;
       gap: 5px;
     }
+
     button {
       padding: 0;
       height: auto;
@@ -433,7 +498,7 @@
 
   .alpaca-checklist-item--dragging {
     z-index: 99900000 !important;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 8px rgb(0 0 0 / 10%);
   }
 
   .alpaca-item .alpaca-item-controls .dashicons,
@@ -441,16 +506,20 @@
     opacity: 0;
     transition: opacity 0.2s ease-in-out;
   }
+
   .alpaca-item:hover .alpaca-item-controls .dashicons {
     opacity: 0.3;
   }
+
   .alpaca-item.is-watched .alpaca-item-controls .dashicons,
   .alpaca-item-dragging.is-watched .alpaca-item-controls .dashicons {
     opacity: 1;
   }
+
   .alpaca-item .alpaca-item-controls .dashicons:hover {
     cursor: pointer;
   }
+
   // fix: flash on star when you start dragging
 
   #alpaca-board .alpaca-item.is-filtered-out {
@@ -469,7 +538,7 @@
     padding: 10px 0 0 36px;
 
     &::before {
-      content: "";
+      content: '';
       position: absolute;
       left: 18px; // Position of the vertical line
       top: 0;
@@ -479,7 +548,7 @@
     }
 
     &::after {
-      content: "";
+      content: '';
       position: absolute;
       left: 0;
       width: 40px;
@@ -494,7 +563,7 @@
     margin-bottom: 18px; // Space between timeline items
     position: relative; // For positioning the marker
 
-    &[data-source="audit"] {
+    &[data-source='audit'] {
       font-style: italic;
     }
   }
@@ -520,6 +589,7 @@
         box-shadow: 0 0 0 var(--timeline-width) #ccc; // Shadow to make it pop
       }
     }
+
     .alpaca-user-name {
       display: none;
     }
@@ -528,6 +598,7 @@
   .alpaca-timeline-content {
     flex-grow: 1;
     border-radius: 5px;
+
     // add background color and border if you think you need it
     padding: 4px 15px;
   }
@@ -541,6 +612,7 @@
   .alpaca-comment-form {
     margin-left: 20px;
   }
+
   .alpaca-comment-content,
   .alpaca-comment-form,
   .alpaca-comment-body .components-textarea-control {
@@ -566,15 +638,18 @@
     line-height: 1.5em;
     margin-top: 0;
   }
+
   .alpaca-comment-content {
     blockquote {
       background: #eee;
       padding: 1.5em 0.5em 0.5em 1.5em;
-      margin: 0 0 1.5em 0;
+      margin: 0 0 1.5em;
       border-left: var(--timeline-width) solid #ccc;
     }
+
     ul {
       padding-left: 1rem;
+
       li {
         list-style-type: disc;
       }
@@ -676,42 +751,49 @@
   }
 }
 
-@media (min-width: 861px) {
+@media (width >= 861px) {
   .wp-admin {
     #alpaca-board {
       .alpaca-wrap {
-        overflow-x: scroll;
         flex-direction: row;
         padding: 10px 0;
         overflow-x: auto;
+
         .alpaca-container {
           flex-shrink: 0;
         }
       }
+
       .alpaca-container {
         width: 16vw;
         height: 75vh;
         display: flex;
         flex-direction: column;
+
         &.hidden {
           width: auto;
-          padding: 0 0 10px 0;
+          padding: 0 0 10px;
+
           .alpaca-container-header {
             height: 100%;
             writing-mode: vertical-rl;
             transform: rotate(180deg);
+
             h2,
             input {
               height: 100%;
             }
+
             h2 {
               margin: 5px 0;
             }
+
             input {
               margin: 5px -1px;
             }
           }
         }
+
         .alpaca-items {
           overflow-y: auto;
         }
@@ -720,12 +802,13 @@
   }
 }
 
-@media (max-width: 860px) {
+@media (width <= 860px) {
   .wp-admin {
     #alpaca-board {
       .alpaca-wrap {
         flex-direction: column;
       }
+
       .alpaca-container {
         width: calc(100% - 2em);
         margin-top: 1em;
@@ -733,17 +816,20 @@
         display: flex;
         flex-direction: column;
         height: auto;
+
         .alpaca-items {
           flex-direction: row;
           display: flex;
           gap: 1em;
           overflow-x: auto;
+
           .alpaca-item {
             width: 200px;
             height: 140px;
             flex-shrink: 0;
+
             .alpaca-item-assignees {
-              &[data-assignees="1"] {
+              &[data-assignees='1'] {
                 .alpaca-user .alpaca-user-name {
                   display: none;
                   padding-left: 0;
@@ -752,9 +838,10 @@
             }
           }
         }
+
         &.hidden {
           width: calc(100% - 2em);
-          padding: 0 10px 0 10px;
+          padding: 0 10px;
         }
       }
     }

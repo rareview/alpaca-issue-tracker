@@ -1,18 +1,18 @@
 const { useState, useEffect, useRef } = wp.element;
 const { Button, Spinner, Modal, TextControl } = wp.components;
+import PropTypes from 'prop-types';
 
 import {
   DragDropContext,
   Droppable,
   Draggable,
-} from "@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration";
-import DragHandleIcon from "./icons/DragHandleIcon";
-
-import { fetchStatuses, updateIssue } from "../services/issueApi";
+} from '@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration';
+import DragHandleIcon from './icons/DragHandleIcon';
+import { updateIssue } from '../services/issueApi';
 
 const StatusManager = ({
   statuses,
-  fetchStatuses,
+  fetchStatuses: fetchStatusesCallback,
   isLoading,
   error,
   onStatusesChange,
@@ -20,7 +20,6 @@ const StatusManager = ({
 }) => {
   const [statusToDelete, setStatusToDelete] = useState(null);
   const [localStatuses, setLocalStatuses] = useState(statuses);
-  const [isUpdatingScores, setIsUpdatingScores] = useState(false);
 
   useEffect(() => {
     setLocalStatuses(statuses);
@@ -37,11 +36,9 @@ const StatusManager = ({
   const recalculateScores = async (statusesArray, defaultId) => {
     if (!defaultId) return; // No default selected, skip scoring
 
-    setIsUpdatingScores(true);
-
     try {
       const defaultIndex = statusesArray.findIndex(
-        (s) => s.term_id.toString() === defaultId
+        (s) => s.term_id.toString() === defaultId,
       );
       if (defaultIndex === -1) return; // Default status not found
 
@@ -50,7 +47,7 @@ const StatusManager = ({
         const score = index - defaultIndex; // Default gets 0, above get negative, below get positive
         return {
           id: status.term_id,
-          score: score,
+          score,
         };
       });
 
@@ -59,19 +56,17 @@ const StatusManager = ({
         scoreUpdates.map((update) =>
           wp.apiFetch({
             path: `/alpaca/v1/status/${update.id}`,
-            method: "POST",
+            method: 'POST',
             data: { term_score: update.score },
-          })
-        )
+          }),
+        ),
       );
 
       // Refresh the statuses to get updated scores
-      fetchStatuses();
+      fetchStatusesCallback();
     } catch (err) {
-      console.error("Error updating term scores:", err);
-      alert("Error updating status order: " + err.message);
-    } finally {
-      setIsUpdatingScores(false);
+      // eslint-disable-next-line no-console
+      console.error('Error updating term scores:', err);
     }
   };
 
@@ -98,13 +93,13 @@ const StatusManager = ({
   const handleRename = (id, newName) => {
     wp.apiFetch({
       path: `/alpaca/v1/status/${id}`,
-      method: "POST",
+      method: 'POST',
       data: { name: newName },
     })
-      .then(() => fetchStatuses())
+      .then(() => fetchStatusesCallback())
       .catch((err) => {
-        console.error("Error renaming status:", err);
-        alert("Error renaming status: " + err.message);
+        // eslint-disable-next-line no-console
+        console.error('Error renaming status:', err);
       });
   };
 
@@ -131,7 +126,7 @@ const StatusManager = ({
       const deletedIndex = sortedStatuses.findIndex((s) => s.term_id === id);
 
       if (deletedIndex === -1) {
-        throw new Error("Status to delete not found.");
+        throw new Error('Status to delete not found.');
       }
 
       // Determine the new status ID
@@ -147,23 +142,16 @@ const StatusManager = ({
       }
 
       const newStatus = localStatuses.find((s) => s.term_id === newStatusId);
-      const newStatusName = newStatus ? newStatus.name : "Unknown";
-
-      console.log("New status ID for reassignment:", newStatusId);
+      const newStatusName = newStatus ? newStatus.name : 'Unknown';
 
       // Find all posts with the status to be deleted
       const issuesToUpdate = await wp.apiFetch({
         path: `/wp/v2/issue?status=${id}&per_page=-1`,
       });
-      console.log("Issues to update:", issuesToUpdate);
 
       // Re-categorize posts if a new status is determined
       if (newStatusId && issuesToUpdate.length > 0) {
-        console.log(
-          `Found ${issuesToUpdate.length} issues to recategorize to status ${newStatusId}.`
-        );
         const updatePromises = issuesToUpdate.map((issue) => {
-          console.log(`Updating issue ${issue.id} to status ${newStatusId}`);
           return updateIssue(issue.id, {
             taxonomies: {
               status: [newStatusId],
@@ -171,57 +159,56 @@ const StatusManager = ({
           })
             .then(() => {
               wp.hooks.doAction(
-                "alpaca.statusChanged",
+                'alpaca.statusChanged',
                 issue,
                 oldStatusName,
-                newStatusName
+                newStatusName,
               );
             })
             .catch((err) => {
+              // eslint-disable-next-line no-console
               console.error(`Failed to update issue ${issue.id}:`, err);
               return null; // Don't let one failure stop others
             });
         });
         await Promise.all(updatePromises);
-        console.log("Finished recategorizing issues.");
       }
 
       // Delete the status term
-      console.log(`Deleting status ${id}`);
       await wp.apiFetch({
         path: `/wp/v2/status/${id}?force=true`,
-        method: "DELETE",
+        method: 'DELETE',
       });
-      console.log("Status deleted.");
 
       // Refresh the statuses list
-      fetchStatuses();
+      fetchStatusesCallback();
     } catch (err) {
-      console.error("Error during status deletion process:", err);
-      alert("Error deleting status: " + err.message);
+      // eslint-disable-next-line no-console
+      console.error('Error during status deletion process:', err);
     }
   };
 
   const handleAddStatus = () => {
-    const newName = prompt("Enter the name for the new status:");
+    // eslint-disable-next-line no-alert
+    const newName = window.prompt('Enter the name for the new status:');
     if (!newName || !newName.trim()) {
       return;
     }
 
     const maxScore = localStatuses.reduce(
       (max, s) => Math.max(max, parseInt(s.term_score, 10) || 0),
-      0
+      0,
     );
 
     wp.apiFetch({
       path: `/wp/v2/status`,
-      method: "POST",
+      method: 'POST',
       data: { name: newName, meta: { term_score: maxScore + 10 } },
     })
-      .then(() => fetchStatuses())
+      .then(() => fetchStatusesCallback())
       .catch((err) => {
-        console.error("Error adding status:", err);
-        alert("Error adding status: " + err.message);
+        // eslint-disable-next-line no-console
+        console.error('Error adding status:', err);
       });
   };
 
@@ -246,10 +233,10 @@ const StatusManager = ({
           {/* Draggable grid body */}
           <DragDropContext onDragEnd={handleDragEnd}>
             <Droppable droppableId="status-list">
-              {(provided) => (
+              {(droppableProvided) => (
                 <div
-                  {...provided.droppableProps}
-                  ref={provided.innerRef}
+                  {...droppableProvided.droppableProps}
+                  ref={droppableProvided.innerRef}
                   className="status-grid-body"
                 >
                   {localStatuses.map((status, index) => (
@@ -271,7 +258,7 @@ const StatusManager = ({
                       )}
                     </Draggable>
                   ))}
-                  {provided.placeholder}{" "}
+                  {droppableProvided.placeholder}{' '}
                   {/* ✅ keep this last inside the droppable */}
                 </div>
               )}
@@ -292,8 +279,9 @@ const StatusManager = ({
             className="alpaca-modal"
           >
             <p>
-              Are you sure you want to delete the status "
-              <strong>{statusToDelete.name}</strong>"? This cannot be undone.
+              Are you sure you want to delete the status &quot;
+              <strong>{statusToDelete.name}</strong>&quot;? This cannot be
+              undone.
             </p>
             <div className="alpaca-actions">
               <Button variant="primary" isDestructive onClick={performDelete}>
@@ -310,11 +298,20 @@ const StatusManager = ({
   );
 };
 
+StatusManager.propTypes = {
+  statuses: PropTypes.arrayOf(PropTypes.object).isRequired,
+  fetchStatuses: PropTypes.func.isRequired,
+  isLoading: PropTypes.bool,
+  error: PropTypes.string,
+  onStatusesChange: PropTypes.func,
+  defaultStatusId: PropTypes.number,
+};
+
 // StatusRow using grid cell display
-const StatusRow = React.forwardRef(
+const StatusRow = wp.element.forwardRef(
   (
     { status, onRename, onDelete, isDragging, dragHandleProps, ...props },
-    ref
+    ref,
   ) => {
     const [isRenaming, setIsRenaming] = useState(false);
     const [name, setName] = useState(status.name);
@@ -346,9 +343,9 @@ const StatusRow = React.forwardRef(
     };
 
     const handleKeyDown = (event) => {
-      if (event.key === "Enter") {
+      if (event.key === 'Enter') {
         handleSaveRename();
-      } else if (event.key === "Escape") {
+      } else if (event.key === 'Escape') {
         handleCancelRename();
       }
     };
@@ -357,7 +354,7 @@ const StatusRow = React.forwardRef(
       <div
         ref={ref}
         {...props}
-        className={`status-grid-row ${isDragging ? "is-dragging" : ""}`}
+        className={`status-grid-row ${isDragging ? 'is-dragging' : ''}`}
       >
         <div className="status-grid-cell">
           <div className="status-row-content">
@@ -398,7 +395,20 @@ const StatusRow = React.forwardRef(
         </div>
       </div>
     );
-  }
+  },
 );
+
+StatusRow.displayName = 'StatusRow';
+
+StatusRow.propTypes = {
+  status: PropTypes.shape({
+    term_id: PropTypes.number.isRequired,
+    name: PropTypes.string.isRequired,
+  }).isRequired,
+  onRename: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired,
+  isDragging: PropTypes.bool,
+  dragHandleProps: PropTypes.object,
+};
 
 export default StatusManager;

@@ -1,21 +1,24 @@
-import { useClipboard } from "../hooks/useClipboard";
+import { useClipboard } from '../hooks/useClipboard';
+
 const { Button } = wp.components;
 
 const WebhookEndpointDisplay = () => {
   const { isClipboardSupported, copyToClipboard } = useClipboard();
 
   // The wpApiSettings object is available globally in the WordPress admin
-  const apiRoot = window.wpApiSettings?.root || "";
+  const apiRoot = window.wpApiSettings?.root || '';
   const webhookUrl = `${apiRoot}alpaca/v1/webhook`;
 
   const handleCopy = () => {
     copyToClipboard(
       webhookUrl,
-      () => alert("Webhook URL copied to clipboard!"),
+      // eslint-disable-next-line no-alert
+      () => alert('Webhook URL copied to clipboard!'),
       (err) => {
-        console.error("Could not copy URL: ", err);
-        alert("Could not copy URL. Please copy it manually.");
-      }
+        console.error('Could not copy URL: ', err);
+        // eslint-disable-next-line no-alert
+        alert('Could not copy URL. Please copy it manually.');
+      },
     );
   };
 

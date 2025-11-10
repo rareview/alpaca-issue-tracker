@@ -1,4 +1,5 @@
 const { useMemo } = wp.element;
+import PropTypes from 'prop-types';
 import { useUser } from '../hooks/useUser';
 
 const User = ({ user: userProp, showAvatar = true, showName = true }) => {
@@ -6,10 +7,13 @@ const User = ({ user: userProp, showAvatar = true, showName = true }) => {
 
   const { userName, avatarUrl } = useMemo(() => {
     if (!user) return { userName: null, avatarUrl: null };
-    const { name, avatar, display_name, avatar_urls } = user;
-    const userName = display_name || name;
-    const avatarUrl = avatar || (avatar_urls && avatar_urls[96]);
-    return { userName, avatarUrl };
+    const apiData = user;
+    const displayName = apiData.display_name || apiData.name; // eslint-disable-line camelcase
+    const avatarUrls = apiData.avatar_urls; // eslint-disable-line camelcase
+    return {
+      userName: displayName,
+      avatarUrl: apiData.avatar || (avatarUrls && avatarUrls[96]), // eslint-disable-line camelcase
+    };
   }, [user]);
 
   if (loading) return <div className="alpaca-user">Loading...</div>;
@@ -25,6 +29,12 @@ const User = ({ user: userProp, showAvatar = true, showName = true }) => {
       {showName && <div className="alpaca-user-name">{userName}</div>}
     </div>
   );
+};
+
+User.propTypes = {
+  user: PropTypes.object,
+  showAvatar: PropTypes.bool,
+  showName: PropTypes.bool,
 };
 
 export default User;

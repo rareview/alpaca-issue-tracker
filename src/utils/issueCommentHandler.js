@@ -1,6 +1,5 @@
-import { getUser } from "../hooks/useUser.js";
-import { generateAssigneeSpan } from "../hooks/useUser.js";
-import { fetchIssueCommentCount } from "../services/issueApi.js";
+import { getUser, generateAssigneeSpan } from '../hooks/useUser.js';
+import { fetchIssueCommentCount } from '../services/issueApi.js';
 
 /**
  * Handles automatic commenting on issues, such as when an issue is created.
@@ -11,7 +10,7 @@ const apiFetch = wp.apiFetch;
 
 const postComment = async (issueOrId, content) => {
   let postId;
-  if (issueOrId && typeof issueOrId === "object") {
+  if (issueOrId && typeof issueOrId === 'object') {
     // Prioritize issue.post_id if available (for full issue objects)
     // Otherwise, assume issue.id is the post ID (for simplified board items)
     postId = issueOrId.post_id || issueOrId.id;
@@ -22,74 +21,74 @@ const postComment = async (issueOrId, content) => {
 
   if (!postId) {
     console.error(
-      "postComment: No valid post ID found for comment.",
-      issueOrId
+      'postComment: No valid post ID found for comment.',
+      issueOrId,
     );
     return;
   }
 
   try {
     await apiFetch({
-      path: "/wp/v2/comments",
-      method: "POST",
+      path: '/wp/v2/comments',
+      method: 'POST',
       data: {
         post: postId,
-        content: content,
-        comment_type: "issuecomment",
-        status: "approve",
-        author_user_agent: "audit",
+        content,
+        comment_type: 'issuecomment',
+        status: 'approve',
+        author_user_agent: 'audit',
       },
     }).then(async (newlyCreatedComment) => {
-      wp.hooks.doAction("alpaca.commentPosted", newlyCreatedComment);
+      wp.hooks.doAction('alpaca.commentPosted', newlyCreatedComment);
       const response = await fetchIssueCommentCount(postId);
-      if (response && typeof response.comment_count !== "undefined") {
-        doAction("alpaca.commentCountChanged", {
+      if (response && typeof response.comment_count !== 'undefined') {
+        doAction('alpaca.commentCountChanged', {
           issueId: postId.toString(),
           newCount: response.comment_count,
         });
       }
     });
   } catch (error) {
-    console.error("issue-comment-handler.js: Error adding comment:", error);
+    console.error('issueCommentHandler.js: Error adding comment:', error);
   }
 };
 
-addAction("alpaca.issueSubmitted", "alpaca/addIssueComment", async (issue) => {
+addAction('alpaca.issueSubmitted', 'alpaca/addIssueComment', async (issue) => {
   const currentUser = await getUser();
   const commentContent = `Issue created by ${generateAssigneeSpan(
-    currentUser
+    currentUser,
   )}`;
   await postComment(issue, commentContent); // Pass issue object
 });
 
 addAction(
-  "alpaca.statusChanged",
-  "alpaca/addStatusChangeComment",
+  'alpaca.statusChanged',
+  'alpaca/addStatusChangeComment',
   async (issue, fromStatus, toStatus) => {
     const commentContent = `Status changed from **${fromStatus}** to **${toStatus}**`;
     await postComment(issue, commentContent); // Pass issue object
-  }
+  },
 );
 
 addAction(
-  "alpaca.assigneeChanged",
-  "alpaca/addAssigneeChangeComment",
+  'alpaca.assigneeChanged',
+  'alpaca/addAssigneeChangeComment',
   async (issue, user, isAssigned) => {
-    const actionText = isAssigned ? "assigned to" : "unassigned from";
+    const actionText = isAssigned ? 'assigned to' : 'unassigned from';
     const commentContent = `${generateAssigneeSpan(
-      user
+      user,
     )} ${actionText} this issue`;
     await postComment(issue, commentContent); // Pass issue object
-  }
+  },
 );
 
 addAction(
-  "alpaca.checklistItemChecked",
-  "alpaca/addChecklistItemCheckedComment",
+  'alpaca.checklistItemChecked',
+  'alpaca/addChecklistItemCheckedComment',
   async (issueId, item, currentUser) => {
-    const commentContent = `Checklist item \"${
+    const commentContent = `Checklist item "${
       item.label
-    }\" checked by ${generateAssigneeSpan(currentUser)}`;
+    }" checked by ${generateAssigneeSpan(currentUser)}`;
     await postComment(issueId, commentContent); // issueId is already the post ID
-  }
+  },
 );

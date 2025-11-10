@@ -1,34 +1,46 @@
 const { useState, useEffect, useRef, memo } = wp.element;
-import { useUser } from "../../hooks/useUser.js";
+import PropTypes from 'prop-types';
+
+import { useUser } from '../../hooks/useUser';
 const { Button, BaseControl, CheckboxControl, TextControl } = wp.components;
 import {
   DragDropContext,
   Droppable,
   Draggable,
-} from "@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration";
-import DragHandleIcon from "../icons/DragHandleIcon.jsx";
+} from '@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration';
+import DragHandleIcon from '../icons/DragHandleIcon';
 
+/**
+ * Checklist component for managing task checklists.
+ *
+ * @param {Object}   root0                       - Props object
+ * @param {number}   root0.issueId               - Issue ID
+ * @param {Array}    root0.initialChecklistItems - Initial checklist items
+ * @param {boolean}  root0.isSaving              - Saving state
+ * @param {Function} root0.setIsSaving           - Set saving function
+ * @return {JSX.Element} Checklist component
+ */
 const Checklist = memo(
-  ({ issueId, initialChecklistItems, isSaving, setIsSaving }) => {
+  ({ issueId, initialChecklistItems, isSaving: _isSaving, setIsSaving }) => {
     const [checklistItems, setChecklistItems] = useState(
-      initialChecklistItems || []
+      initialChecklistItems || [],
     );
     const [activeIndex, setActiveIndex] = useState(null);
     const checklistContainerRef = useRef(null);
     const prevChecklistLength = useRef(checklistItems.length);
     const originalLabelRef = useRef(null);
 
-    const { user: currentUser } = useUser(alpacaUserData.currentUserId);
+    const { user: currentUser } = useUser(window.alpacaUserData?.currentUserId);
 
     const saveChecklist = (items) => {
       setIsSaving(true);
       wp.apiFetch({
         path: `/issue/v1/checklist/${issueId}`,
-        method: "POST",
+        method: 'POST',
         data: items,
       })
         .then(() => {
-          wp.hooks.doAction("alpaca.checklistChanged", {
+          wp.hooks.doAction('alpaca.checklistChanged', {
             issueId,
             checklist: items,
           });
@@ -39,7 +51,7 @@ const Checklist = memo(
     const addChecklistItem = () => {
       const newItem = {
         id: Date.now(),
-        label: "",
+        label: '',
         checked: 0,
       };
       setChecklistItems((prevItems) => [...prevItems, newItem]);
@@ -62,10 +74,10 @@ const Checklist = memo(
 
       if (isBeingChecked) {
         wp.hooks.doAction(
-          "alpaca.checklistItemChecked",
+          'alpaca.checklistItemChecked',
           issueId,
           currentItem,
-          currentUser
+          currentUser,
         );
       }
     };
@@ -89,8 +101,8 @@ const Checklist = memo(
       saveChecklist(newItems);
     };
 
-    const handleChecklistItemKeyDown = (e, index) => {
-      if (e.key === "Enter") {
+    const handleChecklistItemKeyDown = (e, _index) => {
+      if (e.key === 'Enter') {
         e.preventDefault();
         addChecklistItem();
       }
@@ -101,13 +113,13 @@ const Checklist = memo(
       const item = checklistItems[index];
       const newLabel = item.label;
 
-      if (newLabel.trim() === "") {
+      if (newLabel.trim() === '') {
         const newItems = checklistItems.filter((_, i) => i !== index);
         setChecklistItems(newItems);
         saveChecklist(newItems);
       } else {
         if (oldLabel !== newLabel) {
-          wp.hooks.doAction("alpaca.checklistItemUpdated", oldLabel, newLabel);
+          wp.hooks.doAction('alpaca.checklistItemUpdated', oldLabel, newLabel);
         }
         saveChecklist(checklistItems);
       }
@@ -117,7 +129,7 @@ const Checklist = memo(
       if (checklistItems.length > prevChecklistLength.current) {
         if (checklistContainerRef.current) {
           const textInputs = checklistContainerRef.current.querySelectorAll(
-            ".components-text-control__input"
+            '.components-text-control__input',
           );
           if (textInputs.length > 0) {
             const lastInput = textInputs[textInputs.length - 1];
@@ -130,41 +142,44 @@ const Checklist = memo(
 
     return (
       <div className="alpaca-checklist-container" ref={checklistContainerRef}>
-        <BaseControl label="Checklist" className="alpaca-checklist-label" />
+        <BaseControl
+          label="Checklist"
+          id="alpaca-checklist-label"
+          className="alpaca-checklist-label"
+        />
         <DragDropContext onDragEnd={handleDragEnd}>
           <Droppable
             droppableId="checklist"
-            renderClone={(provided, snapshot, rubric) => {
-              const item = checklistItems[rubric.source.index];
+            renderClone={(droppableProvided, snapshot, rubric) => {
+              const cloneItem = checklistItems[rubric.source.index];
               const index = rubric.source.index;
               return (
                 <div
-                  ref={provided.innerRef}
-                  {...provided.draggableProps}
-                  {...provided.dragHandleProps}
+                  ref={droppableProvided.innerRef}
+                  {...droppableProvided.draggableProps}
+                  {...droppableProvided.dragHandleProps}
                   className={`alpaca-checklist-item ${
-                    item.checked !== 0 ? "checked" : ""
+                    cloneItem.checked !== 0 ? 'checked' : ''
                   } alpaca-checklist-item--dragging`}
                   style={{
-                    ...provided.draggableProps.style,
-                    left: 0, // lock X relative to container
-                    // width: "100%",
-                    boxSizing: "border-box",
+                    ...droppableProvided.draggableProps.style,
+                    left: 0,
+                    boxSizing: 'border-box',
                   }}
                 >
                   <CheckboxControl
-                    checked={item.checked !== 0}
+                    checked={cloneItem.checked !== 0}
                     onChange={() => toggleChecklistItem(index)}
                   />
                   <TextControl
                     className="alpaca-textinput"
-                    value={item.label}
+                    value={cloneItem.label}
                     onChange={(newLabel) =>
                       updateChecklistItemLabel(index, newLabel)
                     }
                     onFocus={() => {
                       setActiveIndex(index);
-                      originalLabelRef.current = item.label;
+                      originalLabelRef.current = cloneItem.label;
                     }}
                     onBlur={() =>
                       handleChecklistItemBlur(index, originalLabelRef.current)
@@ -186,11 +201,11 @@ const Checklist = memo(
               );
             }}
           >
-            {(provided) => (
+            {(droppableProvided) => (
               <div
                 className="alpaca-checklist"
-                {...provided.droppableProps}
-                ref={provided.innerRef}
+                {...droppableProvided.droppableProps}
+                ref={droppableProvided.innerRef}
               >
                 {checklistItems.map((item, index) => (
                   <Draggable
@@ -198,14 +213,14 @@ const Checklist = memo(
                     draggableId={item.id.toString()}
                     index={index}
                   >
-                    {(provided) => (
+                    {(draggableProvided) => (
                       <div
-                        ref={provided.innerRef}
-                        {...provided.draggableProps}
-                        {...provided.dragHandleProps}
+                        ref={draggableProvided.innerRef}
+                        {...draggableProvided.draggableProps}
+                        {...draggableProvided.dragHandleProps}
                         className={`alpaca-checklist-item ${
-                          item.checked !== 0 ? "checked" : ""
-                        } ${activeIndex === index ? "active" : ""}`}
+                          item.checked !== 0 ? 'checked' : ''
+                        } ${activeIndex === index ? 'active' : ''}`}
                       >
                         <CheckboxControl
                           checked={item.checked !== 0}
@@ -224,7 +239,7 @@ const Checklist = memo(
                           onBlur={() =>
                             handleChecklistItemBlur(
                               index,
-                              originalLabelRef.current
+                              originalLabelRef.current,
                             )
                           }
                           onKeyDown={(e) =>
@@ -247,7 +262,7 @@ const Checklist = memo(
                     )}
                   </Draggable>
                 ))}
-                {provided.placeholder}
+                {droppableProvided.placeholder}
               </div>
             )}
           </Droppable>
@@ -262,14 +277,14 @@ const Checklist = memo(
         </Button>
       </div>
     );
-  }
+  },
 );
 
 export default Checklist;
 
 wp.hooks.addFilter(
-  "alpaca.issueTabContent",
-  "alpaca/checklist",
+  'alpaca.issueTabContent',
+  'alpaca/checklist',
   (content, issueData) => {
     const { id, meta, isSaving, setIsSaving } = issueData;
     const checklistItems = meta.checklist || [];
@@ -285,5 +300,14 @@ wp.hooks.addFilter(
         />
       </>
     );
-  }
+  },
 );
+
+Checklist.propTypes = {
+  issueId: PropTypes.number.isRequired,
+  initialChecklistItems: PropTypes.array,
+  isSaving: PropTypes.bool,
+  setIsSaving: PropTypes.func.isRequired,
+};
+
+Checklist.displayName = 'Checklist';

@@ -1,5 +1,5 @@
-import handleSnapdomCapture from "./snapdom-handler.js";
-import { useTestLogger } from "./utils/test-logger.js";
+import handleSnapdomCapture from './snapdomHandler.js';
+import { useTestLogger } from './utils/testLogger.js';
 
 const { Button, Modal, TextareaControl, Spinner, CheckboxControl } =
   wp.components;
@@ -8,9 +8,9 @@ const { useState, useRef, useEffect, useCallback } = wp.element;
 
 const AlpacaModal = () => {
   const [isOpen, setOpen] = useState(false);
-  const [status, setStatus] = useState("idle"); // idle, submitting, success, error
-  const [message, setMessage] = useState("");
-  const [feedback, setFeedback] = useState("");
+  const [status, setStatus] = useState('idle'); // idle, submitting, success, error
+  const [message, setMessage] = useState('');
+  const [feedback, setFeedback] = useState('');
   const [includeContext, setIncludeContext] = useState(true); // <-- new state
 
   const textareaRef = useRef(null);
@@ -19,8 +19,8 @@ const AlpacaModal = () => {
   const [enableTestLogs, setEnableTestLogs] = useState(false);
 
   useEffect(() => {
-    wp.apiFetch({ path: "/wp/v2/settings" }).then((settings) => {
-      setEnableTestLogs(settings.alpaca_enable_test_logs === "1");
+    wp.apiFetch({ path: '/wp/v2/settings' }).then((settings) => {
+      setEnableTestLogs(settings.alpaca_enable_test_logs === '1');
     });
 
     const handleTestLogSettingChange = (value) => {
@@ -28,58 +28,58 @@ const AlpacaModal = () => {
     };
 
     wp.hooks.addAction(
-      "alpaca.enableTestLogsChanged",
-      "alpaca/modal",
-      handleTestLogSettingChange
+      'alpaca.enableTestLogsChanged',
+      'alpaca/modal',
+      handleTestLogSettingChange,
     );
 
     return () => {
-      wp.hooks.removeAction("alpaca.enableTestLogsChanged", "alpaca/modal");
+      wp.hooks.removeAction('alpaca.enableTestLogsChanged', 'alpaca/modal');
     };
   }, []);
 
   useTestLogger(enableTestLogs);
 
   const openModal = useCallback(() => {
-    setMessage("");
-    setStatus("idle");
-    setFeedback("");
+    setMessage('');
+    setStatus('idle');
+    setFeedback('');
     setIncludeContext(true); // reset to default each time modal opens
     setOpen(true);
   }, []);
 
   const closeModal = () => {
     setOpen(false);
-    setStatus("idle");
+    setStatus('idle');
   };
 
   // Listen for a global event to open the modal
   useEffect(() => {
     const handleOpen = () => openModal();
-    wp.hooks.addAction("alpaca.openModal", "alpaca/modal", handleOpen);
-    return () => wp.hooks.removeAction("alpaca.openModal", "alpaca/modal");
+    wp.hooks.addAction('alpaca.openModal', 'alpaca/modal', handleOpen);
+    return () => wp.hooks.removeAction('alpaca.openModal', 'alpaca/modal');
   }, [openModal]);
 
   // Focus textarea when modal opens
   useEffect(() => {
-    if (isOpen && status === "idle" && textareaRef.current) {
+    if (isOpen && status === 'idle' && textareaRef.current) {
       setTimeout(() => textareaRef.current.focus(), 10);
     }
   }, [isOpen, status]);
 
   // Focus close button on success or error
   useEffect(() => {
-    if ((status === "success" || status === "error") && closeBtnRef.current) {
+    if ((status === 'success' || status === 'error') && closeBtnRef.current) {
       setTimeout(() => closeBtnRef.current.focus(), 10);
     }
   }, [status]);
 
   const submitIssue = async () => {
-    setMessage("");
+    setMessage('');
 
     try {
       const server = JSON.parse(atob(alpaca_data.env));
-      setStatus("submitting");
+      setStatus('submitting');
 
       const screenshot = await handleSnapdomCapture();
 
@@ -95,13 +95,13 @@ const AlpacaModal = () => {
 
       const payload = { ...submitted, ...server };
 
-      const response = await fetch(wpApiSettings.root + "issue/v1/submit", {
-        method: "POST",
-        credentials: "include",
+      const response = await fetch(wpApiSettings.root + 'issue/v1/submit', {
+        method: 'POST',
+        credentials: 'include',
         headers: new Headers({
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          "X-WP-Nonce": wpApiSettings.nonce,
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'X-WP-Nonce': wpApiSettings.nonce,
         }),
         body: JSON.stringify(payload),
       });
@@ -112,51 +112,54 @@ const AlpacaModal = () => {
         throw new Error(responseData.message || `HTTP ${response.status}`);
       }
 
-      setStatus("success");
-      setMessage("Your issue has been submitted successfully.");
+      setStatus('success');
+      setMessage('Your issue has been submitted successfully.');
 
       doAction(
-        "alpaca.issueSubmitted",
+        'alpaca.issueSubmitted',
         responseData.issue,
-        responseData.statusId
+        responseData.statusId,
       );
 
       setTimeout(closeModal, 1500);
     } catch (error) {
-      console.error("Submission error:", error);
-      setStatus("error");
-      setMessage("There was an error submitting your issue. Please try again.");
+      console.error('Submission error:', error);
+      setStatus('error');
+      setMessage('There was an error submitting your issue. Please try again.');
     }
   };
 
   return (
     <>
-      <a
+      <button
         className="ab-item"
-        href="#"
         onClick={(e) => {
           e.preventDefault();
           openModal();
         }}
+        style={{
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          padding: 0,
+        }}
       >
         Report An Issue
-      </a>
+      </button>
 
       {isOpen && (
         <Modal
           size="medium"
           className="alpaca-modal"
-          title={
-            status === "success"
-              ? "Issue Submitted"
-              : status === "error"
-              ? "Submission Failed"
-              : "Report An Issue"
-          }
+          title={(() => {
+            if (status === 'success') return 'Issue Submitted';
+            if (status === 'error') return 'Submission Failed';
+            return 'Report An Issue';
+          })()}
           onRequestClose={closeModal}
           isDismissible={false}
         >
-          {status === "success" || status === "error" ? (
+          {status === 'success' || status === 'error' ? (
             <>
               <p>{message}</p>
               <Button variant="primary" onClick={closeModal} ref={closeBtnRef}>
@@ -170,7 +173,7 @@ const AlpacaModal = () => {
                 id="alpaca-modal-textarea"
                 value={feedback}
                 onChange={(value) => setFeedback(value)}
-                disabled={status === "submitting"}
+                disabled={status === 'submitting'}
                 ref={textareaRef}
               />
 
@@ -181,7 +184,7 @@ const AlpacaModal = () => {
                   onChange={(val) => setIncludeContext(val)} // <-- update state
                   label="Include full context with report?"
                   help="Always do this, unless you are sure it is not relevant"
-                  disabled={status === "submitting"}
+                  disabled={status === 'submitting'}
                 />
               </div>
 
@@ -189,14 +192,14 @@ const AlpacaModal = () => {
                 <Button
                   variant="primary"
                   onClick={submitIssue}
-                  disabled={status === "submitting"}
+                  disabled={status === 'submitting'}
                 >
-                  {status === "submitting" ? <Spinner /> : "Submit"}
+                  {status === 'submitting' ? <Spinner /> : 'Submit'}
                 </Button>
                 <Button
                   variant="secondary"
                   onClick={closeModal}
-                  disabled={status === "submitting"}
+                  disabled={status === 'submitting'}
                 >
                   Cancel
                 </Button>

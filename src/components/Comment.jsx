@@ -1,11 +1,29 @@
-import { getUser } from "../hooks/useUser";
-import { fetchIssueCommentCount } from "../services/issueApi";
-const { useState, useEffect, useRef, useCallback } = wp.element;
-import User from "./User";
+import { getUser } from '../hooks/useUser';
+import { fetchIssueCommentCount } from '../services/issueApi';
+import PropTypes from 'prop-types';
+
+const { useState, useEffect, useRef, useCallback, memo, useMemo } = wp.element;
+import User from './User';
 const { TextareaControl, Button, Spinner, Modal } = wp.components;
 
-import { marked } from "marked";
+import { marked } from 'marked';
 
+/**
+ * Comment component for displaying individual comments.
+ *
+ * @param {Object}   props                      - Props object
+ * @param {Object}   props.comment              - Comment data
+ * @param {Function} props.startEditing         - Start editing function
+ * @param {Function} props.confirmDeleteComment - Confirm delete function
+ * @param {number}   props.editingCommentId     - Current editing comment ID
+ * @param {string}   props.editingContent       - Editing content
+ * @param {Function} props.setEditingContent    - Set editing content function
+ * @param {Object}   props.editingRef           - Ref for editing textarea
+ * @param {Function} props.saveEdit             - Save edit function
+ * @param {Function} props.cancelEditing        - Cancel editing function
+ * @param {boolean}  props.isSubmitting         - Is submitting flag
+ * @return {JSX.Element} Comment component
+ */
 const Comment = (props) => {
   const {
     comment,
@@ -20,7 +38,7 @@ const Comment = (props) => {
     isSubmitting,
   } = props;
 
-  const processedContent = React.useMemo(() => {
+  const processedContent = useMemo(() => {
     return comment.content.raw
       ? marked(comment.content.raw)
       : comment.content.rendered;
@@ -97,18 +115,31 @@ const Comment = (props) => {
   );
 };
 
-const MemoizedComment = React.memo(Comment);
+Comment.propTypes = {
+  comment: PropTypes.object.isRequired,
+  startEditing: PropTypes.func.isRequired,
+  confirmDeleteComment: PropTypes.func.isRequired,
+  editingCommentId: PropTypes.number,
+  editingContent: PropTypes.string,
+  setEditingContent: PropTypes.func.isRequired,
+  editingRef: PropTypes.object,
+  saveEdit: PropTypes.func.isRequired,
+  cancelEditing: PropTypes.func.isRequired,
+  isSubmitting: PropTypes.bool,
+};
+
+const MemoizedComment = memo(Comment);
 
 const Commenting = ({ issueId, commentRefreshKey }) => {
   const [comments, setComments] = useState([]);
   const [isLoadingComments, setIsLoadingComments] = useState(true);
   const [error, setError] = useState(null);
-  const [newComment, setNewComment] = useState("");
+  const [newComment, setNewComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentUser, setCurrentUser] = useState(null);
 
   const [editingCommentId, setEditingCommentId] = useState(null);
-  const [editingContent, setEditingContent] = useState("");
+  const [editingContent, setEditingContent] = useState('');
   const editingRef = useRef(null);
 
   const [deleteCommentId, setDeleteCommentId] = useState(null); // New state for modal
@@ -131,8 +162,8 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
         setComments(fetchedComments);
       })
       .catch((err) => {
-        console.error("Error fetching comments:", err);
-        setError("Could not load comments.");
+        console.error('Error fetching comments:', err);
+        setError('Could not load comments.');
       })
       .finally(() => setIsLoadingComments(false));
   }, [issueId]);
@@ -143,20 +174,20 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
 
   useEffect(() => {
     const handleCommentCountChanged = (data) => {
-      const { issueId: eventIssueId } = data;
-      if (eventIssueId.toString() === issueId.toString()) {
+      const { issueId: changedIssueId } = data;
+      if (changedIssueId.toString() === issueId.toString()) {
         fetchComments();
       }
     };
 
     wp.hooks.addAction(
-      "alpaca.commentCountChanged",
-      "alpaca/commenting",
-      handleCommentCountChanged
+      'alpaca.commentCountChanged',
+      'alpaca/commenting',
+      handleCommentCountChanged,
     );
 
     return () => {
-      wp.hooks.removeAction("alpaca.commentCountChanged", "alpaca/commenting");
+      wp.hooks.removeAction('alpaca.commentCountChanged', 'alpaca/commenting');
     };
   }, [issueId, fetchComments]);
 
@@ -165,9 +196,9 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
   }, [editingCommentId]);
 
   const stripHtml = (html) => {
-    const div = document.createElement("div");
+    const div = document.createElement('div');
     div.innerHTML = html;
-    return div.textContent || div.innerText || "";
+    return div.textContent || div.innerText || '';
   };
 
   const handleCommentSubmit = () => {
@@ -176,27 +207,27 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
 
     wp.apiFetch({
       path: `/wp/v2/comments`,
-      method: "POST",
+      method: 'POST',
       data: {
         content: newComment,
         post: issueId,
-        comment_type: "issuecomment",
-        status: "approve",
-        author_user_agent: "human",
+        comment_type: 'issuecomment',
+        status: 'approve',
+        author_user_agent: 'human',
       },
     })
       .then((newlyCreatedComment) => {
-        setNewComment("");
+        setNewComment('');
         fetchComments();
 
-        wp.hooks.doAction("alpaca.commentPosted", newlyCreatedComment); // New doAction
+        wp.hooks.doAction('alpaca.commentPosted', newlyCreatedComment); // New doAction
 
         // Dispatch event to update comment count
         const postId = newlyCreatedComment.post;
         fetchIssueCommentCount(postId)
           .then((response) => {
-            if (response && typeof response.comment_count !== "undefined") {
-              wp.hooks.doAction("alpaca.commentCountChanged", {
+            if (response && typeof response.comment_count !== 'undefined') {
+              wp.hooks.doAction('alpaca.commentCountChanged', {
                 issueId: postId.toString(),
                 newCount: response.comment_count,
               });
@@ -204,14 +235,15 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
           })
           .catch((err) => {
             console.error(
-              "Error fetching updated comment count after adding:",
-              err
+              'Error fetching updated comment count after adding:',
+              err,
             );
           });
       })
       .catch((err) => {
         console.error(err);
-        alert(`Failed to submit comment: ${err.message || "Unknown error"}`);
+        // eslint-disable-next-line no-alert
+        alert(`Failed to submit comment: ${err.message || 'Unknown error'}`);
       })
       .finally(() => setIsSubmitting(false));
   };
@@ -219,13 +251,13 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
   const startEditing = (comment) => {
     setEditingCommentId(comment.id);
     setEditingContent(
-      comment.content.raw || stripHtml(comment.content.rendered)
+      comment.content.raw || stripHtml(comment.content.rendered),
     );
   };
 
   const cancelEditing = () => {
     setEditingCommentId(null);
-    setEditingContent("");
+    setEditingContent('');
   };
 
   const saveEdit = (commentId) => {
@@ -234,20 +266,21 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
 
     wp.apiFetch({
       path: `/wp/v2/comments/${commentId}`,
-      method: "POST",
+      method: 'POST',
       data: { content: editingContent },
     })
       .then((updatedComment) => {
         // Add updatedComment parameter
         setEditingCommentId(null);
-        setEditingContent("");
+        setEditingContent('');
         fetchComments();
 
-        wp.hooks.doAction("alpaca.commentUpdated", updatedComment); // New doAction
+        wp.hooks.doAction('alpaca.commentUpdated', updatedComment); // New doAction
       })
       .catch((err) => {
         console.error(err);
-        alert(`Failed to update comment: ${err.message || "Unknown error"}`);
+        // eslint-disable-next-line no-alert
+        alert(`Failed to update comment: ${err.message || 'Unknown error'}`);
       })
       .finally(() => setIsSubmitting(false));
   };
@@ -262,34 +295,35 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
     if (!deleteCommentId) return;
     wp.apiFetch({
       path: `/wp/v2/comments/${deleteCommentId}`,
-      method: "DELETE",
+      method: 'DELETE',
       data: { force: true },
     })
       .then((deletedComment) => {
         fetchComments();
         setDeleteCommentId(null);
 
-        wp.hooks.doAction("alpaca.commentDeleted", deletedComment); // New doAction
+        wp.hooks.doAction('alpaca.commentDeleted', deletedComment); // New doAction
 
         // Dispatch event to update comment count
         // The deletedComment object contains the post ID
         const postId = deletedComment.previous.post;
         fetchIssueCommentCount(postId)
           .then((response) => {
-            if (response && typeof response.comment_count !== "undefined") {
-              wp.hooks.doAction("alpaca.commentCountChanged", {
+            if (response && typeof response.comment_count !== 'undefined') {
+              wp.hooks.doAction('alpaca.commentCountChanged', {
                 issueId: postId.toString(),
                 newCount: response.comment_count,
               });
             }
           })
           .catch((err) => {
-            console.error("Error fetching updated comment count:", err);
+            console.error('Error fetching updated comment count:', err);
           });
       })
       .catch((err) => {
         console.error(err);
-        alert(`Failed to delete comment: ${err.message || "Unknown error"}`);
+        // eslint-disable-next-line no-alert
+        alert(`Failed to delete comment: ${err.message || 'Unknown error'}`);
       });
   };
 
@@ -313,7 +347,7 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
               onClick={handleCommentSubmit}
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Submitting..." : "Submit Comment"}
+              {isSubmitting ? 'Submitting...' : 'Submit Comment'}
             </Button>
           </div>
         </div>
@@ -358,6 +392,11 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
       </div>
     </>
   );
+};
+
+Commenting.propTypes = {
+  issueId: PropTypes.number.isRequired,
+  commentRefreshKey: PropTypes.number.isRequired,
 };
 
 export default Commenting;
