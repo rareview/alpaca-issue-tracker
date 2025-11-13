@@ -160,7 +160,7 @@ function Container({
                   index={index}
                   content={item.content}
                   assignees={item.assignees}
-                  comment_count={item.comment_count}
+                  comment_count={item.commentCount}
                   meta={item.meta}
                   onClick={onItemClick}
                 />
