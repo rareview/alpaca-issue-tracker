@@ -6,11 +6,13 @@ on:
       - main
       - master
       - develop
+      - pragmatic
   push:
     branches:
       - main
       - master
       - develop
+      - pragmatic
   workflow_dispatch:
 
 jobs:
