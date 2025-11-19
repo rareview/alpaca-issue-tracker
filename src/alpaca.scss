@@ -1,7 +1,7 @@
 /* styles go here */
 
 :root {
-  --timeline-width: 4px;
+  --timeline-width: 1px;
 }
 
 .alpaca-wrap {
@@ -540,21 +540,11 @@
     &::before {
       content: '';
       position: absolute;
-      left: 18px; // Position of the vertical line
+      left: 90px; // Position of the vertical line
       top: 0;
       bottom: 0;
       width: var(--timeline-width);
       background-color: #ccc; // Color of the timeline line
-    }
-
-    &::after {
-      content: '';
-      position: absolute;
-      left: 0;
-      width: 40px;
-      bottom: 0;
-      height: var(--timeline-width);
-      background-color: #ccc;
     }
   }
 
@@ -563,72 +553,106 @@
     margin-bottom: 18px; // Space between timeline items
     position: relative; // For positioning the marker
 
+    .alpaca-comment-header {
+      display: flex;
+      align-items: center;
+      color: #777;
+      gap: 1em;
+    }
+
+    .alpaca-timeline-marker {
+      position: absolute;
+      top: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1; // Ensure marker is above the line
+    }
+
     &[data-source='audit'] {
       font-style: italic;
-    }
-  }
-
-  .alpaca-timeline-marker {
-    position: absolute;
-    left: -28px; // Adjust to align with the vertical line
-    top: 12px;
-    width: 24px; // Width of the marker area
-    height: 24px; // Height of the marker area (adjust based on avatar size)
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1; // Ensure marker is above the line
-
-    .alpaca-user-avatar {
-      img {
-        // Target the img inside alpaca-user-avatar
-        width: 24px; // Make avatar circular
-        height: 24px;
-        border-radius: 50%;
-        border: 2px solid #fff; // White border around avatar
-        box-shadow: 0 0 0 var(--timeline-width) #ccc; // Shadow to make it pop
+      margin-left: 42px;
+      .alpaca-timeline-content {
+        padding-left: 16px;
       }
     }
 
-    .alpaca-user-name {
-      display: none;
+    &[data-source='human'] {
+      .alpaca-timeline-marker {
+        left: -28px; // Adjust to align with the vertical line
+        width: 24px; // Width of the marker area
+        height: 24px; // Height of the marker area (adjust based on avatar size)
+
+        .alpaca-user-avatar {
+          img {
+            // Target the img inside alpaca-user-avatar
+            width: 36px; // Make avatar circular
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid #fff; // White border around avatar
+            box-shadow: 0 0 0 var(--timeline-width) #ccc; // Shadow to make it pop
+          }
+        }
+
+        .alpaca-user-name {
+          display: none;
+        }
+      }
+
+      .alpaca-timeline-content {
+        flex-grow: 1;
+        border-radius: 5px;
+        background: white;
+        border: 1px solid #ccc;
+      }
+
+      .alpaca-comment-header {
+        padding: 0 15px;
+        background: #eee;
+        border-top-left-radius: 5px;
+        border-top-right-radius: 5px;
+        border-bottom: 1px solid #ccc;
+      }
+
+      .alpaca-comment-content {
+        padding: 1em 15px 0 15px;
+        blockquote {
+          background: #eee;
+          padding: 1.5em 0.5em 0.5em 1.5em;
+          margin: 0 0 1.5em;
+          border-left: var(--timeline-width) solid #ccc;
+        }
+
+        ul {
+          margin-top: 0;
+          padding-left: 1rem;
+
+          li {
+            list-style-type: disc;
+          }
+        }
+      }
+    }
+  }
+
+  .alpaca-comment-form {
+    padding: 10px;
+    textarea {
+      border: 0;
     }
   }
 
   .alpaca-timeline-content {
-    flex-grow: 1;
-    border-radius: 5px;
-
-    // add background color and border if you think you need it
-    padding: 4px 15px;
-  }
-
-  .alpaca-comment-form {
-    width: 100%;
-    padding-left: 5px;
-  }
-
-  .alpaca-timeline-content,
-  .alpaca-comment-form {
     margin-left: 20px;
   }
 
-  .alpaca-comment-content,
-  .alpaca-comment-form,
+  .alpaca-timeline-item,
   .alpaca-comment-body .components-textarea-control {
     margin-right: 100px;
   }
 
-  .alpaca-comment-header {
-    display: flex;
-    align-items: center;
-    color: #777;
-    gap: 1em;
-  }
-
   .alpaca-comment-buttons {
     display: flex;
-    gap: 5px; // Space between buttons
   }
 
   #alpaca-comments .components-textarea-control__input,
@@ -637,23 +661,6 @@
     font-size: 15px;
     line-height: 1.5em;
     margin-top: 0;
-  }
-
-  .alpaca-comment-content {
-    blockquote {
-      background: #eee;
-      padding: 1.5em 0.5em 0.5em 1.5em;
-      margin: 0 0 1.5em;
-      border-left: var(--timeline-width) solid #ccc;
-    }
-
-    ul {
-      padding-left: 1rem;
-
-      li {
-        list-style-type: disc;
-      }
-    }
   }
 
   .alpaca-status-manager {

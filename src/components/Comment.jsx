@@ -330,25 +330,27 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
   return (
     <>
       <div id="alpaca-comments" className="alpaca-comments-timeline">
-        <div className="alpaca-timeline-item">
+        <div className="alpaca-timeline-item" data-source="human">
           <div className="alpaca-timeline-marker">
             <User user={currentUser} />
           </div>
 
-          <div className="alpaca-comment-form">
-            <TextareaControl
-              placeholder="Add a comment..."
-              value={newComment}
-              onChange={setNewComment}
-              disabled={isSubmitting}
-            />
-            <Button
-              isPrimary
-              onClick={handleCommentSubmit}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Submitting...' : 'Submit Comment'}
-            </Button>
+          <div className="alpaca-timeline-content">
+            <div className="alpaca-comment-form">
+              <TextareaControl
+                placeholder="Add a comment..."
+                value={newComment}
+                onChange={setNewComment}
+                disabled={isSubmitting}
+              />
+              <Button
+                isPrimary
+                onClick={handleCommentSubmit}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Submitting...' : 'Submit Comment'}
+              </Button>
+            </div>
           </div>
         </div>
 
