@@ -572,6 +572,7 @@
     &[data-source='audit'] {
       font-style: italic;
       margin-left: 42px;
+
       .alpaca-timeline-content {
         padding-left: 16px;
       }
@@ -616,6 +617,7 @@
 
       .alpaca-comment-content {
         padding: 1em 15px 0 15px;
+
         blockquote {
           background: #eee;
           padding: 1.5em 0.5em 0.5em 1.5em;
@@ -637,6 +639,7 @@
 
   .alpaca-comment-form {
     padding: 10px;
+
     textarea {
       border: 0;
     }
