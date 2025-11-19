@@ -535,7 +535,8 @@
 
   .alpaca-comments-timeline {
     position: relative;
-    padding: 10px 0 0 36px;
+    padding: 0 0 0 36px;
+    margin-top: 8px;
 
     &::before {
       content: '';
@@ -550,14 +551,20 @@
 
   .alpaca-timeline-item {
     display: flex;
-    margin-bottom: 18px; // Space between timeline items
+    margin-bottom: 18px;
     position: relative; // For positioning the marker
+    margin-right: 100px;
+
+    &:hover .alpaca-comment-buttons {
+      opacity: 1;
+    }
 
     .alpaca-comment-header {
       display: flex;
       align-items: center;
       color: #777;
       gap: 1em;
+      padding-right: 6px;
     }
 
     .alpaca-timeline-marker {
@@ -567,6 +574,20 @@
       align-items: center;
       justify-content: center;
       z-index: 1; // Ensure marker is above the line
+    }
+
+    .alpaca-timeline-content {
+      width: 100%;
+    }
+
+    &:last-child {
+      background: white;
+      margin-top: 24px;
+
+      .alpaca-timeline-marker,
+      .alpaca-timeline-content {
+        margin-top: -4px;
+      }
     }
 
     &[data-source='audit'] {
@@ -608,7 +629,7 @@
       }
 
       .alpaca-comment-header {
-        padding: 0 15px;
+        padding: 0 5px 0 15px;
         background: #eee;
         border-top-left-radius: 5px;
         border-top-right-radius: 5px;
@@ -649,13 +670,21 @@
     margin-left: 20px;
   }
 
-  .alpaca-timeline-item,
-  .alpaca-comment-body .components-textarea-control {
-    margin-right: 100px;
-  }
-
   .alpaca-comment-buttons {
     display: flex;
+    margin-left: auto;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+  }
+
+  .alpaca-comment-body {
+    button.components-button {
+      margin: 0 0 8px 8px;
+    }
+
+    .components-textarea-control__input {
+      padding: 11px 14px;
+    }
   }
 
   #alpaca-comments .components-textarea-control__input,

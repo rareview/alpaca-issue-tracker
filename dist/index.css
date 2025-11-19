@@ -472,7 +472,8 @@
 }
 
 .wp-admin .alpaca-comments-timeline {
-  padding: 10px 0 0 36px;
+  margin-top: 8px;
+  padding: 0 0 0 36px;
   position: relative;
 }
 
@@ -488,14 +489,20 @@
 
 .wp-admin .alpaca-timeline-item {
   margin-bottom: 18px;
+  margin-right: 100px;
   display: flex;
   position: relative;
+}
+
+.wp-admin .alpaca-timeline-item:hover .alpaca-comment-buttons {
+  opacity: 1;
 }
 
 .wp-admin .alpaca-timeline-item .alpaca-comment-header {
   color: #777;
   align-items: center;
   gap: 1em;
+  padding-right: 6px;
   display: flex;
 }
 
@@ -506,6 +513,19 @@
   display: flex;
   position: absolute;
   top: 6px;
+}
+
+.wp-admin .alpaca-timeline-item .alpaca-timeline-content {
+  width: 100%;
+}
+
+.wp-admin .alpaca-timeline-item:last-child {
+  background: #fff;
+  margin-top: 24px;
+}
+
+.wp-admin .alpaca-timeline-item:last-child .alpaca-timeline-marker, .wp-admin .alpaca-timeline-item:last-child .alpaca-timeline-content {
+  margin-top: -4px;
 }
 
 .wp-admin .alpaca-timeline-item[data-source="audit"] {
@@ -547,7 +567,7 @@
   border-bottom: 1px solid #ccc;
   border-top-left-radius: 5px;
   border-top-right-radius: 5px;
-  padding: 0 15px;
+  padding: 0 5px 0 15px;
 }
 
 .wp-admin .alpaca-timeline-item[data-source="human"] .alpaca-comment-content {
@@ -582,12 +602,19 @@
   margin-left: 20px;
 }
 
-.wp-admin .alpaca-timeline-item, .wp-admin .alpaca-comment-body .components-textarea-control {
-  margin-right: 100px;
+.wp-admin .alpaca-comment-buttons {
+  opacity: 0;
+  margin-left: auto;
+  transition: opacity .2s ease-in-out;
+  display: flex;
 }
 
-.wp-admin .alpaca-comment-buttons {
-  display: flex;
+.wp-admin .alpaca-comment-body button.components-button {
+  margin: 0 0 8px 8px;
+}
+
+.wp-admin .alpaca-comment-body .components-textarea-control__input {
+  padding: 11px 14px;
 }
 
 .wp-admin #alpaca-comments .components-textarea-control__input, .wp-admin .alpaca-comment-content p, .wp-admin .alpaca-comment-content li {
