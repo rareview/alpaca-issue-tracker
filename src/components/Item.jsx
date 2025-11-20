@@ -85,8 +85,6 @@ const Item = forwardRef(
         deadlineText = 'Today';
       } else if (diffDays === -1) {
         deadlineText = 'Yesterday';
-      } else {
-        deadlineText = deadlineFormatted;
       }
     }
 
