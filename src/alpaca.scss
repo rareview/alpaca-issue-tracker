@@ -533,19 +533,48 @@ $greyshade: #f0f0f0;
 
   #alpaca-comments {
     padding-top: 8px;
-  }
+    display: flex;
+    flex-direction: column;
 
-  .alpaca-comments-timeline {
-    position: relative;
-
-    &::before {
-      content: '';
+    #alpaca-comments-header {
       position: absolute;
-      left: 90px; // Position of the vertical line
-      top: 6px;
-      bottom: 0;
-      width: var(--timeline-width);
-      background-color: $greyborder; // Color of the timeline line
+    }
+
+    .alpaca-comments-timeline {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+
+      .alpaca-timeline-item:last-child {
+        background: $bgwhite;
+        margin-top: 4px;
+
+        .alpaca-timeline-content {
+          margin-top: -4px;
+        }
+      }
+
+      &::before {
+        content: '';
+        position: absolute;
+        left: 90px; // Position of the vertical line
+        top: 6px;
+        bottom: 18px;
+        width: var(--timeline-width);
+        background-color: $greyborder; // Color of the timeline line
+      }
+    }
+
+    &.oldestfirst {
+      flex-direction: column-reverse;
+
+      .alpaca-comments-timeline {
+        flex-direction: column-reverse;
+
+        .alpaca-timeline-item:last-child {
+          background: none;
+        }
+      }
     }
   }
 
@@ -557,12 +586,21 @@ $greyshade: #f0f0f0;
     border: 1px solid $greyborder;
   }
 
+  #alpaca-comments-header,
   .alpaca-comment-form,
   .alpaca-timeline-item {
     position: relative;
     display: flex;
-    margin-bottom: 18px;
     margin-right: 100px;
+  }
+
+  #alpaca-comments-header {
+    justify-content: flex-end;
+  }
+
+  .alpaca-comment-form,
+  .alpaca-timeline-item {
+    margin-bottom: 18px;
 
     .alpaca-timeline-content,
     textarea {
@@ -647,15 +685,6 @@ $greyshade: #f0f0f0;
       color: #777;
       gap: 1em;
       padding-right: 6px;
-    }
-
-    &:last-child {
-      background: $bgwhite;
-      margin-top: 4px;
-
-      .alpaca-timeline-content {
-        margin-top: -4px;
-      }
     }
 
     &[data-source='human'] {

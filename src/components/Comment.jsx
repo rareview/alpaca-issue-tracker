@@ -6,6 +6,7 @@ const { useState, useEffect, useRef, useCallback, memo, useMemo } = wp.element;
 import User from './User';
 const { TextareaControl, Button, Spinner, Modal } = wp.components;
 
+import { getCookie, setCookie } from '../utils/cookies';
 import { marked } from 'marked';
 
 /**
@@ -140,12 +141,26 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
   const [editingContent, setEditingContent] = useState('');
   const editingRef = useRef(null);
 
-  const [deleteCommentId, setDeleteCommentId] = useState(null); // New state for modal
+  const [deleteCommentId, setDeleteCommentId] = useState(null);
+  const [sortOrder, setSortOrder] = useState(
+    getCookie('comment_sort_order') || 'desc',
+  ); // 'desc' or 'asc'
+
+  const toggleSortOrder = () => {
+    const newSortOrder = sortOrder === 'desc' ? 'asc' : 'desc';
+    setSortOrder(newSortOrder);
+    setCookie('comment_sort_order', newSortOrder, 365);
+    document.getElementById('alpaca-comments').classList.toggle('oldestfirst');
+  };
 
   useEffect(() => {
     getUser().then((user) => {
       setCurrentUser(user);
     });
+
+    if (sortOrder === 'asc') {
+      document.getElementById('alpaca-comments').classList.add('oldestfirst');
+    }
   }, []);
 
   const fetchComments = useCallback(() => {
@@ -327,6 +342,11 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
 
   return (
     <>
+      <div id="alpaca-comments-header">
+        <Button variant="tertiary" onClick={toggleSortOrder}>
+          {sortOrder === 'desc' ? 'Sort: ↑' : 'Sort: ↓'}
+        </Button>
+      </div>
       <div id="alpaca-comments">
         <div className="alpaca-comment-form" data-source="human">
           <User user={currentUser} />
