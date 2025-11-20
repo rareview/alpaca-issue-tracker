@@ -53,7 +53,7 @@ const Comment = (props) => {
         <div className="alpaca-comment-header">
           <User user={comment._embedded?.author?.[0]} showName={false} />
           <div className="alpaca-comment-author">
-            <strong>{comment.author_name}</strong>
+            <strong>{comment._embedded.author[0].name}</strong>
           </div>
           <div className="alpaca-comment-date">
             <small>{new Date(comment.date).toLocaleString()}</small>

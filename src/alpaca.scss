@@ -1,8 +1,8 @@
 /* styles go here */
 
 $bgwhite: #fff;
-$greyborder: #ccc;
-$greyshade: #eee;
+$greyborder: #ddd;
+$greyshade: #f0f0f0;
 
 :root {
   --timeline-width: 1px;
@@ -552,7 +552,7 @@ $greyshade: #eee;
   .alpaca-timeline-item[data-source='human'] .alpaca-timeline-content,
   .alpaca-comment-form textarea {
     flex-grow: 1;
-    border-radius: 5px;
+    border-radius: 8px;
     background: $bgwhite;
     border: 1px solid $greyborder;
   }
@@ -592,8 +592,8 @@ $greyshade: #eee;
       .alpaca-comment-header {
         padding-left: 18px;
         background: $greyshade;
-        border-top-left-radius: 5px;
-        border-top-right-radius: 5px;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
         border-bottom: 1px solid $greyborder;
       }
 
@@ -693,7 +693,7 @@ $greyshade: #eee;
   .alpaca-status-manager {
     .status-grid {
       border: 1px solid $greyborder;
-      border-radius: 6px;
+      border-radius: 8px;
       overflow: hidden;
       font-size: 14px;
       max-width: 600px;
