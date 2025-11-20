@@ -160,7 +160,7 @@ function Container({
                   index={index}
                   content={item.content}
                   assignees={item.assignees}
-                  comment_count={item.commentCount}
+                  commentCount={item.commentCount}
                   meta={item.meta}
                   onClick={onItemClick}
                 />
@@ -184,7 +184,7 @@ Container.propTypes = {
       id: PropTypes.number.isRequired,
       content: PropTypes.string,
       assignees: PropTypes.array,
-      comment_count: PropTypes.number,
+      commentCount: PropTypes.number,
       meta: PropTypes.object,
     }),
   ).isRequired,

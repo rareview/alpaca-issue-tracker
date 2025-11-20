@@ -4,7 +4,7 @@ export const fetchAllAssignees = async () => {
   const users = await fetchUsers();
   return users.map((user) => ({
     id: user.id.toString(),
-    display_name: user.display_name || user.name,
+    displayName: user.display_name || user.name,
     slug: user.slug,
     avatar:
       user.avatar_urls?.['96'] ||
