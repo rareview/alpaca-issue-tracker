@@ -1,5 +1,6 @@
 const { useState, useRef, useEffect, useCallback } = wp.element;
 const { decodeEntities } = wp.htmlEntities;
+const { Button, Notice } = wp.components;
 
 import { DragDropContext } from '@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration';
 
@@ -30,6 +31,8 @@ function Board() {
     const cookie = getCookie('alpaca_hidden_containers');
     return cookie ? cookie.split(',').filter(Boolean) : [];
   });
+  const [isRestoring, setIsRestoring] = useState(false);
+  const [restoreError, setRestoreError] = useState(null);
 
   // Effect to update cookie when hiddenContainerIds changes
   useEffect(() => {
@@ -460,6 +463,34 @@ function Board() {
     setSelectedItem(null);
   };
 
+  const handleRestoreDefaults = () => {
+    setIsRestoring(true);
+    setRestoreError(null);
+
+    wp.apiFetch({
+      path: '/alpaca/v1/statuses/restore-defaults',
+      method: 'POST',
+    })
+      .then((response) => {
+        if (response.success) {
+          window.location.reload();
+        } else {
+          setRestoreError(
+            response.message || 'Failed to restore default statuses.',
+          );
+        }
+      })
+      .catch((err) => {
+        console.error('Error restoring default statuses:', err);
+        setRestoreError(
+          err.message || 'An error occurred while restoring default statuses.',
+        );
+      })
+      .finally(() => {
+        setIsRestoring(false);
+      });
+  };
+
   const handleDeleteIssue = (issueId) => {
     // Optimistically remove the issue from the UI
     const originalContainers = containers;
@@ -560,25 +591,57 @@ function Board() {
     wp.hooks.doAction('alpaca.allAssigneesUpdated', assigneesArray);
   }, [containers]);
 
+  const hasNoStatuses = containers.length === 0;
+
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
-      <div className="alpaca-wrap">
-        {containers.map((container, index) => (
-          <Container
-            key={container.id}
-            id={container.id}
-            title={container.title}
-            items={container.items}
-            onItemClick={handleItemClick}
-            onMoveAllToNext={moveAllItemsToNextContainer}
-            isLastContainer={index === containers.length - 1}
-            isHidden={hiddenContainerIds.includes(container.id)}
-            onToggleHidden={handleToggleHidden}
-            onRename={handleRenameContainer} // 🔹 pass down rename handler
-            onDeleteAll={handleDeleteAll}
-          />
-        ))}
-      </div>
+      {hasNoStatuses ? (
+        <div className="alpaca-empty-state">
+          <Notice status="warning" isDismissible={false}>
+            <p>
+              <strong>
+                Oh no! All your project statuses have disappeared.
+              </strong>
+            </p>
+            <p>
+              Without statuses, you cannot view or manage issues on the board.
+              Click the button below to restore the default statuses (Backlog,
+              Inbox, In Progress, Done).
+            </p>
+            <Button
+              variant="primary"
+              onClick={handleRestoreDefaults}
+              isBusy={isRestoring}
+              disabled={isRestoring}
+            >
+              {isRestoring ? 'Restoring...' : 'Restore Default Statuses'}
+            </Button>
+          </Notice>
+          {restoreError && (
+            <Notice status="error" isDismissible={false}>
+              <p>{restoreError}</p>
+            </Notice>
+          )}
+        </div>
+      ) : (
+        <div className="alpaca-wrap">
+          {containers.map((container, index) => (
+            <Container
+              key={container.id}
+              id={container.id}
+              title={container.title}
+              items={container.items}
+              onItemClick={handleItemClick}
+              onMoveAllToNext={moveAllItemsToNextContainer}
+              isLastContainer={index === containers.length - 1}
+              isHidden={hiddenContainerIds.includes(container.id)}
+              onToggleHidden={handleToggleHidden}
+              onRename={handleRenameContainer}
+              onDeleteAll={handleDeleteAll}
+            />
+          ))}
+        </div>
+      )}
 
       <AlpacaIssue
         issueId={selectedItem?.id}

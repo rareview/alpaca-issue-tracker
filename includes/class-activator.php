@@ -80,70 +80,7 @@ class Activator {
 	 * - Done (score: 3)
 	 */
 	private static function setup_default_statuses() {
-		if ( ! function_exists( 'alpaca_register_cpts_and_taxonomies' ) ) {
-			require_once ALPACA_PLUGIN_DIR . 'includes/core/posttypes-and-taxonomies.php';
-		}
-
-		alpaca_register_cpts_and_taxonomies();
-
-		$existing_statuses = \get_terms(
-			array(
-				'taxonomy'   => 'status',
-				'hide_empty' => false,
-			)
-		);
-
-		if ( ! empty( $existing_statuses ) && ! \is_wp_error( $existing_statuses ) ) {
-			return;
-		}
-
-		$default_statuses = array(
-			array(
-				'name'  => \esc_html__( 'Backlog', 'alpaca' ),
-				'slug'  => 'backlog',
-				'score' => 0,
-			),
-			array(
-				'name'       => \esc_html__( 'Inbox', 'alpaca' ),
-				'slug'       => 'inbox',
-				'score'      => 1,
-				'is_default' => true,
-			),
-			array(
-				'name'  => \esc_html__( 'In Progress', 'alpaca' ),
-				'slug'  => 'in-progress',
-				'score' => 2,
-			),
-			array(
-				'name'  => \esc_html__( 'Done', 'alpaca' ),
-				'slug'  => 'done',
-				'score' => 3,
-			),
-		);
-
-		$default_term_id = 0;
-
-		foreach ( $default_statuses as $status ) {
-			$term = \wp_insert_term(
-				$status['name'],
-				'status',
-				array(
-					'slug' => $status['slug'],
-				)
-			);
-
-			if ( ! \is_wp_error( $term ) && isset( $term['term_id'] ) ) {
-				\update_term_meta( $term['term_id'], 'term_score', $status['score'] );
-
-				if ( ! empty( $status['is_default'] ) ) {
-					$default_term_id = $term['term_id'];
-				}
-			}
-		}
-
-		if ( $default_term_id > 0 ) {
-			\update_option( 'alpaca_default_status_id', $default_term_id );
-		}
+		alpaca_setup_default_statuses();
 	}
 
 	/**

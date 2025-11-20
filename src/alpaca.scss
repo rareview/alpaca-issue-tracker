@@ -8,6 +8,27 @@
   flex-wrap: nowrap;
 }
 
+.alpaca-empty-state {
+  margin: 2rem auto;
+  max-width: 600px;
+
+  .components-notice {
+    margin-bottom: 1rem;
+
+    p {
+      margin: 0.5rem 0;
+    }
+
+    strong {
+      font-size: 1.1em;
+    }
+
+    .components-button {
+      margin-top: 1rem;
+    }
+  }
+}
+
 .alpaca-modal {
   background: white;
   color: black;

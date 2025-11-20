@@ -610,6 +610,41 @@ function alpaca_update_default_status_option( WP_REST_Request $request ) {
 }
 
 /*
+ * Restore default statuses endpoint.
+ */
+add_action( 'rest_api_init', 'alpaca_restore_default_statuses_endpoint' );
+/**
+ * Register restore default statuses endpoint.
+ */
+function alpaca_restore_default_statuses_endpoint() {
+	register_rest_route(
+		'alpaca/v1',
+		'/statuses/restore-defaults',
+		[
+			'methods'             => 'POST',
+			'callback'            => 'alpaca_restore_default_statuses_callback',
+			'permission_callback' => function () {
+				return current_user_can( 'manage_options' );
+			},
+		]
+	);
+}
+
+/**
+ * Callback for restoring default statuses.
+ *
+ * @return WP_REST_Response REST response with result.
+ */
+function alpaca_restore_default_statuses_callback() {
+	$result = alpaca_setup_default_statuses( true );
+
+	return alpaca_rest_response(
+		$result,
+		$result['success'] ? 200 : 400
+	);
+}
+
+/*
  * Issue: get details endpoints.
  */
 add_action( 'rest_api_init', 'alpaca_get_issue_data' );
