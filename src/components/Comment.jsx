@@ -342,70 +342,72 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
 
   return (
     <>
-      <div id="alpaca-comments-header">
-        <Button variant="tertiary" onClick={toggleSortOrder}>
-          {sortOrder === 'desc' ? 'Sort: ↑' : 'Sort: ↓'}
-        </Button>
-      </div>
-      <div id="alpaca-comments">
-        <div className="alpaca-comment-form" data-source="human">
-          <User user={currentUser} />
-          <div className="alpaca-timeline-content">
-            <TextareaControl
-              placeholder="Add a comment..."
-              value={newComment}
-              onChange={setNewComment}
-              disabled={isSubmitting}
-            />
-            <Button
-              isPrimary
-              onClick={handleCommentSubmit}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Submitting...' : 'Submit Comment'}
-            </Button>
-          </div>
+      <div id="alpaca-comments-wrapper">
+        <div id="alpaca-comments-header">
+          <Button variant="tertiary" onClick={toggleSortOrder}>
+            {sortOrder === 'desc' ? 'Sort: ↑' : 'Sort: ↓'}
+          </Button>
         </div>
-
-        {isLoadingComments && <Spinner />}
-        {error && <p className="alpaca-error">{error}</p>}
-        {!isLoadingComments && !error && comments.length === 0 && (
-          <p>No comments yet.</p>
-        )}
-
-        <div className="alpaca-comments-timeline">
-          {!isLoadingComments &&
-            comments.map((comment) => (
-              <MemoizedComment
-                key={comment.id}
-                comment={comment}
-                startEditing={startEditing}
-                confirmDeleteComment={confirmDeleteComment}
-                editingCommentId={editingCommentId}
-                editingContent={editingContent}
-                setEditingContent={setEditingContent}
-                editingRef={editingRef}
-                saveEdit={saveEdit}
-                cancelEditing={cancelEditing}
-                isSubmitting={isSubmitting}
+        <div id="alpaca-comments">
+          <div className="alpaca-comment-form" data-source="human">
+            <User user={currentUser} />
+            <div className="alpaca-timeline-content">
+              <TextareaControl
+                placeholder="Add a comment..."
+                value={newComment}
+                onChange={setNewComment}
+                disabled={isSubmitting}
               />
-            ))}
-        </div>
+              <Button
+                isPrimary
+                onClick={handleCommentSubmit}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Submitting...' : 'Submit Comment'}
+              </Button>
+            </div>
+          </div>
 
-        {/* Modal for delete */}
-        {deleteCommentId && (
-          <Modal
-            title="Delete Comment?"
-            onRequestClose={cancelDelete}
-            className="alpaca-modal"
-          >
-            <p>Are you sure you want to delete this comment?</p>
-            <Button isPrimary onClick={deleteComment}>
-              Delete
-            </Button>
-            <Button onClick={cancelDelete}>Cancel</Button>
-          </Modal>
-        )}
+          {isLoadingComments && <Spinner />}
+          {error && <p className="alpaca-error">{error}</p>}
+          {!isLoadingComments && !error && comments.length === 0 && (
+            <p>No comments yet.</p>
+          )}
+
+          <div className="alpaca-comments-timeline">
+            {!isLoadingComments &&
+              comments.map((comment) => (
+                <MemoizedComment
+                  key={comment.id}
+                  comment={comment}
+                  startEditing={startEditing}
+                  confirmDeleteComment={confirmDeleteComment}
+                  editingCommentId={editingCommentId}
+                  editingContent={editingContent}
+                  setEditingContent={setEditingContent}
+                  editingRef={editingRef}
+                  saveEdit={saveEdit}
+                  cancelEditing={cancelEditing}
+                  isSubmitting={isSubmitting}
+                />
+              ))}
+          </div>
+
+          {/* Modal for delete */}
+          {deleteCommentId && (
+            <Modal
+              title="Delete Comment?"
+              onRequestClose={cancelDelete}
+              className="alpaca-modal"
+            >
+              <p>Are you sure you want to delete this comment?</p>
+              <Button isPrimary onClick={deleteComment}>
+                Delete
+              </Button>
+              <Button onClick={cancelDelete}>Cancel</Button>
+            </Modal>
+          )}
+        </div>
       </div>
     </>
   );
