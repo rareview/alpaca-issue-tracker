@@ -15305,27 +15305,10 @@ const { TextareaControl, Button, Spinner, Modal } = wp.components;
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-timeline-marker",
-        __source: {
-            fileName: "src/components/Comment.jsx",
-            lineNumber: 52,
-            columnNumber: 7
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement((0, _userDefault.default), {
-        user: comment._embedded?.author?.[0],
-        showName: false,
-        __source: {
-            fileName: "src/components/Comment.jsx",
-            lineNumber: 53,
-            columnNumber: 9
-        },
-        __self: undefined
-    })), /*#__PURE__*/ React.createElement("div", {
         className: "alpaca-timeline-content",
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 55,
+            lineNumber: 52,
             columnNumber: 7
         },
         __self: undefined
@@ -15333,22 +15316,31 @@ const { TextareaControl, Button, Spinner, Modal } = wp.components;
         className: "alpaca-comment-header",
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 56,
+            lineNumber: 53,
             columnNumber: 9
         },
         __self: undefined
-    }, /*#__PURE__*/ React.createElement("div", {
+    }, /*#__PURE__*/ React.createElement((0, _userDefault.default), {
+        user: comment._embedded?.author?.[0],
+        showName: false,
+        __source: {
+            fileName: "src/components/Comment.jsx",
+            lineNumber: 54,
+            columnNumber: 11
+        },
+        __self: undefined
+    }), /*#__PURE__*/ React.createElement("div", {
         className: "alpaca-comment-author",
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 57,
+            lineNumber: 55,
             columnNumber: 11
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("strong", {
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 58,
+            lineNumber: 56,
             columnNumber: 13
         },
         __self: undefined
@@ -15356,14 +15348,14 @@ const { TextareaControl, Button, Spinner, Modal } = wp.components;
         className: "alpaca-comment-date",
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 60,
+            lineNumber: 58,
             columnNumber: 11
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("small", {
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 61,
+            lineNumber: 59,
             columnNumber: 13
         },
         __self: undefined
@@ -15371,7 +15363,7 @@ const { TextareaControl, Button, Spinner, Modal } = wp.components;
         className: "alpaca-comment-buttons",
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 63,
+            lineNumber: 61,
             columnNumber: 11
         },
         __self: undefined
@@ -15384,7 +15376,7 @@ const { TextareaControl, Button, Spinner, Modal } = wp.components;
         },
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 64,
+            lineNumber: 62,
             columnNumber: 13
         },
         __self: undefined
@@ -15398,7 +15390,7 @@ const { TextareaControl, Button, Spinner, Modal } = wp.components;
         },
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 72,
+            lineNumber: 70,
             columnNumber: 13
         },
         __self: undefined
@@ -15406,7 +15398,7 @@ const { TextareaControl, Button, Spinner, Modal } = wp.components;
         className: "alpaca-comment-body",
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 83,
+            lineNumber: 81,
             columnNumber: 9
         },
         __self: undefined
@@ -15416,7 +15408,7 @@ const { TextareaControl, Button, Spinner, Modal } = wp.components;
         ref: editingRef,
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 86,
+            lineNumber: 84,
             columnNumber: 15
         },
         __self: undefined
@@ -15426,7 +15418,7 @@ const { TextareaControl, Button, Spinner, Modal } = wp.components;
         disabled: isSubmitting,
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 91,
+            lineNumber: 89,
             columnNumber: 15
         },
         __self: undefined
@@ -15435,7 +15427,7 @@ const { TextareaControl, Button, Spinner, Modal } = wp.components;
         disabled: isSubmitting,
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 98,
+            lineNumber: 96,
             columnNumber: 15
         },
         __self: undefined
@@ -15446,7 +15438,7 @@ const { TextareaControl, Button, Spinner, Modal } = wp.components;
         },
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 104,
+            lineNumber: 102,
             columnNumber: 15
         },
         __self: undefined
@@ -15624,7 +15616,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
         id: "alpaca-comments",
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 332,
+            lineNumber: 330,
             columnNumber: 7
         },
         __self: undefined
@@ -15633,31 +15625,23 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
         "data-source": "human",
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 333,
+            lineNumber: 331,
             columnNumber: 9
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-timeline-marker",
-        __source: {
-            fileName: "src/components/Comment.jsx",
-            lineNumber: 334,
-            columnNumber: 11
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement((0, _userDefault.default), {
         user: currentUser,
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 335,
-            columnNumber: 13
+            lineNumber: 332,
+            columnNumber: 11
         },
         __self: undefined
-    })), /*#__PURE__*/ React.createElement("div", {
+    }), /*#__PURE__*/ React.createElement("div", {
         className: "alpaca-timeline-content",
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 337,
+            lineNumber: 333,
             columnNumber: 11
         },
         __self: undefined
@@ -15668,7 +15652,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
         disabled: isSubmitting,
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 338,
+            lineNumber: 334,
             columnNumber: 13
         },
         __self: undefined
@@ -15678,14 +15662,14 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
         disabled: isSubmitting,
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 344,
+            lineNumber: 340,
             columnNumber: 13
         },
         __self: undefined
     }, isSubmitting ? 'Submitting...' : 'Submit Comment'))), isLoadingComments && /*#__PURE__*/ React.createElement(Spinner, {
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 354,
+            lineNumber: 350,
             columnNumber: 31
         },
         __self: undefined
@@ -15693,14 +15677,14 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
         className: "alpaca-error",
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 355,
+            lineNumber: 351,
             columnNumber: 19
         },
         __self: undefined
     }, error), !isLoadingComments && !error && comments.length === 0 && /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 357,
+            lineNumber: 353,
             columnNumber: 11
         },
         __self: undefined
@@ -15708,7 +15692,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
         className: "alpaca-comments-timeline",
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 360,
+            lineNumber: 356,
             columnNumber: 9
         },
         __self: undefined
@@ -15726,7 +15710,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
             isSubmitting: isSubmitting,
             __source: {
                 fileName: "src/components/Comment.jsx",
-                lineNumber: 363,
+                lineNumber: 359,
                 columnNumber: 15
             },
             __self: undefined
@@ -15736,14 +15720,14 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
         className: "alpaca-modal",
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 381,
+            lineNumber: 377,
             columnNumber: 11
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 386,
+            lineNumber: 382,
             columnNumber: 13
         },
         __self: undefined
@@ -15752,7 +15736,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
         onClick: deleteComment,
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 387,
+            lineNumber: 383,
             columnNumber: 13
         },
         __self: undefined
@@ -15760,7 +15744,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
         onClick: cancelDelete,
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 390,
+            lineNumber: 386,
             columnNumber: 13
         },
         __self: undefined

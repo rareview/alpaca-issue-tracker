@@ -49,11 +49,9 @@ const Comment = (props) => {
       className="alpaca-timeline-item"
       data-source={comment.author_user_agent}
     >
-      <div className="alpaca-timeline-marker">
-        <User user={comment._embedded?.author?.[0]} showName={false} />
-      </div>
       <div className="alpaca-timeline-content">
         <div className="alpaca-comment-header">
+          <User user={comment._embedded?.author?.[0]} showName={false} />
           <div className="alpaca-comment-author">
             <strong>{comment.author_name}</strong>
           </div>
@@ -331,9 +329,7 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
     <>
       <div id="alpaca-comments">
         <div className="alpaca-comment-form" data-source="human">
-          <div className="alpaca-timeline-marker">
-            <User user={currentUser} />
-          </div>
+          <User user={currentUser} />
           <div className="alpaca-timeline-content">
             <TextareaControl
               placeholder="Add a comment..."
