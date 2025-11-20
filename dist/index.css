@@ -471,10 +471,51 @@
   display: none;
 }
 
-.wp-admin .alpaca-comments-timeline {
+.wp-admin .alpaca-comments-timeline, .wp-admin .alpaca-comment-form {
   margin-top: 8px;
   padding: 0 0 0 36px;
   position: relative;
+}
+
+.wp-admin .alpaca-comments-timeline .alpaca-timeline-marker, .wp-admin .alpaca-comment-form .alpaca-timeline-marker {
+  z-index: 1;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  position: absolute;
+  top: 6px;
+}
+
+.wp-admin .alpaca-comments-timeline .alpaca-timeline-item[data-source="human"] .alpaca-timeline-content, .wp-admin .alpaca-comment-form textarea {
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  flex-grow: 1;
+}
+
+.wp-admin .alpaca-comment-form, .wp-admin .alpaca-timeline-item {
+  margin-bottom: 18px;
+  margin-right: 100px;
+  display: flex;
+  position: relative;
+}
+
+.wp-admin .alpaca-comment-form .alpaca-timeline-content, .wp-admin .alpaca-comment-form textarea, .wp-admin .alpaca-timeline-item .alpaca-timeline-content, .wp-admin .alpaca-timeline-item textarea {
+  width: 100%;
+}
+
+.wp-admin .alpaca-comment-form[data-source="human"] .alpaca-timeline-marker, .wp-admin .alpaca-timeline-item[data-source="human"] .alpaca-timeline-marker {
+  margin-left: -36px;
+  top: 0;
+}
+
+.wp-admin .alpaca-comment-form[data-source="human"] .alpaca-timeline-marker .alpaca-user-avatar img, .wp-admin .alpaca-timeline-item[data-source="human"] .alpaca-timeline-marker .alpaca-user-avatar img {
+  width: 36px;
+  height: 36px;
+}
+
+.wp-admin .alpaca-comment-form[data-source="human"] .alpaca-timeline-marker .alpaca-user-name, .wp-admin .alpaca-timeline-item[data-source="human"] .alpaca-timeline-marker .alpaca-user-name {
+  display: none;
 }
 
 .wp-admin .alpaca-comments-timeline:before {
@@ -487,13 +528,6 @@
   left: 90px;
 }
 
-.wp-admin .alpaca-timeline-item {
-  margin-bottom: 18px;
-  margin-right: 100px;
-  display: flex;
-  position: relative;
-}
-
 .wp-admin .alpaca-timeline-item:hover .alpaca-comment-buttons {
   opacity: 1;
 }
@@ -504,19 +538,6 @@
   gap: 1em;
   padding-right: 6px;
   display: flex;
-}
-
-.wp-admin .alpaca-timeline-item .alpaca-timeline-marker {
-  z-index: 1;
-  justify-content: center;
-  align-items: center;
-  display: flex;
-  position: absolute;
-  top: 6px;
-}
-
-.wp-admin .alpaca-timeline-item .alpaca-timeline-content {
-  width: 100%;
 }
 
 .wp-admin .alpaca-timeline-item:last-child {
@@ -537,28 +558,15 @@
   padding-left: 16px;
 }
 
-.wp-admin .alpaca-timeline-item[data-source="human"] .alpaca-timeline-marker {
-  width: 24px;
-  height: 24px;
-  left: -28px;
+.wp-admin .alpaca-timeline-item[data-source="audit"] .alpaca-timeline-marker {
+  top: 0;
 }
 
-.wp-admin .alpaca-timeline-item[data-source="human"] .alpaca-timeline-marker .alpaca-user-avatar img {
-  width: 36px;
-  height: 36px;
-  box-shadow: 0 0 0 var(--timeline-width) #ccc;
-  border: 2px solid #fff;
-  border-radius: 50%;
-}
-
-.wp-admin .alpaca-timeline-item[data-source="human"] .alpaca-timeline-marker .alpaca-user-name {
+.wp-admin .alpaca-timeline-item[data-source="audit"] .alpaca-timeline-marker .alpaca-user-name {
   display: none;
 }
 
 .wp-admin .alpaca-timeline-item[data-source="human"] .alpaca-timeline-content {
-  background: #fff;
-  border: 1px solid #ccc;
-  border-radius: 5px;
   flex-grow: 1;
 }
 
@@ -590,14 +598,6 @@
   list-style-type: disc;
 }
 
-.wp-admin .alpaca-comment-form {
-  padding: 10px;
-}
-
-.wp-admin .alpaca-comment-form textarea {
-  border: 0;
-}
-
 .wp-admin .alpaca-timeline-content {
   margin-left: 20px;
 }
@@ -624,7 +624,7 @@
 }
 
 .wp-admin .alpaca-status-manager .status-grid {
-  border: 1px solid #ddd;
+  border: 1px solid #ccc;
   border-radius: 6px;
   max-width: 600px;
   font-size: 14px;
@@ -633,7 +633,7 @@
 
 .wp-admin .alpaca-status-manager .status-grid .status-grid-header {
   background: #f7f7f7;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid #ccc;
   grid-template-columns: 1fr 150px;
   font-weight: 600;
   display: grid;
@@ -655,7 +655,7 @@
 
 .wp-admin .alpaca-status-manager .status-grid .status-grid-row {
   background: #fff;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid #ccc;
   grid-template-columns: 1fr 150px;
   align-items: center;
   transition: background .2s;

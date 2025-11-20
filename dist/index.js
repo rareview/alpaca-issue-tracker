@@ -15622,7 +15622,6 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
     };
     return /*#__PURE__*/ React.createElement(React.Fragment, null, /*#__PURE__*/ React.createElement("div", {
         id: "alpaca-comments",
-        className: "alpaca-comments-timeline",
         __source: {
             fileName: "src/components/Comment.jsx",
             lineNumber: 332,
@@ -15630,7 +15629,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-timeline-item",
+        className: "alpaca-comment-form",
         "data-source": "human",
         __source: {
             fileName: "src/components/Comment.jsx",
@@ -15658,16 +15657,8 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
         className: "alpaca-timeline-content",
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 338,
+            lineNumber: 337,
             columnNumber: 11
-        },
-        __self: undefined
-    }, /*#__PURE__*/ React.createElement("div", {
-        className: "alpaca-comment-form",
-        __source: {
-            fileName: "src/components/Comment.jsx",
-            lineNumber: 339,
-            columnNumber: 13
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement(TextareaControl, {
@@ -15677,8 +15668,8 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
         disabled: isSubmitting,
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 340,
-            columnNumber: 15
+            lineNumber: 338,
+            columnNumber: 13
         },
         __self: undefined
     }), /*#__PURE__*/ React.createElement(Button, {
@@ -15687,14 +15678,14 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
         disabled: isSubmitting,
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 346,
-            columnNumber: 15
+            lineNumber: 344,
+            columnNumber: 13
         },
         __self: undefined
-    }, isSubmitting ? 'Submitting...' : 'Submit Comment')))), isLoadingComments && /*#__PURE__*/ React.createElement(Spinner, {
+    }, isSubmitting ? 'Submitting...' : 'Submit Comment'))), isLoadingComments && /*#__PURE__*/ React.createElement(Spinner, {
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 357,
+            lineNumber: 354,
             columnNumber: 31
         },
         __self: undefined
@@ -15702,18 +15693,26 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
         className: "alpaca-error",
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 358,
+            lineNumber: 355,
             columnNumber: 19
         },
         __self: undefined
     }, error), !isLoadingComments && !error && comments.length === 0 && /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 360,
+            lineNumber: 357,
             columnNumber: 11
         },
         __self: undefined
-    }, "No comments yet."), !isLoadingComments && comments.map((comment)=>/*#__PURE__*/ React.createElement(MemoizedComment, {
+    }, "No comments yet."), /*#__PURE__*/ React.createElement("div", {
+        className: "alpaca-comments-timeline",
+        __source: {
+            fileName: "src/components/Comment.jsx",
+            lineNumber: 360,
+            columnNumber: 9
+        },
+        __self: undefined
+    }, !isLoadingComments && comments.map((comment)=>/*#__PURE__*/ React.createElement(MemoizedComment, {
             key: comment.id,
             comment: comment,
             startEditing: startEditing,
@@ -15727,24 +15726,24 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
             isSubmitting: isSubmitting,
             __source: {
                 fileName: "src/components/Comment.jsx",
-                lineNumber: 365,
-                columnNumber: 13
+                lineNumber: 363,
+                columnNumber: 15
             },
             __self: undefined
-        })), deleteCommentId && /*#__PURE__*/ React.createElement(Modal, {
+        }))), deleteCommentId && /*#__PURE__*/ React.createElement(Modal, {
         title: "Delete Comment?",
         onRequestClose: cancelDelete,
         className: "alpaca-modal",
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 382,
+            lineNumber: 381,
             columnNumber: 11
         },
         __self: undefined
     }, /*#__PURE__*/ React.createElement("p", {
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 387,
+            lineNumber: 386,
             columnNumber: 13
         },
         __self: undefined
@@ -15753,7 +15752,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
         onClick: deleteComment,
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 388,
+            lineNumber: 387,
             columnNumber: 13
         },
         __self: undefined
@@ -15761,7 +15760,7 @@ const Commenting = ({ issueId, commentRefreshKey })=>{
         onClick: cancelDelete,
         __source: {
             fileName: "src/components/Comment.jsx",
-            lineNumber: 391,
+            lineNumber: 390,
             columnNumber: 13
         },
         __self: undefined

@@ -329,28 +329,25 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
 
   return (
     <>
-      <div id="alpaca-comments" className="alpaca-comments-timeline">
-        <div className="alpaca-timeline-item" data-source="human">
+      <div id="alpaca-comments">
+        <div className="alpaca-comment-form" data-source="human">
           <div className="alpaca-timeline-marker">
             <User user={currentUser} />
           </div>
-
           <div className="alpaca-timeline-content">
-            <div className="alpaca-comment-form">
-              <TextareaControl
-                placeholder="Add a comment..."
-                value={newComment}
-                onChange={setNewComment}
-                disabled={isSubmitting}
-              />
-              <Button
-                isPrimary
-                onClick={handleCommentSubmit}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Submitting...' : 'Submit Comment'}
-              </Button>
-            </div>
+            <TextareaControl
+              placeholder="Add a comment..."
+              value={newComment}
+              onChange={setNewComment}
+              disabled={isSubmitting}
+            />
+            <Button
+              isPrimary
+              onClick={handleCommentSubmit}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Submitting...' : 'Submit Comment'}
+            </Button>
           </div>
         </div>
 
@@ -360,22 +357,24 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
           <p>No comments yet.</p>
         )}
 
-        {!isLoadingComments &&
-          comments.map((comment) => (
-            <MemoizedComment
-              key={comment.id}
-              comment={comment}
-              startEditing={startEditing}
-              confirmDeleteComment={confirmDeleteComment}
-              editingCommentId={editingCommentId}
-              editingContent={editingContent}
-              setEditingContent={setEditingContent}
-              editingRef={editingRef}
-              saveEdit={saveEdit}
-              cancelEditing={cancelEditing}
-              isSubmitting={isSubmitting}
-            />
-          ))}
+        <div className="alpaca-comments-timeline">
+          {!isLoadingComments &&
+            comments.map((comment) => (
+              <MemoizedComment
+                key={comment.id}
+                comment={comment}
+                startEditing={startEditing}
+                confirmDeleteComment={confirmDeleteComment}
+                editingCommentId={editingCommentId}
+                editingContent={editingContent}
+                setEditingContent={setEditingContent}
+                editingRef={editingRef}
+                saveEdit={saveEdit}
+                cancelEditing={cancelEditing}
+                isSubmitting={isSubmitting}
+              />
+            ))}
+        </div>
 
         {/* Modal for delete */}
         {deleteCommentId && (
