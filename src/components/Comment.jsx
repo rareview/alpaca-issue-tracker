@@ -6,6 +6,7 @@ const { useState, useEffect, useRef, useCallback, memo, useMemo } = wp.element;
 import User from './User';
 const { TextareaControl, Button, Spinner, Modal } = wp.components;
 
+import { getCookie, setCookie } from '../utils/cookies';
 import { marked } from 'marked';
 
 /**
@@ -49,13 +50,11 @@ const Comment = (props) => {
       className="alpaca-timeline-item"
       data-source={comment.author_user_agent}
     >
-      <div className="alpaca-timeline-marker">
-        <User user={comment._embedded?.author?.[0]} showName={false} />
-      </div>
       <div className="alpaca-timeline-content">
         <div className="alpaca-comment-header">
+          <User user={comment._embedded?.author?.[0]} showName={false} />
           <div className="alpaca-comment-author">
-            <strong>{comment.author_name}</strong>
+            <strong>{comment._embedded.author[0].name}</strong>
           </div>
           <div className="alpaca-comment-date">
             <small>{new Date(comment.date).toLocaleString()}</small>
@@ -142,12 +141,26 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
   const [editingContent, setEditingContent] = useState('');
   const editingRef = useRef(null);
 
-  const [deleteCommentId, setDeleteCommentId] = useState(null); // New state for modal
+  const [deleteCommentId, setDeleteCommentId] = useState(null);
+  const [sortOrder, setSortOrder] = useState(
+    getCookie('comment_sort_order') || 'desc',
+  ); // 'desc' or 'asc'
+
+  const toggleSortOrder = () => {
+    const newSortOrder = sortOrder === 'desc' ? 'asc' : 'desc';
+    setSortOrder(newSortOrder);
+    setCookie('comment_sort_order', newSortOrder, 365);
+    document.getElementById('alpaca-comments').classList.toggle('oldestfirst');
+  };
 
   useEffect(() => {
     getUser().then((user) => {
       setCurrentUser(user);
     });
+
+    if (sortOrder === 'asc') {
+      document.getElementById('alpaca-comments').classList.add('oldestfirst');
+    }
   }, []);
 
   const fetchComments = useCallback(() => {
@@ -329,66 +342,72 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
 
   return (
     <>
-      <div id="alpaca-comments" className="alpaca-comments-timeline">
-        <div className="alpaca-timeline-item">
-          <div className="alpaca-timeline-marker">
-            <User user={currentUser} />
-          </div>
-
-          <div className="alpaca-comment-form">
-            <TextareaControl
-              placeholder="Add a comment..."
-              value={newComment}
-              onChange={setNewComment}
-              disabled={isSubmitting}
-            />
-            <Button
-              isPrimary
-              onClick={handleCommentSubmit}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Submitting...' : 'Submit Comment'}
-            </Button>
-          </div>
+      <div id="alpaca-comments-wrapper">
+        <div id="alpaca-comments-header">
+          <Button variant="tertiary" onClick={toggleSortOrder}>
+            {sortOrder === 'desc' ? 'Sort: ↑' : 'Sort: ↓'}
+          </Button>
         </div>
+        <div id="alpaca-comments">
+          <div className="alpaca-comment-form" data-source="human">
+            <User user={currentUser} />
+            <div className="alpaca-timeline-content">
+              <TextareaControl
+                placeholder="Add a comment..."
+                value={newComment}
+                onChange={setNewComment}
+                disabled={isSubmitting}
+              />
+              <Button
+                isPrimary
+                onClick={handleCommentSubmit}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Submitting...' : 'Submit Comment'}
+              </Button>
+            </div>
+          </div>
 
-        {isLoadingComments && <Spinner />}
-        {error && <p className="alpaca-error">{error}</p>}
-        {!isLoadingComments && !error && comments.length === 0 && (
-          <p>No comments yet.</p>
-        )}
+          {isLoadingComments && <Spinner />}
+          {error && <p className="alpaca-error">{error}</p>}
+          {!isLoadingComments && !error && comments.length === 0 && (
+            <p>No comments yet.</p>
+          )}
 
-        {!isLoadingComments &&
-          comments.map((comment) => (
-            <MemoizedComment
-              key={comment.id}
-              comment={comment}
-              startEditing={startEditing}
-              confirmDeleteComment={confirmDeleteComment}
-              editingCommentId={editingCommentId}
-              editingContent={editingContent}
-              setEditingContent={setEditingContent}
-              editingRef={editingRef}
-              saveEdit={saveEdit}
-              cancelEditing={cancelEditing}
-              isSubmitting={isSubmitting}
-            />
-          ))}
+          <div className="alpaca-comments-timeline">
+            {!isLoadingComments &&
+              comments.map((comment) => (
+                <MemoizedComment
+                  key={comment.id}
+                  comment={comment}
+                  startEditing={startEditing}
+                  confirmDeleteComment={confirmDeleteComment}
+                  editingCommentId={editingCommentId}
+                  editingContent={editingContent}
+                  setEditingContent={setEditingContent}
+                  editingRef={editingRef}
+                  saveEdit={saveEdit}
+                  cancelEditing={cancelEditing}
+                  isSubmitting={isSubmitting}
+                />
+              ))}
+          </div>
 
-        {/* Modal for delete */}
-        {deleteCommentId && (
-          <Modal
-            title="Delete Comment?"
-            onRequestClose={cancelDelete}
-            className="alpaca-modal"
-          >
-            <p>Are you sure you want to delete this comment?</p>
-            <Button isPrimary onClick={deleteComment}>
-              Delete
-            </Button>
-            <Button onClick={cancelDelete}>Cancel</Button>
-          </Modal>
-        )}
+          {/* Modal for delete */}
+          {deleteCommentId && (
+            <Modal
+              title="Delete Comment?"
+              onRequestClose={cancelDelete}
+              className="alpaca-modal"
+            >
+              <p>Are you sure you want to delete this comment?</p>
+              <Button isPrimary onClick={deleteComment}>
+                Delete
+              </Button>
+              <Button onClick={cancelDelete}>Cancel</Button>
+            </Modal>
+          )}
+        </div>
       </div>
     </>
   );
