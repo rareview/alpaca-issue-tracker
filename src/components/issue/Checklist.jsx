@@ -35,7 +35,7 @@ const Checklist = memo(
     const saveChecklist = (items) => {
       setIsSaving(true);
       wp.apiFetch({
-        path: `/issue/v1/checklist/${issueId}`,
+        path: `/alpaca/v1/checklist/${issueId}`,
         method: 'POST',
         data: items,
       })

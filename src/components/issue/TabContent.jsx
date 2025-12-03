@@ -28,9 +28,20 @@ const TabContent = memo(
           />
         );
       case 'queriedobject':
-        return <JsonTable data={issueDetails.meta.queriedObject} />;
+        return (
+          <JsonTable
+            data={
+              issueDetails.meta.alpaca_queried_object ||
+              issueDetails.meta.queriedObject
+            }
+          />
+        );
       case 'headers':
-        return <JsonTable data={issueDetails.meta.headers} />;
+        return (
+          <JsonTable
+            data={issueDetails.meta.alpaca_headers || issueDetails.meta.headers}
+          />
+        );
       case 'jserrors':
         return null;
       default:

@@ -28,7 +28,7 @@
   <!-- Custom naming prefix requirement -->
   <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
     <properties>
-      <property name="prefixes" value="alpaca"/>
+      <property name="prefixes" value="alpaca,Alpaca"/>
     </properties>
   </rule>
 </ruleset>

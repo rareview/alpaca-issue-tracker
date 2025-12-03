@@ -44,7 +44,7 @@ add_action(
  * @param string $type              Comment type to hide.
  * @param bool   $exclude_from_count Whether to exclude from comment counts.
  */
-function hide_comment_type( $type = '', $exclude_from_count = true ) {
+function alpaca_hide_comment_type( $type = '', $exclude_from_count = true ) {
 
 	global $wpdb;
 

@@ -97,6 +97,16 @@ export const useTestLogger = (enable) => {
     );
     wp.hooks.addAction('alpaca.issueDeleted', 'alpaca/test', logIssueDeleted);
 
+    const logCommentCountChanged = (data) => {
+      // eslint-disable-next-line no-console
+      console.log(`Comment count changed:`, data);
+    };
+    wp.hooks.addAction(
+      'alpaca.commentCountChanged',
+      'alpaca/test',
+      logCommentCountChanged,
+    );
+
     return () => {
       wp.hooks.removeAction('alpaca.statusChanged', 'alpaca/test');
       wp.hooks.removeAction('alpaca.issueAssigneesChanged', 'alpaca/test');
@@ -107,6 +117,7 @@ export const useTestLogger = (enable) => {
       wp.hooks.removeAction('alpaca.commentUpdated', 'alpaca/test');
       wp.hooks.removeAction('alpaca.commentDeleted', 'alpaca/test');
       wp.hooks.removeAction('alpaca.issueDeleted', 'alpaca/test');
+      wp.hooks.removeAction('alpaca.commentCountChanged', 'alpaca/test');
     };
   }, [enable]);
 };

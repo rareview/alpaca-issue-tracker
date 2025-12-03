@@ -5,12 +5,12 @@
  * @package Alpaca
  */
 
-add_action( 'admin_head', 'expose_admin_colors' );
+add_action( 'admin_head', 'alpaca_expose_admin_colors' );
 
 /**
  * Expose current admin color scheme as CSS variables.
  */
-function expose_admin_colors() {
+function alpaca_expose_admin_colors() {
 	global $_wp_admin_css_colors;
 
 	$current_scheme = get_user_option( 'admin_color' );
@@ -19,7 +19,7 @@ function expose_admin_colors() {
 		$scheme = $_wp_admin_css_colors[ $current_scheme ];
 		$colors = $scheme->colors;
 
-		echo '<style id="expose-admin-colors">:root {';
+		echo '<style id="alpaca-expose-admin-colors">:root {';
 		foreach ( $colors as $i => $color ) {
 			// Expose each admin color as a CSS variable.
 			printf( '--admin-color-%d: %s; ', intval( $i ) + 1, esc_html( $color ) );

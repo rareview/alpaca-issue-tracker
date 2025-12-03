@@ -162,7 +162,7 @@ function Board() {
         const newItems = [...container.items];
         newItems[itemIndex] = {
           ...newItems[itemIndex],
-          comment_count: newCount,
+          commentCount: newCount,
         };
 
         return { ...container, items: newItems };
@@ -295,7 +295,7 @@ function Board() {
     Promise.all(
       itemsToDelete.map((issueId) =>
         wp.apiFetch({
-          path: `/issue/v1/delete/${issueId}`,
+          path: `/alpaca/v1/delete/${issueId}`,
           method: 'DELETE',
         }),
       ),
@@ -502,7 +502,7 @@ function Board() {
     closeModal();
 
     wp.apiFetch({
-      path: `/issue/v1/delete/${issueId}`,
+      path: `/alpaca/v1/delete/${issueId}`,
       method: 'DELETE',
     })
       .then(() => {

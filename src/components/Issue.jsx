@@ -154,11 +154,15 @@ const AlpacaIssue = ({
   // Process issue details when they change
   useEffect(() => {
     if (issueDetails && issueDetails.success && allUserObjects.length > 0) {
-      setDeadline(issueDetails.meta.deadline || null);
+      setDeadline(
+        issueDetails.meta.alpaca_deadline || issueDetails.meta.deadline || null,
+      );
 
       // Handle checklist
-      if (issueDetails.meta.checklist) {
-        const parsedChecklist = parseChecklist(issueDetails.meta.checklist);
+      if (issueDetails.meta.alpaca_checklist || issueDetails.meta.checklist) {
+        const parsedChecklist = parseChecklist(
+          issueDetails.meta.alpaca_checklist || issueDetails.meta.checklist,
+        );
         if (Array.isArray(parsedChecklist)) {
           setChecklistItems(parsedChecklist);
         }
@@ -480,7 +484,12 @@ const AlpacaIssue = ({
                     {(tab) => {
                       if (tab.name === 'errors') {
                         return (
-                          <ErrorsTab errorsJson={issueDetails.meta.errors} />
+                          <ErrorsTab
+                            errorsJson={
+                              issueDetails.meta.alpaca_errors ||
+                              issueDetails.meta.errors
+                            }
+                          />
                         );
                       }
                       return (

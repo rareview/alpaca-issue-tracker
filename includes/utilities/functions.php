@@ -121,14 +121,14 @@ function alpaca_setup_default_statuses( $force = false ) {
 		require_once ALPACA_PLUGIN_DIR . 'includes/core/posttypes-and-taxonomies.php';
 	}
 
-	if ( ! did_action( 'init' ) ) {
+	if ( ! taxonomy_exists( 'alpaca_status' ) ) {
 		alpaca_register_cpts_and_taxonomies();
 	}
 
 	if ( ! $force ) {
 		$existing_statuses = get_terms(
 			array(
-				'taxonomy'   => 'status',
+				'taxonomy'   => 'alpaca_status',
 				'hide_empty' => false,
 			)
 		);
@@ -171,7 +171,7 @@ function alpaca_setup_default_statuses( $force = false ) {
 	foreach ( $default_statuses as $status ) {
 		$term = wp_insert_term(
 			$status['name'],
-			'status',
+			'alpaca_status',
 			array(
 				'slug' => $status['slug'],
 			)
@@ -184,6 +184,8 @@ function alpaca_setup_default_statuses( $force = false ) {
 			if ( ! empty( $status['is_default'] ) ) {
 				$default_term_id = $term['term_id'];
 			}
+		} elseif ( is_wp_error( $term ) ) {
+			error_log( '[Alpaca] Failed to create status ' . $status['name'] . ': ' . $term->get_error_message() );
 		}
 	}
 

@@ -1,7 +1,7 @@
 <?php
 // phpcs:ignoreFile WordPress.WP.AlternativeFunctions.file_operations_file_put_contents
 /**
- * Alpaca Issues – REST Endpoints (refactored).
+ * Alpaca Issues – REST Endpoints.
  *
  * @package Alpaca
  */
@@ -98,7 +98,7 @@ function alpaca_avatar( $user_id, $size = 24 ) {
  */
 function alpaca_assert_issue_exists( $post_id ) {
 	$post = get_post( (int) $post_id );
-	return ( $post && 'issue' === $post->post_type ) ? $post : null;
+	return ( $post && 'alpaca_issue' === $post->post_type ) ? $post : null;
 }
 
 /*
@@ -110,7 +110,7 @@ add_action( 'rest_api_init', 'alpaca_issue_submit' );
  */
 function alpaca_issue_submit() {
 	register_rest_route(
-		'issue/v1/',
+		'alpaca/v1',
 		'submit',
 		[
 			'methods'             => 'POST',
@@ -159,7 +159,7 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 	// Prepare post args (keep original behavior).
 	$getbody   = $req->get_body();
 	$post_args = [
-		'post_type'      => 'issue',
+		'post_type'      => 'alpaca_issue',
 		'post_status'    => 'publish',
 		'post_author'    => $user_id,
 		'post_title'     => wp_kses_post( wp_trim_words( $feedback_raw, 10 ) ),
@@ -179,7 +179,7 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 		);
 	}
 
-	// Assign initial status (keeps your improved logic).
+	// Assign initial status.
 	$status_term_id = 0;
 	$statuses       = alpaca_get_statuses();
 	if ( ! empty( $statuses ) && ! is_wp_error( $statuses ) ) {
@@ -188,7 +188,7 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 
 		// 1) Saved default if valid/on board.
 		if ( $default_status_id > 0 ) {
-			$term = get_term( $default_status_id, 'status' );
+			$term = get_term( $default_status_id, 'alpaca_status' );
 			if (
 				$term && ! is_wp_error( $term )
 				&& in_array( $term->term_id, wp_list_pluck( $statuses, 'term_id' ), true )
@@ -210,12 +210,12 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 			$status_term = reset( $statuses );
 		}
 		if ( $status_term ) {
-			wp_set_post_terms( $post_id, [ (int) $status_term->term_id ], 'status' );
+			wp_set_post_terms( $post_id, [ (int) $status_term->term_id ], 'alpaca_status' );
 			$status_term_id = (int) $status_term->term_id;
 		}
 	}
 
-	// Optional context (kept, but hardened).
+	// Optional context.
 	if ( $include_ctx ) {
 		$browser_name = (string) alpaca_arr_get( $payload, [ 'client', 'browser', 'name' ], '' );
 		$os_name      = (string) alpaca_arr_get( $payload, [ 'client', 'os' ], '' );
@@ -223,38 +223,38 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 		$wp_types     = (array) alpaca_arr_get( $payload, [ 'wp', 'type' ], [] );
 
 		if ( '' !== $browser_name ) {
-			wp_set_post_terms( $post_id, $browser_name, 'browser', true );
+			wp_set_post_terms( $post_id, $browser_name, 'alpaca_browser', true );
 		}
 		if ( '' !== $os_name ) {
-			wp_set_post_terms( $post_id, $os_name, 'browser', true );
+			wp_set_post_terms( $post_id, $os_name, 'alpaca_browser', true );
 		}
 		if ( '' !== $template ) {
-			wp_set_post_terms( $post_id, $template, 'phptemplate' );
+			wp_set_post_terms( $post_id, $template, 'alpaca_phptemplate' );
 		}
 		foreach ( $wp_types as $t ) {
 			if ( is_scalar( $t ) && '' !== $t ) {
-				wp_set_post_terms( $post_id, (string) $t, 'type' );
+				wp_set_post_terms( $post_id, (string) $t, 'alpaca_type' );
 			}
 		}
 
-		update_post_meta( $post_id, 'screenshot', (string) alpaca_arr_get( $payload, [ 'screenshot' ], '' ) );
-		update_post_meta( $post_id, 'screenwidth', (int) alpaca_arr_get( $payload, [ 'client', 'browser', 'width' ], 0 ) );
-		update_post_meta( $post_id, 'screenheight', (int) alpaca_arr_get( $payload, [ 'client', 'browser', 'height' ], 0 ) );
-		update_post_meta( $post_id, 'URL', (string) alpaca_arr_get( $payload, [ 'server', 'REQUEST_URI' ], '' ) );
+		update_post_meta( $post_id, 'alpaca_screenshot', (string) alpaca_arr_get( $payload, [ 'screenshot' ], '' ) );
+		update_post_meta( $post_id, 'alpaca_screenwidth', (int) alpaca_arr_get( $payload, [ 'client', 'browser', 'width' ], 0 ) );
+		update_post_meta( $post_id, 'alpaca_screenheight', (int) alpaca_arr_get( $payload, [ 'client', 'browser', 'height' ], 0 ) );
+		update_post_meta( $post_id, 'alpaca_url', (string) alpaca_arr_get( $payload, [ 'server', 'REQUEST_URI' ], '' ) );
 
 		$qo = alpaca_arr_get( $payload, [ 'wp', 'queriedObject' ], null );
 		if ( is_array( $qo ) ) {
-			// Avoid storing post_content (unchanged behavior).
+			// Avoid storing post_content.
 			if ( array_key_exists( 'post_content', $qo ) ) {
 				unset( $qo['post_content'] );
 			}
 
-			update_post_meta( $post_id, 'queriedObject', $qo );
+			update_post_meta( $post_id, 'alpaca_queried_object', $qo );
 		}
 
 		$headers = alpaca_arr_get( $payload, [ 'headers' ], null );
 		if ( is_array( $headers ) ) {
-			update_post_meta( $post_id, 'headers', $headers );
+			update_post_meta( $post_id, 'alpaca_headers', $headers );
 		}
 
 		// Parent link when singular.
@@ -292,7 +292,7 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 			}
 		}
 		if ( ! empty( $sanitized_errors ) ) {
-			update_post_meta( $post_id, 'errors', wp_json_encode( $sanitized_errors, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) );
+			update_post_meta( $post_id, 'alpaca_errors', wp_json_encode( $sanitized_errors, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) );
 		}
 	}
 
@@ -412,7 +412,7 @@ add_action( 'rest_api_init', 'alpaca_update_issue' );
  */
 function alpaca_update_issue() {
 	register_rest_route(
-		'issue/v1',
+		'alpaca/v1',
 		'/update/(?P<id>\d+)',
 		[
 			'methods'             => 'POST',
@@ -476,11 +476,16 @@ function alpaca_update_issue_callback( WP_REST_Request $request ) {
 		foreach ( $data['taxonomies'] as $taxonomy => $terms ) {
 			// Sanitize taxonomy name.
 			$taxonomy = sanitize_key( $taxonomy );
+			
+			// Map old taxonomy names to new ones if necessary (for backward compat in JS payload)
+			if ( 'status' === $taxonomy ) $taxonomy = 'alpaca_status';
+			if ( 'assignee' === $taxonomy ) $taxonomy = 'alpaca_assignee';
+
 			if ( ! taxonomy_exists( $taxonomy ) ) {
 				continue;
 			}
 
-			if ( 'assignee' === $taxonomy ) {
+			if ( 'alpaca_assignee' === $taxonomy ) {
 				$term_ids = [];
 				foreach ( (array) $terms as $user_slug ) {
 					// Sanitize user slug to prevent XSS/injection.
@@ -493,11 +498,11 @@ function alpaca_update_issue_callback( WP_REST_Request $request ) {
 						continue;
 					}
 
-					$existing = get_term_by( 'slug', $user->user_nicename, 'assignee' );
+					$existing = get_term_by( 'slug', $user->user_nicename, 'alpaca_assignee' );
 					if ( ! $existing ) {
 						$inserted = wp_insert_term(
 							$user->display_name,
-							'assignee',
+							'alpaca_assignee',
 							[
 								'slug'        => $user->user_nicename,
 								'description' => $user->user_login,
@@ -511,7 +516,7 @@ function alpaca_update_issue_callback( WP_REST_Request $request ) {
 						$term_ids[] = $term_id;
 					}
 				}
-				wp_set_post_terms( $issue_id, alpaca_to_int_ids( $term_ids ), 'assignee', false );
+				wp_set_post_terms( $issue_id, alpaca_to_int_ids( $term_ids ), 'alpaca_assignee', false );
 			} else {
 				$term_ids = alpaca_to_int_ids( $terms );
 				wp_set_post_terms( $issue_id, $term_ids, $taxonomy, false );
@@ -523,6 +528,10 @@ function alpaca_update_issue_callback( WP_REST_Request $request ) {
 	if ( isset( $data['meta'] ) && is_array( $data['meta'] ) ) {
 		foreach ( $data['meta'] as $meta_key => $meta_value ) {
 			$key = sanitize_key( (string) $meta_key );
+			// Prefix meta keys
+			if ( ! str_starts_with( $key, 'alpaca_' ) ) {
+				$key = 'alpaca_' . $key;
+			}
 			update_post_meta( $issue_id, $key, maybe_serialize( $meta_value ) );
 		}
 	}
@@ -653,7 +662,7 @@ add_action( 'rest_api_init', 'alpaca_get_issue_data' );
  */
 function alpaca_get_issue_data() {
 	register_rest_route(
-		'issue/v1',
+		'alpaca/v1',
 		'/get/(?P<id>\d+)',
 		[
 			'methods'             => 'GET',
@@ -703,25 +712,30 @@ function alpaca_get_issue_data_callback( WP_REST_Request $request ) {
 		if ( 0 === strpos( $key, '_' ) ) {
 			continue;
 		}
+
 		$formatted_meta[ $key ] = maybe_unserialize( $value[0] );
 	}
 
-	$all_taxonomies = get_object_taxonomies( 'issue', 'objects' );
+	$all_taxonomies = get_object_taxonomies( 'alpaca_issue', 'objects' );
 	$terms_data     = [];
 	foreach ( $all_taxonomies as $taxonomy_obj ) {
 		$terms = wp_get_object_terms( $issue_id, $taxonomy_obj->name, [ 'fields' => 'all' ] );
 		if ( is_wp_error( $terms ) || empty( $terms ) ) {
 			continue;
 		}
-		if ( 'assignee' === $taxonomy_obj->name ) {
+		if ( 'alpaca_assignee' === $taxonomy_obj->name ) {
 			foreach ( $terms as $idx => $term ) {
 				// Keep original structure but enrich.
 				$terms[ $idx ]->username     = $term->name;
 				$terms[ $idx ]->display_name = $term->description;
 			}
 		}
+
 		$terms_data[ $taxonomy_obj->name ] = $terms;
 	}
+
+	if ( isset( $terms_data['alpaca_status'] ) ) $terms_data['status'] = $terms_data['alpaca_status'];
+	if ( isset( $terms_data['alpaca_assignee'] ) ) $terms_data['assignee'] = $terms_data['alpaca_assignee'];
 
 	$issue_comment_count = get_comments(
 		[
@@ -754,7 +768,7 @@ add_action( 'rest_api_init', 'alpaca_get_issue_comment_count_endpoint' );
  */
 function alpaca_get_issue_comment_count_endpoint() {
 	register_rest_route(
-		'issue/v1',
+		'alpaca/v1',
 		'/comment-count/(?P<id>\d+)',
 		[
 			'methods'             => 'GET',
@@ -1006,7 +1020,7 @@ function alpaca_update_status_callback( WP_REST_Request $request ) {
 	$term_id = (int) $request['id'];
 	$data    = $request->get_json_params();
 
-	$term = get_term( $term_id, 'status' );
+	$term = get_term( $term_id, 'alpaca_status' );
 	if ( ! $term || is_wp_error( $term ) ) {
 		return alpaca_rest_response(
 			[
@@ -1023,7 +1037,7 @@ function alpaca_update_status_callback( WP_REST_Request $request ) {
 
 		$update_result = wp_update_term(
 			$term_id,
-			'status',
+			'alpaca_status',
 			[
 				'name' => $new_name,
 				'slug' => $new_slug,
@@ -1063,7 +1077,7 @@ add_action( 'rest_api_init', 'alpaca_delete_issue' );
  */
 function alpaca_delete_issue() {
 	register_rest_route(
-		'issue/v1',
+		'alpaca/v1',
 		'/delete/(?P<id>\d+)',
 		[
 			'methods'             => 'DELETE',
@@ -1133,7 +1147,7 @@ add_action( 'rest_api_init', 'alpaca_update_checklist_endpoint' );
  */
 function alpaca_update_checklist_endpoint() {
 	register_rest_route(
-		'issue/v1',
+		'alpaca/v1',
 		'/checklist/(?P<id>\d+)',
 		[
 			'methods'             => 'POST',
@@ -1184,7 +1198,7 @@ function alpaca_update_checklist_callback( WP_REST_Request $request ) {
 		);
 	}
 
-	update_post_meta( $issue_id, 'checklist', wp_json_encode( $checklist_data ) );
+	update_post_meta( $issue_id, 'alpaca_checklist', wp_json_encode( $checklist_data ) );
 
 	return alpaca_rest_response(
 		[
@@ -1232,7 +1246,7 @@ function alpaca_webhook_receiver_callback( WP_REST_Request $request ) {
 		: '';
 
 	// Verify webhook signature.
-	if ( ! verify_github_payload( $body, $signature ) ) {
+	if ( function_exists( 'alpaca_verify_github_payload' ) && ! alpaca_verify_github_payload( $body, $signature ) ) {
 		// Log failed verification attempt.
 		alpaca_log_webhook( 'Webhook verification failed - invalid signature', 'error' );
 		return new WP_REST_Response( [ 'error' => 'Invalid signature' ], 401 );

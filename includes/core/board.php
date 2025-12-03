@@ -9,7 +9,7 @@
 /**
  * Render the project board admin page.
  */
-function project_board_page() {
+function alpaca_project_board_page() {
 	?>
 	<div class="wrap">
 	<h1 class="wp-heading-inline"><?php echo esc_html__( 'Project Board', 'alpaca' ); ?></h1>
@@ -37,7 +37,7 @@ function alpaca_clear_board_cache() {
 		}
 	}
 }
-add_action( 'save_post_issue', 'alpaca_clear_board_cache' );
+add_action( 'save_post_alpaca_issue', 'alpaca_clear_board_cache' );
 add_action( 'deleted_post', 'alpaca_clear_board_cache' );
 add_action( 'set_object_terms', 'alpaca_clear_board_cache' );
 add_action( 'created_term', 'alpaca_clear_board_cache' );
@@ -81,11 +81,11 @@ function alpaca_get_board_data() {
 	// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
 	$posts = get_posts(
 		[
-			'post_type'      => 'issue',
+			'post_type'      => 'alpaca_issue',
 			'posts_per_page' => -1,
 			'tax_query'      => [ // phpcs:ignore-line WordPress.DB.SlowDBQuery.slow_db_query_tax_query
 				[
-					'taxonomy' => 'status',
+					'taxonomy' => 'alpaca_status',
 					'field'    => 'term_id',
 					'terms'    => $status_ids,
 				],
@@ -97,7 +97,7 @@ function alpaca_get_board_data() {
 
 	// Group posts by status term.
 	$posts_by_status = [];
-	$status_terms    = wp_get_object_terms( $post_ids, 'status', [ 'fields' => 'all_with_object_id' ] );
+	$status_terms    = wp_get_object_terms( $post_ids, 'alpaca_status', [ 'fields' => 'all_with_object_id' ] );
 	foreach ( $status_terms as $term ) {
 		$posts_by_status[ $term->term_id ][] = get_post( $term->object_id );
 	}
@@ -128,7 +128,7 @@ function alpaca_get_board_data() {
 	}
 
 	// Batch assignees.
-	$assignee_terms    = wp_get_object_terms( $post_ids, 'assignee', [ 'fields' => 'all_with_object_id' ] );
+	$assignee_terms    = wp_get_object_terms( $post_ids, 'alpaca_assignee', [ 'fields' => 'all_with_object_id' ] );
 	$assignees_by_post = [];
 	$slugs             = [];
 	foreach ( $assignee_terms as $term ) {
@@ -181,16 +181,16 @@ function alpaca_get_board_data() {
 							'id'           => $user->ID,
 							'slug'         => $slug,
 							'display_name' => $user->display_name,
-							'avatar'       => get_avatar_url( $user->ID, [ 'size' => 32 ] ),
+							'avatar'       => alpaca_avatar( $user->ID, 32 ),
 						];
 					}
 				}
 			}
 
 			$meta_vals_for_card             = [];
-			$meta_vals_for_card['deadline'] = get_post_meta( $post->ID, 'deadline', false );
+			$meta_vals_for_card['deadline'] = get_post_meta( $post->ID, 'alpaca_deadline', false );
 
-			$checklist_json = get_post_meta( $post->ID, 'checklist', true );
+			$checklist_json = get_post_meta( $post->ID, 'alpaca_checklist', true );
 			if ( $checklist_json ) {
 				$decoded_checklist = json_decode( $checklist_json, true );
 				if ( is_array( $decoded_checklist ) ) {
