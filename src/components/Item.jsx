@@ -79,13 +79,11 @@ const Item = forwardRef(
     // Format deadline display text
     let deadlineText = deadlineFormatted;
     if (isValidDeadline) {
-      if (diffDays > 0) {
-        deadlineText = deadlineFormatted;
+      if (diffDays === 1) {
+        deadlineText = 'Tomorrow';
       } else if (diffDays === 0) {
         deadlineText = 'Today';
-      } else if (diffDays === 1) {
-        deadlineText = 'Tomorrow';
-      } else {
+      } else if (diffDays === -1) {
         deadlineText = 'Yesterday';
       }
     }
