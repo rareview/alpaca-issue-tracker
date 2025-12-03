@@ -158,7 +158,7 @@ function AlpacaBoardControlsInner({ alpacaUserData }) {
     .filter((assignee) => assignee && assignee.id)
     .map((assignee) => ({
       value: assignee.id.toString(),
-      label: assignee.display_name || assignee.slug || 'Unnamed',
+      label: assignee.displayName || assignee.slug || 'Unnamed',
     }));
 
   // --- Handlers ---
