@@ -24,8 +24,8 @@ class Activator {
 		// Check requirements.
 		self::check_requirements();
 
-		// Setup default terms.
-		\add_option( 'alpaca_needs_term_setup', true );
+		// Setup default status terms.
+		self::setup_default_statuses();
 
 		// Flush rewrite rules.
 		\flush_rewrite_rules();
@@ -68,6 +68,19 @@ class Activator {
 				array( 'back_link' => true )
 			);
 		}
+	}
+
+	/**
+	 * Setup default status terms on first activation.
+	 *
+	 * Creates a starter set of status terms if none exist:
+	 * - Backlog (score: 0)
+	 * - Inbox (score: 1, set as default)
+	 * - In Progress (score: 2)
+	 * - Done (score: 3)
+	 */
+	private static function setup_default_statuses() {
+		alpaca_setup_default_statuses();
 	}
 
 	/**
