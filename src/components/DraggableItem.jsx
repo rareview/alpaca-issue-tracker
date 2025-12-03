@@ -13,7 +13,7 @@ import Item from './Item';
  * @param {boolean}  root0.isDragDisabled - Whether dragging is disabled
  * @param {Function} root0.onClick        - Click handler
  * @param {Array}    root0.assignees      - Array of assignees
- * @param {number}   root0.comment_count  - Comment count
+ * @param {number}   root0.commentCount   - Comment count
  * @param {Object}   root0.meta           - Metadata object
  * @return {JSX.Element} Draggable item component
  */
@@ -25,7 +25,7 @@ function DraggableItem({
   isDragDisabled = false,
   onClick,
   assignees = [],
-  comment_count: commentCount,
+  commentCount,
   meta,
 }) {
   const handleClick = (event) => {
@@ -70,7 +70,7 @@ DraggableItem.propTypes = {
   isDragDisabled: PropTypes.bool,
   onClick: PropTypes.func,
   assignees: PropTypes.array,
-  comment_count: PropTypes.number,
+  commentCount: PropTypes.number,
   meta: PropTypes.object,
 };
 

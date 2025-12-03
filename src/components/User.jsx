@@ -8,7 +8,8 @@ const User = ({ user: userProp, showAvatar = true, showName = true }) => {
   const { userName, avatarUrl } = useMemo(() => {
     if (!user) return { userName: null, avatarUrl: null };
     const apiData = user;
-    const displayName = apiData.display_name || apiData.name; // eslint-disable-line camelcase
+    const displayName =
+      apiData.displayName || apiData.display_name || apiData.name; // eslint-disable-line camelcase
     const avatarUrls = apiData.avatar_urls; // eslint-disable-line camelcase
     return {
       userName: displayName,

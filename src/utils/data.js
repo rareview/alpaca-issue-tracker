@@ -12,9 +12,11 @@ const transformDataForBoard = (data) => {
     items: column.issues.map((issue) => ({
       id: issue.id.toString(),
       content: decodeEntities(issue.title),
+      authorName: issue.author_name,
+      authorImg: issue.author_img,
       assignees: issue.assignees || [],
-      commentCount: issue.comment_count,
-      meta: issue.meta,
+      commentCount: issue.comment_count ?? 0,
+      meta: issue.meta || {},
     })),
   }));
 };

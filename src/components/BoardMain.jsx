@@ -308,12 +308,12 @@ function Board() {
   const handleAssigneesChange = async (issueId, newAssignees) => {
     const enrichedAssignees = await Promise.all(
       newAssignees.map(async (assignee) => {
-        if (assignee && assignee.id && !assignee.display_name) {
+        if (assignee && assignee.id && !assignee.displayName) {
           try {
             const fullUser = await getUser(assignee.id);
             return {
               ...assignee,
-              display_name: fullUser.name,
+              displayName: fullUser.name,
               slug: fullUser.slug,
             };
           } catch (error) {
@@ -511,10 +511,11 @@ function Board() {
           targetContainer.items.unshift({
             id: issue.id.toString(),
             content: decodeEntities(issue.title),
-            author_name: issue.author_name,
-            author_img: issue.author_img,
+            authorName: issue.author_name,
+            authorImg: issue.author_img,
             assignees: [],
-            comment_count: issue.comment_count ?? 0,
+            commentCount: issue.comment_count ?? 0,
+            meta: issue.meta || {},
           });
         }
 
@@ -545,7 +546,7 @@ function Board() {
               const existing = allAssignees.get(assigneeId);
               if (
                 !existing ||
-                (!existing.display_name && assignee.display_name)
+                (!existing.displayName && assignee.displayName)
               ) {
                 allAssignees.set(assigneeId, assignee);
               }
