@@ -1,24 +1,25 @@
 const { useState, useRef, useEffect, useCallback } = wp.element;
 const { decodeEntities } = wp.htmlEntities;
+const { Button, Notice } = wp.components;
 
-import { DragDropContext } from "@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration";
+import { DragDropContext } from '@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration';
 
-import AlpacaIssue from "./issue";
-import Container from "./Container";
+import AlpacaIssue from './Issue';
+import Container from './Container';
 
-import { setCookie, getCookie } from "../utils/cookies";
-import { transformDataForBoard, saveBoardOrder } from "../utils/data";
-import { getUser } from "../hooks/useUser";
+import { setCookie, getCookie } from '../utils/cookies';
+import { transformDataForBoard, saveBoardOrder } from '../utils/data';
+import { getUser } from '../hooks/useUser';
 
-import { fetchStatuses, updateIssue } from "../services/issueApi";
+import { updateIssue } from '../services/issueApi';
 
 /**
  * Main board component.
  */
 function Board() {
   const [containers, setContainers] = useState(() => {
-    if (typeof alpacaBoardData !== "undefined") {
-      return transformDataForBoard(alpacaBoardData);
+    if (typeof window.alpacaBoardData !== 'undefined') {
+      return transformDataForBoard(window.alpacaBoardData);
     }
     return [];
   });
@@ -27,13 +28,15 @@ function Board() {
   const triggerRef = useRef(null);
   const [needsSave, setNeedsSave] = useState(false);
   const [hiddenContainerIds, setHiddenContainerIds] = useState(() => {
-    const cookie = getCookie("alpaca_hidden_containers");
-    return cookie ? cookie.split(",").filter(Boolean) : [];
+    const cookie = getCookie('alpaca_hidden_containers');
+    return cookie ? cookie.split(',').filter(Boolean) : [];
   });
+  const [isRestoring, setIsRestoring] = useState(false);
+  const [restoreError, setRestoreError] = useState(null);
 
   // Effect to update cookie when hiddenContainerIds changes
   useEffect(() => {
-    setCookie("alpaca_hidden_containers", hiddenContainerIds.join(","), 365);
+    setCookie('alpaca_hidden_containers', hiddenContainerIds.join(','), 365);
   }, [hiddenContainerIds]);
 
   const handleToggleHidden = (containerId) => {
@@ -52,24 +55,20 @@ function Board() {
   const handleRenameContainer = (containerId, newTitle) => {
     const original = containers;
     const updated = containers.map((c) =>
-      c.id === containerId ? { ...c, title: newTitle } : c
+      c.id === containerId ? { ...c, title: newTitle } : c,
     );
     setContainers(updated);
 
     // Persist via REST API
     wp.apiFetch({
       path: `/alpaca/v1/status/${containerId}`,
-      method: "POST",
+      method: 'POST',
       data: { name: newTitle },
     }).catch((err) => {
-      console.error("Error renaming container:", err);
+      console.error('Error renaming container:', err);
       setContainers(original); // revert on failure
     });
   };
-
-  function findContainerByItemId(itemId) {
-    return containers.find((c) => c.items.some((item) => item.id === itemId));
-  }
 
   function findContainerById(containerId) {
     return containers.find((c) => c.id === containerId);
@@ -77,8 +76,8 @@ function Board() {
 
   function getItemById(itemId) {
     for (const container of containers) {
-      const item = container.items.find((item) => item.id === itemId);
-      if (item) return item;
+      const foundItem = container.items.find((item) => item.id === itemId);
+      if (foundItem) return foundItem;
     }
     return null;
   }
@@ -87,7 +86,6 @@ function Board() {
     const { source, destination, draggableId } = result;
 
     if (!destination) {
-      console.log("No destination, returning.");
       return;
     }
 
@@ -100,9 +98,7 @@ function Board() {
       items.splice(destination.index, 0, reorderedItem);
 
       setContainers((prev) =>
-        prev.map((c) =>
-          c.id === sourceContainer.id ? { ...c, items: items } : c
-        )
+        prev.map((c) => (c.id === sourceContainer.id ? { ...c, items } : c)),
       );
     } else {
       const sourceItems = Array.from(sourceContainer.items);
@@ -116,17 +112,16 @@ function Board() {
             return { ...c, items: sourceItems };
           } else if (c.id === destinationContainer.id) {
             return { ...c, items: destItems };
-          } else {
-            return c;
           }
-        })
+          return c;
+        }),
       );
 
       wp.hooks.doAction(
-        "alpaca.statusChanged",
+        'alpaca.statusChanged',
         movedItem,
         sourceContainer.title,
-        destinationContainer.title
+        destinationContainer.title,
       );
     }
 
@@ -140,7 +135,8 @@ function Board() {
         status: [newStatusTermId],
       },
     }).catch((err) => {
-      console.error("Error updating issue:", err);
+      // eslint-disable-next-line no-console
+      console.error('Error updating issue:', err);
     });
   }
 
@@ -156,7 +152,7 @@ function Board() {
     setContainers((prevContainers) =>
       prevContainers.map((container) => {
         const itemIndex = container.items.findIndex(
-          (item) => item.id === issueId.toString()
+          (item) => item.id === issueId.toString(),
         );
 
         if (itemIndex === -1) {
@@ -166,11 +162,11 @@ function Board() {
         const newItems = [...container.items];
         newItems[itemIndex] = {
           ...newItems[itemIndex],
-          comment_count: newCount,
+          commentCount: newCount,
         };
 
         return { ...container, items: newItems };
-      })
+      }),
     );
   }, []);
 
@@ -181,13 +177,13 @@ function Board() {
     };
 
     wp.hooks.addAction(
-      "alpaca.commentCountChanged",
-      "alpaca/boardmain",
-      handleCommentCountChanged
+      'alpaca.commentCountChanged',
+      'alpaca/boardmain',
+      handleCommentCountChanged,
     );
 
     return () => {
-      wp.hooks.removeAction("alpaca.commentCountChanged", "alpaca/boardmain");
+      wp.hooks.removeAction('alpaca.commentCountChanged', 'alpaca/boardmain');
     };
   }, [handleCommentCountChange]);
 
@@ -195,7 +191,7 @@ function Board() {
     setContainers((prevContainers) =>
       prevContainers.map((container) => {
         const itemIndex = container.items.findIndex(
-          (item) => item.id === issueId.toString()
+          (item) => item.id === issueId.toString(),
         );
 
         if (itemIndex === -1) {
@@ -212,7 +208,7 @@ function Board() {
         };
 
         return { ...container, items: newItems };
-      })
+      }),
     );
   }, []);
 
@@ -223,13 +219,13 @@ function Board() {
     };
 
     wp.hooks.addAction(
-      "alpaca.checklistChanged",
-      "alpaca/boardmain",
-      checklistChangedCallback
+      'alpaca.checklistChanged',
+      'alpaca/boardmain',
+      checklistChangedCallback,
     );
 
     return () => {
-      wp.hooks.removeAction("alpaca.checklistChanged", "alpaca/boardmain");
+      wp.hooks.removeAction('alpaca.checklistChanged', 'alpaca/boardmain');
     };
   }, [handleChecklistChange]);
 
@@ -240,7 +236,7 @@ function Board() {
     }));
 
     const sourceIndex = containersCopy.findIndex(
-      (c) => c.id === sourceContainerId
+      (c) => c.id === sourceContainerId,
     );
 
     if (sourceIndex === -1 || sourceIndex >= containersCopy.length - 1) {
@@ -260,10 +256,10 @@ function Board() {
 
     itemsToMove.forEach((item) => {
       wp.hooks.doAction(
-        "alpaca.statusChanged",
+        'alpaca.statusChanged',
         item,
         sourceContainer.title,
-        nextContainer.title
+        nextContainer.title,
       );
 
       updateIssue(item.id, {
@@ -291,22 +287,22 @@ function Board() {
     // Optimistically update UI
     setContainers((prevContainers) =>
       prevContainers.map((c) =>
-        c.id === containerId ? { ...c, items: [] } : c
-      )
+        c.id === containerId ? { ...c, items: [] } : c,
+      ),
     );
 
     // API call to delete all issues in the container
     Promise.all(
       itemsToDelete.map((issueId) =>
         wp.apiFetch({
-          path: `/issue/v1/delete/${issueId}`,
-          method: "DELETE",
-        })
-      )
+          path: `/alpaca/v1/delete/${issueId}`,
+          method: 'DELETE',
+        }),
+      ),
     ).catch((err) => {
       console.error(
         `Error deleting issues from container ${containerId}:`,
-        err
+        err,
       );
       setContainers(originalContainers); // Revert UI on error
     });
@@ -315,30 +311,30 @@ function Board() {
   const handleAssigneesChange = async (issueId, newAssignees) => {
     const enrichedAssignees = await Promise.all(
       newAssignees.map(async (assignee) => {
-        if (assignee && assignee.id && !assignee.display_name) {
+        if (assignee && assignee.id && !assignee.displayName) {
           try {
             const fullUser = await getUser(assignee.id);
             return {
               ...assignee,
-              display_name: fullUser.name,
+              displayName: fullUser.name,
               slug: fullUser.slug,
             };
           } catch (error) {
             console.error(
               `Error fetching user data for ID ${assignee.id}:`,
-              error
+              error,
             );
             return assignee;
           }
         }
         return assignee;
-      })
+      }),
     );
 
     setContainers((prevContainers) =>
       prevContainers.map((container) => {
         const itemIndex = container.items.findIndex(
-          (item) => item.id === issueId.toString()
+          (item) => item.id === issueId.toString(),
         );
 
         if (itemIndex === -1) {
@@ -352,13 +348,13 @@ function Board() {
         };
 
         return { ...container, items: newItems };
-      })
+      }),
     );
 
     wp.hooks.doAction(
-      "alpaca.issueAssigneesChanged",
+      'alpaca.issueAssigneesChanged',
       issueId,
-      enrichedAssignees
+      enrichedAssignees,
     );
   };
 
@@ -366,7 +362,7 @@ function Board() {
     setContainers((prevContainers) =>
       prevContainers.map((container) => {
         const itemIndex = container.items.findIndex(
-          (item) => item.id === issueId.toString()
+          (item) => item.id === issueId.toString(),
         );
 
         if (itemIndex === -1) {
@@ -383,7 +379,7 @@ function Board() {
         };
 
         return { ...container, items: newItems };
-      })
+      }),
     );
   }, []);
 
@@ -400,7 +396,7 @@ function Board() {
       // Find the item and remove it from its current container
       for (const container of newContainers) {
         const itemIndex = container.items.findIndex(
-          (item) => item.id === issueId.toString()
+          (item) => item.id === issueId.toString(),
         );
         if (itemIndex !== -1) {
           movedItem = container.items.splice(itemIndex, 1)[0];
@@ -418,19 +414,19 @@ function Board() {
 
         // Add the item to the new container
         const targetContainer = newContainers.find(
-          (container) => container.id === newStatusTerm.term_id.toString()
+          (container) => container.id === newStatusTerm.term_id.toString(),
         );
         if (targetContainer) {
           targetContainer.items.push(movedItem);
           const sourceContainer = prevContainers.find(
-            (c) => c.id === oldContainerId
+            (c) => c.id === oldContainerId,
           );
           if (sourceContainer) {
             wp.hooks.doAction(
-              "alpaca.statusChanged",
+              'alpaca.statusChanged',
               movedItem,
               sourceContainer.title,
-              targetContainer.title
+              targetContainer.title,
             );
           }
         }
@@ -445,7 +441,7 @@ function Board() {
     setContainers((prevContainers) =>
       prevContainers.map((container) => {
         const itemIndex = container.items.findIndex(
-          (item) => item.id === issueId.toString()
+          (item) => item.id === issueId.toString(),
         );
 
         if (itemIndex === -1) {
@@ -459,12 +455,40 @@ function Board() {
         };
 
         return { ...container, items: newItems };
-      })
+      }),
     );
   }, []);
 
   const closeModal = () => {
     setSelectedItem(null);
+  };
+
+  const handleRestoreDefaults = () => {
+    setIsRestoring(true);
+    setRestoreError(null);
+
+    wp.apiFetch({
+      path: '/alpaca/v1/statuses/restore-defaults',
+      method: 'POST',
+    })
+      .then((response) => {
+        if (response.success) {
+          window.location.reload();
+        } else {
+          setRestoreError(
+            response.message || 'Failed to restore default statuses.',
+          );
+        }
+      })
+      .catch((err) => {
+        console.error('Error restoring default statuses:', err);
+        setRestoreError(
+          err.message || 'An error occurred while restoring default statuses.',
+        );
+      })
+      .finally(() => {
+        setIsRestoring(false);
+      });
   };
 
   const handleDeleteIssue = (issueId) => {
@@ -478,15 +502,15 @@ function Board() {
     closeModal();
 
     wp.apiFetch({
-      path: `/issue/v1/delete/${issueId}`,
-      method: "DELETE",
+      path: `/alpaca/v1/delete/${issueId}`,
+      method: 'DELETE',
     })
       .then(() => {
-        wp.hooks.doAction("alpaca.issueDeleted", issueId);
+        wp.hooks.doAction('alpaca.issueDeleted', issueId);
       })
       .catch((err) => {
         // Revert if the delete fails
-        console.error("Error deleting issue:", err);
+        console.error('Error deleting issue:', err);
         setContainers(originalContainers);
       });
   };
@@ -511,17 +535,18 @@ function Board() {
       setContainers((prevContainers) => {
         const newContainers = [...prevContainers];
         const targetContainer = newContainers.find(
-          (c) => c.id === statusId.toString()
+          (c) => c.id === statusId.toString(),
         );
 
         if (targetContainer) {
           targetContainer.items.unshift({
             id: issue.id.toString(),
             content: decodeEntities(issue.title),
-            author_name: issue.author_name,
-            author_img: issue.author_img,
+            authorName: issue.author_name,
+            authorImg: issue.author_img,
             assignees: [],
-            comment_count: issue.comment_count ?? 0,
+            commentCount: issue.comment_count ?? 0,
+            meta: issue.meta || {},
           });
         }
 
@@ -531,13 +556,13 @@ function Board() {
     };
 
     wp.hooks.addAction(
-      "alpaca.issueSubmitted",
-      "alpaca/boardmain",
-      handleIssueSubmitted
+      'alpaca.issueSubmitted',
+      'alpaca/boardmain',
+      handleIssueSubmitted,
     );
 
     return () => {
-      wp.hooks.removeAction("alpaca.issueSubmitted", "alpaca/boardmain");
+      wp.hooks.removeAction('alpaca.issueSubmitted', 'alpaca/boardmain');
     };
   }, []);
 
@@ -552,7 +577,7 @@ function Board() {
               const existing = allAssignees.get(assigneeId);
               if (
                 !existing ||
-                (!existing.display_name && assignee.display_name)
+                (!existing.displayName && assignee.displayName)
               ) {
                 allAssignees.set(assigneeId, assignee);
               }
@@ -564,28 +589,60 @@ function Board() {
 
     const assigneesArray = Array.from(allAssignees.values());
 
-    wp.hooks.doAction("alpaca.allAssigneesUpdated", assigneesArray);
+    wp.hooks.doAction('alpaca.allAssigneesUpdated', assigneesArray);
   }, [containers]);
+
+  const hasNoStatuses = containers.length === 0;
 
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
-      <div className="alpaca-wrap">
-        {containers.map((container, index) => (
-          <Container
-            key={container.id}
-            id={container.id}
-            title={container.title}
-            items={container.items}
-            onItemClick={handleItemClick}
-            onMoveAllToNext={moveAllItemsToNextContainer}
-            isLastContainer={index === containers.length - 1}
-            isHidden={hiddenContainerIds.includes(container.id)}
-            onToggleHidden={handleToggleHidden}
-            onRename={handleRenameContainer} // 🔹 pass down rename handler
-            onDeleteAll={handleDeleteAll}
-          />
-        ))}
-      </div>
+      {hasNoStatuses ? (
+        <div className="alpaca-empty-state">
+          <Notice status="warning" isDismissible={false}>
+            <p>
+              <strong>
+                Oh no! All your project statuses have disappeared.
+              </strong>
+            </p>
+            <p>
+              Without statuses, you cannot view or manage issues on the board.
+              Click the button below to restore the default statuses (Backlog,
+              Inbox, In Progress, Done).
+            </p>
+            <Button
+              variant="primary"
+              onClick={handleRestoreDefaults}
+              isBusy={isRestoring}
+              disabled={isRestoring}
+            >
+              {isRestoring ? 'Restoring...' : 'Restore Default Statuses'}
+            </Button>
+          </Notice>
+          {restoreError && (
+            <Notice status="error" isDismissible={false}>
+              <p>{restoreError}</p>
+            </Notice>
+          )}
+        </div>
+      ) : (
+        <div className="alpaca-wrap">
+          {containers.map((container, index) => (
+            <Container
+              key={container.id}
+              id={container.id}
+              title={container.title}
+              items={container.items}
+              onItemClick={handleItemClick}
+              onMoveAllToNext={moveAllItemsToNextContainer}
+              isLastContainer={index === containers.length - 1}
+              isHidden={hiddenContainerIds.includes(container.id)}
+              onToggleHidden={handleToggleHidden}
+              onRename={handleRenameContainer}
+              onDeleteAll={handleDeleteAll}
+            />
+          ))}
+        </div>
+      )}
 
       <AlpacaIssue
         issueId={selectedItem?.id}

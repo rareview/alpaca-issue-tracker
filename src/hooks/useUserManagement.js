@@ -1,5 +1,5 @@
 const { useState, useEffect } = wp.element;
-import { fetchUsers } from "../services/issueApi"; // Assuming this will be created
+import { fetchUsers } from '../services/issueApi'; // Assuming this will be created
 
 const useUserManagement = () => {
   const [allUsers, setAllUsers] = useState([]);
@@ -12,10 +12,10 @@ const useUserManagement = () => {
         const usersWithAvatar = users.map((u) => ({
           ...u,
           avatar:
-            u.avatar_urls?.["48"] ||
-            u.avatar_urls?.["96"] ||
-            u.avatar_urls?.["24"] ||
-            "",
+            u.avatar_urls?.['48'] ||
+            u.avatar_urls?.['96'] ||
+            u.avatar_urls?.['24'] ||
+            '',
         }));
 
         const localUserMap = {};
@@ -29,7 +29,7 @@ const useUserManagement = () => {
         setAllUserObjects(usersWithAvatar);
       })
       .catch((err) => {
-        console.error("Error fetching users:", err);
+        console.error('Error fetching users:', err);
       });
   }, []);
 

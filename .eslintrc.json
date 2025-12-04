@@ -1,0 +1,81 @@
+{
+  "extends": [
+    "eslint:recommended",
+    "plugin:react/recommended",
+    "plugin:@wordpress/eslint-plugin/recommended"
+  ],
+  "env": {
+    "browser": true,
+    "es2021": true,
+    "node": true,
+    "es6": true
+  },
+  "globals": {
+    "wp": "readonly",
+    "wpApiSettings": "readonly",
+    "alpaca_data": "readonly",
+    "alpacaDataDump": "readonly",
+    "snapdom": "readonly"
+  },
+  "parserOptions": {
+    "ecmaVersion": 2021,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  },
+  "rules": {
+    "react/react-in-jsx-scope": "off",
+    "react/prop-types": "warn",
+    "react/display-name": "warn",
+    "no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_"
+      }
+    ],
+    "no-console": [
+      "warn",
+      {
+        "allow": ["warn", "error"]
+      }
+    ],
+    "semi": "off",
+    "quotes": "off",
+    "indent": "off",
+    "comma-dangle": "off",
+    "object-curly-spacing": "off",
+    "array-bracket-spacing": "off",
+    "prettier/prettier": "off",
+    "@wordpress/no-unused-vars-before-return": "warn",
+    "camelcase": [
+      "error",
+      {
+        "allow": [
+          "unstable_batchedUpdates",
+          "alpaca_data",
+          "alpacaDataDump",
+          "hide_from_snapdom",
+          "comment_count",
+          "display_name",
+          "author_name",
+          "author_img",
+          "term_id",
+          "term_score",
+          "alpaca_enable_test_logs",
+          "comment_type",
+          "author_user_agent",
+          "post_data",
+          "post_content",
+          "post_title",
+          "issue_id"
+        ]
+      }
+    ]
+  }
+}

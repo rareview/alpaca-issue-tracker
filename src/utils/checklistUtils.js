@@ -1,9 +1,13 @@
 export const parseChecklist = (metaChecklist) => {
   if (!metaChecklist) return [];
   try {
-    return typeof metaChecklist === "string"
-      ? JSON.parse(metaChecklist)
-      : Array.isArray(metaChecklist) ? metaChecklist : [];
+    if (typeof metaChecklist === 'string') {
+      return JSON.parse(metaChecklist);
+    }
+    if (Array.isArray(metaChecklist)) {
+      return metaChecklist;
+    }
+    return [];
   } catch {
     return [];
   }

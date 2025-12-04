@@ -16,8 +16,8 @@ const useIssueData = (issueId, isOpen) => {
           setIssueDetails(issueData);
         })
         .catch((err) => {
-          console.error("Error fetching issue data:", err);
-          setError("Failed to load issue details. Please try again.");
+          console.error('Error fetching issue data:', err);
+          setError('Failed to load issue details. Please try again.');
           setIssueDetails(null);
         })
         .finally(() => {
@@ -34,8 +34,8 @@ const useIssueData = (issueId, isOpen) => {
       fetchIssue(issueId)
         .then(setIssueDetails)
         .catch((err) => {
-          console.error("Error refetching issue data:", err);
-          setError("Failed to load issue details. Please try again.");
+          console.error('Error refetching issue data:', err);
+          setError('Failed to load issue details. Please try again.');
         })
         .finally(() => setIsLoadingDetails(false));
     }

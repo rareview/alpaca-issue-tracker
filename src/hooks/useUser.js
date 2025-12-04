@@ -18,25 +18,27 @@ export async function getUsers(ids) {
 
 export const useUser = (user) => {
   const [userData, setUserData] = useState(
-    typeof user === "object" ? user : null
+    typeof user === 'object' ? user : null,
   );
-  const [loading, setLoading] = useState(typeof user === "number" || (typeof user === "string" && !isNaN(user)));
+  const [loading, setLoading] = useState(
+    typeof user === 'number' || (typeof user === 'string' && !isNaN(user)),
+  );
 
   useEffect(() => {
     if (
-      typeof user === "number" ||
-      (typeof user === "string" && !isNaN(user))
+      typeof user === 'number' ||
+      (typeof user === 'string' && !isNaN(user))
     ) {
       const userId = parseInt(user, 10);
       setLoading(true);
       getUser(userId)
         .then(setUserData)
         .catch((err) => {
-          console.error("Error fetching user:", err);
+          console.error('Error fetching user:', err);
           setUserData(null);
         })
         .finally(() => setLoading(false));
-    } else if (typeof user === "object") {
+    } else if (typeof user === 'object') {
       setUserData(user);
       setLoading(false);
     } else {
@@ -50,11 +52,11 @@ export const useUser = (user) => {
 
 /**
  * Generates HTML for an assignee span to be used in comments.
- * @param {object} user The user object for the assignee.
- * @returns {string} HTML string.
+ * @param {Object} user The user object for the assignee.
+ * @return {string} HTML string.
  */
 export const generateAssigneeSpan = (user) => {
-  if (!user) return "";
-  const avatarAttr = user.avatar ? ` data-avatar="${user.avatar}"` : "";
+  if (!user) return '';
+  const avatarAttr = user.avatar ? ` data-avatar="${user.avatar}"` : '';
   return `<span class="alpaca-status-assignee" data-userid="${user.id}"${avatarAttr}>${user.name}</span>`;
 };

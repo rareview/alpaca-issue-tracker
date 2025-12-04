@@ -8,9 +8,9 @@ const EnableTestLogsControl = () => {
 
   const fetchOption = useCallback(() => {
     setIsFetching(true);
-    wp.apiFetch({ path: "/wp/v2/settings" })
+    wp.apiFetch({ path: '/wp/v2/settings' })
       .then((settings) => {
-        setIsEnabled(settings.alpaca_enable_test_logs === "1");
+        setIsEnabled(settings.alpaca_enable_test_logs === '1');
       })
       .finally(() => setIsFetching(false));
   }, []);
@@ -23,12 +23,12 @@ const EnableTestLogsControl = () => {
     setIsSaving(true);
     setIsEnabled(value);
     wp.apiFetch({
-      path: "/wp/v2/settings",
-      method: "POST",
-      data: { alpaca_enable_test_logs: value ? "1" : "0" },
+      path: '/wp/v2/settings',
+      method: 'POST',
+      data: { alpaca_enable_test_logs: value ? '1' : '0' },
     })
       .then(() => {
-        wp.hooks.doAction("alpaca.enableTestLogsChanged", value);
+        wp.hooks.doAction('alpaca.enableTestLogsChanged', value);
       })
       .finally(() => setIsSaving(false));
   };

@@ -1,5 +1,148 @@
+# ============================================
+# Alpaca WordPress Plugin - .gitignore
+# ============================================
+
+# ------------------
+# Dependencies
+# ------------------
+/node_modules/
+
+# Composer vendor (but keep vendor/bowser.es5.min.js and vendor/snapdom.min.js)
+/vendor/composer/
+/vendor/dealerdirect/
+/vendor/phpcompatibility/
+/vendor/phpcsstandards/
+/vendor/squizlabs/
+/vendor/wp-coding-standards/
+/vendor/bin/
+/vendor/autoload.php
+
+# ------------------
+# Build & Cache
+# ------------------
+/.parcel-cache/
 .cache/
-.parcel-cache/
-node_modules/
-playground/
+/dist/*.map
+
+# ------------------
+# Logs
+# ------------------
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+webhook_log.txt
+/logs/
+debug.log
+error_log
+
+# ------------------
+# Operating System
+# ------------------
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.AppleDouble
+.LSOverride
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# ------------------
+# IDE & Editors
+# ------------------
+# VS Code
+.vscode/
+*.code-workspace
+
+# JetBrains IDEs
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+.netrwhist
+
+# Eclipse
+.project
+.settings/
+.buildpath
+.metadata
+
+# ------------------
+# Temporary Files
+# ------------------
+*.tmp
+*.temp
+*.bak
+*.backup
+*.orig
+*.refactor.bak
+
+# ------------------
+# Testing
+# ------------------
+/tests/
+phpunit.xml
+.phpunit.result.cache
+/coverage/
+
+# ------------------
+# Build Artifacts
+# ------------------
 alpaca.zip
+*.zip
+
+# ------------------
+# Environment
+# ------------------
+.env
+.env.local
+.env.*.local
+.env.backup
+
+# ------------------
+# Backup & Archive
+# ------------------
+/alpaca25-pragmatic/
+*.old
+/backup/
+/archives/
+
+# ------------------
+# Documentation (dev only)
+# ------------------
+PHASE*.md
+REFACTORING*.md
+IMPLEMENTATION_GUIDE.md
+TESTING_CHECKLIST.md
+FILE_STRUCTURE_MIGRATION_COMPLETE.md
+INLINE_JS_EXTRACTION.md
+
+# ------------------
+# Misc
+# ------------------
+playground/
+payload-sample.json
+ziM0RoQp

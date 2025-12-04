@@ -1,8 +1,9 @@
 const { useState, useEffect, useCallback, useMemo } = wp.element;
 const { SelectControl, Spinner } = wp.components;
+import PropTypes from 'prop-types';
 
 const DefaultStatusSelector = ({ statuses, onDefaultChange }) => {
-  const [defaultStatus, setDefaultStatus] = useState("");
+  const [defaultStatus, setDefaultStatus] = useState('');
   const [isFetching, setIsFetching] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -10,10 +11,10 @@ const DefaultStatusSelector = ({ statuses, onDefaultChange }) => {
   const fetchOption = useCallback(() => {
     setIsFetching(true);
     wp.apiFetch({
-      path: "/alpaca/v1/options/default_status",
+      path: '/alpaca/v1/options/default_status',
     })
       .then((option) => {
-        const value = option.value ? option.value.toString() : "";
+        const value = option.value ? option.value.toString() : '';
         setDefaultStatus(value);
         // Notify parent of the initial value
         if (onDefaultChange) {
@@ -21,13 +22,14 @@ const DefaultStatusSelector = ({ statuses, onDefaultChange }) => {
         }
       })
       .catch((err) => {
-        console.error("Error fetching data:", err);
-        setError("Could not load default status settings.");
+        // eslint-disable-next-line no-console
+        console.error('Error fetching data:', err);
+        setError('Could not load default status settings.');
       })
       .finally(() => {
         setIsFetching(false);
       });
-  }, []);
+  }, [onDefaultChange]);
 
   useEffect(() => {
     fetchOption();
@@ -43,13 +45,15 @@ const DefaultStatusSelector = ({ statuses, onDefaultChange }) => {
     }
 
     wp.apiFetch({
-      path: "/alpaca/v1/options/default_status",
-      method: "POST",
+      path: '/alpaca/v1/options/default_status',
+      method: 'POST',
       data: { value: newValue },
     })
       .catch((err) => {
-        console.error("Error saving default status:", err);
-        alert("Error saving setting: " + err.message);
+        // eslint-disable-next-line no-console
+        console.error('Error saving default status:', err);
+        // TODO: Replace with WordPress notice API for better UX
+        setError('Error saving setting: ' + err.message);
         fetchOption(); // Revert on error
       })
       .finally(() => {
@@ -60,13 +64,13 @@ const DefaultStatusSelector = ({ statuses, onDefaultChange }) => {
   // Memoize status options to ensure they update when statuses order changes
   const statusOptions = useMemo(
     () => [
-      { label: "Select a default status...", value: "" },
+      { label: 'Select a default status...', value: '' },
       ...statuses.map((status) => ({
         label: status.name,
         value: status.term_id.toString(),
       })),
     ],
-    [statuses]
+    [statuses],
   );
 
   if (error) {
@@ -96,6 +100,16 @@ const DefaultStatusSelector = ({ statuses, onDefaultChange }) => {
       </td>
     </tr>
   );
+};
+
+DefaultStatusSelector.propTypes = {
+  statuses: PropTypes.arrayOf(
+    PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      term_id: PropTypes.number.isRequired,
+    }),
+  ).isRequired,
+  onDefaultChange: PropTypes.func.isRequired,
 };
 
 export default DefaultStatusSelector;

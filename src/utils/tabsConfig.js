@@ -1,33 +1,38 @@
 export const getTabsConfig = (issueDetails) => {
   return [
-    { name: "comments", title: "Timeline", className: "comments" },
-    { name: "report", title: "Report", className: "report" },
-    ...(issueDetails?.meta?.queriedObject &&
-    issueDetails.meta.queriedObject !== "null"
+    { name: 'comments', title: 'Timeline', className: 'comments' },
+    { name: 'report', title: 'Report', className: 'report' },
+    ...((issueDetails?.meta?.alpaca_queried_object &&
+      issueDetails.meta.alpaca_queried_object !== 'null') ||
+    (issueDetails?.meta?.queriedObject &&
+      issueDetails.meta.queriedObject !== 'null')
       ? [
           {
-            name: "queriedobject",
-            title: "Queried Object",
-            className: "queried-object",
+            name: 'queriedobject',
+            title: 'Queried Object',
+            className: 'queried-object',
           },
         ]
       : []),
-    ...(issueDetails?.meta?.headers && issueDetails.meta.headers !== "null"
+    ...((issueDetails?.meta?.alpaca_headers &&
+      issueDetails.meta.alpaca_headers !== 'null') ||
+    (issueDetails?.meta?.headers && issueDetails.meta.headers !== 'null')
       ? [
           {
-            name: "headers",
-            title: "Headers",
-            className: "headers",
+            name: 'headers',
+            title: 'Headers',
+            className: 'headers',
           },
         ]
       : []),
-    ...(issueDetails?.meta?.errors &&
-    issueDetails.meta.errors.length > 2 // >2 to avoid empty array '[]'
+    ...((issueDetails?.meta?.alpaca_errors &&
+      issueDetails.meta.alpaca_errors.length > 2) ||
+    (issueDetails?.meta?.errors && issueDetails.meta.errors.length > 2)
       ? [
           {
-            name: "errors",
-            title: "Errors",
-            className: "errors",
+            name: 'errors',
+            title: 'Errors',
+            className: 'errors',
           },
         ]
       : []),

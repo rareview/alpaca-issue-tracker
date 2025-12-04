@@ -1,23 +1,31 @@
-import { useClipboard } from "../hooks/useClipboard";
+import { useClipboard } from '../hooks/useClipboard';
+import PropTypes from 'prop-types';
+
 const { Button } = wp.components;
 const { useState, useEffect, useCallback } = wp.element;
 
+/**
+ * WebhookServiceKey component for displaying and managing webhook service secrets.
+ *
+ * @param {Object} root0         - Props object
+ * @param {string} root0.service - Service name
+ * @return {JSX.Element} WebhookServiceKey component
+ */
 const WebhookServiceKey = ({ service }) => {
-  const [secret, setSecret] = useState("");
+  const [secret, setSecret] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const { isClipboardSupported, copyToClipboard } = useClipboard();
 
-  const serviceLowercase = service.toLowerCase();
-
   const fetchSecret = useCallback(() => {
+    const serviceLowercase = service.toLowerCase();
     setIsLoading(true);
     wp.apiFetch({ path: `/alpaca/v1/webhook/secret/${serviceLowercase}` })
       .then((data) => {
         if (data.success && data.secret) {
           setSecret(data.secret);
         } else {
-          setError("Invalid data received from server.");
+          setError('Invalid data received from server.');
         }
         setIsLoading(false);
       })
@@ -28,16 +36,17 @@ const WebhookServiceKey = ({ service }) => {
   }, [service]);
 
   const handleRegenerate = () => {
+    const serviceLowercase = service.toLowerCase();
     setIsLoading(true);
     wp.apiFetch({
       path: `/alpaca/v1/webhook/secret/${serviceLowercase}/regenerate`,
-      method: "POST",
+      method: 'POST',
     })
       .then((data) => {
         if (data.success && data.secret) {
           setSecret(data.secret);
         } else {
-          setError("Could not regenerate secret.");
+          setError('Could not regenerate secret.');
         }
         setIsLoading(false);
       })
@@ -50,11 +59,13 @@ const WebhookServiceKey = ({ service }) => {
   const handleCopy = () => {
     copyToClipboard(
       secret,
+      // eslint-disable-next-line no-alert
       () => alert(`${service} secret copied to clipboard!`),
       (err) => {
-        console.error("Could not copy secret: ", err);
-        alert("Could not copy secret.");
-      }
+        console.error('Could not copy secret: ', err);
+        // eslint-disable-next-line no-alert
+        alert('Could not copy secret.');
+      },
     );
   };
 
@@ -62,11 +73,13 @@ const WebhookServiceKey = ({ service }) => {
     fetchSecret();
   }, [fetchSecret]);
 
+  const serviceLowercase = service.toLowerCase();
+
   if (error) {
     return (
       <tr>
         <th scope="row">{service}</th>
-        <td style={{ color: "red" }}>Error: {error}</td>
+        <td style={{ color: 'red' }}>Error: {error}</td>
       </tr>
     );
   }
@@ -81,7 +94,7 @@ const WebhookServiceKey = ({ service }) => {
           id={`webhook-secret-${serviceLowercase}`}
           type="text"
           className="regular-text"
-          value={isLoading ? "Loading..." : secret}
+          value={isLoading ? 'Loading...' : secret}
           readOnly
         />
         {isClipboardSupported && (
@@ -96,6 +109,10 @@ const WebhookServiceKey = ({ service }) => {
       </td>
     </tr>
   );
+};
+
+WebhookServiceKey.propTypes = {
+  service: PropTypes.string.isRequired,
 };
 
 export default WebhookServiceKey;

@@ -1,164 +1,66 @@
 <?php
 /**
-* Plugin Name:       Alpaca
-* Plugin URI:        
-* Description:       A cute issue tracker
-* Version:           202508
-* Author:            Simon Dickson
-* Author URI:        https://simondickson.co.uk
-* Text Domain:       alpaca
-* License:           GPL v2 or later
-* License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
-*/
+ * Plugin Name:       Alpaca
+ * Plugin URI:        https://github.com/simonedickson/alpaca
+ * Description:       A cute issue tracker for WordPress
+ * Version:           2.0.0
+ * Requires at least: 5.8
+ * Requires PHP:      7.4
+ * Author:            Rareview
+ * Author URI:        https://rareview.com/
+ * Text Domain:       alpaca
+ * Domain Path:       /languages
+ * License:           GPL v2 or later
+ * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
+ *
+ * @package Alpaca
+ */
 
-namespace alpaca;
+namespace Alpaca;
 
-include('lib/expose-admin-colors.php');
+use Alpaca\Inc\AlpacaServiceProvider;
 
-include('lib/private-comments.php');
-add_action('init', function() {
-    hide_comment_type(
-        'issuecomment',  // comment type
-        true        // remove from comment counts?
-    );
-});
-
-$all_includes = glob(__DIR__ . '/inc/*.php');
-foreach ($all_includes as $file) {
-	include_once($file);
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
 }
 
-register_activation_hook( __FILE__, 'alpaca_activate' );
-
-function enqueue_alpaca_scripts() {
-
-	// because sometimes I get CORS issues when developing locally, due to port numbers
-    $plugins_url_parts = parse_url( plugins_url( '/', __FILE__ ) );
-    $scheme = ( ! empty( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'] !== 'off' ) ? 'https' : 'http';
-	$host   = $_SERVER['HTTP_HOST'];
-    $plugin_url = $scheme . '://' . $host . $plugins_url_parts['path'];
-	// todo: restore to: $plugin_url = plugin_dir_url( __FILE__ );
-
-    wp_enqueue_script(
-		'alpaca',
-		$plugin_url . 'dist/index.js',
-		array(
-			'wp-element',
-			'wp-api-fetch',
-			'wp-i18n',
-			'wp-components',
-			'wp-dom-ready',
-			'wp-data',
-		),
-		'1.00',
-		true
-	);
-
-    wp_enqueue_script_module(
-		'alpaca-issue-comment-handler',
-		$plugin_url . 'src/utils/issue-comment-handler.js',
-		array(
-			'wp-hooks',
-			'wp-api-fetch',
-		),
-		'1.00',
-		true
-	);
-
-    wp_enqueue_style(
-		'alpaca',
-		$plugin_url . 'dist/index.css',
-		array(
-			'wp-components' // needed to style the modal
-		)
-	);
-
-    wp_enqueue_script(
-		'snapdom',
-		$plugin_url . 'vendor/snapdom.min.js',
-    );
-    wp_enqueue_script(
-		'bowser',
-		$plugin_url . 'vendor/bowser.es5.min.js',
-    );
-
-
+// Define plugin directory constant.
+if ( ! defined( 'ALPACA_PLUGIN_DIR' ) ) {
+	define( 'ALPACA_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 }
 
-add_action('wp_enqueue_scripts', function() {
-    enqueue_alpaca_scripts();
-}, 500);
-
-add_action( 'admin_enqueue_scripts', function($hook_suffix) {
-    enqueue_alpaca_scripts();
-
-	// On the project board page, pass data from PHP to our script.
-	// The hook for our page (admin.php?page=alpaca-board) is 'toplevel_page_alpaca-board'.
-	if ( 'toplevel_page_alpaca-board' === $hook_suffix ) {
-		wp_localize_script(
-			'alpaca',
-			'alpacaBoardData',
-			alpaca_get_board_data()
-		);
-		wp_localize_script(
-			'alpaca',
-			'alpacaUserData',
-			array(
-				'currentUserId' => get_current_user_id(),
-			)
-		);
-
-	}
-}, 500);
-
-add_action('admin_enqueue_scripts', function() {
-    global $pagenow;
-
-    // Only target the specific admin page
-    if ( isset($_GET['page']) && $_GET['page'] === 'alpaca-board' ) {
-        
-        $me = get_current_user_id();
-
-        // Register a dummy handle if needed, or use 'wp-admin' styles
-        $handle = 'alpaca-admin-inline';
-        wp_register_style( $handle, false );
-        wp_enqueue_style( $handle );
-
-        $custom_css = "
-            .wp-admin #alpaca-board .alpaca-item[data-assignee-$me],
-            .wp-admin #alpaca-board .alpaca-item-dragging[data-assignee-$me] {
-                background-color: #eee;
-            }
-		";
-
-        if ( function_exists('expose_admin_colors') ) {
-            $custom_css .= "
-                .wp-admin #alpaca-board .alpaca-item-dragging {
-                    box-shadow: 0 0 8px var(--admin-color-1);
-                }
-				.wp-admin .alpaca-board-filter::before {
-					background-color: var(--admin-color-1);
-				}
-				.alpaca-item .alpaca-item-controls .dashicons {
-					color: var(--admin-color-1);
-				}
-			";
-        }
-
-        wp_add_inline_style( $handle, $custom_css );
-    }
-}, 501);
-
-add_action( 'rest_api_init', __NAMESPACE__ . '\alpaca_register_settings' );
-function alpaca_register_settings() {
-    register_setting(
-        'alpaca_options',
-        'alpaca_enable_test_logs',
-        array(
-            'type' => 'string',
-            'description' => 'Enable console messages for testing purposes.',
-            'show_in_rest' => true,
-            'default' => '0'
-        )
-    );
+// Load Composer autoloader if available.
+if ( file_exists( ALPACA_PLUGIN_DIR . 'vendor/autoload.php' ) ) {
+	require_once ALPACA_PLUGIN_DIR . 'vendor/autoload.php';
 }
+
+// Manually require core classes for now.
+require_once ALPACA_PLUGIN_DIR . 'includes/class-helpers.php';
+require_once ALPACA_PLUGIN_DIR . 'includes/class-register.php';
+require_once ALPACA_PLUGIN_DIR . 'includes/class-alpacaserviceprovider.php';
+require_once ALPACA_PLUGIN_DIR . 'includes/class-activator.php';
+require_once ALPACA_PLUGIN_DIR . 'includes/class-deactivator.php';
+
+// Register activation and deactivation hooks.
+register_activation_hook( __FILE__, array( 'Alpaca\\Activator', 'activate' ) );
+register_deactivation_hook( __FILE__, array( 'Alpaca\\Deactivator', 'deactivate' ) );
+
+// Initialize the Service Provider.
+if ( class_exists( AlpacaServiceProvider::class ) ) {
+	new AlpacaServiceProvider();
+}
+
+require_once ALPACA_PLUGIN_DIR . 'includes/class-alpaca.php';
+
+/**
+ * Initialize the plugin.
+ *
+ * @return Alpaca
+ */
+function alpaca_init() {
+	return Alpaca::instance();
+}
+
+// Start the plugin.
+alpaca_init();
