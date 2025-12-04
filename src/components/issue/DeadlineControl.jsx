@@ -22,24 +22,27 @@ const DeadlineControl = memo(({ deadline, onChange, onClear, isLoading }) => {
 
   return (
     <BaseControl
-      label="Deadline"
       id="alpaca-deadline-control"
       className="alpaca-deadline-control"
     >
-      <div className="alpaca-deadline">
-        <div className="alpaca-deadline-date">
-          <input
-            readOnly
-            type="text"
-            value={
-              deadline
-                ? date.format(datesettings.formats.date, deadline)
-                : 'No deadline set.'
+      <div className="alpaca-deadline flexalign">
+        <div
+          ref={calendarButtonRef}
+          className={`alpaca-input alpaca-deadline-display ${deadline ? '' : 'placeholder'}`}
+          onClick={() => setIsEditingDeadline((prev) => !prev)}
+          contentEditable={false} // read-only for now
+          role="button"
+          tabIndex={0} // makes it focusable
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              setIsEditingDeadline(true);
+              e.preventDefault();
             }
-            onClick={() => setIsEditingDeadline((prev) => !prev)}
-            ref={calendarButtonRef}
-            disabled={isLoading}
-          />
+          }}
+        >
+          {deadline
+            ? date.format(datesettings.formats.date, deadline)
+            : 'Click to select a deadline'}
         </div>
 
         {isEditingDeadline && (
@@ -47,11 +50,13 @@ const DeadlineControl = memo(({ deadline, onChange, onClear, isLoading }) => {
             placement="bottom-start"
             onClose={() => setIsEditingDeadline(false)}
             anchor={calendarButtonRef.current}
-            focusOnMount={false}
+            focusOnMount={true}
             className="alpaca-deadline-popover"
+            onFocusOutside={() => setIsEditingDeadline(false)}
+            onEscape={() => setIsEditingDeadline(false)}
           >
             <DatePicker
-              current={deadline}
+              currentDate={deadline}
               onChange={(newDate) => {
                 onChange(newDate);
                 setIsEditingDeadline(false);
@@ -66,6 +71,7 @@ const DeadlineControl = memo(({ deadline, onChange, onClear, isLoading }) => {
             label="Clear deadline"
             onClick={onClear}
             disabled={isLoading}
+            className="is-small"
           />
         )}
       </div>

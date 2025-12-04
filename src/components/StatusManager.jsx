@@ -283,7 +283,7 @@ const StatusManager = ({
               <strong>{statusToDelete.name}</strong>&quot;? This cannot be
               undone.
             </p>
-            <div className="alpaca-actions">
+            <div className="alpaca-actions flexalign">
               <Button variant="primary" isDestructive onClick={performDelete}>
                 Delete
               </Button>
@@ -357,10 +357,10 @@ const StatusRow = wp.element.forwardRef(
         className={`status-grid-row ${isDragging ? 'is-dragging' : ''}`}
       >
         <div className="status-grid-cell">
-          <div className="status-row-content">
+          <div className="status-row-content flexalign">
             <div
               {...dragHandleProps}
-              className="drag-handle"
+              className="drag-handle flexalign"
               title="Drag to reorder"
             >
               <DragHandleIcon />
