@@ -80,7 +80,7 @@ class Activator {
 	 * - Done (score: 3)
 	 */
 	private static function setup_default_statuses() {
-		alpaca_setup_default_statuses();
+		\alpaca_setup_default_statuses();
 	}
 
 	/**

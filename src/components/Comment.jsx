@@ -54,7 +54,7 @@ const Comment = (props) => {
         <div className="alpaca-comment-header">
           <User user={comment._embedded?.author?.[0]} showName={false} />
           <div className="alpaca-comment-author">
-            <strong>{comment._embedded.author[0].name}</strong>
+            <strong>{comment._embedded?.author?.[0]?.name || 'Unknown'}</strong>
           </div>
           <div className="alpaca-comment-date">
             <small>{new Date(comment.date).toLocaleString()}</small>
@@ -157,11 +157,18 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
     getUser().then((user) => {
       setCurrentUser(user);
     });
+  }, []); // Run once on mount to get user
 
+  useEffect(() => {
     if (sortOrder === 'asc') {
+      // Original condition was 'asc'
       document.getElementById('alpaca-comments').classList.add('oldestfirst');
+    } else {
+      document
+        .getElementById('alpaca-comments')
+        .classList.remove('oldestfirst');
     }
-  }, []);
+  }, [sortOrder]);
 
   const fetchComments = useCallback(() => {
     if (!issueId) return;
@@ -277,10 +284,17 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
     if (!editingContent.trim()) return;
     setIsSubmitting(true);
 
+    // Find original comment to preserve user agent
+    const originalComment = comments.find((c) => c.id === commentId);
+    const userAgent = originalComment?.author_user_agent || 'human';
+
     wp.apiFetch({
       path: `/wp/v2/comments/${commentId}`,
       method: 'POST',
-      data: { content: editingContent },
+      data: {
+        content: editingContent,
+        author_user_agent: userAgent,
+      },
     })
       .then((updatedComment) => {
         // Add updatedComment parameter

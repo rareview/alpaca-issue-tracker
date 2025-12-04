@@ -113,7 +113,7 @@ final class Alpaca {
 		\add_action(
 			'init',
 			function () {
-				hide_comment_type( 'issuecomment', true );
+				alpaca_hide_comment_type( 'issuecomment', true );
 			}
 		);
 
@@ -148,11 +148,6 @@ final class Alpaca {
 		// Initialization.
 		\add_action( 'init', array( $this, 'init' ), 0 );
 
-		// Enqueue scripts.
-		\add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_alpaca_scripts' ), 500 );
-		\add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ), 500 );
-		\add_action( 'admin_enqueue_scripts', array( $this, 'admin_inline_styles' ), 501 );
-
 		// REST API.
 		\add_action( 'rest_api_init', array( $this, 'register_settings' ) );
 	}
@@ -166,145 +161,6 @@ final class Alpaca {
 
 		// Allow other components to hook in.
 		\do_action( 'alpaca_init' );
-	}
-
-	/**
-	 * Enqueue Alpaca scripts and styles.
-	 */
-	public function enqueue_alpaca_scripts() {
-		$plugin_url = \plugins_url( '/', ALPACA_PLUGIN_FILE );
-
-		// Enqueue vendor scripts first.
-		\wp_enqueue_script(
-			'bowser',
-			$plugin_url . 'vendor/bowser.es5.min.js',
-			array(),
-			ALPACA_VERSION,
-			true
-		);
-
-		\wp_enqueue_script(
-			'snapdom',
-			$plugin_url . 'vendor/snapdom.min.js',
-			array(),
-			ALPACA_VERSION,
-			true
-		);
-
-		// Enqueue data dump script (depends on bowser).
-		\wp_enqueue_script(
-			'alpaca-data-dump',
-			$plugin_url . 'src/utils/dataDump.js',
-			array( 'bowser' ),
-			ALPACA_VERSION,
-			true
-		);
-
-		// Pass data to JavaScript.
-		if ( function_exists( 'alpaca_prepare_datadump' ) ) {
-			\wp_localize_script( 'alpaca-data-dump', 'alpacaDataDump', \alpaca_prepare_datadump() );
-		}
-
-		// Enqueue main Alpaca script.
-		\wp_enqueue_script(
-			'alpaca',
-			$plugin_url . 'dist/index.js',
-			array(
-				'wp-element',
-				'wp-api-fetch',
-				'wp-i18n',
-				'wp-components',
-				'wp-dom-ready',
-				'wp-data',
-				'alpaca-data-dump',
-			),
-			ALPACA_VERSION,
-			true
-		);
-
-		// Enqueue main Alpaca styles.
-		\wp_enqueue_style(
-			'alpaca',
-			$plugin_url . 'dist/index.css',
-			array( 'wp-components' ),
-			ALPACA_VERSION
-		);
-	}
-
-	/**
-	 * Enqueue admin scripts and styles.
-	 *
-	 * @param string $hook_suffix Current admin page hook suffix.
-	 */
-	public function admin_enqueue_scripts( $hook_suffix ) {
-		$this->enqueue_alpaca_scripts();
-
-		// On the project board page, enqueue board helpers and pass data.
-		if ( 'toplevel_page_alpaca-board' === $hook_suffix ) {
-			$plugin_url = \plugins_url( '/', ALPACA_PLUGIN_FILE );
-
-			// Enqueue board helpers script.
-			\wp_enqueue_script(
-				'alpaca-board-helpers',
-				$plugin_url . 'src/utils/boardHelpers.js',
-				array( 'wp-hooks' ),
-				ALPACA_VERSION,
-				true
-			);
-
-			// Pass board data to JavaScript.
-			\wp_localize_script(
-				'alpaca',
-				'alpacaBoardData',
-				\alpaca_get_board_data()
-			);
-			\wp_localize_script(
-				'alpaca',
-				'alpacaUserData',
-				array(
-					'currentUserId' => \get_current_user_id(),
-				)
-			);
-		}
-	}
-
-	/**
-	 * Add inline styles for admin.
-	 */
-	public function admin_inline_styles() {
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		if ( ! isset( $_GET['page'] ) || 'alpaca-board' !== $_GET['page'] ) {
-			return;
-		}
-
-		$me = \get_current_user_id();
-
-		$handle = 'alpaca-admin-inline';
-		\wp_register_style( $handle, false, array(), ALPACA_VERSION );
-		\wp_enqueue_style( $handle );
-
-		$custom_css = "
-			.wp-admin #alpaca-board .alpaca-item[data-assignee-$me],
-			.wp-admin #alpaca-board .alpaca-item-dragging[data-assignee-$me] {
-				background-color: #eee;
-			}
-		";
-
-		if ( function_exists( 'expose_admin_colors' ) ) {
-			$custom_css .= '
-				.wp-admin #alpaca-board .alpaca-item-dragging {
-					box-shadow: 0 0 8px var(--admin-color-1);
-				}
-				.wp-admin .alpaca-board-filter::before {
-					background-color: var(--admin-color-1);
-				}
-				.alpaca-item .alpaca-item-controls .dashicons {
-					color: var(--admin-color-1);
-				}
-			';
-		}
-
-		\wp_add_inline_style( $handle, $custom_css );
 	}
 
 	/**

@@ -146,7 +146,7 @@ const StatusManager = ({
 
       // Find all posts with the status to be deleted
       const issuesToUpdate = await wp.apiFetch({
-        path: `/wp/v2/issue?status=${id}&per_page=-1`,
+        path: `/wp/v2/alpaca_issue?alpaca_status=${id}&per_page=-1`,
       });
 
       // Re-categorize posts if a new status is determined
@@ -176,7 +176,7 @@ const StatusManager = ({
 
       // Delete the status term
       await wp.apiFetch({
-        path: `/wp/v2/status/${id}?force=true`,
+        path: `/wp/v2/alpaca_status/${id}?force=true`,
         method: 'DELETE',
       });
 
@@ -201,7 +201,7 @@ const StatusManager = ({
     );
 
     wp.apiFetch({
-      path: `/wp/v2/status`,
+      path: `/wp/v2/alpaca_status`,
       method: 'POST',
       data: { name: newName, meta: { term_score: maxScore + 10 } },
     })

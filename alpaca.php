@@ -6,8 +6,8 @@
  * Version:           2.0.0
  * Requires at least: 5.8
  * Requires PHP:      7.4
- * Author:            Simon Dickson
- * Author URI:        https://simondickson.co.uk
+ * Author:            Rareview
+ * Author URI:        https://rareview.com/
  * Text Domain:       alpaca
  * Domain Path:       /languages
  * License:           GPL v2 or later
@@ -17,6 +17,8 @@
  */
 
 namespace Alpaca;
+
+use Alpaca\Inc\AlpacaServiceProvider;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -33,14 +35,23 @@ if ( file_exists( ALPACA_PLUGIN_DIR . 'vendor/autoload.php' ) ) {
 	require_once ALPACA_PLUGIN_DIR . 'vendor/autoload.php';
 }
 
-// Load core classes.
-require_once ALPACA_PLUGIN_DIR . 'includes/class-alpaca.php';
+// Manually require core classes for now.
+require_once ALPACA_PLUGIN_DIR . 'includes/class-helpers.php';
+require_once ALPACA_PLUGIN_DIR . 'includes/class-register.php';
+require_once ALPACA_PLUGIN_DIR . 'includes/class-alpacaserviceprovider.php';
 require_once ALPACA_PLUGIN_DIR . 'includes/class-activator.php';
 require_once ALPACA_PLUGIN_DIR . 'includes/class-deactivator.php';
 
 // Register activation and deactivation hooks.
-register_activation_hook( __FILE__, array( 'Alpaca\Activator', 'activate' ) );
-register_deactivation_hook( __FILE__, array( 'Alpaca\Deactivator', 'deactivate' ) );
+register_activation_hook( __FILE__, array( 'Alpaca\\Activator', 'activate' ) );
+register_deactivation_hook( __FILE__, array( 'Alpaca\\Deactivator', 'deactivate' ) );
+
+// Initialize the Service Provider.
+if ( class_exists( AlpacaServiceProvider::class ) ) {
+	new AlpacaServiceProvider();
+}
+
+require_once ALPACA_PLUGIN_DIR . 'includes/class-alpaca.php';
 
 /**
  * Initialize the plugin.

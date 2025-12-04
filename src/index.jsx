@@ -3,10 +3,10 @@ import './alpaca.scss';
 import './apiTest.js';
 import './utils/issueCommentHandler.js';
 
-import AlpacaModal from './modal.jsx';
-import AlpacaSettings from './settings.jsx';
+import AlpacaModal from './Modal.jsx';
+import AlpacaSettings from './Settings.jsx';
 import { WatchlistProvider } from './context/WatchlistContext.jsx';
-import { AlpacaBoard, AlpacaBoardControls } from './board.jsx';
+import { AlpacaBoard, AlpacaBoardControls } from './Board.jsx';
 
 const { render } = wp.element;
 if (document.querySelector('#wp-admin-bar-alpaca-menu')) {

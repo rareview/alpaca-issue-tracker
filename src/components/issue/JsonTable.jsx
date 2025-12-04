@@ -12,11 +12,7 @@ const JsonTable = memo(({ data }) => {
       parsedData = data;
     }
 
-    if (
-      !parsedData ||
-      typeof parsedData !== 'object' ||
-      Array.isArray(parsedData)
-    ) {
+    if (!parsedData || typeof parsedData !== 'object') {
       console.error('JsonTable: Invalid data format', parsedData);
       return <p>Invalid data format</p>;
     }

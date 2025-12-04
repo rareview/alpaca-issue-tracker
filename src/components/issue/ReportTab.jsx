@@ -19,20 +19,32 @@ const datesettings = wp.date.getSettings();
 const ReportTab = memo(
   ({ issueDetails, onScreenshotDelete, isLoading, onScreenshotClick }) => (
     <div className="alpaca-report-tab">
-      {issueDetails.meta.screenshot && (
+      {(issueDetails.meta.alpaca_screenshot ||
+        issueDetails.meta.screenshot) && (
         <div className="alpaca-screenshot-wrapper">
           {/* eslint-disable jsx-a11y/no-noninteractive-element-to-interactive-role */}
           <img
-            src={issueDetails.meta.screenshot}
+            src={
+              issueDetails.meta.alpaca_screenshot ||
+              issueDetails.meta.screenshot
+            }
             className="alpaca-screenshot"
             alt="Screenshot"
             style={{ cursor: 'zoom-in', maxWidth: '100%' }}
-            onClick={() => onScreenshotClick(issueDetails.meta.screenshot)}
+            onClick={() =>
+              onScreenshotClick(
+                issueDetails.meta.alpaca_screenshot ||
+                  issueDetails.meta.screenshot,
+              )
+            }
             role="button"
             tabIndex={0}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
-                onScreenshotClick(issueDetails.meta.screenshot);
+                onScreenshotClick(
+                  issueDetails.meta.alpaca_screenshot ||
+                    issueDetails.meta.screenshot,
+                );
               }
             }}
           />
@@ -74,13 +86,13 @@ const ReportTab = memo(
           <tr>
             <th scope="row">URL</th>
             <td>
-              {issueDetails.meta.URL ? (
+              {issueDetails.meta.alpaca_url || issueDetails.meta.URL ? (
                 <a
-                  href={issueDetails.meta.URL}
+                  href={issueDetails.meta.alpaca_url || issueDetails.meta.URL}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  {issueDetails.meta.URL}
+                  {issueDetails.meta.alpaca_url || issueDetails.meta.URL}
                 </a>
               ) : (
                 'N/A'
@@ -90,8 +102,17 @@ const ReportTab = memo(
           <tr>
             <th scope="row">Screen</th>
             <td>
-              {issueDetails.meta.screenwidth && issueDetails.meta.screenheight
-                ? `${issueDetails.meta.screenwidth} x ${issueDetails.meta.screenheight}`
+              {(issueDetails.meta.alpaca_screenwidth ||
+                issueDetails.meta.screenwidth) &&
+              (issueDetails.meta.alpaca_screenheight ||
+                issueDetails.meta.screenheight)
+                ? `${
+                    issueDetails.meta.alpaca_screenwidth ||
+                    issueDetails.meta.screenwidth
+                  } x ${
+                    issueDetails.meta.alpaca_screenheight ||
+                    issueDetails.meta.screenheight
+                  }`
                 : 'N/A'}
             </td>
           </tr>

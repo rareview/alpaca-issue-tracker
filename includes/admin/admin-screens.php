@@ -13,7 +13,7 @@ add_action(
 			esc_html__( 'Project Board', 'alpaca' ),
 			'edit_posts',
 			'alpaca-board',
-			'project_board_page',
+			'alpaca_project_board_page',
 			'dashicons-schedule',
 			101
 		);
@@ -48,4 +48,3 @@ function alpaca_settings_page() {
 	</div>
 	<?php
 }
-

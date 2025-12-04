@@ -48,7 +48,7 @@ function alpaca_add_admin_bar_menu( $admin_bar ) {
 			'parent' => 'alpaca-menu',
 			'title'  => 'View All Issues',
 			'id'     => 'alpaca-view',
-			'href'   => admin_url( 'edit.php?post_type=issue' ),
+			'href'   => admin_url( 'edit.php?post_type=alpaca_issue' ),
 		)
 	);
 }

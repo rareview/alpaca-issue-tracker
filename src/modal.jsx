@@ -78,7 +78,7 @@ const AlpacaModal = () => {
     setMessage('');
 
     try {
-      const server = JSON.parse(atob(alpaca_data.env));
+      const server = JSON.parse(atob(alpacaDataDump.env));
       setStatus('submitting');
 
       const screenshot = await handleSnapdomCapture();
@@ -88,14 +88,14 @@ const AlpacaModal = () => {
           feedback,
           includeContext, // <-- include checkbox status
         },
-        client: alpaca_data.device,
+        client: alpacaDataDump.device,
         screenshot,
-        errors: alpaca_data.errors,
+        errors: alpacaDataDump.errors,
       };
 
       const payload = { ...submitted, ...server };
 
-      const response = await fetch(wpApiSettings.root + 'issue/v1/submit', {
+      const response = await fetch(wpApiSettings.root + 'alpaca/v1/submit', {
         method: 'POST',
         credentials: 'include',
         headers: new Headers({

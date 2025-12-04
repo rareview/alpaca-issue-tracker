@@ -14,6 +14,7 @@
     "wp": "readonly",
     "wpApiSettings": "readonly",
     "alpaca_data": "readonly",
+    "alpacaDataDump": "readonly",
     "snapdom": "readonly"
   },
   "parserOptions": {
@@ -58,6 +59,7 @@
         "allow": [
           "unstable_batchedUpdates",
           "alpaca_data",
+          "alpacaDataDump",
           "hide_from_snapdom",
           "comment_count",
           "display_name",

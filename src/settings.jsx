@@ -43,7 +43,7 @@ const AlpacaSettings = () => {
   const webhookServices = ['GitHub'];
 
   return (
-    <>
+    <div className="alpaca-settings-wrap">
       <StatusManager
         statuses={statuses}
         fetchStatuses={fetchStatuses}
@@ -90,7 +90,7 @@ const AlpacaSettings = () => {
           ))}
         </tbody>
       </table>
-    </>
+    </div>
   );
 };
 

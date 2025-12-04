@@ -2,8 +2,10 @@ export const getTabsConfig = (issueDetails) => {
   return [
     { name: 'comments', title: 'Timeline', className: 'comments' },
     { name: 'report', title: 'Report', className: 'report' },
-    ...(issueDetails?.meta?.queriedObject &&
-    issueDetails.meta.queriedObject !== 'null'
+    ...((issueDetails?.meta?.alpaca_queried_object &&
+      issueDetails.meta.alpaca_queried_object !== 'null') ||
+    (issueDetails?.meta?.queriedObject &&
+      issueDetails.meta.queriedObject !== 'null')
       ? [
           {
             name: 'queriedobject',
@@ -12,7 +14,9 @@ export const getTabsConfig = (issueDetails) => {
           },
         ]
       : []),
-    ...(issueDetails?.meta?.headers && issueDetails.meta.headers !== 'null'
+    ...((issueDetails?.meta?.alpaca_headers &&
+      issueDetails.meta.alpaca_headers !== 'null') ||
+    (issueDetails?.meta?.headers && issueDetails.meta.headers !== 'null')
       ? [
           {
             name: 'headers',
@@ -21,7 +25,9 @@ export const getTabsConfig = (issueDetails) => {
           },
         ]
       : []),
-    ...(issueDetails?.meta?.errors && issueDetails.meta.errors.length > 2 // >2 to avoid empty array '[]'
+    ...((issueDetails?.meta?.alpaca_errors &&
+      issueDetails.meta.alpaca_errors.length > 2) ||
+    (issueDetails?.meta?.errors && issueDetails.meta.errors.length > 2)
       ? [
           {
             name: 'errors',

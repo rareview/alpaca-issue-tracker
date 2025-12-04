@@ -15,7 +15,7 @@
  *
  * Reference: https://docs.github.com/en/webhooks/using-webhooks/validating-webhook-deliveries
  */
-function verify_github_payload( string $body, string $signature ): bool {
+function alpaca_verify_github_payload( string $body, string $signature ): bool {
 
 	$secret = get_option( 'alpaca_webhook_secret_github' );
 

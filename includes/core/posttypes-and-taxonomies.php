@@ -19,7 +19,7 @@ function alpaca_register_taxonomy( $slug, $customargs = array() ) {
 		'hierarchical'       => false,
 	);
 	$args     = array_merge( $defaults, $customargs );
-	register_taxonomy( $slug, 'issue', $args );
+	register_taxonomy( $slug, 'alpaca_issue', $args );
 }
 
 /**
@@ -28,7 +28,7 @@ function alpaca_register_taxonomy( $slug, $customargs = array() ) {
 function alpaca_register_cpts_and_taxonomies() {
 
 	register_term_meta(
-		'status',
+		'alpaca_status',
 		'term_score',
 		array(
 			'type'         => 'number',
@@ -40,7 +40,7 @@ function alpaca_register_cpts_and_taxonomies() {
 	);
 
 	register_post_type(
-		'issue',
+		'alpaca_issue',
 		array(
 			'public'        => false,
 			'show_in_rest'  => true,
@@ -61,20 +61,22 @@ function alpaca_register_cpts_and_taxonomies() {
 		)
 	);
 
-	alpaca_register_taxonomy( 'browser' );
-	alpaca_register_taxonomy( 'phptemplate' );
-	alpaca_register_taxonomy( 'type' );
+	alpaca_register_taxonomy( 'alpaca_browser', array( 'label' => 'Browser' ) );
+	alpaca_register_taxonomy( 'alpaca_phptemplate', array( 'label' => 'PHP Template' ) );
+	alpaca_register_taxonomy( 'alpaca_type', array( 'label' => 'Type' ) );
 	alpaca_register_taxonomy(
-		'assignee',
+		'alpaca_assignee',
 		array(
 			'public' => true,
+			'label'  => 'Assignee',
 		)
 	);
 	alpaca_register_taxonomy(
-		'status',
+		'alpaca_status',
 		array(
 			'show_in_rest' => true,
-			'meta_box_cb'  => 'status_metabox',
+			'meta_box_cb'  => 'alpaca_status_metabox',
+			'label'        => 'Status',
 		)
 	);
 
@@ -102,8 +104,21 @@ function alpaca_register_cpts_and_taxonomies() {
 		2
 	);
 
+	add_filter(
+		'comments_open',
+		function ( $open, $post_id ) {
+			$post = get_post( $post_id );
+			if ( $post && 'alpaca_issue' === $post->post_type ) {
+				return true;
+			}
+			return $open;
+		},
+		10,
+		2
+	);
+
 	add_action(
-		'status_add_form_fields',
+		'alpaca_status_add_form_fields',
 		function () {
 			wp_nonce_field( 'alpaca_status_meta_add', 'alpaca_status_nonce' );
 			?>
@@ -117,7 +132,7 @@ function alpaca_register_cpts_and_taxonomies() {
 	);
 
 	add_action(
-		'status_edit_form_fields',
+		'alpaca_status_edit_form_fields',
 		function ( $term ) {
 			$score = get_term_meta( $term->term_id, 'term_score', true );
 			wp_nonce_field( 'alpaca_status_meta_edit', 'alpaca_status_nonce' );
@@ -141,7 +156,7 @@ function alpaca_register_cpts_and_taxonomies() {
 	 *
 	 * @param int $term_id Term ID.
 	 */
-	function save_status_term_score( $term_id ) {
+	function alpaca_save_status_term_score( $term_id ) {
 		// Verify nonce for security.
 		if ( ! isset( $_POST['alpaca_status_nonce'] ) ) {
 			return;
@@ -169,12 +184,12 @@ function alpaca_register_cpts_and_taxonomies() {
 			update_term_meta( $term_id, 'term_score', $score );
 		}
 	}
-	add_action( 'created_status', 'save_status_term_score' );
-	add_action( 'edited_status', 'save_status_term_score' );
+	add_action( 'created_alpaca_status', 'alpaca_save_status_term_score' );
+	add_action( 'edited_alpaca_status', 'alpaca_save_status_term_score' );
 
 	// Add new column header.
 	add_filter(
-		'manage_edit-status_columns',
+		'manage_edit-alpaca_status_columns',
 		function ( $columns ) {
 			$columns['term_score'] = __( 'Score', 'alpaca' );
 			return $columns;
@@ -183,7 +198,7 @@ function alpaca_register_cpts_and_taxonomies() {
 
 	// Fill the column content.
 	add_filter(
-		'manage_status_custom_column',
+		'manage_alpaca_status_custom_column',
 		function ( $content, $column_name, $term_id ) {
 			if ( 'term_score' === $column_name ) {
 				$score   = get_term_meta( $term_id, 'term_score', true );
@@ -195,7 +210,7 @@ function alpaca_register_cpts_and_taxonomies() {
 		3
 	);
 	add_filter(
-		'manage_edit-status_sortable_columns',
+		'manage_edit-alpaca_status_sortable_columns',
 		function ( $sortable_columns ) {
 			$sortable_columns['term_score'] = 'term_score';
 			return $sortable_columns;
@@ -208,8 +223,8 @@ function alpaca_register_cpts_and_taxonomies() {
 	 *
 	 * @param WP_Post $post Post object.
 	 */
-	function status_metabox( $post ) {
-		$current_terms   = wp_get_post_terms( $post->ID, 'status', array( 'fields' => 'ids' ) );
+	function alpaca_status_metabox( $post ) {
+		$current_terms   = wp_get_post_terms( $post->ID, 'alpaca_status', array( 'fields' => 'ids' ) );
 		$current_term_id = ! empty( $current_terms ) ? $current_terms[0] : 0;
 
 		$terms = alpaca_get_statuses();
@@ -217,7 +232,7 @@ function alpaca_register_cpts_and_taxonomies() {
 		echo '<div class="statuses_radiolist">';
 		foreach ( $terms as $term ) {
 			$checked = ( $current_term_id === $term->term_id ) ? 'checked' : '';
-			echo '<label><input type="radio" name="tax_input[status][]" value="' . esc_attr( $term->slug ) . '" ' . esc_attr( $checked ) . '/> ' . esc_html( $term->name ) . '</label><br>';
+			echo '<label><input type="radio" name="tax_input[alpaca_status][]" value="' . esc_attr( $term->slug ) . '" ' . esc_attr( $checked ) . '/> ' . esc_html( $term->name ) . '</label><br>';
 		}
 		echo '</div>';
 	}
@@ -261,11 +276,11 @@ function alpaca_update_assignee_term_on_profile_update( $user_id, $old_user_data
 	}
 
 	// Find the term in the 'assignee' taxonomy with a slug that matches the user's nicename.
-	$term = get_term_by( 'slug', $user->user_nicename, 'assignee' );
+	$term = get_term_by( 'slug', $user->user_nicename, 'alpaca_assignee' );
 
 	// If a term is found, update its name to the user's new display name.
 	if ( $term ) {
-		wp_update_term( $term->term_id, 'assignee', array( 'name' => $user->display_name ) );
+		wp_update_term( $term->term_id, 'alpaca_assignee', array( 'name' => $user->display_name ) );
 	}
 }
 add_action( 'profile_update', 'alpaca_update_assignee_term_on_profile_update', 10, 2 );
@@ -279,7 +294,7 @@ add_action( 'profile_update', 'alpaca_update_assignee_term_on_profile_update', 1
 function alpaca_get_statuses( $order = 'ASC' ) {
 	$terms = get_terms(
 		array(
-			'taxonomy'   => 'status',
+			'taxonomy'   => 'alpaca_status',
 			'hide_empty' => false,
 			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 			'meta_key'   => 'term_score',
