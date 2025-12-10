@@ -58,5 +58,8 @@ export const useUser = (user) => {
 export const generateAssigneeSpan = (user) => {
   if (!user) return '';
   const avatarAttr = user.avatar ? ` data-avatar="${user.avatar}"` : '';
-  return `<span class="alpaca-status-assignee" data-userid="${user.id}"${avatarAttr}>${user.name}</span>`;
+  const displayName =
+    user.name || user.display_name || user.username || 'Unknown';
+
+  return `<span class="alpaca-status-assignee" data-userid="${user.id}"${avatarAttr}>${displayName}</span>`;
 };

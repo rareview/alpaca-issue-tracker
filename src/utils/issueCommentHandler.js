@@ -81,14 +81,3 @@ addAction(
     await postComment(issue, commentContent); // Pass issue object
   },
 );
-
-addAction(
-  'alpaca.checklistItemChecked',
-  'alpaca/addChecklistItemCheckedComment',
-  async (issueId, item, currentUser) => {
-    const commentContent = `Checklist item "${
-      item.label
-    }" checked by ${generateAssigneeSpan(currentUser)}`;
-    await postComment(issueId, commentContent); // issueId is already the post ID
-  },
-);

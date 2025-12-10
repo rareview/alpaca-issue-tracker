@@ -1,4 +1,3 @@
-import Checklist from './issue/Checklist';
 import PropTypes from 'prop-types';
 
 const { useState, useEffect, useRef, useMemo, useCallback } = wp.element;
@@ -10,7 +9,6 @@ import useUserManagement from '../hooks/useUserManagement';
 import useLoadingStates from '../hooks/useLoadingStates';
 
 import { processAssigneeChanges } from '../utils/assigneeUtils';
-import { parseChecklist } from '../utils/checklistUtils';
 import { fetchStatuses, updateIssue } from '../services/issueApi';
 
 import AssigneeSelector from './issue/AssigneeSelector';
@@ -48,7 +46,6 @@ const AlpacaIssue = ({
   const [commentRefreshKey, setCommentRefreshKey] = useState(0);
   const [deadline, setDeadline] = useState(null);
   const [lightboxSrc, setLightboxSrc] = useState(null);
-  const [checklistItems, setChecklistItems] = useState([]);
   const [allStatuses, setAllStatuses] = useState([]);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState('');
@@ -157,18 +154,6 @@ const AlpacaIssue = ({
       setDeadline(
         issueDetails.meta.alpaca_deadline || issueDetails.meta.deadline || null,
       );
-
-      // Handle checklist
-      if (issueDetails.meta.alpaca_checklist || issueDetails.meta.checklist) {
-        const parsedChecklist = parseChecklist(
-          issueDetails.meta.alpaca_checklist || issueDetails.meta.checklist,
-        );
-        if (Array.isArray(parsedChecklist)) {
-          setChecklistItems(parsedChecklist);
-        }
-      } else {
-        setChecklistItems([]);
-      }
 
       // Handle assignees
       if (
@@ -468,13 +453,10 @@ const AlpacaIssue = ({
                     />
                   </div>
 
-                  <Checklist
-                    issueId={issueId}
-                    initialChecklistItems={checklistItems}
-                    isSaving={loadingStates.assignees || loadingStates.deadline}
-                    setIsSaving={(value) => setLoading('checklist', value)}
-                    setCommentRefreshKey={setCommentRefreshKey} // Add this line
-                  />
+                  {wp.hooks.applyFilters('alpaca.issue.abovetabs', null, {
+                    issueId,
+                    meta: issueDetails.meta,
+                  })}
 
                   <TabPanel
                     className="alpaca-issue-tabs"
