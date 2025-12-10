@@ -21,7 +21,7 @@ const User = ({ user: userProp, showAvatar = true, showName = true }) => {
   if (!user) return null;
 
   return (
-    <div className="alpaca-user" title={userName}>
+    <div className="alpaca-user flexalign" title={userName}>
       {showAvatar && avatarUrl && (
         <div className="alpaca-user-avatar">
           <img src={avatarUrl} alt={`Avatar of ${userName}`} />

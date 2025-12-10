@@ -1,0 +1,53 @@
+import PropTypes from 'prop-types';
+
+const { useReducer, useEffect, useMemo, memo } = wp.element;
+const { Tooltip } = wp.components;
+
+const Time = memo(({ value, type = 'absolute', format, autoUpdate = true }) => {
+  // useReducer to force re-render for relative time updates
+  const [, forceUpdate] = useReducer((x) => x + 1, 0);
+
+  // Auto-update every 15 seconds
+  useEffect(() => {
+    if (type !== 'relative' || !autoUpdate) return;
+    const interval = setInterval(forceUpdate, 15000);
+    return () => clearInterval(interval);
+  }, [type, autoUpdate]);
+
+  // Convert string to JS Date
+  const dateObj = useMemo(
+    () => (value ? new Date(`${value}Z`) : null),
+    [value],
+  );
+  if (!dateObj || isNaN(dateObj.getTime())) return null;
+
+  const wpFormat = format || wp.date.getSettings().formats.datetime;
+  const formattedAbsolute = wp.date.dateI18n(wpFormat, dateObj);
+
+  if (type === 'relative') {
+    const secondsDiff = Math.floor((new Date() - dateObj) / 1000);
+
+    // Show "just now" for the first minute
+    const relative =
+      secondsDiff < 60 ? 'just now' : window.moment(dateObj).fromNow();
+
+    return (
+      <Tooltip text={formattedAbsolute}>
+        <span className="timestamp">{relative}</span>
+      </Tooltip>
+    );
+  }
+
+  return <span className="timestamp">{formattedAbsolute}</span>;
+});
+
+Time.propTypes = {
+  value: PropTypes.string,
+  type: PropTypes.oneOf(['absolute', 'relative']),
+  format: PropTypes.string,
+  autoUpdate: PropTypes.bool,
+};
+
+Time.displayName = 'Time';
+
+export default Time;

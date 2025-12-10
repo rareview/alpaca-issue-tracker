@@ -1,11 +1,11 @@
+import PropTypes from 'prop-types';
 import { getUser } from '../hooks/useUser';
 import { fetchIssueCommentCount } from '../services/issueApi';
-import PropTypes from 'prop-types';
 
-const { useState, useEffect, useRef, useCallback, memo, useMemo } = wp.element;
+const { useState, useEffect, useRef, useCallback, useMemo, memo } = wp.element;
 import User from './User';
-const { TextareaControl, Button, Spinner, Modal } = wp.components;
-
+import Time from './Time';
+const { TextareaControl, Button, Modal } = wp.components;
 import { getCookie, setCookie } from '../utils/cookies';
 import { marked } from 'marked';
 
@@ -25,8 +25,10 @@ import { marked } from 'marked';
  * @param {boolean}  props.isSubmitting         - Is submitting flag
  * @return {JSX.Element} Comment component
  */
-const Comment = (props) => {
-  const {
+
+// --- Single Comment ---
+const Comment = memo(
+  ({
     comment,
     startEditing,
     confirmDeleteComment,
@@ -37,82 +39,110 @@ const Comment = (props) => {
     saveEdit,
     cancelEditing,
     isSubmitting,
-  } = props;
+    currentUser,
+  }) => {
+    const author = comment._embedded?.author?.[0] ||
+      currentUser || { name: 'Unknown' };
 
-  const processedContent = useMemo(() => {
-    return comment.content.raw
-      ? marked(comment.content.raw)
-      : comment.content.rendered;
-  }, [comment.content.raw, comment.content.rendered]);
+    const dataSource =
+      comment.author_user_agent === 'audit' ? 'audit' : 'human';
+    const isAudit = dataSource === 'audit';
 
-  return (
-    <div
-      className="alpaca-timeline-item"
-      data-source={comment.author_user_agent}
-    >
-      <div className="alpaca-timeline-content">
-        <div className="alpaca-comment-header">
-          <User user={comment._embedded?.author?.[0]} showName={false} />
-          <div className="alpaca-comment-author">
-            <strong>{comment._embedded?.author?.[0]?.name || 'Unknown'}</strong>
-          </div>
-          <div className="alpaca-comment-date">
-            <small>{new Date(comment.date).toLocaleString()}</small>
-          </div>
-          <div className="alpaca-comment-buttons">
-            <Button
-              label="Edit"
-              showTooltip="true"
-              icon="edit"
-              onClick={() => {
-                startEditing(comment);
-              }}
-            />
-            <Button
-              icon="trash"
-              label="Delete"
-              showTooltip="true"
-              className="button-link-delete"
-              onClick={() => {
-                confirmDeleteComment(comment.id);
-              }}
-            />
+    const processedContent = useMemo(() => {
+      return comment.content.raw
+        ? marked(comment.content.raw)
+        : comment.content.rendered;
+    }, [comment.content.raw, comment.content.rendered]);
+
+    if (isAudit) {
+      // --- Audit Comment Layout ---
+      return (
+        <div className="alpaca-timeline-item" data-source={dataSource}>
+          <div className="alpaca-timeline-content">
+            <div className="alpaca-comment-header">
+              <User user={author} showName={false} />
+              <div className="alpaca-comment-content">
+                <div dangerouslySetInnerHTML={{ __html: processedContent }} />
+                <Time value={comment.date} type="relative" />
+              </div>
+              <div className="alpaca-comment-buttons">
+                <Button
+                  icon="trash"
+                  label="Delete"
+                  showTooltip
+                  className="button-link-delete"
+                  onClick={() => confirmDeleteComment(comment.id)}
+                />
+              </div>
+            </div>
           </div>
         </div>
-        <div className="alpaca-comment-body">
-          {editingCommentId === comment.id ? (
-            <>
-              <TextareaControl
-                value={editingContent}
-                onChange={setEditingContent}
-                ref={editingRef}
+      );
+    }
+
+    return (
+      <div className="alpaca-timeline-item" data-source={dataSource}>
+        <div className="alpaca-timeline-content">
+          <div className="alpaca-comment-header flexalign">
+            <User user={author} showName={false} />
+            <div className="alpaca-comment-author">
+              <strong>{author.name}</strong>
+            </div>
+            <div className="alpaca-comment-date">
+              <Time value={comment.date} type="relative" />
+            </div>
+            <div className="alpaca-comment-buttons">
+              <Button
+                label="Edit"
+                showTooltip
+                icon="edit"
+                onClick={() => startEditing(comment)}
               />
               <Button
-                isPrimary
-                onClick={() => saveEdit(comment.id)}
-                disabled={isSubmitting}
-              >
-                Save
-              </Button>
-              <Button onClick={cancelEditing} disabled={isSubmitting}>
-                Cancel
-              </Button>
-            </>
-          ) : (
-            <>
+                icon="trash"
+                label="Delete"
+                showTooltip
+                className="button-link-delete"
+                onClick={() => confirmDeleteComment(comment.id)}
+              />
+            </div>
+          </div>
+          <div className="alpaca-comment-body">
+            {editingCommentId === comment.id ? (
+              <>
+                <TextareaControl
+                  value={editingContent}
+                  onChange={setEditingContent}
+                  ref={editingRef}
+                />
+                <Button
+                  isPrimary
+                  onClick={() => saveEdit(comment.id)}
+                  disabled={isSubmitting}
+                >
+                  Save
+                </Button>
+                <Button onClick={cancelEditing} disabled={isSubmitting}>
+                  Cancel
+                </Button>
+              </>
+            ) : (
               <div
                 className="alpaca-comment-content"
-                dangerouslySetInnerHTML={{
-                  __html: processedContent,
-                }}
+                dangerouslySetInnerHTML={{ __html: processedContent }}
               />
-            </>
-          )}
+            )}
+          </div>
         </div>
       </div>
-    </div>
-  );
-};
+    );
+  },
+  (prev, next) =>
+    prev.comment.id === next.comment.id &&
+    prev.editingCommentId === next.editingCommentId &&
+    prev.editingContent === next.editingContent &&
+    prev.isSubmitting === next.isSubmitting,
+);
 
 Comment.propTypes = {
   comment: PropTypes.object.isRequired,
@@ -125,39 +155,41 @@ Comment.propTypes = {
   saveEdit: PropTypes.func.isRequired,
   cancelEditing: PropTypes.func.isRequired,
   isSubmitting: PropTypes.bool,
+  currentUser: PropTypes.object,
 };
 
-const MemoizedComment = memo(Comment);
-
+// --- Commenting Component ---
 const Commenting = ({ issueId, commentRefreshKey }) => {
   const [comments, setComments] = useState([]);
-  const [isLoadingComments, setIsLoadingComments] = useState(true);
-  const [error, setError] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
   const [newComment, setNewComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [currentUser, setCurrentUser] = useState(null);
-
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editingContent, setEditingContent] = useState('');
-  const editingRef = useRef(null);
-
   const [deleteCommentId, setDeleteCommentId] = useState(null);
+  const [isLoadingComments, setIsLoadingComments] = useState(true);
+  const [error, setError] = useState(null);
+  const [notificationMessage, setNotificationMessage] = useState(null);
+  const editingRef = useRef(null);
   const [sortOrder, setSortOrder] = useState(
     getCookie('comment_sort_order') || 'desc',
-  ); // 'desc' or 'asc'
+  );
+
+  const showNotification = useCallback((message) => {
+    setNotificationMessage(message);
+    setTimeout(() => setNotificationMessage(null), 5000);
+  }, []);
+
+  useEffect(() => {
+    getUser().then(setCurrentUser);
+  }, []);
 
   const toggleSortOrder = () => {
     const newSortOrder = sortOrder === 'desc' ? 'asc' : 'desc';
     setSortOrder(newSortOrder);
     setCookie('comment_sort_order', newSortOrder, 365);
-    document.getElementById('alpaca-comments').classList.toggle('oldestfirst');
+    document.getElementById('alpaca-comments')?.classList.toggle('oldestfirst');
   };
-
-  useEffect(() => {
-    getUser().then((user) => {
-      setCurrentUser(user);
-    });
-  }, []); // Run once on mount to get user
 
   useEffect(() => {
     if (sortOrder === 'asc') {
@@ -178,52 +210,42 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
     wp.apiFetch({
       path: `/wp/v2/comments?post=${issueId}&_embed=author&per_page=-1&orderby=date&order=desc&comment_type=issuecomment&show_hidden_comments=1&context=edit`,
     })
-      .then((fetchedComments) => {
-        setComments(fetchedComments);
-      })
+      .then(setComments)
       .catch((err) => {
-        console.error('Error fetching comments:', err);
+        console.error(err);
         setError('Could not load comments.');
       })
       .finally(() => setIsLoadingComments(false));
   }, [issueId]);
 
-  useEffect(() => {
-    fetchComments();
-  }, [fetchComments, commentRefreshKey]);
+  useEffect(() => fetchComments(), [fetchComments, commentRefreshKey]);
 
   useEffect(() => {
-    const handleCommentCountChanged = (data) => {
-      const { issueId: changedIssueId } = data;
-      if (changedIssueId.toString() === issueId.toString()) {
-        fetchComments();
-      }
+    const handleCommentCountChanged = ({ issueId: changedId }) => {
+      if (changedId.toString() === issueId.toString()) fetchComments();
     };
-
     wp.hooks.addAction(
       'alpaca.commentCountChanged',
       'alpaca/commenting',
       handleCommentCountChanged,
     );
-
-    return () => {
+    return () =>
       wp.hooks.removeAction('alpaca.commentCountChanged', 'alpaca/commenting');
-    };
   }, [issueId, fetchComments]);
 
-  useEffect(() => {
-    if (editingRef.current) editingRef.current.focus();
-  }, [editingCommentId]);
-
-  const stripHtml = (html) => {
-    const div = document.createElement('div');
-    div.innerHTML = html;
-    return div.textContent || div.innerText || '';
-  };
-
-  const handleCommentSubmit = () => {
+  const handleCommentSubmit = useCallback(() => {
     if (!newComment.trim()) return;
     setIsSubmitting(true);
+
+    const optimisticComment = {
+      id: Date.now(),
+      content: { raw: newComment },
+      _embedded: { author: currentUser },
+      date: new Date().toISOString(),
+      author_user_agent: 'human',
+    };
+    setComments((prev) => [optimisticComment, ...prev]);
+    setNewComment('');
 
     wp.apiFetch({
       path: `/wp/v2/comments`,
@@ -236,89 +258,77 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
         author_user_agent: 'human',
       },
     })
-      .then((newlyCreatedComment) => {
-        setNewComment('');
-        fetchComments();
+      .then((created) => {
+        setComments((prev) =>
+          prev.map((c) => (c.id === optimisticComment.id ? created : c)),
+        );
+        wp.hooks.doAction('alpaca.commentPosted', created);
 
-        wp.hooks.doAction('alpaca.commentPosted', newlyCreatedComment); // New doAction
-
-        // Dispatch event to update comment count
-        const postId = newlyCreatedComment.post;
-        fetchIssueCommentCount(postId)
-          .then((response) => {
-            if (response && typeof response.comment_count !== 'undefined') {
-              wp.hooks.doAction('alpaca.commentCountChanged', {
-                issueId: postId.toString(),
-                newCount: response.comment_count,
-              });
-            }
-          })
-          .catch((err) => {
-            console.error(
-              'Error fetching updated comment count after adding:',
-              err,
-            );
-          });
+        fetchIssueCommentCount(issueId).then((response) => {
+          if (response?.comment_count !== undefined) {
+            wp.hooks.doAction('alpaca.commentCountChanged', {
+              issueId: issueId.toString(),
+              newCount: response.comment_count,
+            });
+          }
+        });
       })
       .catch((err) => {
         console.error(err);
-        // eslint-disable-next-line no-alert
-        alert(`Failed to submit comment: ${err.message || 'Unknown error'}`);
+        setComments((prev) =>
+          prev.filter((c) => c.id !== optimisticComment.id),
+        );
+        showNotification(
+          `Failed to submit comment: ${err.message || 'Unknown error'}`,
+        );
       })
       .finally(() => setIsSubmitting(false));
-  };
+  }, [newComment, currentUser, issueId, showNotification]);
 
-  const startEditing = (comment) => {
+  const startEditing = useCallback((comment) => {
     setEditingCommentId(comment.id);
-    setEditingContent(
-      comment.content.raw || stripHtml(comment.content.rendered),
-    );
-  };
+    setEditingContent(comment.content.raw || comment.content.rendered || '');
+  }, []);
 
-  const cancelEditing = () => {
+  const cancelEditing = useCallback(() => {
     setEditingCommentId(null);
     setEditingContent('');
-  };
+  }, []);
 
-  const saveEdit = (commentId) => {
-    if (!editingContent.trim()) return;
-    setIsSubmitting(true);
-
-    // Find original comment to preserve user agent
-    const originalComment = comments.find((c) => c.id === commentId);
-    const userAgent = originalComment?.author_user_agent || 'human';
-
-    wp.apiFetch({
-      path: `/wp/v2/comments/${commentId}`,
-      method: 'POST',
-      data: {
-        content: editingContent,
-        author_user_agent: userAgent,
-      },
-    })
-      .then((updatedComment) => {
-        // Add updatedComment parameter
-        setEditingCommentId(null);
-        setEditingContent('');
-        fetchComments();
-
-        wp.hooks.doAction('alpaca.commentUpdated', updatedComment); // New doAction
+  const saveEdit = useCallback(
+    (commentId) => {
+      if (!editingContent.trim()) return;
+      setIsSubmitting(true);
+      wp.apiFetch({
+        path: `/wp/v2/comments/${commentId}`,
+        method: 'POST',
+        data: { content: editingContent },
       })
-      .catch((err) => {
-        console.error(err);
-        // eslint-disable-next-line no-alert
-        alert(`Failed to update comment: ${err.message || 'Unknown error'}`);
-      })
-      .finally(() => setIsSubmitting(false));
-  };
+        .then((updated) => {
+          setComments((prev) =>
+            prev.map((c) => (c.id === commentId ? updated : c)),
+          );
+          setEditingCommentId(null);
+          setEditingContent('');
+          wp.hooks.doAction('alpaca.commentUpdated', updated);
+        })
+        .catch((err) => {
+          console.error(err);
+          showNotification(
+            `Failed to update comment: ${err.message || 'Unknown error'}`,
+          );
+        })
+        .finally(() => setIsSubmitting(false));
+    },
+    [editingContent, showNotification],
+  );
 
-  const confirmDeleteComment = (commentId) => {
-    setDeleteCommentId(commentId);
-  };
-
-  const cancelDelete = () => setDeleteCommentId(null);
-
-  const deleteComment = () => {
+  const confirmDeleteComment = useCallback(
+    (commentId) => setDeleteCommentId(commentId),
+    [],
+  );
+  const cancelDelete = useCallback(() => setDeleteCommentId(null), []);
+  const deleteComment = useCallback(() => {
     if (!deleteCommentId) return;
     wp.apiFetch({
       path: `/wp/v2/comments/${deleteCommentId}`,
@@ -326,10 +336,10 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
       data: { force: true },
     })
       .then((deletedComment) => {
-        fetchComments();
+        setComments((prev) => prev.filter((c) => c.id !== deleteCommentId));
         setDeleteCommentId(null);
 
-        wp.hooks.doAction('alpaca.commentDeleted', deletedComment); // New doAction
+        wp.hooks.doAction('alpaca.commentDeleted', deletedComment);
 
         // Dispatch event to update comment count
         // The deletedComment object contains the post ID
@@ -349,81 +359,83 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
       })
       .catch((err) => {
         console.error(err);
-        // eslint-disable-next-line no-alert
-        alert(`Failed to delete comment: ${err.message || 'Unknown error'}`);
+        showNotification(
+          `Failed to delete comment: ${err.message || 'Unknown error'}`,
+        );
       });
-  };
+  }, [deleteCommentId, showNotification]);
 
   return (
-    <>
-      <div id="alpaca-comments-wrapper">
-        <div id="alpaca-comments-header">
-          <Button variant="tertiary" onClick={toggleSortOrder}>
-            {sortOrder === 'desc' ? 'Sort: ↑' : 'Sort: ↓'}
-          </Button>
-        </div>
-        <div id="alpaca-comments">
-          <div className="alpaca-comment-form" data-source="human">
-            <User user={currentUser} />
-            <div className="alpaca-timeline-content">
-              <TextareaControl
-                placeholder="Add a comment..."
-                value={newComment}
-                onChange={setNewComment}
-                disabled={isSubmitting}
-              />
-              <Button
-                isPrimary
-                onClick={handleCommentSubmit}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Submitting...' : 'Submit Comment'}
-              </Button>
-            </div>
-          </div>
-
-          {isLoadingComments && <Spinner />}
-          {error && <p className="alpaca-error">{error}</p>}
-          {!isLoadingComments && !error && comments.length === 0 && (
-            <p>No comments yet.</p>
-          )}
-
-          <div className="alpaca-comments-timeline">
-            {!isLoadingComments &&
-              comments.map((comment) => (
-                <MemoizedComment
-                  key={comment.id}
-                  comment={comment}
-                  startEditing={startEditing}
-                  confirmDeleteComment={confirmDeleteComment}
-                  editingCommentId={editingCommentId}
-                  editingContent={editingContent}
-                  setEditingContent={setEditingContent}
-                  editingRef={editingRef}
-                  saveEdit={saveEdit}
-                  cancelEditing={cancelEditing}
-                  isSubmitting={isSubmitting}
-                />
-              ))}
-          </div>
-
-          {/* Modal for delete */}
-          {deleteCommentId && (
-            <Modal
-              title="Delete Comment?"
-              onRequestClose={cancelDelete}
-              className="alpaca-modal"
-            >
-              <p>Are you sure you want to delete this comment?</p>
-              <Button isPrimary onClick={deleteComment}>
-                Delete
-              </Button>
-              <Button onClick={cancelDelete}>Cancel</Button>
-            </Modal>
-          )}
-        </div>
+    <div id="alpaca-comments-wrapper" className="has-sidecontrols">
+      <div id="alpaca-comments-header" className="sidecontrols">
+        <Button variant="tertiary" onClick={toggleSortOrder}>
+          {sortOrder === 'desc' ? 'Sort: ↑' : 'Sort: ↓'}
+        </Button>
       </div>
-    </>
+      <div id="alpaca-comments">
+        <div className="alpaca-comment-form" data-source="human">
+          <User user={currentUser} />
+          <div className="alpaca-timeline-content">
+            <TextareaControl
+              placeholder="Add a comment..."
+              value={newComment}
+              onChange={setNewComment}
+              disabled={isSubmitting}
+            />
+            <Button
+              isPrimary
+              onClick={handleCommentSubmit}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Submitting...' : 'Submit Comment'}
+            </Button>
+          </div>
+        </div>
+
+        {isLoadingComments && (
+          <p className="alpaca-loading">Loading comments...</p>
+        )}
+        {notificationMessage && (
+          <div className="notice notice-error inline">
+            <p>{notificationMessage}</p>
+          </div>
+        )}
+        {error && <p className="alpaca-error">{error}</p>}
+
+        <div className="alpaca-comments-timeline">
+          {comments.map((comment) => (
+            <Comment
+              key={comment.id}
+              comment={comment}
+              startEditing={startEditing}
+              confirmDeleteComment={confirmDeleteComment}
+              editingCommentId={editingCommentId}
+              editingContent={editingContent}
+              setEditingContent={setEditingContent}
+              editingRef={editingRef}
+              saveEdit={saveEdit}
+              cancelEditing={cancelEditing}
+              isSubmitting={isSubmitting}
+              currentUser={currentUser}
+            />
+          ))}
+        </div>
+
+        {deleteCommentId && (
+          <Modal
+            title="Delete Comment?"
+            onRequestClose={cancelDelete}
+            className="alpaca-modal"
+          >
+            <p>Are you sure you want to delete this comment?</p>
+            <Button isPrimary onClick={deleteComment}>
+              Delete
+            </Button>
+            <Button onClick={cancelDelete}>Cancel</Button>
+          </Modal>
+        )}
+      </div>
+    </div>
   );
 };
 
@@ -432,4 +444,4 @@ Commenting.propTypes = {
   commentRefreshKey: PropTypes.number.isRequired,
 };
 
-export default Commenting;
+export default memo(Commenting);
