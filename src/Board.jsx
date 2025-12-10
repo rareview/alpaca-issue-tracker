@@ -603,6 +603,7 @@ export function AlpacaBoard() {
 
   return (
     <>
+      <ul class="subsubsub"></ul>
       <div id="alpaca-board-controls-mount"></div>
       <DragDropContext onDragEnd={handleDragEnd}>
         {hasNoStatuses ? (

@@ -124,8 +124,14 @@ $greyshade: #f0f0f0;
   }
 
   #alpaca-board {
+    & > * {
+      clear: both;
+    }
     .alpaca-wrap {
       display: flex;
+    }
+    #alpaca-board-controls-mount {
+      padding-top: 23px;
     }
 
     .alpaca-container {
@@ -844,7 +850,7 @@ $greyshade: #f0f0f0;
     #alpaca-board {
       .alpaca-wrap {
         flex-direction: row;
-        padding: 10px 0;
+        padding: 5px 0;
         overflow-x: auto;
 
         .alpaca-container {
