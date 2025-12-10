@@ -73,20 +73,28 @@ const EditableTitle = memo(
 
     if (isEditing) {
       return (
-        <h3
-          className="alpaca-issue-title"
-          contentEditable
-          suppressContentEditableWarning
-          ref={inputRef}
-          onInput={(e) => onChange(e.currentTarget.textContent)}
-          onBlur={onSave}
+        <div
+          role="textbox"
+          aria-label="Edit issue title"
+          tabIndex={0}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               e.preventDefault();
               onSave();
             }
           }}
-        />
+          onBlur={onSave}
+        >
+          <h3
+            className="alpaca-issue-title"
+            contentEditable
+            suppressContentEditableWarning
+            ref={inputRef}
+            onInput={(e) => onChange(e.currentTarget.textContent)}
+          >
+            {title}
+          </h3>
+        </div>
       );
     }
 
@@ -140,6 +148,7 @@ const AlpacaIssue = ({
   const [lightboxSrc, setLightboxSrc] = useState(null);
   const [commentRefreshKey, setCommentRefreshKey] = useState(0);
   const [notificationMessage, setNotificationMessage] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const showNotification = useCallback((message, type = 'error') => {
     setNotificationMessage({ message, type });
@@ -221,26 +230,6 @@ const AlpacaIssue = ({
     ],
   );
 
-  const updateDeadline = useCallback(
-    async (updatedIssueId, newDate) => {
-      setLoading('deadline', true);
-      try {
-        await updateIssue(updatedIssueId, {
-          meta: { deadline: newDate },
-        });
-        if (typeof onDeadlineChange === 'function') {
-          onDeadlineChange(updatedIssueId, newDate);
-        }
-      } catch (updateDeadlineError) {
-        console.error('Failed to update deadline:', updateDeadlineError);
-        showNotification('Failed to update deadline.', 'error');
-      } finally {
-        setLoading('deadline', false);
-      }
-    },
-    [onDeadlineChange, setLoading, showNotification],
-  );
-
   // Process issue details when they change
   useEffect(() => {
     if (issueDetails && issueDetails.success && allUserObjects.length > 0) {
@@ -314,8 +303,8 @@ const AlpacaIssue = ({
   // Lightbox
   const handleLightboxClose = useCallback(() => setLightboxSrc(null), []);
 
-  const handleScreenshotDelete = useCallback((screenshotId) => {
-    console.log('delete screenshot', screenshotId);
+  const handleScreenshotDelete = useCallback((_screenshotId) => {
+    // TODO: Implement screenshot deletion
   }, []);
 
   // Status progression
@@ -442,15 +431,7 @@ const AlpacaIssue = ({
                   icon="trash"
                   iconPosition="left"
                   isDestructive
-                  onClick={() => {
-                    if (
-                      window.confirm(
-                        'Are you sure you want to trash this issue?',
-                      )
-                    ) {
-                      onDelete(issueId);
-                    }
-                  }}
+                  onClick={() => setShowDeleteConfirm(true)}
                 >
                   Trash Issue
                 </MenuItem>
@@ -472,9 +453,8 @@ const AlpacaIssue = ({
           </div>
         )}
 
-        {isLoadingDetails ? (
-          <p>Loading...</p>
-        ) : issueDetails && issueDetails.success ? (
+        {isLoadingDetails && <p>Loading...</p>}
+        {!isLoadingDetails && issueDetails && issueDetails.success && (
           <div className="alpaca-issue-details">
             <div className="alpaca-issue-main column">
               <EditableTitle
@@ -497,7 +477,7 @@ const AlpacaIssue = ({
                 <tbody>
                   <tr>
                     <th scope="row">Status</th>
-                    <td>Phasellus</td>
+                    <td>{currentStatus?.name || 'Unknown'}</td>
                   </tr>
 
                   <DeadlineRow
@@ -514,10 +494,7 @@ const AlpacaIssue = ({
                     isLoading={stableIsLoading}
                   />
 
-                  <tr>
-                    <th scope="row">Attachments</th>
-                    <td>Phasellus laoreet lorem vel dolor tempus vehicula.</td>
-                  </tr>
+                  {/* Attachments row - to be implemented */}
                 </tbody>
               </table>
 
@@ -560,10 +537,32 @@ const AlpacaIssue = ({
               </TabPanel>
             </div>
           </div>
-        ) : (
+        )}
+        {!isLoadingDetails && (!issueDetails || !issueDetails.success) && (
           <p>{issueDetails?.message || 'Could not load issue details.'}</p>
         )}
       </Modal>
+
+      {showDeleteConfirm && (
+        <Modal
+          title="Delete Issue?"
+          onRequestClose={() => setShowDeleteConfirm(false)}
+          className="alpaca-modal"
+        >
+          <p>Are you sure you want to trash this issue?</p>
+          <Button
+            isPrimary
+            isDestructive
+            onClick={() => {
+              onDelete(issueId);
+              setShowDeleteConfirm(false);
+            }}
+          >
+            Delete
+          </Button>
+          <Button onClick={() => setShowDeleteConfirm(false)}>Cancel</Button>
+        </Modal>
+      )}
 
       {lightboxSrc && (
         <Lightbox src={lightboxSrc} onClose={handleLightboxClose} />

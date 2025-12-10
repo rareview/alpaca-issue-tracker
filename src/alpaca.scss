@@ -35,6 +35,7 @@ $spacegap: 0.8ch;
   grid-template-rows: 1fr;
   gap: $spacegap;
 }
+
 .sidecontrols {
   text-align: right;
 }
@@ -65,8 +66,8 @@ $spacegap: 0.8ch;
 }
 
 .alpaca-modal {
-  background: yellow;
-  color: black;
+  background: $bgwhite;
+  color: inherit;
 
   .small-wrapper {
     padding: 0.8rem 0 1rem;
@@ -379,6 +380,7 @@ $spacegap: 0.8ch;
     from {
       transform: translateX(100%);
     }
+    
     to {
       transform: translateX(0);
     }
@@ -632,6 +634,7 @@ $spacegap: 0.8ch;
 
     .alpaca-comment-form {
       margin: 0 0 12px 0;
+
       .alpaca-user {
         top: -1px; // Needed, not sure why
       }
@@ -651,9 +654,6 @@ $spacegap: 0.8ch;
           background: none;
           margin-top: 0;
         }
-
-        &::before {
-        }
       }
     }
   }
@@ -670,10 +670,6 @@ $spacegap: 0.8ch;
   .alpaca-timeline-item {
     position: relative;
     display: flex;
-  }
-
-  .alpaca-comment-form,
-  .alpaca-timeline-item {
     font-size: 15px;
 
     .alpaca-timeline-content,

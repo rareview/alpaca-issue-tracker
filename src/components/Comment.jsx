@@ -43,7 +43,10 @@ const Comment = memo(
   }) => {
     const author = comment._embedded?.author?.[0] ||
       currentUser || { name: 'Unknown' };
-    const isAudit = comment.author_user_agent === 'audit';
+
+    const dataSource =
+      comment.author_user_agent === 'audit' ? 'audit' : 'human';
+    const isAudit = dataSource === 'audit';
 
     const processedContent = useMemo(() => {
       return comment.content.raw
@@ -54,10 +57,7 @@ const Comment = memo(
     if (isAudit) {
       // --- Audit Comment Layout ---
       return (
-        <div
-          className="alpaca-timeline-item"
-          data-source={comment.author_user_agent}
-        >
+        <div className="alpaca-timeline-item" data-source={dataSource}>
           <div className="alpaca-timeline-content">
             <div className="alpaca-comment-header">
               <User user={author} showName={false} />
@@ -80,12 +80,8 @@ const Comment = memo(
       );
     }
 
-    // --- Normal Comment Layout ---
     return (
-      <div
-        className="alpaca-timeline-item"
-        data-source={comment.author_user_agent}
-      >
+      <div className="alpaca-timeline-item" data-source={dataSource}>
         <div className="alpaca-timeline-content">
           <div className="alpaca-comment-header flexalign">
             <User user={author} showName={false} />
@@ -173,10 +169,16 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
   const [deleteCommentId, setDeleteCommentId] = useState(null);
   const [isLoadingComments, setIsLoadingComments] = useState(true);
   const [error, setError] = useState(null);
+  const [notificationMessage, setNotificationMessage] = useState(null);
   const editingRef = useRef(null);
   const [sortOrder, setSortOrder] = useState(
     getCookie('comment_sort_order') || 'desc',
   );
+
+  const showNotification = useCallback((message) => {
+    setNotificationMessage(message);
+    setTimeout(() => setNotificationMessage(null), 5000);
+  }, []);
 
   useEffect(() => {
     getUser().then(setCurrentUser);
@@ -188,12 +190,6 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
     setCookie('comment_sort_order', newSortOrder, 365);
     document.getElementById('alpaca-comments')?.classList.toggle('oldestfirst');
   };
-
-  useEffect(() => {
-    getUser().then((user) => {
-      setCurrentUser(user);
-    });
-  }, []); // Run once on mount to get user
 
   useEffect(() => {
     if (sortOrder === 'asc') {
@@ -282,10 +278,12 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
         setComments((prev) =>
           prev.filter((c) => c.id !== optimisticComment.id),
         );
-        alert(`Failed to submit comment: ${err.message || 'Unknown error'}`);
+        showNotification(
+          `Failed to submit comment: ${err.message || 'Unknown error'}`,
+        );
       })
       .finally(() => setIsSubmitting(false));
-  }, [newComment, currentUser, issueId]);
+  }, [newComment, currentUser, issueId, showNotification]);
 
   const startEditing = useCallback((comment) => {
     setEditingCommentId(comment.id);
@@ -316,11 +314,13 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
         })
         .catch((err) => {
           console.error(err);
-          alert(`Failed to update comment: ${err.message || 'Unknown error'}`);
+          showNotification(
+            `Failed to update comment: ${err.message || 'Unknown error'}`,
+          );
         })
         .finally(() => setIsSubmitting(false));
     },
-    [editingContent],
+    [editingContent, showNotification],
   );
 
   const confirmDeleteComment = useCallback(
@@ -335,11 +335,11 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
       method: 'DELETE',
       data: { force: true },
     })
-      .then((deleted) => {
+      .then((deletedComment) => {
         setComments((prev) => prev.filter((c) => c.id !== deleteCommentId));
         setDeleteCommentId(null);
 
-        wp.hooks.doAction('alpaca.commentDeleted', deletedComment); // New doAction
+        wp.hooks.doAction('alpaca.commentDeleted', deletedComment);
 
         // Dispatch event to update comment count
         // The deletedComment object contains the post ID
@@ -359,9 +359,11 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
       })
       .catch((err) => {
         console.error(err);
-        alert(`Failed to delete comment: ${err.message || 'Unknown error'}`);
+        showNotification(
+          `Failed to delete comment: ${err.message || 'Unknown error'}`,
+        );
       });
-  }, [deleteCommentId]);
+  }, [deleteCommentId, showNotification]);
 
   return (
     <div id="alpaca-comments-wrapper" className="has-sidecontrols">
@@ -390,7 +392,14 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
           </div>
         </div>
 
-        {isLoadingComments}
+        {isLoadingComments && (
+          <p className="alpaca-loading">Loading comments...</p>
+        )}
+        {notificationMessage && (
+          <div className="notice notice-error inline">
+            <p>{notificationMessage}</p>
+          </div>
+        )}
         {error && <p className="alpaca-error">{error}</p>}
 
         <div className="alpaca-comments-timeline">

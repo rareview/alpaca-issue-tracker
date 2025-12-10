@@ -1,13 +1,16 @@
-const { useState, useEffect, useMemo } = wp.element;
+import PropTypes from 'prop-types';
+
+const { useReducer, useEffect, useMemo, memo } = wp.element;
 const { Tooltip } = wp.components;
 
-const Time = ({ value, type = 'absolute', format, autoUpdate = true }) => {
-  const [tick, setTick] = useState(0); // force re-render for relative time
+const Time = memo(({ value, type = 'absolute', format, autoUpdate = true }) => {
+  // useReducer to force re-render for relative time updates
+  const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
   // Auto-update every 15 seconds
   useEffect(() => {
     if (type !== 'relative' || !autoUpdate) return;
-    const interval = setInterval(() => setTick((prev) => prev + 1), 15000);
+    const interval = setInterval(forceUpdate, 15000);
     return () => clearInterval(interval);
   }, [type, autoUpdate]);
 
@@ -36,6 +39,15 @@ const Time = ({ value, type = 'absolute', format, autoUpdate = true }) => {
   }
 
   return <span className="timestamp">{formattedAbsolute}</span>;
+});
+
+Time.propTypes = {
+  value: PropTypes.string,
+  type: PropTypes.oneOf(['absolute', 'relative']),
+  format: PropTypes.string,
+  autoUpdate: PropTypes.bool,
 };
+
+Time.displayName = 'Time';
 
 export default Time;
