@@ -1,4 +1,5 @@
 const { Card, CardHeader, CardBody, DropdownMenu, TextControl } = wp.components;
+const { Heading = wp.components.__experimentalHeading } = wp.components;
 
 const { useState, useEffect, useRef } = wp.element;
 
@@ -134,9 +135,9 @@ function Container({
             ref={inputRef}
           />
         ) : (
-          <h2 className="alpaca-container-title">
+          <Heading level={2}>
             {title} <span className="alpaca-item-count">{items.length}</span>
-          </h2>
+          </Heading>
         )}
 
         <div className="alpaca-container-controls">

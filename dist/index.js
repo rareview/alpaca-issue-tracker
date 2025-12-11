@@ -17836,6 +17836,7 @@ var _draggableItemDefault = parcelHelpers.interopDefault(_draggableItem);
 var _propTypes = require("prop-types");
 var _propTypesDefault = parcelHelpers.interopDefault(_propTypes);
 const { Card, CardHeader, CardBody, DropdownMenu, TextControl } = wp.components;
+const { Heading = wp.components.__experimentalHeading } = wp.components;
 const { useState, useEffect, useRef } = wp.element;
 /**
  * Container component (delegates rename to parent via onRename).
@@ -17924,7 +17925,7 @@ const { useState, useEffect, useRef } = wp.element;
         "data-id": id,
         __source: {
             fileName: "src/components/Container.jsx",
-            lineNumber: 118,
+            lineNumber: 119,
             columnNumber: 5
         },
         __self: this
@@ -17934,7 +17935,7 @@ const { useState, useEffect, useRef } = wp.element;
         isBorderless: true,
         __source: {
             fileName: "src/components/Container.jsx",
-            lineNumber: 122,
+            lineNumber: 123,
             columnNumber: 7
         },
         __self: this
@@ -17947,15 +17948,15 @@ const { useState, useEffect, useRef } = wp.element;
         ref: inputRef,
         __source: {
             fileName: "src/components/Container.jsx",
-            lineNumber: 128,
+            lineNumber: 129,
             columnNumber: 11
         },
         __self: this
-    }) : /*#__PURE__*/ React.createElement("h2", {
-        className: "alpaca-container-title",
+    }) : /*#__PURE__*/ React.createElement(Heading, {
+        level: 2,
         __source: {
             fileName: "src/components/Container.jsx",
-            lineNumber: 137,
+            lineNumber: 138,
             columnNumber: 11
         },
         __self: this
@@ -17963,7 +17964,7 @@ const { useState, useEffect, useRef } = wp.element;
         className: "alpaca-item-count",
         __source: {
             fileName: "src/components/Container.jsx",
-            lineNumber: 138,
+            lineNumber: 139,
             columnNumber: 21
         },
         __self: this
@@ -17971,7 +17972,7 @@ const { useState, useEffect, useRef } = wp.element;
         className: "alpaca-container-controls",
         __source: {
             fileName: "src/components/Container.jsx",
-            lineNumber: 142,
+            lineNumber: 143,
             columnNumber: 9
         },
         __self: this
@@ -17981,7 +17982,7 @@ const { useState, useEffect, useRef } = wp.element;
         controls: menuControls,
         __source: {
             fileName: "src/components/Container.jsx",
-            lineNumber: 143,
+            lineNumber: 144,
             columnNumber: 11
         },
         __self: this
@@ -17990,7 +17991,7 @@ const { useState, useEffect, useRef } = wp.element;
         size: "xSmall",
         __source: {
             fileName: "src/components/Container.jsx",
-            lineNumber: 147,
+            lineNumber: 148,
             columnNumber: 7
         },
         __self: this
@@ -17998,7 +17999,7 @@ const { useState, useEffect, useRef } = wp.element;
         droppableId: id,
         __source: {
             fileName: "src/components/Container.jsx",
-            lineNumber: 148,
+            lineNumber: 149,
             columnNumber: 9
         },
         __self: this
@@ -18008,7 +18009,7 @@ const { useState, useEffect, useRef } = wp.element;
             className: `alpaca-items ${snapshot.isDraggingOver ? 'dragging-over' : ''}`,
             __source: {
                 fileName: "src/components/Container.jsx",
-                lineNumber: 150,
+                lineNumber: 151,
                 columnNumber: 13
             },
             __self: this
@@ -18024,7 +18025,7 @@ const { useState, useEffect, useRef } = wp.element;
                 onClick: onItemClick,
                 __source: {
                     fileName: "src/components/Container.jsx",
-                    lineNumber: 159,
+                    lineNumber: 160,
                     columnNumber: 19
                 },
                 __self: this
@@ -18032,7 +18033,7 @@ const { useState, useEffect, useRef } = wp.element;
             className: "alpaca-item empty",
             __source: {
                 fileName: "src/components/Container.jsx",
-                lineNumber: 172,
+                lineNumber: 173,
                 columnNumber: 17
             },
             __self: this
@@ -18148,7 +18149,7 @@ var _commentIconDefault = parcelHelpers.interopDefault(_commentIcon);
 var _calendarIcon = require("./icons/CalendarIcon");
 var _calendarIconDefault = parcelHelpers.interopDefault(_calendarIcon);
 const { forwardRef } = wp.element;
-const { Card, CardBody, CardFooter, CardMedia } = wp.components;
+const { Card, CardBody, CardFooter } = wp.components;
 const { Text = wp.components.__experimentalText } = wp.components;
 /**
  * Item component displayed in board containers.

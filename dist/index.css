@@ -208,6 +208,8 @@
 
 .wp-admin #alpaca-board .alpaca-container.hidden {
   opacity: .5;
+  flex: 0;
+  min-width: auto;
 }
 
 .wp-admin #alpaca-board .alpaca-container.hidden .alpaca-items {

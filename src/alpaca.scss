@@ -230,6 +230,8 @@ $spacegap: 0.8ch;
 
       &.hidden {
         opacity: 0.5;
+        flex: 0;
+        min-width: auto;
 
         .alpaca-items {
           display: none;
