@@ -143,7 +143,7 @@ const AlpacaIssue = ({
   const [allStatuses, setAllStatuses] = useState([]);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState('');
-  const [commentRefreshKey, setCommentRefreshKey] = useState(0);
+  const [commentRefreshKey, _setCommentRefreshKey] = useState(0);
   const [notificationMessage, setNotificationMessage] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -163,12 +163,6 @@ const AlpacaIssue = ({
   useEffect(() => {
     if (issueDetails && issueDetails.success && allUserObjects.length > 0) {
       setDeadline(issueDetails.meta.deadline || null);
-
-      // Checklist
-      const parsedChecklist = issueDetails.meta.checklist
-        ? parseChecklist(issueDetails.meta.checklist)
-        : [];
-      setChecklistItems(Array.isArray(parsedChecklist) ? parsedChecklist : []);
 
       // Assignees
       const assigneeNames =
