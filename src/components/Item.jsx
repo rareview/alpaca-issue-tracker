@@ -113,10 +113,10 @@ const Item = forwardRef(
             />
           </div>
         </div>
-        <div className="alpaca-item-meta">
+        <div className="alpaca-item-meta flexalign">
           {assignees.length > 0 && (
             <div
-              className="alpaca-item-assignees"
+              className="alpaca-item-assignees flexalign"
               data-assignees={assignees.length}
               title={
                 assignees.length === 1
@@ -131,7 +131,7 @@ const Item = forwardRef(
           )}
 
           {typeof commentCount !== 'undefined' && commentCount > 0 && (
-            <div className="alpaca-item-icon alpaca-item-comment-count">
+            <div className="alpaca-item-icon alpaca-item-comment-count flexalign">
               <CommentIcon />
               {commentCount}
             </div>
@@ -140,7 +140,7 @@ const Item = forwardRef(
           {wp.hooks.applyFilters('alpaca.item.datapoints', null, { id, meta })}
 
           {isValidDeadline && (
-            <div className="alpaca-item-icon alpaca-item-deadline">
+            <div className="alpaca-item-icon alpaca-item-deadline flexalign">
               <CalendarIcon />
               {deadlineText}
             </div>
