@@ -51,7 +51,11 @@ const ReportTab = memo(
           {/* eslint-enable jsx-a11y/no-noninteractive-element-to-interactive-role */}
           <Button
             disabled={isLoading}
-            onClick={onScreenshotDelete}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onScreenshotDelete();
+            }}
             label="Delete"
             showTooltip="true"
             tooltipPosition="middle left"

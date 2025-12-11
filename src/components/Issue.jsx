@@ -155,6 +155,8 @@ const AlpacaIssue = ({
   const [commentRefreshKey] = useState(0);
   const [notificationMessage, setNotificationMessage] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showDeleteScreenshotConfirm, setShowDeleteScreenshotConfirm] =
+    useState(false);
 
   const showNotification = useCallback((message, type = 'error') => {
     setNotificationMessage({ message, type });
@@ -291,9 +293,35 @@ const AlpacaIssue = ({
   // Lightbox
   const handleLightboxClose = useCallback(() => setLightboxSrc(null), []);
 
-  const handleScreenshotDelete = useCallback((_screenshotId) => {
-    // TODO: Implement screenshot deletion
+  const confirmScreenshotDelete = useCallback(() => {
+    setShowDeleteScreenshotConfirm(true);
   }, []);
+
+  const handleScreenshotDelete = useCallback(async () => {
+    setShowDeleteScreenshotConfirm(false);
+    setLoading('screenshot', true);
+    try {
+      await updateIssue(issueId, { meta: { screenshot: '' } });
+
+      // Update local state to remove screenshot
+      setIssueDetails((prev) => ({
+        ...prev,
+        meta: {
+          ...prev.meta,
+          alpaca_screenshot: null,
+          screenshot: null,
+        },
+      }));
+
+      showNotification('Screenshot deleted successfully.', 'success');
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Error deleting screenshot:', err);
+      showNotification('Failed to delete screenshot.', 'error');
+    } finally {
+      setLoading('screenshot', false);
+    }
+  }, [issueId, setIssueDetails, setLoading, showNotification]);
 
   // Status progression
   const handleProgressIssue = useCallback(async () => {
@@ -513,7 +541,7 @@ const AlpacaIssue = ({
                       issueDetails={issueDetails}
                       issueId={issueId}
                       commentRefreshKey={commentRefreshKey}
-                      onScreenshotDelete={handleScreenshotDelete}
+                      onScreenshotDelete={confirmScreenshotDelete}
                       loadingStates={loadingStates}
                       onScreenshotClick={setLightboxSrc}
                     />
@@ -525,6 +553,24 @@ const AlpacaIssue = ({
         )}
         {!isLoadingDetails && (!issueDetails || !issueDetails.success) && (
           <p>{issueDetails?.message || 'Could not load issue details.'}</p>
+        )}
+
+        {showDeleteScreenshotConfirm && (
+          <Modal
+            title="Delete Screenshot?"
+            onRequestClose={() => setShowDeleteScreenshotConfirm(false)}
+            className="alpaca-modal"
+          >
+            <p>Are you sure you want to delete this screenshot?</p>
+            <div className="alpaca-actions flexalign">
+              <Button isPrimary onClick={handleScreenshotDelete}>
+                Delete
+              </Button>
+              <Button onClick={() => setShowDeleteScreenshotConfirm(false)}>
+                Cancel
+              </Button>
+            </div>
+          </Modal>
         )}
       </Modal>
 
