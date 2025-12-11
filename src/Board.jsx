@@ -72,6 +72,7 @@ export function AlpacaBoard() {
       method: 'POST',
       data: { name: newTitle },
     }).catch((err) => {
+      // eslint-disable-next-line no-console
       console.error('Error renaming container:', err);
       setContainers(original); // revert on failure
     });
@@ -273,6 +274,7 @@ export function AlpacaBoard() {
         taxonomies: {
           status: [parseInt(nextContainer.id, 10)],
         },
+        // eslint-disable-next-line no-console
       }).catch((err) => console.error(`Error updating issue ${item.id}:`, err));
     });
 
@@ -285,6 +287,7 @@ export function AlpacaBoard() {
     const containerToDeleteFrom = containers.find((c) => c.id === containerId);
 
     if (!containerToDeleteFrom) {
+      // eslint-disable-next-line no-console
       console.warn(`Container with ID ${containerId} not found.`);
       return;
     }
@@ -307,6 +310,7 @@ export function AlpacaBoard() {
         }),
       ),
     ).catch((err) => {
+      // eslint-disable-next-line no-console
       console.error(
         `Error deleting issues from container ${containerId}:`,
         err,
@@ -327,6 +331,7 @@ export function AlpacaBoard() {
               slug: fullUser.slug,
             };
           } catch (error) {
+            // eslint-disable-next-line no-console
             console.error(
               `Error fetching user data for ID ${assignee.id}:`,
               error,
@@ -488,6 +493,7 @@ export function AlpacaBoard() {
         }
       })
       .catch((err) => {
+        // eslint-disable-next-line no-console
         console.error('Error restoring default statuses:', err);
         setRestoreError(
           err.message || 'An error occurred while restoring default statuses.',
@@ -517,6 +523,7 @@ export function AlpacaBoard() {
       })
       .catch((err) => {
         // Revert if the delete fails
+        // eslint-disable-next-line no-console
         console.error('Error deleting issue:', err);
         setContainers(originalContainers);
       });
@@ -669,3 +676,5 @@ export function AlpacaBoard() {
     </>
   );
 }
+
+AlpacaBoard.displayName = 'AlpacaBoard';
