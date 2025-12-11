@@ -1,5 +1,7 @@
+const { Card, CardHeader, CardBody, DropdownMenu, TextControl } = wp.components;
+
 const { useState, useEffect, useRef } = wp.element;
-const { DropdownMenu, TextControl } = wp.components;
+
 import { Droppable } from '@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration';
 import DraggableItem from './DraggableItem';
 import PropTypes from 'prop-types';
@@ -30,7 +32,7 @@ function Container({
   isLastContainer,
   isHidden,
   onToggleHidden,
-  onRename, // parent must pass this
+  onRename,
 }) {
   const [isRenaming, setIsRenaming] = useState(false);
   const [newTitle, setNewTitle] = useState(title);
@@ -56,23 +58,17 @@ function Container({
 
   const handleRename = () => {
     setIsRenaming(false);
+
     if (newTitle.trim() !== '' && newTitle !== title) {
-      if (typeof onRename === 'function') {
-        onRename(id, newTitle); // delegate to parent
-      } else {
-        // eslint-disable-next-line no-console
-        console.warn(
-          'Container: onRename prop is missing or not a function. Rename not applied.',
-        );
-      }
+      onRename(id, newTitle);
     } else {
-      setNewTitle(title); // reset if unchanged or empty
+      setNewTitle(title);
     }
   };
 
   const handleCancelRename = () => {
     setIsRenaming(false);
-    setNewTitle(title); // reset to original
+    setNewTitle(title);
   };
 
   const handleKeyDown = (event) => {
@@ -90,7 +86,7 @@ function Container({
       icon: 'edit',
       title: 'Rename',
       onClick: () => {
-        setNewTitle(title); // ensure starting from current prop
+        setNewTitle(title);
         setIsRenaming(true);
       },
     },
@@ -119,11 +115,15 @@ function Container({
   }
 
   return (
-    <div
+    <Card
       className={`alpaca-container ${isHidden ? 'hidden' : ''}`}
       data-id={id}
     >
-      <div className="alpaca-container-header">
+      <CardHeader
+        className="alpaca-container-header"
+        size="xSmall"
+        isBorderless
+      >
         {isRenaming ? (
           <TextControl
             className="alpaca-container-title-input"
@@ -138,41 +138,46 @@ function Container({
             {title} <span className="alpaca-item-count">{items.length}</span>
           </h2>
         )}
+
         <div className="alpaca-container-controls">
           <DropdownMenu icon="menu" label="Options" controls={menuControls} />
         </div>
-      </div>
-      <Droppable droppableId={id}>
-        {(provided, snapshot) => (
-          <div
-            ref={provided.innerRef}
-            {...provided.droppableProps}
-            className={`alpaca-items ${
-              snapshot.isDraggingOver ? 'dragging-over' : ''
-            }`}
-          >
-            {hasItems ? (
-              items.map((item, index) => (
-                <DraggableItem
-                  className="alpaca-item"
-                  key={item.id}
-                  id={item.id}
-                  index={index}
-                  content={item.content}
-                  assignees={item.assignees}
-                  commentCount={item.commentCount}
-                  meta={item.meta}
-                  onClick={onItemClick}
-                />
-              ))
-            ) : (
-              <div className="alpaca-item empty">Drop items here</div>
-            )}
-            {provided.placeholder}
-          </div>
-        )}
-      </Droppable>
-    </div>
+      </CardHeader>
+
+      <CardBody className="alpaca-container-body" size="xSmall">
+        <Droppable droppableId={id}>
+          {(provided, snapshot) => (
+            <div
+              ref={provided.innerRef}
+              {...provided.droppableProps}
+              className={`alpaca-items ${
+                snapshot.isDraggingOver ? 'dragging-over' : ''
+              }`}
+            >
+              {hasItems ? (
+                items.map((item, index) => (
+                  <DraggableItem
+                    className="alpaca-item"
+                    key={item.id}
+                    id={item.id}
+                    index={index}
+                    content={item.content}
+                    assignees={item.assignees}
+                    commentCount={item.commentCount}
+                    meta={item.meta}
+                    onClick={onItemClick}
+                  />
+                ))
+              ) : (
+                <div className="alpaca-item empty">Drop items here</div>
+              )}
+
+              {provided.placeholder}
+            </div>
+          )}
+        </Droppable>
+      </CardBody>
+    </Card>
   );
 }
 

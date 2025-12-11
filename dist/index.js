@@ -17835,8 +17835,8 @@ var _draggableItem = require("./DraggableItem");
 var _draggableItemDefault = parcelHelpers.interopDefault(_draggableItem);
 var _propTypes = require("prop-types");
 var _propTypesDefault = parcelHelpers.interopDefault(_propTypes);
+const { Card, CardHeader, CardBody, DropdownMenu, TextControl } = wp.components;
 const { useState, useEffect, useRef } = wp.element;
-const { DropdownMenu, TextControl } = wp.components;
 /**
  * Container component (delegates rename to parent via onRename).
  *
@@ -17877,15 +17877,12 @@ const { DropdownMenu, TextControl } = wp.components;
     };
     const handleRename = ()=>{
         setIsRenaming(false);
-        if (newTitle.trim() !== '' && newTitle !== title) {
-            if (typeof onRename === 'function') onRename(id, newTitle); // delegate to parent
-            else // eslint-disable-next-line no-console
-            console.warn('Container: onRename prop is missing or not a function. Rename not applied.');
-        } else setNewTitle(title); // reset if unchanged or empty
+        if (newTitle.trim() !== '' && newTitle !== title) onRename(id, newTitle);
+        else setNewTitle(title);
     };
     const handleCancelRename = ()=>{
         setIsRenaming(false);
-        setNewTitle(title); // reset to original
+        setNewTitle(title);
     };
     const handleKeyDown = (event)=>{
         if (event.key === 'Enter') {
@@ -17901,7 +17898,7 @@ const { DropdownMenu, TextControl } = wp.components;
             icon: 'edit',
             title: 'Rename',
             onClick: ()=>{
-                setNewTitle(title); // ensure starting from current prop
+                setNewTitle(title);
                 setIsRenaming(true);
             }
         },
@@ -17922,20 +17919,22 @@ const { DropdownMenu, TextControl } = wp.components;
         title: 'Delete All',
         onClick: ()=>onDeleteAll(id)
     });
-    return /*#__PURE__*/ React.createElement("div", {
+    return /*#__PURE__*/ React.createElement(Card, {
         className: `alpaca-container ${isHidden ? 'hidden' : ''}`,
         "data-id": id,
         __source: {
             fileName: "src/components/Container.jsx",
-            lineNumber: 122,
+            lineNumber: 118,
             columnNumber: 5
         },
         __self: this
-    }, /*#__PURE__*/ React.createElement("div", {
+    }, /*#__PURE__*/ React.createElement(CardHeader, {
         className: "alpaca-container-header",
+        size: "xSmall",
+        isBorderless: true,
         __source: {
             fileName: "src/components/Container.jsx",
-            lineNumber: 126,
+            lineNumber: 122,
             columnNumber: 7
         },
         __self: this
@@ -17972,7 +17971,7 @@ const { DropdownMenu, TextControl } = wp.components;
         className: "alpaca-container-controls",
         __source: {
             fileName: "src/components/Container.jsx",
-            lineNumber: 141,
+            lineNumber: 142,
             columnNumber: 9
         },
         __self: this
@@ -17982,16 +17981,25 @@ const { DropdownMenu, TextControl } = wp.components;
         controls: menuControls,
         __source: {
             fileName: "src/components/Container.jsx",
-            lineNumber: 142,
+            lineNumber: 143,
             columnNumber: 11
         },
         __self: this
-    }))), /*#__PURE__*/ React.createElement((0, _pragmaticDragAndDropReactBeautifulDndMigration.Droppable), {
+    }))), /*#__PURE__*/ React.createElement(CardBody, {
+        className: "alpaca-container-body",
+        size: "xSmall",
+        __source: {
+            fileName: "src/components/Container.jsx",
+            lineNumber: 147,
+            columnNumber: 7
+        },
+        __self: this
+    }, /*#__PURE__*/ React.createElement((0, _pragmaticDragAndDropReactBeautifulDndMigration.Droppable), {
         droppableId: id,
         __source: {
             fileName: "src/components/Container.jsx",
-            lineNumber: 145,
-            columnNumber: 7
+            lineNumber: 148,
+            columnNumber: 9
         },
         __self: this
     }, (provided, snapshot)=>/*#__PURE__*/ React.createElement("div", {
@@ -18000,8 +18008,8 @@ const { DropdownMenu, TextControl } = wp.components;
             className: `alpaca-items ${snapshot.isDraggingOver ? 'dragging-over' : ''}`,
             __source: {
                 fileName: "src/components/Container.jsx",
-                lineNumber: 147,
-                columnNumber: 11
+                lineNumber: 150,
+                columnNumber: 13
             },
             __self: this
         }, hasItems ? items.map((item, index)=>/*#__PURE__*/ React.createElement((0, _draggableItemDefault.default), {
@@ -18016,19 +18024,19 @@ const { DropdownMenu, TextControl } = wp.components;
                 onClick: onItemClick,
                 __source: {
                     fileName: "src/components/Container.jsx",
-                    lineNumber: 156,
-                    columnNumber: 17
+                    lineNumber: 159,
+                    columnNumber: 19
                 },
                 __self: this
             })) : /*#__PURE__*/ React.createElement("div", {
             className: "alpaca-item empty",
             __source: {
                 fileName: "src/components/Container.jsx",
-                lineNumber: 169,
-                columnNumber: 15
+                lineNumber: 172,
+                columnNumber: 17
             },
             __self: this
-        }, "Drop items here"), provided.placeholder)));
+        }, "Drop items here"), provided.placeholder))));
 }
 Container.propTypes = {
     id: (0, _propTypesDefault.default).number.isRequired,

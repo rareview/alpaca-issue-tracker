@@ -164,15 +164,18 @@ $spacegap: 0.8ch;
     }
 
     .alpaca-container {
-      margin: 0 10px 0 0;
-      padding: 0 10px 10px;
+      margin: 0 10px 0 1px;
       background: #f9f9f9;
-      border: 2px solid #e4e4e4;
       border-radius: 4px;
       display: flex;
 
+      .alpaca-container-header,
+      .alpaca-container-body {
+        padding-top: 5px;
+        padding-bottom: 5px;
+      }
+
       .alpaca-container-header {
-        padding: 5px 0;
         display: grid;
         grid-template-columns: 1fr 40px;
         align-items: center;
@@ -372,7 +375,6 @@ $spacegap: 0.8ch;
     .alpaca-item.empty {
       font-style: italic;
       background-color: transparent;
-      border: 1px dashed #aaa;
 
       .alpaca-item-controls {
         display: none;
@@ -930,9 +932,9 @@ $spacegap: 0.8ch;
       }
 
       .alpaca-container {
-        width: 16vw;
         height: 75vh;
         display: flex;
+        flex: 1;
         flex-direction: column;
 
         &.hidden {
@@ -961,6 +963,8 @@ $spacegap: 0.8ch;
 
         .alpaca-items {
           overflow-y: auto;
+          padding: 10px 1px;
+          margin-top: -10px;
         }
       }
     }
