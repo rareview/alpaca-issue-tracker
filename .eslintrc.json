@@ -73,7 +73,8 @@
           "post_data",
           "post_content",
           "post_title",
-          "issue_id"
+          "issue_id",
+          "alpaca_screenshot"
         ]
       }
     ]
