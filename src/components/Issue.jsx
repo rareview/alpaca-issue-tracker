@@ -64,10 +64,21 @@ const DeadlineRow = memo(
 const EditableTitle = memo(
   ({ isEditing, title, onEditStart, onChange, onSave }) => {
     const inputRef = useRef(null);
+    const wasEditingRef = useRef(false);
 
     useEffect(() => {
-      if (isEditing && inputRef.current) inputRef.current.focus();
-    }, [isEditing]);
+      if (isEditing && !wasEditingRef.current && inputRef.current) {
+        inputRef.current.textContent = title;
+        inputRef.current.focus();
+        const range = document.createRange();
+        const sel = inputRef.current.ownerDocument.defaultView.getSelection();
+        range.selectNodeContents(inputRef.current);
+        range.collapse(false);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+      wasEditingRef.current = isEditing;
+    }, [isEditing, title]);
 
     if (isEditing) {
       return (
@@ -83,15 +94,15 @@ const EditableTitle = memo(
           }}
           onBlur={onSave}
         >
+          {/* eslint-disable-next-line jsx-a11y/heading-has-content -- content is set via JavaScript for contentEditable */}
           <h3
             className="alpaca-issue-title"
             contentEditable
             suppressContentEditableWarning
             ref={inputRef}
             onInput={(e) => onChange(e.currentTarget.textContent)}
-          >
-            {title}
-          </h3>
+            aria-label="Issue title"
+          />
         </div>
       );
     }
