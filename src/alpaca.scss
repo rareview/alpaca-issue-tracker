@@ -151,8 +151,16 @@ $spacegap: 0.8ch;
   }
 
   #alpaca-board {
+    & > * {
+      clear: both;
+    }
+
     .alpaca-wrap {
       display: flex;
+    }
+
+    #alpaca-board-controls-mount {
+      padding-top: 23px;
     }
 
     .alpaca-container {
@@ -380,7 +388,7 @@ $spacegap: 0.8ch;
     from {
       transform: translateX(100%);
     }
-    
+
     to {
       transform: translateX(0);
     }
@@ -905,7 +913,7 @@ $spacegap: 0.8ch;
     #alpaca-board {
       .alpaca-wrap {
         flex-direction: row;
-        padding: 10px 0;
+        padding: 5px 0;
         overflow-x: auto;
 
         .alpaca-container {

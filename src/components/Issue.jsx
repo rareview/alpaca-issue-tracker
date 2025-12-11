@@ -1,4 +1,3 @@
-import Checklist from './issue/Checklist';
 import PropTypes from 'prop-types';
 
 const { useState, useEffect, useRef, useMemo, useCallback, memo } = wp.element;
@@ -11,7 +10,6 @@ import useUserManagement from '../hooks/useUserManagement';
 import useLoadingStates from '../hooks/useLoadingStates';
 
 import { processAssigneeChanges } from '../utils/assigneeUtils';
-import { parseChecklist } from '../utils/checklistUtils';
 import { fetchStatuses, updateIssue } from '../services/issueApi';
 
 import AssigneeSelector from './issue/AssigneeSelector';
@@ -141,12 +139,11 @@ const AlpacaIssue = ({
 
   const [assignees, setAssignees] = useState([]);
   const [deadline, setDeadline] = useState(null);
-  const [checklistItems, setChecklistItems] = useState([]);
+  const [lightboxSrc, setLightboxSrc] = useState(null);
   const [allStatuses, setAllStatuses] = useState([]);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState('');
-  const [lightboxSrc, setLightboxSrc] = useState(null);
-  const [commentRefreshKey, setCommentRefreshKey] = useState(0);
+  const [commentRefreshKey, _setCommentRefreshKey] = useState(0);
   const [notificationMessage, setNotificationMessage] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
@@ -166,12 +163,6 @@ const AlpacaIssue = ({
   useEffect(() => {
     if (issueDetails && issueDetails.success && allUserObjects.length > 0) {
       setDeadline(issueDetails.meta.deadline || null);
-
-      // Checklist
-      const parsedChecklist = issueDetails.meta.checklist
-        ? parseChecklist(issueDetails.meta.checklist)
-        : [];
-      setChecklistItems(Array.isArray(parsedChecklist) ? parsedChecklist : []);
 
       // Assignees
       const assigneeNames =
@@ -236,18 +227,6 @@ const AlpacaIssue = ({
       setDeadline(
         issueDetails.meta.alpaca_deadline || issueDetails.meta.deadline || null,
       );
-
-      // Handle checklist
-      if (issueDetails.meta.alpaca_checklist || issueDetails.meta.checklist) {
-        const parsedChecklist = parseChecklist(
-          issueDetails.meta.alpaca_checklist || issueDetails.meta.checklist,
-        );
-        if (Array.isArray(parsedChecklist)) {
-          setChecklistItems(parsedChecklist);
-        }
-      } else {
-        setChecklistItems([]);
-      }
 
       // Handle assignees
       if (
@@ -498,13 +477,10 @@ const AlpacaIssue = ({
                 </tbody>
               </table>
 
-              <Checklist
-                issueId={issueId}
-                initialChecklistItems={checklistItems}
-                isSaving={loadingStates.assignees || loadingStates.deadline}
-                setIsSaving={(value) => setLoading('checklist', value)}
-                setCommentRefreshKey={setCommentRefreshKey}
-              />
+              {wp.hooks.applyFilters('alpaca.issue.abovetabs', null, {
+                issueId,
+                meta: issueDetails.meta,
+              })}
 
               <TabPanel
                 className="alpaca-issue-tabs"

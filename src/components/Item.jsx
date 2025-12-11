@@ -2,7 +2,6 @@ const { forwardRef } = wp.element;
 import PropTypes from 'prop-types';
 import { useWatchlist } from '../context/WatchlistContext';
 import User from './User';
-import ChecklistIcon from './icons/ChecklistIcon';
 import CommentIcon from './icons/CommentIcon';
 import CalendarIcon from './icons/CalendarIcon';
 
@@ -69,12 +68,6 @@ const Item = forwardRef(
     }
 
     const lateClass = diffDays < 0 ? 'is-late' : '';
-
-    const checklistItems = meta?.checklist || [];
-    const totalChecklistItems = checklistItems.length;
-    const checkedChecklistItems = checklistItems.filter(
-      (item) => item.checked !== 0,
-    ).length;
 
     // Format deadline display text
     let deadlineText = deadlineFormatted;
@@ -144,12 +137,7 @@ const Item = forwardRef(
             </div>
           )}
 
-          {totalChecklistItems > 0 && (
-            <div className="alpaca-item-icon alpaca-item-checklist-count flexalign">
-              <ChecklistIcon />
-              {`${checkedChecklistItems}/${totalChecklistItems}`}
-            </div>
-          )}
+          {wp.hooks.applyFilters('alpaca.item.datapoints', null, { id, meta })}
 
           {isValidDeadline && (
             <div className="alpaca-item-icon alpaca-item-deadline flexalign">
