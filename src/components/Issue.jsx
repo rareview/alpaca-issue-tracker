@@ -66,8 +66,17 @@ const EditableTitle = memo(
     const inputRef = useRef(null);
 
     useEffect(() => {
-      if (isEditing && inputRef.current) inputRef.current.focus();
-    }, [isEditing]);
+      if (isEditing && inputRef.current) {
+        inputRef.current.textContent = title;
+        inputRef.current.focus();
+        const range = document.createRange();
+        const sel = inputRef.current.ownerDocument.defaultView.getSelection();
+        range.selectNodeContents(inputRef.current);
+        range.collapse(false);
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+    }, [isEditing, title]);
 
     if (isEditing) {
       return (
@@ -83,15 +92,15 @@ const EditableTitle = memo(
           }}
           onBlur={onSave}
         >
+          {/* eslint-disable-next-line jsx-a11y/heading-has-content -- content is set via JavaScript for contentEditable */}
           <h3
             className="alpaca-issue-title"
             contentEditable
             suppressContentEditableWarning
             ref={inputRef}
             onInput={(e) => onChange(e.currentTarget.textContent)}
-          >
-            {title}
-          </h3>
+            aria-label="Issue title"
+          />
         </div>
       );
     }
@@ -143,7 +152,7 @@ const AlpacaIssue = ({
   const [allStatuses, setAllStatuses] = useState([]);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState('');
-  const [commentRefreshKey, _setCommentRefreshKey] = useState(0);
+  const [commentRefreshKey] = useState(0);
   const [notificationMessage, setNotificationMessage] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
