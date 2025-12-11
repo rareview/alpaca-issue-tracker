@@ -1,6 +1,6 @@
 const { forwardRef } = wp.element;
 import PropTypes from 'prop-types';
-const { Card, CardBody, CardFooter, CardMedia } = wp.components;
+const { Card, CardBody, CardFooter } = wp.components;
 const { Text = wp.components.__experimentalText } = wp.components;
 import { useWatchlist } from '../context/WatchlistContext';
 import User from './User';

@@ -253,6 +253,7 @@ $spacegap: 0.8ch;
       .components-card__footer {
         padding-bottom: 4px;
       }
+
       .components-card__media {
         margin: 4px 0; // assuming image between body and footer
       }
@@ -935,6 +936,7 @@ $spacegap: 0.8ch;
         height: 75vh;
         display: flex;
         flex: 1;
+        min-width: 18vw;
         flex-direction: column;
 
         &.hidden {

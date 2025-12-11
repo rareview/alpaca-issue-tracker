@@ -836,6 +836,7 @@
   .wp-admin #alpaca-board .alpaca-container {
     flex-direction: column;
     flex: 1;
+    min-width: 18vw;
     height: 75vh;
     display: flex;
   }
