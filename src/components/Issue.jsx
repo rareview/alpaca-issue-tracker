@@ -64,9 +64,10 @@ const DeadlineRow = memo(
 const EditableTitle = memo(
   ({ isEditing, title, onEditStart, onChange, onSave }) => {
     const inputRef = useRef(null);
+    const wasEditingRef = useRef(false);
 
     useEffect(() => {
-      if (isEditing && inputRef.current) {
+      if (isEditing && !wasEditingRef.current && inputRef.current) {
         inputRef.current.textContent = title;
         inputRef.current.focus();
         const range = document.createRange();
@@ -76,6 +77,7 @@ const EditableTitle = memo(
         sel.removeAllRanges();
         sel.addRange(range);
       }
+      wasEditingRef.current = isEditing;
     }, [isEditing, title]);
 
     if (isEditing) {
