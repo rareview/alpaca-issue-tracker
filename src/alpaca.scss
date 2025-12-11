@@ -243,21 +243,28 @@ $spacegap: 0.8ch;
       display: flex;
       flex-direction: column;
       gap: $spacegap;
-      line-height: 2em;
+      transition: opacity 0.2s ease-in-out;
+      margin: 1px 0 9px 0;
+
+      .components-card__body,
+      .components-card__footer {
+        padding-bottom: 4px;
+      }
+      .components-card__media {
+        margin: 4px 0; // assuming image between body and footer
+      }
+
+      .components-card__footer {
+        padding-top: 0;
+        line-height: 2em;
+      }
 
       .alpaca-item-upper {
         display: grid;
-        grid-template-columns: 1fr 3em;
+        grid-template-columns: 1fr 2em;
         grid-template-rows: auto;
         gap: 0;
       }
-
-      transition: opacity 0.2s ease-in-out;
-      box-shadow: 0 0 2px #888;
-      border-radius: 8px;
-      padding: 8px 12px;
-      margin: 10px 0;
-      background-color: #fff;
 
       .alpaca-item-deadline {
         border-radius: 8px;
@@ -299,8 +306,6 @@ $spacegap: 0.8ch;
       .alpaca-item-content {
         grid-column: 1;
         grid-row: 1;
-        font-size: 15px;
-        line-height: 1.4;
       }
 
       .alpaca-item-controls {
@@ -309,16 +314,18 @@ $spacegap: 0.8ch;
         text-align: right;
       }
 
-      .alpaca-item-meta {
+      .alpaca-item-datapoints {
         grid-column: 1;
         grid-row: 2;
         color: $greytext;
         margin: 4px 0;
         flex-wrap: wrap;
+        align-items: center;
 
         & > div {
           display: flex;
           align-items: center;
+          gap: 0.4ch;
           margin-right: 10px;
         }
 

@@ -1,5 +1,7 @@
 const { forwardRef } = wp.element;
 import PropTypes from 'prop-types';
+const { Card, CardBody, CardFooter, CardMedia } = wp.components;
+const { Text = wp.components.__experimentalText } = wp.components;
 import { useWatchlist } from '../context/WatchlistContext';
 import User from './User';
 import CommentIcon from './icons/CommentIcon';
@@ -83,7 +85,7 @@ const Item = forwardRef(
 
     return (
       // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
-      <div
+      <Card
         ref={ref}
         className={`${className} ${watchedClass} ${lateClass}`.trim()}
         style={style}
@@ -93,60 +95,69 @@ const Item = forwardRef(
         {...props}
         onClick={onClick}
       >
-        <div className="alpaca-item-upper">
-          <div className="alpaca-item-content">{content}</div>
-          <div className="alpaca-item-controls">
-            <div
-              className="dashicons dashicons-star-filled"
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleWatch(id);
-              }}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
+        <CardBody size="xSmall">
+          <div className="alpaca-item-upper">
+            <div className="alpaca-item-content">
+              <Text>{content}</Text>
+            </div>
+            <div className="alpaca-item-controls">
+              <div
+                className="dashicons dashicons-star-filled"
+                onClick={(e) => {
                   e.stopPropagation();
                   toggleWatch(id);
-                }
-              }}
-            />
+                }}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.stopPropagation();
+                    toggleWatch(id);
+                  }
+                }}
+              />
+            </div>
           </div>
-        </div>
-        <div className="alpaca-item-meta flexalign">
-          {assignees.length > 0 && (
-            <div
-              className="alpaca-item-assignees flexalign"
-              data-assignees={assignees.length}
-              title={
-                assignees.length === 1
-                  ? assignees[0].displayName || assignees[0].name
-                  : assignees.map((a) => a.displayName || a.name).join(', ')
-              }
-            >
-              {assignees.map((assignee) => (
-                <User key={assignee.id} user={assignee} />
-              ))}
-            </div>
-          )}
+        </CardBody>
+        <CardFooter size="xSmall" isBorderless>
+          <div className="alpaca-item-datapoints flexalign">
+            {assignees.length > 0 && (
+              <div
+                className="alpaca-item-assignees"
+                data-assignees={assignees.length}
+                title={
+                  assignees.length === 1
+                    ? assignees[0].displayName || assignees[0].name
+                    : assignees.map((a) => a.displayName || a.name).join(', ')
+                }
+              >
+                {assignees.map((assignee) => (
+                  <User key={assignee.id} user={assignee} />
+                ))}
+              </div>
+            )}
 
-          {typeof commentCount !== 'undefined' && commentCount > 0 && (
-            <div className="alpaca-item-icon alpaca-item-comment-count flexalign">
-              <CommentIcon />
-              {commentCount}
-            </div>
-          )}
+            {typeof commentCount !== 'undefined' && commentCount > 0 && (
+              <div className="alpaca-item-icon alpaca-item-comment-count">
+                <CommentIcon />
+                {commentCount}
+              </div>
+            )}
 
-          {wp.hooks.applyFilters('alpaca.item.datapoints', null, { id, meta })}
+            {wp.hooks.applyFilters('alpaca.item.datapoints', null, {
+              id,
+              meta,
+            })}
 
-          {isValidDeadline && (
-            <div className="alpaca-item-icon alpaca-item-deadline flexalign">
-              <CalendarIcon />
-              {deadlineText}
-            </div>
-          )}
-        </div>
-      </div>
+            {isValidDeadline && (
+              <div className="alpaca-item-icon alpaca-item-deadline">
+                <CalendarIcon />
+                {deadlineText}
+              </div>
+            )}
+          </div>
+        </CardFooter>
+      </Card>
     );
   },
 );
