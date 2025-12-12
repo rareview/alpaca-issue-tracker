@@ -3,8 +3,8 @@ const { Heading = wp.components.__experimentalHeading } = wp.components;
 
 const { useState, useEffect, useRef } = wp.element;
 
-import { Droppable } from '@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration';
 import DraggableItem from './DraggableItem';
+import Item from './Item';
 import PropTypes from 'prop-types';
 
 /**
@@ -21,6 +21,7 @@ import PropTypes from 'prop-types';
  * @param {boolean}  root0.isHidden        - Whether container is hidden
  * @param {Function} root0.onToggleHidden  - Callback to toggle hidden state
  * @param {Function} root0.onRename        - Callback to rename container
+ * @param {Function} root0.onItemDrop
  * @return {JSX.Element} Container component
  */
 function Container({
@@ -34,10 +35,15 @@ function Container({
   isHidden,
   onToggleHidden,
   onRename,
+  onItemDrop,
 }) {
   const [isRenaming, setIsRenaming] = useState(false);
   const [newTitle, setNewTitle] = useState(title);
   const inputRef = useRef(null);
+  const containerRef = useRef(null);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [dragOverIndex, setDragOverIndex] = useState(null);
+  const [dragOverItem, setDragOverItem] = useState(null);
   const hasItems = items.length > 0;
 
   // keep local input in sync if parent updates title
@@ -115,6 +121,116 @@ function Container({
     });
   }
 
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setIsDragOver(true);
+
+    // throttle expensive work to avoid jank on large lists
+    if (!handleDragOver._last || Date.now() - handleDragOver._last > 50) {
+      handleDragOver._last = Date.now();
+    } else {
+      return;
+    }
+
+    // try to read drag payload so we can show a live preview.
+    // Prefer dataTransfer, fall back to global state (window.__alpacaDragState).
+    let parsed = null;
+    try {
+      const raw =
+        e.dataTransfer.getData('application/json') ||
+        e.dataTransfer.getData('text/plain');
+      if (raw) parsed = JSON.parse(raw);
+    } catch (err) {
+      parsed = null;
+    }
+
+    if (!parsed && typeof window !== 'undefined') {
+      try {
+        parsed = window.__alpacaDragState || null;
+      } catch (err) {
+        parsed = null;
+      }
+    }
+
+    if (parsed && parsed.itemId) {
+      const destIndex = getDropIndex(e);
+      setDragOverIndex(destIndex);
+      setDragOverItem(parsed);
+    } else {
+      setDragOverIndex(null);
+      setDragOverItem(null);
+    }
+  };
+
+  const handleDragLeave = (e) => {
+    // Only clear when leaving the container element
+    if (
+      containerRef.current &&
+      !containerRef.current.contains(e.relatedTarget)
+    ) {
+      setIsDragOver(false);
+      setDragOverIndex(null);
+      setDragOverItem(null);
+    }
+  };
+
+  const getDropIndex = (e) => {
+    const el = containerRef.current;
+    if (!el) return items.length;
+    const children = Array.from(
+      el.querySelectorAll('.alpaca-item:not(.empty)'),
+    );
+    for (let i = 0; i < children.length; i++) {
+      const rect = children[i].getBoundingClientRect();
+      if (e.clientY < rect.top + rect.height / 2) return i;
+    }
+    return children.length;
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    // Clear global drag state immediately so renders after drop don't hide the moved item
+    try {
+      if (typeof window !== 'undefined' && window.__alpacaDragState) {
+        delete window.__alpacaDragState;
+      }
+    } catch (err) {
+      // ignore
+    }
+
+    // Read payload from dataTransfer if available, otherwise nothing - caller may rely on payload
+    const raw =
+      e.dataTransfer.getData('application/json') ||
+      e.dataTransfer.getData('text/plain');
+    let parsed = null;
+    if (raw) {
+      try {
+        parsed = JSON.parse(raw);
+      } catch (err) {
+        parsed = null;
+      }
+    }
+
+    const { itemId, sourceContainerId, sourceIndex } = parsed || {};
+    const destIndex = getDropIndex(e);
+
+    // Clear preview state immediately to avoid temporary hiding of the dropped element
+    setDragOverIndex(null);
+    setDragOverItem(null);
+
+    if (onItemDrop) {
+      onItemDrop({
+        itemId,
+        sourceContainerId,
+        sourceIndex,
+        destinationContainerId: id,
+        destinationIndex: destIndex,
+      });
+    }
+  };
+
   return (
     <Card
       className={`alpaca-container ${isHidden ? 'hidden' : ''}`}
@@ -146,37 +262,136 @@ function Container({
       </CardHeader>
 
       <CardBody className="alpaca-container-body" size="xSmall">
-        <Droppable droppableId={id}>
-          {(provided, snapshot) => (
-            <div
-              ref={provided.innerRef}
-              {...provided.droppableProps}
-              className={`alpaca-items ${
-                snapshot.isDraggingOver ? 'dragging-over' : ''
-              }`}
-            >
-              {hasItems ? (
-                items.map((item, index) => (
-                  <DraggableItem
-                    className="alpaca-item"
-                    key={item.id}
-                    id={item.id}
-                    index={index}
-                    content={item.content}
-                    assignees={item.assignees}
-                    commentCount={item.commentCount}
-                    meta={item.meta}
-                    onClick={onItemClick}
-                  />
-                ))
-              ) : (
-                <div className="alpaca-item empty">Drop items here</div>
-              )}
+        <div
+          ref={containerRef}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          className={`alpaca-items ${isDragOver ? 'dragging-over' : ''}`}
+        >
+          {(() => {
+            // If there's an active drag preview, render the previewed list (remove source item if same container)
+            if (dragOverItem) {
+              const itemIdStr = dragOverItem.itemId?.toString();
+              let previewItems = items;
+              if (
+                dragOverItem.sourceContainerId &&
+                dragOverItem.sourceContainerId.toString() === id.toString()
+              ) {
+                previewItems = items.filter((it) => it.id !== itemIdStr);
+              }
 
-              {provided.placeholder}
-            </div>
-          )}
-        </Droppable>
+              const insertAt = Math.max(
+                0,
+                Math.min(
+                  previewItems.length,
+                  dragOverIndex === null ? previewItems.length : dragOverIndex,
+                ),
+              );
+
+              return (
+                <>
+                  {previewItems.slice(0, insertAt).map((item, index) => (
+                    <DraggableItem
+                      className="alpaca-item"
+                      key={item.id}
+                      id={item.id}
+                      index={index}
+                      containerId={id}
+                      content={item.content}
+                      assignees={item.assignees}
+                      commentCount={item.commentCount}
+                      meta={item.meta}
+                      onClick={onItemClick}
+                    />
+                  ))}
+
+                  <div
+                    className="alpaca-item placeholder"
+                    key={`placeholder-${dragOverItem.itemId}`}
+                  >
+                    {dragOverItem.content ? (
+                      <Item
+                        content={dragOverItem.content}
+                        assignees={dragOverItem.assignees}
+                        commentCount={dragOverItem.commentCount}
+                        meta={dragOverItem.meta}
+                        className="alpaca-item-inner"
+                      />
+                    ) : (
+                      <div className="alpaca-item-inner">Moving...</div>
+                    )}
+                  </div>
+
+                  {previewItems.slice(insertAt).map((item, index) => (
+                    <DraggableItem
+                      className="alpaca-item"
+                      key={item.id}
+                      id={item.id}
+                      index={insertAt + index}
+                      containerId={id}
+                      content={item.content}
+                      assignees={item.assignees}
+                      commentCount={item.commentCount}
+                      meta={item.meta}
+                      onClick={onItemClick}
+                    />
+                  ))}
+                </>
+              );
+            }
+
+            return hasItems ? (
+              (() => {
+                const globalDrag =
+                  typeof window !== 'undefined'
+                    ? window.__alpacaDragState
+                    : null;
+                return items.map((item, index) => {
+                  const isSourceHidden =
+                    globalDrag &&
+                    globalDrag.itemId &&
+                    globalDrag.sourceContainerId &&
+                    globalDrag.itemId.toString() === item.id.toString() &&
+                    globalDrag.sourceContainerId.toString() === id.toString();
+
+                  if (isSourceHidden) {
+                    return (
+                      <div className="alpaca-item" key={item.id}>
+                        <Item
+                          id={item.id}
+                          content={item.content}
+                          assignees={item.assignees}
+                          commentCount={item.commentCount}
+                          meta={item.meta}
+                          className="alpaca-item-inner"
+                          style={{ visibility: 'hidden' }}
+                        />
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <DraggableItem
+                      className="alpaca-item"
+                      key={item.id}
+                      id={item.id}
+                      index={index}
+                      containerId={id}
+                      content={item.content}
+                      assignees={item.assignees}
+                      commentCount={item.commentCount}
+                      meta={item.meta}
+                      onClick={onItemClick}
+                    />
+                  );
+                });
+              })()
+            ) : (
+              <div className="alpaca-item empty">Drop items here</div>
+            );
+          })()}
+        </div>
       </CardBody>
     </Card>
   );
@@ -201,6 +416,7 @@ Container.propTypes = {
   isHidden: PropTypes.bool.isRequired,
   onToggleHidden: PropTypes.func.isRequired,
   onRename: PropTypes.func.isRequired,
+  onItemDrop: PropTypes.func,
 };
 
 export default Container;
