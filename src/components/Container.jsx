@@ -191,14 +191,7 @@ function Container({
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragOver(false);
-    // Clear global drag state immediately so renders after drop don't hide the moved item
-    try {
-      if (typeof window !== 'undefined' && window.__alpacaDragState) {
-        delete window.__alpacaDragState;
-      }
-    } catch (err) {
-      // ignore
-    }
+    // Don't clear global drag state yet; consume it below after calling onItemDrop
 
     // Read payload from dataTransfer if available, otherwise nothing - caller may rely on payload
     const raw =
@@ -228,6 +221,23 @@ function Container({
         destinationContainerId: id,
         destinationIndex: destIndex,
       });
+    }
+    // Now that we've consumed the payload, clear the global drag state so
+    // subsequent renders won't treat the source item as hidden and remove any
+    // leftover clones from the DOM.
+    try {
+      if (typeof window !== 'undefined') {
+        if (window.__alpacaDragState) delete window.__alpacaDragState;
+        // eslint-disable-next-line global-require
+        const { removeDragClone } = require('../utils/dragClone');
+        try {
+          removeDragClone();
+        } catch (removeErr) {
+          // ignore
+        }
+      }
+    } catch (err) {
+      // ignore
     }
   };
 

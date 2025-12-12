@@ -131,11 +131,6 @@ function DraggableItem({
 
   const handleDragEnd = () => {
     setIsDragging(false);
-    try {
-      delete window.__alpacaDragState;
-    } catch (err) {
-      // ignore
-    }
   };
 
   return (
@@ -147,6 +142,7 @@ function DraggableItem({
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       data-index={index}
+      data-id={id}
       className={`${className} ${isDragging ? 'dragging' : ''}`}
     >
       <Item

@@ -8435,12 +8435,7 @@ const { useState, useEffect, useRef } = wp.element;
     const handleDrop = (e)=>{
         e.preventDefault();
         setIsDragOver(false);
-        // Clear global drag state immediately so renders after drop don't hide the moved item
-        try {
-            if (typeof window !== 'undefined' && window.__alpacaDragState) delete window.__alpacaDragState;
-        } catch (err) {
-        // ignore
-        }
+        // Don't clear global drag state yet; consume it below after calling onItemDrop
         // Read payload from dataTransfer if available, otherwise nothing - caller may rely on payload
         const raw = e.dataTransfer.getData('application/json') || e.dataTransfer.getData('text/plain');
         let parsed = null;
@@ -8461,13 +8456,30 @@ const { useState, useEffect, useRef } = wp.element;
             destinationContainerId: id,
             destinationIndex: destIndex
         });
+        // Now that we've consumed the payload, clear the global drag state so
+        // subsequent renders won't treat the source item as hidden and remove any
+        // leftover clones from the DOM.
+        try {
+            if (typeof window !== 'undefined') {
+                if (window.__alpacaDragState) delete window.__alpacaDragState;
+                // eslint-disable-next-line global-require
+                const { removeDragClone } = require("79b7fbfd2d1aa215");
+                try {
+                    removeDragClone();
+                } catch (removeErr) {
+                // ignore
+                }
+            }
+        } catch (err) {
+        // ignore
+        }
     };
     return /*#__PURE__*/ React.createElement(Card, {
         className: `alpaca-container ${isHidden ? 'hidden' : ''}`,
         "data-id": id,
         __source: {
             fileName: "src/components/Container.jsx",
-            lineNumber: 235,
+            lineNumber: 245,
             columnNumber: 5
         },
         __self: this
@@ -8477,7 +8489,7 @@ const { useState, useEffect, useRef } = wp.element;
         isBorderless: true,
         __source: {
             fileName: "src/components/Container.jsx",
-            lineNumber: 239,
+            lineNumber: 249,
             columnNumber: 7
         },
         __self: this
@@ -8490,7 +8502,7 @@ const { useState, useEffect, useRef } = wp.element;
         ref: inputRef,
         __source: {
             fileName: "src/components/Container.jsx",
-            lineNumber: 245,
+            lineNumber: 255,
             columnNumber: 11
         },
         __self: this
@@ -8498,7 +8510,7 @@ const { useState, useEffect, useRef } = wp.element;
         level: 2,
         __source: {
             fileName: "src/components/Container.jsx",
-            lineNumber: 254,
+            lineNumber: 264,
             columnNumber: 11
         },
         __self: this
@@ -8506,7 +8518,7 @@ const { useState, useEffect, useRef } = wp.element;
         className: "alpaca-item-count",
         __source: {
             fileName: "src/components/Container.jsx",
-            lineNumber: 255,
+            lineNumber: 265,
             columnNumber: 21
         },
         __self: this
@@ -8514,7 +8526,7 @@ const { useState, useEffect, useRef } = wp.element;
         className: "alpaca-container-controls",
         __source: {
             fileName: "src/components/Container.jsx",
-            lineNumber: 259,
+            lineNumber: 269,
             columnNumber: 9
         },
         __self: this
@@ -8524,7 +8536,7 @@ const { useState, useEffect, useRef } = wp.element;
         controls: menuControls,
         __source: {
             fileName: "src/components/Container.jsx",
-            lineNumber: 260,
+            lineNumber: 270,
             columnNumber: 11
         },
         __self: this
@@ -8533,7 +8545,7 @@ const { useState, useEffect, useRef } = wp.element;
         size: "xSmall",
         __source: {
             fileName: "src/components/Container.jsx",
-            lineNumber: 264,
+            lineNumber: 274,
             columnNumber: 7
         },
         __self: this
@@ -8545,7 +8557,7 @@ const { useState, useEffect, useRef } = wp.element;
         className: `alpaca-items ${isDragOver ? 'dragging-over' : ''}`,
         __source: {
             fileName: "src/components/Container.jsx",
-            lineNumber: 265,
+            lineNumber: 275,
             columnNumber: 9
         },
         __self: this
@@ -8569,7 +8581,7 @@ const { useState, useEffect, useRef } = wp.element;
                     onClick: onItemClick,
                     __source: {
                         fileName: "src/components/Container.jsx",
-                        lineNumber: 295,
+                        lineNumber: 305,
                         columnNumber: 21
                     },
                     __self: this
@@ -8578,7 +8590,7 @@ const { useState, useEffect, useRef } = wp.element;
                 key: `placeholder-${dragOverItem.itemId}`,
                 __source: {
                     fileName: "src/components/Container.jsx",
-                    lineNumber: 309,
+                    lineNumber: 319,
                     columnNumber: 19
                 },
                 __self: this
@@ -8590,7 +8602,7 @@ const { useState, useEffect, useRef } = wp.element;
                 className: "alpaca-item-inner",
                 __source: {
                     fileName: "src/components/Container.jsx",
-                    lineNumber: 314,
+                    lineNumber: 324,
                     columnNumber: 23
                 },
                 __self: this
@@ -8598,7 +8610,7 @@ const { useState, useEffect, useRef } = wp.element;
                 className: "alpaca-item-inner",
                 __source: {
                     fileName: "src/components/Container.jsx",
-                    lineNumber: 322,
+                    lineNumber: 332,
                     columnNumber: 23
                 },
                 __self: this
@@ -8615,7 +8627,7 @@ const { useState, useEffect, useRef } = wp.element;
                     onClick: onItemClick,
                     __source: {
                         fileName: "src/components/Container.jsx",
-                        lineNumber: 327,
+                        lineNumber: 337,
                         columnNumber: 21
                     },
                     __self: this
@@ -8630,7 +8642,7 @@ const { useState, useEffect, useRef } = wp.element;
                     key: item.id,
                     __source: {
                         fileName: "src/components/Container.jsx",
-                        lineNumber: 360,
+                        lineNumber: 370,
                         columnNumber: 23
                     },
                     __self: this
@@ -8646,7 +8658,7 @@ const { useState, useEffect, useRef } = wp.element;
                     },
                     __source: {
                         fileName: "src/components/Container.jsx",
-                        lineNumber: 361,
+                        lineNumber: 371,
                         columnNumber: 25
                     },
                     __self: this
@@ -8664,7 +8676,7 @@ const { useState, useEffect, useRef } = wp.element;
                     onClick: onItemClick,
                     __source: {
                         fileName: "src/components/Container.jsx",
-                        lineNumber: 375,
+                        lineNumber: 385,
                         columnNumber: 21
                     },
                     __self: this
@@ -8674,7 +8686,7 @@ const { useState, useEffect, useRef } = wp.element;
             className: "alpaca-item empty",
             __source: {
                 fileName: "src/components/Container.jsx",
-                lineNumber: 391,
+                lineNumber: 401,
                 columnNumber: 15
             },
             __self: this
@@ -8702,7 +8714,7 @@ Container.propTypes = {
 };
 exports.default = Container;
 
-},{"./DraggableItem":"1yzcB","prop-types":"7wKI2","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./Item":"2yEr4"}],"1yzcB":[function(require,module,exports,__globalThis) {
+},{"./DraggableItem":"1yzcB","prop-types":"7wKI2","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./Item":"2yEr4","79b7fbfd2d1aa215":"../utils/dragClone"}],"1yzcB":[function(require,module,exports,__globalThis) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _propTypes = require("prop-types");
@@ -8802,11 +8814,6 @@ const { useRef, useState } = wp.element;
     };
     const handleDragEnd = ()=>{
         setIsDragging(false);
-        try {
-            delete window.__alpacaDragState;
-        } catch (err) {
-        // ignore
-        }
     };
     return /*#__PURE__*/ React.createElement("div", {
         ref: elRef,
@@ -8816,10 +8823,11 @@ const { useRef, useState } = wp.element;
         onDragStart: handleDragStart,
         onDragEnd: handleDragEnd,
         "data-index": index,
+        "data-id": id,
         className: `${className} ${isDragging ? 'dragging' : ''}`,
         __source: {
             fileName: "src/components/DraggableItem.jsx",
-            lineNumber: 142,
+            lineNumber: 137,
             columnNumber: 5
         },
         __self: this
@@ -8833,7 +8841,7 @@ const { useRef, useState } = wp.element;
         onClick: handleClick,
         __source: {
             fileName: "src/components/DraggableItem.jsx",
-            lineNumber: 152,
+            lineNumber: 148,
             columnNumber: 7
         },
         __self: this
