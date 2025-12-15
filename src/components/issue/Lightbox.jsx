@@ -1,5 +1,4 @@
-const { useEffect, memo } = wp.element;
-import { createPortal } from 'react-dom'; // eslint-disable-line import/no-extraneous-dependencies
+const { useEffect, memo, createPortal } = wp.element;
 import PropTypes from 'prop-types';
 
 /**

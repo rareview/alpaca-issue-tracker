@@ -33,10 +33,6 @@
     "react-dom": "./src/shim/react-dom.js"
   },
   "dependencies": {
-    "@atlaskit/pragmatic-drag-and-drop": "^1.7.4",
-    "@atlaskit/pragmatic-drag-and-drop-auto-scroll": "^2.1.1",
-    "@atlaskit/pragmatic-drag-and-drop-flourish": "^2.0.5",
-    "@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration": "^2.0.6",
     "marked": "^16.2.0",
     "prop-types": "^15.8.1"
   }
