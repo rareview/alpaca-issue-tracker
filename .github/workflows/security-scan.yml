@@ -3,14 +3,10 @@ name: Security Scan
 on:
   pull_request:
     branches:
-      - main
-      - master
-      - develop
+      - pragmatic
   push:
     branches:
-      - main
-      - master
-      - develop
+      - pragmatic
   schedule:
     # Run weekly on Monday at 9am UTC
     - cron: '0 9 * * 1'
@@ -28,6 +24,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Run npm audit
         run: npm audit --audit-level=moderate

@@ -3,10 +3,9 @@ const { decodeEntities } = wp.htmlEntities;
 const { Button, Notice } = wp.components;
 const { doAction } = wp.hooks;
 
-import { DragDropContext } from '@atlaskit/pragmatic-drag-and-drop-react-beautiful-dnd-migration';
-
 import AlpacaIssue from './components/Issue';
 import Container from './components/Container';
+import { DragProvider } from './context/DragContext';
 
 import { setCookie, getCookie } from './utils/cookies';
 import { transformDataForBoard, saveBoardOrder } from './utils/data';
@@ -90,63 +89,7 @@ export function AlpacaBoard() {
     return null;
   }
 
-  async function handleDragEnd(result) {
-    const { source, destination, draggableId } = result;
-
-    if (!destination) {
-      return;
-    }
-
-    const sourceContainer = findContainerById(source.droppableId);
-    const destinationContainer = findContainerById(destination.droppableId);
-
-    if (sourceContainer.id === destinationContainer.id) {
-      const items = Array.from(sourceContainer.items);
-      const [reorderedItem] = items.splice(source.index, 1);
-      items.splice(destination.index, 0, reorderedItem);
-
-      setContainers((prev) =>
-        prev.map((c) => (c.id === sourceContainer.id ? { ...c, items } : c)),
-      );
-    } else {
-      const sourceItems = Array.from(sourceContainer.items);
-      const destItems = Array.from(destinationContainer.items);
-      const [movedItem] = sourceItems.splice(source.index, 1);
-      destItems.splice(destination.index, 0, movedItem);
-
-      setContainers((prev) =>
-        prev.map((c) => {
-          if (c.id === sourceContainer.id) {
-            return { ...c, items: sourceItems };
-          } else if (c.id === destinationContainer.id) {
-            return { ...c, items: destItems };
-          }
-          return c;
-        }),
-      );
-
-      wp.hooks.doAction(
-        'alpaca.statusChanged',
-        movedItem,
-        sourceContainer.title,
-        destinationContainer.title,
-      );
-    }
-
-    saveBoardOrder();
-
-    const movedItemId = parseInt(draggableId, 10);
-    const newStatusTermId = parseInt(destination.droppableId, 10);
-
-    updateIssue(movedItemId, {
-      taxonomies: {
-        status: [newStatusTermId],
-      },
-    }).catch((err) => {
-      // eslint-disable-next-line no-console
-      console.error('Error updating issue:', err);
-    });
-  }
+  // (Atlaskit handler removed; using native drop handlers and `handleItemDrop`)
 
   const handleItemClick = (event, itemId) => {
     triggerRef.current = event.currentTarget;
@@ -608,72 +551,137 @@ export function AlpacaBoard() {
 
   const hasNoStatuses = containers.length === 0;
 
+  // Handler invoked by Containers when an item is dropped
+  const handleItemDrop = (data) => {
+    // data: { itemId, sourceContainerId, sourceIndex, destinationContainerId, destinationIndex }
+    const {
+      //   itemId,
+      sourceContainerId,
+      sourceIndex,
+      destinationContainerId,
+      destinationIndex,
+    } = data;
+
+    if (!destinationContainerId) return;
+
+    const sourceContainer = findContainerById(sourceContainerId);
+    const destinationContainer = findContainerById(destinationContainerId);
+
+    if (!sourceContainer || !destinationContainer) return;
+
+    if (sourceContainer.id === destinationContainer.id) {
+      const items = Array.from(sourceContainer.items);
+      const [reorderedItem] = items.splice(sourceIndex, 1);
+      items.splice(destinationIndex, 0, reorderedItem);
+
+      setContainers((prev) =>
+        prev.map((c) => (c.id === sourceContainer.id ? { ...c, items } : c)),
+      );
+    } else {
+      const sourceItems = Array.from(sourceContainer.items);
+      const destItems = Array.from(destinationContainer.items);
+      const [movedItem] = sourceItems.splice(sourceIndex, 1);
+      destItems.splice(destinationIndex, 0, movedItem);
+
+      setContainers((prev) =>
+        prev.map((c) => {
+          if (c.id === sourceContainer.id) {
+            return { ...c, items: sourceItems };
+          } else if (c.id === destinationContainer.id) {
+            return { ...c, items: destItems };
+          }
+          return c;
+        }),
+      );
+
+      wp.hooks.doAction(
+        'alpaca.statusChanged',
+        movedItem,
+        sourceContainer.title,
+        destinationContainer.title,
+      );
+
+      const movedItemId = parseInt(movedItem.id, 10);
+      const newStatusTermId = parseInt(destinationContainer.id, 10);
+
+      updateIssue(movedItemId, {
+        taxonomies: {
+          status: [newStatusTermId],
+        },
+      }).catch((err) => {
+        // eslint-disable-next-line no-console
+        console.error('Error updating issue:', err);
+      });
+    }
+
+    setNeedsSave(true);
+  };
+
   return (
-    <>
+    <DragProvider>
       <ul className="subsubsub"></ul>
       <div id="alpaca-board-controls-mount"></div>
-      <DragDropContext onDragEnd={handleDragEnd}>
-        {hasNoStatuses ? (
-          <div className="alpaca-empty-state">
-            <Notice status="warning" isDismissible={false}>
-              <p>
-                <strong>
-                  Oh no! All your project statuses have disappeared.
-                </strong>
-              </p>
-              <p>
-                Without statuses, you cannot view or manage issues on the board.
-                Click the button below to restore the default statuses (Backlog,
-                Inbox, In Progress, Done).
-              </p>
-              <Button
-                variant="primary"
-                onClick={handleRestoreDefaults}
-                isBusy={isRestoring}
-                disabled={isRestoring}
-              >
-                {isRestoring ? 'Restoring...' : 'Restore Default Statuses'}
-              </Button>
+      {hasNoStatuses ? (
+        <div className="alpaca-empty-state">
+          <Notice status="warning" isDismissible={false}>
+            <p>
+              <strong>
+                Oh no! All your project statuses have disappeared.
+              </strong>
+            </p>
+            <p>
+              Without statuses, you cannot view or manage issues on the board.
+              Click the button below to restore the default statuses (Backlog,
+              Inbox, In Progress, Done).
+            </p>
+            <Button
+              variant="primary"
+              onClick={handleRestoreDefaults}
+              isBusy={isRestoring}
+              disabled={isRestoring}
+            >
+              {isRestoring ? 'Restoring...' : 'Restore Default Statuses'}
+            </Button>
+          </Notice>
+          {restoreError && (
+            <Notice status="error" isDismissible={false}>
+              <p>{restoreError}</p>
             </Notice>
-            {restoreError && (
-              <Notice status="error" isDismissible={false}>
-                <p>{restoreError}</p>
-              </Notice>
-            )}
-          </div>
-        ) : (
-          <div className="alpaca-wrap">
-            {containers.map((container, index) => (
-              <Container
-                key={container.id}
-                id={container.id}
-                title={container.title}
-                items={container.items}
-                onItemClick={handleItemClick}
-                onMoveAllToNext={moveAllItemsToNextContainer}
-                isLastContainer={index === containers.length - 1}
-                isHidden={hiddenContainerIds.includes(container.id)}
-                onToggleHidden={handleToggleHidden}
-                onRename={handleRenameContainer}
-                onDeleteAll={handleDeleteAll}
-              />
-            ))}
-          </div>
-        )}
+          )}
+        </div>
+      ) : (
+        <div className="alpaca-wrap">
+          {containers.map((container, index) => (
+            <Container
+              key={container.id}
+              id={container.id}
+              title={container.title}
+              items={container.items}
+              onItemClick={handleItemClick}
+              onMoveAllToNext={moveAllItemsToNextContainer}
+              isLastContainer={index === containers.length - 1}
+              isHidden={hiddenContainerIds.includes(container.id)}
+              onToggleHidden={handleToggleHidden}
+              onRename={handleRenameContainer}
+              onDeleteAll={handleDeleteAll}
+              onItemDrop={handleItemDrop}
+            />
+          ))}
+        </div>
+      )}
 
-        <AlpacaIssue
-          issueId={selectedItem?.id}
-          isOpen={!!selectedItem}
-          onClose={closeModal}
-          onDelete={handleDeleteIssue}
-          triggerRef={triggerRef}
-          onAssigneesChange={handleAssigneesChange}
-          onDeadlineChange={handleDeadlineChange}
-          onStatusChange={handleStatusChange}
-          onIssueTitleChange={handleIssueTitleChange}
-        />
-      </DragDropContext>
-    </>
+      <AlpacaIssue
+        issueId={selectedItem?.id}
+        isOpen={!!selectedItem}
+        onClose={closeModal}
+        onDelete={handleDeleteIssue}
+        triggerRef={triggerRef}
+        onAssigneesChange={handleAssigneesChange}
+        onDeadlineChange={handleDeadlineChange}
+        onStatusChange={handleStatusChange}
+        onIssueTitleChange={handleIssueTitleChange}
+      />
+    </DragProvider>
   );
 }
 
