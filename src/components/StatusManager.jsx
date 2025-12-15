@@ -29,6 +29,7 @@ const StatusManager = ({
   }, [localStatuses, onStatusesChange]);
 
   const listRef = useRef(null);
+  const throttleRef = useRef(0);
   const [isDragOver, setIsDragOver] = useState(false);
   const [draggingIndex, setDraggingIndex] = useState(null);
   const [dragOverIndex, setDragOverIndex] = useState(null);
@@ -94,11 +95,11 @@ const StatusManager = ({
     setIsDragOver(true);
 
     // throttle dragover processing to avoid jank
-    if (!handleDragOver._last || Date.now() - handleDragOver._last > 50) {
-      handleDragOver._last = Date.now();
-    } else {
+    const now = Date.now();
+    if (now - throttleRef.current < 50) {
       return;
     }
+    throttleRef.current = now;
 
     // Read payload from dataTransfer or fallback global state
     let parsed = null;
@@ -108,7 +109,8 @@ const StatusManager = ({
         e.dataTransfer.getData('text/plain');
       if (raw) parsed = JSON.parse(raw);
     } catch (err) {
-      parsed = null;
+      // eslint-disable-next-line no-console
+      console.warn('StatusManager: Failed to parse dataTransfer data', err);
     }
 
     if (!parsed && typeof window !== 'undefined') {
@@ -158,7 +160,8 @@ const StatusManager = ({
         e.dataTransfer.getData('text/plain');
       if (raw) parsed = JSON.parse(raw);
     } catch (err) {
-      parsed = null;
+      // eslint-disable-next-line no-console
+      console.warn('StatusManager: Failed to parse drop data', err);
     }
     if (!parsed && typeof window !== 'undefined')
       parsed = window.__alpacaDragState || null;
@@ -184,14 +187,16 @@ const StatusManager = ({
     try {
       e.dataTransfer.setData('application/json', JSON.stringify(payload));
     } catch (err) {
-      // ignore
+      // eslint-disable-next-line no-console
+      console.warn('StatusManager: Failed to set dataTransfer data', err);
     }
 
     // Fallback global drag state for dragover handlers
     try {
       window.__alpacaDragState = payload;
     } catch (err) {
-      // ignore
+      // eslint-disable-next-line no-console
+      console.warn('StatusManager: Failed to set global drag state', err);
     }
 
     // optional drag image
@@ -219,7 +224,8 @@ const StatusManager = ({
             );
           }
         } catch (err) {
-          // ignore
+          // eslint-disable-next-line no-console
+          console.warn('StatusManager: Failed to copy computed styles', err);
         }
 
         const srcChildren = src.children || [];
@@ -247,13 +253,15 @@ const StatusManager = ({
       try {
         e.dataTransfer.setDragImage(clone, 10, 10);
       } catch (err) {
-        // ignore
+        // eslint-disable-next-line no-console
+        console.warn('StatusManager: Failed to set drag image', err);
       }
       setTimeout(() => {
         try {
           document.body.removeChild(clone);
         } catch (err) {
-          // ignore
+          // eslint-disable-next-line no-console
+          console.warn('StatusManager: Failed to remove drag clone', err);
         }
       }, 0);
     }
@@ -264,7 +272,8 @@ const StatusManager = ({
     try {
       delete window.__alpacaDragState;
     } catch (err) {
-      // ignore
+      // eslint-disable-next-line no-console
+      console.warn('StatusManager: Failed to delete global drag state', err);
     }
   };
 
