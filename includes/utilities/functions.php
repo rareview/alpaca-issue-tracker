@@ -109,7 +109,7 @@ function alpaca_setup_default_statuses( $force = false ) {
 				$default_term_id = $term['term_id'];
 			}
 		} elseif ( is_wp_error( $term ) ) {
-			error_log( '[Alpaca] Failed to create status ' . $status['name'] . ': ' . $term->get_error_message() );
+			error_log( '[Alpaca] Failed to create status ' . $status['name'] . ': ' . $term->get_error_message() ); // phpcs:ignore
 		}
 	}
 
