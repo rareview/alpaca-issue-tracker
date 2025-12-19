@@ -19,8 +19,6 @@
     <exclude name="Generic.Files.LineLength"/>
     <!-- Allow file operations for creating security files during activation -->
     <exclude name="WordPress.WP.AlternativeFunctions"/>
-    <!-- Allow error_log for webhook debugging -->
-    <exclude name="WordPress.PHP.DevelopmentFunctions"/>
     <!-- Allow commented out code in uninstall.php -->
     <exclude name="Squiz.PHP.CommentedOutCode"/>
   </rule>

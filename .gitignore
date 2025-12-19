@@ -31,7 +31,6 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-webhook_log.txt
 /logs/
 debug.log
 error_log
