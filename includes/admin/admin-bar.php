@@ -12,6 +12,10 @@ add_action( 'admin_bar_menu', 'alpaca_add_admin_bar_menu', 500 );
  * @param WP_Admin_Bar $admin_bar The admin bar object.
  */
 function alpaca_add_admin_bar_menu( $admin_bar ) {
+	if ( ! is_admin() ) {
+		return;
+	}
+
 	$admin_bar->add_menu(
 		array(
 			'id'     => 'alpaca-menu',
@@ -40,15 +44,6 @@ function alpaca_add_admin_bar_menu( $admin_bar ) {
 			'title'  => 'View Project Board',
 			'id'     => 'alpaca-board',
 			'href'   => admin_url( 'admin.php?page=alpaca-board' ),
-		)
-	);
-
-	$admin_bar->add_menu(
-		array(
-			'parent' => 'alpaca-menu',
-			'title'  => 'View All Issues',
-			'id'     => 'alpaca-view',
-			'href'   => admin_url( 'edit.php?post_type=alpaca_issue' ),
 		)
 	);
 }

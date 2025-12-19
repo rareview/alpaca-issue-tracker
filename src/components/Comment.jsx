@@ -299,10 +299,17 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
     (commentId) => {
       if (!editingContent.trim()) return;
       setIsSubmitting(true);
+
+      const comment = comments.find((c) => c.id === commentId);
+      const agent = comment?.author_user_agent || 'human';
+
       wp.apiFetch({
         path: `/wp/v2/comments/${commentId}`,
         method: 'POST',
-        data: { content: editingContent },
+        data: {
+          content: editingContent,
+          author_user_agent: agent,
+        },
       })
         .then((updated) => {
           setComments((prev) =>
@@ -320,7 +327,7 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
         })
         .finally(() => setIsSubmitting(false));
     },
-    [editingContent, showNotification],
+    [editingContent, comments, showNotification],
   );
 
   const confirmDeleteComment = useCallback(

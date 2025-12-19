@@ -1,8 +1,14 @@
 import handleSnapdomCapture from './snapdomHandler.js';
 import { useTestLogger } from './utils/testLogger.js';
 
-const { Button, Modal, TextareaControl, Spinner, CheckboxControl } =
-  wp.components;
+const {
+  Button,
+  Modal,
+  TextareaControl,
+  Spinner,
+  CheckboxControl,
+  ToggleControl,
+} = wp.components;
 const { doAction } = wp.hooks;
 const { useState, useRef, useEffect, useCallback } = wp.element;
 
@@ -11,7 +17,8 @@ const AlpacaModal = () => {
   const [status, setStatus] = useState('idle'); // idle, submitting, success, error
   const [message, setMessage] = useState('');
   const [feedback, setFeedback] = useState('');
-  const [includeContext, setIncludeContext] = useState(true); // <-- new state
+  const [includeContext, setIncludeContext] = useState(true);
+  const [isHighPriority, setIsHighPriority] = useState(false);
 
   const textareaRef = useRef(null);
   const closeBtnRef = useRef(null);
@@ -44,7 +51,9 @@ const AlpacaModal = () => {
     setMessage('');
     setStatus('idle');
     setFeedback('');
+    setFeedback('');
     setIncludeContext(true); // reset to default each time modal opens
+    setIsHighPriority(false);
     setOpen(true);
   }, []);
 
@@ -81,12 +90,19 @@ const AlpacaModal = () => {
       const server = JSON.parse(atob(alpacaDataDump.env));
       setStatus('submitting');
 
-      const screenshot = await handleSnapdomCapture();
+      let screenshot = '';
+      try {
+        screenshot = await handleSnapdomCapture();
+      } catch (screenshotError) {
+        // eslint-disable-next-line no-console
+        console.warn('Screenshot capture failed:', screenshotError);
+      }
 
       const submitted = {
         userinput: {
           feedback,
-          includeContext, // <-- include checkbox status
+          includeContext,
+          isHighPriority,
         },
         client: alpacaDataDump.device,
         screenshot,
@@ -178,17 +194,23 @@ const AlpacaModal = () => {
               />
 
               <div className="small-wrapper">
+                <ToggleControl
+                  label="High Priority"
+                  checked={isHighPriority}
+                  onChange={setIsHighPriority}
+                  disabled={status === 'submitting'}
+                />
+
                 <CheckboxControl
                   id="alpaca-include-context"
                   checked={includeContext}
                   onChange={(val) => setIncludeContext(val)} // <-- update state
-                  label="Include full context with report?"
+                  label="Include context?"
                   help="Always do this, unless you are sure it is not relevant"
-                  disabled={status === 'submitting'}
                 />
               </div>
 
-              <div className="alpaca-actions">
+              <div className="alpaca-modal-actions">
                 <Button
                   variant="primary"
                   onClick={submitIssue}

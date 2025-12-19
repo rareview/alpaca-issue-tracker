@@ -70,6 +70,8 @@ const Item = forwardRef(
     }
 
     const lateClass = diffDays < 0 ? 'is-late' : '';
+    const highPriorityClass =
+      meta && meta.high_priority ? 'is-high-priority' : '';
 
     // Format deadline display text
     let deadlineText = deadlineFormatted;
@@ -87,7 +89,7 @@ const Item = forwardRef(
       // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
       <Card
         ref={ref}
-        className={`${className} ${watchedClass} ${lateClass}`.trim()}
+        className={`${className} ${watchedClass} ${lateClass} ${highPriorityClass}`.trim()}
         style={style}
         data-id={id}
         data-days-left={diffDays}
@@ -121,6 +123,13 @@ const Item = forwardRef(
         </CardBody>
         <CardFooter size="xSmall" isBorderless>
           <div className="alpaca-item-datapoints flexalign">
+            {meta &&
+              (meta.alpaca_high_priority === '1' ||
+                meta.alpaca_high_priority === 1 ||
+                meta.alpaca_high_priority === true) && (
+                <div className="alpaca-item-priority-badge">Priority</div>
+              )}
+
             {assignees.length > 0 && (
               <div
                 className="alpaca-item-assignees"
