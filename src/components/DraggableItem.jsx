@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types';
 import Item from './Item';
-import { useDragState } from '../context/DragContext';
 
 const { useRef, useState } = wp.element;
+// const { Draggable: WPDraggable } = wp.components || {};
 
 /**
  * Draggable item wrapper component.
@@ -34,7 +34,6 @@ function DraggableItem({
 }) {
   const elRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
-  const { setDragState, clearDragState } = useDragState();
 
   const handleClick = (event) => {
     if (onClick) {
@@ -58,11 +57,15 @@ function DraggableItem({
     try {
       e.dataTransfer.setData('application/json', JSON.stringify(payload));
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.warn('DraggableItem: Failed to set dataTransfer data', err);
+      // ignore
     }
 
-    setDragState(payload);
+    // Fallback: store payload on window so dragover handlers can read it
+    try {
+      window.__alpacaDragState = payload;
+    } catch (err) {
+      // ignore
+    }
 
     // Create a lightweight drag image clone so user sees a preview
     if (elRef.current && e.dataTransfer && e.dataTransfer.setDragImage) {
@@ -84,8 +87,7 @@ function DraggableItem({
             );
           }
         } catch (err) {
-          // eslint-disable-next-line no-console
-          console.warn('DraggableItem: Failed to copy computed styles', err);
+          // ignore copying styles on older browsers
         }
 
         const srcChildren = src.children || [];
@@ -114,16 +116,14 @@ function DraggableItem({
       try {
         e.dataTransfer.setDragImage(clone, 10, 10);
       } catch (err) {
-        // eslint-disable-next-line no-console
-        console.warn('DraggableItem: Failed to set drag image', err);
+        // ignore
       }
       // remove the clone on next tick
       setTimeout(() => {
         try {
           document.body.removeChild(clone);
         } catch (err) {
-          // eslint-disable-next-line no-console
-          console.warn('DraggableItem: Failed to remove drag clone', err);
+          // ignore
         }
       }, 0);
     }
@@ -131,7 +131,6 @@ function DraggableItem({
 
   const handleDragEnd = () => {
     setIsDragging(false);
-    clearDragState();
   };
 
   return (

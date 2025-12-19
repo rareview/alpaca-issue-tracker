@@ -3,9 +3,10 @@ const { decodeEntities } = wp.htmlEntities;
 const { Button, Notice } = wp.components;
 const { doAction } = wp.hooks;
 
+// Replaced Atlaskit DragDropContext with native HTML5 drag/drop handlers
+
 import AlpacaIssue from './components/Issue';
 import Container from './components/Container';
-import { DragProvider } from './context/DragContext';
 
 import { setCookie, getCookie } from './utils/cookies';
 import { transformDataForBoard, saveBoardOrder } from './utils/data';
@@ -618,7 +619,7 @@ export function AlpacaBoard() {
   };
 
   return (
-    <DragProvider>
+    <>
       <ul className="subsubsub"></ul>
       <div id="alpaca-board-controls-mount"></div>
       {hasNoStatuses ? (
@@ -681,7 +682,7 @@ export function AlpacaBoard() {
         onStatusChange={handleStatusChange}
         onIssueTitleChange={handleIssueTitleChange}
       />
-    </DragProvider>
+    </>
   );
 }
 
