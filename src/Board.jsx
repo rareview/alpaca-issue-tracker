@@ -3,9 +3,10 @@ const { decodeEntities } = wp.htmlEntities;
 const { Button, Notice } = wp.components;
 const { doAction } = wp.hooks;
 
+// Replaced Atlaskit DragDropContext with native HTML5 drag/drop handlers
+
 import AlpacaIssue from './components/Issue';
 import Container from './components/Container';
-import { DragProvider } from './context/DragContext';
 
 import { setCookie, getCookie } from './utils/cookies';
 import { transformDataForBoard, saveBoardOrder } from './utils/data';
@@ -163,10 +164,41 @@ export function AlpacaBoard() {
     );
   }, []);
 
+  const handlePriorityChange = useCallback((issueId, isHighPriority) => {
+    setContainers((prevContainers) =>
+      prevContainers.map((container) => {
+        const itemIndex = container.items.findIndex(
+          (item) => item.id === issueId.toString(),
+        );
+
+        if (itemIndex === -1) {
+          return container;
+        }
+
+        const newItems = [...container.items];
+        newItems[itemIndex] = {
+          ...newItems[itemIndex],
+          meta: {
+            ...newItems[itemIndex].meta,
+            // eslint-disable-next-line camelcase
+            alpaca_high_priority: isHighPriority,
+          },
+        };
+
+        return { ...container, items: newItems };
+      }),
+    );
+  }, []);
+
   useEffect(() => {
     const checklistChangedCallback = (data) => {
       const { issueId, checklist } = data;
       handleChecklistChange(issueId, checklist);
+    };
+
+    const priorityUpdatedCallback = (data) => {
+      const { issueId, isHighPriority } = data;
+      handlePriorityChange(issueId, isHighPriority);
     };
 
     wp.hooks.addAction(
@@ -175,10 +207,17 @@ export function AlpacaBoard() {
       checklistChangedCallback,
     );
 
+    wp.hooks.addAction(
+      'alpaca.priorityUpdated',
+      'alpaca/boardmain',
+      priorityUpdatedCallback,
+    );
+
     return () => {
       wp.hooks.removeAction('alpaca.checklistChanged', 'alpaca/boardmain');
+      wp.hooks.removeAction('alpaca.priorityUpdated', 'alpaca/boardmain');
     };
-  }, [handleChecklistChange]);
+  }, [handleChecklistChange, handlePriorityChange]);
 
   const moveAllItemsToNextContainer = (sourceContainerId) => {
     const containersCopy = containers.map((c) => ({
@@ -618,7 +657,7 @@ export function AlpacaBoard() {
   };
 
   return (
-    <DragProvider>
+    <>
       <ul className="subsubsub"></ul>
       <div id="alpaca-board-controls-mount"></div>
       {hasNoStatuses ? (
@@ -681,7 +720,7 @@ export function AlpacaBoard() {
         onStatusChange={handleStatusChange}
         onIssueTitleChange={handleIssueTitleChange}
       />
-    </DragProvider>
+    </>
   );
 }
 

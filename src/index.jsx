@@ -2,8 +2,10 @@ import './alpaca.scss';
 
 import './apiTest.js';
 import './utils/issueCommentHandler.js';
+import './utils/dataDump.js';
 
 import AlpacaModal from './Modal.jsx';
+import AlpacaToolbar from './Toolbar.jsx';
 import AlpacaSettings from './Settings.jsx';
 import { WatchlistProvider } from './context/WatchlistContext.jsx';
 import { AlpacaBoard } from './Board.jsx';
@@ -34,11 +36,20 @@ window.alpaca.services.issueApi = {
 };
 
 const { render } = wp.element;
-if (document.querySelector('#wp-admin-bar-alpaca-menu')) {
+const isAdmin = document.body.classList.contains('wp-admin');
+
+if (isAdmin && document.querySelector('#wp-admin-bar-alpaca-menu')) {
   render(
     <AlpacaModal />,
     document.querySelector('#wp-admin-bar-alpaca-report'),
   );
+}
+
+if (!isAdmin) {
+  const toolbarContainer = document.createElement('div');
+  toolbarContainer.id = 'alpaca-toolbar-mount';
+  document.body.appendChild(toolbarContainer);
+  render(<AlpacaToolbar />, toolbarContainer);
 }
 
 if (document.querySelector('#alpaca-settings-internal')) {

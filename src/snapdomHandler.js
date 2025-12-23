@@ -12,6 +12,8 @@ const handleSnapdomCapture = async () => {
   const canvas = await snapdom.toCanvas(document.body, {
     type: 'webp',
     embedFonts: true,
+    ignoreErrors: true,
+    skipAutoScale: false,
   });
 
   // Calculate the visible area based on scroll position and viewport size

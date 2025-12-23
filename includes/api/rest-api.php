@@ -142,9 +142,10 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 	}
 
 	// Extract user + input safely.
-	$user_id      = (int) alpaca_arr_get( $payload, [ 'user', 'id' ], get_current_user_id() );
-	$feedback_raw = (string) alpaca_arr_get( $payload, [ 'userinput', 'feedback' ], '' );
-	$include_ctx  = (bool) alpaca_arr_get( $payload, [ 'userinput', 'includeContext' ], false );
+	$user_id         = (int) alpaca_arr_get( $payload, [ 'user', 'id' ], get_current_user_id() );
+	$feedback_raw    = (string) alpaca_arr_get( $payload, [ 'userinput', 'feedback' ], '' );
+	$include_ctx     = (bool) alpaca_arr_get( $payload, [ 'userinput', 'includeContext' ], false );
+	$is_high_priority = (bool) alpaca_arr_get( $payload, [ 'userinput', 'isHighPriority' ], false );
 
 	if ( '' === trim( $feedback_raw ) ) {
 		return alpaca_rest_response(
@@ -214,6 +215,8 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 			$status_term_id = (int) $status_term->term_id;
 		}
 	}
+
+	update_post_meta( $post_id, 'alpaca_high_priority', $is_high_priority ? 1 : 0 );
 
 	// Optional context.
 	if ( $include_ctx ) {
@@ -307,6 +310,9 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 				'author_id'   => $post_args['post_author'],
 				'author_name' => get_the_author_meta( 'display_name', $post_args['post_author'] ),
 				'author_img'  => alpaca_avatar( $post_args['post_author'], 24 ),
+				'meta'        => [
+					'alpaca_high_priority' => $is_high_priority,
+				],
 			],
 			'statusId' => $status_term_id,
 		],

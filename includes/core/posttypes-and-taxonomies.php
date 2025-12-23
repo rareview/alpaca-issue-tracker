@@ -86,6 +86,11 @@ function alpaca_register_cpts_and_taxonomies() {
 			if ( isset( $request['comment_type'] ) && 'issuecomment' === $request['comment_type'] ) {
 				$prepared_comment['comment_type'] = 'issuecomment';
 			}
+
+			if ( isset( $request['author_user_agent'] ) ) {
+				$prepared_comment['comment_agent'] = sanitize_text_field( $request['author_user_agent'] );
+			}
+
 			return $prepared_comment;
 		},
 		10,

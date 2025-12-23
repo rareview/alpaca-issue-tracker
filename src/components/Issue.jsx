@@ -2,8 +2,16 @@ import PropTypes from 'prop-types';
 
 const { useState, useEffect, useRef, useMemo, useCallback, memo } = wp.element;
 import { getTabsConfig } from '../utils/tabsConfig';
-const { Modal, TabPanel, Button, Tooltip, Dropdown, MenuGroup, MenuItem } =
-  wp.components;
+const {
+  Modal,
+  TabPanel,
+  Button,
+  Tooltip,
+  Dropdown,
+  MenuGroup,
+  MenuItem,
+  ToggleControl,
+} = wp.components;
 
 import useIssueData from '../hooks/useIssueData';
 import useUserManagement from '../hooks/useUserManagement';
@@ -23,6 +31,26 @@ import Time from './Time';
 const { decodeEntities } = wp.htmlEntities;
 
 // ----- Memoized rows -----
+const PriorityRow = memo(
+  ({ isHighPriority, onChange, isLoading }) => (
+    <tr>
+      <th scope="row">Priority</th>
+      <td className="flexalign">
+        <ToggleControl
+          label="High Priority"
+          checked={isHighPriority}
+          onChange={onChange}
+          disabled={isLoading}
+          className="alpaca-priority-toggle"
+        />
+      </td>
+    </tr>
+  ),
+  (prev, next) =>
+    prev.isLoading === next.isLoading &&
+    prev.isHighPriority === next.isHighPriority,
+);
+
 const AssigneeRow = memo(
   ({ assignees, allUsers, onChange, isLoading }) => (
     <tr>
@@ -150,6 +178,7 @@ const AlpacaIssue = ({
 
   const [assignees, setAssignees] = useState([]);
   const [deadline, setDeadline] = useState(null);
+  const [isHighPriority, setIsHighPriority] = useState(false);
   const [lightboxSrc, setLightboxSrc] = useState(null);
   const [allStatuses, setAllStatuses] = useState([]);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
@@ -176,6 +205,11 @@ const AlpacaIssue = ({
   useEffect(() => {
     if (issueDetails && issueDetails.success && allUserObjects.length > 0) {
       setDeadline(issueDetails.meta.deadline || null);
+      setIsHighPriority(
+        issueDetails.meta.alpaca_high_priority === '1' ||
+          issueDetails.meta.alpaca_high_priority === 1 ||
+          issueDetails.meta.alpaca_high_priority === true,
+      );
 
       // Assignees
       const assigneeNames =
@@ -234,7 +268,47 @@ const AlpacaIssue = ({
     ],
   );
 
-  // Process issue details when they change
+  const handlePriorityChange = useCallback(
+    async (newValue) => {
+      setLoading('priority', true);
+      setIsHighPriority(newValue);
+
+      try {
+        await updateIssue(issueId, {
+          meta: {
+            // eslint-disable-next-line camelcase
+            alpaca_high_priority: newValue ? 1 : 0,
+          },
+        });
+
+        if (issueDetails) {
+          setIssueDetails({
+            ...issueDetails,
+            meta: {
+              ...issueDetails.meta,
+              ...issueDetails.meta,
+              // eslint-disable-next-line camelcase
+              alpaca_high_priority: newValue ? 1 : 0,
+            },
+          });
+        }
+
+        wp.hooks.doAction('alpaca.issueUpdated', issueId);
+        wp.hooks.doAction('alpaca.priorityUpdated', {
+          issueId,
+          isHighPriority: newValue,
+        });
+      } catch (err) {
+        console.error(err);
+        showNotification('Failed to update priority.', 'error');
+        setIsHighPriority(!newValue);
+      } finally {
+        setLoading('priority', false);
+      }
+    },
+    [issueId, issueDetails, setIssueDetails, setLoading, showNotification],
+  );
+
   useEffect(() => {
     if (issueDetails && issueDetails.success && allUserObjects.length > 0) {
       setDeadline(
@@ -497,6 +571,12 @@ const AlpacaIssue = ({
                     <th scope="row">Status</th>
                     <td>{currentStatus?.name || 'Unknown'}</td>
                   </tr>
+
+                  <PriorityRow
+                    isHighPriority={isHighPriority}
+                    onChange={handlePriorityChange}
+                    isLoading={loadingStates.priority}
+                  />
 
                   <DeadlineRow
                     deadline={deadline}

@@ -6,8 +6,6 @@ const { useState, useEffect, useRef } = wp.element;
 import DraggableItem from './DraggableItem';
 import Item from './Item';
 import PropTypes from 'prop-types';
-import { useDragState } from '../context/DragContext';
-import { removeDragClone } from '../utils/dragClone';
 
 /**
  * Container component (delegates rename to parent via onRename).
@@ -43,11 +41,9 @@ function Container({
   const [newTitle, setNewTitle] = useState(title);
   const inputRef = useRef(null);
   const containerRef = useRef(null);
-  const throttleRef = useRef(0);
   const [isDragOver, setIsDragOver] = useState(false);
   const [dragOverIndex, setDragOverIndex] = useState(null);
   const [dragOverItem, setDragOverItem] = useState(null);
-  const { dragState, clearDragState } = useDragState();
   const hasItems = items.length > 0;
 
   // keep local input in sync if parent updates title
@@ -131,14 +127,14 @@ function Container({
     setIsDragOver(true);
 
     // throttle expensive work to avoid jank on large lists
-    const now = Date.now();
-    if (now - throttleRef.current < 50) {
+    if (!handleDragOver._last || Date.now() - handleDragOver._last > 50) {
+      handleDragOver._last = Date.now();
+    } else {
       return;
     }
-    throttleRef.current = now;
 
     // try to read drag payload so we can show a live preview.
-    // Prefer dataTransfer, fall back to context state.
+    // Prefer dataTransfer, fall back to global state (window.__alpacaDragState).
     let parsed = null;
     try {
       const raw =
@@ -146,12 +142,15 @@ function Container({
         e.dataTransfer.getData('text/plain');
       if (raw) parsed = JSON.parse(raw);
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.warn('Container: Failed to parse dataTransfer data', err);
+      parsed = null;
     }
 
-    if (!parsed && dragState) {
-      parsed = dragState;
+    if (!parsed && typeof window !== 'undefined') {
+      try {
+        parsed = window.__alpacaDragState || null;
+      } catch (err) {
+        parsed = null;
+      }
     }
 
     if (parsed && parsed.itemId) {
@@ -192,8 +191,9 @@ function Container({
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragOver(false);
+    // Don't clear global drag state yet; consume it below after calling onItemDrop
 
-    // Read payload from dataTransfer if available, otherwise use context
+    // Read payload from dataTransfer if available, otherwise nothing - caller may rely on payload
     const raw =
       e.dataTransfer.getData('application/json') ||
       e.dataTransfer.getData('text/plain');
@@ -202,13 +202,8 @@ function Container({
       try {
         parsed = JSON.parse(raw);
       } catch (err) {
-        // eslint-disable-next-line no-console
-        console.warn('Container: Failed to parse drop data', err);
+        parsed = null;
       }
-    }
-
-    if (!parsed && dragState) {
-      parsed = dragState;
     }
 
     const { itemId, sourceContainerId, sourceIndex } = parsed || {};
@@ -218,20 +213,31 @@ function Container({
     setDragOverIndex(null);
     setDragOverItem(null);
 
-    onItemDrop({
-      itemId,
-      sourceContainerId,
-      sourceIndex,
-      destinationContainerId: id,
-      destinationIndex: destIndex,
-    });
-
-    clearDragState();
+    if (onItemDrop) {
+      onItemDrop({
+        itemId,
+        sourceContainerId,
+        sourceIndex,
+        destinationContainerId: id,
+        destinationIndex: destIndex,
+      });
+    }
+    // Now that we've consumed the payload, clear the global drag state so
+    // subsequent renders won't treat the source item as hidden and remove any
+    // leftover clones from the DOM.
     try {
-      removeDragClone();
+      if (typeof window !== 'undefined') {
+        if (window.__alpacaDragState) delete window.__alpacaDragState;
+        // eslint-disable-next-line global-require
+        const { removeDragClone } = require('../utils/dragClone');
+        try {
+          removeDragClone();
+        } catch (removeErr) {
+          // ignore
+        }
+      }
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.warn('Container: Failed to remove drag clone', err);
+      // ignore
     }
   };
 
@@ -347,13 +353,17 @@ function Container({
 
             return hasItems ? (
               (() => {
+                const globalDrag =
+                  typeof window !== 'undefined'
+                    ? window.__alpacaDragState
+                    : null;
                 return items.map((item, index) => {
                   const isSourceHidden =
-                    dragState &&
-                    dragState.itemId &&
-                    dragState.sourceContainerId &&
-                    dragState.itemId.toString() === item.id.toString() &&
-                    dragState.sourceContainerId.toString() === id.toString();
+                    globalDrag &&
+                    globalDrag.itemId &&
+                    globalDrag.sourceContainerId &&
+                    globalDrag.itemId.toString() === item.id.toString() &&
+                    globalDrag.sourceContainerId.toString() === id.toString();
 
                   if (isSourceHidden) {
                     return (
@@ -416,7 +426,7 @@ Container.propTypes = {
   isHidden: PropTypes.bool.isRequired,
   onToggleHidden: PropTypes.func.isRequired,
   onRename: PropTypes.func.isRequired,
-  onItemDrop: PropTypes.func.isRequired,
+  onItemDrop: PropTypes.func,
 };
 
 export default Container;
