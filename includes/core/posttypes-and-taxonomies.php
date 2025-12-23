@@ -44,7 +44,7 @@ function alpaca_register_cpts_and_taxonomies() {
 		array(
 			'public'        => false,
 			'show_in_rest'  => true,
-			'show_ui'       => true,
+			'show_ui'       => false,
 			'label'         => 'Issues',
 			'labels'        => array(
 				'name'          => 'Issue',
