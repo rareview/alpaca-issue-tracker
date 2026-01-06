@@ -657,24 +657,29 @@ const AlpacaIssue = ({
       </Modal>
 
       {showDeleteConfirm && (
-        <Modal
-          title="Delete Issue?"
-          onRequestClose={() => setShowDeleteConfirm(false)}
-          className="alpaca-modal"
-        >
-          <p>Are you sure you want to trash this issue?</p>
-          <Button
-            isPrimary
-            isDestructive
-            onClick={() => {
-              onDelete(issueId);
-              setShowDeleteConfirm(false);
-            }}
-          >
-            Delete
-          </Button>
-          <Button onClick={() => setShowDeleteConfirm(false)}>Cancel</Button>
-        </Modal>
+        <div className="alpaca-confirm-overlay">
+          <div className="alpaca-confirm-box">
+            <h2>Delete Issue?</h2>
+            <p>Are you sure you want to trash this issue?</p>
+
+            <div>
+              <Button
+                isPrimary
+                isDestructive
+                onClick={() => {
+                  onDelete(issueId);
+                  setShowDeleteConfirm(false);
+                }}
+              >
+                Delete
+              </Button>
+
+              <Button onClick={() => setShowDeleteConfirm(false)}>
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
 
       {lightboxSrc && (
