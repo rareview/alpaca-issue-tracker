@@ -373,12 +373,13 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
   }, [deleteCommentId, showNotification]);
 
   return (
-    <div id="alpaca-comments-wrapper" className="has-sidecontrols">
-      <div id="alpaca-comments-header" className="sidecontrols">
+    <div id="alpaca-comments-wrapper">
+      <div id="alpaca-comments-header">
         <Button variant="tertiary" onClick={toggleSortOrder}>
           {sortOrder === 'desc' ? 'Sort: ↑' : 'Sort: ↓'}
         </Button>
       </div>
+
       <div id="alpaca-comments">
         <div className="alpaca-comment-form" data-source="human">
           <User user={currentUser} />

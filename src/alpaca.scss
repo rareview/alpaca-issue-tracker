@@ -416,7 +416,7 @@ $spacegap: 0.8ch;
     position: absolute;
     top: 0;
     right: -8px;
-    max-width: 800px;
+    max-width: 600px;
     height: calc(100% - 32px);
     margin: 32px 0 0 0;
     animation: slide-in-right 300ms ease-out forwards;
@@ -523,6 +523,46 @@ $spacegap: 0.8ch;
       .placeholder,
       ::placeholder {
         color: $greytext;
+      }
+
+      .alpaca-attachments-wrapper {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .alpaca-attachment {
+        position: relative;
+
+        .alpaca-attachment-thumbnail {
+          width: 180px;
+          padding: 0;
+          border: 1px solid #ddd;
+          border-radius: 4px;
+          background: none;
+          cursor: zoom-in;
+          display: inline-block;
+
+          img {
+            display: block;
+            width: 100%;
+            height: auto;
+            border-radius: inherit;
+          }
+        }
+
+        .alpaca-attachment-delete {
+          position: absolute;
+          top: 0;
+          right: 0;
+          z-index: 10;
+          opacity: 0;
+          transition: opacity 0.2s ease-in-out;
+        }
+
+        &:hover .alpaca-attachment-delete {
+          opacity: 1;
+        }
       }
     }
 
@@ -647,11 +687,8 @@ $spacegap: 0.8ch;
     pointer-events: none;
   }
 
-  #alpaca-comments-wrapper {
-    #alpaca-comments-header {
-      order: 1;
-      padding: 8px 0;
-    }
+  #alpaca-comments-header {
+    text-align: right;
   }
 
   #alpaca-comments {
