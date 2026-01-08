@@ -216,7 +216,11 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 		}
 	}
 
-	update_post_meta( $post_id, 'alpaca_high_priority', $is_high_priority ? 1 : 0 );
+	if ( $is_high_priority ) {
+		update_post_meta( $post_id, 'alpaca_high_priority', 1 );
+	} else {
+		delete_post_meta( $post_id, 'alpaca_high_priority' );
+	}
 
 	// Optional context.
 	if ( $include_ctx ) {
