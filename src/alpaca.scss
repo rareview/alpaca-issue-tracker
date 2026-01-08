@@ -6,6 +6,8 @@ $greyshade: #f0f0f0;
 $greytext: #999;
 $smallfont: 14px;
 $spacegap: 0.8ch;
+$commenthead-vpad: 12px;
+$commenthead-hpad: 18px;
 
 :root {
   --timeline-width: 1px;
@@ -13,6 +15,10 @@ $spacegap: 0.8ch;
 
 .timestamp {
   white-space: nowrap;
+}
+
+.rotate90 {
+  transform: rotate(90deg);
 }
 
 .alpaca-issue-details {
@@ -416,7 +422,7 @@ $spacegap: 0.8ch;
     position: absolute;
     top: 0;
     right: -8px;
-    max-width: 600px;
+    max-width: 750px;
     height: calc(100% - 32px);
     margin: 32px 0 0 0;
     animation: slide-in-right 300ms ease-out forwards;
@@ -709,9 +715,9 @@ $spacegap: 0.8ch;
       &::before {
         content: '';
         position: absolute;
-        left: 30px; // Position of the vertical line
+        left: 36px; // Position of the vertical line
         top: 6px;
-        bottom: 18px;
+        bottom: $commenthead-hpad;
         width: var(--timeline-width);
         background-color: $greyborder; // Color of the timeline line
       }
@@ -722,6 +728,10 @@ $spacegap: 0.8ch;
 
       .alpaca-user {
         top: -1px; // Needed, not sure why
+      }
+
+      .alpaca-comment-form-actions {
+        text-align: right;
       }
     }
 
@@ -754,6 +764,42 @@ $spacegap: 0.8ch;
       border-top-left-radius: 8px;
       border-top-right-radius: 8px;
       border-bottom: 1px solid $greyborder;
+      padding-top: $commenthead-vpad;
+      padding-bottom: $commenthead-vpad;
+    }
+  }
+
+  .alpaca-timeline-item {
+    margin: 18px 0 12px 0;
+
+    .alpaca-comment-header {
+      font-size: 15px;
+      line-height: normal;
+
+      p {
+        font-size: 15px;
+        line-height: normal;
+      }
+
+      strong {
+        color: #000;
+      }
+    }
+
+    &:hover .alpaca-comment-buttons {
+      opacity: 1;
+    }
+
+    &[data-source='human'] {
+      .alpaca-timeline-content {
+        flex-grow: 1;
+      }
+    }
+
+    &[data-source='audit'] {
+      p {
+        margin: 0;
+      }
     }
   }
 
@@ -774,8 +820,8 @@ $spacegap: 0.8ch;
       opacity: 0;
       transition: opacity 0.2s ease-in-out;
       position: absolute;
-      top: 0;
-      right: 0;
+      top: $commenthead-vpad;
+      right: $commenthead-hpad;
     }
 
     img {
@@ -790,8 +836,8 @@ $spacegap: 0.8ch;
 
   .alpaca-comment-header {
     display: flex;
-    padding-left: 12px;
-    padding-right: 12px;
+    padding-left: $commenthead-hpad;
+    padding-right: $commenthead-hpad;
     background: $bgwhite;
     font-size: $smallfont;
     line-height: 32px;
@@ -820,20 +866,6 @@ $spacegap: 0.8ch;
       li {
         list-style-type: disc;
       }
-    }
-  }
-}
-
-.alpaca-timeline-item {
-  margin: 18px 0 12px 0;
-
-  &:hover .alpaca-comment-buttons {
-    opacity: 1;
-  }
-
-  &[data-source='human'] {
-    .alpaca-timeline-content {
-      flex-grow: 1;
     }
   }
 }

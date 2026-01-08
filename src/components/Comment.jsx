@@ -62,6 +62,24 @@ const Comment = memo(
         : comment.content.rendered;
     }, [comment.content.raw, comment.content.rendered]);
 
+    if (isAudit) {
+      return (
+        <div className="alpaca-timeline-item" data-source={dataSource}>
+          <div className="alpaca-timeline-content">
+            <div className="alpaca-comment-header flexalign">
+              <User user={author} showName={false} />
+              <div dangerouslySetInnerHTML={{ __html: processedContent }} />
+              <Time
+                value={comment.date}
+                type="relative"
+                className="alpaca-comment-date"
+              />
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="alpaca-timeline-item" data-source={dataSource}>
         <div className="alpaca-timeline-content">
@@ -82,15 +100,13 @@ const Comment = memo(
                       icon="ellipsis"
                       onClick={onToggle}
                       aria-expanded={isOpen}
+                      className="rotate90"
                     />
                   </Tooltip>
                 )}
                 renderContent={() => (
                   <MenuGroup>
-                    <MenuItem
-                      icon="edit"
-                      onClick={() => startEditing(comment)}
-                    >
+                    <MenuItem icon="edit" onClick={() => startEditing(comment)}>
                       Edit
                     </MenuItem>
                     <MenuItem
@@ -380,7 +396,6 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
 
       <div id="alpaca-comments">
         <div className="alpaca-comment-form" data-source="human">
-          <User user={currentUser} />
           <div className="alpaca-timeline-content">
             <TextareaControl
               placeholder="Add a comment..."
@@ -388,13 +403,15 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
               onChange={setNewComment}
               disabled={isSubmitting}
             />
-            <Button
-              isPrimary
-              onClick={handleCommentSubmit}
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? 'Submitting...' : 'Submit Comment'}
-            </Button>
+            <div className="alpaca-comment-form-actions">
+              <Button
+                isPrimary
+                onClick={handleCommentSubmit}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Submitting...' : 'Submit Comment'}
+              </Button>
+            </div>
           </div>
         </div>
 
