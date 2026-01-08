@@ -6,7 +6,7 @@ const handleSnapdomCapture = async () => {
     }
   }
   hide_from_snapdom('#wpadminbar');
-  hide_from_snapdom('.components-modal__screen-overlay');;
+  hide_from_snapdom('.components-modal__screen-overlay');
   hide_from_snapdom('#alpaca-toolbar-mount');
 
   const canvas = await snapdom.toCanvas(document.body, {
