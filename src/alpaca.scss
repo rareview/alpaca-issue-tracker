@@ -709,7 +709,7 @@ $spacegap: 0.8ch;
       &::before {
         content: '';
         position: absolute;
-        left: 90px; // Position of the vertical line
+        left: 30px; // Position of the vertical line
         top: 6px;
         bottom: 18px;
         width: var(--timeline-width);
@@ -749,6 +749,12 @@ $spacegap: 0.8ch;
     border-radius: 8px;
     background: $bgwhite;
     border: 1px solid $greyborder;
+
+    .alpaca-comment-header {
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+      border-bottom: 1px solid $greyborder;
+    }
   }
 
   .alpaca-comment-form,
@@ -762,10 +768,6 @@ $spacegap: 0.8ch;
       width: 100%;
     }
 
-    .alpaca-user {
-      position: absolute;
-    }
-
     .alpaca-comment-buttons {
       display: flex;
       margin-left: auto;
@@ -776,213 +778,169 @@ $spacegap: 0.8ch;
       right: 0;
     }
 
-    &[data-source='human'] {
-      padding-left: 72px;
-
-      .alpaca-user {
-        left: 10px;
-
-        img {
-          width: 36px;
-          height: 36px;
-        }
-
-        .alpaca-user-name {
-          display: none;
-        }
-      }
-
-      .alpaca-comment-header {
-        display: flex;
-        padding-left: 18px;
-        background: $greyshade;
-        border-top-left-radius: 8px;
-        border-top-right-radius: 8px;
-        border-bottom: 1px solid $greyborder;
-        font-size: $smallfont;
-        line-height: 32px;
-      }
-
-      .alpaca-timeline-content {
-        flex-grow: 1;
-      }
-
-      .alpaca-comment-content {
-        padding: 1em 15px 0 15px;
-
-        blockquote {
-          background: $greyshade;
-          padding: 1.5em 0.5em 0.5em 1.5em;
-          margin: 0 0 1.5em;
-          border-left: var(--timeline-width) solid $greyborder;
-        }
-
-        ul {
-          margin-top: 0;
-          padding-left: 1rem;
-
-          li {
-            list-style-type: disc;
-          }
-        }
-      }
+    img {
+      width: 36px;
+      height: 36px;
     }
 
-    &[data-source='audit'] {
-      padding-left: 118px;
-
-      .alpaca-user {
-        left: 78px;
-
-        img {
-          width: 24px;
-          height: 24px;
-        }
-      }
-
-      .alpaca-comment-buttons {
-        top: -8px;
-      }
-
-      .alpaca-comment-content {
-        padding-right: 32px;
-        color: #000;
-
-        .timestamp {
-          color: $greytext;
-        }
-
-        * {
-          display: inline;
-        }
-      }
+    .alpaca-user-name {
+      display: none;
     }
   }
 
-  .alpaca-timeline-item {
-    margin: 18px 0 12px 0;
-
-    &:hover .alpaca-comment-buttons {
-      opacity: 1;
-    }
-
-    .alpaca-comment-header {
-      color: $greytext;
-      gap: $spacegap;
-      padding-right: 6px;
-    }
-
-    &[data-source='human'] {
-      .alpaca-timeline-content {
-        flex-grow: 1;
-      }
-    }
-  }
-
-  .alpaca-comment-body {
-    button.components-button {
-      margin: 0 0 8px 8px;
-    }
-
-    .components-textarea-control__input {
-      padding: 11px 14px;
-    }
-  }
-
-  #alpaca-comments .components-textarea-control__input,
-  .alpaca-timeline-item[data-source='human'] .alpaca-comment-content p,
-  .alpaca-timeline-item[data-source='human'] .alpaca-comment-content li {
-    line-height: 1.5em;
-    margin-top: 0;
-  }
-
-  .alpaca-status-manager {
-    .status-grid {
-      border: 1px solid $greyborder;
-      border-radius: 8px;
-      overflow: hidden;
-      font-size: 14px;
-      max-width: 600px;
-
-      .status-grid-header {
-        display: grid;
-        grid-template-columns: 1fr 150px; // name + actions
-        background: #f7f7f7;
-        border-bottom: 1px solid $greyborder;
-        font-weight: 600;
-
-        .status-grid-cell {
-          padding: 8px 12px;
-        }
-
-        .actions-cell {
-          text-align: right;
-        }
-      }
-
-      .status-grid-body {
-        display: flex;
-        flex-direction: column; // ✅ allows placeholder to insert space
-        min-height: 1px; // prevents collapse when empty
-      }
-
-      .status-grid-row {
-        display: grid;
-        grid-template-columns: 1fr 150px; // name + actions
-        align-items: center;
-        border-bottom: 1px solid $greyborder;
-        background: #fff;
-        transition: background 0.2s;
-
-        &:last-child {
-          border-bottom: none;
-        }
-
-        .status-grid-cell {
-          padding: 8px 12px;
-
-          &.actions-cell {
-            text-align: right;
-            white-space: nowrap;
-          }
-        }
-
-        .status-row-content {
-          gap: $spacegap;
-
-          .drag-handle {
-            cursor: grab;
-            padding: 4px;
-            color: $greytext;
-          }
-        }
-      }
-    }
-
-    .alpaca-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-      margin-top: 16px;
-    }
-  }
-
-  .alpaca-settings {
-    hr {
-      margin: 2em 0;
-    }
-
-    #alpaca-settings-internal {
-      .components-input-control__container {
-        max-width: 25em;
-      }
-    }
-  }
-
-  .alpaca-align-controls {
-    flex-direction: row;
+  .alpaca-comment-header {
+    display: flex;
+    padding-left: 12px;
+    padding-right: 12px;
+    background: $bgwhite;
+    font-size: $smallfont;
+    line-height: 32px;
+    color: $greytext;
     gap: $spacegap;
   }
+
+  .alpaca-timeline-content {
+    flex-grow: 1;
+  }
+
+  .alpaca-comment-content {
+    padding: 1em 15px 0 15px;
+
+    blockquote {
+      background: $greyshade;
+      padding: 1.5em 0.5em 0.5em 1.5em;
+      margin: 0 0 1.5em;
+      border-left: var(--timeline-width) solid $greyborder;
+    }
+
+    ul {
+      margin-top: 0;
+      padding-left: 1rem;
+
+      li {
+        list-style-type: disc;
+      }
+    }
+  }
+}
+
+.alpaca-timeline-item {
+  margin: 18px 0 12px 0;
+
+  &:hover .alpaca-comment-buttons {
+    opacity: 1;
+  }
+
+  &[data-source='human'] {
+    .alpaca-timeline-content {
+      flex-grow: 1;
+    }
+  }
+}
+
+.alpaca-comment-body {
+  button.components-button {
+    margin: 0 0 8px 8px;
+  }
+
+  .components-textarea-control__input {
+    padding: 11px 14px;
+  }
+}
+
+#alpaca-comments .components-textarea-control__input,
+.alpaca-timeline-item[data-source='human'] .alpaca-comment-content p,
+.alpaca-timeline-item[data-source='human'] .alpaca-comment-content li {
+  line-height: 1.5em;
+  margin-top: 0;
+}
+
+.alpaca-status-manager {
+  .status-grid {
+    border: 1px solid $greyborder;
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 14px;
+    max-width: 600px;
+
+    .status-grid-header {
+      display: grid;
+      grid-template-columns: 1fr 150px; // name + actions
+      background: #f7f7f7;
+      border-bottom: 1px solid $greyborder;
+      font-weight: 600;
+
+      .status-grid-cell {
+        padding: 8px 12px;
+      }
+
+      .actions-cell {
+        text-align: right;
+      }
+    }
+
+    .status-grid-body {
+      display: flex;
+      flex-direction: column; // ✅ allows placeholder to insert space
+      min-height: 1px; // prevents collapse when empty
+    }
+
+    .status-grid-row {
+      display: grid;
+      grid-template-columns: 1fr 150px; // name + actions
+      align-items: center;
+      border-bottom: 1px solid $greyborder;
+      background: #fff;
+      transition: background 0.2s;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .status-grid-cell {
+        padding: 8px 12px;
+
+        &.actions-cell {
+          text-align: right;
+          white-space: nowrap;
+        }
+      }
+
+      .status-row-content {
+        gap: $spacegap;
+
+        .drag-handle {
+          cursor: grab;
+          padding: 4px;
+          color: $greytext;
+        }
+      }
+    }
+  }
+
+  .alpaca-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 16px;
+  }
+}
+
+.alpaca-settings {
+  hr {
+    margin: 2em 0;
+  }
+
+  #alpaca-settings-internal {
+    .components-input-control__container {
+      max-width: 25em;
+    }
+  }
+}
+
+.alpaca-align-controls {
+  flex-direction: row;
+  gap: $spacegap;
 }
 
 @media (width >= 861px) {

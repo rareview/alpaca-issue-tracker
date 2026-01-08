@@ -5,7 +5,15 @@ import { fetchIssueCommentCount } from '../services/issueApi';
 const { useState, useEffect, useRef, useCallback, useMemo, memo } = wp.element;
 import User from './User';
 import Time from './Time';
-const { TextareaControl, Button, Modal } = wp.components;
+const {
+  TextareaControl,
+  Button,
+  Modal,
+  Dropdown,
+  MenuGroup,
+  MenuItem,
+  Tooltip,
+} = wp.components;
 import { getCookie, setCookie } from '../utils/cookies';
 import { marked } from 'marked';
 
@@ -54,32 +62,6 @@ const Comment = memo(
         : comment.content.rendered;
     }, [comment.content.raw, comment.content.rendered]);
 
-    if (isAudit) {
-      // --- Audit Comment Layout ---
-      return (
-        <div className="alpaca-timeline-item" data-source={dataSource}>
-          <div className="alpaca-timeline-content">
-            <div className="alpaca-comment-header">
-              <User user={author} showName={false} />
-              <div className="alpaca-comment-content">
-                <div dangerouslySetInnerHTML={{ __html: processedContent }} />
-                <Time value={comment.date} type="relative" />
-              </div>
-              <div className="alpaca-comment-buttons">
-                <Button
-                  icon="trash"
-                  label="Delete"
-                  showTooltip
-                  className="button-link-delete"
-                  onClick={() => confirmDeleteComment(comment.id)}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-    }
-
     return (
       <div className="alpaca-timeline-item" data-source={dataSource}>
         <div className="alpaca-timeline-content">
@@ -92,18 +74,34 @@ const Comment = memo(
               <Time value={comment.date} type="relative" />
             </div>
             <div className="alpaca-comment-buttons">
-              <Button
-                label="Edit"
-                showTooltip
-                icon="edit"
-                onClick={() => startEditing(comment)}
-              />
-              <Button
-                icon="trash"
-                label="Delete"
-                showTooltip
-                className="button-link-delete"
-                onClick={() => confirmDeleteComment(comment.id)}
+              <Dropdown
+                popoverProps={{ placement: 'bottom-end' }}
+                renderToggle={({ isOpen, onToggle }) => (
+                  <Tooltip text="Options">
+                    <Button
+                      icon="ellipsis"
+                      onClick={onToggle}
+                      aria-expanded={isOpen}
+                    />
+                  </Tooltip>
+                )}
+                renderContent={() => (
+                  <MenuGroup>
+                    <MenuItem
+                      icon="edit"
+                      onClick={() => startEditing(comment)}
+                    >
+                      Edit
+                    </MenuItem>
+                    <MenuItem
+                      icon="trash"
+                      isDestructive
+                      onClick={() => confirmDeleteComment(comment.id)}
+                    >
+                      Delete
+                    </MenuItem>
+                  </MenuGroup>
+                )}
               />
             </div>
           </div>
