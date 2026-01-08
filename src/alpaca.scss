@@ -1,17 +1,73 @@
-/* styles go here */
+/**
+ * Alpaca Styles
+ *
+ * 1.0 - Variables & Globals
+ * 2.0 - General / Helper Classes
+ * 3.0 - Board
+ *   3.1 - Board Controls
+ *   3.2 - Containers (Columns)
+ *   3.3 - Items (Cards)
+ * 4.0 - Modal (Issue Details)
+ *   4.1 - Modal Frame
+ *   4.2 - Modal Header & Meta
+ *   4.3 - Details Table
+ *   4.4 - Attachments
+ *   4.5 - Checklists
+ *   4.6 - Comments
+ *   4.7 - Other Modal Components
+ * 5.0 - Other Components
+ *   5.1 - Popovers
+ *   5.2 - Status Manager
+ *   5.3 - Settings
+ *   5.4 - Bottom Toolbar & Report Form
+ *   5.5 - Empty State
+ * 6.0 - Media Queries
+ */
+
+/*
+ * 1.0 - Variables & Globals
+ */
 
 $bgwhite: #fff;
 $greyborder: #ddd;
 $greyshade: #f0f0f0;
 $greytext: #999;
 $smallfont: 14px;
+$midfont: 15px;
 $spacegap: 0.8ch;
 $commenthead-vpad: 12px;
 $commenthead-hpad: 18px;
 
-:root {
-  --timeline-width: 1px;
+// New variables
+$container-bg: #f9f9f9;
+$container-header-fontsize: 18px;
+$container-header-fontweight: 600;
+$priority-high-bg: #dc3545;
+$deadline-late-bg: red;
+$deadline-today-bg: black;
+$deadline-soon-bg: orange;
+$control-width-large: 300px;
+$z-index-attachment-delete: 10;
+$z-index-checklist-dragging: 99900000;
+$z-index-report-form: 99998;
+$z-index-bottom-toolbar: 99999;
+
+$timeline-width: 1px;
+
+/*
+ * Mixins
+ */
+
+@mixin deadline-style($bg-color, $text-color) {
+  background-color: $bg-color;
+  color: $text-color;
+  margin: 2px 0;
+  padding: 0 8px;
 }
+
+/*
+ * 2.0 - General / Helper Classes
+ */
 
 .timestamp {
   white-space: nowrap;
@@ -19,18 +75,6 @@ $commenthead-hpad: 18px;
 
 .rotate90 {
   transform: rotate(90deg);
-}
-
-.alpaca-issue-details {
-  p,
-  input,
-  textarea {
-    font-size: 15px;
-  }
-
-  .alpaca-issue-tabs .components-tab-panel__tabs {
-    border-bottom: 1px solid $greyborder;
-  }
 }
 
 .flexalign {
@@ -54,61 +98,10 @@ $commenthead-hpad: 18px;
   flex-wrap: nowrap;
 }
 
-.alpaca-empty-state {
-  margin: 2rem auto;
-  max-width: 600px;
-
-  .components-notice {
-    margin-bottom: 1rem;
-
-    p {
-      margin: 0.5rem 0;
-    }
-
-    strong {
-      font-size: 1.1em;
-    }
-
-    .components-button {
-      margin-top: 1rem;
-    }
-  }
-}
-
-.alpaca-modal {
-  background: $bgwhite;
-  color: inherit;
-
-  .small-wrapper {
-    padding: 0.8rem 0 1rem;
-  }
-
-  small {
-    font-size: 12px;
-  }
-
-  p {
-    margin-top: 0;
-    margin-bottom: 1rem;
-  }
-
-  button {
-    margin-right: 0.5rem;
-  }
-}
-
+/*
+ * Main container for all Alpaca styles in the WP admin
+ */
 .wp-admin {
-  &.post-type-issue {
-    .screenshot {
-      margin: 1rem 0 -1rem;
-
-      img {
-        max-width: 100%;
-        height: auto;
-      }
-    }
-  }
-
   .alpaca-user {
     img {
       aspect-ratio: 1;
@@ -116,49 +109,13 @@ $commenthead-hpad: 18px;
       border: 1px solid $greyborder;
       vertical-align: middle;
       background: $bgwhite;
-      width: 24px;
+      width: 36px;
     }
   }
 
-  #alpaca-board-controls {
-    .alpaca-board-filter {
-      width: fit-content;
-      background: transparent;
-      border-width: 0;
-
-      & > div {
-        flex: none;
-      }
-
-      &:focus-within {
-        outline: none;
-        box-shadow: none;
-        border-width: 0;
-      }
-    }
-
-    .components-combobox-control {
-      width: 300px;
-    }
-  }
-
-  .alpaca-control-popover {
-    width: 300px;
-    padding: 8px 16px 16px;
-
-    .alpaca-control {
-      padding: 8px 0;
-    }
-
-    .components-menu-group {
-      border: none;
-    }
-
-    .components-menu-group__label {
-      margin: 0;
-    }
-  }
-
+  /*
+   * 3.0 - Board
+   */
   #alpaca-board {
     & > * {
       clear: both;
@@ -172,9 +129,42 @@ $commenthead-hpad: 18px;
       padding-top: 23px;
     }
 
+    .alpaca-item.is-filtered-out {
+      display: none; // because there is a really weird bug arising when I use opacity
+      pointer-events: none;
+    }
+
+    /*
+     * 3.1 - Board Controls
+     */
+    #alpaca-board-controls {
+      .alpaca-board-filter {
+        width: fit-content;
+        background: transparent;
+        border-width: 0;
+
+        & > div {
+          flex: none;
+        }
+
+        &:focus-within {
+          outline: none;
+          box-shadow: none;
+          border-width: 0;
+        }
+      }
+
+      .components-combobox-control {
+        width: $control-width-large;
+      }
+    }
+
+    /*
+     * 3.2 - Containers (Columns)
+     */
     .alpaca-container {
       margin: 0 10px 0 1px;
-      background: #f9f9f9;
+      background: $container-bg;
       border-radius: 4px;
       display: flex;
 
@@ -192,8 +182,8 @@ $commenthead-hpad: 18px;
         h2,
         .alpaca-container-title-input input {
           margin: 0;
-          font-size: 18px;
-          font-weight: 600;
+          font-size: $container-header-fontsize;
+          font-weight: $container-header-fontweight;
           padding: 0;
           border: none;
           background: transparent;
@@ -252,6 +242,9 @@ $commenthead-hpad: 18px;
       padding: 0 2px;
     }
 
+    /*
+     * 3.3 - Items (Cards)
+     */
     .alpaca-item,
     .alpaca-item-dragging {
       display: flex;
@@ -263,6 +256,10 @@ $commenthead-hpad: 18px;
       .components-card__body,
       .components-card__footer {
         padding-bottom: 4px;
+      }
+
+      span.components-text {
+        font-size: $midfont;
       }
 
       .components-card__media {
@@ -297,25 +294,34 @@ $commenthead-hpad: 18px;
         grid-column: 1;
         grid-row: 1;
       }
+
+      .alpaca-item-controls .dashicons,
+      &.alpaca-item-dragging .alpaca-item-controls .dashicons {
+        opacity: 0;
+        transition: opacity 0.2s ease-in-out;
+      }
+
+      &:hover .alpaca-item-controls .dashicons {
+        opacity: 0.3;
+      }
+
+      .alpaca-item-controls .dashicons:hover {
+        cursor: pointer;
+      }
+
+      &.is-watched .alpaca-item-controls .dashicons,
+      &.alpaca-item-dragging.is-watched .alpaca-item-controls .dashicons {
+        opacity: 1;
+      }
     }
 
     .alpaca-item-inner {
-      &.is-late {
-        .alpaca-item-deadline {
-          background-color: red;
-          color: white;
-          margin: 2px 0;
-          padding: 0 8px;
-        }
+      &.is-late .alpaca-item-deadline {
+        @include deadline-style($deadline-late-bg, white);
       }
 
-      &[data-days-left='0'] {
-        .alpaca-item-deadline {
-          background-color: black;
-          color: white;
-          margin: 2px 0;
-          padding: 0 8px;
-        }
+      &[data-days-left='0'] .alpaca-item-deadline {
+        @include deadline-style($deadline-today-bg, white);
       }
 
       &[data-days-left='1'],
@@ -326,10 +332,7 @@ $commenthead-hpad: 18px;
       &[data-days-left='6'],
       &[data-days-left='7'] {
         .alpaca-item-deadline {
-          background-color: orange;
-          color: black;
-          margin: 2px 0;
-          padding: 0 8px;
+          @include deadline-style($deadline-soon-bg, black);
         }
       }
 
@@ -360,7 +363,7 @@ $commenthead-hpad: 18px;
         }
 
         .alpaca-item-priority-badge {
-          background: #dc3545;
+          background: $priority-high-bg;
           color: white;
           padding: 0 8px;
           border-radius: 8px;
@@ -381,6 +384,16 @@ $commenthead-hpad: 18px;
             .alpaca-user .alpaca-user-name {
               display: block;
             }
+          }
+
+          img {
+            width: 24px;
+            height: 24px;
+            border: 1px solid $greyborder;
+            border-radius: 50%;
+            background: $bgwhite;
+            vertical-align: middle;
+            margin-right: -2px;
           }
         }
 
@@ -422,6 +435,45 @@ $commenthead-hpad: 18px;
     }
   }
 
+  /*
+   * 4.0 - Modal (Issue Details)
+   */
+  &.post-type-issue {
+    .screenshot {
+      margin: 1rem 0 -1rem;
+
+      img {
+        max-width: 100%;
+        height: auto;
+      }
+    }
+  }
+
+  .alpaca-modal {
+    background: $bgwhite;
+    color: inherit;
+
+    .small-wrapper {
+      padding: 0.8rem 0 1rem;
+    }
+
+    small {
+      font-size: 12px;
+    }
+
+    p {
+      margin-top: 0;
+      margin-bottom: 1rem;
+    }
+
+    button {
+      margin-right: 0.5rem;
+    }
+  }
+
+  /*
+   * 4.1 - Modal Frame
+   */
   .components-modal__frame.alpaca-details-modal {
     position: absolute;
     top: 0;
@@ -433,23 +485,17 @@ $commenthead-hpad: 18px;
     transform-origin: 100% center; /* origin from right */
   }
 
-  @keyframes slide-in-right {
-    from {
-      transform: translateX(100%);
-    }
-
-    to {
-      transform: translateX(0);
-    }
-  }
-
-  .alpaca-deadline-popover {
-    .components-popover__content {
-      padding: 1em;
-    }
-  }
-
   .alpaca-issue-details {
+    p,
+    input,
+    textarea {
+      font-size: $midfont;
+    }
+
+    .alpaca-issue-tabs .components-tab-panel__tabs {
+      border-bottom: 1px solid $greyborder;
+    }
+
     .alpaca-issue-main {
       h3 {
         font-weight: bold;
@@ -459,6 +505,24 @@ $commenthead-hpad: 18px;
       }
     }
 
+    .components-panel {
+      margin-bottom: 1rem;
+
+      .alpaca-modal-textarea {
+        width: 100%;
+      }
+
+      textarea {
+        width: 100%;
+        font-family: monospace; /* Often good for preformatted text */
+        white-space: pre;
+        overflow: hidden scroll;
+      }
+    }
+
+    /*
+     * 4.2 - Modal Header & Meta
+     */
     .alpaca-issue-meta {
       color: $greytext;
       font-size: $smallfont;
@@ -471,6 +535,9 @@ $commenthead-hpad: 18px;
       }
     }
 
+    /*
+     * 4.3 - Details Table
+     */
     table.alpaca-issue-details {
       border: 0;
       margin: 1em 0;
@@ -478,7 +545,7 @@ $commenthead-hpad: 18px;
 
       th,
       td {
-        font-size: 15px;
+        font-size: $midfont;
         line-height: 1.8;
         text-align: left;
         vertical-align: top;
@@ -510,7 +577,7 @@ $commenthead-hpad: 18px;
         padding: 0;
         line-height: inherit;
         min-height: auto;
-        font-size: 15px;
+        font-size: $midfont;
       }
 
       .components-form-token-field {
@@ -534,51 +601,49 @@ $commenthead-hpad: 18px;
       ::placeholder {
         color: $greytext;
       }
-
-      .alpaca-attachments-wrapper {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-      }
-
-      .alpaca-attachment {
-        position: relative;
-
-        .alpaca-attachment-thumbnail {
-          width: 180px;
-          padding: 0;
-          border: 1px solid #ddd;
-          border-radius: 4px;
-          background: none;
-          cursor: zoom-in;
-          display: inline-block;
-
-          img {
-            display: block;
-            width: 100%;
-            height: auto;
-            border-radius: inherit;
-          }
-        }
-
-        .alpaca-attachment-delete {
-          position: absolute;
-          top: 0;
-          right: 0;
-          z-index: 10;
-          opacity: 0;
-          transition: opacity 0.2s ease-in-out;
-        }
-
-        &:hover .alpaca-attachment-delete {
-          opacity: 1;
-        }
-      }
     }
 
-    .components-tab-panel__tab-content {
-      // any tab styling
-      padding: 1em 0;
+    /*
+     * 4.4 - Attachments
+     */
+    .alpaca-attachments-wrapper {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .alpaca-attachment {
+      position: relative;
+
+      .alpaca-attachment-thumbnail {
+        width: 180px;
+        padding: 0;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background: none;
+        cursor: zoom-in;
+        display: inline-block;
+
+        img {
+          display: block;
+          width: 100%;
+          height: auto;
+          border-radius: inherit;
+        }
+      }
+
+      .alpaca-attachment-delete {
+        position: absolute;
+        top: 0;
+        right: 0;
+        z-index: $z-index-attachment-delete;
+        opacity: 0;
+        transition: opacity 0.2s ease-in-out;
+      }
+
+      &:hover .alpaca-attachment-delete {
+        opacity: 1;
+      }
     }
 
     .alpaca-screenshot-wrapper {
@@ -593,26 +658,22 @@ $commenthead-hpad: 18px;
         position: absolute;
         top: 0;
         right: 0;
-        z-index: 10;
+        z-index: $z-index-attachment-delete;
       }
     }
 
-    .components-panel {
-      margin-bottom: 1rem;
-
-      .alpaca-modal-textarea {
-        width: 100%;
-      }
-
-      textarea {
-        width: 100%;
-        font-family: monospace; /* Often good for preformatted text */
-        white-space: pre;
-        overflow: hidden scroll;
-      }
+    /*
+     * 4.7 - Other Modal Components
+     */
+    .components-tab-panel__tab-content {
+      // any tab styling
+      padding: 1em 0;
     }
   }
 
+  /*
+   * 4.5 - Checklists
+   */
   .alpaca-checklist-container {
     .alpaca-checklist {
       padding-bottom: 0.5rem;
@@ -667,36 +728,13 @@ $commenthead-hpad: 18px;
   }
 
   .alpaca-checklist-item--dragging {
-    z-index: 99900000 !important;
+    z-index: $z-index-checklist-dragging !important;
     box-shadow: 0 4px 8px rgb(0 0 0 / 10%);
   }
 
-  .alpaca-item .alpaca-item-controls .dashicons,
-  .alpaca-item-dragging .alpaca-item-controls .dashicons {
-    opacity: 0;
-    transition: opacity 0.2s ease-in-out;
-  }
-
-  .alpaca-item:hover .alpaca-item-controls .dashicons {
-    opacity: 0.3;
-  }
-
-  .alpaca-item.is-watched .alpaca-item-controls .dashicons,
-  .alpaca-item-dragging.is-watched .alpaca-item-controls .dashicons {
-    opacity: 1;
-  }
-
-  .alpaca-item .alpaca-item-controls .dashicons:hover {
-    cursor: pointer;
-  }
-
-  // fix: flash on star when you start dragging
-
-  #alpaca-board .alpaca-item.is-filtered-out {
-    display: none; // because there is a really weird bug arising when I use opacity
-    pointer-events: none;
-  }
-
+  /*
+   * 4.6 - Comments
+   */
   #alpaca-comments-header {
     text-align: right;
   }
@@ -722,7 +760,7 @@ $commenthead-hpad: 18px;
         left: 36px; // Position of the vertical line
         top: 6px;
         bottom: $commenthead-hpad;
-        width: var(--timeline-width);
+        width: $timeline-width;
         background-color: $greyborder; // Color of the timeline line
       }
     }
@@ -755,6 +793,13 @@ $commenthead-hpad: 18px;
         }
       }
     }
+
+    .components-textarea-control__input,
+    .alpaca-timeline-item[data-source='human'] .alpaca-comment-content p,
+    .alpaca-timeline-item[data-source='human'] .alpaca-comment-content li {
+      line-height: 1.5em;
+      margin-top: 0;
+    }
   }
 
   .alpaca-timeline-item[data-source='human'] .alpaca-timeline-content,
@@ -777,11 +822,11 @@ $commenthead-hpad: 18px;
     margin: 18px 0 12px 0;
 
     .alpaca-comment-header {
-      font-size: 15px;
+      font-size: $midfont;
       line-height: normal;
 
       p {
-        font-size: 15px;
+        font-size: $midfont;
         line-height: normal;
       }
 
@@ -811,7 +856,7 @@ $commenthead-hpad: 18px;
   .alpaca-timeline-item {
     position: relative;
     display: flex;
-    font-size: 15px;
+    font-size: $midfont;
 
     .alpaca-timeline-content,
     textarea {
@@ -860,7 +905,7 @@ $commenthead-hpad: 18px;
       background: $greyshade;
       padding: 1.5em 0.5em 0.5em 1.5em;
       margin: 0 0 1.5em;
-      border-left: var(--timeline-width) solid $greyborder;
+      border-left: $timeline-width solid $greyborder;
     }
 
     ul {
@@ -872,24 +917,56 @@ $commenthead-hpad: 18px;
       }
     }
   }
-}
 
-.alpaca-comment-body {
-  button.components-button {
-    margin: 0 0 8px 8px;
+  .alpaca-comment-body {
+    button.components-button {
+      margin: 0 0 8px 8px;
+    }
+
+    .components-textarea-control__input {
+      padding: 11px 14px;
+    }
   }
 
-  .components-textarea-control__input {
-    padding: 11px 14px;
+  /*
+   * 5.1 - Popovers
+   */
+  .alpaca-control-popover {
+    width: $control-width-large;
+    padding: 8px 16px 16px;
+
+    .alpaca-control {
+      padding: 8px 0;
+    }
+
+    .components-menu-group {
+      border: none;
+    }
+
+    .components-menu-group__label {
+      margin: 0;
+    }
+  }
+
+  .alpaca-deadline-popover {
+    .components-popover__content {
+      padding: 1em;
+    }
   }
 }
 
-#alpaca-comments .components-textarea-control__input,
-.alpaca-timeline-item[data-source='human'] .alpaca-comment-content p,
-.alpaca-timeline-item[data-source='human'] .alpaca-comment-content li {
-  line-height: 1.5em;
-  margin-top: 0;
+/*
+ * 5.0 - Other Components
+ */
+
+.alpaca-align-controls {
+  flex-direction: row;
+  gap: $spacegap;
 }
+
+/*
+ * 5.2 - Status Manager
+ */
 
 .alpaca-status-manager {
   .status-grid {
@@ -962,6 +1039,10 @@ $commenthead-hpad: 18px;
   }
 }
 
+/*
+ * 5.3 - Settings
+ */
+
 .alpaca-settings {
   hr {
     margin: 2em 0;
@@ -974,116 +1055,9 @@ $commenthead-hpad: 18px;
   }
 }
 
-.alpaca-align-controls {
-  flex-direction: row;
-  gap: $spacegap;
-}
-
-@media (width >= 861px) {
-  .wp-admin {
-    #alpaca-board {
-      .alpaca-wrap {
-        flex-direction: row;
-        padding: 5px 0;
-        overflow-x: auto;
-
-        .alpaca-container {
-          flex-shrink: 0;
-        }
-      }
-
-      .alpaca-container {
-        height: 75vh;
-        display: flex;
-        flex: 1;
-        min-width: 18vw;
-        flex-direction: column;
-
-        &.hidden {
-          width: auto;
-          padding: 0 0 10px;
-
-          .alpaca-container-header {
-            height: 100%;
-            writing-mode: vertical-rl;
-            transform: rotate(180deg);
-
-            h2,
-            input {
-              height: 100%;
-            }
-
-            h2 {
-              margin: 5px 0;
-            }
-
-            input {
-              margin: 5px -1px;
-            }
-          }
-        }
-
-        .alpaca-items {
-          overflow-y: auto;
-          padding: 10px 1px;
-          margin-top: -10px;
-          height: calc(75vh - 80px);
-        }
-      }
-    }
-  }
-}
-
-@media (width <= 860px) {
-  .wp-admin {
-    #alpaca-board {
-      .alpaca-wrap {
-        flex-direction: column;
-      }
-
-      .alpaca-container {
-        width: calc(100% - 2em);
-        margin-top: 1em;
-        overflow-x: auto;
-        display: flex;
-        flex-direction: column;
-        height: auto;
-
-        .alpaca-items {
-          flex-direction: row;
-          display: flex;
-          gap: $spacegap;
-          overflow-x: auto;
-
-          .alpaca-item {
-            width: 200px;
-            height: 140px;
-            flex-shrink: 0;
-
-            .alpaca-item-assignees {
-              &[data-assignees='1'] {
-                .alpaca-user .alpaca-user-name {
-                  display: none;
-                  padding-left: 0;
-                }
-              }
-            }
-          }
-        }
-
-        &.hidden {
-          width: calc(100% - 2em);
-          padding: 0 10px;
-        }
-      }
-    }
-  }
-
-  .alpaca-bottom-toolbar,
-  .alpaca-report-form {
-    display: none;
-  }
-}
+/*
+ * 5.4 - Bottom Toolbar & Report Form
+ */
 
 .alpaca-bottom-toolbar {
   direction: ltr;
@@ -1095,7 +1069,7 @@ $commenthead-hpad: 18px;
   position: fixed;
   width: 100%;
   min-width: 600px;
-  z-index: 99999;
+  z-index: $z-index-bottom-toolbar;
   background: #1d2327;
   outline: 1px solid transparent;
   bottom: 0;
@@ -1173,7 +1147,7 @@ $commenthead-hpad: 18px;
 
 .alpaca-report-form {
   position: fixed;
-  z-index: 99998;
+  z-index: $z-index-report-form;
   width: 400px;
   max-width: calc(100vw - 40px);
   padding: 16px;
@@ -1280,5 +1254,150 @@ $commenthead-hpad: 18px;
     gap: 8px;
     justify-content: flex-end;
     margin-top: 16px;
+  }
+}
+
+/*
+ * 5.5 - Empty State
+ */
+
+.alpaca-empty-state {
+  margin: 2rem auto;
+  max-width: 600px;
+
+  .components-notice {
+    margin-bottom: 1rem;
+
+    p {
+      margin: 0.5rem 0;
+    }
+
+    strong {
+      font-size: 1.1em;
+    }
+
+    .components-button {
+      margin-top: 1rem;
+    }
+  }
+}
+
+/*
+ * 6.0 - Media Queries
+ */
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+@media (width >= 861px) {
+  .wp-admin {
+    #alpaca-board {
+      .alpaca-wrap {
+        flex-direction: row;
+        padding: 5px 0;
+        overflow-x: auto;
+
+        .alpaca-container {
+          flex-shrink: 0;
+        }
+      }
+
+      .alpaca-container {
+        height: 75vh;
+        display: flex;
+        flex: 1;
+        min-width: 18vw;
+        flex-direction: column;
+
+        &.hidden {
+          width: auto;
+          padding: 0 0 10px;
+
+          .alpaca-container-header {
+            height: 100%;
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+
+            h2,
+            input {
+              height: 100%;
+            }
+
+            h2 {
+              margin: 5px 0;
+            }
+
+            input {
+              margin: 5px -1px;
+            }
+          }
+        }
+
+        .alpaca-items {
+          overflow-y: auto;
+          padding: 10px 1px;
+          margin-top: -10px;
+          height: calc(75vh - 80px);
+        }
+      }
+    }
+  }
+}
+
+@media (width <= 860px) {
+  .wp-admin {
+    #alpaca-board {
+      .alpaca-wrap {
+        flex-direction: column;
+      }
+
+      .alpaca-container {
+        width: calc(100% - 2em);
+        margin-top: 1em;
+        overflow-x: auto;
+        display: flex;
+        flex-direction: column;
+        height: auto;
+
+        .alpaca-items {
+          flex-direction: row;
+          display: flex;
+          gap: $spacegap;
+          overflow-x: auto;
+
+          .alpaca-item {
+            width: 200px;
+            height: 140px;
+            flex-shrink: 0;
+
+            .alpaca-item-assignees {
+              &[data-assignees='1'] {
+                .alpaca-user .alpaca-user-name {
+                  display: none;
+                  padding-left: 0;
+                }
+              }
+            }
+          }
+        }
+
+        &.hidden {
+          width: calc(100% - 2em);
+          padding: 0 10px;
+        }
+      }
+    }
+  }
+
+  .alpaca-bottom-toolbar,
+  .alpaca-report-form {
+    display: none;
   }
 }
