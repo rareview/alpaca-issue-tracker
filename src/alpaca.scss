@@ -27,6 +27,10 @@ $commenthead-hpad: 18px;
   textarea {
     font-size: 15px;
   }
+
+  .alpaca-issue-tabs .components-tab-panel__tabs {
+    border-bottom: 1px solid $greyborder;
+  }
 }
 
 .flexalign {
