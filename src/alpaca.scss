@@ -101,7 +101,12 @@ $spacegap: 0.8ch;
   padding: 20px;
   background-color: $bgwhite;
   border-radius: 4px;
-  box-shadow: 0 0 0 1px #ccc,0 2px 3px #0000000d,0 4px 5px #0000000a,0 12px 12px #00000008,0 16px 16px #00000005;
+  box-shadow:
+    0 0 0 1px #ccc,
+    0 2px 3px #0000000d,
+    0 4px 5px #0000000a,
+    0 12px 12px #00000008,
+    0 16px 16px #00000005;
 }
 
 .wp-admin {
