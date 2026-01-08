@@ -87,6 +87,28 @@ $spacegap: 0.8ch;
   }
 }
 
+.alpaca-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgb(0 0 0 / 50%);
+  z-index: 999000009;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.alpaca-confirm-box {
+  padding: 20px;
+  background-color: $bgwhite;
+  border-radius: 4px;
+  box-shadow:
+    0 0 0 1px #ccc,
+    0 2px 3px #0000000d,
+    0 4px 5px #0000000a,
+    0 12px 12px #00000008,
+    0 16px 16px #00000005;
+}
+
 .wp-admin {
   &.post-type-issue {
     .screenshot {
