@@ -33,7 +33,7 @@ function alpaca_get_min_term_score() {
  *
  * Creates a starter set of status terms if none exist:
  * - Backlog (score: 0)
- * - Inbox (score: 1, set as default)
+ * - Next (score: 1, set as default)
  * - In Progress (score: 2)
  * - Done (score: 3)
  *
@@ -72,8 +72,8 @@ function alpaca_setup_default_statuses( $force = false ) {
 			'score' => 0,
 		),
 		array(
-			'name'       => esc_html__( 'Inbox', 'alpaca' ),
-			'slug'       => 'inbox',
+			'name'       => esc_html__( 'Next', 'alpaca' ),
+			'slug'       => 'next',
 			'score'      => 1,
 			'is_default' => true,
 		),

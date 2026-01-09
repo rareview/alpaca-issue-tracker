@@ -180,36 +180,34 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 		);
 	}
 
-	// Assign initial status.
 	$status_term_id = 0;
 	$statuses       = alpaca_get_statuses();
 	if ( ! empty( $statuses ) && ! is_wp_error( $statuses ) ) {
-		$status_term       = null;
-		$default_status_id = (int) get_option( 'alpaca_default_status_id' );
+		$status_term = null;
+		$min_score   = PHP_INT_MAX;
 
-		// 1) Saved default if valid/on board.
-		if ( $default_status_id > 0 ) {
-			$term = get_term( $default_status_id, 'alpaca_status' );
-			if (
-				$term && ! is_wp_error( $term )
-				&& in_array( $term->term_id, wp_list_pluck( $statuses, 'term_id' ), true )
-			) {
-				$status_term = $term;
+		// Find the status with the lowest score
+		foreach ( $statuses as $s ) {
+			$score = (int) alpaca_arr_get( (array) $s, [ 'term_score' ], 0 );
+			if ( $score < $min_score ) {
+				$min_score   = $score;
+				$status_term = $s;
 			}
 		}
-		// 2) First non-negative score.
-		if ( ! $status_term ) {
-			foreach ( $statuses as $s ) {
-				if ( (int) alpaca_arr_get( (array) $s, [ 'term_score' ], 0 ) >= 0 ) {
-					$status_term = $s;
-					break;
-				}
-			}
-		}
-		// 3) Fallback to first available.
+
 		if ( ! $status_term ) {
 			$status_term = reset( $statuses );
 		}
+
+		/**
+		 * Filter the default status for new issues.
+		 *
+		 * @param object $status_term The default status term object.
+		 * @param array  $statuses    All available status terms.
+		 * @since 1.0.0
+		 */
+		$status_term = apply_filters( 'alpaca_default_status', $status_term, $statuses );
+
 		if ( $status_term ) {
 			wp_set_post_terms( $post_id, [ (int) $status_term->term_id ], 'alpaca_status' );
 			$status_term_id = (int) $status_term->term_id;
