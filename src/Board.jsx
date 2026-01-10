@@ -671,7 +671,7 @@ export function AlpacaBoard() {
             <p>
               Without statuses, you cannot view or manage issues on the board.
               Click the button below to restore the default statuses (Backlog,
-              Inbox, In Progress, Done).
+              Backlog, Next, In Progress, Done).
             </p>
             <Button
               variant="primary"
