@@ -199,7 +199,9 @@ const AlpacaIssue = ({
   useEffect(() => {
     fetchStatuses()
       .then(setAllStatuses)
-      .catch(() => showNotification(__('Failed to load statuses.', 'alpaca'), 'error'));
+      .catch(() =>
+        showNotification(__('Failed to load statuses.', 'alpaca'), 'error'),
+      );
   }, [showNotification]);
 
   // Initialize issue data
@@ -390,7 +392,10 @@ const AlpacaIssue = ({
         },
       }));
 
-      showNotification(__('Screenshot deleted successfully.', 'alpaca'), 'success');
+      showNotification(
+        __('Screenshot deleted successfully.', 'alpaca'),
+        'success',
+      );
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error('Error deleting screenshot:', err);
@@ -423,7 +428,10 @@ const AlpacaIssue = ({
       }));
       onStatusChange?.(issueId, nextStatus);
     } catch (err) {
-      showNotification(__('Failed to progress issue status.', 'alpaca'), 'error');
+      showNotification(
+        __('Failed to progress issue status.', 'alpaca'),
+        'error',
+      );
     } finally {
       setLoading('status', false);
     }
@@ -546,7 +554,7 @@ const AlpacaIssue = ({
           </div>
         )}
 
-        {isLoadingDetails && <p>{__('Loading...', 'alpaca')}</p>}
+        {isLoadingDetails && <p>{__('Loading…', 'alpaca')}</p>}
         {!isLoadingDetails && issueDetails && issueDetails.success && (
           <div className="alpaca-issue-details">
             <div className="alpaca-issue-main column">
@@ -635,7 +643,10 @@ const AlpacaIssue = ({
           </div>
         )}
         {!isLoadingDetails && (!issueDetails || !issueDetails.success) && (
-          <p>{issueDetails?.message || __('Could not load issue details.', 'alpaca')}</p>
+          <p>
+            {issueDetails?.message ||
+              __('Could not load issue details.', 'alpaca')}
+          </p>
         )}
 
         {showDeleteScreenshotConfirm && (
@@ -644,7 +655,9 @@ const AlpacaIssue = ({
             onRequestClose={() => setShowDeleteScreenshotConfirm(false)}
             className="alpaca-modal"
           >
-            <p>{__('Are you sure you want to delete this screenshot?', 'alpaca')}</p>
+            <p>
+              {__('Are you sure you want to delete this screenshot?', 'alpaca')}
+            </p>
             <div className="alpaca-actions flexalign">
               <Button isPrimary onClick={handleScreenshotDelete}>
                 {__('Delete', 'alpaca')}

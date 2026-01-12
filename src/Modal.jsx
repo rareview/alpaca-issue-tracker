@@ -134,7 +134,12 @@ const AlpacaModal = () => {
     } catch (error) {
       console.error('Submission error:', error);
       setStatus('error');
-      setMessage(__('There was an error submitting your issue. Please try again.', 'alpaca'));
+      setMessage(
+        __(
+          'There was an error submitting your issue. Please try again.',
+          'alpaca',
+        ),
+      );
     }
   };
 
@@ -201,7 +206,11 @@ const AlpacaModal = () => {
                   onClick={submitIssue}
                   disabled={status === 'submitting'}
                 >
-                  {status === 'submitting' ? <Spinner /> : __('Submit', 'alpaca')}
+                  {status === 'submitting' ? (
+                    <Spinner />
+                  ) : (
+                    __('Submit', 'alpaca')
+                  )}
                 </Button>
                 <Button
                   variant="secondary"

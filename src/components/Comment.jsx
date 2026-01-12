@@ -121,7 +121,7 @@ const Comment = memo(
                   onClick={() => saveEdit(comment.id)}
                   disabled={isSubmitting}
                 >
-                  {__('Save', 'alpaca')}
+                  {__('Submit', 'alpaca')}
                 </Button>
                 <Button onClick={cancelEditing} disabled={isSubmitting}>
                   {__('Cancel', 'alpaca')}
@@ -385,7 +385,7 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
           <User user={currentUser} />
           <div className="alpaca-timeline-content">
             <TextareaControl
-              placeholder={__('Add a comment...', 'alpaca')}
+              placeholder={__('Add a comment…', 'alpaca')}
               value={newComment}
               onChange={setNewComment}
               disabled={isSubmitting}
@@ -395,13 +395,15 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
               onClick={handleCommentSubmit}
               disabled={isSubmitting}
             >
-              {isSubmitting ? __('Submitting...', 'alpaca') : __('Submit Comment', 'alpaca')}
+              {isSubmitting
+                ? __('Submitting…', 'alpaca')
+                : __('Submit Comment', 'alpaca')}
             </Button>
           </div>
         </div>
 
         {isLoadingComments && (
-          <p className="alpaca-loading">{__('Loading comments...', 'alpaca')}</p>
+          <p className="alpaca-loading">{__('Loading comments…', 'alpaca')}</p>
         )}
         {notificationMessage && (
           <div className="notice notice-error inline">
@@ -435,7 +437,9 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
             onRequestClose={cancelDelete}
             className="alpaca-modal"
           >
-            <p>{__('Are you sure you want to delete this comment?', 'alpaca')}</p>
+            <p>
+              {__('Are you sure you want to delete this comment?', 'alpaca')}
+            </p>
             <Button isPrimary onClick={deleteComment}>
               {__('Delete', 'alpaca')}
             </Button>

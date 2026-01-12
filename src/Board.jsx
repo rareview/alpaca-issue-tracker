@@ -471,7 +471,8 @@ export function AlpacaBoard() {
           window.location.reload();
         } else {
           setRestoreError(
-            response.message || __('Failed to restore default statuses.', 'alpaca'),
+            response.message ||
+              __('Failed to restore default statuses.', 'alpaca'),
           );
         }
       })
@@ -479,7 +480,8 @@ export function AlpacaBoard() {
         // eslint-disable-next-line no-console
         console.error('Error restoring default statuses:', err);
         setRestoreError(
-          err.message || __('An error occurred while restoring default statuses.', 'alpaca'),
+          err.message ||
+            __('An error occurred while restoring default statuses.', 'alpaca'),
         );
       })
       .finally(() => {
@@ -666,11 +668,17 @@ export function AlpacaBoard() {
           <Notice status="warning" isDismissible={false}>
             <p>
               <strong>
-                {__('Oh no! All your project statuses have disappeared.', 'alpaca')}
+                {__(
+                  'Oh no! All your project statuses have disappeared.',
+                  'alpaca',
+                )}
               </strong>
             </p>
             <p>
-              {__('Without statuses, you cannot view or manage issues on the board. Click the button below to restore the default statuses (Backlog, Next, In Progress, Done).', 'alpaca')}
+              {__(
+                'Without statuses, you cannot view or manage issues on the board. Click the button below to restore the default statuses (Backlog, Next, In Progress, Done).',
+                'alpaca',
+              )}
             </p>
             <Button
               variant="primary"
@@ -678,7 +686,9 @@ export function AlpacaBoard() {
               isBusy={isRestoring}
               disabled={isRestoring}
             >
-              {isRestoring ? __('Restoring...', 'alpaca') : __('Restore Default Statuses', 'alpaca')}
+              {isRestoring
+                ? __('Restoring…', 'alpaca')
+                : __('Restore Default Statuses', 'alpaca')}
             </Button>
           </Notice>
           {restoreError && (

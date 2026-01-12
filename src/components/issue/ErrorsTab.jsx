@@ -25,7 +25,11 @@ const ErrorsTab = ({ errorsJson }) => {
   }, [errorsJson]);
 
   if (errors.length === 0) {
-    return <p>{__('No JavaScript errors were recorded for this issue.', 'alpaca')}</p>;
+    return (
+      <p>
+        {__('No JavaScript errors were recorded for this issue.', 'alpaca')}
+      </p>
+    );
   }
 
   return (

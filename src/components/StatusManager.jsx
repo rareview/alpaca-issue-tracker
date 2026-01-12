@@ -357,7 +357,9 @@ const StatusManager = ({
 
   const handleAddStatus = () => {
     // eslint-disable-next-line no-alert
-    const newName = window.prompt(__('Enter the name for the new status:', 'alpaca'));
+    const newName = window.prompt(
+      __('Enter the name for the new status:', 'alpaca'),
+    );
     if (!newName || !newName.trim()) {
       return;
     }
@@ -380,7 +382,12 @@ const StatusManager = ({
   };
 
   if (isLoading) return <Spinner />;
-  if (error) return <p>{__('Error:', 'alpaca')} {error}</p>;
+  if (error)
+    return (
+      <p>
+        {__('Error:', 'alpaca')} {error}
+      </p>
+    );
 
   return (
     <>
@@ -531,8 +538,10 @@ const StatusManager = ({
             className="alpaca-modal"
           >
             <p>
-              {__('Are you sure you want to delete the status', 'alpaca')} &quot;
-              <strong>{statusToDelete.name}</strong>&quot;? {__('This cannot be undone.', 'alpaca')}
+              {__('Are you sure you want to delete the status', 'alpaca')}{' '}
+              &quot;
+              <strong>{statusToDelete.name}</strong>&quot;?{' '}
+              {__('This cannot be undone.', 'alpaca')}
             </p>
             <div className="alpaca-actions flexalign">
               <Button variant="primary" isDestructive onClick={performDelete}>

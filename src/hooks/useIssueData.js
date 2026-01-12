@@ -18,7 +18,9 @@ const useIssueData = (issueId, isOpen) => {
         })
         .catch((err) => {
           console.error('Error fetching issue data:', err);
-          setError(__('Failed to load issue details. Please try again.', 'alpaca'));
+          setError(
+            __('Failed to load issue details. Please try again.', 'alpaca'),
+          );
           setIssueDetails(null);
         })
         .finally(() => {
@@ -36,7 +38,9 @@ const useIssueData = (issueId, isOpen) => {
         .then(setIssueDetails)
         .catch((err) => {
           console.error('Error refetching issue data:', err);
-          setError(__('Failed to load issue details. Please try again.', 'alpaca'));
+          setError(
+            __('Failed to load issue details. Please try again.', 'alpaca'),
+          );
         })
         .finally(() => setIsLoadingDetails(false));
     }

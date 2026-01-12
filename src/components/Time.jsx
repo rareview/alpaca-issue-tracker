@@ -30,7 +30,9 @@ const Time = memo(({ value, type = 'absolute', format, autoUpdate = true }) => {
 
     // Show "just now" for the first minute
     const relative =
-      secondsDiff < 60 ? __('just now', 'alpaca') : window.moment(dateObj).fromNow();
+      secondsDiff < 60
+        ? __('just now', 'alpaca')
+        : window.moment(dateObj).fromNow();
 
     return (
       <Tooltip text={formattedAbsolute}>

@@ -65,7 +65,7 @@ const DefaultStatusSelector = ({ statuses, onDefaultChange }) => {
   // Memoize status options to ensure they update when statuses order changes
   const statusOptions = useMemo(
     () => [
-      { label: __('Select a default status...', 'alpaca'), value: '' },
+      { label: __('Select a default status…', 'alpaca'), value: '' },
       ...statuses.map((status) => ({
         label: status.name,
         value: status.term_id.toString(),

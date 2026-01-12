@@ -268,7 +268,11 @@ function Container({
         )}
 
         <div className="alpaca-container-controls">
-          <DropdownMenu icon="menu" label={__('Options', 'alpaca')} controls={menuControls} />
+          <DropdownMenu
+            icon="menu"
+            label={__('Options', 'alpaca')}
+            controls={menuControls}
+          />
         </div>
       </CardHeader>
 
@@ -330,7 +334,9 @@ function Container({
                         className="alpaca-item-inner"
                       />
                     ) : (
-                      <div className="alpaca-item-inner">{__('Moving...', 'alpaca')}</div>
+                      <div className="alpaca-item-inner">
+                        {__('Moving…', 'alpaca')}
+                      </div>
                     )}
                   </div>
 
@@ -399,7 +405,9 @@ function Container({
                 });
               })()
             ) : (
-              <div className="alpaca-item empty">{__('Drop items here', 'alpaca')}</div>
+              <div className="alpaca-item empty">
+                {__('Drop items here', 'alpaca')}
+              </div>
             );
           })()}
         </div>

@@ -144,7 +144,12 @@ const AlpacaToolbar = () => {
     } catch (error) {
       console.error('Submission error:', error);
       setStatus('error');
-      setMessage(__('There was an error submitting your issue. Please try again.', 'alpaca'));
+      setMessage(
+        __(
+          'There was an error submitting your issue. Please try again.',
+          'alpaca',
+        ),
+      );
     }
   }, [feedback, isHighPriority, closeForm]);
 
@@ -203,7 +208,11 @@ const AlpacaToolbar = () => {
 
             <div className="form-toggles">
               <ToggleControl
-                label={<span className="priority-label">{__('High Priority', 'alpaca')}</span>}
+                label={
+                  <span className="priority-label">
+                    {__('High Priority', 'alpaca')}
+                  </span>
+                }
                 checked={isHighPriority}
                 onChange={setIsHighPriority}
                 disabled={status === 'submitting'}

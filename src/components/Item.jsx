@@ -128,7 +128,9 @@ const Item = forwardRef(
               (meta.alpaca_high_priority === '1' ||
                 meta.alpaca_high_priority === 1 ||
                 meta.alpaca_high_priority === true) && (
-                <div className="alpaca-item-priority-badge">{__('Priority', 'alpaca')}</div>
+                <div className="alpaca-item-priority-badge">
+                  {__('Priority', 'alpaca')}
+                </div>
               )}
 
             {assignees.length > 0 && (

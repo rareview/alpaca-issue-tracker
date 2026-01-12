@@ -18,7 +18,8 @@ const User = ({ user: userProp, showAvatar = true, showName = true }) => {
     };
   }, [user]);
 
-  if (loading) return <div className="alpaca-user">{__('Loading...', 'alpaca')}</div>;
+  if (loading)
+    return <div className="alpaca-user">{__('Loading…', 'alpaca')}</div>;
   if (!user) return null;
 
   return (
