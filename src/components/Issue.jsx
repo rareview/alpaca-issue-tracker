@@ -91,7 +91,7 @@ const DeadlineRow = memo(
 );
 
 const EditableTitle = memo(
-  ({ isEditing, title, onEditStart, onChange, onSave }) => {
+  ({ isEditing, title, onEditStart, onChange, onSave, onCancel }) => {
     const inputRef = useRef(null);
     const wasEditingRef = useRef(false);
 
@@ -119,6 +119,10 @@ const EditableTitle = memo(
             if (e.key === 'Enter') {
               e.preventDefault();
               onSave();
+            } else if (e.key === 'Escape') {
+              e.preventDefault();
+              e.stopPropagation();
+              onCancel();
             }
           }}
           onBlur={onSave}
@@ -137,17 +141,10 @@ const EditableTitle = memo(
     }
 
     return (
-      <div className="alpaca-issue-title-wrapper has-sidecontrols">
-        <h3 className="alpaca-issue-title">{title}</h3>
-        <div className="sidecontrols">
-          <Tooltip text="Edit title">
-            <Button
-              className="alpaca-edit-title-button"
-              icon="edit"
-              onClick={onEditStart}
-            />
-          </Tooltip>
-        </div>
+      <div className="alpaca-issue-title-wrapper">
+        <h3 className="alpaca-issue-title" onClick={onEditStart}>
+          {title}
+        </h3>
       </div>
     );
   },
@@ -471,6 +468,13 @@ const AlpacaIssue = ({
     showNotification,
   ]);
 
+  const handleTitleCancel = useCallback(() => {
+    setIsEditingTitle(false);
+    if (issueDetails?.success) {
+      setEditedTitle(decodeEntities(issueDetails.post_data.post_content));
+    }
+  }, [issueDetails]);
+
   // Memoized stable props
   const stableUsers = useMemo(() => allUsers, [allUsers]);
   const stableAssignees = useMemo(() => assignees, [assignees]);
@@ -556,6 +560,7 @@ const AlpacaIssue = ({
                 onEditStart={() => setIsEditingTitle(true)}
                 onChange={setEditedTitle}
                 onSave={handleTitleSave}
+                onCancel={handleTitleCancel}
               />
 
               <div className="alpaca-issue-meta flexalign">
