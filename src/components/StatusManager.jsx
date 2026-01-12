@@ -12,7 +12,6 @@ const StatusManager = ({
   isLoading,
   error,
   onStatusesChange,
-  defaultStatusId,
 }) => {
   const [statusToDelete, setStatusToDelete] = useState(null);
   const [localStatuses, setLocalStatuses] = useState(statuses);
@@ -35,24 +34,15 @@ const StatusManager = ({
   const [dragOverStatus, setDragOverStatus] = useState(null);
   const [dragSourceIndex, setDragSourceIndex] = useState(null);
 
-  // Recalculate term_scores based on order and default status
-  const recalculateScores = async (statusesArray, defaultId) => {
-    if (!defaultId) return; // No default selected, skip scoring
-
+  // Recalculate term_scores based on order
+  // Scores are sequential starting from 0 for the first status
+  const recalculateScores = async (statusesArray) => {
     try {
-      const defaultIndex = statusesArray.findIndex(
-        (s) => s.term_id.toString() === defaultId,
-      );
-      if (defaultIndex === -1) return; // Default status not found
-
-      // Calculate scores relative to default status
-      const scoreUpdates = statusesArray.map((status, index) => {
-        const score = index - defaultIndex; // Default gets 0, above get negative, below get positive
-        return {
-          id: status.term_id,
-          score,
-        };
-      });
+      // Calculate scores based on position: first = 0, second = 1, etc.
+      const scoreUpdates = statusesArray.map((status, index) => ({
+        id: status.term_id,
+        score: index,
+      }));
 
       // Update all scores via API
       await Promise.all(
@@ -82,10 +72,8 @@ const StatusManager = ({
 
     setLocalStatuses(newStatuses);
 
-    // Recalculate scores when order changes
-    if (defaultStatusId) {
-      recalculateScores(newStatuses, defaultStatusId);
-    }
+    // Always recalculate scores when order changes
+    recalculateScores(newStatuses);
   };
 
   const handleDragOver = (e) => {
@@ -567,7 +555,6 @@ StatusManager.propTypes = {
   isLoading: PropTypes.bool,
   error: PropTypes.string,
   onStatusesChange: PropTypes.func,
-  defaultStatusId: PropTypes.number,
 };
 
 // StatusRow using grid cell display

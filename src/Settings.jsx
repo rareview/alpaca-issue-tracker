@@ -1,12 +1,10 @@
 import StatusManager from './components/StatusManager';
-import DefaultStatusSelector from './components/DefaultStatusSelector';
 import EnableTestLogsControl from './components/EnableTestLogsControl';
 const { useState, useEffect, useCallback } = wp.element;
 
 const AlpacaSettings = () => {
   const [statuses, setStatuses] = useState([]);
   const [currentStatuses, setCurrentStatuses] = useState([]); // Track current order
-  const [defaultStatusId, setDefaultStatusId] = useState(''); // Track default status
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -33,11 +31,6 @@ const AlpacaSettings = () => {
     setCurrentStatuses(newOrder);
   }, []);
 
-  // Handle when DefaultStatusSelector changes the default
-  const handleDefaultStatusChange = useCallback((newDefaultId) => {
-    setDefaultStatusId(newDefaultId);
-  }, []);
-
   return (
     <div className="alpaca-settings-wrap">
       <StatusManager
@@ -46,7 +39,6 @@ const AlpacaSettings = () => {
         isLoading={isLoading}
         error={error}
         onStatusesChange={handleStatusesOrderChange}
-        defaultStatusId={defaultStatusId}
       />
 
       <hr />
@@ -55,13 +47,21 @@ const AlpacaSettings = () => {
 
       <table className="form-table">
         <tbody>
-          <DefaultStatusSelector
-            statuses={currentStatuses}
-            onDefaultChange={handleDefaultStatusChange}
-          />
           <EnableTestLogsControl />
+          {/*
+           * Action hook for adding additional settings.
+           * @param {Object} context - Contains statuses array.
+           */}
+          {wp.hooks.applyFilters('alpaca.settings.additionalRows', null, {
+            statuses: currentStatuses,
+          })}
         </tbody>
       </table>
+
+      {/* Extensibility hook for adding custom settings sections */}
+      {wp.hooks.applyFilters('alpaca.settings.afterTable', null, {
+        statuses: currentStatuses,
+      })}
     </div>
   );
 };

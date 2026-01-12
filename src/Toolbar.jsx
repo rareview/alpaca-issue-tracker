@@ -1,8 +1,7 @@
 import handleSnapdomCapture from './snapdomHandler.js';
 import { useTestLogger } from './utils/testLogger.js';
 
-const { Button, TextareaControl, Spinner, CheckboxControl, ToggleControl } =
-  wp.components;
+const { Button, TextareaControl, Spinner, ToggleControl } = wp.components;
 const { doAction } = wp.hooks;
 const { useState, useRef, useEffect, useCallback } = wp.element;
 
@@ -18,7 +17,6 @@ const AlpacaToolbar = () => {
   const [status, setStatus] = useState('idle');
   const [message, setMessage] = useState('');
   const [feedback, setFeedback] = useState('');
-  const [includeContext, setIncludeContext] = useState(true);
   const [isHighPriority, setIsHighPriority] = useState(false);
 
   const textareaRef = useRef(null);
@@ -56,7 +54,6 @@ const AlpacaToolbar = () => {
     setMessage('');
     setStatus('idle');
     setFeedback('');
-    setIncludeContext(true);
     setIsHighPriority(false);
     setTimeout(() => textareaRef.current?.focus(), 100);
   }, []);
@@ -106,7 +103,7 @@ const AlpacaToolbar = () => {
       const submitted = {
         userinput: {
           feedback,
-          includeContext,
+          includeContext: true, // Always include context
           isHighPriority,
         },
         client: alpacaDataDump.device,
@@ -148,7 +145,7 @@ const AlpacaToolbar = () => {
       setStatus('error');
       setMessage('There was an error submitting your issue. Please try again.');
     }
-  }, [feedback, includeContext, isHighPriority, closeForm]);
+  }, [feedback, isHighPriority, closeForm]);
 
   return (
     <>
@@ -208,13 +205,6 @@ const AlpacaToolbar = () => {
                 label={<span className="priority-label">High Priority</span>}
                 checked={isHighPriority}
                 onChange={setIsHighPriority}
-                disabled={status === 'submitting'}
-              />
-              <CheckboxControl
-                label="Include full context with report?"
-                help="Always do this, unless you are sure it is not relevant"
-                checked={includeContext}
-                onChange={setIncludeContext}
                 disabled={status === 'submitting'}
               />
             </div>
