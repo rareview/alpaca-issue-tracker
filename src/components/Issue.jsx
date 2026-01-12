@@ -25,6 +25,7 @@ import DeadlineControl from './issue/DeadlineControl';
 import TabContent from './issue/TabContent';
 import Lightbox from './issue/Lightbox';
 import ErrorsTab from './issue/ErrorsTab';
+import AttachmentRow from './issue/AttachmentRow';
 import User from './User';
 import Time from './Time';
 
@@ -592,7 +593,23 @@ const AlpacaIssue = ({
                     isLoading={stableIsLoading}
                   />
 
-                  {/* Attachments row - to be implemented */}
+                  <AttachmentRow
+                    attachments={
+                      issueDetails.meta.alpaca_screenshot ||
+                      issueDetails.meta.screenshot
+                        ? [
+                            {
+                              url:
+                                issueDetails.meta.alpaca_screenshot ||
+                                issueDetails.meta.screenshot,
+                            },
+                          ]
+                        : []
+                    }
+                    onAttachmentClick={setLightboxSrc}
+                    onAttachmentDelete={confirmScreenshotDelete}
+                    isLoading={loadingStates.screenshot}
+                  />
                 </tbody>
               </table>
 
@@ -623,9 +640,6 @@ const AlpacaIssue = ({
                       issueDetails={issueDetails}
                       issueId={issueId}
                       commentRefreshKey={commentRefreshKey}
-                      onScreenshotDelete={confirmScreenshotDelete}
-                      loadingStates={loadingStates}
-                      onScreenshotClick={setLightboxSrc}
                     />
                   );
                 }}

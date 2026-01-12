@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 const { useReducer, useEffect, useMemo, memo } = wp.element;
 const { Tooltip } = wp.components;
 
-const Time = memo(({ value, type = 'absolute', format, autoUpdate = true }) => {
+const Time = memo(({ value, type = 'absolute', format, autoUpdate = true, className }) => {
   // useReducer to force re-render for relative time updates
   const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
@@ -23,6 +23,7 @@ const Time = memo(({ value, type = 'absolute', format, autoUpdate = true }) => {
 
   const wpFormat = format || wp.date.getSettings().formats.datetime;
   const formattedAbsolute = wp.date.dateI18n(wpFormat, dateObj);
+  const spanClassName = ['timestamp', className].filter(Boolean).join(' ');
 
   if (type === 'relative') {
     const secondsDiff = Math.floor((new Date() - dateObj) / 1000);
@@ -33,12 +34,12 @@ const Time = memo(({ value, type = 'absolute', format, autoUpdate = true }) => {
 
     return (
       <Tooltip text={formattedAbsolute}>
-        <span className="timestamp">{relative}</span>
+        <span className={spanClassName}>{relative}</span>
       </Tooltip>
     );
   }
 
-  return <span className="timestamp">{formattedAbsolute}</span>;
+  return <span className={spanClassName}>{formattedAbsolute}</span>;
 });
 
 Time.propTypes = {
@@ -46,6 +47,7 @@ Time.propTypes = {
   type: PropTypes.oneOf(['absolute', 'relative']),
   format: PropTypes.string,
   autoUpdate: PropTypes.bool,
+  className: PropTypes.string,
 };
 
 Time.displayName = 'Time';
