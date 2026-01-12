@@ -846,8 +846,28 @@ $timeline-width: 1px;
     }
 
     &[data-source='audit'] {
+      position: relative;
+
+      .alpaca-timeline-icon {
+        position: absolute;
+        width: 24px;
+        height: 24px;
+        background: $bgwhite;
+        border: 1px solid $greyborder;
+        border-radius: 50%;
+        left: 24px;
+      }
+
+      .alpaca-timeline-msg {
+        margin-left: 64px;
+      }
+
       p {
-        margin: 0;
+        margin: 0 0 0.25em 0;
+      }
+
+      .alpaca-comment-date {
+        color: $greytext;
       }
     }
   }
@@ -1424,5 +1444,27 @@ $timeline-width: 1px;
   .alpaca-bottom-toolbar,
   .alpaca-report-form {
     display: none;
+  }
+}
+
+.alpaca-comment-content.with-avatar-meta,
+.alpaca-timeline-msg-content.with-avatar-meta {
+  .alpaca-status-assignee[data-avatar] {
+    display: inline-flex;
+    align-items: center;
+
+    &::after {
+      content: '';
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      background-image: var(--avatar-url);
+      background-position: center;
+      background-size: cover;
+      border-radius: 50%;
+      border: 1px solid $greyborder;
+      margin-left: 5px;
+      vertical-align: middle;
+    }
   }
 }

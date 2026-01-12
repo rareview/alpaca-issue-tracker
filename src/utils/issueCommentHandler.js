@@ -8,7 +8,7 @@ import { fetchIssueCommentCount } from '../services/issueApi.js';
 const { addAction, doAction } = wp.hooks;
 const apiFetch = wp.apiFetch;
 
-const postComment = async (issueOrId, content) => {
+const postComment = async (issueOrId, content, commentTags = []) => {
   let postId;
   if (issueOrId && typeof issueOrId === 'object') {
     // Prioritize issue.post_id if available (for full issue objects)
@@ -27,17 +27,25 @@ const postComment = async (issueOrId, content) => {
     return;
   }
 
+  const commentData = {
+    post: postId,
+    content,
+    comment_type: 'issuecomment',
+    status: 'approve',
+    author_user_agent: 'audit',
+  };
+
+  if (commentTags && commentTags.length > 0) {
+    commentData.meta = {
+      alpacaCommentTags: commentTags,
+    };
+  }
+
   try {
     await apiFetch({
       path: '/wp/v2/comments',
       method: 'POST',
-      data: {
-        post: postId,
-        content,
-        comment_type: 'issuecomment',
-        status: 'approve',
-        author_user_agent: 'audit',
-      },
+      data: commentData,
     }).then(async (newlyCreatedComment) => {
       wp.hooks.doAction('alpaca.commentPosted', newlyCreatedComment);
       const response = await fetchIssueCommentCount(postId);
@@ -57,16 +65,18 @@ addAction('alpaca.issueSubmitted', 'alpaca/addIssueComment', async (issue) => {
   const currentUser = await getUser();
   const commentContent = `Issue created by ${generateAssigneeSpan(
     currentUser,
+    true,
   )}`;
-  await postComment(issue, commentContent); // Pass issue object
+  await postComment(issue, commentContent, ['issue-created']); // Pass issue object
 });
 
 addAction(
   'alpaca.statusChanged',
   'alpaca/addStatusChangeComment',
   async (issue, fromStatus, toStatus) => {
-    const commentContent = `Status changed from **${fromStatus}** to **${toStatus}**`;
-    await postComment(issue, commentContent); // Pass issue object
+    const currentUser = await getUser();
+    const commentContent = `Status changed from **${fromStatus}** to **${toStatus}** by ${generateAssigneeSpan(currentUser)}`;
+    await postComment(issue, commentContent, ['status-changed']); // Pass issue object
   },
 );
 
@@ -74,10 +84,12 @@ addAction(
   'alpaca.assigneeChanged',
   'alpaca/addAssigneeChangeComment',
   async (issue, user, isAssigned) => {
+    const currentUser = await getUser();
     const actionText = isAssigned ? 'assigned to' : 'unassigned from';
     const commentContent = `${generateAssigneeSpan(
       user,
-    )} ${actionText} this issue`;
-    await postComment(issue, commentContent); // Pass issue object
+      true,
+    )} was ${actionText} this issue by ${generateAssigneeSpan(currentUser)}`;
+    await postComment(issue, commentContent, ['assignee-changed']); // Pass issue object
   },
 );

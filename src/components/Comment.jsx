@@ -17,6 +17,32 @@ const {
 import { getCookie, setCookie } from '../utils/cookies';
 import { marked } from 'marked';
 
+const injectAvatarStyles = (htmlString) => {
+  if (
+    typeof DOMParser === 'undefined' ||
+    !htmlString ||
+    !htmlString.includes('data-avatar')
+  ) {
+    return htmlString;
+  }
+
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlString, 'text/html');
+    const spans = doc.querySelectorAll('[data-avatar]');
+    spans.forEach((span) => {
+      const avatarUrl = span.dataset.avatar;
+      if (avatarUrl) {
+        span.style.setProperty('--avatar-url', `url('${avatarUrl}')`);
+      }
+    });
+    return doc.body.innerHTML;
+  } catch (e) {
+    console.error('Failed to process content for avatar styles', e);
+    return htmlString; // Return original string on error
+  }
+};
+
 /**
  * Comment component for displaying individual comments.
  *
@@ -56,32 +82,45 @@ const Comment = memo(
       comment.author_user_agent === 'audit' ? 'audit' : 'human';
     const isAudit = dataSource === 'audit';
 
+    const commentTags = comment.meta?.alpacaCommentTags || [];
+    const timelineItemClasses = ['alpaca-timeline-item', ...commentTags].join(
+      ' ',
+    );
+
     const processedContent = useMemo(() => {
-      return comment.content.raw
+      // Optimistic comments have pre-rendered content
+      if (!comment.meta && comment.content.rendered) {
+        return comment.content.rendered;
+      }
+
+      const content = comment.content.raw
         ? marked(comment.content.raw)
         : comment.content.rendered;
-    }, [comment.content.raw, comment.content.rendered]);
+
+      return injectAvatarStyles(content);
+    }, [comment]);
 
     if (isAudit) {
       return (
-        <div className="alpaca-timeline-item" data-source={dataSource}>
-          <div className="alpaca-timeline-content">
-            <div className="alpaca-comment-header flexalign">
-              <User user={author} showName={false} />
-              <div dangerouslySetInnerHTML={{ __html: processedContent }} />
-              <Time
-                value={comment.date}
-                type="relative"
-                className="alpaca-comment-date"
-              />
-            </div>
+        <div className={timelineItemClasses} data-source={dataSource}>
+          <div className="alpaca-timeline-icon" />
+          <div className="alpaca-timeline-msg">
+            <div
+              className="alpaca-timeline-msg-content with-avatar-meta"
+              dangerouslySetInnerHTML={{ __html: processedContent }}
+            />
+            <Time
+              value={comment.date}
+              type="relative"
+              className="alpaca-comment-date"
+            />
           </div>
         </div>
       );
     }
 
     return (
-      <div className="alpaca-timeline-item" data-source={dataSource}>
+      <div className={timelineItemClasses} data-source={dataSource}>
         <div className="alpaca-timeline-content">
           <div className="alpaca-comment-header flexalign">
             <User user={author} showName={false} />
@@ -142,7 +181,7 @@ const Comment = memo(
               </>
             ) : (
               <div
-                className="alpaca-comment-content"
+                className="alpaca-comment-content with-avatar-meta"
                 dangerouslySetInnerHTML={{ __html: processedContent }}
               />
             )}
@@ -251,9 +290,11 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
     if (!newComment.trim()) return;
     setIsSubmitting(true);
 
+    const processedOptimisticContent = injectAvatarStyles(marked(newComment));
+
     const optimisticComment = {
       id: Date.now(),
-      content: { raw: newComment },
+      content: { raw: newComment, rendered: processedOptimisticContent },
       _embedded: { author: currentUser },
       date: new Date().toISOString(),
       author_user_agent: 'human',
