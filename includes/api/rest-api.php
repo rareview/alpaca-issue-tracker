@@ -135,7 +135,7 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 		return alpaca_rest_response(
 			[
 				'success' => false,
-				'message' => 'Invalid request body.',
+				'message' => esc_html__( 'Invalid request body.', 'alpaca' ),
 			],
 			400
 		);
@@ -151,7 +151,7 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 		return alpaca_rest_response(
 			[
 				'success' => false,
-				'message' => 'Feedback is required.',
+				'message' => esc_html__( 'Feedback is required.', 'alpaca' ),
 			],
 			400
 		);
@@ -174,7 +174,7 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 		return alpaca_rest_response(
 			[
 				'success' => false,
-				'message' => 'Failed to create the issue post.',
+				'message' => esc_html__( 'Failed to create the issue post.', 'alpaca' ),
 			],
 			500
 		);
@@ -304,7 +304,7 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 	return alpaca_rest_response(
 		[
 			'success'  => true,
-			'message'  => 'Issue submitted successfully.',
+			'message'  => esc_html__( 'Issue submitted successfully.', 'alpaca' ),
 			'post_id'  => $post_id,
 			'issue'    => [
 				'id'          => $post_id,
@@ -384,7 +384,7 @@ function alpaca_update_board_data_callback( WP_REST_Request $request ) {
 		return alpaca_rest_response(
 			[
 				'success' => false,
-				'message' => 'Invalid data format. Expected an array of columns.',
+				'message' => esc_html__( 'Invalid data format. Expected an array of columns.', 'alpaca' ),
 			],
 			400
 		);
@@ -405,7 +405,7 @@ function alpaca_update_board_data_callback( WP_REST_Request $request ) {
 	return alpaca_rest_response(
 		[
 			'success' => true,
-			'message' => 'Board order saved successfully.',
+			'message' => esc_html__( 'Board order saved successfully.', 'alpaca' ),
 		],
 		200
 	);
@@ -454,7 +454,7 @@ function alpaca_update_issue_callback( WP_REST_Request $request ) {
 		return alpaca_rest_response(
 			[
 				'success' => false,
-				'message' => 'Issue not found.',
+				'message' => esc_html__( 'Issue not found.', 'alpaca' ),
 			],
 			404
 		);
@@ -473,7 +473,7 @@ function alpaca_update_issue_callback( WP_REST_Request $request ) {
 		return alpaca_rest_response(
 			[
 				'success' => false,
-				'message' => 'Failed to update the issue.',
+				'message' => esc_html__( 'Failed to update the issue.', 'alpaca' ),
 			],
 			500
 		);
@@ -547,7 +547,7 @@ function alpaca_update_issue_callback( WP_REST_Request $request ) {
 	return alpaca_rest_response(
 		[
 			'success' => true,
-			'message' => 'Issue updated successfully.',
+			'message' => esc_html__( 'Issue updated successfully.', 'alpaca' ),
 			'post_id' => $issue_id,
 		],
 		200
@@ -703,7 +703,7 @@ function alpaca_get_issue_data_callback( WP_REST_Request $request ) {
 		return alpaca_rest_response(
 			[
 				'success' => false,
-				'message' => 'Issue not found.',
+				'message' => esc_html__( 'Issue not found.', 'alpaca' ),
 			],
 			404
 		);
@@ -756,7 +756,7 @@ function alpaca_get_issue_data_callback( WP_REST_Request $request ) {
 	return alpaca_rest_response(
 		[
 			'success'       => true,
-			'message'       => 'Issue data retrieved successfully.',
+			'message'       => esc_html__( 'Issue data retrieved successfully.', 'alpaca' ),
 			'post_id'       => $issue_id,
 			'post_data'     => $post_data,
 			'meta'          => $formatted_meta,
@@ -1033,7 +1033,7 @@ function alpaca_update_status_callback( WP_REST_Request $request ) {
 		return alpaca_rest_response(
 			[
 				'success' => false,
-				'message' => 'Status not found.',
+				'message' => esc_html__( 'Status not found.', 'alpaca' ),
 			],
 			404
 		);
@@ -1056,7 +1056,7 @@ function alpaca_update_status_callback( WP_REST_Request $request ) {
 			return alpaca_rest_response(
 				[
 					'success' => false,
-					'message' => 'Failed to update status name and slug.',
+					'message' => esc_html__( 'Failed to update status name and slug.', 'alpaca' ),
 				],
 				500
 			);
@@ -1070,7 +1070,7 @@ function alpaca_update_status_callback( WP_REST_Request $request ) {
 	return alpaca_rest_response(
 		[
 			'success' => true,
-			'message' => 'Status updated successfully.',
+			'message' => esc_html__( 'Status updated successfully.', 'alpaca' ),
 		],
 		200
 	);
@@ -1119,7 +1119,7 @@ function alpaca_delete_issue_callback( WP_REST_Request $request ) {
 		return alpaca_rest_response(
 			[
 				'success' => false,
-				'message' => 'Issue not found.',
+				'message' => esc_html__( 'Issue not found.', 'alpaca' ),
 			],
 			404
 		);
@@ -1131,7 +1131,7 @@ function alpaca_delete_issue_callback( WP_REST_Request $request ) {
 		return alpaca_rest_response(
 			[
 				'success' => false,
-				'message' => 'Failed to trash the issue.',
+				'message' => esc_html__( 'Failed to trash the issue.', 'alpaca' ),
 			],
 			500
 		);
@@ -1140,7 +1140,7 @@ function alpaca_delete_issue_callback( WP_REST_Request $request ) {
 	return alpaca_rest_response(
 		[
 			'success' => true,
-			'message' => 'Issue trashed successfully.',
+			'message' => esc_html__( 'Issue trashed successfully.', 'alpaca' ),
 		],
 		200
 	);

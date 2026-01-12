@@ -1,4 +1,5 @@
 const { forwardRef } = wp.element;
+const { __ } = wp.i18n;
 import PropTypes from 'prop-types';
 const { Card, CardBody, CardFooter } = wp.components;
 const { Text = wp.components.__experimentalText } = wp.components;
@@ -77,11 +78,11 @@ const Item = forwardRef(
     let deadlineText = deadlineFormatted;
     if (isValidDeadline) {
       if (diffDays === 1) {
-        deadlineText = 'Tomorrow';
+        deadlineText = __('Tomorrow', 'alpaca');
       } else if (diffDays === 0) {
-        deadlineText = 'Today';
+        deadlineText = __('Today', 'alpaca');
       } else if (diffDays === -1) {
-        deadlineText = 'Yesterday';
+        deadlineText = __('Yesterday', 'alpaca');
       }
     }
 
@@ -127,7 +128,7 @@ const Item = forwardRef(
               (meta.alpaca_high_priority === '1' ||
                 meta.alpaca_high_priority === 1 ||
                 meta.alpaca_high_priority === true) && (
-                <div className="alpaca-item-priority-badge">Priority</div>
+                <div className="alpaca-item-priority-badge">{__('Priority', 'alpaca')}</div>
               )}
 
             {assignees.length > 0 && (

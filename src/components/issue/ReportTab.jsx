@@ -1,4 +1,5 @@
 const { memo } = wp.element;
+const { __ } = wp.i18n;
 import PropTypes from 'prop-types';
 
 const { Button } = wp.components;
@@ -29,7 +30,7 @@ const ReportTab = memo(
               issueDetails.meta.screenshot
             }
             className="alpaca-screenshot"
-            alt="Screenshot"
+            alt={__('Screenshot', 'alpaca')}
             style={{ cursor: 'zoom-in', maxWidth: '100%' }}
             onClick={() =>
               onScreenshotClick(
@@ -56,7 +57,7 @@ const ReportTab = memo(
               e.stopPropagation();
               onScreenshotDelete();
             }}
-            label="Delete"
+            label={__('Delete', 'alpaca')}
             showTooltip="true"
             tooltipPosition="middle left"
             icon="trash"
@@ -70,7 +71,7 @@ const ReportTab = memo(
       <table className="widefat striped">
         <tbody>
           <tr>
-            <th scope="row">Reported</th>
+            <th scope="row">{__('Reported', 'alpaca')}</th>
             <td>
               {date.format(
                 datesettings.formats.datetimeAbbreviated,
@@ -79,7 +80,7 @@ const ReportTab = memo(
             </td>
           </tr>
           <tr>
-            <th scope="row">Last edit</th>
+            <th scope="row">{__('Last edit', 'alpaca')}</th>
             <td>
               {date.format(
                 datesettings.formats.datetimeAbbreviated,
@@ -99,12 +100,12 @@ const ReportTab = memo(
                   {issueDetails.meta.alpaca_url || issueDetails.meta.URL}
                 </a>
               ) : (
-                'N/A'
+                __('N/A', 'alpaca')
               )}
             </td>
           </tr>
           <tr>
-            <th scope="row">Screen</th>
+            <th scope="row">{__('Screen', 'alpaca')}</th>
             <td>
               {(issueDetails.meta.alpaca_screenwidth ||
                 issueDetails.meta.screenwidth) &&
@@ -117,7 +118,7 @@ const ReportTab = memo(
                     issueDetails.meta.alpaca_screenheight ||
                     issueDetails.meta.screenheight
                   }`
-                : 'N/A'}
+                : __('N/A', 'alpaca')}
             </td>
           </tr>
           {Object.entries(issueDetails.taxonomies)

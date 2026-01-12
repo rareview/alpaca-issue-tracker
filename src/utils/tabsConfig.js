@@ -1,7 +1,9 @@
+const { __ } = wp.i18n;
+
 export const getTabsConfig = (issueDetails) => {
   return [
-    { name: 'comments', title: 'Timeline', className: 'comments' },
-    { name: 'report', title: 'Report', className: 'report' },
+    { name: 'comments', title: __('Timeline', 'alpaca'), className: 'comments' },
+    { name: 'report', title: __('Report', 'alpaca'), className: 'report' },
     ...((issueDetails?.meta?.alpaca_queried_object &&
       issueDetails.meta.alpaca_queried_object !== 'null') ||
     (issueDetails?.meta?.queriedObject &&
@@ -9,7 +11,7 @@ export const getTabsConfig = (issueDetails) => {
       ? [
           {
             name: 'queriedobject',
-            title: 'Queried Object',
+            title: __('Queried Object', 'alpaca'),
             className: 'queried-object',
           },
         ]
@@ -20,7 +22,7 @@ export const getTabsConfig = (issueDetails) => {
       ? [
           {
             name: 'headers',
-            title: 'Headers',
+            title: __('Headers', 'alpaca'),
             className: 'headers',
           },
         ]
@@ -31,7 +33,7 @@ export const getTabsConfig = (issueDetails) => {
       ? [
           {
             name: 'errors',
-            title: 'Errors',
+            title: __('Errors', 'alpaca'),
             className: 'errors',
           },
         ]

@@ -1,4 +1,5 @@
 const { useMemo } = wp.element;
+const { __ } = wp.i18n;
 import PropTypes from 'prop-types';
 import { useUser } from '../hooks/useUser';
 
@@ -17,7 +18,7 @@ const User = ({ user: userProp, showAvatar = true, showName = true }) => {
     };
   }, [user]);
 
-  if (loading) return <div className="alpaca-user">Loading...</div>;
+  if (loading) return <div className="alpaca-user">{__('Loading...', 'alpaca')}</div>;
   if (!user) return null;
 
   return (

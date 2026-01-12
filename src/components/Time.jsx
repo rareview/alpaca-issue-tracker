@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 
 const { useReducer, useEffect, useMemo, memo } = wp.element;
+const { __ } = wp.i18n;
 const { Tooltip } = wp.components;
 
 const Time = memo(({ value, type = 'absolute', format, autoUpdate = true }) => {
@@ -29,7 +30,7 @@ const Time = memo(({ value, type = 'absolute', format, autoUpdate = true }) => {
 
     // Show "just now" for the first minute
     const relative =
-      secondsDiff < 60 ? 'just now' : window.moment(dateObj).fromNow();
+      secondsDiff < 60 ? __('just now', 'alpaca') : window.moment(dateObj).fromNow();
 
     return (
       <Tooltip text={formattedAbsolute}>

@@ -3,6 +3,7 @@ import { getUser } from '../hooks/useUser';
 import { fetchIssueCommentCount } from '../services/issueApi';
 
 const { useState, useEffect, useRef, useCallback, useMemo, memo } = wp.element;
+const { __ } = wp.i18n;
 import User from './User';
 import Time from './Time';
 const { TextareaControl, Button, Modal } = wp.components;
@@ -68,7 +69,7 @@ const Comment = memo(
               <div className="alpaca-comment-buttons">
                 <Button
                   icon="trash"
-                  label="Delete"
+                  label={__('Delete', 'alpaca')}
                   showTooltip
                   className="button-link-delete"
                   onClick={() => confirmDeleteComment(comment.id)}
@@ -93,14 +94,14 @@ const Comment = memo(
             </div>
             <div className="alpaca-comment-buttons">
               <Button
-                label="Edit"
+                label={__('Edit', 'alpaca')}
                 showTooltip
                 icon="edit"
                 onClick={() => startEditing(comment)}
               />
               <Button
                 icon="trash"
-                label="Delete"
+                label={__('Delete', 'alpaca')}
                 showTooltip
                 className="button-link-delete"
                 onClick={() => confirmDeleteComment(comment.id)}
@@ -120,10 +121,10 @@ const Comment = memo(
                   onClick={() => saveEdit(comment.id)}
                   disabled={isSubmitting}
                 >
-                  Save
+                  {__('Save', 'alpaca')}
                 </Button>
                 <Button onClick={cancelEditing} disabled={isSubmitting}>
-                  Cancel
+                  {__('Cancel', 'alpaca')}
                 </Button>
               </>
             ) : (
@@ -213,7 +214,7 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
       .then(setComments)
       .catch((err) => {
         console.error(err);
-        setError('Could not load comments.');
+        setError(__('Could not load comments.', 'alpaca'));
       })
       .finally(() => setIsLoadingComments(false));
   }, [issueId]);
@@ -384,7 +385,7 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
           <User user={currentUser} />
           <div className="alpaca-timeline-content">
             <TextareaControl
-              placeholder="Add a comment..."
+              placeholder={__('Add a comment...', 'alpaca')}
               value={newComment}
               onChange={setNewComment}
               disabled={isSubmitting}
@@ -394,13 +395,13 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
               onClick={handleCommentSubmit}
               disabled={isSubmitting}
             >
-              {isSubmitting ? 'Submitting...' : 'Submit Comment'}
+              {isSubmitting ? __('Submitting...', 'alpaca') : __('Submit Comment', 'alpaca')}
             </Button>
           </div>
         </div>
 
         {isLoadingComments && (
-          <p className="alpaca-loading">Loading comments...</p>
+          <p className="alpaca-loading">{__('Loading comments...', 'alpaca')}</p>
         )}
         {notificationMessage && (
           <div className="notice notice-error inline">
@@ -430,15 +431,15 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
 
         {deleteCommentId && (
           <Modal
-            title="Delete Comment?"
+            title={__('Delete Comment?', 'alpaca')}
             onRequestClose={cancelDelete}
             className="alpaca-modal"
           >
-            <p>Are you sure you want to delete this comment?</p>
+            <p>{__('Are you sure you want to delete this comment?', 'alpaca')}</p>
             <Button isPrimary onClick={deleteComment}>
-              Delete
+              {__('Delete', 'alpaca')}
             </Button>
-            <Button onClick={cancelDelete}>Cancel</Button>
+            <Button onClick={cancelDelete}>{__('Cancel', 'alpaca')}</Button>
           </Modal>
         )}
       </div>

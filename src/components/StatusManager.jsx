@@ -1,4 +1,5 @@
 const { useState, useEffect, useRef } = wp.element;
+const { __ } = wp.i18n;
 const { Button, Spinner, Modal, TextControl } = wp.components;
 import PropTypes from 'prop-types';
 
@@ -356,7 +357,7 @@ const StatusManager = ({
 
   const handleAddStatus = () => {
     // eslint-disable-next-line no-alert
-    const newName = window.prompt('Enter the name for the new status:');
+    const newName = window.prompt(__('Enter the name for the new status:', 'alpaca'));
     if (!newName || !newName.trim()) {
       return;
     }
@@ -379,20 +380,20 @@ const StatusManager = ({
   };
 
   if (isLoading) return <Spinner />;
-  if (error) return <p>Error: {error}</p>;
+  if (error) return <p>{__('Error:', 'alpaca')} {error}</p>;
 
   return (
     <>
-      <h2>Status Manager</h2>
+      <h2>{__('Status Manager', 'alpaca')}</h2>
       <div className="alpaca-status-manager">
         <div className="status-grid">
           {/* Grid header */}
           <div className="status-grid-header">
             <div className="status-grid-cell">
-              <strong>Name</strong>
+              <strong>{__('Name', 'alpaca')}</strong>
             </div>
             <div className="status-grid-cell actions-cell">
-              <strong>Actions</strong>
+              <strong>{__('Actions', 'alpaca')}</strong>
             </div>
           </div>
 
@@ -519,27 +520,26 @@ const StatusManager = ({
 
         <p>
           <Button isPrimary onClick={handleAddStatus}>
-            New Status
+            {__('New Status', 'alpaca')}
           </Button>
         </p>
 
         {statusToDelete && (
           <Modal
-            title="Delete Status?"
+            title={__('Delete Status?', 'alpaca')}
             onRequestClose={cancelDelete}
             className="alpaca-modal"
           >
             <p>
-              Are you sure you want to delete the status &quot;
-              <strong>{statusToDelete.name}</strong>&quot;? This cannot be
-              undone.
+              {__('Are you sure you want to delete the status', 'alpaca')} &quot;
+              <strong>{statusToDelete.name}</strong>&quot;? {__('This cannot be undone.', 'alpaca')}
             </p>
             <div className="alpaca-actions flexalign">
               <Button variant="primary" isDestructive onClick={performDelete}>
-                Delete
+                {__('Delete', 'alpaca')}
               </Button>
               <Button isSecondary onClick={cancelDelete}>
-                Cancel
+                {__('Cancel', 'alpaca')}
               </Button>
             </div>
           </Modal>
@@ -614,7 +614,7 @@ const StatusRow = wp.element.forwardRef(
             <div
               {...handleProps}
               className="drag-handle flexalign"
-              title="Drag to reorder"
+              title={__('Drag to reorder', 'alpaca')}
             >
               <DragHandleIcon />
             </div>
@@ -642,7 +642,7 @@ const StatusRow = wp.element.forwardRef(
         <div className="status-grid-cell actions-cell">
           <Button
             icon="trash"
-            label="Delete"
+            label={__('Delete', 'alpaca')}
             onClick={() => onDelete(status.term_id)}
           />
         </div>

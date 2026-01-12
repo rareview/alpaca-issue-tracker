@@ -1,6 +1,7 @@
 import handleSnapdomCapture from './snapdomHandler.js';
 import { useTestLogger } from './utils/testLogger.js';
 
+const { __ } = wp.i18n;
 const { Button, TextareaControl, Spinner, ToggleControl } = wp.components;
 const { doAction } = wp.hooks;
 const { useState, useRef, useEffect, useCallback } = wp.element;
@@ -131,7 +132,7 @@ const AlpacaToolbar = () => {
       }
 
       setStatus('success');
-      setMessage('Your issue has been submitted successfully.');
+      setMessage(__('Your issue has been submitted successfully.', 'alpaca'));
 
       doAction(
         'alpaca.issueSubmitted',
@@ -143,7 +144,7 @@ const AlpacaToolbar = () => {
     } catch (error) {
       console.error('Submission error:', error);
       setStatus('error');
-      setMessage('There was an error submitting your issue. Please try again.');
+      setMessage(__('There was an error submitting your issue. Please try again.', 'alpaca'));
     }
   }, [feedback, isHighPriority, closeForm]);
 
@@ -155,7 +156,7 @@ const AlpacaToolbar = () => {
           onClick={openForm}
         >
           <span className="dashicons dashicons-warning" />
-          Report An Issue
+          {__('Report An Issue', 'alpaca')}
         </button>
         <a
           href={
@@ -165,7 +166,7 @@ const AlpacaToolbar = () => {
           className="alpaca-board-link"
         >
           <span className="dashicons dashicons-analytics" />
-          Project Board
+          {__('Project Board', 'alpaca')}
         </a>
         <button className="toggle-button" onClick={toggleExpand}>
           <span className="toggle-pointer">►</span>
@@ -177,7 +178,7 @@ const AlpacaToolbar = () => {
         className={`alpaca-report-form ${isFormVisible ? 'visible' : ''}`}
       >
         <div className="form-header">
-          <h4>Report An Issue</h4>
+          <h4>{__('Report An Issue', 'alpaca')}</h4>
           <button className="form-close" onClick={closeForm}>
             ×
           </button>
@@ -187,13 +188,13 @@ const AlpacaToolbar = () => {
           <>
             <p>{message}</p>
             <Button variant="primary" onClick={closeForm} ref={textareaRef}>
-              Close
+              {__('Close', 'alpaca')}
             </Button>
           </>
         ) : (
           <>
             <TextareaControl
-              placeholder="Describe the problem"
+              placeholder={__('Describe the problem', 'alpaca')}
               value={feedback}
               onChange={(value) => setFeedback(value)}
               disabled={status === 'submitting'}
@@ -202,7 +203,7 @@ const AlpacaToolbar = () => {
 
             <div className="form-toggles">
               <ToggleControl
-                label={<span className="priority-label">High Priority</span>}
+                label={<span className="priority-label">{__('High Priority', 'alpaca')}</span>}
                 checked={isHighPriority}
                 onChange={setIsHighPriority}
                 disabled={status === 'submitting'}
@@ -215,14 +216,14 @@ const AlpacaToolbar = () => {
                 onClick={submitIssue}
                 disabled={status === 'submitting' || !feedback.trim()}
               >
-                {status === 'submitting' ? <Spinner /> : 'Submit'}
+                {status === 'submitting' ? <Spinner /> : __('Submit', 'alpaca')}
               </Button>
               <Button
                 variant="secondary"
                 onClick={closeForm}
                 disabled={status === 'submitting'}
               >
-                Cancel
+                {__('Cancel', 'alpaca')}
               </Button>
             </div>
           </>

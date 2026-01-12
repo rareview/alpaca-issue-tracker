@@ -1,4 +1,5 @@
 const { useEffect, memo, createPortal } = wp.element;
+const { __ } = wp.i18n;
 import PropTypes from 'prop-types';
 
 /**
@@ -43,7 +44,7 @@ const Lightbox = memo(({ src, onClose }) => {
     >
       <img
         src={src}
-        alt="Enlarged screenshot"
+        alt={__('Enlarged screenshot', 'alpaca')}
         style={{
           maxWidth: '90%',
           maxHeight: '90%',
