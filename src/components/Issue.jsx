@@ -1,18 +1,6 @@
 import PropTypes from 'prop-types';
 
-const { useState, useEffect, useRef, useMemo, useCallback, memo } = wp.element;
 import { getTabsConfig } from '../utils/tabsConfig';
-const {
-  Modal,
-  TabPanel,
-  Button,
-  Tooltip,
-  Dropdown,
-  MenuGroup,
-  MenuItem,
-  ToggleControl,
-} = wp.components;
-
 import useIssueData from '../hooks/useIssueData';
 import useUserManagement from '../hooks/useUserManagement';
 import useLoadingStates from '../hooks/useLoadingStates';
@@ -28,6 +16,20 @@ import ErrorsTab from './issue/ErrorsTab';
 import AttachmentRow from './issue/AttachmentRow';
 import User from './User';
 import Time from './Time';
+
+/* THEN access WordPress globals */
+const { useState, useEffect, useRef, useMemo, useCallback, memo } = wp.element;
+
+const {
+  Modal,
+  TabPanel,
+  Button,
+  Tooltip,
+  Dropdown,
+  MenuGroup,
+  MenuItem,
+  ToggleControl,
+} = wp.components;
 
 const { decodeEntities } = wp.htmlEntities;
 
@@ -93,10 +95,9 @@ const DeadlineRow = memo(
 const EditableTitle = memo(
   ({ isEditing, title, onEditStart, onChange, onSave, onCancel }) => {
     const inputRef = useRef(null);
-    const wasEditingRef = useRef(false);
 
     useEffect(() => {
-      if (isEditing && !wasEditingRef.current && inputRef.current) {
+      if (isEditing && inputRef.current) {
         inputRef.current.textContent = title;
         inputRef.current.focus();
         const range = document.createRange();
@@ -106,46 +107,40 @@ const EditableTitle = memo(
         sel.removeAllRanges();
         sel.addRange(range);
       }
-      wasEditingRef.current = isEditing;
     }, [isEditing, title]);
 
-    if (isEditing) {
-      return (
-        <div
-          role="textbox"
-          aria-label="Edit issue title"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              onSave();
-            } else if (e.key === 'Escape') {
-              e.preventDefault();
-              e.stopPropagation();
-              onCancel();
-            }
-          }}
-          onBlur={onSave}
-        >
-          {/* eslint-disable-next-line jsx-a11y/heading-has-content -- content is set via JavaScript for contentEditable */}
-          <h3
-            className="alpaca-issue-title"
-            contentEditable
-            suppressContentEditableWarning
-            ref={inputRef}
-            onInput={(e) => onChange(e.currentTarget.textContent)}
-            aria-label="Issue title"
-          />
-        </div>
-      );
-    }
+    const handleKeyDown = (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        onSave();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        onCancel();
+      }
+    };
 
     return (
-      <div className="alpaca-issue-title-wrapper">
-        <h3 className="alpaca-issue-title" onClick={onEditStart}>
-          {title}
-        </h3>
-      </div>
+      // eslint-disable-next-line jsx-a11y/no-noninteractive-element-to-interactive-role, jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/heading-has-content
+      <h3
+        className="alpaca-issue-title"
+        contentEditable={isEditing}
+        suppressContentEditableWarning={isEditing}
+        ref={isEditing ? inputRef : undefined}
+        role={isEditing ? 'textbox' : 'button'}
+        tabIndex={0}
+        onClick={!isEditing ? onEditStart : undefined}
+        onKeyDown={
+          !isEditing ? (e) => e.key === 'Enter' && onEditStart() : handleKeyDown
+        }
+        onInput={
+          isEditing ? (e) => onChange(e.currentTarget.textContent) : undefined
+        }
+        onBlur={isEditing ? onSave : undefined}
+        aria-label="Issue title"
+      >
+        {title}
+      </h3>
     );
   },
   (prev, next) =>

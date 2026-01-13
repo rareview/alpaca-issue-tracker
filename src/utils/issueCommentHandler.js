@@ -63,11 +63,12 @@ const postComment = async (issueOrId, content, commentTags = []) => {
 
 addAction('alpaca.issueSubmitted', 'alpaca/addIssueComment', async (issue) => {
   const currentUser = await getUser();
+  const actionClass = ['issue-created'];
   const commentContent = `Issue created by ${generateAssigneeSpan(
     currentUser,
     true,
   )}`;
-  await postComment(issue, commentContent, ['issue-created']); // Pass issue object
+  await postComment(issue, commentContent, actionClass); // Pass issue object
 });
 
 addAction(
@@ -75,8 +76,9 @@ addAction(
   'alpaca/addStatusChangeComment',
   async (issue, fromStatus, toStatus) => {
     const currentUser = await getUser();
+    const actionClass = ['status-changed'];
     const commentContent = `Status changed from **${fromStatus}** to **${toStatus}** by ${generateAssigneeSpan(currentUser)}`;
-    await postComment(issue, commentContent, ['status-changed']); // Pass issue object
+    await postComment(issue, commentContent, actionClass); // Pass issue object
   },
 );
 
@@ -86,10 +88,14 @@ addAction(
   async (issue, user, isAssigned) => {
     const currentUser = await getUser();
     const actionText = isAssigned ? 'assigned to' : 'unassigned from';
+    const actionClass = [
+      'assignee-changed',
+      isAssigned ? 'action-add' : 'action-remove',
+    ];
     const commentContent = `${generateAssigneeSpan(
       user,
       true,
     )} was ${actionText} this issue by ${generateAssigneeSpan(currentUser)}`;
-    await postComment(issue, commentContent, ['assignee-changed']); // Pass issue object
+    await postComment(issue, commentContent, actionClass); // Pass issue object
   },
 );

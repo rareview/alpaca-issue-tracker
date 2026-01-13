@@ -14,7 +14,7 @@
  *   4.4 - Attachments
  *   4.5 - Checklists
  *   4.6 - Comments
- *   4.7 - Other Modal Components
+ *   4.7 - Timeline Items
  * 5.0 - Other Components
  *   5.1 - Popovers
  *   5.2 - Status Manager
@@ -496,178 +496,187 @@ $timeline-width: 1px;
       border-bottom: 1px solid $greyborder;
     }
 
-    .alpaca-issue-main {
-      h3 {
-        font-weight: bold;
-        font-size: xx-large;
-        line-height: 1.3;
-        margin: 5px 0;
-      }
-    }
-
-    .components-panel {
-      margin-bottom: 1rem;
-
-      .alpaca-modal-textarea {
-        width: 100%;
-      }
-
-      textarea {
-        width: 100%;
-        font-family: monospace; /* Often good for preformatted text */
-        white-space: pre;
-        overflow: hidden scroll;
-      }
-    }
-
-    /*
-     * 4.2 - Modal Header & Meta
-     */
-    .alpaca-issue-meta {
-      color: $greytext;
-      font-size: $smallfont;
-      line-height: 3em;
-      flex-direction: row;
-      gap: $spacegap;
-
-      .alpaca-user-name {
-        font-weight: 600;
-      }
-    }
-
-    /*
-     * 4.3 - Details Table
-     */
-    table.alpaca-issue-details {
-      border: 0;
-      margin: 1em 0;
-      width: 100%;
-
-      th,
-      td {
-        font-size: $midfont;
-        line-height: 1.8;
-        text-align: left;
-        vertical-align: top;
-      }
-
-      th {
-        padding: 5px 1rem 5px 0;
-        width: 150px;
-        font-weight: normal;
-      }
-
-      td {
-        padding: 5px 0;
-        word-break: break-all;
-      }
-
-      div {
-        margin: 0;
-        padding: 0;
-      }
-
-      input,
-      .alpaca-input,
-      .components-form-token-field__input-container,
-      .components-form-token-field__input-container .components-flex {
-        background: none;
-        border: none;
-        margin: 0;
-        padding: 0;
-        line-height: inherit;
-        min-height: auto;
-        font-size: $midfont;
-      }
-
-      .components-form-token-field {
-        width: 100%;
-      }
-
-      .components-form-token-field__help {
-        display: none;
-      }
-
-      .components-form-token-field input,
-      .components-form-token-field:focus,
-      .components-form-token-field:focus-visible,
-      .components-form-token-field:focus-within {
-        outline: none !important;
-        box-shadow: none !important;
-        border: none !important;
-      }
-
-      .placeholder,
-      ::placeholder {
-        color: $greytext;
-      }
-    }
-
-    /*
-     * 4.4 - Attachments
-     */
-    .alpaca-attachments-wrapper {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .alpaca-attachment {
-      position: relative;
-
-      .alpaca-attachment-thumbnail {
-        width: 180px;
-        padding: 0;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        background: none;
-        cursor: zoom-in;
-        display: inline-block;
-
-        img {
-          display: block;
-          width: 100%;
-          height: auto;
-          border-radius: inherit;
-        }
-      }
-
-      .alpaca-attachment-delete {
-        position: absolute;
-        top: 0;
-        right: 0;
-        z-index: $z-index-attachment-delete;
-        opacity: 0;
-        transition: opacity 0.2s ease-in-out;
-      }
-
-      &:hover .alpaca-attachment-delete {
-        opacity: 1;
-      }
-    }
-
-    .alpaca-screenshot-wrapper {
-      position: relative;
-
-      .alpaca-screenshot {
-        width: 100%;
-        height: auto;
-      }
-
-      .alpaca-screenshot-delete {
-        position: absolute;
-        top: 0;
-        right: 0;
-        z-index: $z-index-attachment-delete;
-      }
-    }
-
-    /*
-     * 4.7 - Other Modal Components
-     */
     .components-tab-panel__tab-content {
       // any tab styling
       padding: 1em 0;
+    }
+  }
+
+  .alpaca-issue-main {
+    .alpaca-issue-title {
+      font-size: 2rem; // match h3
+      font-weight: bold;
+      line-height: 1.3;
+      margin: 0;
+      padding: 0;
+      color: inherit;
+      background: none; // remove any default bg
+      border: none; // remove border
+      outline: none; // remove focus outline
+      cursor: pointer; // for view mode
+      width: 100%;
+      text-align: left;
+
+      &:focus {
+        outline: none;
+      }
+    }
+  }
+
+  .components-panel {
+    margin-bottom: 1rem;
+
+    .alpaca-modal-textarea {
+      width: 100%;
+    }
+
+    textarea {
+      width: 100%;
+      font-family: monospace; /* Often good for preformatted text */
+      white-space: pre;
+      overflow: hidden scroll;
+    }
+  }
+
+  /*
+     * 4.2 - Modal Header & Meta
+     */
+  .alpaca-issue-meta {
+    color: $greytext;
+    font-size: $smallfont;
+    line-height: 3em;
+    flex-direction: row;
+    gap: $spacegap;
+
+    .alpaca-user-name {
+      font-weight: 600;
+    }
+  }
+
+  /*
+     * 4.3 - Details Table
+     */
+  table.alpaca-issue-details {
+    border: 0;
+    margin: 1em 0;
+    width: 100%;
+
+    th,
+    td {
+      font-size: $midfont;
+      line-height: 1.8;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      padding: 5px 1rem 5px 0;
+      width: 150px;
+      font-weight: normal;
+    }
+
+    td {
+      padding: 5px 0;
+      word-break: break-all;
+    }
+
+    div {
+      margin: 0;
+      padding: 0;
+    }
+
+    input,
+    .alpaca-input,
+    .components-form-token-field__input-container,
+    .components-form-token-field__input-container .components-flex {
+      background: none;
+      border: none;
+      margin: 0;
+      padding: 0;
+      line-height: inherit;
+      min-height: auto;
+      font-size: $midfont;
+    }
+
+    .components-form-token-field {
+      width: 100%;
+    }
+
+    .components-form-token-field__help {
+      display: none;
+    }
+
+    .components-form-token-field input,
+    .components-form-token-field:focus,
+    .components-form-token-field:focus-visible,
+    .components-form-token-field:focus-within {
+      outline: none !important;
+      box-shadow: none !important;
+      border: none !important;
+    }
+
+    .placeholder,
+    ::placeholder {
+      color: $greytext;
+    }
+  }
+
+  /*
+     * 4.4 - Attachments
+     */
+  .alpaca-attachments-wrapper {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .alpaca-attachment {
+    position: relative;
+
+    .alpaca-attachment-thumbnail {
+      width: 180px;
+      padding: 0;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      background: none;
+      cursor: zoom-in;
+      display: inline-block;
+
+      img {
+        display: block;
+        width: 100%;
+        height: auto;
+        border-radius: inherit;
+      }
+    }
+
+    .alpaca-attachment-delete {
+      position: absolute;
+      top: 0;
+      right: 0;
+      z-index: $z-index-attachment-delete;
+      opacity: 0;
+      transition: opacity 0.2s ease-in-out;
+    }
+
+    &:hover .alpaca-attachment-delete {
+      opacity: 1;
+    }
+  }
+
+  .alpaca-screenshot-wrapper {
+    position: relative;
+
+    .alpaca-screenshot {
+      width: 100%;
+      height: auto;
+    }
+
+    .alpaca-screenshot-delete {
+      position: absolute;
+      top: 0;
+      right: 0;
+      z-index: $z-index-attachment-delete;
     }
   }
 
@@ -844,32 +853,6 @@ $timeline-width: 1px;
         flex-grow: 1;
       }
     }
-
-    &[data-source='audit'] {
-      position: relative;
-
-      .alpaca-timeline-icon {
-        position: absolute;
-        width: 24px;
-        height: 24px;
-        background: $bgwhite;
-        border: 1px solid $greyborder;
-        border-radius: 50%;
-        left: 24px;
-      }
-
-      .alpaca-timeline-msg {
-        margin-left: 64px;
-      }
-
-      p {
-        margin: 0 0 0.25em 0;
-      }
-
-      .alpaca-comment-date {
-        color: $greytext;
-      }
-    }
   }
 
   .alpaca-comment-form,
@@ -945,6 +928,77 @@ $timeline-width: 1px;
 
     .components-textarea-control__input {
       padding: 11px 14px;
+    }
+  }
+
+  /*
+     * 4.7 - Timeline Items
+     */
+
+  .alpaca-timeline-item[data-source='audit'] {
+    position: relative;
+
+    .alpaca-timeline-msg {
+      margin-left: 64px;
+    }
+
+    p {
+      margin: 0 0 0.25em 0;
+    }
+
+    .alpaca-comment-date {
+      color: $greytext;
+    }
+
+    .alpaca-timeline-icon {
+      position: absolute;
+      width: 28px;
+      height: 28px;
+      background-color: $bgwhite;
+      border: 1px solid $greyborder;
+      border-radius: 50%;
+      left: 22px;
+      top: -3px;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background-color: $bgwhite; // Color for the icon
+        mask-size: 14px;
+        mask-repeat: no-repeat;
+        mask-position: center;
+      }
+    }
+
+    &.assignee-changed {
+      .alpaca-timeline-icon::before {
+        mask-image: url('components/icons/svg/person.svg');
+        background-color: $greytext;
+      }
+    }
+
+    &.status-changed {
+      .alpaca-timeline-icon::before {
+        mask-image: url('components/icons/svg/columns.svg');
+        background-color: $greytext;
+      }
+    }
+
+    &.action-add {
+      .alpaca-timeline-icon::before {
+        background-color: green;
+      }
+    }
+
+    &.action-remove {
+      .alpaca-timeline-icon::before {
+        background-color: red;
+      }
     }
   }
 
