@@ -4,7 +4,6 @@ const CommentIcon = (props) => (
     width="16"
     height="16"
     fill="currentColor"
-    class="bi bi-chat-right"
     viewBox="0 0 16 16"
     {...props}
   >
