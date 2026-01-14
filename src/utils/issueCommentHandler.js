@@ -123,19 +123,19 @@ addAction(
         actionClass.push('action-add');
         commentContent = `Deadline set to **${formatDate(
           newDeadline,
-        )}** by ${generateAssigneeSpan(currentUser)}.`;
+        )}** by ${generateAssigneeSpan(currentUser)}`;
         break;
       case 'deleted':
         actionClass.push('action-remove');
         commentContent = `Deadline removed by ${generateAssigneeSpan(
           currentUser,
-        )}.`;
+        )}`;
         break;
       case 'changed':
         actionClass.push('action-update');
         commentContent = `Deadline changed to **${formatDate(newDeadline)}** by ${generateAssigneeSpan(
           currentUser,
-        )}.`;
+        )}`;
         break;
       default:
         // Do nothing if changeType is unknown
