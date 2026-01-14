@@ -127,6 +127,7 @@ const AlpacaModal = () => {
         'alpaca.issueSubmitted',
         responseData.issue,
         responseData.statusId,
+        isHighPriority,
       );
 
       setTimeout(closeModal, 1500);

@@ -137,6 +137,7 @@ const AlpacaToolbar = () => {
         'alpaca.issueSubmitted',
         responseData.issue,
         responseData.statusId,
+        isHighPriority,
       );
 
       setTimeout(closeForm, 1500);

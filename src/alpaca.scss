@@ -1007,7 +1007,8 @@ $timeline-width: 1px;
       }
     }
 
-    &.priority-changed {
+    &.priority-changed,
+    &.issue-created.high-priority {
       .alpaca-timeline-icon::before {
         mask-image: url('components/icons/svg/exclamation-circle-fill.svg');
         background-color: $greytext;
