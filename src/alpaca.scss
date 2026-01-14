@@ -1007,6 +1007,14 @@ $timeline-width: 1px;
       }
     }
 
+    &.priority-changed {
+      .alpaca-timeline-icon::before {
+        mask-image: url('components/icons/svg/exclamation-circle-fill.svg');
+        background-color: $greytext;
+        mask-size: 22px;
+      }
+    }
+
     // &.action-add {
     //   .alpaca-timeline-icon::before {
     //     background-color: green;

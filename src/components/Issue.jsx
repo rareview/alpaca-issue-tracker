@@ -290,6 +290,7 @@ const AlpacaIssue = ({
         wp.hooks.doAction('alpaca.priorityUpdated', {
           issueId,
           isHighPriority: newValue,
+          issue: issueDetails,
         });
       } catch (err) {
         console.error(err);

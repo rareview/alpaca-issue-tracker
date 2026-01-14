@@ -147,3 +147,30 @@ addAction(
     }
   },
 );
+
+addAction(
+  'alpaca.priorityUpdated',
+  'alpaca/addPriorityChangeComment',
+  async (payload) => {
+    const { issue, isHighPriority } = payload;
+    const currentUser = await getUser();
+    const actionClass = ['priority-changed'];
+
+    let commentContent = '';
+    if (isHighPriority) {
+      actionClass.push('action-add');
+      commentContent = `Priority set to **High** by ${generateAssigneeSpan(
+        currentUser,
+      )}`;
+    } else {
+      actionClass.push('action-remove');
+      commentContent = `High priority removed by ${generateAssigneeSpan(
+        currentUser,
+      )}`;
+    }
+
+    if (commentContent) {
+      await postComment(issue, commentContent, actionClass);
+    }
+  },
+);
