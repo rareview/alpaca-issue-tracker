@@ -44,9 +44,9 @@ $container-bg: #f9f9f9;
 $container-header-fontsize: 18px;
 $container-header-fontweight: 600;
 $priority-high-bg: #dc3545;
-$deadline-late-bg: red;
-$deadline-today-bg: black;
-$deadline-soon-bg: orange;
+$deadline-late-bg: #ef4444;
+$deadline-today-bg: #3b82f6;
+$deadline-soon-bg: #f59e0b;
 $control-width-large: 300px;
 $z-index-attachment-delete: 10;
 $z-index-checklist-dragging: 99900000;
@@ -57,10 +57,15 @@ $timeline-width: 1px;
 /*
  * Mixins
  */
+@use 'sass:color';
 
-@mixin deadline-style($bg-color, $text-color) {
+@mixin deadline-style($bg-color) {
   background-color: $bg-color;
-  color: $text-color;
+  color: if(
+    color.channel($bg-color, 'lightness', $space: hsl) > 67%,
+    #000,
+    #fff
+  );
   margin: 2px 0;
   padding: 0 8px;
 }
@@ -317,11 +322,11 @@ $timeline-width: 1px;
 
     .alpaca-item-inner {
       &.is-late .alpaca-item-deadline {
-        @include deadline-style($deadline-late-bg, white);
+        @include deadline-style($deadline-late-bg);
       }
 
       &[data-days-left='0'] .alpaca-item-deadline {
-        @include deadline-style($deadline-today-bg, white);
+        @include deadline-style($deadline-today-bg);
       }
 
       &[data-days-left='1'],
@@ -332,7 +337,7 @@ $timeline-width: 1px;
       &[data-days-left='6'],
       &[data-days-left='7'] {
         .alpaca-item-deadline {
-          @include deadline-style($deadline-soon-bg, black);
+          @include deadline-style($deadline-soon-bg);
         }
       }
 
@@ -968,10 +973,16 @@ $timeline-width: 1px;
         width: 100%;
         height: 100%;
         border-radius: 50%;
-        background-color: $bgwhite; // Color for the icon
         mask-size: 14px;
         mask-repeat: no-repeat;
         mask-position: center;
+      }
+    }
+
+    &.issue-created {
+      .alpaca-timeline-icon::before {
+        mask-image: url('components/icons/svg/plus-lg.svg');
+        background-color: $greytext;
       }
     }
 
@@ -989,17 +1000,24 @@ $timeline-width: 1px;
       }
     }
 
-    &.action-add {
+    &.deadline-changed {
       .alpaca-timeline-icon::before {
-        background-color: green;
+        mask-image: url('components/icons/svg/calendar2-week.svg');
+        background-color: $greytext;
       }
     }
 
-    &.action-remove {
-      .alpaca-timeline-icon::before {
-        background-color: red;
-      }
-    }
+    // &.action-add {
+    //   .alpaca-timeline-icon::before {
+    //     background-color: green;
+    //   }
+    // }
+
+    // &.action-remove {
+    //   .alpaca-timeline-icon::before {
+    //     background-color: red;
+    //   }
+    // }
   }
 
   /*

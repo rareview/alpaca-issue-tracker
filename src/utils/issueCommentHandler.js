@@ -99,3 +99,51 @@ addAction(
     await postComment(issue, commentContent, actionClass); // Pass issue object
   },
 );
+
+addAction(
+  'alpaca.deadlineUpdated',
+  'alpaca/addDeadlineChangeComment',
+  async (payload) => {
+    const { changeType, newDeadline, issue } = payload;
+    // payload also includes oldDeadline
+    const currentUser = await getUser();
+    let commentContent = '';
+    const actionClass = ['deadline-changed'];
+
+    const formatDate = (dateString) => {
+      if (!dateString) return '';
+      // The 'Z' is important to ensure the date is treated as UTC.
+      const dateObj = new Date(`${dateString}Z`);
+      const format = wp.date.getSettings().formats.date;
+      return wp.date.dateI18n(format, dateObj);
+    };
+
+    switch (changeType) {
+      case 'added':
+        actionClass.push('action-add');
+        commentContent = `Deadline set to **${formatDate(
+          newDeadline,
+        )}** by ${generateAssigneeSpan(currentUser)}.`;
+        break;
+      case 'deleted':
+        actionClass.push('action-remove');
+        commentContent = `Deadline removed by ${generateAssigneeSpan(
+          currentUser,
+        )}.`;
+        break;
+      case 'changed':
+        actionClass.push('action-update');
+        commentContent = `Deadline changed to **${formatDate(newDeadline)}** by ${generateAssigneeSpan(
+          currentUser,
+        )}.`;
+        break;
+      default:
+        // Do nothing if changeType is unknown
+        break;
+    }
+
+    if (commentContent) {
+      await postComment(issue, commentContent, actionClass);
+    }
+  },
+);

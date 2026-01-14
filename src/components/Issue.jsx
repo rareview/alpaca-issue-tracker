@@ -346,13 +346,33 @@ const AlpacaIssue = ({
   // Deadline handlers
   const handleDeadlineChange = useCallback(
     (newDate) => {
+      const oldDeadline = deadline;
       setDeadline(newDate);
       setLoading('deadline', true);
       updateIssue(issueId, { meta: { deadline: newDate } })
-        .then(() => onDeadlineChange?.(issueId, newDate))
+        .then(() => {
+          onDeadlineChange?.(issueId, newDate);
+
+          if (newDate !== oldDeadline) {
+            let changeType = 'changed';
+            if (!oldDeadline) {
+              changeType = 'added';
+            } else if (!newDate) {
+              changeType = 'deleted';
+            }
+
+            wp.hooks.doAction('alpaca.deadlineUpdated', {
+              issueId,
+              changeType,
+              newDeadline: newDate,
+              oldDeadline,
+              issue: issueDetails,
+            });
+          }
+        })
         .finally(() => setLoading('deadline', false));
     },
-    [issueId, onDeadlineChange, setLoading],
+    [issueId, onDeadlineChange, setLoading, deadline, issueDetails],
   );
 
   const handleDeadlineClear = useCallback(() => {
