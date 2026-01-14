@@ -8,14 +8,14 @@
     "lint": "npm run lint:js && npm run lint:styles && npm run lint:php",
     "lint:js": "eslint src --ext .jsx,.js",
     "lint:styles": "stylelint src/**/*.scss",
-    "lint:php": "vendor/bin/phpcs 'src/**/*.php'",
+    "lint:php": "vendor/bin/phpcs --ignore=src/*",
     "format": "npm run format:js && npm run format:php",
     "format:js": "prettier --write 'src/**/*.{jsx,js,scss}'",
-    "format:php": "vendor/bin/phpcbf 'src/**/*.php'",
+    "format:php": "vendor/bin/phpcbf --ignore=src/*",
     "fix": "npm run fix:js && npm run fix:styles && npm run fix:php",
     "fix:js": "eslint src --ext .jsx,.js --fix",
     "fix:styles": "stylelint src/**/*.scss --fix",
-    "fix:php": "vendor/bin/phpcbf 'src/**/*.php'"
+    "fix:php": "vendor/bin/phpcbf --ignore=src/*"
   },
   "devDependencies": {
     "@parcel/transformer-sass": "^2.15.4",
