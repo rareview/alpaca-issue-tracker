@@ -1016,6 +1016,13 @@ $timeline-width: 1px;
       }
     }
 
+    &.priority-changed.action-add,
+    &.issue-created.high-priority {
+      .alpaca-timeline-icon::before {
+        background-color: $priority-high-bg;
+      }
+    }
+
     // &.action-add {
     //   .alpaca-timeline-icon::before {
     //     background-color: green;
