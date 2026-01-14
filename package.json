@@ -15,7 +15,8 @@
     "fix": "npm run fix:js && npm run fix:styles && npm run fix:php",
     "fix:js": "eslint src --ext .jsx,.js --fix",
     "fix:styles": "stylelint src/**/*.scss --fix",
-    "fix:php": "vendor/bin/phpcbf --ignore=src/*"
+    "fix:php": "vendor/bin/phpcbf --ignore=src/*",
+    "clear": "rm -rf ./.parcel-cache/ ./dist/"
   },
   "devDependencies": {
     "@parcel/transformer-sass": "^2.15.4",
