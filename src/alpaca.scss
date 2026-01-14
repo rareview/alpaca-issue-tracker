@@ -1010,7 +1010,7 @@ $timeline-width: 1px;
     &.priority-changed,
     &.issue-created.high-priority {
       .alpaca-timeline-icon::before {
-        mask-image: url('components/icons/svg/exclamation-circle-fill.svg');
+        mask-image: url('components/icons/svg/exclamation-circle.svg');
         background-color: $greytext;
         mask-size: 22px;
       }
@@ -1019,6 +1019,7 @@ $timeline-width: 1px;
     &.priority-changed.action-add,
     &.issue-created.high-priority {
       .alpaca-timeline-icon::before {
+        mask-image: url('components/icons/svg/exclamation-circle-fill.svg');
         background-color: $priority-high-bg;
       }
     }
