@@ -47,20 +47,15 @@
 
   code {
     font-family: monospace;
-    background-color: #f6f8fa;
-    padding: 0.2em 0.4em;
     margin: 0;
     font-size: 85%;
-    border-radius: 6px;
+    background-color: transparent;
   }
 
   pre {
-    padding: 16px;
     overflow: auto;
     font-size: 85%;
     line-height: 1.45;
-    background-color: #f6f8fa;
-    border-radius: 6px;
 
     code {
       padding: 0;
