@@ -1,4 +1,5 @@
 const { useState, useEffect, useCallback, useMemo } = wp.element;
+const { __ } = wp.i18n;
 const { SelectControl, Spinner } = wp.components;
 import PropTypes from 'prop-types';
 
@@ -24,7 +25,7 @@ const DefaultStatusSelector = ({ statuses, onDefaultChange }) => {
       .catch((err) => {
         // eslint-disable-next-line no-console
         console.error('Error fetching data:', err);
-        setError('Could not load default status settings.');
+        setError(__('Could not load default status settings.', 'alpaca'));
       })
       .finally(() => {
         setIsFetching(false);
@@ -53,7 +54,7 @@ const DefaultStatusSelector = ({ statuses, onDefaultChange }) => {
         // eslint-disable-next-line no-console
         console.error('Error saving default status:', err);
         // TODO: Replace with WordPress notice API for better UX
-        setError('Error saving setting: ' + err.message);
+        setError(`${__('Error saving setting:', 'alpaca')} ${err.message}`);
         fetchOption(); // Revert on error
       })
       .finally(() => {
@@ -64,7 +65,7 @@ const DefaultStatusSelector = ({ statuses, onDefaultChange }) => {
   // Memoize status options to ensure they update when statuses order changes
   const statusOptions = useMemo(
     () => [
-      { label: 'Select a default status...', value: '' },
+      { label: __('Select a default status…', 'alpaca'), value: '' },
       ...statuses.map((status) => ({
         label: status.name,
         value: status.term_id.toString(),
@@ -76,7 +77,7 @@ const DefaultStatusSelector = ({ statuses, onDefaultChange }) => {
   if (error) {
     return (
       <tr>
-        <th>Default Status for New Issues</th>
+        <th>{__('Default Status for New Issues', 'alpaca')}</th>
         <td>
           <p className="alpaca-error">{error}</p>
         </td>
@@ -86,10 +87,10 @@ const DefaultStatusSelector = ({ statuses, onDefaultChange }) => {
 
   return (
     <tr>
-      <th>Default Status for New Issues</th>
+      <th>{__('Default Status for New Issues', 'alpaca')}</th>
       <td>
         <SelectControl
-          label="Default Status"
+          label={__('Default Status', 'alpaca')}
           hideLabelFromVision={true}
           value={defaultStatus}
           options={statusOptions}

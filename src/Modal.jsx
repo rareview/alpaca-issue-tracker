@@ -1,6 +1,7 @@
 import handleSnapdomCapture from './snapdomHandler.js';
 import { useTestLogger } from './utils/testLogger.js';
 
+const { __ } = wp.i18n;
 const { Button, Modal, TextareaControl, Spinner, ToggleControl } =
   wp.components;
 const { doAction } = wp.hooks;
@@ -121,7 +122,7 @@ const AlpacaModal = () => {
       }
 
       setStatus('success');
-      setMessage('Your issue has been submitted successfully.');
+      setMessage(__('Your issue has been submitted successfully.', 'alpaca'));
 
       doAction(
         'alpaca.issueSubmitted',
@@ -133,7 +134,12 @@ const AlpacaModal = () => {
     } catch (error) {
       console.error('Submission error:', error);
       setStatus('error');
-      setMessage('There was an error submitting your issue. Please try again.');
+      setMessage(
+        __(
+          'There was an error submitting your issue. Please try again.',
+          'alpaca',
+        ),
+      );
     }
   };
 
@@ -152,7 +158,7 @@ const AlpacaModal = () => {
           padding: 0,
         }}
       >
-        Report An Issue
+        {__('Report An Issue', 'alpaca')}
       </button>
 
       {isOpen && (
@@ -160,9 +166,9 @@ const AlpacaModal = () => {
           size="medium"
           className="alpaca-modal"
           title={(() => {
-            if (status === 'success') return 'Issue Submitted';
-            if (status === 'error') return 'Submission Failed';
-            return 'Report An Issue';
+            if (status === 'success') return __('Issue Submitted', 'alpaca');
+            if (status === 'error') return __('Submission Failed', 'alpaca');
+            return __('Report An Issue', 'alpaca');
           })()}
           onRequestClose={closeModal}
           isDismissible={false}
@@ -171,13 +177,13 @@ const AlpacaModal = () => {
             <>
               <p>{message}</p>
               <Button variant="primary" onClick={closeModal} ref={closeBtnRef}>
-                Close
+                {__('Close', 'alpaca')}
               </Button>
             </>
           ) : (
             <>
               <TextareaControl
-                placeholder="Describe the problem"
+                placeholder={__('Describe the problem', 'alpaca')}
                 id="alpaca-modal-textarea"
                 value={feedback}
                 onChange={(value) => setFeedback(value)}
@@ -187,7 +193,7 @@ const AlpacaModal = () => {
 
               <div className="small-wrapper">
                 <ToggleControl
-                  label="High Priority"
+                  label={__('High Priority', 'alpaca')}
                   checked={isHighPriority}
                   onChange={setIsHighPriority}
                   disabled={status === 'submitting'}
@@ -200,14 +206,18 @@ const AlpacaModal = () => {
                   onClick={submitIssue}
                   disabled={status === 'submitting'}
                 >
-                  {status === 'submitting' ? <Spinner /> : 'Submit'}
+                  {status === 'submitting' ? (
+                    <Spinner />
+                  ) : (
+                    __('Submit', 'alpaca')
+                  )}
                 </Button>
                 <Button
                   variant="secondary"
                   onClick={closeModal}
                   disabled={status === 'submitting'}
                 >
-                  Cancel
+                  {__('Cancel', 'alpaca')}
                 </Button>
               </div>
             </>

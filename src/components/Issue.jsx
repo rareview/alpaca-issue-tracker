@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 
 const { useState, useEffect, useRef, useMemo, useCallback, memo } = wp.element;
+const { __ } = wp.i18n;
 import { getTabsConfig } from '../utils/tabsConfig';
 const {
   Modal,
@@ -35,10 +36,10 @@ const { decodeEntities } = wp.htmlEntities;
 const PriorityRow = memo(
   ({ isHighPriority, onChange, isLoading }) => (
     <tr>
-      <th scope="row">Priority</th>
+      <th scope="row">{__('Priority', 'alpaca')}</th>
       <td className="flexalign">
         <ToggleControl
-          label="High Priority"
+          label={__('High Priority', 'alpaca')}
           checked={isHighPriority}
           onChange={onChange}
           disabled={isLoading}
@@ -55,7 +56,7 @@ const PriorityRow = memo(
 const AssigneeRow = memo(
   ({ assignees, allUsers, onChange, isLoading }) => (
     <tr>
-      <th scope="row">Assignees</th>
+      <th scope="row">{__('Assignees', 'alpaca')}</th>
       <td className="flexalign">
         <AssigneeSelector
           assignees={assignees}
@@ -75,7 +76,7 @@ const AssigneeRow = memo(
 const DeadlineRow = memo(
   ({ deadline, onChange, onClear, isLoading }) => (
     <tr>
-      <th scope="row">Due Date</th>
+      <th scope="row">{__('Due Date', 'alpaca')}</th>
       <td className="flexalign">
         <DeadlineControl
           deadline={deadline}
@@ -113,7 +114,7 @@ const EditableTitle = memo(
       return (
         <div
           role="textbox"
-          aria-label="Edit issue title"
+          aria-label={__('Edit issue title', 'alpaca')}
           tabIndex={0}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
@@ -130,7 +131,7 @@ const EditableTitle = memo(
             suppressContentEditableWarning
             ref={inputRef}
             onInput={(e) => onChange(e.currentTarget.textContent)}
-            aria-label="Issue title"
+            aria-label={__('Issue title', 'alpaca')}
           />
         </div>
       );
@@ -140,7 +141,7 @@ const EditableTitle = memo(
       <div className="alpaca-issue-title-wrapper has-sidecontrols">
         <h3 className="alpaca-issue-title">{title}</h3>
         <div className="sidecontrols">
-          <Tooltip text="Edit title">
+          <Tooltip text={__('Edit title', 'alpaca')}>
             <Button
               className="alpaca-edit-title-button"
               icon="edit"
@@ -199,7 +200,9 @@ const AlpacaIssue = ({
   useEffect(() => {
     fetchStatuses()
       .then(setAllStatuses)
-      .catch(() => showNotification('Failed to load statuses.', 'error'));
+      .catch(() =>
+        showNotification(__('Failed to load statuses.', 'alpaca'), 'error'),
+      );
   }, [showNotification]);
 
   // Initialize issue data
@@ -255,7 +258,7 @@ const AlpacaIssue = ({
         });
       } catch (err) {
         console.error(err);
-        showNotification('Failed to update assignees.', 'error');
+        showNotification(__('Failed to update assignees.', 'alpaca'), 'error');
       } finally {
         setLoading('assignees', false);
       }
@@ -301,7 +304,7 @@ const AlpacaIssue = ({
         });
       } catch (err) {
         console.error(err);
-        showNotification('Failed to update priority.', 'error');
+        showNotification(__('Failed to update priority.', 'alpaca'), 'error');
         setIsHighPriority(!newValue);
       } finally {
         setLoading('priority', false);
@@ -390,11 +393,14 @@ const AlpacaIssue = ({
         },
       }));
 
-      showNotification('Screenshot deleted successfully.', 'success');
+      showNotification(
+        __('Screenshot deleted successfully.', 'alpaca'),
+        'success',
+      );
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error('Error deleting screenshot:', err);
-      showNotification('Failed to delete screenshot.', 'error');
+      showNotification(__('Failed to delete screenshot.', 'alpaca'), 'error');
     } finally {
       setLoading('screenshot', false);
     }
@@ -423,7 +429,10 @@ const AlpacaIssue = ({
       }));
       onStatusChange?.(issueId, nextStatus);
     } catch (err) {
-      showNotification('Failed to progress issue status.', 'error');
+      showNotification(
+        __('Failed to progress issue status.', 'alpaca'),
+        'error',
+      );
     } finally {
       setLoading('status', false);
     }
@@ -456,7 +465,7 @@ const AlpacaIssue = ({
       }));
       onIssueTitleChange?.(issueId, editedTitle);
     } catch {
-      showNotification('Failed to update issue title.', 'error');
+      showNotification(__('Failed to update issue title.', 'alpaca'), 'error');
     } finally {
       setLoading('title', false);
       setIsEditingTitle(false);
@@ -499,7 +508,7 @@ const AlpacaIssue = ({
           <Dropdown
             popoverProps={{ placement: 'bottom-end' }}
             renderToggle={({ onToggle }) => (
-              <Tooltip text="Options">
+              <Tooltip text={__('Options', 'alpaca')}>
                 <Button
                   className="alpaca-modal-options-button components-button has-icon"
                   onClick={onToggle}
@@ -517,7 +526,7 @@ const AlpacaIssue = ({
                     onClick={handleProgressIssue}
                     disabled={loadingStates.status}
                   >
-                    Progress Issue
+                    {__('Progress Issue', 'alpaca')}
                   </MenuItem>
                 )}
                 <MenuItem
@@ -526,7 +535,7 @@ const AlpacaIssue = ({
                   isDestructive
                   onClick={() => setShowDeleteConfirm(true)}
                 >
-                  Trash Issue
+                  {__('Trash Issue', 'alpaca')}
                 </MenuItem>
               </MenuGroup>
             )}
@@ -536,7 +545,7 @@ const AlpacaIssue = ({
         {error && (
           <div className="notice notice-error">
             <p>{error}</p>
-            <Button onClick={refetchData}>Retry</Button>
+            <Button onClick={refetchData}>{__('Retry', 'alpaca')}</Button>
           </div>
         )}
 
@@ -546,7 +555,7 @@ const AlpacaIssue = ({
           </div>
         )}
 
-        {isLoadingDetails && <p>Loading...</p>}
+        {isLoadingDetails && <p>{__('Loading…', 'alpaca')}</p>}
         {!isLoadingDetails && issueDetails && issueDetails.success && (
           <div className="alpaca-issue-details">
             <div className="alpaca-issue-main column">
@@ -569,8 +578,8 @@ const AlpacaIssue = ({
               <table className="alpaca-issue-details">
                 <tbody>
                   <tr>
-                    <th scope="row">Status</th>
-                    <td>{currentStatus?.name || 'Unknown'}</td>
+                    <th scope="row">{__('Status', 'alpaca')}</th>
+                    <td>{currentStatus?.name || __('Unknown', 'alpaca')}</td>
                   </tr>
 
                   <PriorityRow
@@ -648,22 +657,27 @@ const AlpacaIssue = ({
           </div>
         )}
         {!isLoadingDetails && (!issueDetails || !issueDetails.success) && (
-          <p>{issueDetails?.message || 'Could not load issue details.'}</p>
+          <p>
+            {issueDetails?.message ||
+              __('Could not load issue details.', 'alpaca')}
+          </p>
         )}
 
         {showDeleteScreenshotConfirm && (
           <Modal
-            title="Delete Screenshot?"
+            title={__('Delete Screenshot?', 'alpaca')}
             onRequestClose={() => setShowDeleteScreenshotConfirm(false)}
             className="alpaca-modal"
           >
-            <p>Are you sure you want to delete this screenshot?</p>
+            <p>
+              {__('Are you sure you want to delete this screenshot?', 'alpaca')}
+            </p>
             <div className="alpaca-actions flexalign">
               <Button isPrimary onClick={handleScreenshotDelete}>
-                Delete
+                {__('Delete', 'alpaca')}
               </Button>
               <Button onClick={() => setShowDeleteScreenshotConfirm(false)}>
-                Cancel
+                {__('Cancel', 'alpaca')}
               </Button>
             </div>
           </Modal>
@@ -673,8 +687,8 @@ const AlpacaIssue = ({
       {showDeleteConfirm && (
         <div className="alpaca-confirm-overlay">
           <div className="alpaca-confirm-box">
-            <h2>Delete Issue?</h2>
-            <p>Are you sure you want to trash this issue?</p>
+            <h2>{__('Delete Issue?', 'alpaca')}</h2>
+            <p>{__('Are you sure you want to trash this issue?', 'alpaca')}</p>
 
             <div>
               <Button
@@ -685,11 +699,11 @@ const AlpacaIssue = ({
                   setShowDeleteConfirm(false);
                 }}
               >
-                Delete
+                {__('Delete', 'alpaca')}
               </Button>
 
               <Button onClick={() => setShowDeleteConfirm(false)}>
-                Cancel
+                {__('Cancel', 'alpaca')}
               </Button>
             </div>
           </div>

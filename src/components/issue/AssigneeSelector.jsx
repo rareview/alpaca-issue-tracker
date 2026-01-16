@@ -1,11 +1,12 @@
 const { FormTokenField } = wp.components;
+const { __ } = wp.i18n;
 const { memo } = wp.element;
 
 const AssigneeSelector = memo(
   ({ assignees, allUsers, onChange, isLoading }) => (
     <FormTokenField
       label=""
-      placeholder="Enter username(s)"
+      placeholder={__('Enter username(s)', 'alpaca')}
       value={assignees}
       suggestions={allUsers}
       onChange={onChange}

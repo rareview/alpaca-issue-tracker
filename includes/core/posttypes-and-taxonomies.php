@@ -45,14 +45,14 @@ function alpaca_register_cpts_and_taxonomies() {
 			'public'        => false,
 			'show_in_rest'  => true,
 			'show_ui'       => false,
-			'label'         => 'Issues',
+			'label'         => esc_html__( 'Issues', 'alpaca' ),
 			'labels'        => array(
-				'name'          => 'Issue',
-				'singular_name' => 'Issue',
-				'all_items'     => 'All Issues',
-				'edit_item'     => 'Edit Issue',
-				'view_item'     => 'View Issue',
-				'view_items'    => 'View Issues',
+				'name'          => esc_html__( 'Issue', 'alpaca' ),
+				'singular_name' => esc_html__( 'Issue', 'alpaca' ),
+				'all_items'     => esc_html__( 'All Issues', 'alpaca' ),
+				'edit_item'     => esc_html__( 'Edit Issue', 'alpaca' ),
+				'view_item'     => esc_html__( 'View Issue', 'alpaca' ),
+				'view_items'    => esc_html__( 'View Issues', 'alpaca' ),
 			),
 			'menu_icon'     => 'dashicons-warning',
 			'menu_position' => 102,
@@ -61,14 +61,14 @@ function alpaca_register_cpts_and_taxonomies() {
 		)
 	);
 
-	alpaca_register_taxonomy( 'alpaca_browser', array( 'label' => 'Browser' ) );
-	alpaca_register_taxonomy( 'alpaca_phptemplate', array( 'label' => 'PHP Template' ) );
-	alpaca_register_taxonomy( 'alpaca_type', array( 'label' => 'Type' ) );
+	alpaca_register_taxonomy( 'alpaca_browser', array( 'label' => esc_html__( 'Browser', 'alpaca' ) ) );
+	alpaca_register_taxonomy( 'alpaca_phptemplate', array( 'label' => esc_html__( 'PHP Template', 'alpaca' ) ) );
+	alpaca_register_taxonomy( 'alpaca_type', array( 'label' => esc_html__( 'Type', 'alpaca' ) ) );
 	alpaca_register_taxonomy(
 		'alpaca_assignee',
 		array(
 			'public' => true,
-			'label'  => 'Assignee',
+			'label'  => esc_html__( 'Assignee', 'alpaca' ),
 		)
 	);
 	alpaca_register_taxonomy(
@@ -76,7 +76,7 @@ function alpaca_register_cpts_and_taxonomies() {
 		array(
 			'show_in_rest' => true,
 			'meta_box_cb'  => 'alpaca_status_metabox',
-			'label'        => 'Status',
+			'label'        => esc_html__( 'Status', 'alpaca' ),
 		)
 	);
 

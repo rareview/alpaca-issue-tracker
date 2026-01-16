@@ -1,6 +1,7 @@
 import StatusManager from './components/StatusManager';
 import EnableTestLogsControl from './components/EnableTestLogsControl';
 const { useState, useEffect, useCallback } = wp.element;
+const { __ } = wp.i18n;
 
 const AlpacaSettings = () => {
   const [statuses, setStatuses] = useState([]);
@@ -43,7 +44,7 @@ const AlpacaSettings = () => {
 
       <hr />
 
-      <h3>Settings</h3>
+      <h3>{__('Settings', 'alpaca')}</h3>
 
       <table className="form-table">
         <tbody>

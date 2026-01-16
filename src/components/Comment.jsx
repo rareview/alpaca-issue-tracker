@@ -3,6 +3,7 @@ import { getUser } from '../hooks/useUser';
 import { fetchIssueCommentCount } from '../services/issueApi';
 
 const { useState, useEffect, useRef, useCallback, useMemo, memo } = wp.element;
+const { __ } = wp.i18n;
 import User from './User';
 import Time from './Time';
 const {
@@ -50,7 +51,7 @@ const Comment = memo(
     currentUser,
   }) => {
     const author = comment._embedded?.author?.[0] ||
-      currentUser || { name: 'Unknown' };
+      currentUser || { name: __('Unknown', 'alpaca') };
 
     const dataSource =
       comment.author_user_agent === 'audit' ? 'audit' : 'human';
@@ -95,7 +96,7 @@ const Comment = memo(
               <Dropdown
                 popoverProps={{ placement: 'bottom-end' }}
                 renderToggle={({ isOpen, onToggle }) => (
-                  <Tooltip text="Options">
+                  <Tooltip text={__('Options', 'alpaca')}>
                     <Button
                       icon="ellipsis"
                       onClick={onToggle}
@@ -107,14 +108,14 @@ const Comment = memo(
                 renderContent={() => (
                   <MenuGroup>
                     <MenuItem icon="edit" onClick={() => startEditing(comment)}>
-                      Edit
+                      {__('Edit', 'alpaca')}
                     </MenuItem>
                     <MenuItem
                       icon="trash"
                       isDestructive
                       onClick={() => confirmDeleteComment(comment.id)}
                     >
-                      Delete
+                      {__('Delete', 'alpaca')}
                     </MenuItem>
                   </MenuGroup>
                 )}
@@ -134,10 +135,10 @@ const Comment = memo(
                   onClick={() => saveEdit(comment.id)}
                   disabled={isSubmitting}
                 >
-                  Save
+                  {__('Save', 'alpaca')}
                 </Button>
                 <Button onClick={cancelEditing} disabled={isSubmitting}>
-                  Cancel
+                  {__('Cancel', 'alpaca')}
                 </Button>
               </>
             ) : (
@@ -227,7 +228,7 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
       .then(setComments)
       .catch((err) => {
         console.error(err);
-        setError('Could not load comments.');
+        setError(__('Could not load comments.', 'alpaca'));
       })
       .finally(() => setIsLoadingComments(false));
   }, [issueId]);
@@ -293,7 +294,7 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
           prev.filter((c) => c.id !== optimisticComment.id),
         );
         showNotification(
-          `Failed to submit comment: ${err.message || 'Unknown error'}`,
+          `${__('Failed to submit comment:', 'alpaca')} ${err.message || __('Unknown error', 'alpaca')}`,
         );
       })
       .finally(() => setIsSubmitting(false));
@@ -336,7 +337,7 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
         .catch((err) => {
           console.error(err);
           showNotification(
-            `Failed to update comment: ${err.message || 'Unknown error'}`,
+            `${__('Failed to update comment:', 'alpaca')} ${err.message || __('Unknown error', 'alpaca')}`,
           );
         })
         .finally(() => setIsSubmitting(false));
@@ -381,7 +382,7 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
       .catch((err) => {
         console.error(err);
         showNotification(
-          `Failed to delete comment: ${err.message || 'Unknown error'}`,
+          `${__('Failed to delete comment:', 'alpaca')} ${err.message || __('Unknown error', 'alpaca')}`,
         );
       });
   }, [deleteCommentId, showNotification]);
@@ -390,7 +391,9 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
     <div id="alpaca-comments-wrapper">
       <div id="alpaca-comments-header">
         <Button variant="tertiary" onClick={toggleSortOrder}>
-          {sortOrder === 'desc' ? 'Sort: ↑' : 'Sort: ↓'}
+          {sortOrder === 'desc'
+            ? __('Sort: ↑', 'alpaca')
+            : __('Sort: ↓', 'alpaca')}
         </Button>
       </div>
 
@@ -398,7 +401,7 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
         <div className="alpaca-comment-form" data-source="human">
           <div className="alpaca-timeline-content">
             <TextareaControl
-              placeholder="Add a comment..."
+              placeholder={__('Add a comment…', 'alpaca')}
               value={newComment}
               onChange={setNewComment}
               disabled={isSubmitting}
@@ -409,14 +412,16 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
                 onClick={handleCommentSubmit}
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Submitting...' : 'Submit Comment'}
+                {isSubmitting
+                  ? __('Submitting…', 'alpaca')
+                  : __('Submit Comment', 'alpaca')}
               </Button>
             </div>
           </div>
         </div>
 
         {isLoadingComments && (
-          <p className="alpaca-loading">Loading comments...</p>
+          <p className="alpaca-loading">{__('Loading comments…', 'alpaca')}</p>
         )}
         {notificationMessage && (
           <div className="notice notice-error inline">
@@ -446,15 +451,17 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
 
         {deleteCommentId && (
           <Modal
-            title="Delete Comment?"
+            title={__('Delete Comment?', 'alpaca')}
             onRequestClose={cancelDelete}
             className="alpaca-modal"
           >
-            <p>Are you sure you want to delete this comment?</p>
+            <p>
+              {__('Are you sure you want to delete this comment?', 'alpaca')}
+            </p>
             <Button isPrimary onClick={deleteComment}>
-              Delete
+              {__('Delete', 'alpaca')}
             </Button>
-            <Button onClick={cancelDelete}>Cancel</Button>
+            <Button onClick={cancelDelete}>{__('Cancel', 'alpaca')}</Button>
           </Modal>
         )}
       </div>

@@ -1,4 +1,5 @@
 const { useState, useRef, memo } = wp.element;
+const { __ } = wp.i18n;
 import PropTypes from 'prop-types';
 
 const { BaseControl, Popover, DatePicker, Button } = wp.components;
@@ -42,7 +43,7 @@ const DeadlineControl = memo(({ deadline, onChange, onClear, isLoading }) => {
         >
           {deadline
             ? date.format(datesettings.formats.date, deadline)
-            : 'Click to select a deadline'}
+            : __('Click to select a deadline', 'alpaca')}
         </div>
 
         {isEditingDeadline && (
@@ -68,7 +69,7 @@ const DeadlineControl = memo(({ deadline, onChange, onClear, isLoading }) => {
         {deadline && (
           <Button
             icon="trash"
-            label="Clear deadline"
+            label={__('Clear deadline', 'alpaca')}
             onClick={onClear}
             disabled={isLoading}
             className="is-small"
