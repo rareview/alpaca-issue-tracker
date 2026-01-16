@@ -169,7 +169,7 @@ final class Alpaca {
 			'alpaca_enable_test_logs',
 			array(
 				'type'         => 'string',
-				'description'  => 'Enable console messages for testing purposes.',
+				'description'  => esc_html__( 'Enable console messages for testing purposes.', 'alpaca' ),
 				'show_in_rest' => true,
 				'default'      => '0',
 			)

@@ -72,7 +72,7 @@ add_action( 'add_meta_boxes', 'alpaca_add_metabox_to_issue' );
 function alpaca_screenshot_metabox_callback( $post ) {
 	$screenshot = get_post_meta( $post->ID, 'alpaca_screenshot', true );
 	?>
-	<div class="screenshot"><img src="<?php echo esc_url( $screenshot ); ?>" alt="Screenshot" /></div>
-	<p><em>Warning: may not be 100% faithful.</em></p>
+	<div class="screenshot"><img src="<?php echo esc_url( $screenshot ); ?>" alt="<?php echo esc_attr__( 'Screenshot', 'alpaca' ); ?>" /></div>
+	<p><em><?php echo esc_html__( 'Warning: may not be 100% faithful.', 'alpaca' ); ?></em></p>
 	<?php
 }

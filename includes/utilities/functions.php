@@ -60,7 +60,7 @@ function alpaca_setup_default_statuses( $force = false ) {
 		if ( ! empty( $existing_statuses ) && ! is_wp_error( $existing_statuses ) ) {
 			return array(
 				'success' => false,
-				'message' => 'Statuses already exist.',
+				'message' => esc_html__( 'Statuses already exist.', 'alpaca' ),
 			);
 		}
 	}

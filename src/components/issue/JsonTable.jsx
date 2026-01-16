@@ -1,4 +1,5 @@
 const { memo } = wp.element;
+const { __ } = wp.i18n;
 
 const JsonTable = memo(({ data }) => {
   if (!data) return null;
@@ -14,11 +15,11 @@ const JsonTable = memo(({ data }) => {
 
     if (!parsedData || typeof parsedData !== 'object') {
       console.error('JsonTable: Invalid data format', parsedData);
-      return <p>Invalid data format</p>;
+      return <p>{__('Invalid data format', 'alpaca')}</p>;
     }
   } catch (e) {
     console.error('JsonTable: Error parsing JSON', e, data);
-    return <p>Error parsing JSON data</p>;
+    return <p>{__('Error parsing JSON data', 'alpaca')}</p>;
   }
 
   return (

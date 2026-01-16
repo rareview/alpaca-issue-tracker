@@ -20,9 +20,9 @@ function alpaca_add_admin_bar_menu( $admin_bar ) {
 		array(
 			'id'     => 'alpaca-menu',
 			'parent' => 'top-secondary',
-			'title'  => '<span class="ab-icon dashicons dashicons-warning"></span><span class="ab-label">Issues</span>',
+			'title'  => '<span class="ab-icon dashicons dashicons-warning"></span><span class="ab-label">' . esc_html__( 'Issues', 'alpaca' ) . '</span>',
 			'href'   => '#',
-			'meta'   => array( 'title' => 'Issues' ),
+			'meta'   => array( 'title' => esc_html__( 'Issues', 'alpaca' ) ),
 		)
 	);
 
@@ -41,7 +41,7 @@ function alpaca_add_admin_bar_menu( $admin_bar ) {
 	$admin_bar->add_menu(
 		array(
 			'parent' => 'alpaca-menu',
-			'title'  => 'View Project Board',
+			'title'  => esc_html__( 'View Project Board', 'alpaca' ),
 			'id'     => 'alpaca-board',
 			'href'   => admin_url( 'admin.php?page=alpaca-board' ),
 		)

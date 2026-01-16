@@ -2,6 +2,7 @@ import JsonTable from './JsonTable';
 import PropTypes from 'prop-types';
 
 const { useMemo } = wp.element;
+const { __ } = wp.i18n;
 const { decodeEntities } = wp.htmlEntities;
 
 /**
@@ -24,7 +25,11 @@ const ErrorsTab = ({ errorsJson }) => {
   }, [errorsJson]);
 
   if (errors.length === 0) {
-    return <p>No JavaScript errors were recorded for this issue.</p>;
+    return (
+      <p>
+        {__('No JavaScript errors were recorded for this issue.', 'alpaca')}
+      </p>
+    );
   }
 
   return (
@@ -48,7 +53,7 @@ const ErrorsTab = ({ errorsJson }) => {
             <JsonTable data={JSON.stringify(errorWithoutStack)} />
             {stack && (
               <div className="alpaca-error-stack" style={{ marginTop: '1rem' }}>
-                <h5>Stack Trace</h5>
+                <h5>{__('Stack Trace', 'alpaca')}</h5>
                 <pre
                   style={{
                     whiteSpace: 'pre-wrap',

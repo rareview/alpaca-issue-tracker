@@ -1,4 +1,5 @@
 const { useState, useEffect } = wp.element;
+const { __ } = wp.i18n;
 
 export const useClipboard = () => {
   const [isClipboardSupported, setIsClipboardSupported] = useState(false);
@@ -14,7 +15,7 @@ export const useClipboard = () => {
   const copyToClipboard = (text, onSuccess, onError) => {
     if (!isClipboardSupported) {
       if (onError) {
-        onError('Clipboard API not supported.');
+        onError(__('Clipboard API not supported.', 'alpaca'));
       }
       return;
     }

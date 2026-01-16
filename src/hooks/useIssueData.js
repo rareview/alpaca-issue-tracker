@@ -1,4 +1,5 @@
 const { useState, useEffect, useCallback } = wp.element;
+const { __ } = wp.i18n;
 import { fetchIssue } from '../services/issueApi'; // Assuming this will be created
 
 const useIssueData = (issueId, isOpen) => {
@@ -17,7 +18,9 @@ const useIssueData = (issueId, isOpen) => {
         })
         .catch((err) => {
           console.error('Error fetching issue data:', err);
-          setError('Failed to load issue details. Please try again.');
+          setError(
+            __('Failed to load issue details. Please try again.', 'alpaca'),
+          );
           setIssueDetails(null);
         })
         .finally(() => {
@@ -35,7 +38,9 @@ const useIssueData = (issueId, isOpen) => {
         .then(setIssueDetails)
         .catch((err) => {
           console.error('Error refetching issue data:', err);
-          setError('Failed to load issue details. Please try again.');
+          setError(
+            __('Failed to load issue details. Please try again.', 'alpaca'),
+          );
         })
         .finally(() => setIsLoadingDetails(false));
     }

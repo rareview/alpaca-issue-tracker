@@ -1,4 +1,5 @@
 const { useState, useEffect, useCallback } = wp.element;
+const { __ } = wp.i18n;
 const { CheckboxControl, Spinner } = wp.components;
 
 const EnableTestLogsControl = () => {
@@ -35,10 +36,10 @@ const EnableTestLogsControl = () => {
 
   return (
     <tr>
-      <th>Debugging</th>
+      <th>{__('Debugging', 'alpaca')}</th>
       <td>
         <CheckboxControl
-          label="Enable Browser Console Messages"
+          label={__('Enable Browser Console Messages', 'alpaca')}
           checked={isEnabled}
           onChange={handleChange}
           disabled={isFetching || isSaving}

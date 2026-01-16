@@ -1,5 +1,6 @@
 const { useState, useRef, useEffect, useCallback } = wp.element;
 const { decodeEntities } = wp.htmlEntities;
+const { __ } = wp.i18n;
 const { Button, Notice } = wp.components;
 const { doAction } = wp.hooks;
 
@@ -470,7 +471,8 @@ export function AlpacaBoard() {
           window.location.reload();
         } else {
           setRestoreError(
-            response.message || 'Failed to restore default statuses.',
+            response.message ||
+              __('Failed to restore default statuses.', 'alpaca'),
           );
         }
       })
@@ -478,7 +480,8 @@ export function AlpacaBoard() {
         // eslint-disable-next-line no-console
         console.error('Error restoring default statuses:', err);
         setRestoreError(
-          err.message || 'An error occurred while restoring default statuses.',
+          err.message ||
+            __('An error occurred while restoring default statuses.', 'alpaca'),
         );
       })
       .finally(() => {
@@ -665,13 +668,17 @@ export function AlpacaBoard() {
           <Notice status="warning" isDismissible={false}>
             <p>
               <strong>
-                Oh no! All your project statuses have disappeared.
+                {__(
+                  'Oh no! All your project statuses have disappeared.',
+                  'alpaca',
+                )}
               </strong>
             </p>
             <p>
-              Without statuses, you cannot view or manage issues on the board.
-              Click the button below to restore the default statuses (Backlog,
-              Backlog, Next, In Progress, Done).
+              {__(
+                'Without statuses, you cannot view or manage issues on the board. Click the button below to restore the default statuses (Backlog, Next, In Progress, Done).',
+                'alpaca',
+              )}
             </p>
             <Button
               variant="primary"
@@ -679,7 +686,9 @@ export function AlpacaBoard() {
               isBusy={isRestoring}
               disabled={isRestoring}
             >
-              {isRestoring ? 'Restoring...' : 'Restore Default Statuses'}
+              {isRestoring
+                ? __('Restoring…', 'alpaca')
+                : __('Restore Default Statuses', 'alpaca')}
             </Button>
           </Notice>
           {restoreError && (

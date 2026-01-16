@@ -1,4 +1,5 @@
 const { useState, useEffect } = wp.element;
+const { __ } = wp.i18n;
 
 const cache = new Map();
 
@@ -63,7 +64,7 @@ export const generateAssigneeSpan = (user, withAvatar = false) => {
   const avatarAttr =
     user.avatar && withAvatar === true ? ` data-avatar="${user.avatar}"` : '';
   const displayName =
-    user.name || user.display_name || user.username || 'Unknown';
+    user.name || user.display_name || user.username || __('Unknown', 'alpaca');
 
   return `<${el} class="alpaca-status-assignee" data-userid="${user.id}"${avatarAttr}>${displayName}</${el}>`;
 };

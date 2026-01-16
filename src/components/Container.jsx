@@ -1,5 +1,6 @@
 const { Card, CardHeader, CardBody, DropdownMenu, TextControl } = wp.components;
 const { Heading = wp.components.__experimentalHeading } = wp.components;
+const { __ } = wp.i18n;
 
 const { useState, useEffect, useRef } = wp.element;
 
@@ -91,7 +92,7 @@ function Container({
   const menuControls = [
     {
       icon: 'edit',
-      title: 'Rename',
+      title: __('Rename', 'alpaca'),
       onClick: () => {
         setNewTitle(title);
         setIsRenaming(true);
@@ -107,7 +108,7 @@ function Container({
   if (!isLastContainer) {
     menuControls.push({
       icon: 'arrow-right-alt',
-      title: 'Move All To Next Column',
+      title: __('Move All To Next Column', 'alpaca'),
       onClick: () => onMoveAllToNext(id),
       disabled: !hasItems,
     });
@@ -116,7 +117,7 @@ function Container({
   if (isLastContainer) {
     menuControls.push({
       icon: 'trash',
-      title: 'Delete All',
+      title: __('Delete All', 'alpaca'),
       onClick: () => onDeleteAll(id),
     });
   }
@@ -267,7 +268,11 @@ function Container({
         )}
 
         <div className="alpaca-container-controls">
-          <DropdownMenu icon="menu" label="Options" controls={menuControls} />
+          <DropdownMenu
+            icon="menu"
+            label={__('Options', 'alpaca')}
+            controls={menuControls}
+          />
         </div>
       </CardHeader>
 
@@ -329,7 +334,9 @@ function Container({
                         className="alpaca-item-inner"
                       />
                     ) : (
-                      <div className="alpaca-item-inner">Moving...</div>
+                      <div className="alpaca-item-inner">
+                        {__('Moving…', 'alpaca')}
+                      </div>
                     )}
                   </div>
 
@@ -398,7 +405,9 @@ function Container({
                 });
               })()
             ) : (
-              <div className="alpaca-item empty">Drop items here</div>
+              <div className="alpaca-item empty">
+                {__('Drop items here', 'alpaca')}
+              </div>
             );
           })()}
         </div>
