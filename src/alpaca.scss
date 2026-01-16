@@ -1,26 +1,80 @@
-/* styles go here */
+/**
+ * Alpaca Styles
+ *
+ * 1.0 - Variables & Globals
+ * 2.0 - General / Helper Classes
+ * 3.0 - Board
+ *   3.1 - Board Controls
+ *   3.2 - Containers (Columns)
+ *   3.3 - Items (Cards)
+ * 4.0 - Modal (Issue Details)
+ *   4.1 - Modal Frame
+ *   4.2 - Modal Header & Meta
+ *   4.3 - Details Table
+ *   4.4 - Attachments
+ *   4.5 - Checklists
+ *   4.6 - Comments
+ *   4.7 - Other Modal Components
+ * 5.0 - Other Components
+ *   5.1 - Popovers
+ *   5.2 - Status Manager
+ *   5.3 - Settings
+ *   5.4 - Bottom Toolbar & Report Form
+ *   5.5 - Empty State
+ *   5.6 - Confirmation Dialog
+ * 6.0 - Media Queries
+ */
+
+/*
+ * 1.0 - Variables & Globals
+ */
 
 $bgwhite: #fff;
 $greyborder: #ddd;
 $greyshade: #f0f0f0;
 $greytext: #999;
 $smallfont: 14px;
+$midfont: 15px;
 $spacegap: 0.8ch;
+$commenthead-vpad: 12px;
+$commenthead-hpad: 18px;
 
-:root {
-  --timeline-width: 1px;
+// New variables
+$container-bg: #f9f9f9;
+$container-header-fontsize: 18px;
+$container-header-fontweight: 600;
+$priority-high-bg: #dc3545;
+$deadline-late-bg: red;
+$deadline-today-bg: black;
+$deadline-soon-bg: orange;
+$control-width-large: 300px;
+$z-index-attachment-delete: 10;
+$z-index-checklist-dragging: 99900000;
+$z-index-report-form: 99998;
+$z-index-bottom-toolbar: 99999;
+$timeline-width: 1px;
+
+/*
+ * Mixins
+ */
+
+@mixin deadline-style($bg-color, $text-color) {
+  background-color: $bg-color;
+  color: $text-color;
+  margin: 2px 0;
+  padding: 0 8px;
 }
+
+/*
+ * 2.0 - General / Helper Classes
+ */
 
 .timestamp {
   white-space: nowrap;
 }
 
-.alpaca-issue-details {
-  p,
-  input,
-  textarea {
-    font-size: 15px;
-  }
+.rotate90 {
+  transform: rotate(90deg);
 }
 
 .flexalign {
@@ -44,83 +98,10 @@ $spacegap: 0.8ch;
   flex-wrap: nowrap;
 }
 
-.alpaca-empty-state {
-  margin: 2rem auto;
-  max-width: 600px;
-
-  .components-notice {
-    margin-bottom: 1rem;
-
-    p {
-      margin: 0.5rem 0;
-    }
-
-    strong {
-      font-size: 1.1em;
-    }
-
-    .components-button {
-      margin-top: 1rem;
-    }
-  }
-}
-
-.alpaca-modal {
-  background: $bgwhite;
-  color: inherit;
-
-  .small-wrapper {
-    padding: 0.8rem 0 1rem;
-  }
-
-  small {
-    font-size: 12px;
-  }
-
-  p {
-    margin-top: 0;
-    margin-bottom: 1rem;
-  }
-
-  button {
-    margin-right: 0.5rem;
-  }
-}
-
-.alpaca-confirm-overlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgb(0 0 0 / 50%);
-  z-index: 999000009;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.alpaca-confirm-box {
-  padding: 20px;
-  background-color: $bgwhite;
-  border-radius: 4px;
-  box-shadow:
-    0 0 0 1px #ccc,
-    0 2px 3px #0000000d,
-    0 4px 5px #0000000a,
-    0 12px 12px #00000008,
-    0 16px 16px #00000005;
-}
-
+/*
+ * Main container for all Alpaca styles in the WP admin
+ */
 .wp-admin {
-  &.post-type-issue {
-    .screenshot {
-      margin: 1rem 0 -1rem;
-
-      img {
-        max-width: 100%;
-        height: auto;
-      }
-    }
-  }
-
   .alpaca-user {
     img {
       aspect-ratio: 1;
@@ -128,49 +109,13 @@ $spacegap: 0.8ch;
       border: 1px solid $greyborder;
       vertical-align: middle;
       background: $bgwhite;
-      width: 24px;
+      width: 36px;
     }
   }
 
-  #alpaca-board-controls {
-    .alpaca-board-filter {
-      width: fit-content;
-      background: transparent;
-      border-width: 0;
-
-      & > div {
-        flex: none;
-      }
-
-      &:focus-within {
-        outline: none;
-        box-shadow: none;
-        border-width: 0;
-      }
-    }
-
-    .components-combobox-control {
-      width: 300px;
-    }
-  }
-
-  .alpaca-control-popover {
-    width: 300px;
-    padding: 8px 16px 16px;
-
-    .alpaca-control {
-      padding: 8px 0;
-    }
-
-    .components-menu-group {
-      border: none;
-    }
-
-    .components-menu-group__label {
-      margin: 0;
-    }
-  }
-
+  /*
+   * 3.0 - Board
+   */
   #alpaca-board {
     & > * {
       clear: both;
@@ -184,9 +129,42 @@ $spacegap: 0.8ch;
       padding-top: 23px;
     }
 
+    .alpaca-item.is-filtered-out {
+      display: none; // because there is a really weird bug arising when I use opacity
+      pointer-events: none;
+    }
+
+    /*
+     * 3.1 - Board Controls
+     */
+    #alpaca-board-controls {
+      .alpaca-board-filter {
+        width: fit-content;
+        background: transparent;
+        border-width: 0;
+
+        & > div {
+          flex: none;
+        }
+
+        &:focus-within {
+          outline: none;
+          box-shadow: none;
+          border-width: 0;
+        }
+      }
+
+      .components-combobox-control {
+        width: $control-width-large;
+      }
+    }
+
+    /*
+     * 3.2 - Containers (Columns)
+     */
     .alpaca-container {
       margin: 0 10px 0 1px;
-      background: #f9f9f9;
+      background: $container-bg;
       border-radius: 4px;
       display: flex;
 
@@ -204,8 +182,8 @@ $spacegap: 0.8ch;
         h2,
         .alpaca-container-title-input input {
           margin: 0;
-          font-size: 18px;
-          font-weight: 600;
+          font-size: $container-header-fontsize;
+          font-weight: $container-header-fontweight;
           padding: 0;
           border: none;
           background: transparent;
@@ -264,6 +242,9 @@ $spacegap: 0.8ch;
       padding: 0 2px;
     }
 
+    /*
+     * 3.3 - Items (Cards)
+     */
     .alpaca-item,
     .alpaca-item-dragging {
       display: flex;
@@ -275,6 +256,10 @@ $spacegap: 0.8ch;
       .components-card__body,
       .components-card__footer {
         padding-bottom: 4px;
+      }
+
+      span.components-text {
+        font-size: $midfont;
       }
 
       .components-card__media {
@@ -309,25 +294,34 @@ $spacegap: 0.8ch;
         grid-column: 1;
         grid-row: 1;
       }
+
+      .alpaca-item-controls .dashicons,
+      &.alpaca-item-dragging .alpaca-item-controls .dashicons {
+        opacity: 0;
+        transition: opacity 0.2s ease-in-out;
+      }
+
+      &:hover .alpaca-item-controls .dashicons {
+        opacity: 0.3;
+      }
+
+      .alpaca-item-controls .dashicons:hover {
+        cursor: pointer;
+      }
+
+      &.is-watched .alpaca-item-controls .dashicons,
+      &.alpaca-item-dragging.is-watched .alpaca-item-controls .dashicons {
+        opacity: 1;
+      }
     }
 
     .alpaca-item-inner {
-      &.is-late {
-        .alpaca-item-deadline {
-          background-color: red;
-          color: white;
-          margin: 2px 0;
-          padding: 0 8px;
-        }
+      &.is-late .alpaca-item-deadline {
+        @include deadline-style($deadline-late-bg, white);
       }
 
-      &[data-days-left='0'] {
-        .alpaca-item-deadline {
-          background-color: black;
-          color: white;
-          margin: 2px 0;
-          padding: 0 8px;
-        }
+      &[data-days-left='0'] .alpaca-item-deadline {
+        @include deadline-style($deadline-today-bg, white);
       }
 
       &[data-days-left='1'],
@@ -338,10 +332,7 @@ $spacegap: 0.8ch;
       &[data-days-left='6'],
       &[data-days-left='7'] {
         .alpaca-item-deadline {
-          background-color: orange;
-          color: black;
-          margin: 2px 0;
-          padding: 0 8px;
+          @include deadline-style($deadline-soon-bg, black);
         }
       }
 
@@ -372,7 +363,7 @@ $spacegap: 0.8ch;
         }
 
         .alpaca-item-priority-badge {
-          background: #dc3545;
+          background: $priority-high-bg;
           color: white;
           padding: 0 8px;
           border-radius: 8px;
@@ -393,6 +384,16 @@ $spacegap: 0.8ch;
             .alpaca-user .alpaca-user-name {
               display: block;
             }
+          }
+
+          img {
+            width: 24px;
+            height: 24px;
+            border: 1px solid $greyborder;
+            border-radius: 50%;
+            background: $bgwhite;
+            vertical-align: middle;
+            margin-right: -2px;
           }
         }
 
@@ -434,34 +435,67 @@ $spacegap: 0.8ch;
     }
   }
 
+  /*
+   * 4.0 - Modal (Issue Details)
+   */
+  &.post-type-issue {
+    .screenshot {
+      margin: 1rem 0 -1rem;
+
+      img {
+        max-width: 100%;
+        height: auto;
+      }
+    }
+  }
+
+  .alpaca-modal {
+    background: $bgwhite;
+    color: inherit;
+
+    .small-wrapper {
+      padding: 0.8rem 0 1rem;
+    }
+
+    small {
+      font-size: 12px;
+    }
+
+    p {
+      margin-top: 0;
+      margin-bottom: 1rem;
+    }
+
+    button {
+      margin-right: 0.5rem;
+    }
+  }
+
+  /*
+   * 4.1 - Modal Frame
+   */
   .components-modal__frame.alpaca-details-modal {
     position: absolute;
     top: 0;
     right: -8px;
-    max-width: 800px;
+    max-width: 750px;
     height: calc(100% - 32px);
     margin: 32px 0 0 0;
     animation: slide-in-right 300ms ease-out forwards;
     transform-origin: 100% center; /* origin from right */
   }
 
-  @keyframes slide-in-right {
-    from {
-      transform: translateX(100%);
-    }
-
-    to {
-      transform: translateX(0);
-    }
-  }
-
-  .alpaca-deadline-popover {
-    .components-popover__content {
-      padding: 1em;
-    }
-  }
-
   .alpaca-issue-details {
+    p,
+    input,
+    textarea {
+      font-size: $midfont;
+    }
+
+    .alpaca-issue-tabs .components-tab-panel__tabs {
+      border-bottom: 1px solid $greyborder;
+    }
+
     .alpaca-issue-main {
       h3 {
         font-weight: bold;
@@ -471,6 +505,24 @@ $spacegap: 0.8ch;
       }
     }
 
+    .components-panel {
+      margin-bottom: 1rem;
+
+      .alpaca-modal-textarea {
+        width: 100%;
+      }
+
+      textarea {
+        width: 100%;
+        font-family: monospace; /* Often good for preformatted text */
+        white-space: pre;
+        overflow: hidden scroll;
+      }
+    }
+
+    /*
+     * 4.2 - Modal Header & Meta
+     */
     .alpaca-issue-meta {
       color: $greytext;
       font-size: $smallfont;
@@ -483,6 +535,9 @@ $spacegap: 0.8ch;
       }
     }
 
+    /*
+     * 4.3 - Details Table
+     */
     table.alpaca-issue-details {
       border: 0;
       margin: 1em 0;
@@ -490,7 +545,7 @@ $spacegap: 0.8ch;
 
       th,
       td {
-        font-size: 15px;
+        font-size: $midfont;
         line-height: 1.8;
         text-align: left;
         vertical-align: top;
@@ -522,7 +577,7 @@ $spacegap: 0.8ch;
         padding: 0;
         line-height: inherit;
         min-height: auto;
-        font-size: 15px;
+        font-size: $midfont;
       }
 
       .components-form-token-field {
@@ -548,9 +603,47 @@ $spacegap: 0.8ch;
       }
     }
 
-    .components-tab-panel__tab-content {
-      // any tab styling
-      padding: 1em 0;
+    /*
+     * 4.4 - Attachments
+     */
+    .alpaca-attachments-wrapper {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .alpaca-attachment {
+      position: relative;
+
+      .alpaca-attachment-thumbnail {
+        width: 180px;
+        padding: 0;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background: none;
+        cursor: zoom-in;
+        display: inline-block;
+
+        img {
+          display: block;
+          width: 100%;
+          height: auto;
+          border-radius: inherit;
+        }
+      }
+
+      .alpaca-attachment-delete {
+        position: absolute;
+        top: 0;
+        right: 0;
+        z-index: $z-index-attachment-delete;
+        opacity: 0;
+        transition: opacity 0.2s ease-in-out;
+      }
+
+      &:hover .alpaca-attachment-delete {
+        opacity: 1;
+      }
     }
 
     .alpaca-screenshot-wrapper {
@@ -565,26 +658,22 @@ $spacegap: 0.8ch;
         position: absolute;
         top: 0;
         right: 0;
-        z-index: 10;
+        z-index: $z-index-attachment-delete;
       }
     }
 
-    .components-panel {
-      margin-bottom: 1rem;
-
-      .alpaca-modal-textarea {
-        width: 100%;
-      }
-
-      textarea {
-        width: 100%;
-        font-family: monospace; /* Often good for preformatted text */
-        white-space: pre;
-        overflow: hidden scroll;
-      }
+    /*
+     * 4.7 - Other Modal Components
+     */
+    .components-tab-panel__tab-content {
+      // any tab styling
+      padding: 1em 0;
     }
   }
 
+  /*
+   * 4.5 - Checklists
+   */
   .alpaca-checklist-container {
     .alpaca-checklist {
       padding-bottom: 0.5rem;
@@ -639,41 +728,15 @@ $spacegap: 0.8ch;
   }
 
   .alpaca-checklist-item--dragging {
-    z-index: 99900000 !important;
+    z-index: $z-index-checklist-dragging !important;
     box-shadow: 0 4px 8px rgb(0 0 0 / 10%);
   }
 
-  .alpaca-item .alpaca-item-controls .dashicons,
-  .alpaca-item-dragging .alpaca-item-controls .dashicons {
-    opacity: 0;
-    transition: opacity 0.2s ease-in-out;
-  }
-
-  .alpaca-item:hover .alpaca-item-controls .dashicons {
-    opacity: 0.3;
-  }
-
-  .alpaca-item.is-watched .alpaca-item-controls .dashicons,
-  .alpaca-item-dragging.is-watched .alpaca-item-controls .dashicons {
-    opacity: 1;
-  }
-
-  .alpaca-item .alpaca-item-controls .dashicons:hover {
-    cursor: pointer;
-  }
-
-  // fix: flash on star when you start dragging
-
-  #alpaca-board .alpaca-item.is-filtered-out {
-    display: none; // because there is a really weird bug arising when I use opacity
-    pointer-events: none;
-  }
-
-  #alpaca-comments-wrapper {
-    #alpaca-comments-header {
-      order: 1;
-      padding: 8px 0;
-    }
+  /*
+   * 4.6 - Comments
+   */
+  #alpaca-comments-header {
+    text-align: right;
   }
 
   #alpaca-comments {
@@ -694,10 +757,10 @@ $spacegap: 0.8ch;
       &::before {
         content: '';
         position: absolute;
-        left: 90px; // Position of the vertical line
+        left: 36px; // Position of the vertical line
         top: 6px;
-        bottom: 18px;
-        width: var(--timeline-width);
+        bottom: $commenthead-hpad;
+        width: $timeline-width;
         background-color: $greyborder; // Color of the timeline line
       }
     }
@@ -707,6 +770,10 @@ $spacegap: 0.8ch;
 
       .alpaca-user {
         top: -1px; // Needed, not sure why
+      }
+
+      .alpaca-comment-form-actions {
+        text-align: right;
       }
     }
 
@@ -726,6 +793,13 @@ $spacegap: 0.8ch;
         }
       }
     }
+
+    .components-textarea-control__input,
+    .alpaca-timeline-item[data-source='human'] .alpaca-comment-content p,
+    .alpaca-timeline-item[data-source='human'] .alpaca-comment-content li {
+      line-height: 1.5em;
+      margin-top: 0;
+    }
   }
 
   .alpaca-timeline-item[data-source='human'] .alpaca-timeline-content,
@@ -734,21 +808,59 @@ $spacegap: 0.8ch;
     border-radius: 8px;
     background: $bgwhite;
     border: 1px solid $greyborder;
+
+    .alpaca-comment-header {
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+      border-bottom: 1px solid $greyborder;
+      padding-top: $commenthead-vpad;
+      padding-bottom: $commenthead-vpad;
+    }
+  }
+
+  .alpaca-timeline-item {
+    margin: 18px 0 12px 0;
+
+    .alpaca-comment-header {
+      font-size: $midfont;
+      line-height: normal;
+
+      p {
+        font-size: $midfont;
+        line-height: normal;
+      }
+
+      strong {
+        color: #000;
+      }
+    }
+
+    &:hover .alpaca-comment-buttons {
+      opacity: 1;
+    }
+
+    &[data-source='human'] {
+      .alpaca-timeline-content {
+        flex-grow: 1;
+      }
+    }
+
+    &[data-source='audit'] {
+      p {
+        margin: 0;
+      }
+    }
   }
 
   .alpaca-comment-form,
   .alpaca-timeline-item {
     position: relative;
     display: flex;
-    font-size: 15px;
+    font-size: $midfont;
 
     .alpaca-timeline-content,
     textarea {
       width: 100%;
-    }
-
-    .alpaca-user {
-      position: absolute;
     }
 
     .alpaca-comment-buttons {
@@ -757,109 +869,51 @@ $spacegap: 0.8ch;
       opacity: 0;
       transition: opacity 0.2s ease-in-out;
       position: absolute;
-      top: 0;
-      right: 0;
+      top: $commenthead-vpad;
+      right: $commenthead-hpad;
     }
 
-    &[data-source='human'] {
-      padding-left: 72px;
-
-      .alpaca-user {
-        left: 10px;
-
-        img {
-          width: 36px;
-          height: 36px;
-        }
-
-        .alpaca-user-name {
-          display: none;
-        }
-      }
-
-      .alpaca-comment-header {
-        display: flex;
-        padding-left: 18px;
-        background: $greyshade;
-        border-top-left-radius: 8px;
-        border-top-right-radius: 8px;
-        border-bottom: 1px solid $greyborder;
-        font-size: $smallfont;
-        line-height: 32px;
-      }
-
-      .alpaca-timeline-content {
-        flex-grow: 1;
-      }
-
-      .alpaca-comment-content {
-        padding: 1em 15px 0 15px;
-
-        blockquote {
-          background: $greyshade;
-          padding: 1.5em 0.5em 0.5em 1.5em;
-          margin: 0 0 1.5em;
-          border-left: var(--timeline-width) solid $greyborder;
-        }
-
-        ul {
-          margin-top: 0;
-          padding-left: 1rem;
-
-          li {
-            list-style-type: disc;
-          }
-        }
-      }
+    img {
+      width: 36px;
+      height: 36px;
     }
 
-    &[data-source='audit'] {
-      padding-left: 118px;
-
-      .alpaca-user {
-        left: 78px;
-
-        img {
-          width: 24px;
-          height: 24px;
-        }
-      }
-
-      .alpaca-comment-buttons {
-        top: -8px;
-      }
-
-      .alpaca-comment-content {
-        padding-right: 32px;
-        color: #000;
-
-        .timestamp {
-          color: $greytext;
-        }
-
-        * {
-          display: inline;
-        }
-      }
+    .alpaca-user-name {
+      display: none;
     }
   }
 
-  .alpaca-timeline-item {
-    margin: 18px 0 12px 0;
+  .alpaca-comment-header {
+    display: flex;
+    padding-left: $commenthead-hpad;
+    padding-right: $commenthead-hpad;
+    background: $bgwhite;
+    font-size: $smallfont;
+    line-height: 32px;
+    color: $greytext;
+    gap: $spacegap;
+  }
 
-    &:hover .alpaca-comment-buttons {
-      opacity: 1;
+  .alpaca-timeline-content {
+    flex-grow: 1;
+  }
+
+  .alpaca-comment-content {
+    padding: 1em 15px 0 15px;
+
+    blockquote {
+      background: $greyshade;
+      padding: 1.5em 0.5em 0.5em 1.5em;
+      margin: 0 0 1.5em;
+      border-left: $timeline-width solid $greyborder;
     }
 
-    .alpaca-comment-header {
-      color: $greytext;
-      gap: $spacegap;
-      padding-right: 6px;
-    }
+    ul {
+      margin-top: 0;
+      padding-left: 1rem;
 
-    &[data-source='human'] {
-      .alpaca-timeline-content {
-        flex-grow: 1;
+      li {
+        list-style-type: disc;
       }
     }
   }
@@ -874,207 +928,136 @@ $spacegap: 0.8ch;
     }
   }
 
-  #alpaca-comments .components-textarea-control__input,
-  .alpaca-timeline-item[data-source='human'] .alpaca-comment-content p,
-  .alpaca-timeline-item[data-source='human'] .alpaca-comment-content li {
-    line-height: 1.5em;
-    margin-top: 0;
+  /*
+   * 5.1 - Popovers
+   */
+  .alpaca-control-popover {
+    width: $control-width-large;
+    padding: 8px 16px 16px;
+
+    .alpaca-control {
+      padding: 8px 0;
+    }
+
+    .components-menu-group {
+      border: none;
+    }
+
+    .components-menu-group__label {
+      margin: 0;
+    }
   }
 
-  .alpaca-status-manager {
-    .status-grid {
-      border: 1px solid $greyborder;
-      border-radius: 8px;
-      overflow: hidden;
-      font-size: 14px;
-      max-width: 600px;
+  .alpaca-deadline-popover {
+    .components-popover__content {
+      padding: 1em;
+    }
+  }
+}
 
-      .status-grid-header {
-        display: grid;
-        grid-template-columns: 1fr 150px; // name + actions
-        background: #f7f7f7;
-        border-bottom: 1px solid $greyborder;
-        font-weight: 600;
+/*
+ * 5.0 - Other Components
+ */
 
-        .status-grid-cell {
-          padding: 8px 12px;
-        }
+.alpaca-align-controls {
+  flex-direction: row;
+  gap: $spacegap;
+}
 
-        .actions-cell {
-          text-align: right;
-        }
+/*
+ * 5.2 - Status Manager
+ */
+
+.alpaca-status-manager {
+  .status-grid {
+    border: 1px solid $greyborder;
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 14px;
+    max-width: 600px;
+
+    .status-grid-header {
+      display: grid;
+      grid-template-columns: 1fr 150px; // name + actions
+      background: #f7f7f7;
+      border-bottom: 1px solid $greyborder;
+      font-weight: 600;
+
+      .status-grid-cell {
+        padding: 8px 12px;
       }
 
-      .status-grid-body {
-        display: flex;
-        flex-direction: column; // ✅ allows placeholder to insert space
-        min-height: 1px; // prevents collapse when empty
-      }
-
-      .status-grid-row {
-        display: grid;
-        grid-template-columns: 1fr 150px; // name + actions
-        align-items: center;
-        border-bottom: 1px solid $greyborder;
-        background: #fff;
-        transition: background 0.2s;
-
-        &:last-child {
-          border-bottom: none;
-        }
-
-        .status-grid-cell {
-          padding: 8px 12px;
-
-          &.actions-cell {
-            text-align: right;
-            white-space: nowrap;
-          }
-        }
-
-        .status-row-content {
-          gap: $spacegap;
-
-          .drag-handle {
-            cursor: grab;
-            padding: 4px;
-            color: $greytext;
-          }
-        }
+      .actions-cell {
+        text-align: right;
       }
     }
 
-    .alpaca-actions {
+    .status-grid-body {
       display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-      margin-top: 16px;
-    }
-  }
-
-  .alpaca-settings {
-    hr {
-      margin: 2em 0;
+      flex-direction: column; // ✅ allows placeholder to insert space
+      min-height: 1px; // prevents collapse when empty
     }
 
-    #alpaca-settings-internal {
-      .components-input-control__container {
-        max-width: 25em;
+    .status-grid-row {
+      display: grid;
+      grid-template-columns: 1fr 150px; // name + actions
+      align-items: center;
+      border-bottom: 1px solid $greyborder;
+      background: #fff;
+      transition: background 0.2s;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .status-grid-cell {
+        padding: 8px 12px;
+
+        &.actions-cell {
+          text-align: right;
+          white-space: nowrap;
+        }
+      }
+
+      .status-row-content {
+        gap: $spacegap;
+
+        .drag-handle {
+          cursor: grab;
+          padding: 4px;
+          color: $greytext;
+        }
       }
     }
   }
 
-  .alpaca-align-controls {
-    flex-direction: row;
-    gap: $spacegap;
+  .alpaca-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 16px;
   }
 }
 
-@media (width >= 861px) {
-  .wp-admin {
-    #alpaca-board {
-      .alpaca-wrap {
-        flex-direction: row;
-        padding: 5px 0;
-        overflow-x: auto;
+/*
+ * 5.3 - Settings
+ */
 
-        .alpaca-container {
-          flex-shrink: 0;
-        }
-      }
+.alpaca-settings {
+  hr {
+    margin: 2em 0;
+  }
 
-      .alpaca-container {
-        height: 75vh;
-        display: flex;
-        flex: 1;
-        min-width: 18vw;
-        flex-direction: column;
-
-        &.hidden {
-          width: auto;
-          padding: 0 0 10px;
-
-          .alpaca-container-header {
-            height: 100%;
-            writing-mode: vertical-rl;
-            transform: rotate(180deg);
-
-            h2,
-            input {
-              height: 100%;
-            }
-
-            h2 {
-              margin: 5px 0;
-            }
-
-            input {
-              margin: 5px -1px;
-            }
-          }
-        }
-
-        .alpaca-items {
-          overflow-y: auto;
-          padding: 10px 1px;
-          margin-top: -10px;
-          height: calc(75vh - 80px);
-        }
-      }
+  #alpaca-settings-internal {
+    .components-input-control__container {
+      max-width: 25em;
     }
   }
 }
 
-@media (width <= 860px) {
-  .wp-admin {
-    #alpaca-board {
-      .alpaca-wrap {
-        flex-direction: column;
-      }
-
-      .alpaca-container {
-        width: calc(100% - 2em);
-        margin-top: 1em;
-        overflow-x: auto;
-        display: flex;
-        flex-direction: column;
-        height: auto;
-
-        .alpaca-items {
-          flex-direction: row;
-          display: flex;
-          gap: $spacegap;
-          overflow-x: auto;
-
-          .alpaca-item {
-            width: 200px;
-            height: 140px;
-            flex-shrink: 0;
-
-            .alpaca-item-assignees {
-              &[data-assignees='1'] {
-                .alpaca-user .alpaca-user-name {
-                  display: none;
-                  padding-left: 0;
-                }
-              }
-            }
-          }
-        }
-
-        &.hidden {
-          width: calc(100% - 2em);
-          padding: 0 10px;
-        }
-      }
-    }
-  }
-
-  .alpaca-bottom-toolbar,
-  .alpaca-report-form {
-    display: none;
-  }
-}
+/*
+ * 5.4 - Bottom Toolbar & Report Form
+ */
 
 .alpaca-bottom-toolbar {
   direction: ltr;
@@ -1086,7 +1069,7 @@ $spacegap: 0.8ch;
   position: fixed;
   width: 100%;
   min-width: 600px;
-  z-index: 99999;
+  z-index: $z-index-bottom-toolbar;
   background: #1d2327;
   outline: 1px solid transparent;
   bottom: 0;
@@ -1164,7 +1147,7 @@ $spacegap: 0.8ch;
 
 .alpaca-report-form {
   position: fixed;
-  z-index: 99998;
+  z-index: $z-index-report-form;
   width: 400px;
   max-width: calc(100vw - 40px);
   padding: 16px;
@@ -1271,5 +1254,175 @@ $spacegap: 0.8ch;
     gap: 8px;
     justify-content: flex-end;
     margin-top: 16px;
+  }
+}
+
+/*
+ * 5.5 - Empty State
+ */
+
+.alpaca-empty-state {
+  margin: 2rem auto;
+  max-width: 600px;
+
+  .components-notice {
+    margin-bottom: 1rem;
+
+    p {
+      margin: 0.5rem 0;
+    }
+
+    strong {
+      font-size: 1.1em;
+    }
+
+    .components-button {
+      margin-top: 1rem;
+    }
+  }
+}
+
+/*
+ * 5.6 - Confirmation Dialog
+ */
+.alpaca-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgb(0 0 0 / 50%);
+  z-index: 999000009;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.alpaca-confirm-box {
+  padding: 20px;
+  background-color: $bgwhite;
+  border-radius: 4px;
+  box-shadow:
+    0 0 0 1px #ccc,
+    0 2px 3px #0000000d,
+    0 4px 5px #0000000a,
+    0 12px 12px #00000008,
+    0 16px 16px #00000005;
+}
+
+/*
+ * 6.0 - Media Queries
+ */
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+@media (width >= 861px) {
+  .wp-admin {
+    #alpaca-board {
+      .alpaca-wrap {
+        flex-direction: row;
+        padding: 5px 0;
+        overflow-x: auto;
+
+        .alpaca-container {
+          flex-shrink: 0;
+        }
+      }
+
+      .alpaca-container {
+        height: 75vh;
+        display: flex;
+        flex: 1;
+        min-width: 18vw;
+        flex-direction: column;
+
+        &.hidden {
+          width: auto;
+          padding: 0 0 10px;
+
+          .alpaca-container-header {
+            height: 100%;
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+
+            h2,
+            input {
+              height: 100%;
+            }
+
+            h2 {
+              margin: 5px 0;
+            }
+
+            input {
+              margin: 5px -1px;
+            }
+          }
+        }
+
+        .alpaca-items {
+          overflow-y: auto;
+          padding: 10px 1px;
+          margin-top: -10px;
+          height: calc(75vh - 80px);
+        }
+      }
+    }
+  }
+}
+
+@media (width <= 860px) {
+  .wp-admin {
+    #alpaca-board {
+      .alpaca-wrap {
+        flex-direction: column;
+      }
+
+      .alpaca-container {
+        width: calc(100% - 2em);
+        margin-top: 1em;
+        overflow-x: auto;
+        display: flex;
+        flex-direction: column;
+        height: auto;
+
+        .alpaca-items {
+          flex-direction: row;
+          display: flex;
+          gap: $spacegap;
+          overflow-x: auto;
+
+          .alpaca-item {
+            width: 200px;
+            height: 140px;
+            flex-shrink: 0;
+
+            .alpaca-item-assignees {
+              &[data-assignees='1'] {
+                .alpaca-user .alpaca-user-name {
+                  display: none;
+                  padding-left: 0;
+                }
+              }
+            }
+          }
+        }
+
+        &.hidden {
+          width: calc(100% - 2em);
+          padding: 0 10px;
+        }
+      }
+    }
+  }
+
+  .alpaca-bottom-toolbar,
+  .alpaca-report-form {
+    display: none;
   }
 }

@@ -6,7 +6,15 @@ const { useState, useEffect, useRef, useCallback, useMemo, memo } = wp.element;
 const { __ } = wp.i18n;
 import User from './User';
 import Time from './Time';
-const { TextareaControl, Button, Modal } = wp.components;
+const {
+  TextareaControl,
+  Button,
+  Modal,
+  Dropdown,
+  MenuGroup,
+  MenuItem,
+  Tooltip,
+} = wp.components;
 import { getCookie, setCookie } from '../utils/cookies';
 import { marked } from 'marked';
 
@@ -56,25 +64,17 @@ const Comment = memo(
     }, [comment.content.raw, comment.content.rendered]);
 
     if (isAudit) {
-      // --- Audit Comment Layout ---
       return (
         <div className="alpaca-timeline-item" data-source={dataSource}>
           <div className="alpaca-timeline-content">
-            <div className="alpaca-comment-header">
+            <div className="alpaca-comment-header flexalign">
               <User user={author} showName={false} />
-              <div className="alpaca-comment-content">
-                <div dangerouslySetInnerHTML={{ __html: processedContent }} />
-                <Time value={comment.date} type="relative" />
-              </div>
-              <div className="alpaca-comment-buttons">
-                <Button
-                  icon="trash"
-                  label={__('Delete', 'alpaca')}
-                  showTooltip
-                  className="button-link-delete"
-                  onClick={() => confirmDeleteComment(comment.id)}
-                />
-              </div>
+              <div dangerouslySetInnerHTML={{ __html: processedContent }} />
+              <Time
+                value={comment.date}
+                type="relative"
+                className="alpaca-comment-date"
+              />
             </div>
           </div>
         </div>
@@ -93,18 +93,32 @@ const Comment = memo(
               <Time value={comment.date} type="relative" />
             </div>
             <div className="alpaca-comment-buttons">
-              <Button
-                label={__('Edit', 'alpaca')}
-                showTooltip
-                icon="edit"
-                onClick={() => startEditing(comment)}
-              />
-              <Button
-                icon="trash"
-                label={__('Delete', 'alpaca')}
-                showTooltip
-                className="button-link-delete"
-                onClick={() => confirmDeleteComment(comment.id)}
+              <Dropdown
+                popoverProps={{ placement: 'bottom-end' }}
+                renderToggle={({ isOpen, onToggle }) => (
+                  <Tooltip text="Options">
+                    <Button
+                      icon="ellipsis"
+                      onClick={onToggle}
+                      aria-expanded={isOpen}
+                      className="rotate90"
+                    />
+                  </Tooltip>
+                )}
+                renderContent={() => (
+                  <MenuGroup>
+                    <MenuItem icon="edit" onClick={() => startEditing(comment)}>
+                      Edit
+                    </MenuItem>
+                    <MenuItem
+                      icon="trash"
+                      isDestructive
+                      onClick={() => confirmDeleteComment(comment.id)}
+                    >
+                      Delete
+                    </MenuItem>
+                  </MenuGroup>
+                )}
               />
             </div>
           </div>
@@ -374,15 +388,15 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
   }, [deleteCommentId, showNotification]);
 
   return (
-    <div id="alpaca-comments-wrapper" className="has-sidecontrols">
-      <div id="alpaca-comments-header" className="sidecontrols">
+    <div id="alpaca-comments-wrapper">
+      <div id="alpaca-comments-header">
         <Button variant="tertiary" onClick={toggleSortOrder}>
           {sortOrder === 'desc' ? 'Sort: ↑' : 'Sort: ↓'}
         </Button>
       </div>
+
       <div id="alpaca-comments">
         <div className="alpaca-comment-form" data-source="human">
-          <User user={currentUser} />
           <div className="alpaca-timeline-content">
             <TextareaControl
               placeholder={__('Add a comment…', 'alpaca')}
@@ -390,15 +404,15 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
               onChange={setNewComment}
               disabled={isSubmitting}
             />
-            <Button
-              isPrimary
-              onClick={handleCommentSubmit}
-              disabled={isSubmitting}
-            >
-              {isSubmitting
-                ? __('Submitting…', 'alpaca')
-                : __('Submit Comment', 'alpaca')}
-            </Button>
+            <div className="alpaca-comment-form-actions">
+              <Button
+                isPrimary
+                onClick={handleCommentSubmit}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Submitting...' : 'Submit Comment'}
+              </Button>
+            </div>
           </div>
         </div>
 
