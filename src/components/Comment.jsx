@@ -51,7 +51,7 @@ const Comment = memo(
     currentUser,
   }) => {
     const author = comment._embedded?.author?.[0] ||
-      currentUser || { name: 'Unknown' };
+      currentUser || { name: __('Unknown', 'alpaca') };
 
     const dataSource =
       comment.author_user_agent === 'audit' ? 'audit' : 'human';
@@ -96,7 +96,7 @@ const Comment = memo(
               <Dropdown
                 popoverProps={{ placement: 'bottom-end' }}
                 renderToggle={({ isOpen, onToggle }) => (
-                  <Tooltip text="Options">
+                  <Tooltip text={__('Options', 'alpaca')}>
                     <Button
                       icon="ellipsis"
                       onClick={onToggle}
@@ -108,14 +108,14 @@ const Comment = memo(
                 renderContent={() => (
                   <MenuGroup>
                     <MenuItem icon="edit" onClick={() => startEditing(comment)}>
-                      Edit
+                      {__('Edit', 'alpaca')}
                     </MenuItem>
                     <MenuItem
                       icon="trash"
                       isDestructive
                       onClick={() => confirmDeleteComment(comment.id)}
                     >
-                      Delete
+                      {__('Delete', 'alpaca')}
                     </MenuItem>
                   </MenuGroup>
                 )}
@@ -135,7 +135,7 @@ const Comment = memo(
                   onClick={() => saveEdit(comment.id)}
                   disabled={isSubmitting}
                 >
-                  {__('Submit', 'alpaca')}
+                  {__('Save', 'alpaca')}
                 </Button>
                 <Button onClick={cancelEditing} disabled={isSubmitting}>
                   {__('Cancel', 'alpaca')}
@@ -294,7 +294,7 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
           prev.filter((c) => c.id !== optimisticComment.id),
         );
         showNotification(
-          `Failed to submit comment: ${err.message || 'Unknown error'}`,
+          `${__('Failed to submit comment:', 'alpaca')} ${err.message || __('Unknown error', 'alpaca')}`,
         );
       })
       .finally(() => setIsSubmitting(false));
@@ -337,7 +337,7 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
         .catch((err) => {
           console.error(err);
           showNotification(
-            `Failed to update comment: ${err.message || 'Unknown error'}`,
+            `${__('Failed to update comment:', 'alpaca')} ${err.message || __('Unknown error', 'alpaca')}`,
           );
         })
         .finally(() => setIsSubmitting(false));
@@ -382,7 +382,7 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
       .catch((err) => {
         console.error(err);
         showNotification(
-          `Failed to delete comment: ${err.message || 'Unknown error'}`,
+          `${__('Failed to delete comment:', 'alpaca')} ${err.message || __('Unknown error', 'alpaca')}`,
         );
       });
   }, [deleteCommentId, showNotification]);
@@ -391,7 +391,9 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
     <div id="alpaca-comments-wrapper">
       <div id="alpaca-comments-header">
         <Button variant="tertiary" onClick={toggleSortOrder}>
-          {sortOrder === 'desc' ? 'Sort: ↑' : 'Sort: ↓'}
+          {sortOrder === 'desc'
+            ? __('Sort: ↑', 'alpaca')
+            : __('Sort: ↓', 'alpaca')}
         </Button>
       </div>
 
@@ -410,7 +412,9 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
                 onClick={handleCommentSubmit}
                 disabled={isSubmitting}
               >
-                {isSubmitting ? 'Submitting...' : 'Submit Comment'}
+                {isSubmitting
+                  ? __('Submitting…', 'alpaca')
+                  : __('Submit Comment', 'alpaca')}
               </Button>
             </div>
           </div>

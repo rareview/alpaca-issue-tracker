@@ -526,7 +526,7 @@ const AlpacaIssue = ({
                     onClick={handleProgressIssue}
                     disabled={loadingStates.status}
                   >
-                    Progress Issue
+                    {__('Progress Issue', 'alpaca')}
                   </MenuItem>
                 )}
                 <MenuItem
@@ -535,7 +535,7 @@ const AlpacaIssue = ({
                   isDestructive
                   onClick={() => setShowDeleteConfirm(true)}
                 >
-                  Trash Issue
+                  {__('Trash Issue', 'alpaca')}
                 </MenuItem>
               </MenuGroup>
             )}

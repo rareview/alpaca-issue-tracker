@@ -54,7 +54,7 @@ const DefaultStatusSelector = ({ statuses, onDefaultChange }) => {
         // eslint-disable-next-line no-console
         console.error('Error saving default status:', err);
         // TODO: Replace with WordPress notice API for better UX
-        setError('Error saving setting: ' + err.message);
+        setError(`${__('Error saving setting:', 'alpaca')} ${err.message}`);
         fetchOption(); // Revert on error
       })
       .finally(() => {
