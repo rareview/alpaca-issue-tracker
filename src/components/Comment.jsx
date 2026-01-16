@@ -317,7 +317,10 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
         setComments((prev) =>
           prev.map((c) => (c.id === optimisticComment.id ? created : c)),
         );
-        wp.hooks.doAction('alpaca.commentPosted', created);
+        wp.hooks.doAction(
+          'alpaca.commentPosted',
+          wp.hooks.applyFilters('alpaca.commentObject', created),
+        );
 
         fetchIssueCommentCount(issueId).then((response) => {
           if (response?.comment_count !== undefined) {

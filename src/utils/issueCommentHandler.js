@@ -5,8 +5,40 @@ import { fetchIssueCommentCount } from '../services/issueApi.js';
  * Handles automatic commenting on issues, such as when an issue is created.
  * This script hooks into WordPress actions to add comments via the REST API.
  */
-const { addAction, doAction } = wp.hooks;
+const { addAction, doAction, addFilter, applyFilters } = wp.hooks;
 const apiFetch = wp.apiFetch;
+
+/**
+ * Strips HTML and basic Markdown from a string.
+ *
+ * @param {string} input The string to sanitize.
+ * @return {string} The plain text string.
+ */
+const stripHtmlAndMarkdown = (input) => {
+  if (!input) {
+    return '';
+  }
+
+  let output = input;
+
+  // Strip HTML tags
+  output = output.replace(/<[^>]*>?/gm, '');
+
+  // Strip Markdown links, keeping the text
+  output = output.replace(/\[(.*?)\]\(.*?\)/g, '$1');
+
+  // Strip Markdown bold and italic, keeping the text
+  output = output.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1');
+
+  return output;
+};
+
+addFilter('alpaca.commentObject', 'alpaca/addPlainText', (comment) => {
+  if (comment && comment.content && comment.content.raw) {
+    comment.content.txt = stripHtmlAndMarkdown(comment.content.raw);
+  }
+  return comment;
+});
 
 const postComment = async (issueOrId, content, commentTags = []) => {
   let postId;
@@ -47,7 +79,10 @@ const postComment = async (issueOrId, content, commentTags = []) => {
       method: 'POST',
       data: commentData,
     }).then(async (newlyCreatedComment) => {
-      wp.hooks.doAction('alpaca.commentPosted', newlyCreatedComment);
+      doAction(
+        'alpaca.commentPosted',
+        applyFilters('alpaca.commentObject', newlyCreatedComment),
+      );
       const response = await fetchIssueCommentCount(postId);
       if (response && typeof response.comment_count !== 'undefined') {
         doAction('alpaca.commentCountChanged', {
@@ -150,33 +185,6 @@ addAction(
       default:
         // Do nothing if changeType is unknown
         break;
-    }
-
-    if (commentContent) {
-      await postComment(issue, commentContent, actionClass);
-    }
-  },
-);
-
-addAction(
-  'alpaca.priorityUpdated',
-  'alpaca/addPriorityChangeComment',
-  async (payload) => {
-    const { issue, isHighPriority } = payload;
-    const currentUser = await getUser();
-    const actionClass = ['priority-changed'];
-
-    let commentContent = '';
-    if (isHighPriority) {
-      actionClass.push('action-add');
-      commentContent = `Priority set to **High** by ${generateAssigneeSpan(
-        currentUser,
-      )}`;
-    } else {
-      actionClass.push('action-remove');
-      commentContent = `High priority removed by ${generateAssigneeSpan(
-        currentUser,
-      )}`;
     }
 
     if (commentContent) {
