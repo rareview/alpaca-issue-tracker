@@ -1145,3 +1145,30 @@ function alpaca_delete_issue_callback( WP_REST_Request $request ) {
 		200
 	);
 }
+
+/**
+ * Register comment meta fields for REST API.
+ */
+function alpaca_register_comment_meta_fields() {
+	register_meta(
+		'comment',
+		'alpacaCommentTags',
+		[
+			'type'          => 'array',
+			'description'   => 'Comment tags for Alpaca issues.',
+			'single'        => true,
+			'show_in_rest'  => [
+				'schema' => [
+					'type'  => 'array',
+					'items' => [
+						'type' => 'string',
+					],
+				],
+			],
+			'auth_callback' => function () {
+				return current_user_can( 'edit_posts' );
+			},
+		]
+	);
+}
+add_action( 'rest_api_init', 'alpaca_register_comment_meta_fields' );

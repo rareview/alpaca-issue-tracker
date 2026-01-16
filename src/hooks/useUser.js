@@ -53,14 +53,18 @@ export const useUser = (user) => {
 
 /**
  * Generates HTML for an assignee span to be used in comments.
- * @param {Object} user The user object for the assignee.
+ * @param {Object}  user       The user object for the assignee.
+ * @param {boolean} withAvatar Whether to include avatar.
  * @return {string} HTML string.
  */
-export const generateAssigneeSpan = (user) => {
+export const generateAssigneeSpan = (user, withAvatar = false) => {
   if (!user) return '';
-  const avatarAttr = user.avatar ? ` data-avatar="${user.avatar}"` : '';
+
+  const el = user.avatar && withAvatar === true ? 'strong' : 'span';
+  const avatarAttr =
+    user.avatar && withAvatar === true ? ` data-avatar="${user.avatar}"` : '';
   const displayName =
     user.name || user.display_name || user.username || __('Unknown', 'alpaca');
 
-  return `<span class="alpaca-status-assignee" data-userid="${user.id}"${avatarAttr}>${displayName}</span>`;
+  return `<${el} class="alpaca-status-assignee" data-userid="${user.id}"${avatarAttr}>${displayName}</${el}>`;
 };
