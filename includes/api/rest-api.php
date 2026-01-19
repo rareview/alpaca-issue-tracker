@@ -124,6 +124,58 @@ function alpaca_assert_issue_exists( $post_id ) {
 	return ( $post && 'alpaca_issue' === $post->post_type ) ? $post : null;
 }
 
+/**
+ * Generates a consistent issue object for REST responses.
+ *
+ * @param int|WP_Post $issue      Issue post ID or object.
+ * @param array       $override_data Optional data to override fetched values.
+ *
+ * @return array The issue data structure for API responses.
+ */
+function alpaca_get_issue_response_data( $issue, $override_data = [] ) {
+	$post = get_post( $issue );
+	if ( ! $post ) {
+		return [];
+	}
+
+	$post_id   = $post->ID;
+	$author_id = (int) $post->post_author;
+
+	// Get high priority status.
+	$is_high_priority = ! empty( get_post_meta( $post_id, 'alpaca_high_priority', true ) );
+	if ( isset( $override_data['is_high_priority'] ) ) {
+		$is_high_priority = (bool) $override_data['is_high_priority'];
+	}
+
+	// Get status term ID.
+	$status_term_id = null;
+	if ( isset( $override_data['statusId'] ) ) {
+		$status_term_id = (int) $override_data['statusId'];
+	} else {
+		$terms = wp_get_post_terms( $post_id, 'alpaca_status', [ 'fields' => 'ids' ] );
+		if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) {
+			$status_term_id = (int) $terms[0];
+		}
+	}
+
+	$title = isset( $override_data['title'] ) ? $override_data['title'] : $post->post_title;
+
+	return [
+		'post_id'  => $post_id,
+		'issue'    => [
+			'id'          => $post_id,
+			'title'       => $title,
+			'author_id'   => $author_id,
+			'author_name' => get_the_author_meta( 'display_name', $author_id ),
+			'author_img'  => alpaca_avatar( $author_id, 24 ),
+			'meta'        => [
+				'alpaca_high_priority' => $is_high_priority,
+			],
+		],
+		'statusId' => $status_term_id,
+	];
+}
+
 /*
  * Issue submit endpoint.
  */
@@ -327,24 +379,24 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 		}
 	}
 
+	$response_data = alpaca_get_issue_response_data(
+		$post_id,
+		[
+			'title'            => $post_args['post_title'],
+			'is_high_priority' => $is_high_priority,
+			'statusId'         => $status_term_id,
+		]
+	);
+
 	return alpaca_rest_response(
 		'issue_submit',
-		[
-			'success'  => true,
-			'message'  => esc_html__( 'Issue submitted successfully.', 'alpaca' ),
-			'post_id'  => $post_id,
-			'issue'    => [
-				'id'          => $post_id,
-				'title'       => $post_args['post_title'],
-				'author_id'   => $post_args['post_author'],
-				'author_name' => get_the_author_meta( 'display_name', $post_args['post_author'] ),
-				'author_img'  => alpaca_avatar( $post_args['post_author'], 24 ),
-				'meta'        => [
-					'alpaca_high_priority' => $is_high_priority,
-				],
+		array_merge(
+			[
+				'success' => true,
+				'message' => esc_html__( 'Issue submitted successfully.', 'alpaca' ),
 			],
-			'statusId' => $status_term_id,
-		],
+			$response_data
+		),
 		200
 	);
 }
@@ -575,13 +627,35 @@ function alpaca_update_issue_callback( WP_REST_Request $request ) {
 		}
 	}
 
+	// Extract overrides for response data.
+	$override_data = [
+		'title' => $post_args['post_title'],
+	];
+	if ( isset( $data['meta']['high_priority'] ) ) {
+		$override_data['is_high_priority'] = (bool) $data['meta']['high_priority'];
+	}
+	if ( isset( $data['taxonomies'] ) ) {
+		$tax_data     = $data['taxonomies'];
+		$status_terms = $tax_data['status'] ?? $tax_data['alpaca_status'] ?? null;
+		if ( $status_terms ) {
+			$term_ids = alpaca_to_int_ids( $status_terms );
+			if ( ! empty( $term_ids ) ) {
+				$override_data['statusId'] = (int) $term_ids[0];
+			}
+		}
+	}
+
+	$response_data = alpaca_get_issue_response_data( $issue_id, $override_data );
+
 	return alpaca_rest_response(
 		'issue_update',
-		[
-			'success' => true,
-			'message' => esc_html__( 'Issue updated successfully.', 'alpaca' ),
-			'post_id' => $issue_id,
-		],
+		array_merge(
+			[
+				'success' => true,
+				'message' => esc_html__( 'Issue updated successfully.', 'alpaca' ),
+			],
+			$response_data
+		),
 		200
 	);
 }
