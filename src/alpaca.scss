@@ -515,12 +515,16 @@ $timeline-width: 1px;
       margin: 0;
       padding: 0;
       color: inherit;
-      background: none; // remove any default bg
-      border: none; // remove border
-      outline: none; // remove focus outline
-      cursor: pointer; // for view mode
+      background: none;
+      border: none;
+      outline: none;
       width: 100%;
       text-align: left;
+
+      &:hover {
+        background: $greyshade;
+        cursor: text;
+      }
 
       &:focus {
         outline: none;
