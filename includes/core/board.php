@@ -190,6 +190,7 @@ function alpaca_get_board_data() {
 			$meta_vals_for_card             = [];
 			$meta_vals_for_card['deadline'] = get_post_meta( $post->ID, 'alpaca_deadline', false );
 			$meta_vals_for_card['alpaca_high_priority'] = (bool) get_post_meta( $post->ID, 'alpaca_high_priority', true );
+			$meta_vals_for_card['last_activity'] = get_post_meta( $post->ID, 'alpaca_last_activity', true );
 
 			$checklist_json = get_post_meta( $post->ID, 'alpaca_checklist', true );
 			if ( $checklist_json ) {
@@ -202,6 +203,7 @@ function alpaca_get_board_data() {
 			$issues[] = [
 				'id'            => $post->ID,
 				'title'         => $post->post_title,
+				'post_date'     => $post->post_date,
 				'comment_count' => $comment_count,
 				'assignees'     => $assignees,
 				'meta'          => $meta_vals_for_card,

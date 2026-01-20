@@ -1,11 +1,12 @@
 const { forwardRef } = wp.element;
-const { __ } = wp.i18n;
+const { __, sprintf } = wp.i18n;
 import PropTypes from 'prop-types';
 const { Card, CardBody, CardFooter } = wp.components;
 const { Text = wp.components.__experimentalText } = wp.components;
 import { useWatchlist } from '../context/WatchlistContext';
 import User from './User';
 import CommentIcon from './icons/CommentIcon';
+import HourglassIcon from './icons/HourglassIcon';
 import CalendarIcon from './icons/CalendarIcon';
 
 /**
@@ -17,6 +18,7 @@ import CalendarIcon from './icons/CalendarIcon';
  * @param {Array}    root0.assignees    - Array of assignees
  * @param {number}   root0.commentCount - Number of comments
  * @param {Object}   root0.meta         - Metadata object
+ * @param {string}   root0.postDate     - Post creation date
  * @param {string}   root0.className    - CSS class name
  * @param {Object}   root0.style        - Inline styles
  * @param {Function} root0.onClick      - Click handler
@@ -32,6 +34,7 @@ const Item = forwardRef(
       assignees = [],
       commentCount,
       meta,
+      postDate,
       className,
       style,
       onClick,
@@ -83,6 +86,24 @@ const Item = forwardRef(
         deadlineText = __('Today', 'alpaca');
       } else if (diffDays === -1) {
         deadlineText = __('Yesterday', 'alpaca');
+      }
+    }
+
+    const lastActivityDateString = meta?.lastActivity || postDate;
+    let idleText = null;
+
+    if (lastActivityDateString) {
+      const lastActivityDate = new Date(lastActivityDateString);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      lastActivityDate.setHours(0, 0, 0, 0);
+      const daysIdle = Math.floor(
+        (today - lastActivityDate) / (1000 * 60 * 60 * 24),
+      );
+
+      if (daysIdle > 0) {
+        // translators: %d: Number of days
+        idleText = sprintf(__('%dd idle', 'alpaca'), daysIdle);
       }
     }
 
@@ -156,9 +177,17 @@ const Item = forwardRef(
               </div>
             )}
 
+            {idleText && (
+              <div className="alpaca-item-icon alpaca-item-idle-time">
+                <HourglassIcon />
+                {idleText}
+              </div>
+            )}
+
             {wp.hooks.applyFilters('alpaca.item.datapoints', null, {
               id,
               meta,
+              postDate,
             })}
 
             {isValidDeadline && (
@@ -180,6 +209,7 @@ Item.propTypes = {
   assignees: PropTypes.arrayOf(PropTypes.object),
   commentCount: PropTypes.number,
   meta: PropTypes.object,
+  postDate: PropTypes.string,
   className: PropTypes.string,
   style: PropTypes.object,
   onClick: PropTypes.func,

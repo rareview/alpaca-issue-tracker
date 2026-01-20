@@ -147,6 +147,29 @@ final class Alpaca {
 
 		// REST API.
 		\add_action( 'rest_api_init', array( $this, 'register_settings' ) );
+
+		// Update last activity on new comment.
+		\add_action( 'rest_insert_comment', array( $this, 'update_last_activity_on_rest_comment' ), 10, 3 );
+	}
+
+	/**
+	 * Update the last activity timestamp when a new comment is posted via the REST API.
+	 *
+	 * @param \WP_Comment      $comment  The comment object.
+	 * @param \WP_REST_Request $request  The request object.
+	 * @param bool             $creating True when creating a comment, false when updating.
+	 */
+	public function update_last_activity_on_rest_comment( $comment, $request, $creating ) {
+		if ( ! $creating ) {
+			return;
+		}
+
+		$post_id   = $comment->comment_post_ID;
+		$post_type = \get_post_type( $post_id );
+
+		if ( 'alpaca_issue' === $post_type ) {
+			alpaca_update_last_activity( $post_id );
+		}
 	}
 
 	/**
