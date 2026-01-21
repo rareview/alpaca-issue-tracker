@@ -277,18 +277,6 @@ const AlpacaIssue = ({
           },
         });
 
-        if (issueDetails) {
-          setIssueDetails({
-            ...issueDetails,
-            meta: {
-              ...issueDetails.meta,
-              ...issueDetails.meta,
-              // eslint-disable-next-line camelcase
-              alpaca_high_priority: newValue ? 1 : 0,
-            },
-          });
-        }
-
         wp.hooks.doAction('alpaca.issueUpdated', issueId);
         wp.hooks.doAction('alpaca.priorityUpdated', {
           issueId,
@@ -303,7 +291,7 @@ const AlpacaIssue = ({
         setLoading('priority', false);
       }
     },
-    [issueId, issueDetails, setIssueDetails, setLoading, showNotification],
+    [issueId, issueDetails, setLoading, showNotification],
   );
 
   useEffect(() => {
