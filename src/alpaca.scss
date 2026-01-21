@@ -44,7 +44,7 @@ $container-bg: #f9f9f9;
 $container-header-fontsize: 18px;
 $container-header-fontweight: 600;
 $priority-high-bg: #dc3545;
-$deadline-late-bg: #ef4444;
+$deadline-late-bg: #dc3545;
 $deadline-today-bg: #3b82f6;
 $deadline-soon-bg: #f59e0b;
 $control-width-large: 300px;
@@ -60,14 +60,23 @@ $timeline-width: 1px;
 @use 'sass:color';
 
 @mixin deadline-style($bg-color) {
-  background-color: $bg-color;
-  color: if(
-    color.channel($bg-color, 'lightness', $space: hsl) > 67%,
-    #000,
-    #fff
-  );
-  margin: 2px 0;
-  padding: 0 8px;
+  //   background-color: $bg-color;
+  //   color: if(
+  //     color.channel($bg-color, 'lightness', $space: hsl) > 67%,
+  //     #000,
+  //     #fff
+  //   );
+  //   margin: 2px 0;
+  //   padding: 0 8px;
+  svg {
+    background-color: $bg-color;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+  }
+}
+
+/*}
 }
 
 /*
@@ -367,17 +376,13 @@ $timeline-width: 1px;
           margin-right: 10px;
         }
 
-        .alpaca-item-priority-badge {
-          background: $priority-high-bg;
-          color: white;
-          padding: 0 8px;
-          border-radius: 8px;
-          margin: 2px 0;
-          font-size: 11px;
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          margin-right: 4px;
+        .alpaca-item-priority-badge svg {
+          color: $priority-high-bg;
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          padding: 2px;
+          border: 1px solid $greyborder;
         }
 
         .alpaca-item-assignees {

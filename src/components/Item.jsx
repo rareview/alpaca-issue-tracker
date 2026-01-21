@@ -7,6 +7,7 @@ import { useWatchlist } from '../context/WatchlistContext';
 import User from './User';
 import CommentIcon from './icons/CommentIcon';
 import CalendarIcon from './icons/CalendarIcon';
+import PriorityIcon from './icons/PriorityIcon';
 
 /**
  * Item component displayed in board containers.
@@ -129,7 +130,7 @@ const Item = forwardRef(
                 meta.alpaca_high_priority === 1 ||
                 meta.alpaca_high_priority === true) && (
                 <div className="alpaca-item-priority-badge">
-                  {__('Priority', 'alpaca')}
+                  <PriorityIcon /> Priority
                 </div>
               )}
 
