@@ -16,34 +16,30 @@ function alpaca_add_admin_bar_menu( $admin_bar ) {
 		return;
 	}
 
-	$admin_bar->add_menu(
-		array(
-			'id'     => 'alpaca-menu',
-			'parent' => 'top-secondary',
-			'title'  => '<span class="ab-icon dashicons dashicons-warning"></span><span class="ab-label">' . esc_html__( 'Issues', 'alpaca' ) . '</span>',
-			'href'   => '#',
-			'meta'   => array( 'title' => esc_html__( 'Issues', 'alpaca' ) ),
-		)
-	);
+	// Hide the menu when on the project board page.
+	$current_screen = get_current_screen();
+	if ( $current_screen && 'toplevel_page_alpaca-board' === $current_screen->id ) {
+		return;
+	}
 
 	/**
-	 * Placeholder menu item replaced by AlpacaModal.
+	 * Report an Issue - top-level admin bar item with SVG icon.
 	 */
-	$admin_bar->add_menu(
-		array(
-			'parent' => 'alpaca-menu',
-			'title'  => '',
-			'id'     => 'alpaca-report',
-			'href'   => '#',
-		)
-	);
+	$plugin_dir = plugin_dir_path( dirname( __DIR__ ) );
+	$icon_files = glob( $plugin_dir . 'dist/exclamation-circle-fill.*.svg' );
+	$icon_svg   = '';
+
+	if ( ! empty( $icon_files ) && file_exists( $icon_files[0] ) ) {
+		$icon_svg = file_get_contents( $icon_files[0] );
+		$icon_svg = str_replace( '<svg', '<svg style="width: 16px; height: 16px; vertical-align: middle; margin-right: 4px;"', $icon_svg );
+	}
 
 	$admin_bar->add_menu(
 		array(
-			'parent' => 'alpaca-menu',
-			'title'  => esc_html__( 'View Project Board', 'alpaca' ),
-			'id'     => 'alpaca-board',
-			'href'   => admin_url( 'admin.php?page=alpaca-board' ),
+			'parent' => 'top-secondary',
+			'title'  => $icon_svg . 'Report an Issue',
+			'id'     => 'alpaca-report',
+			'href'   => '#',
 		)
 	);
 }

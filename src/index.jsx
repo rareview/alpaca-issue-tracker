@@ -39,11 +39,11 @@ window.alpaca.services.issueApi = {
 const { render } = wp.element;
 const isAdmin = document.body.classList.contains('wp-admin');
 
-if (isAdmin && document.querySelector('#wp-admin-bar-alpaca-menu')) {
-  render(
-    <AlpacaModal />,
-    document.querySelector('#wp-admin-bar-alpaca-report'),
-  );
+if (isAdmin && document.querySelector('#wp-admin-bar-alpaca-report')) {
+  const adminBarModalContainer = document.createElement('div');
+  adminBarModalContainer.id = 'alpaca-admin-bar-modal-mount';
+  document.body.appendChild(adminBarModalContainer);
+  render(<AlpacaModal />, adminBarModalContainer);
 }
 
 if (!isAdmin) {
