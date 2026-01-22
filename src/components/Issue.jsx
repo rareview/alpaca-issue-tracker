@@ -5,6 +5,7 @@ import { getTabsConfig } from '../utils/tabsConfig';
 import useIssueData from '../hooks/useIssueData';
 import useUserManagement from '../hooks/useUserManagement';
 import useLoadingStates from '../hooks/useLoadingStates';
+import { getUser, generateAssigneeSpan } from '../hooks/useUser';
 
 import { processAssigneeChanges } from '../utils/assigneeUtils';
 import { fetchStatuses, updateIssue, createIssue } from '../services/issueApi';
@@ -110,6 +111,8 @@ const EditableTitle = memo(
         if (inputRef.current.textContent !== title) {
           inputRef.current.textContent = title;
         }
+        // Auto-focus the input when entering edit mode
+        inputRef.current.focus();
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isEditing]);
@@ -211,6 +214,15 @@ const AlpacaIssue = ({
       setAssignees([]);
       setDeadline(null);
       setIsHighPriority(false);
+    }
+
+    // Cleanup: reset form state when modal closes in create mode
+    if (!isOpen && isCreating) {
+      setEditedTitle('');
+      setAssignees([]);
+      setDeadline(null);
+      setIsHighPriority(false);
+      setIsEditingTitle(false);
     }
   }, [isOpen, isCreating]);
 
@@ -558,7 +570,7 @@ const AlpacaIssue = ({
       const payload = {
         userinput: {
           feedback: editedTitle,
-          includeContext: true,
+          includeContext: false, // Board issues don't need browser context
           isHighPriority,
         },
         client:
@@ -590,15 +602,51 @@ const AlpacaIssue = ({
           }
         }
 
-        wp.hooks.doAction(
-          'alpaca.issueSubmitted',
-          response.issue,
-          response.statusId,
-          isHighPriority,
-        );
+        try {
+          const currentUser = await getUser();
+          const actionClass = ['issue-created'];
+          let commentContent = `Issue created by ${generateAssigneeSpan(
+            currentUser,
+            true,
+          )}`;
+
+          if (isHighPriority) {
+            actionClass.push('high-priority');
+            commentContent += ' with **High Priority**';
+          }
+
+          await wp.apiFetch({
+            path: '/wp/v2/comments',
+            method: 'POST',
+            data: {
+              post: newIssueId,
+              content: commentContent,
+              comment_type: 'issuecomment',
+              status: 'approve',
+              author_user_agent: 'audit',
+              meta: {
+                alpacaCommentTags: actionClass,
+              },
+            },
+          });
+        } catch (commentErr) {
+          console.error('Failed to create issue comment:', commentErr);
+        }
+
+        setEditedTitle('');
+        setAssignees([]);
+        setDeadline(null);
+        setIsHighPriority(false);
+        setLoading('title', false);
 
         if (onIssueCreated) {
-          onIssueCreated();
+          onIssueCreated({
+            id: newIssueId,
+            title: editedTitle,
+            assignees: assignees || [],
+            deadline: deadline || null,
+            isHighPriority,
+          });
         }
       }
     } catch (err) {

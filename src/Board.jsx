@@ -528,6 +528,45 @@ export function AlpacaBoard() {
       });
   };
 
+  const handleIssueCreated = (createdIssue) => {
+    if (!createdIssue || !createdIssue.id) {
+      console.error('Invalid issue data received:', createdIssue);
+      window.location.reload();
+      return;
+    }
+
+    setContainers((prevContainers) => {
+      if (prevContainers.length === 0) {
+        window.location.reload();
+        return prevContainers;
+      }
+
+      const firstContainerIndex = 0;
+      const updatedContainers = [...prevContainers];
+      const firstContainer = { ...updatedContainers[firstContainerIndex] };
+
+      const newItem = {
+        id: createdIssue.id.toString(),
+        content: createdIssue.title,
+        assignees: createdIssue.assignees || [],
+        commentCount: 1,
+        meta: {
+          deadline: createdIssue.deadline ? [createdIssue.deadline] : undefined,
+          // eslint-disable-next-line camelcase
+          alpaca_high_priority: createdIssue.isHighPriority ? '1' : undefined,
+        },
+      };
+
+      firstContainer.items = [newItem, ...firstContainer.items];
+      updatedContainers[firstContainerIndex] = firstContainer;
+
+      return updatedContainers;
+    });
+
+    closeModal();
+    setNeedsSave(true);
+  };
+
   useEffect(() => {
     if (!selectedItem && triggerRef.current) {
       triggerRef.current.focus();
@@ -733,6 +772,7 @@ export function AlpacaBoard() {
       )}
 
       <AlpacaIssue
+        key={selectedItem?.isCreating ? 'creating' : selectedItem?.id || 'none'}
         issueId={selectedItem?.id}
         isCreating={selectedItem?.isCreating}
         isOpen={!!selectedItem}
@@ -743,7 +783,7 @@ export function AlpacaBoard() {
         onDeadlineChange={handleDeadlineChange}
         onStatusChange={handleStatusChange}
         onIssueTitleChange={handleIssueTitleChange}
-        onIssueCreated={() => window.location.reload()}
+        onIssueCreated={handleIssueCreated}
       />
     </>
   );
