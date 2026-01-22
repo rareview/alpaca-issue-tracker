@@ -60,20 +60,14 @@ $timeline-width: 1px;
 @use 'sass:color';
 
 @mixin deadline-style($bg-color) {
-  //   background-color: $bg-color;
-  //   color: if(
-  //     color.channel($bg-color, 'lightness', $space: hsl) > 67%,
-  //     #000,
-  //     #fff
-  //   );
-  //   margin: 2px 0;
-  //   padding: 0 8px;
-  svg {
-    background-color: $bg-color;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-  }
+  background-color: $bg-color;
+  color: if(
+    color.channel($bg-color, 'lightness', $space: hsl) > 67%,
+    #000,
+    #fff
+  );
+  margin: 2px 0;
+  padding: 0 8px;
 }
 
 /*}
