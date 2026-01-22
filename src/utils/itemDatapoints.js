@@ -1,9 +1,9 @@
 const { __, sprintf } = wp.i18n;
 import HourglassIcon from '../components/icons/HourglassIcon';
-// import PriorityIcon from '../components/icons/PriorityIcon';
 import User from '../components/User';
 import CommentIcon from '../components/icons/CommentIcon';
 import CalendarIcon from '../components/icons/CalendarIcon';
+import PriorityIcon from '../components/icons/PriorityIcon';
 
 /**
  * Filter to add priority badge to item datapoints.
@@ -25,7 +25,7 @@ export const addPriorityDatapoint = (originalContent, itemProps) => {
       <>
         {originalContent}
         <div className="alpaca-item-priority-badge">
-          <CommentIcon /> {__('Priority', 'alpaca')}
+          <PriorityIcon /> {__('Priority', 'alpaca')}
         </div>
       </>
     );
