@@ -529,6 +529,16 @@ $timeline-width: 1px;
       &:focus {
         outline: none;
       }
+
+      &:empty[data-placeholder]::before {
+        content: attr(data-placeholder);
+        color: $greytext;
+        opacity: 0.6;
+      }
+
+      &:focus:empty[data-placeholder]::before {
+        opacity: 0.5;
+      }
     }
   }
 

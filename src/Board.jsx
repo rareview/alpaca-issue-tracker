@@ -40,6 +40,20 @@ export function AlpacaBoard() {
   useEffect(() => {
     // Fire an action to allow other components to render into the controls area.
     doAction('alpaca_board_controls', '#alpaca-board-controls-mount');
+
+    const handleCreateBoardIssue = () => {
+      setSelectedItem({ isCreating: true });
+    };
+
+    wp.hooks.addAction(
+      'alpaca.createBoardIssue',
+      'alpaca/board',
+      handleCreateBoardIssue,
+    );
+
+    return () => {
+      wp.hooks.removeAction('alpaca.createBoardIssue', 'alpaca/board');
+    };
   }, []);
 
   // Effect to update cookie when hiddenContainerIds changes
@@ -720,6 +734,7 @@ export function AlpacaBoard() {
 
       <AlpacaIssue
         issueId={selectedItem?.id}
+        isCreating={selectedItem?.isCreating}
         isOpen={!!selectedItem}
         onClose={closeModal}
         onDelete={handleDeleteIssue}
@@ -728,6 +743,7 @@ export function AlpacaBoard() {
         onDeadlineChange={handleDeadlineChange}
         onStatusChange={handleStatusChange}
         onIssueTitleChange={handleIssueTitleChange}
+        onIssueCreated={() => window.location.reload()}
       />
     </>
   );

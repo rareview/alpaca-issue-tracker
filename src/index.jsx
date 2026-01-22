@@ -3,6 +3,7 @@ import './alpaca.scss';
 import './apiTest.js';
 import './utils/issueCommentHandler.js';
 import './utils/dataDump.js';
+import './utils/boardHelpers.js';
 
 import AlpacaModal from './Modal.jsx';
 import AlpacaToolbar from './Toolbar.jsx';
