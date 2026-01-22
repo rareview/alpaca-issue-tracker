@@ -7,6 +7,7 @@ import { useWatchlist } from '../context/WatchlistContext';
 import User from './User';
 import CommentIcon from './icons/CommentIcon';
 import CalendarIcon from './icons/CalendarIcon';
+import PriorityIcon from './icons/PriorityIcon';
 
 /**
  * Item component displayed in board containers.
@@ -39,7 +40,7 @@ const Item = forwardRef(
     },
     ref,
   ) => {
-    const { isWatched, toggleWatch } = useWatchlist();
+    const { isWatched } = useWatchlist();
     const watched = isWatched(id);
 
     const assigneeDataAttributes = assignees.reduce((acc, assignee) => {
@@ -103,7 +104,7 @@ const Item = forwardRef(
             <div className="alpaca-item-content">
               <Text>{content}</Text>
             </div>
-            <div className="alpaca-item-controls">
+            {/* <div className="alpaca-item-controls">
               <div
                 className="dashicons dashicons-star-filled"
                 onClick={(e) => {
@@ -119,7 +120,7 @@ const Item = forwardRef(
                   }
                 }}
               />
-            </div>
+            </div> */}
           </div>
         </CardBody>
         <CardFooter size="xSmall" isBorderless>
@@ -129,7 +130,7 @@ const Item = forwardRef(
                 meta.alpaca_high_priority === 1 ||
                 meta.alpaca_high_priority === true) && (
                 <div className="alpaca-item-priority-badge">
-                  {__('Priority', 'alpaca')}
+                  <PriorityIcon /> Priority
                 </div>
               )}
 
