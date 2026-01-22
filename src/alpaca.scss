@@ -321,22 +321,16 @@ $timeline-width: 1px;
     }
 
     .alpaca-item-inner {
-      &.is-late .alpaca-item-deadline {
-        @include deadline-style($deadline-late-bg);
-      }
+      .alpaca-item-deadline {
+        &[data-deadline-state='late'] {
+          @include deadline-style($deadline-late-bg);
+        }
 
-      &[data-days-left='0'] .alpaca-item-deadline {
-        @include deadline-style($deadline-today-bg);
-      }
+        &[data-deadline-state='today'] {
+          @include deadline-style($deadline-today-bg);
+        }
 
-      &[data-days-left='1'],
-      &[data-days-left='2'],
-      &[data-days-left='3'],
-      &[data-days-left='4'],
-      &[data-days-left='5'],
-      &[data-days-left='6'],
-      &[data-days-left='7'] {
-        .alpaca-item-deadline {
+        &[data-deadline-state='soon'] {
           @include deadline-style($deadline-soon-bg);
         }
       }

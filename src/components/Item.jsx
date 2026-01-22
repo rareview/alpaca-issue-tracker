@@ -4,10 +4,7 @@ import PropTypes from 'prop-types';
 const { Card, CardBody, CardFooter } = wp.components;
 const { Text = wp.components.__experimentalText } = wp.components;
 import { useWatchlist } from '../context/WatchlistContext';
-import User from './User';
-import CommentIcon from './icons/CommentIcon';
-import HourglassIcon from './icons/HourglassIcon';
-import CalendarIcon from './icons/CalendarIcon';
+import '../utils/itemDatapoints';
 
 /**
  * Item component displayed in board containers.
@@ -54,41 +51,6 @@ const Item = forwardRef(
 
     const watchedClass = watched ? 'is-watched item-highlight' : '';
 
-    const deadline =
-      meta && meta.deadline && meta.deadline[0]
-        ? new Date(meta.deadline[0])
-        : null;
-    const isValidDeadline = deadline && !isNaN(deadline);
-
-    const deadlineFormatted = new Intl.DateTimeFormat(undefined, {
-      month: 'short',
-      day: 'numeric',
-    }).format(deadline);
-
-    let diffDays = null;
-    if (isValidDeadline) {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      deadline.setHours(0, 0, 0, 0);
-      diffDays = Math.ceil((deadline - today) / (1000 * 60 * 60 * 24));
-    }
-
-    const lateClass = diffDays < 0 ? 'is-late' : '';
-    const highPriorityClass =
-      meta && meta.high_priority ? 'is-high-priority' : '';
-
-    // Format deadline display text
-    let deadlineText = deadlineFormatted;
-    if (isValidDeadline) {
-      if (diffDays === 1) {
-        deadlineText = __('Tomorrow', 'alpaca');
-      } else if (diffDays === 0) {
-        deadlineText = __('Today', 'alpaca');
-      } else if (diffDays === -1) {
-        deadlineText = __('Yesterday', 'alpaca');
-      }
-    }
-
     const lastActivityDateString = meta?.lastActivity || postDate;
     let idleText = null;
 
@@ -111,10 +73,9 @@ const Item = forwardRef(
       // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
       <Card
         ref={ref}
-        className={`${className} ${watchedClass} ${lateClass} ${highPriorityClass}`.trim()}
+        className={`${className} ${watchedClass} `.trim()}
         style={style}
         data-id={id}
-        data-days-left={diffDays}
         {...assigneeDataAttributes}
         {...props}
         onClick={onClick}
@@ -145,57 +106,13 @@ const Item = forwardRef(
         </CardBody>
         <CardFooter size="xSmall" isBorderless>
           <div className="alpaca-item-datapoints flexalign">
-            {meta &&
-              (meta.alpaca_high_priority === '1' ||
-                meta.alpaca_high_priority === 1 ||
-                meta.alpaca_high_priority === true) && (
-                <div className="alpaca-item-priority-badge">
-                  {__('Priority', 'alpaca')}
-                </div>
-              )}
-
-            {assignees.length > 0 && (
-              <div
-                className="alpaca-item-assignees"
-                data-assignees={assignees.length}
-                title={
-                  assignees.length === 1
-                    ? assignees[0].displayName || assignees[0].name
-                    : assignees.map((a) => a.displayName || a.name).join(', ')
-                }
-              >
-                {assignees.map((assignee) => (
-                  <User key={assignee.id} user={assignee} />
-                ))}
-              </div>
-            )}
-
-            {typeof commentCount !== 'undefined' && commentCount > 0 && (
-              <div className="alpaca-item-icon alpaca-item-comment-count">
-                <CommentIcon />
-                {commentCount}
-              </div>
-            )}
-
-            {idleText && (
-              <div className="alpaca-item-icon alpaca-item-idle-time">
-                <HourglassIcon />
-                {idleText}
-              </div>
-            )}
-
             {wp.hooks.applyFilters('alpaca.item.datapoints', null, {
               id,
               meta,
               postDate,
+              assignees,
+              commentCount,
             })}
-
-            {isValidDeadline && (
-              <div className="alpaca-item-icon alpaca-item-deadline">
-                <CalendarIcon />
-                {deadlineText}
-              </div>
-            )}
           </div>
         </CardFooter>
       </Card>
