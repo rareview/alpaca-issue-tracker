@@ -39,7 +39,7 @@ const Item = forwardRef(
     },
     ref,
   ) => {
-    const { isWatched, toggleWatch } = useWatchlist();
+    const { isWatched } = useWatchlist();
     const watched = isWatched(id);
 
     const assigneeDataAttributes = assignees.reduce((acc, assignee) => {
@@ -103,7 +103,7 @@ const Item = forwardRef(
             <div className="alpaca-item-content">
               <Text>{content}</Text>
             </div>
-            <div className="alpaca-item-controls">
+            {/* <div className="alpaca-item-controls">
               <div
                 className="dashicons dashicons-star-filled"
                 onClick={(e) => {
@@ -119,7 +119,7 @@ const Item = forwardRef(
                   }
                 }}
               />
-            </div>
+            </div> */}
           </div>
         </CardBody>
         <CardFooter size="xSmall" isBorderless>
