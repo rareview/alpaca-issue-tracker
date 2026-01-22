@@ -107,16 +107,12 @@ const EditableTitle = memo(
 
     useEffect(() => {
       if (isEditing && inputRef.current) {
-        inputRef.current.textContent = title;
-        inputRef.current.focus();
-        const range = document.createRange();
-        const sel = inputRef.current.ownerDocument.defaultView.getSelection();
-        range.selectNodeContents(inputRef.current);
-        range.collapse(false);
-        sel.removeAllRanges();
-        sel.addRange(range);
+        if (inputRef.current.textContent !== title) {
+          inputRef.current.textContent = title;
+        }
       }
-    }, [isEditing, title]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isEditing]);
 
     const handleKeyDown = (e) => {
       if (e.key === 'Enter') {
@@ -149,7 +145,7 @@ const EditableTitle = memo(
         aria-label="Issue title"
         data-placeholder={placeholder}
       >
-        {title}
+        {!isEditing && title}
       </h3>
     );
   },
