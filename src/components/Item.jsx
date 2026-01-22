@@ -1,5 +1,4 @@
 const { forwardRef } = wp.element;
-const { __, sprintf } = wp.i18n;
 import PropTypes from 'prop-types';
 const { Card, CardBody, CardFooter } = wp.components;
 const { Text = wp.components.__experimentalText } = wp.components;
@@ -50,24 +49,6 @@ const Item = forwardRef(
     }, {});
 
     const watchedClass = watched ? 'is-watched item-highlight' : '';
-
-    const lastActivityDateString = meta?.lastActivity || postDate;
-    let idleText = null;
-
-    if (lastActivityDateString) {
-      const lastActivityDate = new Date(lastActivityDateString);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      lastActivityDate.setHours(0, 0, 0, 0);
-      const daysIdle = Math.floor(
-        (today - lastActivityDate) / (1000 * 60 * 60 * 24),
-      );
-
-      if (daysIdle > 0) {
-        // translators: %d: Number of days
-        idleText = sprintf(__('%dd idle', 'alpaca'), daysIdle);
-      }
-    }
 
     return (
       // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
