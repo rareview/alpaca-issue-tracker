@@ -9,6 +9,7 @@ import AlpacaToolbar from './Toolbar.jsx';
 import AlpacaSettings from './Settings.jsx';
 import { WatchlistProvider } from './context/WatchlistContext.jsx';
 import { AlpacaBoard } from './Board.jsx';
+import AlpacaDashboardWidget from './DashboardWidget.jsx';
 
 import { fetchAllAssignees } from './services/userApi.js';
 import {
@@ -67,3 +68,10 @@ if (document.querySelector('#alpaca-board')) {
     document.querySelector('#alpaca-board'),
   );
 }
+
+if (document.querySelector('#alpaca-dashboard-widget')) {
+  const el = document.querySelector('#alpaca-dashboard-widget');
+  const data = JSON.parse(el.dataset.props);
+  render(<AlpacaDashboardWidget data={data} />, el);
+}
+
