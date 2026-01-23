@@ -35,7 +35,7 @@ function _get_assigned_to_me_issues() {
 	$posts = get_posts(
 		array(
 			'post_type'      => 'alpaca_issue',
-			'posts_per_page' => 10,
+			'posts_per_page' => -1,
 			'tax_query'      => array(
 				array(
 					'taxonomy' => 'alpaca_assignee',
@@ -64,7 +64,7 @@ function _get_newly_created_issues() {
 	$posts = get_posts(
 		array(
 			'post_type'      => 'alpaca_issue',
-			'posts_per_page' => 10,
+			'posts_per_page' => 5,
 			'date_query'     => array(
 				array(
 					'after' => '1 week ago',
@@ -89,7 +89,7 @@ function _get_overdue_issues() {
 	$posts = get_posts(
 		array(
 			'post_type'      => 'alpaca_issue',
-			'posts_per_page' => 10,
+			'posts_per_page' => -1,
 			'meta_query'     => array(
 				array(
 					'key'     => 'alpaca_deadline',
@@ -126,13 +126,17 @@ function _alpaca_prepare_issue_data( $post ) {
 	$status    = get_the_terms( $post->ID, 'alpaca_status' );
 
 	return array(
-		'id'        => $post->ID,
-		'title'     => $post->post_title,
-		'url'       => get_permalink( $post->ID ),
-		'postDate'  => $post->post_date,
-		'deadline'  => $deadline,
-		'assignees' => $assignees,
-		'status'    => $status,
-
+		'id'            => $post->ID,
+		'title'         => $post->post_title,
+		'url'           => get_permalink( $post->ID ),
+		'postDate'      => $post->post_date,
+		'deadline'      => $deadline,
+		'assignees'     => $assignees,
+		'status'        => $status,
+		'high_priority' => get_post_meta(
+			$post->ID,
+			'alpaca_high_priority',
+			true
+		),
 	);
 }

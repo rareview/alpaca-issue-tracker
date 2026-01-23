@@ -3,16 +3,15 @@ const { TabPanel } = wp.components;
 const { __ } = wp.i18n;
 import User from './components/User';
 import useUserManagement from './hooks/useUserManagement';
+import PriorityIcon from './components/icons/PriorityIcon';
 
 const formatDate = (dateString) => {
-  if (!dateString) {
-    return null;
-  }
-  const date = new Date(dateString);
-  const day = date.getDate().toString().padStart(2, '0');
-  const month = date.toLocaleString('default', { month: 'short' });
+  if (!dateString) return null;
 
-  return `${day} ${month}`;
+  return new Intl.DateTimeFormat(undefined, {
+    day: '2-digit',
+    month: 'short',
+  }).format(new Date(dateString));
 };
 
 function AlpacaDashboardWidget({ data }) {
@@ -30,7 +29,7 @@ function AlpacaDashboardWidget({ data }) {
     },
     {
       name: 'newlyCreated',
-      title: __('Newly Created', 'alpaca'),
+      title: __('Latest', 'alpaca'),
       issues: data.newlyCreated,
     },
     {
@@ -49,20 +48,23 @@ function AlpacaDashboardWidget({ data }) {
       {(tab) => (
         <div>
           {tab.issues && tab.issues.length > 0 ? (
-            <table className="widefat striped">
+            <table>
               <tr>
-                <th>Issue</th>
-                <th>Submitted</th>
-                <th>Deadline</th>
-                <th>Assignees</th>
-                <th>Status</th>
+                <th>{__('Issue', 'alpaca')}</th>
+                <th></th>
+                <th>{__('Due Date', 'alpaca')}</th>
+                <th>{__('Assignees', 'alpaca')}</th>
+                <th>{__('Status', 'alpaca')}</th>
               </tr>
               {tab.issues.map((issue) => (
                 <tr key={issue.id}>
                   <td className="title">
-                    <a href={issue.url}>{issue.title}</a>
+                    {/* <a href={issue.url}>{issue.title}</a> */}
+                    {issue.title}
                   </td>
-                  <td className="postdate">{formatDate(issue.postDate)}</td>
+                  <td className="high-priority">
+                    {issue.high_priority ? <PriorityIcon /> : null}
+                  </td>
                   <td className="deadline">{formatDate(issue.deadline)}</td>
                   <td className="assignees">
                     {issue.assignees &&
@@ -79,7 +81,9 @@ function AlpacaDashboardWidget({ data }) {
                         ) : null;
                       })}
                   </td>
-                  <td className="status">{issue.status[0].name}</td>
+                  <td className="status">
+                    <span className="nowrap">{issue.status[0].name}</span>
+                  </td>
                 </tr>
               ))}
             </table>
