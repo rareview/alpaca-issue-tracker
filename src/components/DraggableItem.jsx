@@ -56,30 +56,35 @@ function DraggableItem({
 
     try {
       e.dataTransfer.setData('application/json', JSON.stringify(payload));
+      // @url https://stackoverflow.com/a/23522755/5038063
+      const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
-      // Clone the element for the drag image
-      const dragImage = e.currentTarget.cloneNode(true);
-      dragImage.style.transform = 'rotate(3deg)';
-      dragImage.style.boxShadow = '0 4px 8px rgb(0 0 0 / 10%)';
-      dragImage.style.position = 'absolute';
-      dragImage.style.width = '100%';
-      dragImage.style.top = '-1000px';
-      dragImage.style.left = '-1000px';
-      const container = document.body.querySelector(".alpaca-items");
-      if (container) {
-        container.appendChild(dragImage);
+      if ( ! isSafari ) {
 
-        // Set the custom drag image.
-        e.dataTransfer.setDragImage(
-          dragImage,
-          dragImage.clientWidth / 2,
-          dragImage.clientHeight / 2
-        );
+        // Clone the element for the drag image
+        const dragImage = e.currentTarget.cloneNode(true);
+        dragImage.style.transform = 'rotate(3deg)';
+        dragImage.style.boxShadow = '0 4px 8px rgb(0 0 0 / 10%)';
+        dragImage.style.position = 'absolute';
+        dragImage.style.width = '100%';
+        dragImage.style.top = '-1000px';
+        dragImage.style.left = '-1000px';
+        const container = document.body.querySelector(".alpaca-items");
+        if (container) {
+          container.appendChild(dragImage);
 
-        // Remove the temporary drag image immediately after snapshot
-        setTimeout(() => {
-          dragImage.remove();
-        }, 0);
+          // Set the custom drag image.
+          e.dataTransfer.setDragImage(
+            dragImage,
+            dragImage.clientWidth / 2,
+            dragImage.clientHeight / 2
+          );
+
+          // Remove the temporary drag image immediately after snapshot
+          setTimeout(() => {
+            dragImage.remove();
+          }, 0);
+        }
       }
     } catch (err) {
       // ignore
