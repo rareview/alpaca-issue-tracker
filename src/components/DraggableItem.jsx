@@ -59,36 +59,6 @@ function DraggableItem({
 
     try {
       e.dataTransfer.setData('application/json', JSON.stringify(payload));
-      // @url https://stackoverflow.com/a/23522755/5038063
-      const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-
-      if ( ! isSafari ) {
-
-        // Clone the element for the drag image
-        const dragImage = e.currentTarget.cloneNode(true);
-        dragImage.style.transform = 'rotate(3deg)';
-        dragImage.style.boxShadow = '0 4px 8px rgb(0 0 0 / 10%)';
-        dragImage.style.position = 'absolute';
-        dragImage.style.width = '100%';
-        dragImage.style.top = '-1000px';
-        dragImage.style.left = '-1000px';
-        const container = document.body.querySelector(".alpaca-items");
-        if (container) {
-          container.appendChild(dragImage);
-
-          // Set the custom drag image.
-          e.dataTransfer.setDragImage(
-            dragImage,
-            dragImage.clientWidth / 2,
-            dragImage.clientHeight / 2
-          );
-
-          // Remove the temporary drag image immediately after snapshot
-          setTimeout(() => {
-            dragImage.remove();
-          }, 0);
-        }
-      }
     } catch (err) {
       // ignore
     }
@@ -98,6 +68,67 @@ function DraggableItem({
       window.__alpacaDragState = payload;
     } catch (err) {
       // ignore
+    }
+
+    // Create a lightweight drag image clone so user sees a preview
+    if (elRef.current && e.dataTransfer && e.dataTransfer.setDragImage) {
+      const original = elRef.current;
+      const clone = original.cloneNode(true);
+      const rect = original.getBoundingClientRect();
+
+      // Recursively copy computed styles from original to clone so display:flex/grid
+      // and child element styles are preserved in the preview.
+      const copyComputedStylesRecursive = (src, dest) => {
+        try {
+          const cs = window.getComputedStyle(src);
+          for (let i = 0; i < cs.length; i++) {
+            const prop = cs[i];
+            dest.style.setProperty(
+              prop,
+              cs.getPropertyValue(prop),
+              cs.getPropertyPriority(prop),
+            );
+          }
+        } catch (err) {
+          // ignore copying styles on older browsers
+        }
+
+        const srcChildren = src.children || [];
+        const destChildren = dest.children || [];
+        for (
+          let i = 0;
+          i < srcChildren.length && i < destChildren.length;
+          i++
+        ) {
+          copyComputedStylesRecursive(srcChildren[i], destChildren[i]);
+        }
+      };
+
+      copyComputedStylesRecursive(original, clone);
+
+      clone.style.position = 'absolute';
+      clone.style.top = '-10000px';
+      clone.style.left = '-10000px';
+      // enforce size so width matches column width
+      clone.style.width = `${rect.width}px`;
+      clone.style.height = `${rect.height}px`;
+      clone.style.margin = '0';
+      clone.classList.add('alpaca-drag-clone');
+
+      document.body.appendChild(clone);
+      try {
+        e.dataTransfer.setDragImage(clone, 10, 10);
+      } catch (err) {
+        // ignore
+      }
+      // remove the clone on next tick
+      setTimeout(() => {
+        try {
+          document.body.removeChild(clone);
+        } catch (err) {
+          // ignore
+        }
+      }, 0);
     }
   };
 

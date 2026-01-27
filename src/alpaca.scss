@@ -49,6 +49,7 @@ $deadline-today-bg: #3b82f6;
 $deadline-soon-bg: #f59e0b;
 $control-width-large: 300px;
 $z-index-attachment-delete: 10;
+$z-index-checklist-dragging: 99900000;
 $z-index-report-form: 99998;
 $z-index-bottom-toolbar: 99999;
 $timeline-width: 1px;
@@ -249,17 +250,13 @@ $timeline-width: 1px;
     /*
      * 3.3 - Items (Cards)
      */
-    .alpaca-item {
+    .alpaca-item,
+    .alpaca-item-dragging {
       display: flex;
       flex-direction: column;
       gap: $spacegap;
       transition: opacity 0.2s ease-in-out;
       margin: 1px 0 9px 0;
-      cursor: pointer;
-
-      &:active {
-        cursor: grabbing;
-      }
 
       .components-card__body,
       .components-card__footer {
@@ -303,7 +300,8 @@ $timeline-width: 1px;
         grid-row: 1;
       }
 
-      .alpaca-item-controls .dashicons {
+      .alpaca-item-controls .dashicons,
+      &.alpaca-item-dragging .alpaca-item-controls .dashicons {
         opacity: 0;
         transition: opacity 0.2s ease-in-out;
       }
@@ -316,7 +314,8 @@ $timeline-width: 1px;
         cursor: pointer;
       }
 
-      &.is-watched .alpaca-item-controls .dashicons {
+      &.is-watched .alpaca-item-controls .dashicons,
+      &.alpaca-item-dragging.is-watched .alpaca-item-controls .dashicons {
         opacity: 1;
       }
     }
@@ -412,6 +411,13 @@ $timeline-width: 1px;
           }
         }
       }
+    }
+
+    .alpaca-item-dragging {
+      cursor: grabbing;
+      transform: rotate(3deg);
+
+      // note: function to match admin colors in alpaca.php
     }
 
     .alpaca-item.empty {
@@ -684,7 +690,8 @@ $timeline-width: 1px;
     padding: 1em 0;
   }
 
-  .alpaca-checklist-item {
+  .alpaca-checklist-item,
+  .alpaca-checklist-item--dragging {
     display: flex;
     align-items: center;
 
@@ -726,6 +733,11 @@ $timeline-width: 1px;
       height: auto;
       min-width: auto;
     }
+  }
+
+  .alpaca-checklist-item--dragging {
+    z-index: $z-index-checklist-dragging !important;
+    box-shadow: 0 4px 8px rgb(0 0 0 / 10%);
   }
 
   /*
