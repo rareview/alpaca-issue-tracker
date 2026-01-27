@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import Item from './Item';
 
-const { forwardRef, useRef, useState } = wp.element;
+const { forwardRef, useState } = wp.element;
 
 // ... (propTypes and component definition)
 
