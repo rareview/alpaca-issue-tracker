@@ -167,9 +167,7 @@ final class Alpaca {
 		$post_id   = $comment->comment_post_ID;
 		$post_type = \get_post_type( $post_id );
 
-		if ( 'alpaca_issue' === $post_type ) {
-			alpaca_update_last_activity( $post_id );
-		}
+		alpaca_update_last_activity( $post_id );
 	}
 
 	/**
