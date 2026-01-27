@@ -329,6 +329,10 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
               issueId: issueId.toString(),
               newCount: response.comment_count,
             });
+            wp.hooks.doAction('alpaca.lastActivityChanged', {
+              issueId: issueId.toString(),
+              lastActivity: new Date().toISOString(),
+            });
           }
         });
       })

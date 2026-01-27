@@ -11,6 +11,7 @@ const { useRef, useState } = wp.element;
  * @param {number}          root0.id             - Item ID
  * @param {number}          root0.index          - Index in drag list
  * @param {string}          root0.content        - Item content text
+ * @param {string}          root0.postDate       - Item creation date
  * @param {string}          root0.className      - CSS class name
  * @param {boolean}         root0.isDragDisabled - Whether dragging is disabled
  * @param {Function}        root0.onClick        - Click handler
@@ -25,6 +26,7 @@ function DraggableItem({
   index,
   containerId,
   content,
+  postDate,
   className,
   isDragDisabled = false,
   onClick,
@@ -49,6 +51,7 @@ function DraggableItem({
       sourceContainerId: containerId,
       sourceIndex: index,
       content,
+      postDate,
       assignees,
       commentCount,
       meta,
@@ -148,6 +151,7 @@ function DraggableItem({
       <Item
         id={id}
         content={content}
+        postDate={postDate}
         assignees={assignees}
         commentCount={commentCount}
         meta={meta}
@@ -163,6 +167,7 @@ DraggableItem.propTypes = {
   index: PropTypes.number.isRequired,
   containerId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   content: PropTypes.string.isRequired,
+  postDate: PropTypes.string,
   className: PropTypes.string,
   isDragDisabled: PropTypes.bool,
   onClick: PropTypes.func,
