@@ -103,6 +103,62 @@ function Container({
       title: isHidden ? 'Expand Column' : 'Collapse Column',
       onClick: toggleHidden,
     },
+    {
+      icon: 'arrow-up-alt',
+      title: __('Lift Priority Items', 'alpaca'),
+      onClick: () => {
+        if (!onItemDrop) {
+          return;
+        }
+
+        // Separate items into priority and non-priority groups, preserving original order.
+        const priorityItems = items.filter(
+          (item) =>
+            item.meta &&
+            (item.meta.alpaca_high_priority === '1' ||
+              item.meta.alpaca_high_priority === 1 ||
+              item.meta.alpaca_high_priority === true),
+        );
+        const otherItems = items.filter(
+          (item) =>
+            !(
+              item.meta &&
+              (item.meta.alpaca_high_priority === '1' ||
+                item.meta.alpaca_high_priority === 1 ||
+                item.meta.alpaca_high_priority === true)
+            ),
+        );
+
+        // This is the desired final state of the items array.
+        const newItems = [...priorityItems, ...otherItems];
+
+        // A local copy of the items array to simulate the moves and find the correct source index for each step.
+        const currentItemsState = [...items];
+
+        // Iterate through the desired final list and move items into place one by one.
+        for (let i = 0; i < newItems.length; i++) {
+          const desiredItem = newItems[i];
+          const currentIndex = currentItemsState.findIndex(
+            (item) => item.id === desiredItem.id,
+          );
+
+          // If the item is not in its correct final position, move it.
+          if (currentIndex !== i) {
+            onItemDrop({
+              itemId: desiredItem.id,
+              sourceContainerId: id,
+              sourceIndex: currentIndex,
+              destinationContainerId: id,
+              destinationIndex: i,
+            });
+
+            // Update our local state representation to reflect the move for the next iteration.
+            const [movedItem] = currentItemsState.splice(currentIndex, 1);
+            currentItemsState.splice(i, 0, movedItem);
+          }
+        }
+      },
+    },
   ];
 
   if (!isLastContainer) {

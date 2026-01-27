@@ -650,13 +650,24 @@ export function AlpacaBoard() {
     if (!sourceContainer || !destinationContainer) return;
 
     if (sourceContainer.id === destinationContainer.id) {
-      const items = Array.from(sourceContainer.items);
-      const [reorderedItem] = items.splice(sourceIndex, 1);
-      items.splice(destinationIndex, 0, reorderedItem);
+      setContainers((prev) => {
+        const container = prev.find((c) => c.id === sourceContainerId);
+        if (!container) return prev;
 
-      setContainers((prev) =>
-        prev.map((c) => (c.id === sourceContainer.id ? { ...c, items } : c)),
-      );
+        const items = Array.from(container.items);
+
+        // Bail if source index is out of bounds
+        if (sourceIndex < 0 || sourceIndex >= items.length) {
+          return prev;
+        }
+
+        const [reorderedItem] = items.splice(sourceIndex, 1);
+        items.splice(destinationIndex, 0, reorderedItem);
+
+        return prev.map((c) =>
+          c.id === sourceContainerId ? { ...c, items } : c,
+        );
+      });
     } else {
       const sourceItems = Array.from(sourceContainer.items);
       const destItems = Array.from(destinationContainer.items);
