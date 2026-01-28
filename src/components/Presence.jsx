@@ -69,7 +69,7 @@ const Presence = () => {
 
   return (
     <div className="alpaca-presence-list">
-      <div class="alpaca-presence-msg">
+      <div className="alpaca-presence-msg">
         {__('Currently viewing the board: ', 'alpaca')}
       </div>
       {presentUsers.map((u) => (

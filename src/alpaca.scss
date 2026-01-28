@@ -144,18 +144,22 @@ $timeline-width: 1px;
     align-items: center;
     margin: 10px 0;
     line-height: 32px;
+
     .alpaca-presence-msg {
       margin-right: 8px;
     }
+
     .alpaca-presence-list {
       display: flex;
       flex-direction: row;
       align-items: center;
       gap: $spacegap;
+
       img {
         width: 24px;
         height: 24px;
       }
+
       .alpaca-user-name {
         display: none;
       }
