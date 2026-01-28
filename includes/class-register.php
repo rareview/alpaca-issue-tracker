@@ -87,6 +87,9 @@ class Register {
 		// On the project board page.
 		if ( 'toplevel_page_alpaca-board' === $hook_suffix ) {
 
+			// Ensure WP Heartbeat is available on the board page.
+			wp_enqueue_script( 'heartbeat' );
+
 			// Pass board data.
 			wp_localize_script(
 				self::PREFIX . '-script',

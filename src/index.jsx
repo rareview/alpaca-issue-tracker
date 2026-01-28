@@ -9,6 +9,7 @@ import AlpacaToolbar from './Toolbar.jsx';
 import AlpacaSettings from './Settings.jsx';
 import { WatchlistProvider } from './context/WatchlistContext.jsx';
 import { AlpacaBoard } from './Board.jsx';
+import Presence from './components/Presence';
 
 import { fetchAllAssignees } from './services/userApi.js';
 import {
@@ -35,7 +36,7 @@ window.alpaca.services.issueApi = {
   fetchIssueCommentCount,
 };
 
-const { render } = wp.element;
+const { render, createElement } = wp.element;
 const isAdmin = document.body.classList.contains('wp-admin');
 
 if (isAdmin && document.querySelector('#wp-admin-bar-alpaca-menu')) {
@@ -66,4 +67,13 @@ if (document.querySelector('#alpaca-board')) {
     </WatchlistProvider>,
     document.querySelector('#alpaca-board'),
   );
+}
+
+// Mount presence widget into the board admin page placeholder.
+if (
+  typeof document !== 'undefined' &&
+  document.getElementById('alpaca-presence')
+) {
+  const el = document.getElementById('alpaca-presence');
+  render(createElement(Presence), el);
 }

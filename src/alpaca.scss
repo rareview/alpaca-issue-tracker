@@ -129,298 +129,318 @@ $timeline-width: 1px;
       display: flex;
     }
 
-    #alpaca-board-controls-mount {
-      padding-top: 23px;
-    }
-
     .alpaca-item.is-filtered-out {
       display: none; // because there is a really weird bug arising when I use opacity
       pointer-events: none;
     }
+  }
 
-    /*
+  /*
      * 3.1 - Board Controls
      */
-    #alpaca-board-controls {
-      .alpaca-board-filter {
-        width: fit-content;
-        background: transparent;
-        border-width: 0;
 
-        & > div {
-          flex: none;
-        }
-
-        &:focus-within {
-          outline: none;
-          box-shadow: none;
-          border-width: 0;
-        }
-      }
-
-      .components-combobox-control {
-        width: $control-width-large;
-      }
+  #alpaca-presence {
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+    line-height: 32px;
+    .alpaca-presence-msg {
+      margin-right: 8px;
     }
-
-    /*
-     * 3.2 - Containers (Columns)
-     */
-    .alpaca-container {
-      margin: 0 10px 0 1px;
-      background: $container-bg;
-      border-radius: 4px;
+    .alpaca-presence-list {
       display: flex;
-
-      .alpaca-container-header,
-      .alpaca-container-body {
-        padding-top: 5px;
-        padding-bottom: 5px;
-      }
-
-      .alpaca-container-header {
-        display: grid;
-        grid-template-columns: 1fr 40px;
-        align-items: center;
-
-        h2,
-        .alpaca-container-title-input input {
-          margin: 0;
-          font-size: $container-header-fontsize;
-          font-weight: $container-header-fontweight;
-          padding: 0;
-          border: none;
-          background: transparent;
-
-          &:focus {
-            outline: none;
-            box-shadow: none;
-          }
-        }
-
-        .alpaca-container-title-input > div {
-          margin: -1px 0 0;
-          padding: 0;
-        }
-
-        .alpaca-item-count {
-          font-size: smaller;
-          font-weight: 200;
-          margin: 0.5rem;
-          opacity: 0.5;
-        }
-
-        .alpaca-container-controls {
-          padding: 2px 0;
-          flex-direction: row;
-
-          .components-button:focus:not(:disabled) {
-            box-shadow: none;
-          }
-
-          button {
-            margin-left: 2px;
-            opacity: 0.2;
-            transition: opacity 0.2s ease-in-out;
-
-            &:hover {
-              opacity: 1;
-              cursor: pointer;
-            }
-          }
-        }
-      }
-
-      &.hidden {
-        opacity: 0.5;
-        flex: 0;
-        min-width: auto;
-
-        .alpaca-items {
-          display: none;
-        }
-      }
-    }
-
-    .alpaca-items {
-      padding: 0 2px;
-    }
-
-    /*
-     * 3.3 - Items (Cards)
-     */
-    .alpaca-item {
-      display: flex;
-      flex-direction: column;
+      flex-direction: row;
+      align-items: center;
       gap: $spacegap;
-      transition: opacity 0.2s ease-in-out;
-      margin: 1px 0 9px 0;
-      cursor: pointer;
-
-      &:active {
-        cursor: grabbing;
+      img {
+        width: 24px;
+        height: 24px;
       }
-
-      .components-card__body,
-      .components-card__footer {
-        padding-bottom: 4px;
-      }
-
-      span.components-text {
-        font-size: $midfont;
-      }
-
-      .components-card__media {
-        margin: 4px 0; // assuming image between body and footer
-      }
-
-      .components-card__footer {
-        padding-top: 0;
-        line-height: 2em;
-      }
-
-      .alpaca-item-upper {
-        display: grid;
-        grid-template-columns: 1fr 2em;
-        grid-template-rows: auto;
-        gap: 0;
-      }
-
-      .alpaca-item-deadline {
-        border-radius: 8px;
-      }
-
-      &.is-high-priority {
-        .alpaca-item-content::before {
-          content: '⚠️';
-          margin-right: 4px;
-          font-size: 14px;
-        }
-      }
-
-      .alpaca-item-content {
-        grid-column: 1;
-        grid-row: 1;
-      }
-
-      .alpaca-item-controls .dashicons {
-        opacity: 0;
-        transition: opacity 0.2s ease-in-out;
-      }
-
-      &:hover .alpaca-item-controls .dashicons {
-        opacity: 0.3;
-      }
-
-      .alpaca-item-controls .dashicons:hover {
-        cursor: pointer;
-      }
-
-      &.is-watched .alpaca-item-controls .dashicons {
-        opacity: 1;
-      }
-    }
-
-    .alpaca-item-inner {
-      .alpaca-item-deadline {
-        &[data-deadline-state='late'] {
-          @include deadline-style($deadline-late-bg);
-        }
-
-        &[data-deadline-state='today'] {
-          @include deadline-style($deadline-today-bg);
-        }
-
-        &[data-deadline-state='soon'] {
-          @include deadline-style($deadline-soon-bg);
-        }
-      }
-
-      .alpaca-item-content {
-        grid-column: 1;
-        grid-row: 1;
-      }
-
-      .alpaca-item-controls {
-        grid-column: 2;
-        grid-row: 1;
-        text-align: right;
-      }
-
-      .alpaca-item-datapoints {
-        grid-column: 1;
-        grid-row: 2;
-        color: $greytext;
-        margin: 4px 0;
-        flex-wrap: wrap;
-        align-items: center;
-
-        & > div {
-          display: flex;
-          align-items: center;
-          gap: 0.4ch;
-          margin-right: 10px;
-        }
-
-        .alpaca-item-priority-badge svg {
-          color: $priority-high-bg;
-          width: 20px;
-          height: 20px;
-          border-radius: 50%;
-          padding: 2px;
-          border: 1px solid $greyborder;
-        }
-
-        .alpaca-item-assignees {
-          .alpaca-user-name {
-            display: none;
-          }
-
-          &[data-assignees='1'] {
-            .alpaca-user .alpaca-user-name {
-              display: block;
-            }
-          }
-
-          img {
-            width: 24px;
-            height: 24px;
-            border: 1px solid $greyborder;
-            border-radius: 50%;
-            background: $bgwhite;
-            vertical-align: middle;
-            margin-right: -2px;
-          }
-        }
-
-        .alpaca-item-icon {
-          text-wrap: nowrap;
-
-          svg {
-            margin-right: 3px;
-            vertical-align: middle;
-            margin-top: -2px;
-          }
-        }
-
-        .alpaca-user {
-          font-size: 0.8rem;
-          margin-left: -8px;
-
-          &:first-child {
-            margin-left: 0;
-          }
-        }
-      }
-    }
-
-    .alpaca-item.empty {
-      font-style: italic;
-      background-color: transparent;
-
-      .alpaca-item-controls {
+      .alpaca-user-name {
         display: none;
       }
+    }
+  }
+
+  #alpaca-board-controls {
+    .alpaca-board-filter {
+      width: fit-content;
+      background: transparent;
+      border-width: 0;
+
+      & > div {
+        flex: none;
+      }
+
+      &:focus-within {
+        outline: none;
+        box-shadow: none;
+        border-width: 0;
+      }
+    }
+
+    .components-combobox-control {
+      width: $control-width-large;
+    }
+  }
+
+  /*
+     * 3.2 - Containers (Columns)
+     */
+  .alpaca-container {
+    margin: 0 10px 0 1px;
+    background: $container-bg;
+    border-radius: 4px;
+    display: flex;
+
+    .alpaca-container-header,
+    .alpaca-container-body {
+      padding-top: 5px;
+      padding-bottom: 5px;
+    }
+
+    .alpaca-container-header {
+      display: grid;
+      grid-template-columns: 1fr 40px;
+      align-items: center;
+
+      h2,
+      .alpaca-container-title-input input {
+        margin: 0;
+        font-size: $container-header-fontsize;
+        font-weight: $container-header-fontweight;
+        padding: 0;
+        border: none;
+        background: transparent;
+
+        &:focus {
+          outline: none;
+          box-shadow: none;
+        }
+      }
+
+      .alpaca-container-title-input > div {
+        margin: -1px 0 0;
+        padding: 0;
+      }
+
+      .alpaca-item-count {
+        font-size: smaller;
+        font-weight: 200;
+        margin: 0.5rem;
+        opacity: 0.5;
+      }
+
+      .alpaca-container-controls {
+        padding: 2px 0;
+        flex-direction: row;
+
+        .components-button:focus:not(:disabled) {
+          box-shadow: none;
+        }
+
+        button {
+          margin-left: 2px;
+          opacity: 0.2;
+          transition: opacity 0.2s ease-in-out;
+
+          &:hover {
+            opacity: 1;
+            cursor: pointer;
+          }
+        }
+      }
+    }
+
+    &.hidden {
+      opacity: 0.5;
+      flex: 0;
+      min-width: auto;
+
+      .alpaca-items {
+        display: none;
+      }
+    }
+  }
+
+  .alpaca-items {
+    padding: 0 2px;
+  }
+
+  /*
+     * 3.3 - Items (Cards)
+     */
+  .alpaca-item {
+    display: flex;
+    flex-direction: column;
+    gap: $spacegap;
+    transition: opacity 0.2s ease-in-out;
+    margin: 1px 0 9px 0;
+    cursor: pointer;
+
+    &:active {
+      cursor: grabbing;
+    }
+
+    .components-card__body,
+    .components-card__footer {
+      padding-bottom: 4px;
+    }
+
+    span.components-text {
+      font-size: $midfont;
+    }
+
+    .components-card__media {
+      margin: 4px 0; // assuming image between body and footer
+    }
+
+    .components-card__footer {
+      padding-top: 0;
+      line-height: 2em;
+    }
+
+    .alpaca-item-upper {
+      display: grid;
+      grid-template-columns: 1fr 2em;
+      grid-template-rows: auto;
+      gap: 0;
+    }
+
+    .alpaca-item-deadline {
+      border-radius: 8px;
+    }
+
+    &.is-high-priority {
+      .alpaca-item-content::before {
+        content: '⚠️';
+        margin-right: 4px;
+        font-size: 14px;
+      }
+    }
+
+    .alpaca-item-content {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .alpaca-item-controls .dashicons {
+      opacity: 0;
+      transition: opacity 0.2s ease-in-out;
+    }
+
+    &:hover .alpaca-item-controls .dashicons {
+      opacity: 0.3;
+    }
+
+    .alpaca-item-controls .dashicons:hover {
+      cursor: pointer;
+    }
+
+    &.is-watched .alpaca-item-controls .dashicons {
+      opacity: 1;
+    }
+  }
+
+  .alpaca-item-inner {
+    .alpaca-item-deadline {
+      &[data-deadline-state='late'] {
+        @include deadline-style($deadline-late-bg);
+      }
+
+      &[data-deadline-state='today'] {
+        @include deadline-style($deadline-today-bg);
+      }
+
+      &[data-deadline-state='soon'] {
+        @include deadline-style($deadline-soon-bg);
+      }
+    }
+
+    .alpaca-item-content {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .alpaca-item-controls {
+      grid-column: 2;
+      grid-row: 1;
+      text-align: right;
+    }
+
+    .alpaca-item-datapoints {
+      grid-column: 1;
+      grid-row: 2;
+      color: $greytext;
+      margin: 4px 0;
+      flex-wrap: wrap;
+      align-items: center;
+
+      & > div {
+        display: flex;
+        align-items: center;
+        gap: 0.4ch;
+        margin-right: 10px;
+      }
+
+      .alpaca-item-priority-badge svg {
+        color: $priority-high-bg;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        padding: 2px;
+        border: 1px solid $greyborder;
+      }
+
+      .alpaca-item-assignees {
+        .alpaca-user-name {
+          display: none;
+        }
+
+        &[data-assignees='1'] {
+          .alpaca-user .alpaca-user-name {
+            display: block;
+          }
+        }
+
+        img {
+          width: 24px;
+          height: 24px;
+          border: 1px solid $greyborder;
+          border-radius: 50%;
+          background: $bgwhite;
+          vertical-align: middle;
+          margin-right: -2px;
+        }
+      }
+
+      .alpaca-item-icon {
+        text-wrap: nowrap;
+
+        svg {
+          margin-right: 3px;
+          vertical-align: middle;
+          margin-top: -2px;
+        }
+      }
+
+      .alpaca-user {
+        font-size: 0.8rem;
+        margin-left: -8px;
+
+        &:first-child {
+          margin-left: 0;
+        }
+      }
+    }
+  }
+
+  .alpaca-item.empty {
+    font-style: italic;
+    background-color: transparent;
+
+    .alpaca-item-controls {
+      display: none;
     }
   }
 

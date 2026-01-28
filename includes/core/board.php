@@ -16,8 +16,10 @@ function alpaca_project_board_page() {
 	<a id="alpaca-add-issue" href="#" class="page-title-action aria-button-if-js" role="button" aria-expanded="false"><?php echo esc_html__( 'Add Issue', 'alpaca' ); ?></a>
 	
 	<hr class="wp-header-end">
-	<div id="alpaca-board-controls">
-	</div>
+
+	<div id="alpaca-board-controls"></div>
+
+    <div id="alpaca-presence"></div>
 
 	<div id="alpaca-board"></div>
 	</div>
