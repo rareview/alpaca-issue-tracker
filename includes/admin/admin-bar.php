@@ -31,7 +31,6 @@ function alpaca_add_admin_bar_menu( $admin_bar ) {
 
 	if ( ! empty( $icon_files ) && file_exists( $icon_files[0] ) ) {
 		$icon_svg = file_get_contents( $icon_files[0] );
-		$icon_svg = str_replace( '<svg', '<svg style="width: 16px; height: 16px; vertical-align: middle; margin-right: 4px;"', $icon_svg );
 	}
 
 	$admin_bar->add_menu(
