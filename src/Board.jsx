@@ -594,6 +594,7 @@ export function AlpacaBoard() {
         },
       };
 
+      // Add new issue to the top of the first container for immediate UI update
       firstContainer.items = [newItem, ...firstContainer.items];
       updatedContainers[firstContainerIndex] = firstContainer;
 
@@ -601,7 +602,6 @@ export function AlpacaBoard() {
     });
 
     closeModal();
-    setNeedsSave(true);
   };
 
   useEffect(() => {
@@ -621,14 +621,19 @@ export function AlpacaBoard() {
     const handleIssueSubmitted = (issue, statusId) => {
       if (!issue || !statusId) return;
 
+      // Use functional update to ensure we have the latest state
       setContainers((prevContainers) => {
-        const newContainers = [...prevContainers];
+        const newContainers = prevContainers.map((container) => ({
+          ...container,
+          items: [...container.items],
+        }));
+
         const targetContainer = newContainers.find(
           (c) => c.id === statusId.toString(),
         );
 
         if (targetContainer) {
-          targetContainer.items.unshift({
+          const newItem = {
             id: issue.id.toString(),
             content: decodeEntities(issue.title),
             postDate: issue.post_date,
@@ -637,12 +642,14 @@ export function AlpacaBoard() {
             assignees: [],
             commentCount: issue.comment_count ?? 0,
             meta: issue.meta || {},
-          });
+          };
+
+          // Add new issue to the top of the container for immediate UI update
+          targetContainer.items.unshift(newItem);
         }
 
         return newContainers;
       });
-      setNeedsSave(true);
     };
 
     wp.hooks.addAction(
