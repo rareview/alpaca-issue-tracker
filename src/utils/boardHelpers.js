@@ -13,7 +13,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
       // Trigger modal open via WordPress hooks
       if (window.wp && window.wp.hooks) {
-        wp.hooks.doAction('alpaca.openModal');
+        if (document.getElementById('alpaca-board')) {
+          wp.hooks.doAction('alpaca.createBoardIssue');
+        } else {
+          wp.hooks.doAction('alpaca.openModal');
+        }
       }
     });
   }
