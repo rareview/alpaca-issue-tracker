@@ -154,6 +154,31 @@ export function AlpacaBoard() {
     };
   }, [handleCommentCountChange]);
 
+  const handleLastActivityChange = useCallback((issueId, newLastActivity) => {
+    setContainers((prevContainers) =>
+      prevContainers.map((container) => {
+        const itemIndex = container.items.findIndex(
+          (item) => item.id === issueId.toString(),
+        );
+
+        if (itemIndex === -1) {
+          return container;
+        }
+
+        const newItems = [...container.items];
+        newItems[itemIndex] = {
+          ...newItems[itemIndex],
+          meta: {
+            ...newItems[itemIndex].meta,
+            lastActivity: newLastActivity,
+          },
+        };
+
+        return { ...container, items: newItems };
+      }),
+    );
+  }, []);
+
   const handleChecklistChange = useCallback((issueId, newChecklist) => {
     setContainers((prevContainers) =>
       prevContainers.map((container) => {
@@ -216,6 +241,11 @@ export function AlpacaBoard() {
       handlePriorityChange(issueId, isHighPriority);
     };
 
+    const lastActivityChangedCallback = (data) => {
+      const { issueId, lastActivity } = data;
+      handleLastActivityChange(issueId, lastActivity);
+    };
+
     wp.hooks.addAction(
       'alpaca.checklistChanged',
       'alpaca/boardmain',
@@ -228,11 +258,18 @@ export function AlpacaBoard() {
       priorityUpdatedCallback,
     );
 
+    wp.hooks.addAction(
+      'alpaca.lastActivityChanged',
+      'alpaca/boardmain',
+      lastActivityChangedCallback,
+    );
+
     return () => {
       wp.hooks.removeAction('alpaca.checklistChanged', 'alpaca/boardmain');
       wp.hooks.removeAction('alpaca.priorityUpdated', 'alpaca/boardmain');
+      wp.hooks.removeAction('alpaca.lastActivityChanged', 'alpaca/boardmain');
     };
-  }, [handleChecklistChange, handlePriorityChange]);
+  }, [handleChecklistChange, handlePriorityChange, handleLastActivityChange]);
 
   const moveAllItemsToNextContainer = (sourceContainerId) => {
     const containersCopy = containers.map((c) => ({
@@ -594,6 +631,7 @@ export function AlpacaBoard() {
           targetContainer.items.unshift({
             id: issue.id.toString(),
             content: decodeEntities(issue.title),
+            postDate: issue.post_date,
             authorName: issue.author_name,
             authorImg: issue.author_img,
             assignees: [],

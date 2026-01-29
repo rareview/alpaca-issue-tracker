@@ -10,6 +10,7 @@ import AlpacaToolbar from './Toolbar.jsx';
 import AlpacaSettings from './Settings.jsx';
 import { WatchlistProvider } from './context/WatchlistContext.jsx';
 import { AlpacaBoard } from './Board.jsx';
+import About from './about/About.jsx';
 
 import { fetchAllAssignees } from './services/userApi.js';
 import {
@@ -67,4 +68,11 @@ if (document.querySelector('#alpaca-board')) {
     </WatchlistProvider>,
     document.querySelector('#alpaca-board'),
   );
+}
+
+if (document.querySelector('#alpaca-about-page')) {
+	render(
+		<About />,
+		document.querySelector('#alpaca-about-page')
+	);
 }

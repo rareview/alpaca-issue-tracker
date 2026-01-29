@@ -89,6 +89,10 @@ const postComment = async (issueOrId, content, commentTags = []) => {
           issueId: postId.toString(),
           newCount: response.comment_count,
         });
+        doAction('alpaca.lastActivityChanged', {
+          issueId: postId.toString(),
+          lastActivity: new Date().toISOString(),
+        });
       }
     });
   } catch (error) {

@@ -127,3 +127,14 @@ function alpaca_setup_default_statuses( $force = false ) {
 		'count'   => $created_count,
 	);
 }
+
+/**
+ * Update the last activity timestamp for an issue.
+ *
+ * @param int $post_id The ID of the issue post.
+ */
+function alpaca_update_last_activity( $post_id ) {
+	if ( 'alpaca_issue' === get_post_type( $post_id ) ) {
+		update_post_meta( $post_id, 'alpaca_last_activity', current_time( 'mysql' ) );
+	}
+}
