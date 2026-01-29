@@ -16,6 +16,12 @@ const formatDate = (dateString) => {
 
 function AlpacaDashboardWidget({ data }) {
   const { allUserObjects } = useUserManagement();
+  const adminUrlBase =
+    typeof window !== 'undefined' &&
+    window.alpacaSettings &&
+    window.alpacaSettings.adminUrl
+      ? window.alpacaSettings.adminUrl
+      : 'admin.php';
 
   if (!data) {
     return <div>{__('Loading…', 'alpaca')}</div>;
@@ -59,8 +65,14 @@ function AlpacaDashboardWidget({ data }) {
               {tab.issues.map((issue) => (
                 <tr key={issue.id}>
                   <td className="title">
-                    {/* <a href={issue.url}>{issue.title}</a> */}
-                    {issue.title}
+                    <a
+                      href={`${adminUrlBase}?page=alpaca-board&issue=${encodeURIComponent(
+                        issue.slug || issue.post_name || issue.id,
+                      )}`}
+                      target="_self"
+                    >
+                      {issue.title}
+                    </a>
                   </td>
                   <td className="high-priority">
                     {issue.high_priority ? <PriorityIcon /> : null}

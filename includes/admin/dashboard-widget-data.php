@@ -128,7 +128,7 @@ function _alpaca_prepare_issue_data( $post ) {
 	return array(
 		'id'            => $post->ID,
 		'title'         => $post->post_title,
-		'url'           => get_permalink( $post->ID ),
+		'slug'          => $post->post_name,
 		'postDate'      => $post->post_date,
 		'deadline'      => $deadline,
 		'assignees'     => $assignees,
