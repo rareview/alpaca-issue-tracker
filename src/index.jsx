@@ -71,8 +71,5 @@ if (document.querySelector('#alpaca-board')) {
 }
 
 if (document.querySelector('#alpaca-about-page')) {
-	render(
-		<About />,
-		document.querySelector('#alpaca-about-page')
-	);
+  render(<About />, document.querySelector('#alpaca-about-page'));
 }
