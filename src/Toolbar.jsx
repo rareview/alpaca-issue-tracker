@@ -1,5 +1,7 @@
 import handleSnapdomCapture from './snapdomHandler.js';
 import { useTestLogger } from './utils/testLogger.js';
+import ReportIcon from './components/icons/ReportIcon';
+import BoardIcon from './components/icons/BoardIcon';
 
 const { __ } = wp.i18n;
 const { Button, TextareaControl, Spinner, ToggleControl } = wp.components;
@@ -161,7 +163,7 @@ const AlpacaToolbar = () => {
           className={`alpaca-report-button ${isFormVisible ? 'form-visible' : ''}`}
           onClick={openForm}
         >
-          <span className="dashicons dashicons-warning" />
+          <ReportIcon />
           {__('Report An Issue', 'alpaca')}
         </button>
         <a
@@ -171,7 +173,7 @@ const AlpacaToolbar = () => {
           }
           className="alpaca-board-link"
         >
-          <span className="dashicons dashicons-analytics" />
+          <BoardIcon />
           {__('Project Board', 'alpaca')}
         </a>
         <button className="toggle-button" onClick={toggleExpand}>

@@ -44,6 +44,20 @@ export function AlpacaBoard() {
   useEffect(() => {
     // Fire an action to allow other components to render into the controls area.
     doAction('alpaca_board_controls', '#alpaca-board-controls-mount');
+
+    const handleCreateBoardIssue = () => {
+      setSelectedItem({ isCreating: true });
+    };
+
+    wp.hooks.addAction(
+      'alpaca.createBoardIssue',
+      'alpaca/board',
+      handleCreateBoardIssue,
+    );
+
+    return () => {
+      wp.hooks.removeAction('alpaca.createBoardIssue', 'alpaca/board');
+    };
   }, []);
 
   // Effect to update cookie when hiddenContainerIds changes
@@ -654,6 +668,45 @@ export function AlpacaBoard() {
       });
   };
 
+  const handleIssueCreated = (createdIssue) => {
+    if (!createdIssue || !createdIssue.id) {
+      console.error('Invalid issue data received:', createdIssue);
+      window.location.reload();
+      return;
+    }
+
+    setContainers((prevContainers) => {
+      if (prevContainers.length === 0) {
+        window.location.reload();
+        return prevContainers;
+      }
+
+      const firstContainerIndex = 0;
+      const updatedContainers = [...prevContainers];
+      const firstContainer = { ...updatedContainers[firstContainerIndex] };
+
+      const newItem = {
+        id: createdIssue.id.toString(),
+        content: createdIssue.title,
+        assignees: createdIssue.assignees || [],
+        commentCount: 1,
+        meta: {
+          deadline: createdIssue.deadline ? [createdIssue.deadline] : undefined,
+          // eslint-disable-next-line camelcase
+          alpaca_high_priority: createdIssue.isHighPriority ? '1' : undefined,
+        },
+      };
+
+      // Add new issue to the top of the first container for immediate UI update
+      firstContainer.items = [newItem, ...firstContainer.items];
+      updatedContainers[firstContainerIndex] = firstContainer;
+
+      return updatedContainers;
+    });
+
+    closeModal();
+  };
+
   useEffect(() => {
     if (!selectedItem && triggerRef.current) {
       triggerRef.current.focus();
@@ -671,14 +724,19 @@ export function AlpacaBoard() {
     const handleIssueSubmitted = (issue, statusId) => {
       if (!issue || !statusId) return;
 
+      // Use functional update to ensure we have the latest state
       setContainers((prevContainers) => {
-        const newContainers = [...prevContainers];
+        const newContainers = prevContainers.map((container) => ({
+          ...container,
+          items: [...container.items],
+        }));
+
         const targetContainer = newContainers.find(
           (c) => c.id === statusId.toString(),
         );
 
         if (targetContainer) {
-          targetContainer.items.unshift({
+          const newItem = {
             id: issue.id.toString(),
             content: decodeEntities(issue.title),
             postDate: issue.post_date,
@@ -687,12 +745,14 @@ export function AlpacaBoard() {
             assignees: [],
             commentCount: issue.comment_count ?? 0,
             meta: issue.meta || {},
-          });
+          };
+
+          // Add new issue to the top of the container for immediate UI update
+          targetContainer.items.unshift(newItem);
         }
 
         return newContainers;
       });
-      setNeedsSave(true);
     };
 
     wp.hooks.addAction(
@@ -860,7 +920,9 @@ export function AlpacaBoard() {
       )}
 
       <AlpacaIssue
+        key={selectedItem?.isCreating ? 'creating' : selectedItem?.id || 'none'}
         issueId={selectedItem?.id}
+        isCreating={selectedItem?.isCreating}
         isOpen={!!selectedItem}
         onClose={closeModal}
         onDelete={handleDeleteIssue}
@@ -869,6 +931,7 @@ export function AlpacaBoard() {
         onDeadlineChange={handleDeadlineChange}
         onStatusChange={handleStatusChange}
         onIssueTitleChange={handleIssueTitleChange}
+        onIssueCreated={handleIssueCreated}
       />
       {snackbarMessage && (
         <Snackbar

@@ -3,12 +3,15 @@ import './alpaca.scss';
 import './apiTest.js';
 import './utils/issueCommentHandler.js';
 import './utils/dataDump.js';
+import './utils/boardHelpers.js';
 
 import AlpacaModal from './Modal.jsx';
 import AlpacaToolbar from './Toolbar.jsx';
 import AlpacaSettings from './Settings.jsx';
 import { WatchlistProvider } from './context/WatchlistContext.jsx';
 import { AlpacaBoard } from './Board.jsx';
+import AlpacaDashboardWidget from './DashboardWidget.jsx';
+import About from './about/About.jsx';
 
 import { fetchAllAssignees } from './services/userApi.js';
 import {
@@ -38,11 +41,11 @@ window.alpaca.services.issueApi = {
 const { render } = wp.element;
 const isAdmin = document.body.classList.contains('wp-admin');
 
-if (isAdmin && document.querySelector('#wp-admin-bar-alpaca-menu')) {
-  render(
-    <AlpacaModal />,
-    document.querySelector('#wp-admin-bar-alpaca-report'),
-  );
+if (isAdmin && document.querySelector('#wp-admin-bar-alpaca-report')) {
+  const adminBarModalContainer = document.createElement('div');
+  adminBarModalContainer.id = 'alpaca-admin-bar-modal-mount';
+  document.body.appendChild(adminBarModalContainer);
+  render(<AlpacaModal />, adminBarModalContainer);
 }
 
 if (!isAdmin) {
@@ -66,4 +69,20 @@ if (document.querySelector('#alpaca-board')) {
     </WatchlistProvider>,
     document.querySelector('#alpaca-board'),
   );
+}
+
+if (document.querySelector('#alpaca-dashboard-widget')) {
+  const el = document.querySelector('#alpaca-dashboard-widget');
+  let data = null;
+  try {
+    data = el.dataset.props ? JSON.parse(el.dataset.props) : null;
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error('Alpaca dashboard widget: invalid data-props', e);
+  }
+  render(<AlpacaDashboardWidget data={data} />, el);
+}
+
+if (document.querySelector('#alpaca-about-page')) {
+  render(<About />, document.querySelector('#alpaca-about-page'));
 }
