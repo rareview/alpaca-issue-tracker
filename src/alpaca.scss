@@ -108,6 +108,13 @@ $timeline-width: 1px;
  * Main container for all Alpaca styles in the WP admin
  */
 .wp-admin {
+  #wp-admin-bar-alpaca-report a svg {
+    width: 1rem;
+    height: 1rem;
+    vertical-align: text-top;
+    margin-right: 4px;
+  }
+
   .alpaca-user {
     img {
       aspect-ratio: 1;
@@ -514,6 +521,16 @@ $timeline-width: 1px;
 
       &:focus {
         outline: none;
+      }
+
+      &:empty[data-placeholder]::before {
+        content: attr(data-placeholder);
+        color: $greytext;
+        opacity: 0.6;
+      }
+
+      &:focus:empty[data-placeholder]::before {
+        opacity: 0.5;
       }
     }
   }

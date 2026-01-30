@@ -59,11 +59,13 @@ function DraggableItem({
 
     try {
       e.dataTransfer.setData('application/json', JSON.stringify(payload));
-      // @url https://stackoverflow.com/a/23522755/5038063
-      const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+      // Use browser detection from alpacaDataDump if available, fallback to regex
+      const isSafari =
+        (typeof alpacaDataDump !== 'undefined' &&
+          alpacaDataDump.device?.browser?.name === 'Safari') ||
+        /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
-      if ( ! isSafari ) {
-
+      if (!isSafari) {
         // Clone the element for the drag image
         const dragImage = e.currentTarget.cloneNode(true);
         dragImage.style.transform = 'rotate(3deg)';
@@ -72,7 +74,7 @@ function DraggableItem({
         dragImage.style.width = '100%';
         dragImage.style.top = '-1000px';
         dragImage.style.left = '-1000px';
-        const container = document.body.querySelector(".alpaca-items");
+        const container = document.body.querySelector('.alpaca-items');
         if (container) {
           container.appendChild(dragImage);
 
@@ -80,7 +82,7 @@ function DraggableItem({
           e.dataTransfer.setDragImage(
             dragImage,
             dragImage.clientWidth / 2,
-            dragImage.clientHeight / 2
+            dragImage.clientHeight / 2,
           );
 
           // Remove the temporary drag image immediately after snapshot

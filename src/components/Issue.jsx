@@ -5,9 +5,10 @@ import { getTabsConfig } from '../utils/tabsConfig';
 import useIssueData from '../hooks/useIssueData';
 import useUserManagement from '../hooks/useUserManagement';
 import useLoadingStates from '../hooks/useLoadingStates';
+import { getUser, generateAssigneeSpan } from '../hooks/useUser';
 
 import { processAssigneeChanges } from '../utils/assigneeUtils';
-import { fetchStatuses, updateIssue } from '../services/issueApi';
+import { fetchStatuses, updateIssue, createIssue } from '../services/issueApi';
 
 import AssigneeSelector from './issue/AssigneeSelector';
 import DeadlineControl from './issue/DeadlineControl';
@@ -94,21 +95,27 @@ const DeadlineRow = memo(
 );
 
 const EditableTitle = memo(
-  ({ isEditing, title, onEditStart, onChange, onSave, onCancel }) => {
+  ({
+    isEditing,
+    title,
+    onEditStart,
+    onChange,
+    onSave,
+    onCancel,
+    placeholder,
+  }) => {
     const inputRef = useRef(null);
 
     useEffect(() => {
       if (isEditing && inputRef.current) {
-        inputRef.current.textContent = title;
+        if (inputRef.current.textContent !== title) {
+          inputRef.current.textContent = title;
+        }
+        // Auto-focus the input when entering edit mode
         inputRef.current.focus();
-        const range = document.createRange();
-        const sel = inputRef.current.ownerDocument.defaultView.getSelection();
-        range.selectNodeContents(inputRef.current);
-        range.collapse(false);
-        sel.removeAllRanges();
-        sel.addRange(range);
       }
-    }, [isEditing, title]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isEditing]);
 
     const handleKeyDown = (e) => {
       if (e.key === 'Enter') {
@@ -139,8 +146,9 @@ const EditableTitle = memo(
         }
         onBlur={isEditing ? onSave : undefined}
         aria-label="Issue title"
+        data-placeholder={placeholder}
       >
-        {title}
+        {!isEditing && title}
       </h3>
     );
   },
@@ -151,6 +159,7 @@ const EditableTitle = memo(
 // ----- Main Component -----
 const AlpacaIssue = ({
   issueId,
+  isCreating,
   isOpen,
   onClose,
   onDelete,
@@ -158,6 +167,7 @@ const AlpacaIssue = ({
   onDeadlineChange,
   onStatusChange,
   onIssueTitleChange,
+  onIssueCreated,
 }) => {
   const {
     issueDetails,
@@ -165,7 +175,7 @@ const AlpacaIssue = ({
     isLoadingDetails,
     error,
     refetchData,
-  } = useIssueData(issueId, isOpen);
+  } = useIssueData(isCreating ? null : issueId, isOpen);
 
   const { allUsers, allUserObjects, userMap } = useUserManagement();
   const { loadingStates, setLoading } = useLoadingStates();
@@ -197,9 +207,33 @@ const AlpacaIssue = ({
       );
   }, [showNotification]);
 
+  useEffect(() => {
+    if (isOpen && isCreating) {
+      setIsEditingTitle(true);
+      setEditedTitle('');
+      setAssignees([]);
+      setDeadline(null);
+      setIsHighPriority(false);
+    }
+
+    // Cleanup: reset form state when modal closes in create mode
+    if (!isOpen && isCreating) {
+      setEditedTitle('');
+      setAssignees([]);
+      setDeadline(null);
+      setIsHighPriority(false);
+      setIsEditingTitle(false);
+    }
+  }, [isOpen, isCreating]);
+
   // Initialize issue data
   useEffect(() => {
-    if (issueDetails && issueDetails.success && allUserObjects.length > 0) {
+    if (
+      !isCreating &&
+      issueDetails &&
+      issueDetails.success &&
+      allUserObjects.length > 0
+    ) {
       setDeadline(issueDetails.meta.deadline || null);
       setIsHighPriority(
         issueDetails.meta.alpaca_high_priority === '1' ||
@@ -218,7 +252,7 @@ const AlpacaIssue = ({
       // Title
       setEditedTitle(decodeEntities(issueDetails.post_data.post_content));
     }
-  }, [issueDetails, allUserObjects]);
+  }, [issueDetails, allUserObjects, isCreating]);
 
   // Update assignees API call
   const updateAssignees = useCallback(
@@ -266,8 +300,13 @@ const AlpacaIssue = ({
 
   const handlePriorityChange = useCallback(
     async (newValue) => {
-      setLoading('priority', true);
       setIsHighPriority(newValue);
+
+      if (isCreating) {
+        return;
+      }
+
+      setLoading('priority', true);
 
       try {
         await updateIssue(issueId, {
@@ -291,7 +330,7 @@ const AlpacaIssue = ({
         setLoading('priority', false);
       }
     },
-    [issueId, issueDetails, setLoading, showNotification],
+    [isCreating, issueId, issueDetails, setLoading, showNotification],
   );
 
   useEffect(() => {
@@ -322,24 +361,34 @@ const AlpacaIssue = ({
   // Event handlers
   const handleAssigneeChange = useCallback(
     (newAssignees) => {
+      setAssignees(newAssignees);
+
+      if (isCreating) {
+        return;
+      }
+
       const oldAssignees = [...assignees];
       const { added, removed } = processAssigneeChanges(
         oldAssignees,
         newAssignees,
       );
-      setAssignees(newAssignees);
 
       const slugs = newAssignees.map((a) => userMap[a] || a);
       updateAssignees(issueId, slugs, newAssignees, added, removed);
     },
-    [assignees, issueId, updateAssignees, userMap],
+    [isCreating, assignees, issueId, updateAssignees, userMap],
   );
 
   // Deadline handlers
   const handleDeadlineChange = useCallback(
     (newDate) => {
-      const oldDeadline = deadline;
       setDeadline(newDate);
+
+      if (isCreating) {
+        return;
+      }
+
+      const oldDeadline = deadline;
       setLoading('deadline', true);
       updateIssue(issueId, { meta: { deadline: newDate } })
         .then(() => {
@@ -364,7 +413,7 @@ const AlpacaIssue = ({
         })
         .finally(() => setLoading('deadline', false));
     },
-    [issueId, onDeadlineChange, setLoading, deadline, issueDetails],
+    [isCreating, issueId, onDeadlineChange, setLoading, deadline, issueDetails],
   );
 
   const handleDeadlineClear = useCallback(() => {
@@ -449,6 +498,13 @@ const AlpacaIssue = ({
 
   // Title editing
   const handleTitleSave = useCallback(async () => {
+    if (isCreating) {
+      if (editedTitle && editedTitle.trim()) {
+        setIsEditingTitle(false);
+      }
+      return;
+    }
+
     if (editedTitle === decodeEntities(issueDetails.post_data.post_content)) {
       setIsEditingTitle(false);
       return;
@@ -472,6 +528,7 @@ const AlpacaIssue = ({
       setIsEditingTitle(false);
     }
   }, [
+    isCreating,
     editedTitle,
     issueDetails,
     issueId,
@@ -482,11 +539,133 @@ const AlpacaIssue = ({
   ]);
 
   const handleTitleCancel = useCallback(() => {
+    if (isCreating) {
+      onClose();
+      return;
+    }
+
     setIsEditingTitle(false);
     if (issueDetails?.success) {
       setEditedTitle(decodeEntities(issueDetails.post_data.post_content));
     }
-  }, [issueDetails]);
+  }, [issueDetails, isCreating, onClose]);
+
+  const handleCreateIssue = useCallback(async () => {
+    if (!isCreating || !editedTitle || !editedTitle.trim()) {
+      return;
+    }
+
+    setLoading('title', true);
+    try {
+      const server = {};
+      if (typeof alpacaDataDump !== 'undefined' && alpacaDataDump.env) {
+        try {
+          const loadedServer = JSON.parse(atob(alpacaDataDump.env));
+          Object.assign(server, loadedServer);
+        } catch (e) {
+          // Ignore parse errors
+        }
+      }
+
+      const payload = {
+        userinput: {
+          feedback: editedTitle,
+          includeContext: false, // Board issues don't need browser context
+          isHighPriority,
+        },
+        client:
+          typeof alpacaDataDump !== 'undefined' ? alpacaDataDump.device : {},
+        errors: [],
+        screenshot: '',
+        ...server,
+      };
+
+      const response = await createIssue(payload);
+
+      if (response && response.issue) {
+        const newIssueId = response.issue.id;
+
+        if (deadline) {
+          try {
+            await updateIssue(newIssueId, { meta: { deadline } });
+          } catch (err) {
+            console.error('Failed to set deadline:', err);
+          }
+        }
+
+        if (assignees && assignees.length > 0) {
+          try {
+            const slugs = assignees.map((a) => userMap[a] || a);
+            await updateAssignees(newIssueId, slugs, assignees, assignees, []);
+          } catch (err) {
+            console.error('Failed to set assignees:', err);
+          }
+        }
+
+        try {
+          const currentUser = await getUser();
+          const actionClass = ['issue-created'];
+          let commentContent = `Issue created by ${generateAssigneeSpan(
+            currentUser,
+            true,
+          )}`;
+
+          if (isHighPriority) {
+            actionClass.push('high-priority');
+            commentContent += ' with **High Priority**';
+          }
+
+          await wp.apiFetch({
+            path: '/wp/v2/comments',
+            method: 'POST',
+            data: {
+              post: newIssueId,
+              content: commentContent,
+              comment_type: 'issuecomment',
+              status: 'approve',
+              author_user_agent: 'audit',
+              meta: {
+                alpacaCommentTags: actionClass,
+              },
+            },
+          });
+        } catch (commentErr) {
+          console.error('Failed to create issue comment:', commentErr);
+        }
+
+        setEditedTitle('');
+        setAssignees([]);
+        setDeadline(null);
+        setIsHighPriority(false);
+        setLoading('title', false);
+
+        if (onIssueCreated) {
+          onIssueCreated({
+            id: newIssueId,
+            title: editedTitle,
+            assignees: assignees || [],
+            deadline: deadline || null,
+            isHighPriority,
+          });
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      showNotification(__('Failed to create issue.', 'alpaca'), 'error');
+      setLoading('title', false);
+    }
+  }, [
+    isCreating,
+    editedTitle,
+    isHighPriority,
+    setLoading,
+    showNotification,
+    onIssueCreated,
+    deadline,
+    assignees,
+    userMap,
+    updateAssignees,
+  ]);
 
   // Memoized stable props
   const stableUsers = useMemo(() => allUsers, [allUsers]);
@@ -513,41 +692,43 @@ const AlpacaIssue = ({
         onRequestClose={onClose}
         className="alpaca-details-modal"
         headerActions={
-          <Dropdown
-            popoverProps={{ placement: 'bottom-end' }}
-            renderToggle={({ onToggle }) => (
-              <Tooltip text={__('Options', 'alpaca')}>
-                <Button
-                  className="alpaca-modal-options-button components-button has-icon"
-                  onClick={onToggle}
-                >
-                  <span className="dashicons dashicons-ellipsis"></span>
-                </Button>
-              </Tooltip>
-            )}
-            renderContent={() => (
-              <MenuGroup>
-                {!isLastStatus && (
-                  <MenuItem
-                    icon="arrow-right-alt"
-                    iconPosition="left"
-                    onClick={handleProgressIssue}
-                    disabled={loadingStates.status}
+          !isCreating && (
+            <Dropdown
+              popoverProps={{ placement: 'bottom-end' }}
+              renderToggle={({ onToggle }) => (
+                <Tooltip text={__('Options', 'alpaca')}>
+                  <Button
+                    className="alpaca-modal-options-button components-button has-icon"
+                    onClick={onToggle}
                   >
-                    {__('Progress Issue', 'alpaca')}
+                    <span className="dashicons dashicons-ellipsis"></span>
+                  </Button>
+                </Tooltip>
+              )}
+              renderContent={() => (
+                <MenuGroup>
+                  {!isLastStatus && (
+                    <MenuItem
+                      icon="arrow-right-alt"
+                      iconPosition="left"
+                      onClick={handleProgressIssue}
+                      disabled={loadingStates.status}
+                    >
+                      {__('Progress Issue', 'alpaca')}
+                    </MenuItem>
+                  )}
+                  <MenuItem
+                    icon="trash"
+                    iconPosition="left"
+                    isDestructive
+                    onClick={() => setShowDeleteConfirm(true)}
+                  >
+                    {__('Trash Issue', 'alpaca')}
                   </MenuItem>
-                )}
-                <MenuItem
-                  icon="trash"
-                  iconPosition="left"
-                  isDestructive
-                  onClick={() => setShowDeleteConfirm(true)}
-                >
-                  {__('Trash Issue', 'alpaca')}
-                </MenuItem>
-              </MenuGroup>
-            )}
-          />
+                </MenuGroup>
+              )}
+            />
+          )
         }
       >
         {error && (
@@ -563,8 +744,9 @@ const AlpacaIssue = ({
           </div>
         )}
 
-        {isLoadingDetails && <p>{__('Loading…', 'alpaca')}</p>}
-        {!isLoadingDetails && issueDetails && issueDetails.success && (
+        {isLoadingDetails && !isCreating && <p>{__('Loading…', 'alpaca')}</p>}
+        {((!isLoadingDetails && issueDetails && issueDetails.success) ||
+          isCreating) && (
           <div className="alpaca-issue-details">
             <div className="alpaca-issue-main column">
               <EditableTitle
@@ -574,21 +756,40 @@ const AlpacaIssue = ({
                 onChange={setEditedTitle}
                 onSave={handleTitleSave}
                 onCancel={handleTitleCancel}
+                placeholder={
+                  isCreating
+                    ? __('Enter a title to create issue…', 'alpaca')
+                    : ''
+                }
               />
 
-              <div className="alpaca-issue-meta flexalign">
-                Created by <User user={issueDetails.post_data.post_author} />{' '}
-                <Time
-                  value={issueDetails.post_data.post_date}
-                  type="relative"
-                />
-              </div>
+              {!isCreating && (
+                <div className="alpaca-issue-meta flexalign">
+                  Created by <User user={issueDetails.post_data.post_author} />{' '}
+                  <Time
+                    value={issueDetails.post_data.post_date}
+                    type="relative"
+                  />
+                </div>
+              )}
 
               <table className="alpaca-issue-details">
                 <tbody>
                   <tr>
                     <th scope="row">{__('Status', 'alpaca')}</th>
-                    <td>{currentStatus?.name || __('Unknown', 'alpaca')}</td>
+                    <td>
+                      {isCreating
+                        ? (() => {
+                            if (!allStatuses.length)
+                              return __('Unknown', 'alpaca');
+                            const sorted = [...allStatuses].sort(
+                              (a, b) =>
+                                (a.term_score || 0) - (b.term_score || 0),
+                            );
+                            return sorted[0]?.name || __('Unknown', 'alpaca');
+                          })()
+                        : currentStatus?.name || __('Unknown', 'alpaca')}
+                    </td>
                   </tr>
 
                   <PriorityRow
@@ -611,66 +812,99 @@ const AlpacaIssue = ({
                     isLoading={stableIsLoading}
                   />
 
-                  <AttachmentRow
-                    attachments={
-                      issueDetails.meta.alpaca_screenshot ||
-                      issueDetails.meta.screenshot
-                        ? [
-                            {
-                              url:
-                                issueDetails.meta.alpaca_screenshot ||
-                                issueDetails.meta.screenshot,
-                            },
-                          ]
-                        : []
-                    }
-                    onAttachmentClick={setLightboxSrc}
-                    onAttachmentDelete={confirmScreenshotDelete}
-                    isLoading={loadingStates.screenshot}
-                  />
+                  {!isCreating && (
+                    <AttachmentRow
+                      attachments={
+                        issueDetails.meta.alpaca_screenshot ||
+                        issueDetails.meta.screenshot
+                          ? [
+                              {
+                                url:
+                                  issueDetails.meta.alpaca_screenshot ||
+                                  issueDetails.meta.screenshot,
+                              },
+                            ]
+                          : []
+                      }
+                      onAttachmentClick={setLightboxSrc}
+                      onAttachmentDelete={confirmScreenshotDelete}
+                      isLoading={loadingStates.screenshot}
+                    />
+                  )}
                 </tbody>
               </table>
 
               {wp.hooks.applyFilters('alpaca.issue.abovetabs', null, {
                 issueId,
-                meta: issueDetails.meta,
+                meta: issueDetails?.meta || {},
               })}
 
-              <TabPanel
-                className="alpaca-issue-tabs"
-                initialTabName="comments"
-                tabs={getTabsConfig(issueDetails)}
-              >
-                {(tab) => {
-                  if (tab.name === 'errors') {
+              {!isCreating && (
+                <TabPanel
+                  className="alpaca-issue-tabs"
+                  initialTabName="comments"
+                  tabs={getTabsConfig(issueDetails)}
+                >
+                  {(tab) => {
+                    if (tab.name === 'errors') {
+                      return (
+                        <ErrorsTab
+                          errorsJson={
+                            issueDetails.meta.alpaca_errors ||
+                            issueDetails.meta.errors
+                          }
+                        />
+                      );
+                    }
                     return (
-                      <ErrorsTab
-                        errorsJson={
-                          issueDetails.meta.alpaca_errors ||
-                          issueDetails.meta.errors
-                        }
+                      <TabContent
+                        tab={tab}
+                        issueDetails={issueDetails}
+                        issueId={issueId}
+                        commentRefreshKey={commentRefreshKey}
                       />
                     );
-                  }
-                  return (
-                    <TabContent
-                      tab={tab}
-                      issueDetails={issueDetails}
-                      issueId={issueId}
-                      commentRefreshKey={commentRefreshKey}
-                    />
-                  );
-                }}
-              </TabPanel>
+                  }}
+                </TabPanel>
+              )}
             </div>
           </div>
         )}
-        {!isLoadingDetails && (!issueDetails || !issueDetails.success) && (
-          <p>
-            {issueDetails?.message ||
-              __('Could not load issue details.', 'alpaca')}
-          </p>
+
+        {/* Create Issue Footer - only shown in create mode */}
+        {isCreating && (
+          <div
+            className="alpaca-modal-footer"
+            style={{
+              padding: '16px 24px',
+              borderTop: '1px solid #ddd',
+              display: 'flex',
+              justifyContent: 'flex-end',
+              gap: '12px',
+            }}
+          >
+            <Button
+              variant="primary"
+              onClick={handleCreateIssue}
+              disabled={
+                !editedTitle || !editedTitle.trim() || loadingStates.title
+              }
+            >
+              {loadingStates.title
+                ? __('Creating…', 'alpaca')
+                : __('Create Issue', 'alpaca')}
+            </Button>
+          </div>
         )}
+
+        {!isCreating &&
+          !isLoadingDetails &&
+          (!issueDetails || !issueDetails.success) && (
+            <p>
+              {issueDetails?.message ||
+                __('Could not load issue details.', 'alpaca')}
+            </p>
+          )}
 
         {showDeleteScreenshotConfirm && (
           <Modal
@@ -735,6 +969,8 @@ AlpacaIssue.propTypes = {
   onDeadlineChange: PropTypes.func.isRequired,
   onStatusChange: PropTypes.func.isRequired,
   onIssueTitleChange: PropTypes.func.isRequired,
+  isCreating: PropTypes.bool,
+  onIssueCreated: PropTypes.func,
 };
 
 export default AlpacaIssue;

@@ -11,7 +11,7 @@ Content management systems were very much the same, not so long ago. So we've be
 
 Out of the box, Alpaca presents itself as a solution for reporting and tracking issues on a WordPress site. Because: who knows more about your WordPress website than WordPress itself?
 
-When you see a problem, you press the Report Issue button, write a one-sentence description, and press Submit. *That's it.*
+When you see a problem, you press the Report Issue button, write a one-sentence description, and press Submit. _That's it._
 
 Alpaca captures the full context of what's in your browser at the time (including a screenshot!) and creates a detailed issue in your Backlog. Every report is instantly actionable: you will never have to go back to your client, to ask what exactly they meant by 'broken'.
 
@@ -24,13 +24,14 @@ But just as WordPress is capable of much more than its base use-case of blogging
 ```
 MVP FEATURE SET (this version)                              FIRST FULL RELEASE (already in development)
 ==============================                              ===========================================
-Contextualised issue capture (inc screenshot)               Checklists and/or subtasks
-Customisable kanban board with drag-and-drop                Starred Items watchlists
+Create Issues with/without context (inc screenshot)         Checklists and/or subtasks
+Customisable kanban board with drag-and-drop                'Starred Items' watchlists
 Add assignees and deadlines to issues                       Visible 'Tagging' of issues
-Add comments on issues (including basic Markdown)           Table and swim-line views
+Add comments on issues (including basic Markdown)           Alternative views (eg table, swimlane)
 User actions create comments on Issues                      Comments pushed to external channels (eg Slack)
 Heavy use of Gutenberg components for UX consistency        Comments pulled from external activity (eg GitHub)
-                                                            Board filtering
+WP-Admin Dashboard Widget                                   Board filtering
+Basic 'presence' indicator                                  Further collaboration / syncing
                                                             Basic email notifications
                                                             Basic user/role permission controls
                                                             Additional attachments
@@ -45,7 +46,7 @@ Store/backup Alpaca data in a different WP instance         Add Alpaca reporting
 
 ---
 
-### Recommended plugins
+### Recommended Plugins
 
 Alpaca should work on any current WordPress install, without further dependencies. We suggest adding the following plugins for a better usage or testing experience.
 
@@ -55,10 +56,6 @@ Alpaca should work on any current WordPress install, without further dependencie
 ---
 
 ### Your Questions Answered
-
-**Who is Alpaca aimed at?**
-
-Out of the box, Alpaca will present itself as a solution for solo consultants and small teams working on a single website. But just like WordPress isn't just for bloggers, Alpaca will have much greater ambitions.
 
 **What do you want to achieve with Alpaca?**
 
