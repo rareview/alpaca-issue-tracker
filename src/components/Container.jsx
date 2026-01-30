@@ -401,7 +401,7 @@ function Container({
 
   return (
     <Card
-      className={`alpaca-container ${isHidden ? 'hidden' : ''}`}
+      className={`alpaca-container ${isHidden ? 'is-collapsed' : ''}`}
       data-id={id}
     >
       <CardHeader
