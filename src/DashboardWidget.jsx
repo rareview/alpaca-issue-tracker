@@ -1,10 +1,17 @@
-import PropTypes from 'prop-types';
+const { memo } = wp.element;
 const { TabPanel } = wp.components;
 const { __ } = wp.i18n;
+import PropTypes from 'prop-types';
 import User from './components/User';
 import useUserManagement from './hooks/useUserManagement';
 import PriorityIcon from './components/icons/PriorityIcon';
 
+/**
+ * Format a date string for display in the dashboard widget.
+ *
+ * @param {string} dateString - ISO date string.
+ * @return {string|null} Formatted date or null.
+ */
 const formatDate = (dateString) => {
   if (!dateString) return null;
 
@@ -14,7 +21,14 @@ const formatDate = (dateString) => {
   }).format(new Date(dateString));
 };
 
-function AlpacaDashboardWidget({ data }) {
+/**
+ * Dashboard widget component showing assigned, latest, and overdue issues.
+ *
+ * @param {Object} root0      - Props object
+ * @param {Object} root0.data - Widget data (assignedToMe, newlyCreated, overdue)
+ * @return {JSX.Element} Dashboard widget
+ */
+const AlpacaDashboardWidget = memo(function AlpacaDashboardWidget({ data }) {
   const { allUserObjects } = useUserManagement();
   const adminUrlBase =
     typeof window !== 'undefined' &&
@@ -55,49 +69,57 @@ function AlpacaDashboardWidget({ data }) {
         <div>
           {tab.issues && tab.issues.length > 0 ? (
             <table>
-              <tr>
-                <th>{__('Issue', 'alpaca')}</th>
-                <th></th>
-                <th>{__('Due Date', 'alpaca')}</th>
-                <th>{__('Assignees', 'alpaca')}</th>
-                <th>{__('Status', 'alpaca')}</th>
-              </tr>
-              {tab.issues.map((issue) => (
-                <tr key={issue.id}>
-                  <td className="title">
-                    <a
-                      href={`${adminUrlBase}?page=alpaca-board&issue=${encodeURIComponent(
-                        issue.slug || issue.post_name || issue.id,
-                      )}`}
-                      target="_self"
-                    >
-                      {issue.title}
-                    </a>
-                  </td>
-                  <td className="high-priority">
-                    {issue.high_priority ? <PriorityIcon /> : null}
-                  </td>
-                  <td className="deadline">{formatDate(issue.deadline)}</td>
-                  <td className="assignees">
-                    {issue.assignees &&
-                      issue.assignees.map((assignee) => {
-                        const userObject = allUserObjects.find(
-                          (u) => u.slug === assignee.slug,
-                        );
-                        return userObject ? (
-                          <User
-                            key={assignee.term_id}
-                            user={userObject}
-                            showName={false}
-                          />
-                        ) : null;
-                      })}
-                  </td>
-                  <td className="status">
-                    <span className="nowrap">{issue.status[0].name}</span>
-                  </td>
+              <thead>
+                <tr>
+                  <th scope="col">{__('Issue', 'alpaca')}</th>
+                  <th scope="col" aria-hidden="true" />
+                  <th scope="col">{__('Due Date', 'alpaca')}</th>
+                  <th scope="col">{__('Assignees', 'alpaca')}</th>
+                  <th scope="col">{__('Status', 'alpaca')}</th>
                 </tr>
-              ))}
+              </thead>
+              <tbody>
+                {tab.issues.map((issue) => (
+                  <tr key={issue.id}>
+                    <td className="title">
+                      <a
+                        href={`${adminUrlBase}?page=alpaca-board&issue=${encodeURIComponent(
+                          issue.slug || issue.post_name || issue.id,
+                        )}`}
+                        target="_self"
+                      >
+                        {issue.title}
+                      </a>
+                    </td>
+                    <td className="high-priority">
+                      {issue.high_priority ? <PriorityIcon /> : null}
+                    </td>
+                    <td className="deadline">{formatDate(issue.deadline)}</td>
+                    <td className="assignees">
+                      {issue.assignees &&
+                        issue.assignees.map((assignee) => {
+                          const userObject = allUserObjects.find(
+                            (u) => u.slug === assignee.slug,
+                          );
+                          return userObject ? (
+                            <User
+                              key={assignee.term_id}
+                              user={userObject}
+                              showName={false}
+                            />
+                          ) : null;
+                        })}
+                    </td>
+                    <td className="status">
+                      <span className="nowrap">
+                        {issue.status && issue.status[0]
+                          ? issue.status[0].name
+                          : ''}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
             </table>
           ) : (
             <p>{__('No issues found.', 'alpaca')}</p>
@@ -106,7 +128,7 @@ function AlpacaDashboardWidget({ data }) {
       )}
     </TabPanel>
   );
-}
+});
 
 AlpacaDashboardWidget.propTypes = {
   data: PropTypes.shape({

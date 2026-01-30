@@ -73,7 +73,13 @@ if (document.querySelector('#alpaca-board')) {
 
 if (document.querySelector('#alpaca-dashboard-widget')) {
   const el = document.querySelector('#alpaca-dashboard-widget');
-  const data = JSON.parse(el.dataset.props);
+  let data = null;
+  try {
+    data = el.dataset.props ? JSON.parse(el.dataset.props) : null;
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error('Alpaca dashboard widget: invalid data-props', e);
+  }
   render(<AlpacaDashboardWidget data={data} />, el);
 }
 
