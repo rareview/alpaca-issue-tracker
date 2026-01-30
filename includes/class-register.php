@@ -37,6 +37,13 @@ class Register {
 	 * @return void
 	 */
 	public function enqueue_assets() {
+		wp_enqueue_style(
+			'atkinson-hyperlegible-mono',
+			'https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono&display=swap',
+			array(),
+			Helpers::version()
+		);
+
 		// Enqueue vendor scripts.
 		wp_enqueue_script(
 			'bowser',
@@ -54,7 +61,7 @@ class Register {
 			true
 		);
 
-		// Main script.
+		// Main script (includes Prism.js via npm import).
 		wp_enqueue_script(
 			self::PREFIX . '-script',
 			Helpers::asset_url( 'dist/index.js' ),
@@ -66,7 +73,7 @@ class Register {
 		wp_enqueue_style(
 			self::PREFIX . '-style',
 			Helpers::asset_url( 'dist/index.css' ),
-			array( 'wp-components' ),
+			array( 'wp-components', 'atkinson-hyperlegible-mono' ),
 			Helpers::version()
 		);
 
@@ -84,7 +91,6 @@ class Register {
 	public function enqueue_admin_assets( $hook_suffix ) {
 		$this->enqueue_assets();
 
-		// On the project board page.
 		if ( 'toplevel_page_alpaca-board' === $hook_suffix ) {
 
 			// Pass board data.
