@@ -44,7 +44,7 @@ class Helpers {
 	 */
 	public static function user_can( $action, $args = array() ) {
 		$action = is_string( $action ) ? $action : '';
-		$args = is_array( $args ) ? $args : array();
+		$args   = is_array( $args ) ? $args : array();
 
 		// Default decision for common actions.
 		switch ( $action ) {
