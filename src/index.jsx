@@ -39,7 +39,7 @@ window.alpaca.services.issueApi = {
   fetchIssueCommentCount,
 };
 
-const { render, createElement } = wp.element;
+const { render } = wp.element;
 const isAdmin = document.body.classList.contains('wp-admin');
 
 if (isAdmin && document.querySelector('#wp-admin-bar-alpaca-report')) {
@@ -78,7 +78,7 @@ if (
   document.getElementById('alpaca-presence')
 ) {
   const el = document.getElementById('alpaca-presence');
-  render(createElement(Presence), el);
+  render(<Presence />, el);
 }
 
 if (document.querySelector('#alpaca-dashboard-widget')) {

@@ -1337,9 +1337,8 @@ function alpaca_update_presence_callback( WP_REST_Request $request ) {
         return alpaca_rest_response( '', [ 'success' => false ], 403 );
     }
 
-    $now                = time();
-    $timeout            = 15; // consider user gone after n seconds.
-    $min_write_interval = $timeout/2; // only persist changes if last write older than this.
+    $now     = time();
+    $timeout = 15; // Consider user gone after n seconds without a ping.
 
     $present = get_transient( 'alpaca_presence_users' );
     if ( ! is_array( $present ) ) {
@@ -1348,29 +1347,17 @@ function alpaca_update_presence_callback( WP_REST_Request $request ) {
 
     // Purge stale entries based on timeout.
     foreach ( $present as $uid => $ts ) {
-        if ( $ts < ( $now - $timeout ) ) {
+        if ( (int) $ts < ( $now - $timeout ) ) {
             unset( $present[ $uid ] );
         }
     }
 
-    $needs_write = true;
-    if ( isset( $present[ $current_user ] ) && ( $now - (int) $present[ $current_user ] ) < $min_write_interval ) {
-        // recent write exists — don't persist to DB to reduce churn.
-        $needs_write = false;
-    } else {
-        $present[ $current_user ] = $now;
-        $needs_write              = true;
-    }
+    // Always refresh current user's timestamp so others see us as present.
+    $present[ $current_user ] = $now;
 
-    // Persist only when needed.
-    if ( $needs_write ) {
-        // prefer wp_cache for in-request speed; still write transient for cross-process fallback.
-        wp_cache_set( 'alpaca_presence_users', $present, 'alpaca' );
-        set_transient( 'alpaca_presence_users', $present, $timeout );
-    } else {
-        // keep in object cache so subsequent reads in same request are fast.
-        wp_cache_set( 'alpaca_presence_users', $present, 'alpaca' );
-    }
+    // Always persist so other users' requests see the latest state (avoids users disappearing).
+    wp_cache_set( 'alpaca_presence_users', $present, 'alpaca' );
+    set_transient( 'alpaca_presence_users', $present, $timeout );
 
     // Build list of other user IDs
     $other_ids = array_values( array_diff( array_keys( $present ), [ $current_user ] ) );
