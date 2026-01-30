@@ -10,6 +10,7 @@ import AlpacaToolbar from './Toolbar.jsx';
 import AlpacaSettings from './Settings.jsx';
 import { WatchlistProvider } from './context/WatchlistContext.jsx';
 import { AlpacaBoard } from './Board.jsx';
+import Presence from './components/Presence';
 import AlpacaDashboardWidget from './DashboardWidget.jsx';
 import About from './about/About.jsx';
 
@@ -69,6 +70,15 @@ if (document.querySelector('#alpaca-board')) {
     </WatchlistProvider>,
     document.querySelector('#alpaca-board'),
   );
+}
+
+// Mount presence widget into the board admin page placeholder.
+if (
+  typeof document !== 'undefined' &&
+  document.getElementById('alpaca-presence')
+) {
+  const el = document.getElementById('alpaca-presence');
+  render(<Presence />, el);
 }
 
 if (document.querySelector('#alpaca-dashboard-widget')) {
