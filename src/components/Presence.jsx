@@ -1,0 +1,98 @@
+const { useEffect, useState, useRef, useCallback, memo } = wp.element;
+const { __ } = wp.i18n;
+const { Tooltip } = wp.components;
+const apiFetch = wp.apiFetch;
+import User from './User';
+
+/**
+ * Presence component: shows who else is currently viewing the board.
+ * Pings /alpaca/v1/presence and syncs with WP Heartbeat when available.
+ *
+ * @return {JSX.Element} Presence list or empty message
+ */
+const PING_INTERVAL_MS = 5000; // Ping every 5s so presence updates quickly for all users.
+
+const Presence = memo(function Presence() {
+  const [presentUsers, setPresentUsers] = useState([]);
+  const lastPingRef = useRef(0);
+
+  const fetchPresence = useCallback((force = false) => {
+    if (typeof document !== 'undefined' && document.hidden && !force) return;
+    if (!force && Date.now() - lastPingRef.current < PING_INTERVAL_MS) {
+      return;
+    }
+    lastPingRef.current = Date.now();
+
+    if (typeof apiFetch !== 'function') return;
+
+    apiFetch({ path: '/alpaca/v1/presence', method: 'POST', data: {} })
+      .then((resp) => {
+        const users = Array.isArray(resp.present_users)
+          ? resp.present_users
+          : [];
+        setPresentUsers(users);
+      })
+      .catch(() => {
+        /* Keep previous list on error to avoid flicker */
+      });
+  }, []);
+
+  useEffect(() => {
+    const heartbeatHandler = () => fetchPresence(true);
+
+    fetchPresence(true); // Initial ping immediately
+
+    if (typeof wp !== 'undefined' && wp.heartbeat && wp.heartbeat.on) {
+      wp.heartbeat.on('tick', heartbeatHandler);
+    }
+
+    const iv = setInterval(() => fetchPresence(false), PING_INTERVAL_MS);
+
+    const onVisibility = () => {
+      if (!document.hidden) fetchPresence(true); // Ping when tab visible
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+
+    return () => {
+      if (typeof wp !== 'undefined' && wp.heartbeat && wp.heartbeat.off) {
+        wp.heartbeat.off('tick', heartbeatHandler);
+      }
+      clearInterval(iv);
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, [fetchPresence]);
+
+  if (!presentUsers || presentUsers.length === 0) {
+    return (
+      <div className="alpaca-presence-msg alpaca-presence-empty">
+        {__('Nobody else is viewing the board right now', 'alpaca')}
+      </div>
+    );
+  }
+
+  return (
+    <div className="alpaca-presence-list">
+      <div className="alpaca-presence-msg">
+        {__('Currently viewing the board: ', 'alpaca')}
+      </div>
+      {presentUsers.map((u) => {
+        const name =
+          u.display_name ||
+          u.displayName ||
+          u.user_nicename ||
+          __('User', 'alpaca');
+        return (
+          <Tooltip key={u.id} text={name}>
+            <span className="alpaca-presence-user-wrap">
+              <User user={u} showAvatar={true} showName={true} />
+            </span>
+          </Tooltip>
+        );
+      })}
+    </div>
+  );
+});
+
+Presence.displayName = 'Presence';
+
+export default Presence;

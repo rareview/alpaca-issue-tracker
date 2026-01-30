@@ -8,6 +8,14 @@ export const updateIssue = (id, data) => {
   });
 };
 
+export const createIssue = (data) => {
+  return wp.apiFetch({
+    path: '/alpaca/v1/submit',
+    method: 'POST',
+    data,
+  });
+};
+
 export const fetchStatuses = () => wp.apiFetch({ path: '/alpaca/v1/statuses' });
 
 export const fetchUsers = () => wp.apiFetch({ path: '/alpaca/v1/users' });

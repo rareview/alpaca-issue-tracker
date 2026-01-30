@@ -1,7 +1,7 @@
 const { useState, useRef, useEffect, useCallback } = wp.element;
 const { decodeEntities } = wp.htmlEntities;
 const { __ } = wp.i18n;
-const { Button, Notice } = wp.components;
+const { Button, Notice, Snackbar } = wp.components;
 const { doAction } = wp.hooks;
 
 // Replaced Atlaskit DragDropContext with native HTML5 drag/drop handlers
@@ -28,6 +28,10 @@ export function AlpacaBoard() {
 
   const [selectedItem, setSelectedItem] = useState(null);
   const triggerRef = useRef(null);
+  const [snackbarMessage, setSnackbarMessage] = useState(null);
+  const [snackbarClosing, setSnackbarClosing] = useState(false);
+  const snackbarTimerRef = useRef(null);
+  const snackbarFadeTimerRef = useRef(null);
   const [needsSave, setNeedsSave] = useState(false);
   const [hiddenContainerIds, setHiddenContainerIds] = useState(() => {
     const cookie = getCookie('alpaca_hidden_containers');
@@ -40,12 +44,98 @@ export function AlpacaBoard() {
   useEffect(() => {
     // Fire an action to allow other components to render into the controls area.
     doAction('alpaca_board_controls', '#alpaca-board-controls-mount');
+
+    const handleCreateBoardIssue = () => {
+      setSelectedItem({ isCreating: true });
+    };
+
+    wp.hooks.addAction(
+      'alpaca.createBoardIssue',
+      'alpaca/board',
+      handleCreateBoardIssue,
+    );
+
+    return () => {
+      wp.hooks.removeAction('alpaca.createBoardIssue', 'alpaca/board');
+    };
   }, []);
 
   // Effect to update cookie when hiddenContainerIds changes
   useEffect(() => {
     setCookie('alpaca_hidden_containers', hiddenContainerIds.join(','), 365);
   }, [hiddenContainerIds]);
+
+  // Sync selected issue with the URL `issue` query param and listen for Back/Forward.
+  // Debounced to avoid rapid state churn when popstate events fire quickly.
+  useEffect(() => {
+    const syncFromUrl = () => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const issueSlug = params.get('issue');
+
+        if (!issueSlug) {
+          setSelectedItem(null);
+          return;
+        }
+
+        for (const container of containers) {
+          const found = container.items.find(
+            (it) =>
+              it.slug === issueSlug || (it.meta && it.meta.slug === issueSlug),
+          );
+          if (found) {
+            setSelectedItem(found);
+            return;
+          }
+        }
+
+        // If an `issue` param was present but no matching issue found, show a snackbar.
+        if (issueSlug) {
+          setSelectedItem(null);
+          // Show snackbar with auto-dismiss and fade-out.
+          setSnackbarClosing(false);
+          setSnackbarMessage(
+            __('Issue not found.', 'alpaca') + ` (${issueSlug})`,
+          );
+          if (snackbarTimerRef.current) clearTimeout(snackbarTimerRef.current);
+          if (snackbarFadeTimerRef.current) {
+            clearTimeout(snackbarFadeTimerRef.current);
+            snackbarFadeTimerRef.current = null;
+          }
+          snackbarTimerRef.current = setTimeout(() => {
+            setSnackbarClosing(true);
+            snackbarFadeTimerRef.current = setTimeout(() => {
+              setSnackbarMessage(null);
+              setSnackbarClosing(false);
+              snackbarFadeTimerRef.current = null;
+            }, 300);
+            snackbarTimerRef.current = null;
+          }, 4000);
+        }
+      } catch (e) {
+        // ignore malformed URL
+      }
+    };
+
+    let popTimer = null;
+    const popHandler = () => {
+      if (popTimer) clearTimeout(popTimer);
+      popTimer = setTimeout(() => {
+        syncFromUrl();
+        popTimer = null;
+      }, 100);
+    };
+
+    window.addEventListener('popstate', popHandler);
+
+    // Immediately sync once on mount
+    syncFromUrl();
+
+    return () => {
+      window.removeEventListener('popstate', popHandler);
+      if (popTimer) clearTimeout(popTimer);
+    };
+  }, [containers]);
 
   const handleToggleHidden = (containerId) => {
     setHiddenContainerIds((prev) => {
@@ -99,6 +189,21 @@ export function AlpacaBoard() {
 
     const item = getItemById(itemId);
     setSelectedItem(item);
+    // Update URL so the item can be shared via `?issue=slug` (fallback to id)
+    try {
+      const url = new URL(window.location.href);
+      const value = item?.slug || item?.meta?.slug || itemId;
+      url.searchParams.set('issue', value);
+      window.history.pushState({}, '', url.toString());
+    } catch (e) {
+      const params = new URLSearchParams(window.location.search);
+      const value =
+        (item && (item.slug || (item.meta && item.meta.slug))) || itemId;
+      params.set('issue', value);
+      const base = window.location.pathname + window.location.hash;
+      const search = params.toString();
+      window.history.pushState({}, '', base + (search ? `?${search}` : ''));
+    }
   };
 
   const handleCommentCountChange = useCallback((issueId, newCount) => {
@@ -493,6 +598,18 @@ export function AlpacaBoard() {
 
   const closeModal = () => {
     setSelectedItem(null);
+    // Remove `issue` param from URL when modal is closed (create history entry).
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('issue');
+      window.history.pushState({}, '', url.toString());
+    } catch (e) {
+      const params = new URLSearchParams(window.location.search);
+      params.delete('issue');
+      const base = window.location.pathname + window.location.hash;
+      const search = params.toString();
+      window.history.pushState({}, '', base + (search ? `?${search}` : ''));
+    }
   };
 
   const handleRestoreDefaults = () => {
@@ -551,6 +668,45 @@ export function AlpacaBoard() {
       });
   };
 
+  const handleIssueCreated = (createdIssue) => {
+    if (!createdIssue || !createdIssue.id) {
+      console.error('Invalid issue data received:', createdIssue);
+      window.location.reload();
+      return;
+    }
+
+    setContainers((prevContainers) => {
+      if (prevContainers.length === 0) {
+        window.location.reload();
+        return prevContainers;
+      }
+
+      const firstContainerIndex = 0;
+      const updatedContainers = [...prevContainers];
+      const firstContainer = { ...updatedContainers[firstContainerIndex] };
+
+      const newItem = {
+        id: createdIssue.id.toString(),
+        content: createdIssue.title,
+        assignees: createdIssue.assignees || [],
+        commentCount: 1,
+        meta: {
+          deadline: createdIssue.deadline ? [createdIssue.deadline] : undefined,
+          // eslint-disable-next-line camelcase
+          alpaca_high_priority: createdIssue.isHighPriority ? '1' : undefined,
+        },
+      };
+
+      // Add new issue to the top of the first container for immediate UI update
+      firstContainer.items = [newItem, ...firstContainer.items];
+      updatedContainers[firstContainerIndex] = firstContainer;
+
+      return updatedContainers;
+    });
+
+    closeModal();
+  };
+
   useEffect(() => {
     if (!selectedItem && triggerRef.current) {
       triggerRef.current.focus();
@@ -568,14 +724,19 @@ export function AlpacaBoard() {
     const handleIssueSubmitted = (issue, statusId) => {
       if (!issue || !statusId) return;
 
+      // Use functional update to ensure we have the latest state
       setContainers((prevContainers) => {
-        const newContainers = [...prevContainers];
+        const newContainers = prevContainers.map((container) => ({
+          ...container,
+          items: [...container.items],
+        }));
+
         const targetContainer = newContainers.find(
           (c) => c.id === statusId.toString(),
         );
 
         if (targetContainer) {
-          targetContainer.items.unshift({
+          const newItem = {
             id: issue.id.toString(),
             content: decodeEntities(issue.title),
             postDate: issue.post_date,
@@ -584,12 +745,14 @@ export function AlpacaBoard() {
             assignees: [],
             commentCount: issue.comment_count ?? 0,
             meta: issue.meta || {},
-          });
+          };
+
+          // Add new issue to the top of the container for immediate UI update
+          targetContainer.items.unshift(newItem);
         }
 
         return newContainers;
       });
-      setNeedsSave(true);
     };
 
     wp.hooks.addAction(
@@ -768,7 +931,9 @@ export function AlpacaBoard() {
       )}
 
       <AlpacaIssue
+        key={selectedItem?.isCreating ? 'creating' : selectedItem?.id || 'none'}
         issueId={selectedItem?.id}
+        isCreating={selectedItem?.isCreating}
         isOpen={!!selectedItem}
         onClose={closeModal}
         onDelete={handleDeleteIssue}
@@ -777,7 +942,32 @@ export function AlpacaBoard() {
         onDeadlineChange={handleDeadlineChange}
         onStatusChange={handleStatusChange}
         onIssueTitleChange={handleIssueTitleChange}
+        onIssueCreated={handleIssueCreated}
       />
+      {snackbarMessage && (
+        <Snackbar
+          className={`alpaca-snackbar ${snackbarClosing ? 'is-closing' : ''}`}
+          onClose={() => {
+            // start fade then clear
+            if (snackbarTimerRef.current) {
+              clearTimeout(snackbarTimerRef.current);
+              snackbarTimerRef.current = null;
+            }
+            if (snackbarFadeTimerRef.current) {
+              clearTimeout(snackbarFadeTimerRef.current);
+              snackbarFadeTimerRef.current = null;
+            }
+            setSnackbarClosing(true);
+            snackbarFadeTimerRef.current = setTimeout(() => {
+              setSnackbarMessage(null);
+              setSnackbarClosing(false);
+              snackbarFadeTimerRef.current = null;
+            }, 300);
+          }}
+        >
+          {snackbarMessage}
+        </Snackbar>
+      )}
     </>
   );
 }

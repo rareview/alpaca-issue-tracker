@@ -3,8 +3,6 @@ import Item from './Item';
 
 const { forwardRef, useState } = wp.element;
 
-// ... (propTypes and component definition)
-
 const DraggableItem = forwardRef(
   (
     {
@@ -46,10 +44,11 @@ const DraggableItem = forwardRef(
 
       try {
         e.dataTransfer.setData('application/json', JSON.stringify(payload));
-        // @url https://stackoverflow.com/a/23522755/5038063
-        const isSafari = /^((?!chrome|android).)*safari/i.test(
-          navigator.userAgent,
-        );
+        // Use browser detection from alpacaDataDump if available, fallback to regex
+        const isSafari =
+          (typeof alpacaDataDump !== 'undefined' &&
+            alpacaDataDump.device?.browser?.name === 'Safari') ||
+          /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
         if (!isSafari) {
           // Clone the element for the drag image

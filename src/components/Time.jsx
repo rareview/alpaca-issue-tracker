@@ -17,10 +17,7 @@ const Time = memo(
     }, [type, autoUpdate]);
 
     // Convert string to JS Date
-    const dateObj = useMemo(
-      () => (value ? new Date(`${value}Z`) : null),
-      [value],
-    );
+    const dateObj = useMemo(() => (value ? new Date(value) : null), [value]);
     if (!dateObj || isNaN(dateObj.getTime())) return null;
 
     const wpFormat = format || wp.date.getSettings().formats.datetime;
