@@ -1,13 +1,21 @@
 const { __ } = wp.i18n;
 
 export const getTabsConfig = (issueDetails) => {
+  const hasBrowserContext =
+    issueDetails?.meta?.alpaca_url ||
+    issueDetails?.meta?.alpaca_screenshot ||
+    issueDetails?.meta?.alpaca_queried_object ||
+    issueDetails?.meta?.alpaca_headers;
+
   return [
     {
       name: 'comments',
       title: __('Timeline', 'alpaca'),
       className: 'comments',
     },
-    { name: 'report', title: __('Report', 'alpaca'), className: 'report' },
+    ...(hasBrowserContext
+      ? [{ name: 'report', title: __('Report', 'alpaca'), className: 'report' }]
+      : []),
     ...((issueDetails?.meta?.alpaca_queried_object &&
       issueDetails.meta.alpaca_queried_object !== 'null') ||
     (issueDetails?.meta?.queriedObject &&

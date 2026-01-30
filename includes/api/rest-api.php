@@ -289,6 +289,18 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 		if ( $status_term ) {
 			wp_set_post_terms( $post_id, [ (int) $status_term->term_id ], 'alpaca_status' );
 			$status_term_id = (int) $status_term->term_id;
+
+			// Add new issue to the top of the issue_order for this status.
+			$current_order = get_term_meta( $status_term_id, 'issue_order', true );
+			$current_order = is_array( $current_order ) ? $current_order : [];
+			// Remove the new issue ID if it already exists.
+			$current_order = array_values( array_diff( $current_order, [ $post_id ] ) );
+			// Add new issue to the beginning of the array.
+			array_unshift( $current_order, $post_id );
+			// Update the term meta with the new order.
+			update_term_meta( $status_term_id, 'issue_order', $current_order );
+			// Clear board cache so the new order is reflected immediately.
+			alpaca_clear_board_cache();
 		}
 	}
 

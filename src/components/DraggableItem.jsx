@@ -11,6 +11,7 @@ const { useRef, useState } = wp.element;
  * @param {number}          root0.id             - Item ID
  * @param {number}          root0.index          - Index in drag list
  * @param {string}          root0.content        - Item content text
+ * @param {string}          root0.postDate       - Item creation date
  * @param {string}          root0.className      - CSS class name
  * @param {boolean}         root0.isDragDisabled - Whether dragging is disabled
  * @param {Function}        root0.onClick        - Click handler
@@ -25,6 +26,7 @@ function DraggableItem({
   index,
   containerId,
   content,
+  postDate,
   className,
   isDragDisabled = false,
   onClick,
@@ -49,6 +51,7 @@ function DraggableItem({
       sourceContainerId: containerId,
       sourceIndex: index,
       content,
+      postDate,
       assignees,
       commentCount,
       meta,
@@ -56,6 +59,38 @@ function DraggableItem({
 
     try {
       e.dataTransfer.setData('application/json', JSON.stringify(payload));
+      // Use browser detection from alpacaDataDump if available, fallback to regex
+      const isSafari =
+        (typeof alpacaDataDump !== 'undefined' &&
+          alpacaDataDump.device?.browser?.name === 'Safari') ||
+        /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+      if (!isSafari) {
+        // Clone the element for the drag image
+        const dragImage = e.currentTarget.cloneNode(true);
+        dragImage.style.transform = 'rotate(3deg)';
+        dragImage.style.boxShadow = '0 4px 8px rgb(0 0 0 / 10%)';
+        dragImage.style.position = 'absolute';
+        dragImage.style.width = '100%';
+        dragImage.style.top = '-1000px';
+        dragImage.style.left = '-1000px';
+        const container = document.body.querySelector('.alpaca-items');
+        if (container) {
+          container.appendChild(dragImage);
+
+          // Set the custom drag image.
+          e.dataTransfer.setDragImage(
+            dragImage,
+            dragImage.clientWidth / 2,
+            dragImage.clientHeight / 2,
+          );
+
+          // Remove the temporary drag image immediately after snapshot
+          setTimeout(() => {
+            dragImage.remove();
+          }, 0);
+        }
+      }
     } catch (err) {
       // ignore
     }
@@ -65,67 +100,6 @@ function DraggableItem({
       window.__alpacaDragState = payload;
     } catch (err) {
       // ignore
-    }
-
-    // Create a lightweight drag image clone so user sees a preview
-    if (elRef.current && e.dataTransfer && e.dataTransfer.setDragImage) {
-      const original = elRef.current;
-      const clone = original.cloneNode(true);
-      const rect = original.getBoundingClientRect();
-
-      // Recursively copy computed styles from original to clone so display:flex/grid
-      // and child element styles are preserved in the preview.
-      const copyComputedStylesRecursive = (src, dest) => {
-        try {
-          const cs = window.getComputedStyle(src);
-          for (let i = 0; i < cs.length; i++) {
-            const prop = cs[i];
-            dest.style.setProperty(
-              prop,
-              cs.getPropertyValue(prop),
-              cs.getPropertyPriority(prop),
-            );
-          }
-        } catch (err) {
-          // ignore copying styles on older browsers
-        }
-
-        const srcChildren = src.children || [];
-        const destChildren = dest.children || [];
-        for (
-          let i = 0;
-          i < srcChildren.length && i < destChildren.length;
-          i++
-        ) {
-          copyComputedStylesRecursive(srcChildren[i], destChildren[i]);
-        }
-      };
-
-      copyComputedStylesRecursive(original, clone);
-
-      clone.style.position = 'absolute';
-      clone.style.top = '-10000px';
-      clone.style.left = '-10000px';
-      // enforce size so width matches column width
-      clone.style.width = `${rect.width}px`;
-      clone.style.height = `${rect.height}px`;
-      clone.style.margin = '0';
-      clone.classList.add('alpaca-drag-clone');
-
-      document.body.appendChild(clone);
-      try {
-        e.dataTransfer.setDragImage(clone, 10, 10);
-      } catch (err) {
-        // ignore
-      }
-      // remove the clone on next tick
-      setTimeout(() => {
-        try {
-          document.body.removeChild(clone);
-        } catch (err) {
-          // ignore
-        }
-      }, 0);
     }
   };
 
@@ -148,6 +122,7 @@ function DraggableItem({
       <Item
         id={id}
         content={content}
+        postDate={postDate}
         assignees={assignees}
         commentCount={commentCount}
         meta={meta}
@@ -163,6 +138,7 @@ DraggableItem.propTypes = {
   index: PropTypes.number.isRequired,
   containerId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   content: PropTypes.string.isRequired,
+  postDate: PropTypes.string,
   className: PropTypes.string,
   isDragDisabled: PropTypes.bool,
   onClick: PropTypes.func,

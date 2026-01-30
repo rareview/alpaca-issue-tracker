@@ -314,6 +314,7 @@ function Container({
                       index={index}
                       containerId={id}
                       content={item.content}
+                      postDate={item.postDate}
                       assignees={item.assignees}
                       commentCount={item.commentCount}
                       meta={item.meta}
@@ -330,6 +331,7 @@ function Container({
                         content={dragOverItem.content}
                         assignees={dragOverItem.assignees}
                         commentCount={dragOverItem.commentCount}
+                        postDate={dragOverItem.postDate}
                         meta={dragOverItem.meta}
                         className="alpaca-item-inner"
                       />
@@ -348,6 +350,7 @@ function Container({
                       index={insertAt + index}
                       containerId={id}
                       content={item.content}
+                      postDate={item.postDate}
                       assignees={item.assignees}
                       commentCount={item.commentCount}
                       meta={item.meta}
@@ -396,6 +399,7 @@ function Container({
                       index={index}
                       containerId={id}
                       content={item.content}
+                      postDate={item.postDate}
                       assignees={item.assignees}
                       commentCount={item.commentCount}
                       meta={item.meta}
@@ -423,6 +427,7 @@ Container.propTypes = {
     PropTypes.shape({
       id: PropTypes.number.isRequired,
       content: PropTypes.string,
+      postDate: PropTypes.string,
       assignees: PropTypes.array,
       commentCount: PropTypes.number,
       meta: PropTypes.object,
