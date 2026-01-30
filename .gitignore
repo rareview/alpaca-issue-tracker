@@ -31,9 +31,6 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-/logs/
-debug.log
-error_log
 
 # ------------------
 # Operating System
@@ -100,14 +97,6 @@ $RECYCLE.BIN/
 *.refactor.bak
 
 # ------------------
-# Testing
-# ------------------
-/tests/
-phpunit.xml
-.phpunit.result.cache
-/coverage/
-
-# ------------------
 # Build Artifacts
 # ------------------
 alpaca.zip
@@ -124,24 +113,9 @@ alpaca.zip
 # ------------------
 # Backup & Archive
 # ------------------
-/alpaca25-pragmatic/
 *.old
-/backup/
-/archives/
-
-# ------------------
-# Documentation (dev only)
-# ------------------
-PHASE*.md
-REFACTORING*.md
-IMPLEMENTATION_GUIDE.md
-TESTING_CHECKLIST.md
-FILE_STRUCTURE_MIGRATION_COMPLETE.md
-INLINE_JS_EXTRACTION.md
 
 # ------------------
 # Misc
 # ------------------
-playground/
 payload-sample.json
-ziM0RoQp

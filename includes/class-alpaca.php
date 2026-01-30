@@ -129,6 +129,8 @@ final class Alpaca {
 		if ( \is_admin() ) {
 			require_once ALPACA_PLUGIN_DIR . 'includes/admin/admin-screens.php';
 			require_once ALPACA_PLUGIN_DIR . 'includes/admin/admin-helpers.php';
+			require_once ALPACA_PLUGIN_DIR . 'includes/admin/dashboard-widget.php';
+			require_once ALPACA_PLUGIN_DIR . 'includes/admin/dashboard-widget-data.php';
 		}
 
 		// Load REST API.

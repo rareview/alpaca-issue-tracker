@@ -84,6 +84,15 @@ class Register {
 	public function enqueue_admin_assets( $hook_suffix ) {
 		$this->enqueue_assets();
 
+		// Expose admin URL for use in JS (e.g., linking to admin pages).
+		wp_localize_script(
+			self::PREFIX . '-script',
+			'alpacaSettings',
+			array(
+				'adminUrl' => admin_url( 'admin.php' ),
+			)
+		);
+
 		// On the project board page.
 		if ( 'toplevel_page_alpaca-board' === $hook_suffix ) {
 

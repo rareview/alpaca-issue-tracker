@@ -144,24 +144,27 @@ const AlpacaModal = () => {
     }
   };
 
+  useEffect(() => {
+    const adminBarLink = document.querySelector(
+      '#wp-admin-bar-alpaca-report .ab-item',
+    );
+
+    if (adminBarLink) {
+      const handleClick = (e) => {
+        e.preventDefault();
+        openModal();
+      };
+
+      adminBarLink.addEventListener('click', handleClick);
+
+      return () => {
+        adminBarLink.removeEventListener('click', handleClick);
+      };
+    }
+  }, [openModal]);
+
   return (
     <>
-      <button
-        className="ab-item"
-        onClick={(e) => {
-          e.preventDefault();
-          openModal();
-        }}
-        style={{
-          background: 'none',
-          border: 'none',
-          cursor: 'pointer',
-          padding: 0,
-        }}
-      >
-        {__('Report An Issue', 'alpaca')}
-      </button>
-
       {isOpen && (
         <Modal
           size="medium"
