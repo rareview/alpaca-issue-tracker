@@ -23,6 +23,8 @@ import AlpacaToolbar from './Toolbar.jsx';
 import AlpacaSettings from './Settings.jsx';
 import { WatchlistProvider } from './context/WatchlistContext.jsx';
 import { AlpacaBoard } from './Board.jsx';
+import Presence from './components/Presence';
+import AlpacaDashboardWidget from './DashboardWidget.jsx';
 import About from './about/About.jsx';
 
 import { fetchAllAssignees } from './services/userApi.js';
@@ -81,6 +83,27 @@ if (document.querySelector('#alpaca-board')) {
     </WatchlistProvider>,
     document.querySelector('#alpaca-board'),
   );
+}
+
+// Mount presence widget into the board admin page placeholder.
+if (
+  typeof document !== 'undefined' &&
+  document.getElementById('alpaca-presence')
+) {
+  const el = document.getElementById('alpaca-presence');
+  render(<Presence />, el);
+}
+
+if (document.querySelector('#alpaca-dashboard-widget')) {
+  const el = document.querySelector('#alpaca-dashboard-widget');
+  let data = null;
+  try {
+    data = el.dataset.props ? JSON.parse(el.dataset.props) : null;
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error('Alpaca dashboard widget: invalid data-props', e);
+  }
+  render(<AlpacaDashboardWidget data={data} />, el);
 }
 
 if (document.querySelector('#alpaca-about-page')) {

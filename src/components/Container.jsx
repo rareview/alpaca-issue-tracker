@@ -2,7 +2,7 @@ const { Card, CardHeader, CardBody, DropdownMenu, TextControl } = wp.components;
 const { Heading = wp.components.__experimentalHeading } = wp.components;
 const { __ } = wp.i18n;
 
-const { useState, useEffect, useRef } = wp.element;
+const { useState, useEffect, useRef, useLayoutEffect, createRef } = wp.element;
 
 import DraggableItem from './DraggableItem';
 import Item from './Item';
@@ -46,6 +46,68 @@ function Container({
   const [dragOverIndex, setDragOverIndex] = useState(null);
   const [dragOverItem, setDragOverItem] = useState(null);
   const hasItems = items.length > 0;
+
+  // --- FLIP Animation ---
+  const isSortingRef = useRef(false);
+  const itemRefs = useRef({});
+  const [boundingBoxes, setBoundingBoxes] = useState({});
+  const prevItemsRef = useRef(items);
+
+  // Create refs for any new items
+  items.forEach((item) => {
+    if (!itemRefs.current[item.id]) {
+      itemRefs.current[item.id] = createRef();
+    }
+  });
+
+  useLayoutEffect(() => {
+    const newBoxes = {};
+    const prevItems = prevItemsRef.current;
+    prevItems.forEach((item) => {
+      const ref = itemRefs.current[item.id];
+      if (ref && ref.current) {
+        newBoxes[item.id] = ref.current.getBoundingClientRect();
+      }
+    });
+    setBoundingBoxes(newBoxes);
+    prevItemsRef.current = items;
+  }, [items]);
+
+  useLayoutEffect(() => {
+    // Only animate when the automatic sort is running.
+    if (!isSortingRef.current) {
+      return;
+    }
+
+    const hasMoved = (box1, box2) => {
+      if (!box1 || !box2) return false;
+      return box1.top !== box2.top || box1.left !== box2.left;
+    };
+
+    items.forEach((item) => {
+      const ref = itemRefs.current[item.id];
+      if (!ref || !ref.current) return;
+
+      const newBox = ref.current.getBoundingClientRect();
+      const oldBox = boundingBoxes[item.id];
+
+      if (hasMoved(oldBox, newBox)) {
+        const deltaX = oldBox.left - newBox.left;
+        const deltaY = oldBox.top - newBox.top;
+
+        requestAnimationFrame(() => {
+          ref.current.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+          ref.current.style.transition = 'transform 0s';
+
+          requestAnimationFrame(() => {
+            ref.current.style.transform = '';
+            ref.current.style.transition = 'transform 300ms ease-out';
+          });
+        });
+      }
+    });
+  }, [boundingBoxes, items]);
+  // --- End FLIP Animation ---
 
   // keep local input in sync if parent updates title
   useEffect(() => {
@@ -102,6 +164,74 @@ function Container({
       icon: isHidden ? 'visibility' : 'hidden',
       title: isHidden ? 'Expand Column' : 'Collapse Column',
       onClick: toggleHidden,
+    },
+    {
+      icon: 'arrow-up-alt',
+      title: __('Lift Priority Items', 'alpaca'),
+      onClick: () => {
+        if (!onItemDrop) {
+          return;
+        }
+
+        // Separate items into priority and non-priority groups.
+        const priorityItems = items.filter(
+          (item) =>
+            item.meta &&
+            (item.meta.alpaca_high_priority === '1' ||
+              item.meta.alpaca_high_priority === 1 ||
+              item.meta.alpaca_high_priority === true),
+        );
+        const otherItems = items.filter(
+          (item) =>
+            !(
+              item.meta &&
+              (item.meta.alpaca_high_priority === '1' ||
+                item.meta.alpaca_high_priority === 1 ||
+                item.meta.alpaca_high_priority === true)
+            ),
+        );
+
+        const newItems = [...priorityItems, ...otherItems];
+        const currentItemsState = [...items];
+        const moves = [];
+
+        // First, calculate the sequence of moves required.
+        for (let i = 0; i < newItems.length; i++) {
+          const desiredItem = newItems[i];
+          const currentIndex = currentItemsState.findIndex(
+            (item) => item.id === desiredItem.id,
+          );
+
+          if (currentIndex !== i) {
+            moves.push({
+              itemId: desiredItem.id,
+              sourceContainerId: id,
+              sourceIndex: currentIndex,
+              destinationContainerId: id,
+              destinationIndex: i,
+            });
+
+            const [movedItem] = currentItemsState.splice(currentIndex, 1);
+            currentItemsState.splice(i, 0, movedItem);
+          }
+        }
+
+        if (moves.length > 0) {
+          isSortingRef.current = true;
+        }
+
+        // Now, execute the moves with a delay for animation.
+        moves.forEach((move, index) => {
+          setTimeout(() => {
+            onItemDrop(move);
+          }, index * 150); // 150ms delay between moves
+        });
+
+        // After the animation is complete, reset the flag.
+        setTimeout(() => {
+          isSortingRef.current = false;
+        }, moves.length * 150);
+      },
     },
   ];
 
@@ -308,6 +438,7 @@ function Container({
                 <>
                   {previewItems.slice(0, insertAt).map((item, index) => (
                     <DraggableItem
+                      ref={itemRefs.current[item.id]}
                       className="alpaca-item"
                       key={item.id}
                       id={item.id}
@@ -344,6 +475,7 @@ function Container({
 
                   {previewItems.slice(insertAt).map((item, index) => (
                     <DraggableItem
+                      ref={itemRefs.current[item.id]}
                       className="alpaca-item"
                       key={item.id}
                       id={item.id}
@@ -393,6 +525,7 @@ function Container({
 
                   return (
                     <DraggableItem
+                      ref={itemRefs.current[item.id]}
                       className="alpaca-item"
                       key={item.id}
                       id={item.id}
