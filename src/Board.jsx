@@ -1,7 +1,7 @@
 const { useState, useRef, useEffect, useCallback } = wp.element;
 const { decodeEntities } = wp.htmlEntities;
 const { __ } = wp.i18n;
-const { Button, Notice } = wp.components;
+const { Button, Notice, Snackbar } = wp.components;
 const { doAction } = wp.hooks;
 
 // Replaced Atlaskit DragDropContext with native HTML5 drag/drop handlers
@@ -28,6 +28,10 @@ export function AlpacaBoard() {
 
   const [selectedItem, setSelectedItem] = useState(null);
   const triggerRef = useRef(null);
+  const [snackbarMessage, setSnackbarMessage] = useState(null);
+  const [snackbarClosing, setSnackbarClosing] = useState(false);
+  const snackbarTimerRef = useRef(null);
+  const snackbarFadeTimerRef = useRef(null);
   const [needsSave, setNeedsSave] = useState(false);
   const [hiddenContainerIds, setHiddenContainerIds] = useState(() => {
     const cookie = getCookie('alpaca_hidden_containers');
@@ -60,6 +64,78 @@ export function AlpacaBoard() {
   useEffect(() => {
     setCookie('alpaca_hidden_containers', hiddenContainerIds.join(','), 365);
   }, [hiddenContainerIds]);
+
+  // Sync selected issue with the URL `issue` query param and listen for Back/Forward.
+  // Debounced to avoid rapid state churn when popstate events fire quickly.
+  useEffect(() => {
+    const syncFromUrl = () => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const issueSlug = params.get('issue');
+
+        if (!issueSlug) {
+          setSelectedItem(null);
+          return;
+        }
+
+        for (const container of containers) {
+          const found = container.items.find(
+            (it) =>
+              it.slug === issueSlug || (it.meta && it.meta.slug === issueSlug),
+          );
+          if (found) {
+            setSelectedItem(found);
+            return;
+          }
+        }
+
+        // If an `issue` param was present but no matching issue found, show a snackbar.
+        if (issueSlug) {
+          setSelectedItem(null);
+          // Show snackbar with auto-dismiss and fade-out.
+          setSnackbarClosing(false);
+          setSnackbarMessage(
+            __('Issue not found.', 'alpaca') + ` (${issueSlug})`,
+          );
+          if (snackbarTimerRef.current) clearTimeout(snackbarTimerRef.current);
+          if (snackbarFadeTimerRef.current) {
+            clearTimeout(snackbarFadeTimerRef.current);
+            snackbarFadeTimerRef.current = null;
+          }
+          snackbarTimerRef.current = setTimeout(() => {
+            setSnackbarClosing(true);
+            snackbarFadeTimerRef.current = setTimeout(() => {
+              setSnackbarMessage(null);
+              setSnackbarClosing(false);
+              snackbarFadeTimerRef.current = null;
+            }, 300);
+            snackbarTimerRef.current = null;
+          }, 4000);
+        }
+      } catch (e) {
+        // ignore malformed URL
+      }
+    };
+
+    let popTimer = null;
+    const popHandler = () => {
+      if (popTimer) clearTimeout(popTimer);
+      popTimer = setTimeout(() => {
+        syncFromUrl();
+        popTimer = null;
+      }, 100);
+    };
+
+    window.addEventListener('popstate', popHandler);
+
+    // Immediately sync once on mount
+    syncFromUrl();
+
+    return () => {
+      window.removeEventListener('popstate', popHandler);
+      if (popTimer) clearTimeout(popTimer);
+    };
+  }, [containers]);
 
   const handleToggleHidden = (containerId) => {
     setHiddenContainerIds((prev) => {
@@ -113,6 +189,21 @@ export function AlpacaBoard() {
 
     const item = getItemById(itemId);
     setSelectedItem(item);
+    // Update URL so the item can be shared via `?issue=slug` (fallback to id)
+    try {
+      const url = new URL(window.location.href);
+      const value = item?.slug || item?.meta?.slug || itemId;
+      url.searchParams.set('issue', value);
+      window.history.pushState({}, '', url.toString());
+    } catch (e) {
+      const params = new URLSearchParams(window.location.search);
+      const value =
+        (item && (item.slug || (item.meta && item.meta.slug))) || itemId;
+      params.set('issue', value);
+      const base = window.location.pathname + window.location.hash;
+      const search = params.toString();
+      window.history.pushState({}, '', base + (search ? `?${search}` : ''));
+    }
   };
 
   const handleCommentCountChange = useCallback((issueId, newCount) => {
@@ -507,6 +598,18 @@ export function AlpacaBoard() {
 
   const closeModal = () => {
     setSelectedItem(null);
+    // Remove `issue` param from URL when modal is closed (create history entry).
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('issue');
+      window.history.pushState({}, '', url.toString());
+    } catch (e) {
+      const params = new URLSearchParams(window.location.search);
+      params.delete('issue');
+      const base = window.location.pathname + window.location.hash;
+      const search = params.toString();
+      window.history.pushState({}, '', base + (search ? `?${search}` : ''));
+    }
   };
 
   const handleRestoreDefaults = () => {
@@ -830,6 +933,30 @@ export function AlpacaBoard() {
         onIssueTitleChange={handleIssueTitleChange}
         onIssueCreated={handleIssueCreated}
       />
+      {snackbarMessage && (
+        <Snackbar
+          className={`alpaca-snackbar ${snackbarClosing ? 'is-closing' : ''}`}
+          onClose={() => {
+            // start fade then clear
+            if (snackbarTimerRef.current) {
+              clearTimeout(snackbarTimerRef.current);
+              snackbarTimerRef.current = null;
+            }
+            if (snackbarFadeTimerRef.current) {
+              clearTimeout(snackbarFadeTimerRef.current);
+              snackbarFadeTimerRef.current = null;
+            }
+            setSnackbarClosing(true);
+            snackbarFadeTimerRef.current = setTimeout(() => {
+              setSnackbarMessage(null);
+              setSnackbarClosing(false);
+              snackbarFadeTimerRef.current = null;
+            }, 300);
+          }}
+        >
+          {snackbarMessage}
+        </Snackbar>
+      )}
     </>
   );
 }

@@ -12,6 +12,7 @@ const transformDataForBoard = (data) => {
     items: column.issues.map((issue) => ({
       id: issue.id.toString(),
       content: decodeEntities(issue.title),
+      slug: issue.slug || issue.post_name || '',
       postDate: issue.post_date,
       authorName: issue.author_name,
       authorImg: issue.author_img,
