@@ -15,6 +15,7 @@
  *   4.5 - Checklists
  *   4.6 - Comments
  *   4.7 - Timeline Items
+ *   4.8 - Syntax Highlighting
  * 5.0 - Other Components
  *   5.1 - Popovers
  *   5.2 - Status Manager
@@ -25,6 +26,8 @@
  * 6.0 - Dashboard Widget
  * 7.0 - Media Queries
  */
+
+@use 'sass:color';
 
 /*
  * 1.0 - Variables & Globals
@@ -39,6 +42,7 @@ $midfont: 15px;
 $spacegap: 0.8ch;
 $commenthead-vpad: 12px;
 $commenthead-hpad: 18px;
+$code-font: 'Atkinson Hyperlegible Mono', monospace;
 
 // New variables
 $container-bg: #f9f9f9;
@@ -57,8 +61,6 @@ $timeline-width: 1px;
 /*
  * Mixins
  */
-@use 'sass:color';
-
 @mixin deadline-style($bg-color) {
   background-color: $bg-color;
   color: if(
@@ -1066,6 +1068,157 @@ $timeline-width: 1px;
     //     background-color: red;
     //   }
     // }
+  }
+
+  /*
+   * 4.8 - Errors Tab
+   */
+  .alpaca-errors-tab {
+    .alpaca-error-item {
+      margin-bottom: 2rem;
+      border-bottom: 1px solid $greyborder;
+      padding-bottom: 1rem;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      h4 {
+        margin-top: 0;
+      }
+    }
+
+    .alpaca-error-stack {
+      margin-top: 1rem;
+
+      h5 {
+        margin-bottom: 0.5rem;
+      }
+
+      pre,
+      pre[class*='language-'] {
+        background: $greyshade !important;
+        padding: 1rem !important;
+        margin: 0 !important;
+        border: 0 !important;
+        border-radius: 4px !important;
+        white-space: pre-wrap !important;
+        word-break: break-word !important;
+        overflow-x: auto !important;
+        box-shadow: none !important;
+      }
+
+      code,
+      code[class*='language-'] {
+        background: transparent !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: 0 !important;
+        font-family: $code-font !important;
+        font-size: 0.8125rem !important;
+        color: inherit !important;
+        text-shadow: none !important;
+      }
+    }
+  }
+
+  /*
+   * 4.9 - Syntax Highlighting
+   */
+
+  table.alpaca-data-table,
+  .alpaca-json-table table,
+  .alpaca-report-tab table,
+  .alpaca-errors-tab table,
+  .alpaca-data-table,
+  .alpaca-json-table,
+  .alpaca-report-tab,
+  .alpaca-errors-tab {
+    &,
+    table,
+    pre,
+    code,
+    code[class*='language-'],
+    pre[class*='language-'] {
+      font-family: $code-font !important;
+      font-size: 0.8125rem !important;
+    }
+
+    table.alpaca-data-table {
+      border: 1px solid $greyborder;
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    th,
+    td {
+      border: 1px solid $greyborder;
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+      word-break: break-word;
+    }
+
+    th {
+      background-color: $greyshade;
+      width: 200px;
+    }
+
+    td {
+      max-width: 600px;
+      line-height: 1.5em;
+    }
+
+    pre,
+    code {
+      margin: 0 !important;
+      padding: 0 !important;
+      text-indent: 0 !important;
+      white-space: pre-wrap !important;
+      word-break: break-word !important;
+      font-family: inherit !important;
+      font-size: inherit !important;
+      width: 100% !important;
+      background: transparent !important;
+      background-color: transparent !important;
+      border: 0 !important;
+    }
+
+    pre code span {
+      display: inline !important;
+    }
+
+    pre[class*='language-'],
+    code[class*='language-'] {
+      padding: 0 !important;
+      margin: 0 !important;
+      border: 0 !important;
+      line-height: 1.5em !important;
+      background: transparent !important;
+      background-color: transparent !important;
+      color: inherit !important;
+    }
+
+    :not(pre) > code[class*='language-'] {
+      padding: 0 !important;
+      background: transparent !important;
+      background-color: transparent !important;
+      border: 0 !important;
+    }
+
+    code.language-uri {
+      cursor: pointer !important;
+      user-select: text !important;
+      pointer-events: auto !important;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+    .token.operator {
+      background: none !important;
+    }
   }
 
   /*

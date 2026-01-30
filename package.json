@@ -36,6 +36,7 @@
   },
   "dependencies": {
     "marked": "^16.2.0",
+    "prismjs": "^1.30.0",
     "prop-types": "^15.8.1"
   }
 }
