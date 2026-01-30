@@ -1482,9 +1482,9 @@ function alpaca_register_presence_endpoint() {
         '/presence',
         [
             'methods'             => 'POST',
-            'callback'            => 'alpaca_update_presence_callback',
+			'callback'            => 'alpaca_update_presence_callback',
 			'permission_callback' => function () {
-				return \Alpaca\Inc\Helpers::user_can( 'update_issue' );
+				return \Alpaca\Inc\Helpers::user_can( 'presence' );
 			},
         ]
     );
