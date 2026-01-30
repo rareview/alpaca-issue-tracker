@@ -465,6 +465,20 @@ $timeline-width: 1px;
     }
   }
 
+  .alpaca-item-dragging {
+    opacity: 0.4;
+  }
+
+  .alpaca-item.is-source-hidden {
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    opacity: 0 !important;
+    border: none !important;
+    pointer-events: none !important;
+  }
+
   /*
    * 4.0 - Modal (Issue Details)
    */
@@ -512,7 +526,7 @@ $timeline-width: 1px;
     height: calc(100% - 32px);
     margin: 32px 0 0 0;
     animation: slide-in-right 300ms ease-out forwards;
-    transform-origin: 100% center; /* origin from right */
+    transform-origin: 100% center;
   }
 
   .alpaca-issue-details {
@@ -576,7 +590,8 @@ $timeline-width: 1px;
 
     textarea {
       width: 100%;
-      font-family: monospace; /* Often good for preformatted text */
+      font-family: monospace;
+      /* Often good for preformatted text */
       white-space: pre;
       overflow: hidden scroll;
     }
@@ -1699,7 +1714,7 @@ $timeline-width: 1px;
   }
 }
 
-@media (width >= 861px) {
+@media (width >=861px) {
   .wp-admin {
     #alpaca-board {
       .alpaca-wrap {
@@ -1753,7 +1768,7 @@ $timeline-width: 1px;
   }
 }
 
-@media (width <= 860px) {
+@media (width <=860px) {
   .wp-admin {
     #alpaca-board {
       .alpaca-wrap {
