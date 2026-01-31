@@ -5,7 +5,7 @@ const { __ } = wp.i18n;
 const { useState, useEffect, useRef, useLayoutEffect, createRef } = wp.element;
 
 import DraggableItem from './DraggableItem';
-import Item from './Item';
+
 import PropTypes from 'prop-types';
 
 /**
@@ -45,6 +45,7 @@ function Container({
   const [isDragOver, setIsDragOver] = useState(false);
   const [dragOverIndex, setDragOverIndex] = useState(null);
   const [dragOverItem, setDragOverItem] = useState(null);
+  const [, forceUpdate] = useState(0);
   const hasItems = items.length > 0;
 
   // --- FLIP Animation ---
@@ -306,6 +307,32 @@ function Container({
     }
   };
 
+  // Global dragend listener to catch drops outside any valid container
+  useEffect(() => {
+    const handleGlobalDragEnd = () => {
+      // Force reset of local drag state
+      setIsDragOver(false);
+      setDragOverIndex(null);
+      setDragOverItem(null);
+      isSortingRef.current = false;
+
+      // Also ensure global state is cleared if not already
+      try {
+        if (typeof window !== 'undefined' && window.__alpacaDragState) {
+          delete window.__alpacaDragState;
+        }
+      } catch (err) {
+        // ignore
+      }
+      forceUpdate((n) => n + 1);
+    };
+
+    window.addEventListener('dragend', handleGlobalDragEnd);
+    return () => {
+      window.removeEventListener('dragend', handleGlobalDragEnd);
+    };
+  }, []);
+
   const getDropIndex = (e) => {
     const el = containerRef.current;
     if (!el) return items.length;
@@ -374,7 +401,7 @@ function Container({
 
   return (
     <Card
-      className={`alpaca-container ${isHidden ? 'hidden' : ''}`}
+      className={`alpaca-container ${isHidden ? 'is-collapsed' : ''}`}
       data-id={id}
     >
       <CardHeader
@@ -415,137 +442,130 @@ function Container({
           className={`alpaca-items ${isDragOver ? 'dragging-over' : ''}`}
         >
           {(() => {
-            // If there's an active drag preview, render the previewed list (remove source item if same container)
-            if (dragOverItem) {
-              const itemIdStr = dragOverItem.itemId?.toString();
-              let previewItems = items;
-              if (
-                dragOverItem.sourceContainerId &&
-                dragOverItem.sourceContainerId.toString() === id.toString()
-              ) {
-                previewItems = items.filter((it) => it.id !== itemIdStr);
-              }
+            const renderList = [];
 
-              const insertAt = Math.max(
+            // Identify if the dragged item originated from this container
+            const draggingId = dragOverItem ? dragOverItem.itemId : null;
+            const isSourceContainer =
+              dragOverItem &&
+              dragOverItem.sourceContainerId &&
+              dragOverItem.sourceContainerId.toString() === id.toString();
+
+            let insertAt = items.length;
+            if (dragOverItem) {
+              insertAt = Math.max(
                 0,
                 Math.min(
-                  previewItems.length,
-                  dragOverIndex === null ? previewItems.length : dragOverIndex,
+                  items.length,
+                  dragOverIndex === null ? items.length : dragOverIndex,
                 ),
-              );
-
-              return (
-                <>
-                  {previewItems.slice(0, insertAt).map((item, index) => (
-                    <DraggableItem
-                      ref={itemRefs.current[item.id]}
-                      className="alpaca-item"
-                      key={item.id}
-                      id={item.id}
-                      index={index}
-                      containerId={id}
-                      content={item.content}
-                      postDate={item.postDate}
-                      assignees={item.assignees}
-                      commentCount={item.commentCount}
-                      meta={item.meta}
-                      onClick={onItemClick}
-                    />
-                  ))}
-
-                  <div
-                    className="alpaca-item placeholder"
-                    key={`placeholder-${dragOverItem.itemId}`}
-                  >
-                    {dragOverItem.content ? (
-                      <Item
-                        content={dragOverItem.content}
-                        assignees={dragOverItem.assignees}
-                        commentCount={dragOverItem.commentCount}
-                        postDate={dragOverItem.postDate}
-                        meta={dragOverItem.meta}
-                        className="alpaca-item-inner"
-                      />
-                    ) : (
-                      <div className="alpaca-item-inner">
-                        {__('Moving…', 'alpaca')}
-                      </div>
-                    )}
-                  </div>
-
-                  {previewItems.slice(insertAt).map((item, index) => (
-                    <DraggableItem
-                      ref={itemRefs.current[item.id]}
-                      className="alpaca-item"
-                      key={item.id}
-                      id={item.id}
-                      index={insertAt + index}
-                      containerId={id}
-                      content={item.content}
-                      postDate={item.postDate}
-                      assignees={item.assignees}
-                      commentCount={item.commentCount}
-                      meta={item.meta}
-                      onClick={onItemClick}
-                    />
-                  ))}
-                </>
               );
             }
 
-            return hasItems ? (
-              (() => {
-                const globalDrag =
-                  typeof window !== 'undefined'
-                    ? window.__alpacaDragState
-                    : null;
-                return items.map((item, index) => {
-                  const isSourceHidden =
-                    globalDrag &&
-                    globalDrag.itemId &&
-                    globalDrag.sourceContainerId &&
-                    globalDrag.itemId.toString() === item.id.toString() &&
-                    globalDrag.sourceContainerId.toString() === id.toString();
-
-                  if (isSourceHidden) {
-                    return (
-                      <div className="alpaca-item" key={item.id}>
-                        <Item
-                          id={item.id}
-                          content={item.content}
-                          assignees={item.assignees}
-                          commentCount={item.commentCount}
-                          meta={item.meta}
-                          className="alpaca-item-inner"
-                          style={{ visibility: 'hidden' }}
-                        />
-                      </div>
-                    );
-                  }
-
-                  return (
-                    <DraggableItem
-                      ref={itemRefs.current[item.id]}
-                      className="alpaca-item"
-                      key={item.id}
-                      id={item.id}
-                      index={index}
-                      containerId={id}
-                      content={item.content}
-                      postDate={item.postDate}
-                      assignees={item.assignees}
-                      commentCount={item.commentCount}
-                      meta={item.meta}
-                      onClick={onItemClick}
-                    />
-                  );
-                });
-              })()
-            ) : (
-              <div className="alpaca-item empty">
-                {__('Drop items here', 'alpaca')}
+            const renderPreview = () => (
+              <div
+                className="alpaca-item placeholder"
+                key={`preview-${dragOverItem.itemId}`}
+              >
+                {dragOverItem.content ? (
+                  <DraggableItem
+                    id={-1}
+                    index={-1}
+                    containerId={id}
+                    content={dragOverItem.content}
+                    assignees={dragOverItem.assignees}
+                    commentCount={dragOverItem.commentCount}
+                    postDate={dragOverItem.postDate}
+                    meta={dragOverItem.meta}
+                    className="alpaca-item-inner"
+                    isDragDisabled={true}
+                  />
+                ) : (
+                  <div className="alpaca-item-inner">
+                    {__('Moving…', 'alpaca')}
+                  </div>
+                )}
               </div>
             );
+
+            if (!dragOverItem) {
+              const listHasItems = items && items.length > 0;
+              if (!listHasItems) {
+                // Check if we are the source container (via global fallback), to ensure we don't assume empty if hidden source exists
+
+                return (
+                  <div className="alpaca-item empty">
+                    {__('Drop items here', 'alpaca')}
+                  </div>
+                );
+              }
+
+              const globalDrag =
+                typeof window !== 'undefined' ? window.__alpacaDragState : null;
+
+              return items.map((item, index) => {
+                const isGlobalSourceHidden =
+                  globalDrag &&
+                  globalDrag.itemId &&
+                  globalDrag.sourceContainerId &&
+                  globalDrag.itemId.toString() === item.id.toString() &&
+                  globalDrag.sourceContainerId.toString() === id.toString();
+
+                return (
+                  <DraggableItem
+                    ref={itemRefs.current[item.id]}
+                    className={`alpaca-item ${
+                      isGlobalSourceHidden ? 'is-source-hidden' : ''
+                    }`}
+                    key={item.id}
+                    id={item.id}
+                    index={index}
+                    containerId={id}
+                    content={item.content}
+                    postDate={item.postDate}
+                    assignees={item.assignees}
+                    commentCount={item.commentCount}
+                    meta={item.meta}
+                    onClick={onItemClick}
+                  />
+                );
+              });
+            }
+
+            // Dragging IS Active Over This Container (Loop and insert)
+            for (let i = 0; i <= items.length; i++) {
+              if (i === insertAt) {
+                renderList.push(renderPreview());
+              }
+
+              if (i < items.length) {
+                const item = items[i];
+                const isSource =
+                  isSourceContainer &&
+                  item.id.toString() === draggingId?.toString();
+
+                renderList.push(
+                  <DraggableItem
+                    ref={itemRefs.current[item.id]}
+                    className={`alpaca-item ${
+                      isSource ? 'is-source-hidden' : ''
+                    }`}
+                    key={item.id}
+                    id={item.id}
+                    index={i}
+                    containerId={id}
+                    content={item.content}
+                    postDate={item.postDate}
+                    assignees={item.assignees}
+                    commentCount={item.commentCount}
+                    meta={item.meta}
+                    onClick={onItemClick}
+                  />,
+                );
+              }
+            }
+
+            return renderList;
           })()}
         </div>
       </CardBody>

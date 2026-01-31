@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import Item from './Item';
 
-const { forwardRef, useState } = wp.element;
+const { forwardRef, useState, useEffect } = wp.element;
 
 const DraggableItem = forwardRef(
   (
@@ -51,30 +51,55 @@ const DraggableItem = forwardRef(
           /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
         if (!isSafari) {
-          // Clone the element for the drag image
-          const dragImage = e.currentTarget.cloneNode(true);
-          dragImage.style.transform = 'rotate(3deg)';
-          dragImage.style.boxShadow = '0 4px 8px rgb(0 0 0 / 10%)';
-          dragImage.style.position = 'absolute';
-          dragImage.style.width = '100%';
-          dragImage.style.top = '-1000px';
-          dragImage.style.left = '-1000px';
-          const container = document.body.querySelector('.alpaca-items');
-          if (container) {
-            container.appendChild(dragImage);
+          // 1. Capture exact dimensions of the original element to prevent wrapping
+          const rect = e.currentTarget.getBoundingClientRect();
 
-            // Set the custom drag image.
-            e.dataTransfer.setDragImage(
-              dragImage,
-              dragImage.clientWidth / 2,
-              dragImage.clientHeight / 2,
-            );
+          // 2. Clone the element
+          const clone = e.currentTarget.cloneNode(true);
 
-            // Remove the temporary drag image immediately after snapshot
-            setTimeout(() => {
-              dragImage.remove();
-            }, 0);
-          }
+          // Clone element and lock dimensions
+          clone.style.width = `${rect.width}px`;
+          clone.style.height = `${rect.height}px`;
+          clone.style.boxSizing = 'border-box';
+          clone.classList.add('alpaca-drag-clone');
+
+          // Rotate clone
+          clone.style.transform = 'rotate(3deg)';
+          clone.style.transformOrigin = 'center center';
+          clone.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+          clone.style.opacity = '1';
+
+          // Create wrapper to preserve rotation
+          const wrapper = document.createElement('div');
+          wrapper.style.position = 'absolute';
+          wrapper.style.top = '-9999px';
+          wrapper.style.left = '-9999px';
+          // Make wrapper large enough to hold the rotated clone without clipping
+          wrapper.style.width = `${rect.width + 40}px`;
+          wrapper.style.height = `${rect.height + 40}px`;
+
+          // Center the clone inside the wrapper
+          clone.style.position = 'absolute';
+          clone.style.top = '20px';
+          clone.style.left = '20px';
+          clone.style.margin = '0';
+
+          wrapper.appendChild(clone);
+          document.body.appendChild(wrapper);
+
+          // 6. Set the drag image
+          e.dataTransfer.setDragImage(
+            wrapper,
+            rect.width / 2 + 20,
+            rect.height / 2 + 20,
+          );
+
+          // 7. Cleanup
+          setTimeout(() => {
+            if (document.body.contains(wrapper)) {
+              document.body.removeChild(wrapper);
+            }
+          }, 0);
         }
       } catch (err) {
         // ignore
@@ -90,7 +115,24 @@ const DraggableItem = forwardRef(
 
     const handleDragEnd = () => {
       setIsDragging(false);
+      try {
+        if (typeof window !== 'undefined') {
+          delete window.__alpacaDragState;
+        }
+      } catch (err) {
+        // ignore
+      }
     };
+
+    useEffect(() => {
+      const onGlobalDragEnd = () => {
+        setIsDragging(false);
+      };
+      window.addEventListener('dragend', onGlobalDragEnd);
+      return () => {
+        window.removeEventListener('dragend', onGlobalDragEnd);
+      };
+    }, []);
 
     return (
       <div
@@ -102,7 +144,8 @@ const DraggableItem = forwardRef(
         onDragEnd={handleDragEnd}
         data-index={index}
         data-id={id}
-        className={`${className} ${isDragging ? 'dragging' : ''}`}
+        /* distinct class for the source item being dragged */
+        className={`${className} ${isDragging ? 'alpaca-item-dragging' : ''}`}
       >
         <Item
           id={id}
