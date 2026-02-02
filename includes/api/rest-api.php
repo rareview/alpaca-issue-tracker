@@ -252,7 +252,7 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 			'',
 			[
 				'success' => false,
-				'message' => esc_html__( 'Failed to create the issue post.', 'alpaca' ),
+				'message' => esc_html__( 'Failed to create issue.', 'alpaca' ),
 			],
 			500
 		);
@@ -1356,118 +1356,57 @@ add_filter(
 );
 
 /**
- * Ensure Alpaca issue comments can be created as approved by Contributors.
- * Modify the prepared comment before insertion via the REST API.
+ * Intercept POST requests to the core comments endpoint for Alpaca issue comments.
+ *
+ * The Core REST controller throws a 403 if 'status' is provided but the user lacks 'moderate_comments'.
+ * We work around this by stripping the 'status' param from the request here, allowing the
+ * request to proceed to the controller. We then enforce the status via `pre_comment_approved`.
  */
-add_filter( 'rest_pre_insert_comment', function ( $prepared_comment, $request, $creating ) {
+add_filter( 'rest_pre_dispatch', function ( $result, $server, $request ) {
+	if ( 'POST' !== $request->get_method() ) {
+		return $result;
+	}
+	if ( '/wp/v2/comments' !== $request->get_route() ) {
+		return $result;
+	}
+
+	// Check if this is an issue comment.
 	$comment_type = (string) $request->get_param( 'comment_type' );
-	if ( 'issuecomment' === $comment_type && \Alpaca\Inc\Helpers::user_can( 'create_issue' ) ) {
-		// Remove 'status' if provided to avoid the REST field-level permission
-		// check that would block Contributors from setting `status` on comments.
-		if ( isset( $prepared_comment['status'] ) ) {
-			unset( $prepared_comment['status'] );
+	if ( 'issuecomment' !== $comment_type ) {
+		return $result;
+	}
+
+	// If the user can create an issue, let them create the comment without manual status assignment.
+	// This prevents the controller from checking for 'moderate_comments' capability.
+	if ( \Alpaca\Inc\Helpers::user_can( 'create_issue' ) ) {
+		$params = $request->get_json_params();
+		if ( isset( $params['status'] ) ) {
+			unset( $params['status'] );
+			$request->set_body_params( $params );
+		}
+		// Also unset if sent as a standard param (though JS usually sends JSON).
+		if ( isset( $request['status'] ) ) {
+			$request->offsetUnset( 'status' );
 		}
 	}
-	return $prepared_comment;
+
+	return $result;
 }, 10, 3 );
 
 /**
- * Intercept POST requests to the core comments endpoint for Alpaca issue comments
- * so we can create them server-side (approved) without triggering field-level
- * permission checks for the `status` property.
+ * Force-approve Alpaca issue comments for authorized users.
+ *
+ * This handles the approval logic centrally, ensuring comments are live immediately
+ * even though we stripped the 'status' param in the REST request.
  */
-add_filter( 'rest_pre_dispatch', function ( $maybe_a = null, $maybe_b = null, $maybe_c = null ) {
-	// Robustly detect WP_REST_Request and WP_REST_Server regardless of
-	// argument ordering to avoid calling methods on the wrong object.
-	$pre_dispatch = null;
-	$request = null;
-	$server = null;
-
-	foreach ( array( $maybe_a, $maybe_b, $maybe_c ) as $arg ) {
-		if ( is_null( $arg ) ) {
-			continue;
+add_filter( 'pre_comment_approved', function ( $approved, $commentdata ) {
+	if ( isset( $commentdata['comment_type'] ) && 'issuecomment' === $commentdata['comment_type'] ) {
+		if ( \Alpaca\Inc\Helpers::user_can( 'create_issue' ) ) {
+			return 1;
 		}
-		if ( $arg instanceof WP_REST_Request ) {
-			$request = $arg;
-			continue;
-		}
-		if ( $arg instanceof WP_REST_Server ) {
-			$server = $arg;
-			continue;
-		}
-		$pre_dispatch = $arg;
 	}
-
-	if ( ! $request instanceof WP_REST_Request ) {
-		return $pre_dispatch;
-	}
-
-	// Only intercept POSTs to the collection route for comments.
-	$method = strtoupper( $request->get_method() );
-	if ( 'POST' !== $method ) {
-		return $pre_dispatch;
-	}
-
-	$route = $request->get_route();
-	if ( '/wp/v2/comments' !== $route ) {
-		return $pre_dispatch;
-	}
-
-	$comment_type = (string) $request->get_param( 'comment_type' );
-	if ( 'issuecomment' !== $comment_type ) {
-		return $pre_dispatch;
-	}
-
-	if ( ! \Alpaca\Inc\Helpers::user_can( 'create_issue' ) ) {
-		return new WP_Error( 'rest_forbidden', esc_html__( 'Sorry, you are not allowed to create comments.', 'alpaca' ), array( 'status' => 403 ) );
-	}
-
-	$post_id = (int) $request->get_param( 'post' );
-	if ( $post_id <= 0 ) {
-		return new WP_Error( 'rest_invalid', esc_html__( 'Invalid post ID.', 'alpaca' ), array( 'status' => 400 ) );
-	}
-
-	$content = $request->get_param( 'content' );
-	$content_raw = '';
-	if ( is_array( $content ) ) {
-		$content_raw = isset( $content['raw'] ) ? (string) $content['raw'] : '';
-	} else {
-		$content_raw = (string) $content;
-	}
-
-	if ( '' === trim( $content_raw ) ) {
-		return new WP_Error( 'rest_invalid', esc_html__( 'Comment content is required.', 'alpaca' ), array( 'status' => 400 ) );
-	}
-
-	$commentdata = array(
-		'comment_post_ID' => $post_id,
-		'comment_content' => wp_kses_post( $content_raw ),
-		'comment_type'    => 'issuecomment',
-		'user_id'         => get_current_user_id(),
-		'comment_approved'=> 1,
-	);
-
-	$meta = $request->get_param( 'meta' );
-
-	$new_id = wp_insert_comment( $commentdata );
-	if ( ! $new_id || is_wp_error( $new_id ) ) {
-		return new WP_Error( 'rest_insert_failed', esc_html__( 'Failed to create comment.', 'alpaca' ), array( 'status' => 500 ) );
-	}
-
-	if ( is_array( $meta ) && isset( $meta['alpacaCommentTags'] ) ) {
-		update_comment_meta( $new_id, 'alpacaCommentTags', maybe_serialize( $meta['alpacaCommentTags'] ) );
-	}
-
-	if ( ! class_exists( 'WP_REST_Comments_Controller' ) ) {
-		require_once ABSPATH . WPINC . '/rest-api/endpoints/class-wp-rest-comments-controller.php';
-	}
-
-	$controller = new WP_REST_Comments_Controller();
-	$comment_obj = get_comment( $new_id );
-	$response = $controller->prepare_item_for_response( $comment_obj, $request );
-
-	return rest_ensure_response( $response );
-}, 10, 3 );
+	return $approved;
+}, 10, 2 );
 
 /*
  * Presence endpoint (used by Heartbeat pings).

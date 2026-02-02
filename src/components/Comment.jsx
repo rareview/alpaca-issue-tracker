@@ -310,7 +310,6 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
         content: newComment,
         post: issueId,
         comment_type: 'issuecomment',
-        status: 'approve',
         author_user_agent: 'human',
       },
     })
