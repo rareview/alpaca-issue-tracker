@@ -76,7 +76,8 @@ const Comment = memo(
     isSubmitting,
     currentUser,
   }) => {
-    const author = comment._embedded?.author?.[0] ||
+    const author = comment.author_details ||
+      comment._embedded?.author?.[0] ||
       currentUser || { name: __('Unknown', 'alpaca') };
 
     const dataSource =
