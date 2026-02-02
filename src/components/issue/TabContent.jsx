@@ -2,6 +2,7 @@ const { memo } = wp.element;
 import Commenting from '../Comment';
 import JsonTable from './JsonTable';
 import ReportTab from './ReportTab';
+import ErrorsTab from './ErrorsTab';
 
 const TabContent = memo(({ tab, issueDetails, issueId, commentRefreshKey }) => {
   switch (tab.name) {
@@ -27,7 +28,13 @@ const TabContent = memo(({ tab, issueDetails, issueId, commentRefreshKey }) => {
         />
       );
     case 'jserrors':
-      return null;
+      return (
+        <ErrorsTab
+          errorsJson={
+            issueDetails.meta.alpaca_errors || issueDetails.meta.errors
+          }
+        />
+      );
     default:
       return null;
   }

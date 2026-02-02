@@ -1,9 +1,8 @@
-import JsonTable from './JsonTable';
-import PropTypes from 'prop-types';
-
-const { useMemo } = wp.element;
+const { useMemo, useEffect, useRef } = wp.element;
 const { __ } = wp.i18n;
 const { decodeEntities } = wp.htmlEntities;
+import PropTypes from 'prop-types';
+import DataTable from './DataTable';
 
 /**
  * ErrorsTab component for displaying error information in a table format.
@@ -19,6 +18,7 @@ const ErrorsTab = ({ errorsJson }) => {
       const parsed = JSON.parse(errorsJson);
       return Array.isArray(parsed) ? parsed : [];
     } catch (e) {
+      // eslint-disable-next-line no-console
       console.error('Failed to parse errors JSON:', e);
       return [];
     }
@@ -38,40 +38,66 @@ const ErrorsTab = ({ errorsJson }) => {
         // Remove stack from main object to display it separately
         const { stack, ...errorWithoutStack } = error;
         return (
-          <div
+          <ErrorItem
             key={index}
-            className="alpaca-error-item"
-            style={{
-              marginBottom: '2rem',
-              borderBottom: '1px solid #eee',
-              paddingBottom: '1rem',
-            }}
-          >
-            <h4>
-              Error #{index + 1}: {error.message}
-            </h4>
-            <JsonTable data={JSON.stringify(errorWithoutStack)} />
-            {stack && (
-              <div className="alpaca-error-stack" style={{ marginTop: '1rem' }}>
-                <h5>{__('Stack Trace', 'alpaca')}</h5>
-                <pre
-                  style={{
-                    whiteSpace: 'pre-wrap',
-                    wordBreak: 'break-all',
-                    background: '#f7f7f7',
-                    padding: '1rem',
-                    borderRadius: '4px',
-                  }}
-                >
-                  <code>{decodeEntities(stack)}</code>
-                </pre>
-              </div>
-            )}
-          </div>
+            index={index}
+            error={errorWithoutStack}
+            message={error.message}
+            stack={stack}
+          />
         );
       })}
     </div>
   );
+};
+
+/**
+ * Individual error item component with syntax highlighting.
+ *
+ * @param {Object} root0         - Props object
+ * @param {number} root0.index   - Error index
+ * @param {Object} root0.error   - Error object without stack
+ * @param {string} root0.message - Error message
+ * @param {string} root0.stack   - Stack trace string
+ * @return {JSX.Element} ErrorItem component
+ */
+const ErrorItem = ({ index, error, message, stack }) => {
+  const stackRef = useRef(null);
+
+  // Apply syntax highlighting to stack trace after render
+  useEffect(() => {
+    if (stack && stackRef.current && window.Prism) {
+      const codeEl = stackRef.current.querySelector('code');
+      if (codeEl) {
+        // Apply Prism highlighting to the code element
+        window.Prism.highlightElement(codeEl);
+      }
+    }
+  }, [stack]);
+
+  return (
+    <div className="alpaca-error-item">
+      <h4>
+        Error #{index + 1}: {message}
+      </h4>
+      <DataTable data={error} showSyntaxHighlighting={true} />
+      {stack && (
+        <div ref={stackRef} className="alpaca-error-stack">
+          <h5>{__('Stack Trace', 'alpaca')}</h5>
+          <pre>
+            <code className="language-javascript">{decodeEntities(stack)}</code>
+          </pre>
+        </div>
+      )}
+    </div>
+  );
+};
+
+ErrorItem.propTypes = {
+  index: PropTypes.number.isRequired,
+  error: PropTypes.object.isRequired,
+  message: PropTypes.string.isRequired,
+  stack: PropTypes.string,
 };
 
 ErrorsTab.propTypes = {
