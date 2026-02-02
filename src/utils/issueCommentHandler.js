@@ -40,7 +40,12 @@ addFilter('alpaca.commentObject', 'alpaca/addPlainText', (comment) => {
   return comment;
 });
 
-const postComment = async (issueOrId, content, commentTags = []) => {
+const postComment = async (
+  issueOrId,
+  content,
+  commentTags = [],
+  updateActivity = true,
+) => {
   let postId;
   if (issueOrId && typeof issueOrId === 'object') {
     // Prioritize issue.post_id if available (for full issue objects)
@@ -89,10 +94,13 @@ const postComment = async (issueOrId, content, commentTags = []) => {
           issueId: postId.toString(),
           newCount: response.comment_count,
         });
-        doAction('alpaca.lastActivityChanged', {
-          issueId: postId.toString(),
-          lastActivity: new Date().toISOString(),
-        });
+
+        if (updateActivity) {
+          doAction('alpaca.lastActivityChanged', {
+            issueId: postId.toString(),
+            lastActivity: new Date().toISOString(),
+          });
+        }
       }
     });
   } catch (error) {
@@ -127,7 +135,7 @@ addAction(
     const currentUser = await getUser();
     const actionClass = ['status-changed'];
     const commentContent = `Status changed from **${fromStatus}** to **${toStatus}** by ${generateAssigneeSpan(currentUser)}`;
-    await postComment(issue, commentContent, actionClass); // Pass issue object
+    await postComment(issue, commentContent, actionClass, false); // Pass issue object, false to skip lastActivity update
   },
 );
 
