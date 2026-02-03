@@ -4,11 +4,16 @@ import JsonTable from './JsonTable';
 import ReportTab from './ReportTab';
 import ErrorsTab from './ErrorsTab';
 
-const TabContent = memo(({ tab, issueDetails, issueId, commentRefreshKey }) => {
+const TabContent = memo(
+  ({ tab, issueDetails, issueId, commentRefreshKey, showNotification }) => {
   switch (tab.name) {
     case 'comments':
       return (
-        <Commenting issueId={issueId} commentRefreshKey={commentRefreshKey} />
+        <Commenting
+          issueId={issueId}
+          commentRefreshKey={commentRefreshKey}
+          showNotification={showNotification}
+        />
       );
     case 'report':
       return <ReportTab issueDetails={issueDetails} />;
@@ -38,6 +43,7 @@ const TabContent = memo(({ tab, issueDetails, issueId, commentRefreshKey }) => {
     default:
       return null;
   }
-});
+},
+);
 
 export default TabContent;
