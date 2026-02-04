@@ -337,7 +337,9 @@ function Container({
     const el = containerRef.current;
     if (!el) return items.length;
     const children = Array.from(
-      el.querySelectorAll('.alpaca-item:not(.empty)'),
+      el.querySelectorAll(
+        '.alpaca-item:not(.empty):not(.placeholder):not(.is-source-hidden)',
+      ),
     );
     for (let i = 0; i < children.length; i++) {
       const rect = children[i].getBoundingClientRect();
@@ -453,13 +455,16 @@ function Container({
 
             let insertAt = items.length;
             if (dragOverItem) {
-              insertAt = Math.max(
-                0,
-                Math.min(
-                  items.length,
-                  dragOverIndex === null ? items.length : dragOverIndex,
-                ),
-              );
+              let idx = dragOverIndex === null ? items.length : dragOverIndex;
+              if (isSourceContainer) {
+                const sourceIndex = items.findIndex(
+                  (i) => i.id.toString() === draggingId?.toString(),
+                );
+                if (sourceIndex !== -1 && idx >= sourceIndex) {
+                  idx += 1;
+                }
+              }
+              insertAt = Math.max(0, Math.min(items.length, idx));
             }
 
             const renderPreview = () => (
