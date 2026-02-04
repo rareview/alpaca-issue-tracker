@@ -122,6 +122,28 @@ function alpaca_register_cpts_and_taxonomies() {
 		2
 	);
 
+	// Allow Contributors to comment on alpaca_issue posts via REST API.
+	add_filter(
+		'map_meta_cap',
+		function ( $caps, $cap, $user_id, $args ) {
+			if ( ! defined( 'REST_REQUEST' ) || ! REST_REQUEST ) {
+				return $caps;
+			}
+
+			if ( 'edit_post' === $cap && ! empty( $args[0] ) ) {
+				$post = get_post( $args[0] );
+
+				if ( $post && 'alpaca_issue' === $post->post_type && \Alpaca\Inc\Helpers::user_can( 'create_issue' ) ) {
+					return array( 'exist' );
+				}
+			}
+
+			return $caps;
+		},
+		10,
+		4
+	);
+
 	add_action(
 		'alpaca_status_add_form_fields',
 		function () {

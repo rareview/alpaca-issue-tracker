@@ -1384,6 +1384,9 @@ add_filter( 'rest_pre_dispatch', function ( $result, $server, $request ) {
 	// If the user can create an issue, let them create the comment without manual status assignment.
 	// This prevents the controller from checking for 'moderate_comments' capability.
 	if ( \Alpaca\Inc\Helpers::user_can( 'create_issue' ) ) {
+		// Disable flood control for automated system comments.
+		remove_action( 'check_comment_flood', 'check_comment_flood_db' );
+
 		$params = $request->get_json_params();
 		if ( isset( $params['status'] ) ) {
 			unset( $params['status'] );
