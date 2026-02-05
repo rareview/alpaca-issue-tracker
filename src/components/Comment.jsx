@@ -214,7 +214,7 @@ Comment.propTypes = {
 };
 
 // --- Commenting Component ---
-const Commenting = ({ issueId, commentRefreshKey }) => {
+const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
   const [comments, setComments] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [newComment, setNewComment] = useState('');
@@ -223,17 +223,10 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
   const [editingContent, setEditingContent] = useState('');
   const [deleteCommentId, setDeleteCommentId] = useState(null);
   const [isLoadingComments, setIsLoadingComments] = useState(true);
-  const [error, setError] = useState(null);
-  const [notificationMessage, setNotificationMessage] = useState(null);
   const editingRef = useRef(null);
   const [sortOrder, setSortOrder] = useState(
     getCookie('comment_sort_order') || 'desc',
   );
-
-  const showNotification = useCallback((message) => {
-    setNotificationMessage(message);
-    setTimeout(() => setNotificationMessage(null), 5000);
-  }, []);
 
   useEffect(() => {
     getUser().then(setCurrentUser);
@@ -260,7 +253,6 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
   const fetchComments = useCallback(() => {
     if (!issueId) return;
     setIsLoadingComments(true);
-    setError(null);
 
     wp.apiFetch({
       path: `/wp/v2/comments?post=${issueId}&_embed=author&per_page=-1&orderby=date&order=desc&comment_type=issuecomment&show_hidden_comments=1&context=edit`,
@@ -268,10 +260,10 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
       .then(setComments)
       .catch((err) => {
         console.error(err);
-        setError(__('Could not load comments.', 'alpaca'));
+        showNotification(__('Could not load comments.', 'alpaca'), 'error');
       })
       .finally(() => setIsLoadingComments(false));
-  }, [issueId]);
+  }, [issueId, showNotification]);
 
   useEffect(() => fetchComments(), [fetchComments, commentRefreshKey]);
 
@@ -471,12 +463,6 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
         {isLoadingComments && (
           <p className="alpaca-loading">{__('Loading comments…', 'alpaca')}</p>
         )}
-        {notificationMessage && (
-          <div className="notice notice-error inline">
-            <p>{notificationMessage}</p>
-          </div>
-        )}
-        {error && <p className="alpaca-error">{error}</p>}
 
         <div className="alpaca-comments-timeline">
           {comments.map((comment) => (
@@ -520,6 +506,7 @@ const Commenting = ({ issueId, commentRefreshKey }) => {
 Commenting.propTypes = {
   issueId: PropTypes.number.isRequired,
   commentRefreshKey: PropTypes.number.isRequired,
+  showNotification: PropTypes.func.isRequired,
 };
 
 export default memo(Commenting);
