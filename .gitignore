@@ -22,7 +22,9 @@
 # ------------------
 /.parcel-cache/
 .cache/
-/dist/*.map
+
+# Built assets
+/dist/
 
 # ------------------
 # Logs
