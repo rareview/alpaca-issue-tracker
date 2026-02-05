@@ -5,6 +5,11 @@
  * @package Alpaca
  */
 
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Get data for the dashboard widget.
  *
@@ -12,9 +17,9 @@
  */
 function alpaca_get_dashboard_widget_data() {
 	$data = array(
-		'assignedToMe' => _get_assigned_to_me_issues(),
-		'newlyCreated' => _get_newly_created_issues(),
-		'overdue'      => _get_overdue_issues(),
+		'assignedToMe' => alpaca_get_assigned_to_me_issues(),
+		'newlyCreated' => alpaca_get_newly_created_issues(),
+		'overdue'      => alpaca_get_overdue_issues(),
 	);
 
 	return $data;
@@ -25,7 +30,7 @@ function alpaca_get_dashboard_widget_data() {
  *
  * @return array
  */
-function _get_assigned_to_me_issues() {
+function alpaca_get_assigned_to_me_issues() {
 	$current_user = wp_get_current_user();
 	if ( ! $current_user || ! $current_user->ID ) {
 		return array();
@@ -49,7 +54,7 @@ function _get_assigned_to_me_issues() {
 
 	$prepared_posts = array();
 	foreach ( $posts as $post ) {
-		$prepared_posts[] = _alpaca_prepare_issue_data( $post );
+		$prepared_posts[] = alpaca_prepare_issue_data( $post );
 	}
 
 	return $prepared_posts;
@@ -60,7 +65,7 @@ function _get_assigned_to_me_issues() {
  *
  * @return array
  */
-function _get_newly_created_issues() {
+function alpaca_get_newly_created_issues() {
 	$posts = get_posts(
 		array(
 			'post_type'      => 'alpaca_issue',
@@ -73,7 +78,7 @@ function _get_newly_created_issues() {
 		)
 	);
 
-	return array_map( '_alpaca_prepare_issue_data', $posts );
+	return array_map( 'alpaca_prepare_issue_data', $posts );
 }
 
 /**
@@ -81,7 +86,7 @@ function _get_newly_created_issues() {
  *
  * @return array
  */
-function _get_overdue_issues() {
+function alpaca_get_overdue_issues() {
 	$done_status    = alpaca_get_statuses( 'DESC' );
 	$done_status_id = ! empty( $done_status ) ? $done_status[0]->term_id : 0;
 
@@ -110,7 +115,7 @@ function _get_overdue_issues() {
 	);
 	// phpcs:enable WordPress.DB.SlowDBQuery
 
-	return array_map( '_alpaca_prepare_issue_data', $posts );
+	return array_map( 'alpaca_prepare_issue_data', $posts );
 }
 
 /**
@@ -119,7 +124,7 @@ function _get_overdue_issues() {
  * @param WP_Post $post Post object.
  * @return array
  */
-function _alpaca_prepare_issue_data( $post ) {
+function alpaca_prepare_issue_data( $post ) {
 
 	$deadline  = get_post_meta( $post->ID, 'alpaca_deadline', true );
 	$assignees = get_the_terms( $post->ID, 'alpaca_assignee' );

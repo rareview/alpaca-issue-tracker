@@ -5,6 +5,11 @@
  * @package Alpaca
  */
 
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Add a widget to the dashboard.
  */

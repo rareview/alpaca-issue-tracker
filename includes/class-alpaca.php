@@ -22,7 +22,7 @@ final class Alpaca {
 	 *
 	 * @var string
 	 */
-	const VERSION = '2.0.0';
+	const VERSION = '1.0.0-beta';
 
 	/**
 	 * Minimum PHP version.
@@ -176,9 +176,6 @@ final class Alpaca {
 	 * Initialize plugin.
 	 */
 	public function init() {
-		// Load text domain.
-		\load_plugin_textdomain( 'alpaca', false, dirname( ALPACA_PLUGIN_BASENAME ) . '/languages' );
-
 		// Allow other components to hook in.
 		\do_action( 'alpaca_init' );
 	}

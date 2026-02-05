@@ -5,6 +5,11 @@
  * @package Alpaca
  */
 
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Add the "Comment Type" column to the Comments screen.
  */

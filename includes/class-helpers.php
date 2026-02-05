@@ -7,6 +7,11 @@
 
 namespace Alpaca\Inc;
 
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Class Helpers
  */
@@ -18,7 +23,7 @@ class Helpers {
 	 * @return string
 	 */
 	public static function version() {
-		return '2.0.0';
+		return '1.0.0-beta';
 	}
 
 	/**

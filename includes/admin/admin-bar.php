@@ -5,6 +5,11 @@
  * @package Alpaca
  */
 
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 add_action( 'admin_bar_menu', 'alpaca_add_admin_bar_menu', 500 );
 /**
  * Add Alpaca menu items to the WordPress admin bar.

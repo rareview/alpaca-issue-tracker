@@ -7,6 +7,11 @@
 
 namespace Alpaca\Inc;
 
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Class Register
  */

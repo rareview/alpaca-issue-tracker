@@ -5,6 +5,11 @@
  * @package Alpaca
  */
 
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 add_filter(
 	'duplicate_comment_id',
 	function ( $dupe_id, $commentdata ) {
