@@ -3,10 +3,10 @@ name: Security Scan
 on:
   pull_request:
     branches:
-      - pragmatic
+      - main
   push:
     branches:
-      - pragmatic
+      - main
   schedule:
     # Run weekly on Monday at 9am UTC
     - cron: '0 9 * * 1'
@@ -23,7 +23,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '20'
           cache: 'npm'
 
       - name: Install dependencies
