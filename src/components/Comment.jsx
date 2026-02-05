@@ -76,7 +76,8 @@ const Comment = memo(
     isSubmitting,
     currentUser,
   }) => {
-    const author = comment._embedded?.author?.[0] ||
+    const author = comment.author_details ||
+      comment._embedded?.author?.[0] ||
       currentUser || { name: __('Unknown', 'alpaca') };
 
     const dataSource =
@@ -302,7 +303,6 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
         content: newComment,
         post: issueId,
         comment_type: 'issuecomment',
-        status: 'approve',
         author_user_agent: 'human',
       },
     })

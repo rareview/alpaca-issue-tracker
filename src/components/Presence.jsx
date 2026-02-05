@@ -10,10 +10,11 @@ import User from './User';
  *
  * @return {JSX.Element} Presence list or empty message
  */
-const PING_INTERVAL_MS = 5000; // Ping every 5s so presence updates quickly for all users.
+const PING_INTERVAL_MS = 10000; // Ping every 10s to reduce request frequency.
 
 const Presence = memo(function Presence() {
   const [presentUsers, setPresentUsers] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const lastPingRef = useRef(0);
 
   const fetchPresence = useCallback((force = false) => {
@@ -34,6 +35,9 @@ const Presence = memo(function Presence() {
       })
       .catch(() => {
         /* Keep previous list on error to avoid flicker */
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   }, []);
 
@@ -61,6 +65,10 @@ const Presence = memo(function Presence() {
       document.removeEventListener('visibilitychange', onVisibility);
     };
   }, [fetchPresence]);
+
+  if (isLoading) {
+    return <div className="alpaca-presence-loading">Loading ...</div>;
+  }
 
   if (!presentUsers || presentUsers.length === 0) {
     return (

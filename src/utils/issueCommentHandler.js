@@ -63,7 +63,6 @@ const postComment = async (issueOrId, content, commentTags = []) => {
     post: postId,
     content,
     comment_type: 'issuecomment',
-    status: 'approve',
     author_user_agent: 'audit',
   };
 

@@ -122,6 +122,34 @@ function alpaca_register_cpts_and_taxonomies() {
 		2
 	);
 
+	// Allow Contributors to comment on and delete alpaca_issue posts.
+	add_filter(
+		'map_meta_cap',
+		function ( $caps, $cap, $user_id, $args ) {
+			// Grant edit_post capability for commenting on issues.
+			if ( 'edit_post' === $cap && ! empty( $args[0] ) ) {
+				$post = get_post( $args[0] );
+
+				if ( $post && 'alpaca_issue' === $post->post_type && \Alpaca\Inc\Helpers::user_can( 'create_issue' ) ) {
+					return array( 'exist' );
+				}
+			}
+
+			// Grant delete_post capability for deleting issues.
+			if ( 'delete_post' === $cap && ! empty( $args[0] ) ) {
+				$post = get_post( $args[0] );
+
+				if ( $post && 'alpaca_issue' === $post->post_type && \Alpaca\Inc\Helpers::user_can( 'create_issue' ) ) {
+					return array( 'exist' );
+				}
+			}
+
+			return $caps;
+		},
+		10,
+		4
+	);
+
 	add_action(
 		'alpaca_status_add_form_fields',
 		function () {
