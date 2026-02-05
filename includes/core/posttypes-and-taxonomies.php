@@ -126,7 +126,7 @@ function alpaca_register_cpts_and_taxonomies() {
 	add_filter(
 		'map_meta_cap',
 		function ( $caps, $cap, $user_id, $args ) {
-			// Grant edit_post capability for commenting on issues
+			// Grant edit_post capability for commenting on issues.
 			if ( 'edit_post' === $cap && ! empty( $args[0] ) ) {
 				$post = get_post( $args[0] );
 
@@ -135,7 +135,7 @@ function alpaca_register_cpts_and_taxonomies() {
 				}
 			}
 
-			// Grant delete_post capability for deleting issues
+			// Grant delete_post capability for deleting issues.
 			if ( 'delete_post' === $cap && ! empty( $args[0] ) ) {
 				$post = get_post( $args[0] );
 
