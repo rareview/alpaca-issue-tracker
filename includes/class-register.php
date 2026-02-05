@@ -37,6 +37,11 @@ class Register {
 	 * @return void
 	 */
 	public function enqueue_assets() {
+		// Only load Alpaca for logged-in users.
+		if ( ! is_user_logged_in() ) {
+			return;
+		}
+
 		wp_enqueue_style(
 			'atkinson-hyperlegible-mono',
 			'https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono&display=swap',
