@@ -459,6 +459,9 @@ $timeline-width: 1px;
   .alpaca-item.empty {
     font-style: italic;
     background-color: transparent;
+    border: 1px dotted $greyborder;
+    padding: 6px 8px;
+    height: calc(100% - 12px);
 
     .alpaca-item-controls {
       display: none;
