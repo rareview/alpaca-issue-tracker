@@ -4,7 +4,7 @@
     "start": "parcel src/index.jsx",
     "build": "parcel build src/index.jsx",
     "watch": "parcel watch src/index.jsx",
-    "zip": "zip -r alpaca.zip . -x '*.git*' '*.gitignore' '*.DS_Store*' '*node_modules*' 'vendor/composer/*' 'vendor/dealerdirect/*' 'vendor/phpcompatibility/*' 'vendor/phpcsstandards/*' 'vendor/squizlabs/*' 'vendor/wp-coding-standards/*' 'vendor/bin/*' 'vendor/autoload.php' 'src/components/*' 'src/hooks/*' 'src/services/*' 'src/shim/*' 'src/index.jsx' 'src/Modal.jsx' 'src/Settings.jsx' 'src/Board.jsx' 'src/context/*' 'src/*.scss' 'src/apiTest.js' 'src/snapdomHandler.js' '*.parcel-cache*' '*.cache*' 'package.json' 'package-lock.json' 'composer.json' 'composer.lock' 'phpcs.xml' '.eslintrc.json' '.prettierrc.json' '.stylelintrc.json' '*logs*' '*tests*' 'playground*' 'payload-sample.json' '*alpaca25-pragmatic*' 'ziM0RoQp' 'NOTES.md' 'alpaca.zip' 'dist/*.map'",
+    "zip": "npm run build && zip -r alpaca.zip . -x '*.git*' '*.github/*' '*.DS_Store' '*node_modules*' 'vendor/autoload.php' 'vendor/bin/*' 'vendor/composer/*' 'vendor/dealerdirect/*' 'vendor/phpcompatibility/*' 'vendor/phpcsstandards/*' 'vendor/squizlabs/*' 'vendor/wp-coding-standards/*' 'src/*' '*.parcel-cache*' '*.cache*' '*package*.json' '*composer.*' '*.xml' '.*rc.json' 'NOTES.md' 'payload-sample.json' 'alpaca.zip' 'dist/*.map' '*.backup'",
     "lint": "npm run lint:js && npm run lint:styles && npm run lint:php",
     "lint:js": "eslint src --ext .jsx,.js",
     "lint:styles": "stylelint src/**/*.scss",
