@@ -1275,11 +1275,48 @@ $timeline-width: 1px;
 .alpaca-snackbar {
   transition: opacity 300ms ease;
   opacity: 1;
+  color: #1e1e1e;
+  transform: translateY(0);
+  will-change: opacity;
+}
+
+.alpaca-snackbar.alpaca-snackbar-error {
+  border-left: 4px solid #b32d2e;
+  background: #fff5f5;
+}
+
+.alpaca-snackbar.alpaca-snackbar-warning {
+  border-left: 4px solid #dba617;
+  background: #fff9e6;
 }
 
 .alpaca-snackbar.is-closing {
   opacity: 0;
   pointer-events: none;
+}
+
+.alpaca-details-modal {
+  position: relative;
+}
+
+.alpaca-snackbar-stack {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  top: 24px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.alpaca-snackbar-stack .alpaca-snackbar {
+  pointer-events: auto;
+}
+
+#alpaca-comments-wrapper {
+  position: relative;
 }
 
 .alpaca-align-controls {
@@ -1628,6 +1665,29 @@ $timeline-width: 1px;
     0 4px 5px #0000000a,
     0 12px 12px #00000008,
     0 16px 16px #00000005;
+
+  .alpaca-snackbar-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+
+    .components-button {
+      min-width: auto;
+      padding: 0;
+      color: inherit;
+      background: transparent;
+
+      &:hover,
+      &:focus {
+        background: transparent;
+        color: inherit;
+        opacity: 0.8;
+        box-shadow: none;
+      }
+    }
+  }
 }
 
 /*

@@ -31,6 +31,7 @@ const {
   MenuGroup,
   MenuItem,
   ToggleControl,
+  Snackbar,
 } = wp.components;
 
 const { decodeEntities } = wp.htmlEntities;
@@ -188,15 +189,58 @@ const AlpacaIssue = ({
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState('');
   const [commentRefreshKey] = useState(0);
-  const [notificationMessage, setNotificationMessage] = useState(null);
+  const [snackbars, setSnackbars] = useState([]);
+  const snackbarTimersRef = useRef({});
+  const snackbarCloseTimersRef = useRef({});
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showDeleteScreenshotConfirm, setShowDeleteScreenshotConfirm] =
     useState(false);
 
-  const showNotification = useCallback((message, type = 'error') => {
-    setNotificationMessage({ message, type });
-    setTimeout(() => setNotificationMessage(null), 5000);
+  const dismissSnackbar = useCallback((id) => {
+    setSnackbars((prev) =>
+      prev.map((snackbar) =>
+        snackbar.id === id ? { ...snackbar, isClosing: true } : snackbar,
+      ),
+    );
+
+    if (snackbarCloseTimersRef.current[id]) {
+      clearTimeout(snackbarCloseTimersRef.current[id]);
+    }
+
+    snackbarCloseTimersRef.current[id] = setTimeout(() => {
+      setSnackbars((prev) => prev.filter((snackbar) => snackbar.id !== id));
+      delete snackbarCloseTimersRef.current[id];
+    }, 300);
+
+    if (snackbarTimersRef.current[id]) {
+      clearTimeout(snackbarTimersRef.current[id]);
+      delete snackbarTimersRef.current[id];
+    }
   }, []);
+
+  const showNotification = useCallback(
+    (message, type = 'error') => {
+      const id = `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      setSnackbars((prev) => [
+        ...prev,
+        { id, message, type, isClosing: false },
+      ]);
+
+      snackbarTimersRef.current[id] = setTimeout(
+        () => dismissSnackbar(id),
+        5000,
+      );
+    },
+    [dismissSnackbar],
+  );
+
+  useEffect(
+    () => () => {
+      Object.values(snackbarTimersRef.current).forEach(clearTimeout);
+      Object.values(snackbarCloseTimersRef.current).forEach(clearTimeout);
+    },
+    [],
+  );
 
   // Fetch statuses
   useEffect(() => {
@@ -738,12 +782,6 @@ const AlpacaIssue = ({
           </div>
         )}
 
-        {notificationMessage && (
-          <div className={`notice notice-${notificationMessage.type}`}>
-            <p>{notificationMessage.message}</p>
-          </div>
-        )}
-
         {isLoadingDetails && !isCreating && <p>{__('Loading…', 'alpaca')}</p>}
         {((!isLoadingDetails && issueDetails && issueDetails.success) ||
           isCreating) && (
@@ -862,6 +900,7 @@ const AlpacaIssue = ({
                         issueDetails={issueDetails}
                         issueId={issueId}
                         commentRefreshKey={commentRefreshKey}
+                        showNotification={showNotification}
                       />
                     );
                   }}
@@ -905,6 +944,29 @@ const AlpacaIssue = ({
                 __('Could not load issue details.', 'alpaca')}
             </p>
           )}
+
+        {snackbars.length > 0 && (
+          <div className="alpaca-snackbar-stack">
+            {snackbars.map((snackbar) => (
+              <Snackbar
+                key={snackbar.id}
+                className={`alpaca-snackbar alpaca-snackbar-${
+                  snackbar.type || 'error'
+                } ${snackbar.isClosing ? 'is-closing' : ''}`}
+                onClose={() => dismissSnackbar(snackbar.id)}
+              >
+                <div className="alpaca-snackbar-content">
+                  <span>{snackbar.message}</span>
+                  <Button
+                    icon="no-alt"
+                    label={__('Dismiss', 'alpaca')}
+                    onClick={() => dismissSnackbar(snackbar.id)}
+                  />
+                </div>
+              </Snackbar>
+            ))}
+          </div>
+        )}
 
         {showDeleteScreenshotConfirm && (
           <Modal
