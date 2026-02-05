@@ -5,6 +5,11 @@
  * @package Alpaca
  */
 
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Register a taxonomy with optional custom arguments.
  *
@@ -80,47 +85,9 @@ function alpaca_register_cpts_and_taxonomies() {
 		)
 	);
 
-	add_filter(
-		'rest_pre_insert_comment',
-		function ( $prepared_comment, $request ) {
-			if ( isset( $request['comment_type'] ) && 'issuecomment' === $request['comment_type'] ) {
-				$prepared_comment['comment_type'] = 'issuecomment';
-			}
-
-			if ( isset( $request['author_user_agent'] ) ) {
-				$prepared_comment['comment_agent'] = sanitize_text_field( $request['author_user_agent'] );
-			}
-
-			return $prepared_comment;
-		},
-		10,
-		2
-	);
-
-	add_filter(
-		'rest_comment_query',
-		function ( $args, $request ) {
-			if ( isset( $request['comment_type'] ) && 'issuecomment' === $request['comment_type'] ) {
-				$args['type'] = 'issuecomment';
-			}
-			return $args;
-		},
-		10,
-		2
-	);
-
-	add_filter(
-		'comments_open',
-		function ( $open, $post_id ) {
-			$post = get_post( $post_id );
-			if ( $post && 'alpaca_issue' === $post->post_type ) {
-				return true;
-			}
-			return $open;
-		},
-		10,
-		2
-	);
+	add_filter( 'rest_pre_insert_comment', 'alpaca_rest_pre_insert_comment', 10, 2 );
+	add_filter( 'rest_comment_query', 'alpaca_rest_comment_query', 10, 2 );
+	add_filter( 'comments_open', 'alpaca_comments_open', 10, 2 );
 
 	// Allow Contributors to comment on and delete alpaca_issue posts.
 	add_filter(
@@ -346,4 +313,52 @@ function alpaca_get_statuses( $order = 'ASC' ) {
 		$term->term_score = $score;
 	}
 	return $terms;
+}
+
+/**
+ * Filter REST API comment insertion to handle custom comment types.
+ *
+ * @param array           $prepared_comment Prepared comment data.
+ * @param WP_REST_Request $request          REST request object.
+ * @return array Modified comment data.
+ */
+function alpaca_rest_pre_insert_comment( $prepared_comment, $request ) {
+	if ( isset( $request['comment_type'] ) && 'issuecomment' === $request['comment_type'] ) {
+		$prepared_comment['comment_type'] = 'issuecomment';
+	}
+
+	if ( isset( $request['author_user_agent'] ) ) {
+		$prepared_comment['comment_agent'] = sanitize_text_field( $request['author_user_agent'] );
+	}
+
+	return $prepared_comment;
+}
+
+/**
+ * Filter REST API comment query to handle custom comment types.
+ *
+ * @param array           $args    Comment query arguments.
+ * @param WP_REST_Request $request REST request object.
+ * @return array Modified query arguments.
+ */
+function alpaca_rest_comment_query( $args, $request ) {
+	if ( isset( $request['comment_type'] ) && 'issuecomment' === $request['comment_type'] ) {
+		$args['type'] = 'issuecomment';
+	}
+	return $args;
+}
+
+/**
+ * Filter comments_open to always allow comments on alpaca_issue posts.
+ *
+ * @param bool $open    Whether comments are open.
+ * @param int  $post_id Post ID.
+ * @return bool Whether comments are open.
+ */
+function alpaca_comments_open( $open, $post_id ) {
+	$post = get_post( $post_id );
+	if ( $post && 'alpaca_issue' === $post->post_type ) {
+		return true;
+	}
+	return $open;
 }

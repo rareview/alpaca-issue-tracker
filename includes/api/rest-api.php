@@ -6,6 +6,11 @@
  * @package Alpaca
  */
 
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /*
  * Bootstrapping: expose wpApiSettings (unchanged behavior).
  */
