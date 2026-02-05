@@ -1292,7 +1292,6 @@ $timeline-width: 1px;
   pointer-events: none;
 }
 
-
 .alpaca-details-modal {
   position: relative;
 }
@@ -1663,6 +1662,29 @@ $timeline-width: 1px;
     0 4px 5px #0000000a,
     0 12px 12px #00000008,
     0 16px 16px #00000005;
+
+  .alpaca-snackbar-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+
+    .components-button {
+      min-width: auto;
+      padding: 0;
+      color: inherit;
+      background: transparent;
+
+      &:hover,
+      &:focus {
+        background: transparent;
+        color: inherit;
+        opacity: 0.8;
+        box-shadow: none;
+      }
+    }
+  }
 }
 
 /*
