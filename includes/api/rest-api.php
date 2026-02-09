@@ -1306,6 +1306,27 @@ function alpaca_register_comment_meta_fields() {
 			},
 		]
 	);
+
+	register_meta(
+		'comment',
+		'alpacaCommentAttachments',
+		[
+			'type'          => 'array',
+			'description'   => 'Attachment data URLs for Alpaca issue comments.',
+			'single'        => true,
+			'show_in_rest'  => [
+				'schema' => [
+					'type'  => 'array',
+					'items' => [
+						'type' => 'string',
+					],
+				],
+			],
+			'auth_callback' => function () {
+				return \Alpaca\Inc\Helpers::user_can( 'register_comment_meta' );
+			},
+		]
+	);
 }
 add_action( 'rest_api_init', 'alpaca_register_comment_meta_fields' );
 

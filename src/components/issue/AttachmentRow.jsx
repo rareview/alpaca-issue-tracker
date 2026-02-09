@@ -7,6 +7,8 @@ const Attachment = ({
   onAttachmentClick,
   onAttachmentDelete,
   isLoading,
+  showDelete,
+  altText,
 }) => (
   <div className="alpaca-attachment">
     <button
@@ -20,24 +22,26 @@ const Attachment = ({
         background: 'none',
       }}
     >
-      <img src={attachment.url} alt="Screenshot" />
+      <img src={attachment.url} alt={altText} />
     </button>
 
-    <Button
-      disabled={isLoading}
-      onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        onAttachmentDelete();
-      }}
-      label="Delete"
-      showTooltip
-      tooltipPosition="top"
-      icon="trash"
-      isDestructive
-      className="alpaca-attachment-delete"
-      variant="primary"
-    />
+    {showDelete && (
+      <Button
+        disabled={isLoading}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onAttachmentDelete();
+        }}
+        label="Delete"
+        showTooltip
+        tooltipPosition="top"
+        icon="trash"
+        isDestructive
+        className="alpaca-attachment-delete"
+        variant="primary"
+      />
+    )}
   </div>
 );
 
@@ -46,8 +50,17 @@ Attachment.propTypes = {
     url: PropTypes.string.isRequired,
   }).isRequired,
   onAttachmentClick: PropTypes.func.isRequired,
-  onAttachmentDelete: PropTypes.func.isRequired,
-  isLoading: PropTypes.bool.isRequired,
+  onAttachmentDelete: PropTypes.func,
+  isLoading: PropTypes.bool,
+  showDelete: PropTypes.bool,
+  altText: PropTypes.string,
+};
+
+Attachment.defaultProps = {
+  onAttachmentDelete: () => {},
+  isLoading: false,
+  showDelete: true,
+  altText: 'Screenshot',
 };
 
 const AttachmentRow = ({
@@ -72,6 +85,8 @@ const AttachmentRow = ({
               onAttachmentClick={onAttachmentClick}
               onAttachmentDelete={onAttachmentDelete}
               isLoading={isLoading}
+              showDelete
+              altText="Screenshot"
             />
           ))}
         </div>
@@ -94,5 +109,7 @@ AttachmentRow.propTypes = {
 AttachmentRow.defaultProps = {
   attachments: [],
 };
+
+export { Attachment };
 
 export default AttachmentRow;

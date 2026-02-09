@@ -689,26 +689,25 @@ $timeline-width: 1px;
      */
   .alpaca-attachments-wrapper {
     display: flex;
-    gap: 10px;
+    gap: 15px;
     flex-wrap: wrap;
+    padding: 0 15px 15px 15px;
   }
 
   .alpaca-attachment {
     position: relative;
 
     .alpaca-attachment-thumbnail {
-      width: 180px;
       padding: 0;
-      border: 1px solid #ddd;
-      border-radius: 4px;
       background: none;
       cursor: zoom-in;
       display: inline-block;
 
       img {
         display: block;
-        width: 100%;
-        height: auto;
+        width: auto;
+        height: 60px;
+        border: 1px solid $greyborder;
         border-radius: inherit;
       }
     }
@@ -838,8 +837,37 @@ $timeline-width: 1px;
         top: -1px; // Needed, not sure why
       }
 
-      .alpaca-comment-form-actions {
-        text-align: right;
+      .alpaca-comment-dropzone {
+        position: relative;
+      }
+
+      .alpaca-comment-dropzone .components-drop-zone {
+        border: 2px dashed $greyborder;
+        border-radius: 8px;
+        position: absolute;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.85);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease-in-out;
+
+        &::after {
+          content: 'Drop images to attach';
+          position: absolute;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: $greytext;
+          font-size: $smallfont;
+          letter-spacing: 0.02em;
+        }
+      }
+
+      .alpaca-comment-dropzone .components-drop-zone.is-active,
+      .alpaca-comment-dropzone .components-drop-zone.is-dragging {
+        opacity: 1;
+        pointer-events: auto;
       }
     }
 
@@ -909,6 +937,14 @@ $timeline-width: 1px;
       .alpaca-timeline-content {
         flex-grow: 1;
       }
+    }
+  }
+
+  .alpaca-comment-form-actions {
+    display: flex;
+
+    .components-form-file-upload {
+      margin-right: auto;
     }
   }
 
