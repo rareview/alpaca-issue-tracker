@@ -24,6 +24,7 @@ const AlpacaToolbar = () => {
 
   const textareaRef = useRef(null);
   const formRef = useRef(null);
+  const reportButtonRef = useRef(null);
   const [enableTestLogs, setEnableTestLogs] = useState(false);
 
   useEffect(() => {
@@ -66,11 +67,25 @@ const AlpacaToolbar = () => {
     setStatus('idle');
   }, []);
 
+  const toggleFormVisibility = useCallback(() => {
+    if (isFormVisible) {
+      closeForm();
+      return;
+    }
+
+    openForm();
+  }, [closeForm, isFormVisible, openForm]);
+
   useEffect(() => {
     if (!isFormVisible) return;
 
     const handleClickOutside = (event) => {
-      if (formRef.current && !formRef.current.contains(event.target)) {
+      if (
+        formRef.current &&
+        !formRef.current.contains(event.target) &&
+        reportButtonRef.current &&
+        !reportButtonRef.current.contains(event.target)
+      ) {
         closeForm();
       }
     };
@@ -160,8 +175,9 @@ const AlpacaToolbar = () => {
     <>
       <div className={`alpaca-bottom-toolbar ${isExpanded ? 'expanded' : ''}`}>
         <button
+          ref={reportButtonRef}
           className={`alpaca-report-button ${isFormVisible ? 'form-visible' : ''}`}
-          onClick={openForm}
+          onClick={toggleFormVisibility}
         >
           <ReportIcon />
           {__('Report An Issue', 'alpaca')}
