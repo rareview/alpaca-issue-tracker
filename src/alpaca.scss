@@ -1442,6 +1442,7 @@ $core-font-stack:
   padding: 0;
   transform: translateX(calc(-100% + 32px));
   transition: transform 0.3s ease;
+  font-family: $core-font-stack !important;
 
   &.expanded {
     transform: translateX(0);
@@ -1465,7 +1466,7 @@ $core-font-stack:
     font-size: 13px;
     cursor: pointer;
     text-decoration: none;
-    font-family: $core-font-stack;
+    font-family: $core-font-stack !important;
 
     .dashicons {
       color: #a7aaad;
