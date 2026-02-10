@@ -21,6 +21,7 @@ import { getCookie, setCookie } from '../utils/cookies';
 import { marked } from 'marked';
 import Lightbox from './issue/Lightbox';
 import { Attachment } from './issue/AttachmentRow';
+import { uploadIssueAttachment } from '../utils/attachmentUpload';
 
 const injectAvatarStyles = (htmlString) => {
   if (
@@ -69,39 +70,6 @@ const useAutoExpandTextarea = (ref, value, enabled = true) => {
       }
     };
   }, [ref, value, enabled]);
-};
-
-const uploadCommentAttachment = async (file, issueId) => {
-  if (!file) {
-    throw new Error(__('Missing attachment file.', 'alpaca'));
-  }
-
-  const formData = new window.FormData();
-  formData.append('file', file);
-  formData.append('issue_id', issueId);
-
-  const response = await wp.apiFetch({
-    path: '/alpaca/v1/comment-attachments',
-    method: 'POST',
-    body: formData,
-  });
-
-  if (!response || response.success === false) {
-    throw new Error(
-      response?.message || __('Failed to upload attachment.', 'alpaca'),
-    );
-  }
-
-  if (!response.url) {
-    throw new Error(__('Failed to upload attachment.', 'alpaca'));
-  }
-
-  return {
-    id: `${file.name}-${file.size}-${Date.now()}`,
-    name: response.name || file.name,
-    mime: response.mime || file.type || '',
-    url: response.url,
-  };
 };
 
 const deleteCommentAttachment = async (url, issueId) => {
@@ -734,7 +702,7 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
 
       try {
         const results = await Promise.allSettled(
-          incomingFiles.map((file) => uploadCommentAttachment(file, issueId)),
+          incomingFiles.map((file) => uploadIssueAttachment(file, issueId)),
         );
 
         const uploaded = results
