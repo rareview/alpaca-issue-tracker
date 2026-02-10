@@ -3,7 +3,7 @@ import { getUser } from '../hooks/useUser';
 import { fetchIssueCommentCount } from '../services/issueApi';
 
 const { useState, useEffect, useRef, useCallback, useMemo, memo } = wp.element;
-const { __ } = wp.i18n;
+const { __, _n, sprintf } = wp.i18n;
 import User from './User';
 import Time from './Time';
 const {
@@ -960,16 +960,25 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
                 );
                 const attachmentCount =
                   commentToDelete?.meta?.alpacaCommentAttachments?.length || 0;
-                const attachmentText =
-                  attachmentCount === 0
-                    ? ''
-                    : attachmentCount === 1
-                      ? __(' and its attachment', 'alpaca')
-                      : __(' and its attachments', 'alpaca');
+                let attachmentText = '';
 
-                return __(
-                  `Are you sure you want to delete this comment${attachmentText}?`,
-                  'alpaca',
+                if (attachmentCount === 1) {
+                  attachmentText = __(' and its attachment', 'alpaca');
+                } else if (attachmentCount > 1) {
+                  attachmentText = __(' and its attachments', 'alpaca');
+                }
+
+                const commentCount = 1;
+
+                return sprintf(
+                  /* translators: %1$s: attachment text suffix for comment deletion confirmation. */
+                  _n(
+                    'Are you sure you want to delete this comment%1$s?',
+                    'Are you sure you want to delete these comments%1$s?',
+                    commentCount,
+                    'alpaca',
+                  ),
+                  attachmentText,
                 );
               })()}
             </p>
