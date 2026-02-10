@@ -676,39 +676,54 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
   const cancelDelete = useCallback(() => setDeleteCommentId(null), []);
   const deleteComment = useCallback(() => {
     if (!deleteCommentId) return;
-    wp.apiFetch({
-      path: `/wp/v2/comments/${deleteCommentId}?force=true`,
-      method: 'DELETE',
-    })
-      .then((deletedComment) => {
-        setComments((prev) => prev.filter((c) => c.id !== deleteCommentId));
-        setDeleteCommentId(null);
+    const comment = comments.find((item) => item.id === deleteCommentId);
+    const attachmentUrls = comment?.meta?.alpacaCommentAttachments || [];
 
-        wp.hooks.doAction('alpaca.commentDeleted', deletedComment);
+    const deleteAttachments = attachmentUrls.length
+      ? Promise.allSettled(
+          attachmentUrls.map((url) => deleteCommentAttachment(url, issueId)),
+        )
+      : Promise.resolve([]);
 
-        // Dispatch event to update comment count
-        // The deletedComment object contains the post ID
-        const postId = deletedComment.previous.post;
-        fetchIssueCommentCount(postId)
-          .then((response) => {
-            if (response && typeof response.comment_count !== 'undefined') {
-              wp.hooks.doAction('alpaca.commentCountChanged', {
-                issueId: postId.toString(),
-                newCount: response.comment_count,
+    deleteAttachments
+      .catch((error) => {
+        console.error('Failed to delete comment attachments', error);
+      })
+      .finally(() => {
+        wp.apiFetch({
+          path: `/wp/v2/comments/${deleteCommentId}?force=true`,
+          method: 'DELETE',
+        })
+          .then((deletedComment) => {
+            setComments((prev) => prev.filter((c) => c.id !== deleteCommentId));
+            setDeleteCommentId(null);
+
+            wp.hooks.doAction('alpaca.commentDeleted', deletedComment);
+
+            // Dispatch event to update comment count
+            // The deletedComment object contains the post ID
+            const postId = deletedComment.previous.post;
+            fetchIssueCommentCount(postId)
+              .then((response) => {
+                if (response && typeof response.comment_count !== 'undefined') {
+                  wp.hooks.doAction('alpaca.commentCountChanged', {
+                    issueId: postId.toString(),
+                    newCount: response.comment_count,
+                  });
+                }
+              })
+              .catch((err) => {
+                console.error('Error fetching updated comment count:', err);
               });
-            }
           })
           .catch((err) => {
-            console.error('Error fetching updated comment count:', err);
+            console.error(err);
+            showNotification(
+              `${__('Failed to delete comment:', 'alpaca')} ${err.message || __('Unknown error', 'alpaca')}`,
+            );
           });
-      })
-      .catch((err) => {
-        console.error(err);
-        showNotification(
-          `${__('Failed to delete comment:', 'alpaca')} ${err.message || __('Unknown error', 'alpaca')}`,
-        );
       });
-  }, [deleteCommentId, showNotification]);
+  }, [deleteCommentId, comments, issueId, showNotification]);
 
   const handleAttachmentFiles = useCallback(
     async (files, onSuccess) => {
@@ -939,7 +954,24 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
             className="alpaca-modal"
           >
             <p>
-              {__('Are you sure you want to delete this comment?', 'alpaca')}
+              {(() => {
+                const commentToDelete = comments.find(
+                  (item) => item.id === deleteCommentId,
+                );
+                const attachmentCount =
+                  commentToDelete?.meta?.alpacaCommentAttachments?.length || 0;
+                const attachmentText =
+                  attachmentCount === 0
+                    ? ''
+                    : attachmentCount === 1
+                      ? __(' and its attachment', 'alpaca')
+                      : __(' and its attachments', 'alpaca');
+
+                return __(
+                  `Are you sure you want to delete this comment${attachmentText}?`,
+                  'alpaca',
+                );
+              })()}
             </p>
             <Button isPrimary onClick={deleteComment}>
               {__('Delete', 'alpaca')}
