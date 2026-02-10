@@ -691,7 +691,6 @@ $timeline-width: 1px;
     display: flex;
     gap: 15px;
     flex-wrap: wrap;
-    padding: 0 15px 15px 15px;
   }
 
   .alpaca-attachment {
@@ -831,7 +830,8 @@ $timeline-width: 1px;
     }
 
     .alpaca-comment-form {
-      margin: 0 0 12px 0;
+      border: 1px solid $greyborder;
+      border-radius: 8px;
 
       .alpaca-user {
         top: -1px; // Needed, not sure why
@@ -899,9 +899,7 @@ $timeline-width: 1px;
   .alpaca-timeline-item[data-source='human'] .alpaca-timeline-content,
   .alpaca-comment-form textarea {
     flex-grow: 1;
-    border-radius: 8px;
     background: $bgwhite;
-    border: 1px solid $greyborder;
 
     .alpaca-comment-header {
       border-top-left-radius: 8px;
@@ -910,6 +908,15 @@ $timeline-width: 1px;
       padding-top: $commenthead-vpad;
       padding-bottom: $commenthead-vpad;
     }
+  }
+
+  .alpaca-timeline-item[data-source='human'] .alpaca-timeline-content {
+    border-radius: 8px;
+    border: 1px solid $greyborder;
+  }
+
+  .alpaca-comment-form textarea {
+    border: none;
   }
 
   .alpaca-timeline-item {
@@ -995,7 +1002,7 @@ $timeline-width: 1px;
   }
 
   .alpaca-comment-content {
-    padding: 1em 15px 0 15px;
+    padding: 0;
 
     blockquote {
       background: $greyshade;
@@ -1014,14 +1021,20 @@ $timeline-width: 1px;
     }
   }
 
-  .alpaca-comment-body {
-    button.components-button {
-      margin: 0 0 8px 8px;
-    }
+  /*
+  * Form and comment display spacing
+  */
 
-    .components-textarea-control__input {
-      padding: 11px 14px;
-    }
+  .alpaca-comment-form,
+  .alpaca-timeline-item .alpaca-comment-body {
+    padding: 15px;
+  }
+
+  .alpaca-comment-form textarea,
+  .alpaca-timeline-item textarea {
+    padding: 0;
+    border: none;
+    margin-bottom: 15px;
   }
 
   /*
