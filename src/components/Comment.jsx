@@ -48,66 +48,82 @@ const injectAvatarStyles = (htmlString) => {
   }
 };
 
-const ATTACHMENT_MIME_PREFIX = 'image/';
-const ATTACHMENT_OUTPUT_MIME = 'image/webp';
-const ATTACHMENT_OUTPUT_QUALITY = 0.7;
-
-const fileToWebpDataUrl = (file) =>
-  new Promise((resolve, reject) => {
-    if (!file || !file.type || !file.type.startsWith(ATTACHMENT_MIME_PREFIX)) {
-      reject(new Error('Invalid file type.'));
+const useAutoExpandTextarea = (ref, value, enabled = true) => {
+  useEffect(() => {
+    if (!enabled) {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onerror = () => reject(new Error('Failed to read file.'));
-    reader.onload = () => {
-      const image = new Image();
-      image.onerror = () => reject(new Error('Failed to load image.'));
-      image.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = image.naturalWidth || image.width;
-        canvas.height = image.naturalHeight || image.height;
+    const textarea = ref?.current;
 
-        const context = canvas.getContext('2d');
-        if (!context) {
-          reject(new Error('Failed to render image.'));
-          return;
-        }
+    if (!textarea || typeof textarea.style === 'undefined') {
+      return;
+    }
 
-        context.drawImage(image, 0, 0);
-        let dataUrl = '';
+    textarea.style.height = 'auto';
+    textarea.style.height = `${textarea.scrollHeight}px`;
 
-        try {
-          dataUrl = canvas.toDataURL(
-            ATTACHMENT_OUTPUT_MIME,
-            ATTACHMENT_OUTPUT_QUALITY,
-          );
-        } catch (error) {
-          dataUrl = '';
-        }
-
-        if (dataUrl) {
-          resolve(dataUrl);
-          return;
-        }
-
-        if (typeof reader.result === 'string') {
-          resolve(reader.result);
-          return;
-        }
-
-        reject(new Error('Failed to process image.'));
-      };
-
-      if (typeof reader.result === 'string') {
-        image.src = reader.result;
-      } else {
-        reject(new Error('Failed to read image.'));
+    return () => {
+      if (textarea && textarea.style) {
+        textarea.style.height = '';
       }
     };
-    reader.readAsDataURL(file);
+  }, [ref, value, enabled]);
+};
+
+const uploadCommentAttachment = async (file, issueId) => {
+  if (!file) {
+    throw new Error(__('Missing attachment file.', 'alpaca'));
+  }
+
+  const formData = new window.FormData();
+  formData.append('file', file);
+  formData.append('issue_id', issueId);
+
+  const response = await wp.apiFetch({
+    path: '/alpaca/v1/comment-attachments',
+    method: 'POST',
+    body: formData,
   });
+
+  if (!response || response.success === false) {
+    throw new Error(
+      response?.message || __('Failed to upload attachment.', 'alpaca'),
+    );
+  }
+
+  if (!response.url) {
+    throw new Error(__('Failed to upload attachment.', 'alpaca'));
+  }
+
+  return {
+    id: `${file.name}-${file.size}-${Date.now()}`,
+    name: response.name || file.name,
+    mime: response.mime || file.type || '',
+    url: response.url,
+  };
+};
+
+const deleteCommentAttachment = async (url, issueId) => {
+  if (!url || !issueId) {
+    return;
+  }
+
+  const response = await wp.apiFetch({
+    path: '/alpaca/v1/comment-attachments/delete',
+    method: 'POST',
+    data: {
+      issue_id: issueId,
+      url,
+    },
+  });
+
+  if (!response || response.success === false) {
+    throw new Error(
+      response?.message || __('Failed to delete attachment.', 'alpaca'),
+    );
+  }
+};
 
 const AttachmentControls = ({
   children,
@@ -143,15 +159,14 @@ const AttachmentControls = ({
     )}
     <div className="alpaca-comment-form-actions">
       <FormFileUpload
-        accept="image/*"
         icon="paperclip"
         multiple
         onChange={onUpload}
         disabled={isSubmitting || isProcessing}
       >
         {isProcessing
-          ? __('Processing…', 'alpaca')
-          : __('Attach Images', 'alpaca')}
+          ? __('Uploading…', 'alpaca')
+          : __('Attach Files', 'alpaca')}
       </FormFileUpload>
       {actions}
     </div>
@@ -164,6 +179,8 @@ AttachmentControls.propTypes = {
     PropTypes.shape({
       id: PropTypes.string.isRequired,
       url: PropTypes.string.isRequired,
+      name: PropTypes.string,
+      mime: PropTypes.string,
     }),
   ).isRequired,
   onDrop: PropTypes.func.isRequired,
@@ -399,6 +416,8 @@ Comment.propTypes = {
     PropTypes.shape({
       id: PropTypes.string.isRequired,
       url: PropTypes.string.isRequired,
+      name: PropTypes.string,
+      mime: PropTypes.string,
     }),
   ).isRequired,
   onEditAttachFiles: PropTypes.func.isRequired,
@@ -422,6 +441,7 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
   const [isLoadingComments, setIsLoadingComments] = useState(true);
   const [lightboxSrc, setLightboxSrc] = useState(null);
   const editingRef = useRef(null);
+  const newCommentRef = useRef(null);
   const [sortOrder, setSortOrder] = useState(
     getCookie('comment_sort_order') || 'desc',
   );
@@ -439,6 +459,10 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
       editingRef.current.focus();
     }
   }, [editingCommentId]);
+
+  useAutoExpandTextarea(editingRef, editingContent, !!editingCommentId);
+
+  useAutoExpandTextarea(newCommentRef, newComment);
 
   const toggleSortOrder = () => {
     const newSortOrder = sortOrder === 'desc' ? 'asc' : 'desc';
@@ -653,9 +677,8 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
   const deleteComment = useCallback(() => {
     if (!deleteCommentId) return;
     wp.apiFetch({
-      path: `/wp/v2/comments/${deleteCommentId}`,
+      path: `/wp/v2/comments/${deleteCommentId}?force=true`,
       method: 'DELETE',
-      data: { force: true },
     })
       .then((deletedComment) => {
         setComments((prev) => prev.filter((c) => c.id !== deleteCommentId));
@@ -689,55 +712,44 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
 
   const handleAttachmentFiles = useCallback(
     async (files, onSuccess) => {
-      if (!files || files.length === 0) return;
+      if (!files || files.length === 0 || !issueId) return;
 
       const incomingFiles = Array.from(files);
-      const invalidFiles = incomingFiles.filter(
-        (file) => !file.type || !file.type.startsWith(ATTACHMENT_MIME_PREFIX),
-      );
-
-      if (invalidFiles.length > 0) {
-        showNotification(
-          __('Only image files can be attached to comments.', 'alpaca'),
-          'error',
-        );
-      }
-
-      const imageFiles = incomingFiles.filter(
-        (file) => file.type && file.type.startsWith(ATTACHMENT_MIME_PREFIX),
-      );
-
-      if (imageFiles.length === 0) {
-        return;
-      }
-
       setIsProcessingAttachments(true);
+
       try {
-        const processed = await Promise.all(
-          imageFiles.map(async (file) => {
-            const url = await fileToWebpDataUrl(file);
-            return {
-              id: `${file.name}-${file.size}-${Date.now()}`,
-              name: file.name,
-              url,
-            };
-          }),
+        const results = await Promise.allSettled(
+          incomingFiles.map((file) => uploadCommentAttachment(file, issueId)),
         );
 
-        if (typeof onSuccess === 'function') {
-          onSuccess(processed);
+        const uploaded = results
+          .filter((result) => result.status === 'fulfilled')
+          .map((result) => result.value);
+        const failedCount = results.filter(
+          (result) => result.status === 'rejected',
+        ).length;
+
+        if (failedCount > 0) {
+          showNotification(
+            __('Failed to upload one or more attachments.', 'alpaca'),
+            'error',
+          );
+        }
+
+        if (uploaded.length > 0 && typeof onSuccess === 'function') {
+          onSuccess(uploaded);
         }
       } catch (error) {
-        console.error('Failed to process attachments', error);
+        console.error('Failed to upload attachments', error);
         showNotification(
-          __('Failed to process one or more attachments.', 'alpaca'),
+          __('Failed to upload one or more attachments.', 'alpaca'),
           'error',
         );
       } finally {
         setIsProcessingAttachments(false);
       }
     },
-    [showNotification],
+    [showNotification, issueId],
   );
 
   const handleAttachmentUpload = useCallback(
@@ -778,17 +790,57 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
     [handleAttachmentFiles],
   );
 
-  const removePendingAttachment = useCallback((attachmentId) => {
-    setPendingAttachments((prev) =>
-      prev.filter((attachment) => attachment.id !== attachmentId),
-    );
-  }, []);
+  const removePendingAttachment = useCallback(
+    async (attachmentId) => {
+      const attachment = pendingAttachments.find(
+        (item) => item.id === attachmentId,
+      );
 
-  const removeEditingAttachment = useCallback((attachmentId) => {
-    setEditingAttachments((prev) =>
-      prev.filter((attachment) => attachment.id !== attachmentId),
-    );
-  }, []);
+      if (attachment?.url) {
+        try {
+          await deleteCommentAttachment(attachment.url, issueId);
+        } catch (error) {
+          console.error('Failed to delete attachment', error);
+          showNotification(
+            __('Failed to delete attachment.', 'alpaca'),
+            'error',
+          );
+          return;
+        }
+      }
+
+      setPendingAttachments((prev) =>
+        prev.filter((item) => item.id !== attachmentId),
+      );
+    },
+    [pendingAttachments, issueId, showNotification],
+  );
+
+  const removeEditingAttachment = useCallback(
+    async (attachmentId) => {
+      const attachment = editingAttachments.find(
+        (item) => item.id === attachmentId,
+      );
+
+      if (attachment?.url) {
+        try {
+          await deleteCommentAttachment(attachment.url, issueId);
+        } catch (error) {
+          console.error('Failed to delete attachment', error);
+          showNotification(
+            __('Failed to delete attachment.', 'alpaca'),
+            'error',
+          );
+          return;
+        }
+      }
+
+      setEditingAttachments((prev) =>
+        prev.filter((item) => item.id !== attachmentId),
+      );
+    },
+    [editingAttachments, issueId, showNotification],
+  );
 
   const handleLightboxClose = useCallback(() => setLightboxSrc(null), []);
 
@@ -830,6 +882,7 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
                 placeholder={__('Add a comment…', 'alpaca')}
                 value={newComment}
                 onChange={setNewComment}
+                ref={newCommentRef}
                 disabled={isSubmitting}
               />
             </AttachmentControls>
