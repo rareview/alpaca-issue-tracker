@@ -5,6 +5,11 @@
  * @package Alpaca
  */
 
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 add_action(
 	'admin_menu',
 	function () {

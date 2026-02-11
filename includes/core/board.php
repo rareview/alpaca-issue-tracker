@@ -6,6 +6,11 @@
  * @package Alpaca
  */
 
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Render the project board admin page.
  */

@@ -1,10 +1,10 @@
 <?php
 /**
  * Plugin Name:       Alpaca
- * Plugin URI:        https://github.com/simonedickson/alpaca
+ * Plugin URI:        https://github.com/rareview/alpaca
  * Description:       A cute issue tracker for WordPress
- * Version:           2.0.0
- * Requires at least: 5.8
+ * Version:           1.0.0-beta
+ * Requires at least: 6.8
  * Requires PHP:      7.4
  * Author:            Rareview
  * Author URI:        https://rareview.com/

@@ -58,6 +58,9 @@ $z-index-report-form: 99998;
 $z-index-bottom-toolbar: 99999;
 $timeline-width: 1px;
 
+$core-font-stack:
+  -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu,
+  Cantarell, 'Helvetica Neue', sans-serif;
 /*
  * Mixins
  */
@@ -643,6 +646,10 @@ $timeline-width: 1px;
       word-break: break-all;
     }
 
+    tr#assignees input {
+      margin-left: 0;
+    }
+
     div {
       margin: 0;
       padding: 0;
@@ -676,6 +683,7 @@ $timeline-width: 1px;
       outline: none !important;
       box-shadow: none !important;
       border: none !important;
+      font-size: $midfont;
     }
 
     .placeholder,
@@ -1566,6 +1574,7 @@ $timeline-width: 1px;
   padding: 0;
   transform: translateX(calc(-100% + 32px));
   transition: transform 0.3s ease;
+  font-family: $core-font-stack !important;
 
   &.expanded {
     transform: translateX(0);
@@ -1589,6 +1598,7 @@ $timeline-width: 1px;
     font-size: 13px;
     cursor: pointer;
     text-decoration: none;
+    font-family: $core-font-stack !important;
 
     .dashicons {
       color: #a7aaad;
@@ -1644,15 +1654,24 @@ $timeline-width: 1px;
   left: 0;
   box-shadow: 0 -4px 16px rgb(0 0 0 / 15%);
   bottom: -500px;
-  transition: bottom 0.3s ease;
+  transition:
+    bottom 0.3s ease,
+    opacity 0.3s ease,
+    visibility 0s linear 0.3s;
   font-size: 13px;
+  font-family: $core-font-stack;
   visibility: hidden;
   opacity: 0;
+  color: #000;
 
   &.visible {
     bottom: 31px;
     visibility: visible;
     opacity: 1;
+    transition:
+      bottom 0.3s ease,
+      opacity 0.3s ease,
+      visibility 0s;
   }
 
   .form-header {
@@ -1666,6 +1685,7 @@ $timeline-width: 1px;
     h4 {
       margin: 0;
       font-size: $smallfont;
+      font-family: $core-font-stack;
       font-weight: 600;
       color: #1d2327;
     }
@@ -2007,11 +2027,6 @@ $timeline-width: 1px;
         }
       }
     }
-  }
-
-  .alpaca-bottom-toolbar,
-  .alpaca-report-form {
-    display: none;
   }
 }
 
