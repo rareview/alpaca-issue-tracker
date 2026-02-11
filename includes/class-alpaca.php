@@ -106,7 +106,6 @@ final class Alpaca {
 		require_once ALPACA_PLUGIN_DIR . 'includes/utilities/functions.php';
 
 		// Load third-party libraries.
-		require_once ALPACA_PLUGIN_DIR . 'lib/expose-admin-colors.php';
 		require_once ALPACA_PLUGIN_DIR . 'lib/private-comments.php';
 
 		// Initialize private comments for issue comments.
@@ -120,7 +119,6 @@ final class Alpaca {
 		// Load core functionality.
 		require_once ALPACA_PLUGIN_DIR . 'includes/core/posttypes-and-taxonomies.php';
 		require_once ALPACA_PLUGIN_DIR . 'includes/core/board.php';
-		require_once ALPACA_PLUGIN_DIR . 'includes/core/commenting.php';
 
 		// Load admin bar (available both frontend and backend).
 		require_once ALPACA_PLUGIN_DIR . 'includes/admin/admin-bar.php';
@@ -128,7 +126,6 @@ final class Alpaca {
 		// Load admin-only functionality.
 		if ( \is_admin() ) {
 			require_once ALPACA_PLUGIN_DIR . 'includes/admin/admin-screens.php';
-			require_once ALPACA_PLUGIN_DIR . 'includes/admin/admin-helpers.php';
 			require_once ALPACA_PLUGIN_DIR . 'includes/admin/dashboard-widget.php';
 			require_once ALPACA_PLUGIN_DIR . 'includes/admin/dashboard-widget-data.php';
 		}

@@ -83,7 +83,7 @@ const AlpacaDashboardWidget = memo(function AlpacaDashboardWidget({ data }) {
                   <tr key={issue.id}>
                     <td className="title">
                       <a
-                        href={`${adminUrlBase}?page=alpaca-board&issue=${encodeURIComponent(
+                        href={`${adminUrlBase}?page=project-board&issue=${encodeURIComponent(
                           issue.slug || issue.post_name || issue.id,
                         )}`}
                         target="_self"

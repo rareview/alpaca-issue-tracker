@@ -76,12 +76,12 @@ if (document.querySelector('#alpaca-settings-internal')) {
   );
 }
 
-if (document.querySelector('#alpaca-board')) {
+if (document.querySelector('#project-board')) {
   render(
     <WatchlistProvider>
       <AlpacaBoard />
     </WatchlistProvider>,
-    document.querySelector('#alpaca-board'),
+    document.querySelector('#project-board'),
   );
 }
 

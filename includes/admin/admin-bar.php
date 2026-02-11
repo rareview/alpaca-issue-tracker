@@ -23,7 +23,7 @@ function alpaca_add_admin_bar_menu( $admin_bar ) {
 
 	// Hide the menu when on the project board page.
 	$current_screen = get_current_screen();
-	if ( $current_screen && 'toplevel_page_alpaca-board' === $current_screen->id ) {
+	if ( $current_screen && 'toplevel_page_project-board' === $current_screen->id ) {
 		return;
 	}
 
@@ -35,6 +35,7 @@ function alpaca_add_admin_bar_menu( $admin_bar ) {
 	$icon_svg   = '';
 
 	if ( ! empty( $icon_files ) && file_exists( $icon_files[0] ) ) {
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading a local SVG from the plugin directory.
 		$icon_svg = file_get_contents( $icon_files[0] );
 	}
 

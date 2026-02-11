@@ -43,7 +43,7 @@ export function AlpacaBoard() {
   // From BoardFrame.jsx
   useEffect(() => {
     // Fire an action to allow other components to render into the controls area.
-    doAction('alpaca_board_controls', '#alpaca-board-controls-mount');
+    doAction('alpaca_board_controls', '#project-board-controls-mount');
 
     const handleCreateBoardIssue = () => {
       setSelectedItem({ isCreating: true });
@@ -884,7 +884,7 @@ export function AlpacaBoard() {
   return (
     <>
       <ul className="subsubsub"></ul>
-      <div id="alpaca-board-controls-mount"></div>
+      <div id="project-board-controls-mount"></div>
       {hasNoStatuses ? (
         <div className="alpaca-empty-state">
           <Notice status="warning" isDismissible={false}>

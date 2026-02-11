@@ -134,7 +134,7 @@ $core-font-stack:
   /*
    * 3.0 - Board
    */
-  #alpaca-board {
+  #project-board {
     & > * {
       clear: both;
     }
@@ -184,8 +184,8 @@ $core-font-stack:
     }
   }
 
-  #alpaca-board-controls {
-    .alpaca-board-filter {
+  #project-board-controls {
+    .project-board-filter {
       width: fit-content;
       background: transparent;
       border-width: 0;
@@ -1585,7 +1585,7 @@ $core-font-stack:
   }
 
   .alpaca-report-button,
-  .alpaca-board-link {
+  .project-board-link {
     background: none;
     color: #f0f0f1;
     border: none;
@@ -1927,7 +1927,7 @@ $core-font-stack:
 
 @media (width >=861px) {
   .wp-admin {
-    #alpaca-board {
+    #project-board {
       .alpaca-wrap {
         flex-direction: row;
         padding: 5px 0;
@@ -1982,7 +1982,7 @@ $core-font-stack:
 
 @media (width <=860px) {
   .wp-admin {
-    #alpaca-board {
+    #project-board {
       .alpaca-wrap {
         flex-direction: column;
       }
