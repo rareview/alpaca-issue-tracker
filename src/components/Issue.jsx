@@ -971,11 +971,6 @@ const AlpacaIssue = ({
               >
                 <div className="alpaca-snackbar-content">
                   <span>{snackbar.message}</span>
-                  <Button
-                    icon="no-alt"
-                    label={__('Dismiss', 'alpaca')}
-                    onClick={() => dismissSnackbar(snackbar.id)}
-                  />
                 </div>
               </Snackbar>
             ))}

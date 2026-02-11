@@ -1393,7 +1393,8 @@ $timeline-width: 1px;
 .alpaca-snackbar {
   transition: opacity 300ms ease;
   opacity: 1;
-  color: #1e1e1e;
+  color: #fff;
+  background: #1e1e1e;
   transform: translateY(0);
   will-change: opacity;
 }
@@ -1401,11 +1402,19 @@ $timeline-width: 1px;
 .alpaca-snackbar.alpaca-snackbar-error {
   border-left: 4px solid #b32d2e;
   background: #fff5f5;
+  color: #1e1e1e;
 }
 
 .alpaca-snackbar.alpaca-snackbar-warning {
   border-left: 4px solid #dba617;
   background: #fff9e6;
+  color: #1e1e1e;
+}
+
+.alpaca-snackbar.alpaca-snackbar-success {
+  border-left: 4px solid #00a32a;
+  background: #edfaef;
+  color: #1e1e1e;
 }
 
 .alpaca-snackbar.is-closing {
