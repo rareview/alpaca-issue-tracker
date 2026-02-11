@@ -1,4 +1,6 @@
 import handleSnapdomCapture from './snapdomHandler.js';
+import { updateIssue } from './services/issueApi';
+import { dataUrlToFile, uploadIssueAttachment } from './utils/attachmentUpload';
 import { useTestLogger } from './utils/testLogger.js';
 
 const { __ } = wp.i18n;
@@ -98,7 +100,7 @@ const AlpacaModal = () => {
           isHighPriority,
         },
         client: alpacaDataDump.device,
-        screenshot,
+        screenshot: '',
         errors: alpacaDataDump.errors,
       };
 
@@ -119,6 +121,27 @@ const AlpacaModal = () => {
 
       if (!response.ok || !responseData.success) {
         throw new Error(responseData.message || `HTTP ${response.status}`);
+      }
+
+      if (screenshot && responseData.issue?.id) {
+        try {
+          const screenshotFile = await dataUrlToFile(
+            screenshot,
+            'alpaca-screenshot.webp',
+          );
+          const uploaded = await uploadIssueAttachment(
+            screenshotFile,
+            responseData.issue.id,
+          );
+          await updateIssue(responseData.issue.id, {
+            meta: {
+              screenshot: uploaded.url,
+            },
+          });
+        } catch (uploadError) {
+          // eslint-disable-next-line no-console
+          console.warn('Screenshot upload failed:', uploadError);
+        }
       }
 
       setStatus('success');
