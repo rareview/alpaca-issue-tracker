@@ -353,6 +353,20 @@ $core-font-stack:
       transition: opacity 0.2s ease-in-out;
     }
 
+    .alpaca-item-controls button.dashicons {
+      background: transparent;
+      border: 0;
+      padding: 0;
+      width: 20px;
+      height: 20px;
+      color: inherit;
+    }
+
+    .alpaca-item-controls button.dashicons:disabled {
+      cursor: default;
+      opacity: 0.2;
+    }
+
     &:hover .alpaca-item-controls .dashicons {
       opacity: 0.3;
     }
@@ -363,6 +377,14 @@ $core-font-stack:
 
     &.is-watched .alpaca-item-controls .dashicons {
       opacity: 1;
+    }
+
+    .alpaca-item-inner.is-watched .alpaca-item-controls .dashicons {
+      opacity: 1;
+    }
+
+    .alpaca-item-controls button.dashicons.dashicons-star-filled {
+      color: #ffb900;
     }
   }
 
@@ -553,6 +575,29 @@ $core-font-stack:
   }
 
   .alpaca-issue-main {
+    .alpaca-issue-title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .alpaca-issue-title {
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+    }
+
+    .alpaca-issue-watch-indicator {
+      color: #ffb900;
+      display: inline-flex;
+      align-items: center;
+
+      .dashicons {
+        width: 20px;
+        height: 20px;
+        font-size: 20px;
+      }
+    }
+
     .alpaca-issue-title {
       font-size: 2rem; // match h3
       font-weight: bold;

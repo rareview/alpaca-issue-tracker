@@ -38,7 +38,7 @@ const Item = forwardRef(
     },
     ref,
   ) => {
-    const { isWatched } = useWatchlist();
+    const { isWatched, toggleWatch, loading } = useWatchlist();
     const watched = isWatched(id);
 
     const assigneeDataAttributes = assignees.reduce((acc, assignee) => {
@@ -49,6 +49,11 @@ const Item = forwardRef(
     }, {});
 
     const watchedClass = watched ? 'is-watched item-highlight' : '';
+
+    const handleWatchToggle = (event) => {
+      event.stopPropagation();
+      toggleWatch(id);
+    };
 
     return (
       // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
@@ -66,23 +71,20 @@ const Item = forwardRef(
             <div className="alpaca-item-content">
               <Text>{content}</Text>
             </div>
-            {/* <div className="alpaca-item-controls">
-              <div
-                className="dashicons dashicons-star-filled"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleWatch(id);
-                }}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.stopPropagation();
-                    toggleWatch(id);
-                  }
-                }}
+            <div className="alpaca-item-controls">
+              <button
+                type="button"
+                className={`dashicons ${
+                  watched ? 'dashicons-star-filled' : 'dashicons-star-empty'
+                }`}
+                onClick={handleWatchToggle}
+                aria-label={
+                  watched ? 'Remove from watchlist' : 'Add to watchlist'
+                }
+                title={watched ? 'Remove from watchlist' : 'Add to watchlist'}
+                disabled={loading}
               />
-            </div> */}
+            </div>
           </div>
         </CardBody>
         <CardFooter size="xSmall" isBorderless>

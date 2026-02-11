@@ -1067,21 +1067,45 @@ function alpaca_get_watchlist_callback() {
  * @return WP_REST_Response REST response with updated watchlist.
  */
 function alpaca_update_watchlist_callback( WP_REST_Request $request ) {
-	$params             = $request->get_json_params();
-	$issue_id           = isset( $params['issue_id'] ) ? (int) $params['issue_id'] : 0;
+	$params = $request->get_json_params();
+	if ( ! is_array( $params ) ) {
+		$params = $request->get_params();
+	}
+
+	$issue_id = isset( $params['issue_id'] ) ? (int) $params['issue_id'] : 0;
 	$user_id            = get_current_user_id();
 	$original_watchlist = get_user_meta( $user_id, 'alpaca_watchlist', true );
 	$original_watchlist = is_array( $original_watchlist ) ? $original_watchlist : [];
 	$watchlist          = alpaca_to_int_ids( $original_watchlist );
+	$watchlist_updated  = false;
 
-	if ( $issue_id > 0 ) {
+	// Preferred input: set the complete array for this user.
+	if ( isset( $params['watchlist'] ) && is_array( $params['watchlist'] ) ) {
+		$watchlist         = alpaca_to_int_ids( $params['watchlist'] );
+		$watchlist_updated = true;
+	}
+
+	// Backward compatible input: toggle one issue ID.
+	if ( ! $watchlist_updated && $issue_id > 0 ) {
 		if ( in_array( $issue_id, $watchlist, true ) ) {
 			$watchlist = array_values( array_diff( $watchlist, [ $issue_id ] ) );
 		} else {
 			$watchlist[] = $issue_id;
 		}
-		update_user_meta( $user_id, 'alpaca_watchlist', $watchlist, $original_watchlist );
 	}
+
+	// Keep only valid Alpaca issues.
+	if ( ! empty( $watchlist ) ) {
+		$valid_watchlist = [];
+		foreach ( $watchlist as $post_id ) {
+			if ( 'alpaca_issue' === get_post_type( $post_id ) ) {
+				$valid_watchlist[] = $post_id;
+			}
+		}
+		$watchlist = $valid_watchlist;
+	}
+
+	update_user_meta( $user_id, 'alpaca_watchlist', $watchlist );
 
 	return alpaca_rest_response(
 		'watchlist_update',

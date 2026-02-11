@@ -22,10 +22,10 @@ const formatDate = (dateString) => {
 };
 
 /**
- * Dashboard widget component showing assigned, latest, and overdue issues.
+ * Dashboard widget component showing assigned, latest, overdue, and watchlist issues.
  *
  * @param {Object} root0      - Props object
- * @param {Object} root0.data - Widget data (assignedToMe, newlyCreated, overdue)
+ * @param {Object} root0.data - Widget data (assignedToMe, newlyCreated, overdue, watchlist)
  * @return {JSX.Element} Dashboard widget
  */
 const AlpacaDashboardWidget = memo(function AlpacaDashboardWidget({ data }) {
@@ -56,6 +56,11 @@ const AlpacaDashboardWidget = memo(function AlpacaDashboardWidget({ data }) {
       name: 'overdue',
       title: __('Overdue', 'alpaca'),
       issues: data.overdue,
+    },
+    {
+      name: 'watchlist',
+      title: __('Watchlist', 'alpaca'),
+      issues: data.watchlist,
     },
   ];
 
@@ -135,6 +140,7 @@ AlpacaDashboardWidget.propTypes = {
     assignedToMe: PropTypes.array,
     newlyCreated: PropTypes.array,
     overdue: PropTypes.array,
+    watchlist: PropTypes.array,
   }),
 };
 
