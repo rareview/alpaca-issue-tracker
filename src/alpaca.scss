@@ -646,6 +646,10 @@ $core-font-stack:
       word-break: break-all;
     }
 
+    tr#assignees input {
+      margin-left: 0;
+    }
+
     div {
       margin: 0;
       padding: 0;
@@ -679,6 +683,7 @@ $core-font-stack:
       outline: none !important;
       box-shadow: none !important;
       border: none !important;
+      font-size: $midfont;
     }
 
     .placeholder,

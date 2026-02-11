@@ -39,7 +39,7 @@ const { decodeEntities } = wp.htmlEntities;
 // ----- Memoized rows -----
 const PriorityRow = memo(
   ({ isHighPriority, onChange, isLoading }) => (
-    <tr>
+    <tr id="priority">
       <th scope="row">{__('Priority', 'alpaca')}</th>
       <td className="flexalign">
         <ToggleControl
@@ -59,7 +59,7 @@ const PriorityRow = memo(
 
 const AssigneeRow = memo(
   ({ assignees, allUsers, onChange, isLoading }) => (
-    <tr>
+    <tr id="assignees">
       <th scope="row">{__('Assignees', 'alpaca')}</th>
       <td className="flexalign">
         <AssigneeSelector
@@ -79,7 +79,7 @@ const AssigneeRow = memo(
 
 const DeadlineRow = memo(
   ({ deadline, onChange, onClear, isLoading }) => (
-    <tr>
+    <tr id="deadline">
       <th scope="row">{__('Due Date', 'alpaca')}</th>
       <td className="flexalign">
         <DeadlineControl
@@ -813,7 +813,7 @@ const AlpacaIssue = ({
 
               <table className="alpaca-issue-details">
                 <tbody>
-                  <tr>
+                  <tr id="status">
                     <th scope="row">{__('Status', 'alpaca')}</th>
                     <td>
                       {isCreating
