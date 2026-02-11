@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       // Trigger modal open via WordPress hooks
       if (window.wp && window.wp.hooks) {
-        if (document.getElementById('alpaca-board')) {
+        if (document.getElementById('project-board')) {
           wp.hooks.doAction('alpaca.createBoardIssue');
         } else {
           wp.hooks.doAction('alpaca.openModal');

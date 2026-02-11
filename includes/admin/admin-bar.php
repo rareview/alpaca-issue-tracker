@@ -23,7 +23,7 @@ function alpaca_add_admin_bar_menu( $admin_bar ) {
 
 	// Hide the menu when on the project board page.
 	$current_screen = get_current_screen();
-	if ( $current_screen && 'toplevel_page_alpaca-board' === $current_screen->id ) {
+	if ( $current_screen && 'toplevel_page_project-board' === $current_screen->id ) {
 		return;
 	}
 
