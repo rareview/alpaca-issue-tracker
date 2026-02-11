@@ -106,7 +106,6 @@ final class Alpaca {
 		require_once ALPACA_PLUGIN_DIR . 'includes/utilities/functions.php';
 
 		// Load third-party libraries.
-		require_once ALPACA_PLUGIN_DIR . 'lib/expose-admin-colors.php';
 		require_once ALPACA_PLUGIN_DIR . 'lib/private-comments.php';
 
 		// Initialize private comments for issue comments.
