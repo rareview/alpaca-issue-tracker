@@ -125,7 +125,7 @@ class Register {
 		);
 
 		// On the project board page.
-		if ( 'toplevel_page_alpaca-board' === $hook_suffix ) {
+		if ( 'toplevel_page_project-board' === $hook_suffix ) {
 
 			// Ensure WP Heartbeat is available on the board page.
 			wp_enqueue_script( 'heartbeat' );

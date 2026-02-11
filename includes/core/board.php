@@ -22,11 +22,11 @@ function alpaca_project_board_page() {
 	
 	<hr class="wp-header-end">
 
-	<div id="alpaca-board-controls"></div>
+	<div id="project-board-controls"></div>
 
     <div id="alpaca-presence"></div>
 
-	<div id="alpaca-board"></div>
+	<div id="project-board"></div>
 	</div>
 	<?php
 }

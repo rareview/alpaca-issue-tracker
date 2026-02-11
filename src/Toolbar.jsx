@@ -208,9 +208,9 @@ const AlpacaToolbar = () => {
         <a
           href={
             wpApiSettings.root.replace('/wp-json/', '/wp-admin/') +
-            'admin.php?page=alpaca-board'
+            'admin.php?page=project-board'
           }
-          className="alpaca-board-link"
+          className="project-board-link"
         >
           <BoardIcon />
           {__('Project Board', 'alpaca')}

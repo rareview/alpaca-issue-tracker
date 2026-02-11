@@ -17,14 +17,14 @@ add_action(
 			esc_html__( 'Project Board', 'alpaca' ),
 			esc_html__( 'Project Board', 'alpaca' ),
 			'edit_posts',
-			'alpaca-board',
+			'project-board',
 			'alpaca_project_board_page',
 			'dashicons-schedule',
 			101
 		);
 
 		add_submenu_page(
-			'alpaca-board',
+			'project-board',
 			esc_html__( 'Configure', 'alpaca' ),
 			esc_html__( 'Configure', 'alpaca' ),
 			'manage_options',
@@ -33,7 +33,7 @@ add_action(
 		);
 
 		add_submenu_page(
-			'alpaca-board',
+			'project-board',
 			esc_html__( 'About', 'alpaca' ),
 			esc_html__( 'About', 'alpaca' ),
 			'manage_options',

@@ -80,7 +80,6 @@ function alpaca_register_cpts_and_taxonomies() {
 		'alpaca_status',
 		array(
 			'show_in_rest' => true,
-			'meta_box_cb'  => 'alpaca_status_metabox',
 			'label'        => esc_html__( 'Status', 'alpaca' ),
 		)
 	);
@@ -115,39 +114,6 @@ function alpaca_register_cpts_and_taxonomies() {
 		},
 		10,
 		4
-	);
-
-	add_action(
-		'alpaca_status_add_form_fields',
-		function () {
-			wp_nonce_field( 'alpaca_status_meta_add', 'alpaca_status_nonce' );
-			?>
-		<div class="form-field">
-			<label for="term_score"><?php esc_html_e( 'Score', 'alpaca' ); ?></label>
-			<input type="number" name="term_score" id="term_score" value="" step="1" min="0">
-			<p class="description"><?php esc_html_e( 'Enter a numerical score for sorting purposes.', 'alpaca' ); ?></p>
-		</div>
-			<?php
-		}
-	);
-
-	add_action(
-		'alpaca_status_edit_form_fields',
-		function ( $term ) {
-			$score = get_term_meta( $term->term_id, 'term_score', true );
-			wp_nonce_field( 'alpaca_status_meta_edit', 'alpaca_status_nonce' );
-			?>
-		<tr class="form-field">
-			<th scope="row"><label for="term_score"><?php esc_html_e( 'Score', 'alpaca' ); ?></label></th>
-			<td>
-				<input type="number" name="term_score" id="term_score" value="<?php echo esc_attr( $score ); ?>" step="1">
-				<p class="description"><?php esc_html_e( 'Enter a numerical score for sorting purposes.', 'alpaca' ); ?></p>
-			</td>
-		</tr>
-			<?php
-		},
-		10,
-		1
 	);
 
 	// Save term meta when creating or editing.
@@ -186,57 +152,25 @@ function alpaca_register_cpts_and_taxonomies() {
 	}
 	add_action( 'created_alpaca_status', 'alpaca_save_status_term_score' );
 	add_action( 'edited_alpaca_status', 'alpaca_save_status_term_score' );
-
-	// Add new column header.
-	add_filter(
-		'manage_edit-alpaca_status_columns',
-		function ( $columns ) {
-			$columns['term_score'] = __( 'Score', 'alpaca' );
-			return $columns;
-		}
-	);
-
-	// Fill the column content.
-	add_filter(
-		'manage_alpaca_status_custom_column',
-		function ( $content, $column_name, $term_id ) {
-			if ( 'term_score' === $column_name ) {
-				$score   = get_term_meta( $term_id, 'term_score', true );
-				$content = '' !== $score ? intval( $score ) : '—';
-			}
-			return $content;
-		},
-		10,
-		3
-	);
-	add_filter(
-		'manage_edit-alpaca_status_sortable_columns',
-		function ( $sortable_columns ) {
-			$sortable_columns['term_score'] = 'term_score';
-			return $sortable_columns;
-		}
-	);
-
-	/**
-	 * Custom metabox for status taxonomy.
-	 * Inspired by: https://wordpress.stackexchange.com/questions/50077/display-a-custom-taxonomy-as-a-dropdown-on-the-edit-posts-page
-	 *
-	 * @param WP_Post $post Post object.
-	 */
-	function alpaca_status_metabox( $post ) {
-		$current_terms   = wp_get_post_terms( $post->ID, 'alpaca_status', array( 'fields' => 'ids' ) );
-		$current_term_id = ! empty( $current_terms ) ? $current_terms[0] : 0;
-
-		$terms = alpaca_get_statuses();
-
-		echo '<div class="statuses_radiolist">';
-		foreach ( $terms as $term ) {
-			$checked = ( $current_term_id === $term->term_id ) ? 'checked' : '';
-			echo '<label><input type="radio" name="tax_input[alpaca_status][]" value="' . esc_attr( $term->slug ) . '" ' . esc_attr( $checked ) . '/> ' . esc_html( $term->name ) . '</label><br>';
-		}
-		echo '</div>';
-	}
 }
+
+/**
+ * Allow duplicate comments on Alpaca issues.
+ *
+ * @param int|false $dupe_id     Duplicate comment ID if found, otherwise false.
+ * @param array     $commentdata Comment data array.
+ * @return int|false Duplicate comment ID or false to allow duplicate comment.
+ */
+function alpaca_allow_duplicate_issue_comments( $dupe_id, $commentdata ) {
+	$post_id = isset( $commentdata['comment_post_ID'] ) ? (int) $commentdata['comment_post_ID'] : 0;
+
+	if ( $post_id > 0 && 'alpaca_issue' === get_post_type( $post_id ) ) {
+		return false;
+	}
+
+	return $dupe_id;
+}
+add_filter( 'duplicate_comment_id', 'alpaca_allow_duplicate_issue_comments', 10, 2 );
 add_action( 'init', 'alpaca_register_cpts_and_taxonomies' );
 
 add_filter(
