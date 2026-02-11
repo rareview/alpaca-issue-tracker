@@ -475,6 +475,20 @@ const AlpacaIssue = ({
     setShowDeleteScreenshotConfirm(false);
     setLoading('screenshot', true);
     try {
+      const screenshotUrl =
+        issueDetails?.meta?.alpaca_screenshot || issueDetails?.meta?.screenshot;
+
+      if (screenshotUrl) {
+        await wp.apiFetch({
+          path: '/alpaca/v1/comment-attachments/delete',
+          method: 'POST',
+          data: {
+            issue_id: issueId,
+            url: screenshotUrl,
+          },
+        });
+      }
+
       await updateIssue(issueId, { meta: { screenshot: '' } });
 
       // Update local state to remove screenshot
@@ -498,7 +512,7 @@ const AlpacaIssue = ({
     } finally {
       setLoading('screenshot', false);
     }
-  }, [issueId, setIssueDetails, setLoading, showNotification]);
+  }, [issueDetails, issueId, setIssueDetails, setLoading, showNotification]);
 
   // Status progression
   const handleProgressIssue = useCallback(async () => {
