@@ -577,7 +577,7 @@ $core-font-stack:
   .alpaca-issue-main {
     .alpaca-issue-title-row {
       display: flex;
-      align-items: center;
+      align-items: baseline;
       gap: 8px;
 
       .alpaca-issue-title {
@@ -590,11 +590,18 @@ $core-font-stack:
       color: #ffb900;
       display: inline-flex;
       align-items: center;
+      background: transparent;
+      border: 0;
+      padding: 0;
+      cursor: pointer;
 
-      .dashicons {
-        width: 20px;
-        height: 20px;
-        font-size: 20px;
+      width: 20px;
+      height: 20px;
+      font-size: 20px;
+
+      &:disabled {
+        cursor: default;
+        opacity: 0.2;
       }
     }
 

@@ -18,6 +18,7 @@ import ErrorsTab from './issue/ErrorsTab';
 import AttachmentRow from './issue/AttachmentRow';
 import User from './User';
 import Time from './Time';
+import StarControl from './StarControl';
 import { useWatchlist } from '../context/WatchlistContext';
 
 /* THEN access WordPress globals */
@@ -181,7 +182,8 @@ const AlpacaIssue = ({
 
   const { allUsers, allUserObjects, userMap } = useUserManagement();
   const { loadingStates, setLoading } = useLoadingStates();
-  const { isWatched } = useWatchlist();
+  const { isWatched, toggleWatch, loading: isWatchlistLoading } =
+    useWatchlist();
 
   const [assignees, setAssignees] = useState([]);
   const [deadline, setDeadline] = useState(null);
@@ -199,6 +201,17 @@ const AlpacaIssue = ({
     useState(false);
 
   const isIssueWatched = !isCreating && issueId && isWatched(issueId);
+
+  const handleWatchToggle = useCallback(
+    (event) => {
+      event.stopPropagation();
+      if (isCreating || !issueId) {
+        return;
+      }
+      toggleWatch(issueId);
+    },
+    [isCreating, issueId, toggleWatch],
+  );
 
   const dismissSnackbar = useCallback((id) => {
     setSnackbars((prev) =>
@@ -819,20 +832,13 @@ const AlpacaIssue = ({
                       : ''
                   }
                 />
-                {isIssueWatched && (
-                  <span
+                {!isCreating && (
+                  <StarControl
                     className="alpaca-issue-watch-indicator"
-                    title={__('Starred in Watchlist', 'alpaca')}
-                    aria-label={__('Starred in Watchlist', 'alpaca')}
-                  >
-                    <span
-                      className="dashicons dashicons-star-filled"
-                      aria-hidden="true"
-                    />
-                    <span className="screen-reader-text">
-                      {__('Starred in Watchlist', 'alpaca')}
-                    </span>
-                  </span>
+                    watched={Boolean(isIssueWatched)}
+                    onToggle={handleWatchToggle}
+                    disabled={isWatchlistLoading}
+                  />
                 )}
               </div>
 

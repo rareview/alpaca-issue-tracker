@@ -1,9 +1,9 @@
 const { forwardRef } = wp.element;
-const { __ } = wp.i18n;
 import PropTypes from 'prop-types';
 const { Card, CardBody, CardFooter } = wp.components;
 const { Text = wp.components.__experimentalText } = wp.components;
 import { useWatchlist } from '../context/WatchlistContext';
+import StarControl from './StarControl';
 import '../utils/itemDatapoints';
 
 /**
@@ -73,22 +73,9 @@ const Item = forwardRef(
               <Text>{content}</Text>
             </div>
             <div className="alpaca-item-controls">
-              <button
-                type="button"
-                className={`dashicons ${
-                  watched ? 'dashicons-star-filled' : 'dashicons-star-empty'
-                }`}
-                onClick={handleWatchToggle}
-                aria-label={
-                  watched
-                    ? __('Remove from Watchlist', 'alpaca')
-                    : __('Add to Watchlist', 'alpaca')
-                }
-                title={
-                  watched
-                    ? __('Remove from Watchlist', 'alpaca')
-                    : __('Add to Watchlist', 'alpaca')
-                }
+              <StarControl
+                watched={watched}
+                onToggle={handleWatchToggle}
                 disabled={loading}
               />
             </div>
