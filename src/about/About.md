@@ -21,28 +21,38 @@ But just as WordPress is capable of much more than its base use-case of blogging
 
 ### Current Features and Future Plans
 
-```
-MVP FEATURE SET (this version)                              FIRST FULL RELEASE (already in development)
-==============================                              ===========================================
-Create Issues with/without context (inc screenshot)         Checklists and/or subtasks
-Customisable kanban board with drag-and-drop                'Starred Items' watchlists
-Add assignees and deadlines to issues                       Visible 'Tagging' of issues
-Add comments on issues (including basic Markdown)           Alternative views (eg table, swimlane)
-User actions create comments on Issues                      Comments pushed to external channels (eg Slack)
-Heavy use of Gutenberg components for UX consistency        Comments pulled from external activity (eg GitHub)
-WP-Admin Dashboard Widget                                   Board filtering
-Basic 'presence' indicator                                  Further collaboration / syncing
-                                                            Basic email notifications
-                                                            Basic user/role permission controls
-                                                            Additional attachments
+Beta 1 (Feb 2026):
 
-FUTURE PLANS                                                UNDER CONSIDERATION
-============                                                ===================
-Unified view across multiple projects                       AI analysis and developer support
-Store/backup Alpaca data in a different WP instance         Add Alpaca reporting tools to non-WordPress sites
-                                                            Cloud-hosted functions (eg multi browser testing)
-                                                            Cloud-hosted platform
-```
+☑︎ Create Issues with context (front end)
+☑︎ Create open Issues (back end)
+☑︎ Customisable kanban board with drag-and-drop
+☑︎ Add assignees and deadlines to issues
+☑︎ Add comments on issues (including basic Markdown)
+☑︎ User actions create comments on Issues
+☑︎ Heavy use of Gutenberg components for UX consistency
+☑︎ WP-Admin Dashboard Widget
+☑︎ Basic 'presence' indicator
+
+Beta 2 (coming soon):
+
+☑︎ Attach files of multiple filetypes to comments
+☑︎ Watchlist (Starred Items)
+
+In preparation:
+
+▢ 'Tagging' of issues with a manageable taxonomy
+▢ Comments pushed to external channels (eg Slack)
+▢ Activity pulled from external platforms (eg GitHub)
+▢ User notifications
+▢ UI refinement
+
+Longer-term:
+
+▢ Data storage in a different WP instance
+▢ Real-time collaboration / syncing
+▢ Consolidated multi-project view
+▢ AI-based issue analysis (and more?)
+▢ Make Alpaca available for other CMSes
 
 ---
 
