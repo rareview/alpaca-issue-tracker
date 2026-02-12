@@ -1,4 +1,5 @@
 const { forwardRef } = wp.element;
+const { __ } = wp.i18n;
 import PropTypes from 'prop-types';
 const { Card, CardBody, CardFooter } = wp.components;
 const { Text = wp.components.__experimentalText } = wp.components;
@@ -79,9 +80,15 @@ const Item = forwardRef(
                 }`}
                 onClick={handleWatchToggle}
                 aria-label={
-                  watched ? 'Remove from watchlist' : 'Add to watchlist'
+                  watched
+                    ? __('Remove from Watchlist', 'alpaca')
+                    : __('Add to Watchlist', 'alpaca')
                 }
-                title={watched ? 'Remove from watchlist' : 'Add to watchlist'}
+                title={
+                  watched
+                    ? __('Remove from Watchlist', 'alpaca')
+                    : __('Add to Watchlist', 'alpaca')
+                }
                 disabled={loading}
               />
             </div>
