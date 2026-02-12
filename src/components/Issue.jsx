@@ -18,6 +18,8 @@ import ErrorsTab from './issue/ErrorsTab';
 import AttachmentRow from './issue/AttachmentRow';
 import User from './User';
 import Time from './Time';
+import StarControl from './StarControl';
+import { useWatchlist } from '../context/WatchlistContext';
 
 /* THEN access WordPress globals */
 const { useState, useEffect, useRef, useMemo, useCallback, memo } = wp.element;
@@ -180,6 +182,8 @@ const AlpacaIssue = ({
 
   const { allUsers, allUserObjects, userMap } = useUserManagement();
   const { loadingStates, setLoading } = useLoadingStates();
+  const { isWatched, toggleWatch, loading: isWatchlistLoading } =
+    useWatchlist();
 
   const [assignees, setAssignees] = useState([]);
   const [deadline, setDeadline] = useState(null);
@@ -195,6 +199,19 @@ const AlpacaIssue = ({
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showDeleteScreenshotConfirm, setShowDeleteScreenshotConfirm] =
     useState(false);
+
+  const isIssueWatched = !isCreating && issueId && isWatched(issueId);
+
+  const handleWatchToggle = useCallback(
+    (event) => {
+      event.stopPropagation();
+      if (isCreating || !issueId) {
+        return;
+      }
+      toggleWatch(issueId);
+    },
+    [isCreating, issueId, toggleWatch],
+  );
 
   const dismissSnackbar = useCallback((id) => {
     setSnackbars((prev) =>
@@ -801,19 +818,29 @@ const AlpacaIssue = ({
           isCreating) && (
           <div className="alpaca-issue-details">
             <div className="alpaca-issue-main column">
-              <EditableTitle
-                isEditing={isEditingTitle}
-                title={editedTitle}
-                onEditStart={() => setIsEditingTitle(true)}
-                onChange={setEditedTitle}
-                onSave={handleTitleSave}
-                onCancel={handleTitleCancel}
-                placeholder={
-                  isCreating
-                    ? __('Enter a title to create issue…', 'alpaca')
-                    : ''
-                }
-              />
+              <div className="alpaca-issue-title-row">
+                <EditableTitle
+                  isEditing={isEditingTitle}
+                  title={editedTitle}
+                  onEditStart={() => setIsEditingTitle(true)}
+                  onChange={setEditedTitle}
+                  onSave={handleTitleSave}
+                  onCancel={handleTitleCancel}
+                  placeholder={
+                    isCreating
+                      ? __('Enter a title to create issue…', 'alpaca')
+                      : ''
+                  }
+                />
+                {!isCreating && (
+                  <StarControl
+                    className="alpaca-issue-watch-indicator"
+                    watched={Boolean(isIssueWatched)}
+                    onToggle={handleWatchToggle}
+                    disabled={isWatchlistLoading}
+                  />
+                )}
+              </div>
 
               {!isCreating && (
                 <div className="alpaca-issue-meta flexalign">

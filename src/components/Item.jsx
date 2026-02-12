@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 const { Card, CardBody, CardFooter } = wp.components;
 const { Text = wp.components.__experimentalText } = wp.components;
 import { useWatchlist } from '../context/WatchlistContext';
+import StarControl from './StarControl';
 import '../utils/itemDatapoints';
 
 /**
@@ -38,7 +39,7 @@ const Item = forwardRef(
     },
     ref,
   ) => {
-    const { isWatched } = useWatchlist();
+    const { isWatched, toggleWatch, loading } = useWatchlist();
     const watched = isWatched(id);
 
     const assigneeDataAttributes = assignees.reduce((acc, assignee) => {
@@ -49,6 +50,11 @@ const Item = forwardRef(
     }, {});
 
     const watchedClass = watched ? 'is-watched item-highlight' : '';
+
+    const handleWatchToggle = (event) => {
+      event.stopPropagation();
+      toggleWatch(id);
+    };
 
     return (
       // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
@@ -66,23 +72,13 @@ const Item = forwardRef(
             <div className="alpaca-item-content">
               <Text>{content}</Text>
             </div>
-            {/* <div className="alpaca-item-controls">
-              <div
-                className="dashicons dashicons-star-filled"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleWatch(id);
-                }}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.stopPropagation();
-                    toggleWatch(id);
-                  }
-                }}
+            <div className="alpaca-item-controls">
+              <StarControl
+                watched={watched}
+                onToggle={handleWatchToggle}
+                disabled={loading}
               />
-            </div> */}
+            </div>
           </div>
         </CardBody>
         <CardFooter size="xSmall" isBorderless>

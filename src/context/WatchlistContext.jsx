@@ -1,4 +1,4 @@
-const { createContext, useState, useEffect, useContext, useCallback } =
+const { createContext, useState, useEffect, useContext, useCallback, useRef } =
   wp.element;
 import PropTypes from 'prop-types';
 
@@ -14,12 +14,14 @@ export const WatchlistContext = createContext();
 export const WatchlistProvider = ({ children }) => {
   const [watchlist, setWatchlist] = useState([]);
   const [loading, setLoading] = useState(true);
+  const watchlistRef = useRef([]);
 
   const fetchWatchlist = useCallback(async () => {
     try {
       const response = await wp.apiFetch({ path: '/alpaca/v1/watchlist' });
       if (response.success && Array.isArray(response.watchlist)) {
         setWatchlist(response.watchlist);
+        watchlistRef.current = response.watchlist;
       }
     } catch (error) {
       console.error('Error fetching watchlist:', error);
@@ -32,36 +34,47 @@ export const WatchlistProvider = ({ children }) => {
     fetchWatchlist();
   }, [fetchWatchlist]);
 
-  const toggleWatch = useCallback(
-    async (issueId) => {
-      const numericId = Number(issueId);
-      const currentWatchlist = watchlist;
+  useEffect(() => {
+    watchlistRef.current = watchlist;
+  }, [watchlist]);
 
-      // Optimistically update the UI
-      const newWatchlist = currentWatchlist.includes(numericId)
-        ? currentWatchlist.filter((id) => id !== numericId)
-        : [...currentWatchlist, numericId];
-      setWatchlist(newWatchlist);
+  const toggleWatch = useCallback(async (issueId) => {
+    const numericId = Number(issueId);
+    if (numericId <= 0) {
+      return;
+    }
 
-      // Then send the request to the server
-      try {
-        const response = await wp.apiFetch({
-          path: '/alpaca/v1/watchlist',
-          method: 'POST',
-          data: { issue_id: numericId },
-        });
-        // If the server response is different, update the state again to ensure consistency
-        if (response.success && Array.isArray(response.watchlist)) {
-          setWatchlist(response.watchlist);
-        }
-      } catch (error) {
-        console.error('Error updating watchlist:', error);
-        // If the API call fails, revert the optimistic update
-        setWatchlist(currentWatchlist);
+    const currentWatchlist = watchlistRef.current;
+
+    // Optimistically update the UI
+    const newWatchlist = currentWatchlist.includes(numericId)
+      ? currentWatchlist.filter((id) => id !== numericId)
+      : [...currentWatchlist, numericId];
+    setWatchlist(newWatchlist);
+    watchlistRef.current = newWatchlist;
+
+    // Then send the request to the server
+    try {
+      const response = await wp.apiFetch({
+        path: '/alpaca/v1/watchlist',
+        method: 'POST',
+        data: {
+          issue_id: numericId,
+          watchlist: newWatchlist,
+        },
+      });
+      // If the server response is different, update the state again to ensure consistency
+      if (response.success && Array.isArray(response.watchlist)) {
+        setWatchlist(response.watchlist);
+        watchlistRef.current = response.watchlist;
       }
-    },
-    [watchlist],
-  );
+    } catch (error) {
+      console.error('Error updating watchlist:', error);
+      // If the API call fails, revert the optimistic update
+      setWatchlist(currentWatchlist);
+      watchlistRef.current = currentWatchlist;
+    }
+  }, []);
 
   const isWatched = (issueId) => {
     return watchlist.includes(Number(issueId));

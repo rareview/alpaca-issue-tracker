@@ -16,15 +16,16 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return array
  */
 function alpaca_get_dashboard_widget_data() {
+
 	$data = array(
 		'assignedToMe' => alpaca_get_assigned_to_me_issues(),
 		'newlyCreated' => alpaca_get_newly_created_issues(),
 		'overdue'      => alpaca_get_overdue_issues(),
+		'watchlist'    => alpaca_get_watchlist_issues(),
 	);
 
 	return $data;
 }
-
 /**
  * Get issues assigned to the current user.
  *
@@ -87,6 +88,7 @@ function alpaca_get_newly_created_issues() {
  * @return array
  */
 function alpaca_get_overdue_issues() {
+
 	$done_status    = alpaca_get_statuses( 'DESC' );
 	$done_status_id = ! empty( $done_status ) ? $done_status[0]->term_id : 0;
 
@@ -118,6 +120,48 @@ function alpaca_get_overdue_issues() {
 	return array_map( 'alpaca_prepare_issue_data', $posts );
 }
 
+/**
+ * Get issues in the current user's watchlist.
+ *
+ * @return array
+ */
+function alpaca_get_watchlist_issues() {
+
+	$user_id = get_current_user_id();
+	if ( ! $user_id ) {
+		return array();
+	}
+
+	$watchlist = get_user_meta( $user_id, 'alpaca_watchlist', true );
+	if ( ! is_array( $watchlist ) || empty( $watchlist ) ) {
+		return array();
+	}
+
+	$watchlist = array_map( 'intval', $watchlist );
+	$watchlist = array_filter(
+		$watchlist,
+		static function ( $post_id ) {
+
+			return $post_id > 0;
+		}
+	);
+	$watchlist = array_values( array_unique( $watchlist ) );
+
+	if ( empty( $watchlist ) ) {
+		return array();
+	}
+
+	$posts = get_posts(
+		array(
+			'post_type'      => 'alpaca_issue',
+			'post__in'       => $watchlist,
+			'orderby'        => 'post__in',
+			'posts_per_page' => -1,
+		)
+	);
+
+	return array_map( 'alpaca_prepare_issue_data', $posts );
+}
 /**
  * Prepare issue data for the widget.
  *
