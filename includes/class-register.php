@@ -105,6 +105,19 @@ class Register {
 		if ( function_exists( 'alpaca_prepare_datadump' ) ) {
 			wp_localize_script( self::PREFIX . '-script', 'alpacaDataDump', \alpaca_prepare_datadump() );
 		}
+
+		$idle_indicator_days = absint( get_option( 'alpaca_idle_indicator_days', 1 ) );
+		if ( $idle_indicator_days < 1 ) {
+			$idle_indicator_days = 1;
+		}
+
+		wp_localize_script(
+			self::PREFIX . '-script',
+			'alpacaSettings',
+			array(
+				'idleIndicatorDays' => $idle_indicator_days,
+			)
+		);
 	}
 
 	/**
@@ -115,12 +128,18 @@ class Register {
 	public function enqueue_admin_assets( $hook_suffix ) {
 		$this->enqueue_assets();
 
+		$idle_indicator_days = absint( get_option( 'alpaca_idle_indicator_days', 1 ) );
+		if ( $idle_indicator_days < 1 ) {
+			$idle_indicator_days = 1;
+		}
+
 		// Expose admin URL for use in JS (e.g., linking to admin pages).
 		wp_localize_script(
 			self::PREFIX . '-script',
 			'alpacaSettings',
 			array(
-				'adminUrl' => admin_url( 'admin.php' ),
+				'adminUrl'          => admin_url( 'admin.php' ),
+				'idleIndicatorDays' => $idle_indicator_days,
 			)
 		);
 
