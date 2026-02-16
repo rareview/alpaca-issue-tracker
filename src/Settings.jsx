@@ -1,5 +1,6 @@
 import StatusManager from './components/StatusManager';
 import EnableTestLogsControl from './components/EnableTestLogsControl';
+import LabelsManager from './components/LabelsManager';
 const { useState, useEffect, useCallback } = wp.element;
 const { __ } = wp.i18n;
 
@@ -9,17 +10,28 @@ const AlpacaSettings = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchStatuses = useCallback(() => {
-    setIsLoading(true);
+  const fetchStatuses = useCallback((options = {}) => {
+    const { silent = false } = options;
+
+    if (!silent) {
+      setIsLoading(true);
+    }
+
     wp.apiFetch({ path: '/alpaca/v1/statuses' })
       .then((data) => {
         setStatuses(data);
         setCurrentStatuses(data); // Initialize current order
-        setIsLoading(false);
+
+        if (!silent) {
+          setIsLoading(false);
+        }
       })
       .catch((err) => {
         setError(err.message);
-        setIsLoading(false);
+
+        if (!silent) {
+          setIsLoading(false);
+        }
       });
   }, []);
 
@@ -41,6 +53,10 @@ const AlpacaSettings = () => {
         error={error}
         onStatusesChange={handleStatusesOrderChange}
       />
+
+      <hr />
+
+      <LabelsManager />
 
       <hr />
 
