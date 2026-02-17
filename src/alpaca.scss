@@ -185,24 +185,13 @@ $core-font-stack:
   }
 
   #project-board-controls {
-    .project-board-filter {
-      width: fit-content;
-      background: transparent;
-      border-width: 0;
+    display: flex;
+    align-items: center;
+    gap: $spacegap;
+    width: 100%;
 
-      & > div {
-        flex: none;
-      }
-
-      &:focus-within {
-        outline: none;
-        box-shadow: none;
-        border-width: 0;
-      }
-    }
-
-    .components-combobox-control {
-      width: $control-width-large;
+    > :first-child {
+      margin-right: auto;
     }
   }
 

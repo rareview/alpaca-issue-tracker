@@ -17,16 +17,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 function alpaca_project_board_page() {
 	?>
 	<div class="wrap">
-	<h1 class="wp-heading-inline"><?php echo esc_html__( 'Project Board', 'alpaca' ); ?></h1>
-	<a id="alpaca-add-issue" href="#" class="page-title-action aria-button-if-js" role="button" aria-expanded="false"><?php echo esc_html__( 'Add Issue', 'alpaca' ); ?></a>
-	
-	<hr class="wp-header-end">
+        <h1 class="wp-heading-inline"><?php echo esc_html__( 'Project Board', 'alpaca' ); ?></h1>
+        <a id="alpaca-add-issue" href="#" class="page-title-action aria-button-if-js" role="button" aria-expanded="false"><?php echo esc_html__( 'Add Issue', 'alpaca' ); ?></a>
+        
+        <hr class="wp-header-end">
 
-	<div id="project-board-controls"></div>
+        <div id="project-board-controls">
+            <div id="alpaca-presence"></div>
+            <div id="project-board-controls-mount"></div>
+        </div>
 
-    <div id="alpaca-presence"></div>
-
-	<div id="project-board"></div>
+        <div id="project-board"></div>
 	</div>
 	<?php
 }

@@ -883,8 +883,6 @@ export function AlpacaBoard() {
 
   return (
     <>
-      <ul className="subsubsub"></ul>
-      <div id="project-board-controls-mount"></div>
       {hasNoStatuses ? (
         <div className="alpaca-empty-state">
           <Notice status="warning" isDismissible={false}>
