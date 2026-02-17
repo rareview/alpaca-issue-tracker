@@ -375,11 +375,23 @@ function SearchContainer() {
           <div className="alpaca-search-results-wrap">
             <div className="alpaca-items alpaca-search-items">
               {results.map((r) => {
+                const titleContent = (
+                  <span className="alpaca-search-title-wrap">
+                    <span className="alpaca-search-title-text">{r.title}</span>
+                    {r.status ? (
+                      <>
+                        {'\u00A0\u00A0'}
+                        <span className="alpaca-search-status-pill">{r.status}</span>
+                      </>
+                    ) : null}
+                  </span>
+                );
+
                 return (
                   <div key={r.id} className="alpaca-item">
                     <Item
                       id={parseInt(r.id, 10)}
-                      content={r.title}
+                      content={titleContent}
                       assignees={r.assignees}
                       commentCount={r.commentCount}
                       meta={r.meta}

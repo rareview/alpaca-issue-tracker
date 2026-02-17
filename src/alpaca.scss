@@ -1444,6 +1444,28 @@ $core-font-stack:
       max-height: 420px;
       overflow-y: auto;
     }
+
+    .alpaca-search-title-wrap {
+      display: inline;
+    }
+
+    .alpaca-search-title-text {
+      overflow-wrap: anywhere;
+    }
+
+    .alpaca-search-status-pill {
+      display: inline-block;
+      padding: 1px 8px;
+      border-radius: 999px;
+      border: 1px solid #b3b8bf;
+      background: $bgwhite;
+      color: #50575e;
+      font-size: 11px;
+      line-height: 1.4;
+      font-weight: 600;
+      white-space: nowrap;
+      vertical-align: baseline;
+    }
   }
 }
 
