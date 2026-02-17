@@ -127,6 +127,7 @@ function SearchContainer() {
   const [results, setResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [enableTestLogs, setEnableTestLogs] = useState(false);
+  const [popoverWidth, setPopoverWidth] = useState(300);
   const wrapperRef = useRef(null);
   const debounceRef = useRef(null);
   const requestIdRef = useRef(0);
@@ -348,9 +349,57 @@ function SearchContainer() {
     };
   }, [results]);
 
+  useEffect(() => {
+    if (typeof document === 'undefined' || !document.body) {
+      return undefined;
+    }
+
+    if (results && results.length > 0) {
+      document.body.classList.add('alpaca-search-active');
+    } else {
+      document.body.classList.remove('alpaca-search-active');
+    }
+
+    return () => {
+      document.body.classList.remove('alpaca-search-active');
+    };
+  }, [results]);
+
+  useEffect(() => {
+    const wrapperEl = wrapperRef.current;
+    if (!wrapperEl) {
+      return undefined;
+    }
+
+    const updateWidth = () => {
+      const rect = wrapperEl.getBoundingClientRect();
+      if (rect.width > 0) {
+        setPopoverWidth(Math.round(rect.width));
+      }
+    };
+
+    updateWidth();
+
+    if (typeof ResizeObserver === 'undefined') {
+      window.addEventListener('resize', updateWidth);
+      return () => {
+        window.removeEventListener('resize', updateWidth);
+      };
+    }
+
+    const observer = new ResizeObserver(updateWidth);
+    observer.observe(wrapperEl);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
+
   return (
     <div
-      className="alpaca-board-search"
+      className={`alpaca-board-search ${
+        results && results.length > 0 ? 'is-search-open' : ''
+      }`}
       ref={wrapperRef}
       style={{ position: 'relative', width: 300 }}
     >
@@ -366,6 +415,10 @@ function SearchContainer() {
         <Popover
           position="bottom left"
           className="alpaca-search-popover"
+          style={{
+            '--alpaca-search-popover-width': `${popoverWidth}px`,
+          }}
+          animate={false}
           focusOnMount={false}
           onClose={closePopover}
           onFocusOutside={closePopover}

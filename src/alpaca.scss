@@ -1434,15 +1434,29 @@ $core-font-stack:
   }
 
   .alpaca-search-popover {
+    z-index: 100003;
+    transition: none;
+
     .components-popover__content {
-      width: 300px;
+      width: var(--alpaca-search-popover-width, 300px);
       padding: 8px;
       background: $container-bg;
+      border: 1px solid #c3c4c7;
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+      box-shadow:
+        0 12px 28px rgb(0 0 0 / 18%),
+        0 2px 8px rgb(0 0 0 / 10%);
+      margin-top: -14px;
+      transform-origin: top center;
+      transition: none;
     }
 
     .alpaca-search-results-wrap {
       max-height: 420px;
       overflow-y: auto;
+      transform-origin: top center;
+      animation: alpaca-search-popover-in 240ms cubic-bezier(0.22, 1, 0.36, 1);
     }
 
     .alpaca-search-title-wrap {
@@ -1465,6 +1479,29 @@ $core-font-stack:
       font-weight: 600;
       white-space: nowrap;
       vertical-align: baseline;
+    }
+  }
+
+  .alpaca-board-search.is-search-open {
+    z-index: 100002;
+
+    .components-search-control__input,
+    .components-search-control input[type='search'] {
+      border-color: #2271b1;
+      box-shadow: 0 0 0 1px #2271b1;
+      background: $bgwhite;
+    }
+  }
+
+  @keyframes alpaca-search-popover-in {
+    0% {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+
+    100% {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
 }
@@ -1911,6 +1948,34 @@ $core-font-stack:
       }
     }
   }
+}
+
+.wp-admin.alpaca-search-active #project-board .alpaca-wrap {
+  opacity: 0.82;
+  filter: saturate(0.88);
+  transition:
+    opacity 160ms ease,
+    filter 160ms ease;
+}
+
+.wp-admin #project-board-controls .alpaca-board-search {
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 6px;
+  background: transparent;
+  box-shadow: 0 0 0 rgb(0 0 0 / 0%);
+  transition:
+    box-shadow 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.wp-admin #project-board-controls .alpaca-board-search.is-search-open {
+  background: $bgwhite;
+  border-color: #c3c4c7;
+  box-shadow:
+    0 10px 26px rgb(0 0 0 / 16%),
+    0 2px 8px rgb(0 0 0 / 10%);
 }
 
 /*
