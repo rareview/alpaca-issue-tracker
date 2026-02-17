@@ -1432,6 +1432,19 @@ $core-font-stack:
       padding: 1em;
     }
   }
+
+  .alpaca-search-popover {
+    .components-popover__content {
+      width: 300px;
+      padding: 8px;
+      background: $container-bg;
+    }
+
+    .alpaca-search-results-wrap {
+      max-height: 420px;
+      overflow-y: auto;
+    }
+  }
 }
 
 /*

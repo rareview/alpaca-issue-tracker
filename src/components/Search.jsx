@@ -1,24 +1,151 @@
-const { useState, useEffect, useRef } = wp.element;
+const { useState, useEffect, useRef, useMemo } = wp.element;
 const { SearchControl, Popover } = wp.components;
 const { decodeEntities } = wp.htmlEntities;
+const { __ } = wp.i18n;
+const { doAction } = wp.hooks;
+import Item from './Item';
+import { WatchlistProvider } from '../context/WatchlistContext';
 
-// Dynamic search control: queries issues and issue comments (comment_type=issuecomment)
-// when the query is at least 3 characters. Results shown in a Popover as a
-// simple list of up to 10 unique Issues. Clicking a result updates the URL
-// `issue` query param so the board can respond (no wiring to open modal here).
+const MIN_QUERY_LENGTH = 3;
+const MAX_RESULTS = 10;
+
+/**
+ * Strip all HTML tags from a string.
+ *
+ * @param {string} maybeHtml Potentially HTML content.
+ * @return {string} Clean plain text.
+ */
+function stripHtml(maybeHtml) {
+  if (!maybeHtml) {
+    return '';
+  }
+
+  return String(maybeHtml).replace(/<[^>]*>/g, '').trim();
+}
+
+/**
+ * Resolve the best available issue title from REST payloads.
+ *
+ * @param {Object} post Issue object from REST.
+ * @return {string} A readable issue title.
+ */
+function getIssueTitle(post) {
+  if (!post) {
+    return '';
+  }
+
+  if (post.title) {
+    if (typeof post.title === 'string' && post.title.trim()) {
+      return post.title.trim();
+    }
+    if (post.title.rendered && post.title.rendered.trim()) {
+      return decodeEntities(stripHtml(post.title.rendered));
+    }
+  }
+
+  if (post.content && post.content.rendered) {
+    const fromContent = decodeEntities(stripHtml(post.content.rendered));
+    if (fromContent) {
+      return fromContent;
+    }
+  }
+
+  return post.post_title || post.post_content || post.slug || post.post_name || '';
+}
+
+/**
+ * Build a lookup table from preloaded board data.
+ *
+ * @param {Array} boardData Board data from PHP.
+ * @return {Map} Map keyed by issue ID.
+ */
+function buildBoardIssueIndex(boardData) {
+  const index = new Map();
+
+  if (!Array.isArray(boardData)) {
+    return index;
+  }
+
+  boardData.forEach((column) => {
+    const status = column && column.title ? decodeEntities(column.title) : '';
+    const issues = column && Array.isArray(column.issues) ? column.issues : [];
+
+    issues.forEach((issue) => {
+      if (!issue || typeof issue.id === 'undefined' || issue.id === null) {
+        return;
+      }
+
+      const id = String(issue.id);
+      const meta = issue.meta && typeof issue.meta === 'object' ? issue.meta : {};
+      const labels = Array.isArray(meta.labels)
+        ? meta.labels.filter((label) => typeof label === 'string')
+        : [];
+      let commentCount = 0;
+      if (typeof issue.comment_count === 'number') {
+        commentCount = issue.comment_count;
+      } else if (typeof issue.commentCount === 'number') {
+        commentCount = issue.commentCount;
+      }
+
+      index.set(id, {
+        status,
+        commentCount,
+        labels,
+        assignees: Array.isArray(issue.assignees) ? issue.assignees : [],
+        meta,
+        postDate: issue.post_date || issue.postDate || '',
+      });
+    });
+  });
+
+  return index;
+}
+
+function buildResultItem(post, boardIssueIndex) {
+  const id = String(post.id);
+  const fromBoard = boardIssueIndex.get(id);
+  return {
+    id,
+    title: getIssueTitle(post) || id,
+    slug: post.slug || post.post_name || post.name || null,
+    status: fromBoard && fromBoard.status ? fromBoard.status : '',
+    commentCount:
+      fromBoard && typeof fromBoard.commentCount === 'number'
+        ? fromBoard.commentCount
+        : 0,
+    labels:
+      fromBoard && Array.isArray(fromBoard.labels) ? fromBoard.labels : [],
+    assignees:
+      fromBoard && Array.isArray(fromBoard.assignees) ? fromBoard.assignees : [],
+    meta: fromBoard && fromBoard.meta ? fromBoard.meta : {},
+    postDate: fromBoard && fromBoard.postDate ? fromBoard.postDate : '',
+  };
+}
 
 function SearchContainer() {
   const [value, setValue] = useState('');
   const [results, setResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [enableTestLogs, setEnableTestLogs] = useState(false);
-  const debounceRef = useRef(null);
   const wrapperRef = useRef(null);
+  const debounceRef = useRef(null);
+  const requestIdRef = useRef(0);
+  const boardIssueIndex = useMemo(
+    () =>
+      buildBoardIssueIndex(
+        typeof window !== 'undefined' ? window.alpacaBoardData : [],
+      ),
+    [],
+  );
 
   useEffect(() => {
-    wp.apiFetch({ path: '/wp/v2/settings' }).then((settings) => {
-      setEnableTestLogs(settings.alpaca_enable_test_logs === '1');
-    });
+    wp.apiFetch({ path: '/wp/v2/settings' })
+      .then((settings) => {
+        setEnableTestLogs(settings.alpaca_enable_test_logs === '1');
+      })
+      .catch(() => {
+        setEnableTestLogs(false);
+      });
 
     const handleTestLogSettingChange = (newVal) => {
       setEnableTestLogs(newVal);
@@ -36,34 +163,41 @@ function SearchContainer() {
   }, []);
 
   useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
 
-    if (!value || value.length < 3) {
+    const query = value ? value.trim() : '';
+    if (!query || query.length < MIN_QUERY_LENGTH) {
       setResults([]);
       setIsSearching(false);
       return undefined;
     }
 
     debounceRef.current = setTimeout(() => {
+      const requestId = requestIdRef.current + 1;
+      requestIdRef.current = requestId;
       setIsSearching(true);
-      const q = value.trim();
+      const q = query;
 
       const issuesPromise = wp
         .apiFetch({
-          path: `/wp/v2/alpaca_issue?search=${encodeURIComponent(q)}&per_page=10`,
+          path: `/wp/v2/alpaca_issue?search=${encodeURIComponent(q)}&per_page=${MAX_RESULTS}&_fields=id,title,content,slug,post_name,post_title,post_content`,
         })
         .catch(() => []);
 
       const commentsPromise = wp
         .apiFetch({
-          // request a larger page and match other comment-listing calls used elsewhere
-          path: `/wp/v2/comments?search=${encodeURIComponent(q)}&per_page=100&comment_type=issuecomment&type=issuecomment&context=edit&_embed=author&show_hidden_comments=1`,
+          path: `/wp/v2/comments?search=${encodeURIComponent(q)}&per_page=100&comment_type=issuecomment&type=issuecomment&context=edit&show_hidden_comments=1&_fields=post,comment_post_ID`,
         })
         .catch(() => []);
 
       Promise.all([issuesPromise, commentsPromise])
-        .then(async ([issues, comments]) => {
-          // Debug: log raw responses when test logs are enabled
+        .then(([issues, comments]) => {
+          if (requestId !== requestIdRef.current) {
+            return;
+          }
+
           if (enableTestLogs) {
             // eslint-disable-next-line no-console
             console.log('Alpaca search raw responses', {
@@ -72,220 +206,147 @@ function SearchContainer() {
               comments,
             });
           }
-          const seen = new Map();
+
+          const seen = new Set();
           const normalized = [];
 
-          // Normalize issue posts from /wp/v2/alpaca_issue
-          const issuesArray = issues || [];
-          const stripHtml = (s) =>
-            s
-              ? String(s)
-                  .replace(/<[^>]*>/g, '')
-                  .trim()
-              : '';
-
-          const getTitle = (post) => {
-            if (!post) return '';
-
-            // Prefer WP REST `title.rendered` when present
-            if (post.title) {
-              if (typeof post.title === 'string' && post.title.trim())
-                return post.title;
-              if (post.title.rendered && post.title.rendered.trim())
-                return decodeEntities(stripHtml(post.title.rendered));
-            }
-
-            // Fallback: use content.rendered stripped of HTML (many responses include content)
-            if (post.content && post.content.rendered) {
-              const fromContent = stripHtml(post.content.rendered);
-              if (fromContent) return decodeEntities(fromContent);
-            }
-
-            return post.post_title || post.slug || post.post_name || '';
-          };
-
-          issuesArray.forEach((post) => {
+          (issues || []).forEach((post) => {
             const id = String(post.id);
-            if (seen.has(id)) return;
-            seen.set(id, true);
-            const title = getTitle(post) || id;
-            const slug = post.slug || post.post_name || post.name || null;
-            normalized.push({ id, title, slug });
+            if (seen.has(id)) {
+              return;
+            }
+            seen.add(id);
+            normalized.push(buildResultItem(post, boardIssueIndex));
           });
 
-          // If any normalized entries lack a proper human title (e.g. equal to slug or id),
-          // attempt to fetch authoritative issue data from the Alpaca endpoint.
-          const missingTitleIds = normalized
-            .filter((n) => !n.title || n.title === n.slug || n.title === n.id)
-            .map((n) => n.id)
-            .slice(0, 10);
-
-          if (missingTitleIds.length > 0) {
-            const fetches = missingTitleIds.map((id) =>
-              wp.apiFetch({ path: `/alpaca/v1/get/${id}` }).catch(() => null),
-            );
-            const fetched = await Promise.all(fetches);
-            // Debug: log Alpaca endpoint responses for missing titles
-            if (enableTestLogs) {
-              // eslint-disable-next-line no-console
-              console.log('Alpaca /alpaca/v1/get responses (missing titles)', {
-                missingTitleIds,
-                fetched,
-              });
-            }
-
-            const extractTitleFromResp = (r) => {
-              if (!r) return null;
-              if (r.issue && r.issue.title) return r.issue.title;
-              if (r.title) return r.title;
-              if (r.post_data && r.post_data.post_title)
-                return r.post_data.post_title;
-              if (
-                r.post_data &&
-                r.post_data.post_title &&
-                typeof r.post_data.post_title === 'string'
-              )
-                return r.post_data.post_title;
-              return null;
-            };
-
-            const extractSlugFromResp = (r) => {
-              if (!r) return null;
-              if (r.issue && r.issue.slug) return r.issue.slug;
-              if (r.slug) return r.slug;
-              if (r.post_data && r.post_data.post_name)
-                return r.post_data.post_name;
-              return null;
-            };
-
-            fetched.forEach((resp) => {
-              if (!resp) return;
-              const postId =
-                resp.post_id ||
-                (resp.issue && resp.issue.id) ||
-                (resp.post_data && (resp.post_data.ID || resp.post_data.id)) ||
-                null;
-              if (!postId) return;
-              const titleFromResp = extractTitleFromResp(resp);
-              const slugFromResp = extractSlugFromResp(resp);
-              const id = String(postId);
-              const idx = normalized.findIndex((n) => n.id === id);
-              if (idx !== -1 && titleFromResp) {
-                normalized[idx] = {
-                  ...normalized[idx],
-                  title: titleFromResp,
-                  slug: normalized[idx].slug || slugFromResp,
-                };
-              }
-            });
-          }
-
-          // For comments, collect parent post IDs and fetch missing issues
           const commentPostIds = Array.from(
             new Set(
               (comments || [])
                 .map(
                   (c) =>
-                    c &&
-                    (c.post || c.comment_post_ID || c.comment_post_ID === 0
-                      ? c.post || c.comment_post_ID
-                      : null),
+                    c && (c.post || c.comment_post_ID)
+                      ? String(c.post || c.comment_post_ID)
+                      : null,
                 )
                 .filter(Boolean),
             ),
-          ).filter(Boolean);
+          );
+
           const missingIds = commentPostIds
-            .filter((id) => !seen.has(String(id)))
-            .slice(0, 10);
+            .filter((id) => !seen.has(id))
+            .slice(0, MAX_RESULTS);
 
-          if (missingIds.length > 0) {
-            // Fetch authoritative Alpaca issue data for comment parents
-            const fetches = missingIds.map((id) =>
-              wp.apiFetch({ path: `/alpaca/v1/get/${id}` }).catch(() => null),
-            );
-            const fetched = await Promise.all(fetches);
-            // Debug: log Alpaca endpoint responses for comment parents
-            if (enableTestLogs) {
-              // eslint-disable-next-line no-console
-              console.log('Alpaca /alpaca/v1/get responses (comment parents)', {
-                missingIds,
-                fetched,
-              });
-            }
-            const extractTitleFromResp = (r) => {
-              if (!r) return null;
-              if (r.issue && r.issue.title) return r.issue.title;
-              if (r.title) return r.title;
-              if (r.post_data && r.post_data.post_title)
-                return r.post_data.post_title;
-              return null;
-            };
-
-            const extractSlugFromResp = (r) => {
-              if (!r) return null;
-              if (r.issue && r.issue.slug) return r.issue.slug;
-              if (r.slug) return r.slug;
-              if (r.post_data && r.post_data.post_name)
-                return r.post_data.post_name;
-              return null;
-            };
-
-            fetched.forEach((resp) => {
-              if (!resp) return;
-              const postId =
-                resp.post_id ||
-                (resp.issue && resp.issue.id) ||
-                (resp.post_data && (resp.post_data.ID || resp.post_data.id)) ||
-                null;
-              if (!postId) return;
-              const id = String(postId);
-              if (seen.has(id)) return;
-              seen.set(id, true);
-              const titleFromResp = extractTitleFromResp(resp);
-              const slugFromResp = extractSlugFromResp(resp);
-              const title = titleFromResp || id;
-              const slug = slugFromResp || null;
-              normalized.push({ id, title, slug });
-            });
+          if (missingIds.length === 0) {
+            setResults(normalized.slice(0, MAX_RESULTS));
+            return;
           }
 
-          // Limit to max 10 results
-          setResults(normalized.slice(0, 10));
+          const includePath = `/wp/v2/alpaca_issue?include=${encodeURIComponent(
+            missingIds.join(','),
+          )}&per_page=${MAX_RESULTS}&_fields=id,title,content,slug,post_name,post_title,post_content`;
+
+          wp.apiFetch({ path: includePath })
+            .then((extraIssues) => {
+              if (requestId !== requestIdRef.current) {
+                return;
+              }
+
+              (extraIssues || []).forEach((post) => {
+                const id = String(post.id);
+                if (seen.has(id)) {
+                  return;
+                }
+                seen.add(id);
+                normalized.push(buildResultItem(post, boardIssueIndex));
+              });
+
+              setResults(normalized.slice(0, MAX_RESULTS));
+            })
+            .catch(() => {
+              if (requestId !== requestIdRef.current) {
+                return;
+              }
+              setResults(normalized.slice(0, MAX_RESULTS));
+            });
         })
         .catch((err) => {
-          // eslint-disable-next-line no-console
-          console.error('Search error', err);
+          if (requestId !== requestIdRef.current) {
+            return;
+          }
+          if (enableTestLogs) {
+            // eslint-disable-next-line no-console
+            console.error('Search error', err);
+          }
           setResults([]);
         })
         .finally(() => {
-          setIsSearching(false);
+          if (requestId === requestIdRef.current) {
+            setIsSearching(false);
+          }
         });
     }, 300);
 
     return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
     };
-  }, [value, enableTestLogs]);
+  }, [value, enableTestLogs, boardIssueIndex]);
 
   const handleResultClick = (e, item) => {
     e.preventDefault();
-    try {
-      const url = new URL(window.location.href);
-      const valueToSet = item.slug || item.id;
-      url.searchParams.set('issue', valueToSet);
-      window.history.pushState({}, '', url.toString());
-    } catch (err) {
-      const params = new URLSearchParams(window.location.search);
-      params.set('issue', item.slug || item.id);
-      const base = window.location.pathname + window.location.hash;
-      const search = params.toString();
-      window.history.pushState({}, '', base + (search ? `?${search}` : ''));
-    }
+    doAction('alpaca.openIssue', {
+      id: item.id,
+      slug: item.slug,
+    });
 
-    // close results
     setResults([]);
     setValue('');
   };
+
+  /**
+   * Close the search results popover.
+   */
+  const closePopover = () => {
+    setResults([]);
+  };
+
+  useEffect(() => {
+    if (!results || results.length === 0) {
+      return undefined;
+    }
+
+    const handleDocumentPointerDown = (event) => {
+      const target = event.target;
+      if (!target) {
+        return;
+      }
+
+      const wrapperEl = wrapperRef.current;
+      if (wrapperEl && wrapperEl.contains(target)) {
+        return;
+      }
+
+      const popoverEl = document.querySelector('.alpaca-search-popover');
+      if (popoverEl && popoverEl.contains(target)) {
+        return;
+      }
+
+      closePopover();
+    };
+
+    document.addEventListener('mousedown', handleDocumentPointerDown, true);
+    document.addEventListener('touchstart', handleDocumentPointerDown, true);
+
+    return () => {
+      document.removeEventListener('mousedown', handleDocumentPointerDown, true);
+      document.removeEventListener(
+        'touchstart',
+        handleDocumentPointerDown,
+        true,
+      );
+    };
+  }, [results]);
 
   return (
     <div
@@ -294,10 +355,10 @@ function SearchContainer() {
       style={{ position: 'relative', width: 300 }}
     >
       <SearchControl
-        label={wp.i18n.__('Search', 'alpaca')}
+        label={__('Search', 'alpaca')}
         value={value}
         onChange={(val) => setValue(val)}
-        placeholder={wp.i18n.__('Search')}
+        placeholder={__('Search', 'alpaca')}
         isBusy={isSearching}
       />
 
@@ -306,35 +367,30 @@ function SearchContainer() {
           position="bottom left"
           className="alpaca-search-popover"
           focusOnMount={false}
+          onClose={closePopover}
+          onFocusOutside={closePopover}
+          onEscape={closePopover}
+          anchor={wrapperRef.current}
         >
-          <div style={{ width: 300, maxHeight: 320, overflowY: 'auto' }}>
-            <ul style={{ listStyle: 'none', margin: 0, padding: '8px' }}>
+          <div className="alpaca-search-results-wrap">
+            <div className="alpaca-items alpaca-search-items">
               {results.map((r) => {
-                const adminUrlBase =
-                  typeof window !== 'undefined' &&
-                  window.alpacaSettings &&
-                  window.alpacaSettings.adminUrl
-                    ? window.alpacaSettings.adminUrl
-                    : 'admin.php';
-
-                const issueParam = r.slug || r.post_name || r.id;
-                const href = `${adminUrlBase}?page=project-board&issue=${encodeURIComponent(
-                  issueParam,
-                )}`;
-
                 return (
-                  <li key={r.id} style={{ padding: '6px 0' }}>
-                    <a
-                      href={href}
-                      target="_self"
+                  <div key={r.id} className="alpaca-item">
+                    <Item
+                      id={parseInt(r.id, 10)}
+                      content={r.title}
+                      assignees={r.assignees}
+                      commentCount={r.commentCount}
+                      meta={r.meta}
+                      postDate={r.postDate}
+                      className="alpaca-item-inner"
                       onClick={(e) => handleResultClick(e, r)}
-                    >
-                      {r.title}
-                    </a>
-                  </li>
+                    />
+                  </div>
                 );
               })}
-            </ul>
+            </div>
           </div>
         </Popover>
       )}
@@ -347,7 +403,12 @@ function mountSearch(selector) {
     const el = document.querySelector(selector);
     if (!el) return;
     const { render } = wp.element;
-    render(<SearchContainer />, el);
+    render(
+      <WatchlistProvider>
+        <SearchContainer />
+      </WatchlistProvider>,
+      el,
+    );
   } catch (e) {
     // eslint-disable-next-line no-console
     console.error('Error mounting Alpaca search control:', e);
