@@ -66,9 +66,9 @@ const createEmptyLabelRow = (key = '') => {
 const LabelsManager = () => {
   const [labels, setLabels] = useState([]);
   const [isFetching, setIsFetching] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
   const [savingKeys, setSavingKeys] = useState([]);
   const [saveError, setSaveError] = useState('');
+  const isSaving = savingKeys.length > 0;
 
   const fetchLabels = useCallback(() => {
     setIsFetching(true);
@@ -135,14 +135,15 @@ const LabelsManager = () => {
   const updateSlotRow = useCallback((slotIndex, field, value) => {
     setLabels((previousLabels) => {
       const nextLabels = [...previousLabels];
+      for (let index = 0; index <= slotIndex; index += 1) {
+        if (!nextLabels[index]) {
+          nextLabels[index] = createEmptyLabelRow(`slot-${index}`);
+        }
+      }
+
       const currentRow = nextLabels[slotIndex];
 
       if (!currentRow) {
-        const newRow = {
-          ...createEmptyLabelRow(`slot-${slotIndex}`),
-          [field]: field === 'color' ? normalizeLabelColor(value) : value,
-        };
-        nextLabels.splice(slotIndex, 0, newRow);
         return nextLabels;
       }
 
@@ -206,7 +207,6 @@ const LabelsManager = () => {
       }
 
       setSaveError('');
-      setIsSaving(true);
       setSavingKeys((previousKeys) => [...previousKeys, key]);
 
       try {
@@ -261,7 +261,6 @@ const LabelsManager = () => {
         setSavingKeys((previousKeys) =>
           previousKeys.filter((existingKey) => existingKey !== key),
         );
-        setIsSaving(false);
       }
     },
     [deleteLabelTerm, savingKeys],
@@ -279,7 +278,6 @@ const LabelsManager = () => {
       }
 
       setSaveError('');
-      setIsSaving(true);
       setSavingKeys((previousKeys) => [...previousKeys, key]);
 
       try {
@@ -307,7 +305,6 @@ const LabelsManager = () => {
         setSavingKeys((previousKeys) =>
           previousKeys.filter((existingKey) => existingKey !== key),
         );
-        setIsSaving(false);
       }
     },
     [deleteLabelTerm, savingKeys],

@@ -1608,26 +1608,6 @@ $core-font-stack:
       color: #b32d2e;
     }
 
-    .alpaca-settings-list-header {
-      align-items: center;
-      background: #f7f7f7;
-      border-bottom: 1px solid $greyborder;
-      display: grid;
-      gap: 10px;
-      grid-template-columns: minmax(0, 1fr) auto;
-      padding: 8px 12px;
-
-      .alpaca-settings-list-header-cell {
-        font-size: 14px;
-        font-weight: 600;
-      }
-
-      .alpaca-settings-list-header-actions,
-      .actions-cell {
-        text-align: right;
-      }
-    }
-
     .alpaca-settings-list-body {
       display: flex;
       flex-direction: column;

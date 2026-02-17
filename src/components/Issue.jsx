@@ -305,6 +305,44 @@ const AlpacaIssue = ({
       );
   }, [showNotification]);
 
+  const getAssigneeNamesFromIssue = useCallback(
+    (details) => {
+      if (
+        !details ||
+        !details.taxonomies ||
+        !Array.isArray(details.taxonomies.assignee)
+      ) {
+        return [];
+      }
+
+      return details.taxonomies.assignee.map((term) => {
+        const userObject = allUserObjects.find(
+          (user) => user.slug === term.slug,
+        );
+        if (userObject) {
+          return userObject.name;
+        }
+
+        return term.name;
+      });
+    },
+    [allUserObjects],
+  );
+
+  const getLabelIdsFromIssue = useCallback((details) => {
+    if (
+      !details ||
+      !details.taxonomies ||
+      !Array.isArray(details.taxonomies.label)
+    ) {
+      return [];
+    }
+
+    return details.taxonomies.label
+      .map((term) => Number(term.term_id))
+      .filter((value) => value > 0);
+  }, []);
+
   useEffect(() => {
     if (isOpen && isCreating) {
       setIsEditingTitle(true);
@@ -328,35 +366,27 @@ const AlpacaIssue = ({
 
   // Initialize issue data
   useEffect(() => {
-    if (
-      !isCreating &&
-      issueDetails &&
-      issueDetails.success &&
-      allUserObjects.length > 0
-    ) {
-      setDeadline(issueDetails.meta.deadline || null);
-      setIsHighPriority(
-        issueDetails.meta.alpaca_high_priority === '1' ||
-          issueDetails.meta.alpaca_high_priority === 1 ||
-          issueDetails.meta.alpaca_high_priority === true,
-      );
-
-      // Assignees
-      const assigneeNames =
-        issueDetails.taxonomies?.assignee?.map((t) => {
-          const userObj = allUserObjects.find((u) => u.slug === t.slug);
-          return userObj ? userObj.name : t.name;
-        }) || [];
-      setAssignees(assigneeNames);
-      const labelIds =
-        issueDetails.taxonomies?.label?.map((term) => Number(term.term_id)) ||
-        [];
-      setSelectedLabelIds(labelIds.filter((value) => value > 0));
-
-      // Title
-      setEditedTitle(decodeEntities(issueDetails.post_data.post_content));
+    if (isCreating || !issueDetails || !issueDetails.success) {
+      return;
     }
-  }, [issueDetails, allUserObjects, isCreating]);
+
+    setDeadline(
+      issueDetails.meta.alpaca_deadline || issueDetails.meta.deadline || null,
+    );
+    setIsHighPriority(
+      issueDetails.meta.alpaca_high_priority === '1' ||
+        issueDetails.meta.alpaca_high_priority === 1 ||
+        issueDetails.meta.alpaca_high_priority === true,
+    );
+    setAssignees(getAssigneeNamesFromIssue(issueDetails));
+    setSelectedLabelIds(getLabelIdsFromIssue(issueDetails));
+    setEditedTitle(decodeEntities(issueDetails.post_data.post_content));
+  }, [
+    getAssigneeNamesFromIssue,
+    getLabelIdsFromIssue,
+    isCreating,
+    issueDetails,
+  ]);
 
   // Update assignees API call
   const updateAssignees = useCallback(
@@ -436,44 +466,6 @@ const AlpacaIssue = ({
     },
     [isCreating, issueId, issueDetails, setLoading, showNotification],
   );
-
-  useEffect(() => {
-    if (issueDetails && issueDetails.success && allUserObjects.length > 0) {
-      setDeadline(
-        issueDetails.meta.alpaca_deadline || issueDetails.meta.deadline || null,
-      );
-
-      // Handle assignees
-      if (
-        issueDetails.taxonomies &&
-        issueDetails.taxonomies.assignee &&
-        Array.isArray(issueDetails.taxonomies.assignee)
-      ) {
-        const assigneeNames = issueDetails.taxonomies.assignee.map((t) => {
-          const userObject = allUserObjects.find(
-            (user) => user.slug === t.slug,
-          );
-          return userObject ? userObject.name : t.name;
-        });
-        setAssignees(assigneeNames);
-      } else {
-        setAssignees([]);
-      }
-
-      if (
-        issueDetails.taxonomies &&
-        issueDetails.taxonomies.label &&
-        Array.isArray(issueDetails.taxonomies.label)
-      ) {
-        const labelIds = issueDetails.taxonomies.label
-          .map((term) => Number(term.term_id))
-          .filter((value) => value > 0);
-        setSelectedLabelIds(labelIds);
-      } else {
-        setSelectedLabelIds([]);
-      }
-    }
-  }, [issueDetails, allUserObjects]);
 
   // Event handlers
   const handleAssigneeChange = useCallback(

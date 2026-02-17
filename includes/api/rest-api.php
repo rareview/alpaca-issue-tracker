@@ -1098,6 +1098,57 @@ function alpaca_normalize_label_color( $color ) {
 }
 
 /**
+ * Read request params from JSON payload, with fallback to generic params.
+ *
+ * @param WP_REST_Request $request REST request object.
+ * @return array<string, mixed> Request parameters.
+ */
+function alpaca_get_request_params( WP_REST_Request $request ) {
+	$params = $request->get_json_params();
+	if ( ! is_array( $params ) ) {
+		$params = $request->get_params();
+	}
+
+	if ( ! is_array( $params ) ) {
+		return array();
+	}
+
+	return $params;
+}
+
+/**
+ * Build a standard response for missing label terms.
+ *
+ * @return WP_REST_Response REST response.
+ */
+function alpaca_label_not_found_response() {
+	return alpaca_rest_response(
+		'',
+		array(
+			'success' => false,
+			'message' => esc_html__( 'Label not found.', 'alpaca' ),
+		),
+		404
+	);
+}
+
+/**
+ * Build a standard response for missing label names.
+ *
+ * @return WP_REST_Response REST response.
+ */
+function alpaca_label_name_required_response() {
+	return alpaca_rest_response(
+		'',
+		array(
+			'success' => false,
+			'message' => esc_html__( 'Label name is required.', 'alpaca' ),
+		),
+		400
+	);
+}
+
+/**
  * Build a consistent REST response payload for a label term.
  *
  * @param WP_Term $term Label term.
@@ -1148,21 +1199,11 @@ function alpaca_get_labels_callback() {
  * @return WP_REST_Response REST response.
  */
 function alpaca_create_label_callback( WP_REST_Request $request ) {
-	$params = $request->get_json_params();
-	if ( ! is_array( $params ) ) {
-		$params = $request->get_params();
-	}
+	$params = alpaca_get_request_params( $request );
 
 	$name = isset( $params['name'] ) ? sanitize_text_field( (string) $params['name'] ) : '';
 	if ( '' === trim( $name ) ) {
-		return alpaca_rest_response(
-			'',
-			array(
-				'success' => false,
-				'message' => esc_html__( 'Label name is required.', 'alpaca' ),
-			),
-			400
-		);
+		return alpaca_label_name_required_response();
 	}
 
 	$color = isset( $params['color'] ) ? alpaca_normalize_label_color( (string) $params['color'] ) : '#172b4d';
@@ -1215,32 +1256,15 @@ function alpaca_update_label_callback( WP_REST_Request $request ) {
 	$term    = get_term( $term_id, 'alpaca_label' );
 
 	if ( ! $term || is_wp_error( $term ) ) {
-		return alpaca_rest_response(
-			'',
-			array(
-				'success' => false,
-				'message' => esc_html__( 'Label not found.', 'alpaca' ),
-			),
-			404
-		);
+		return alpaca_label_not_found_response();
 	}
 
-	$params = $request->get_json_params();
-	if ( ! is_array( $params ) ) {
-		$params = $request->get_params();
-	}
+	$params = alpaca_get_request_params( $request );
 
 	if ( isset( $params['name'] ) ) {
 		$name = sanitize_text_field( (string) $params['name'] );
 		if ( '' === trim( $name ) ) {
-			return alpaca_rest_response(
-				'',
-				array(
-					'success' => false,
-					'message' => esc_html__( 'Label name is required.', 'alpaca' ),
-				),
-				400
-			);
+			return alpaca_label_name_required_response();
 		}
 
 		$updated = wp_update_term(
@@ -1302,14 +1326,7 @@ function alpaca_delete_label_callback( WP_REST_Request $request ) {
 	$term    = get_term( $term_id, 'alpaca_label' );
 
 	if ( ! $term || is_wp_error( $term ) ) {
-		return alpaca_rest_response(
-			'',
-			array(
-				'success' => false,
-				'message' => esc_html__( 'Label not found.', 'alpaca' ),
-			),
-			404
-		);
+		return alpaca_label_not_found_response();
 	}
 
 	$deleted = wp_delete_term( $term_id, 'alpaca_label' );

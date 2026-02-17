@@ -20,46 +20,6 @@ SettingsList.defaultProps = {
   className: '',
 };
 
-export const SettingsListHeader = ({ children, className }) => {
-  return (
-    <div
-      className={`alpaca-settings-list-header ${className}`.trim()}
-      role="row"
-    >
-      {children}
-    </div>
-  );
-};
-
-SettingsListHeader.propTypes = {
-  children: PropTypes.node.isRequired,
-  className: PropTypes.string,
-};
-
-SettingsListHeader.defaultProps = {
-  className: '',
-};
-
-export const SettingsListHeaderCell = ({ children, className }) => {
-  return (
-    <div
-      className={`alpaca-settings-list-header-cell ${className}`.trim()}
-      role="columnheader"
-    >
-      {children}
-    </div>
-  );
-};
-
-SettingsListHeaderCell.propTypes = {
-  children: PropTypes.node.isRequired,
-  className: PropTypes.string,
-};
-
-SettingsListHeaderCell.defaultProps = {
-  className: '',
-};
-
 export const SettingsListBody = ({
   children,
   bodyRef,
