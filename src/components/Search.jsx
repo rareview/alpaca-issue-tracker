@@ -20,8 +20,8 @@ function SearchContainer() {
       setEnableTestLogs(settings.alpaca_enable_test_logs === '1');
     });
 
-    const handleTestLogSettingChange = (value) => {
-      setEnableTestLogs(value);
+    const handleTestLogSettingChange = (newVal) => {
+      setEnableTestLogs(newVal);
     };
 
     wp.hooks.addAction(
@@ -165,9 +165,9 @@ function SearchContainer() {
                 (resp.issue && resp.issue.id) ||
                 (resp.post_data && (resp.post_data.ID || resp.post_data.id)) ||
                 null;
+              if (!postId) return;
               const titleFromResp = extractTitleFromResp(resp);
               const slugFromResp = extractSlugFromResp(resp);
-              if (!postId) return;
               const id = String(postId);
               const idx = normalized.findIndex((n) => n.id === id);
               if (idx !== -1 && titleFromResp) {
@@ -237,12 +237,12 @@ function SearchContainer() {
                 (resp.issue && resp.issue.id) ||
                 (resp.post_data && (resp.post_data.ID || resp.post_data.id)) ||
                 null;
-              const titleFromResp = extractTitleFromResp(resp);
-              const slugFromResp = extractSlugFromResp(resp);
               if (!postId) return;
               const id = String(postId);
               if (seen.has(id)) return;
               seen.set(id, true);
+              const titleFromResp = extractTitleFromResp(resp);
+              const slugFromResp = extractSlugFromResp(resp);
               const title = titleFromResp || id;
               const slug = slugFromResp || null;
               normalized.push({ id, title, slug });
@@ -265,7 +265,7 @@ function SearchContainer() {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [value]);
+  }, [value, enableTestLogs]);
 
   const handleResultClick = (e, item) => {
     e.preventDefault();
@@ -324,7 +324,11 @@ function SearchContainer() {
 
                 return (
                   <li key={r.id} style={{ padding: '6px 0' }}>
-                    <a href={href} target="_self">
+                    <a
+                      href={href}
+                      target="_self"
+                      onClick={(e) => handleResultClick(e, r)}
+                    >
                       {r.title}
                     </a>
                   </li>
