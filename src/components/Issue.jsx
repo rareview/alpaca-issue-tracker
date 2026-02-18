@@ -305,9 +305,38 @@ const SubissueAssigneeControl = memo(
 );
 
 const SubissueTitleField = memo(
-  ({ value, placeholder, disabled, onChange, onFocus, onBlur, onKeyDown }) => {
+  ({
+    value,
+    placeholder,
+    disabled,
+    autoFocusOnMount,
+    onChange,
+    onFocus,
+    onBlur,
+    onKeyDown,
+  }) => {
     const textareaRef = useRef(null);
     useAutoExpandTextarea(textareaRef, value, true);
+
+    useEffect(() => {
+      if (!autoFocusOnMount || !textareaRef.current) {
+        return undefined;
+      }
+
+      const focusTextarea = () => {
+        if (
+          textareaRef.current &&
+          typeof textareaRef.current.focus === 'function'
+        ) {
+          textareaRef.current.focus();
+        }
+      };
+
+      const animationFrameId = window.requestAnimationFrame(focusTextarea);
+      return () => {
+        window.cancelAnimationFrame(animationFrameId);
+      };
+    }, [autoFocusOnMount]);
 
     return (
       <TextareaControl
@@ -1596,10 +1625,10 @@ const AlpacaIssue = ({
                                     />
                                     <SubissueTitleField
                                       value={subissue.title}
-                                      placeholder={__(
-                                        'Enter subissue title…',
-                                        'alpaca',
-                                      )}
+                                      placeholder={__('Enter title…', 'alpaca')}
+                                      autoFocusOnMount={
+                                        subissue.isDraft && subissue.isEditing
+                                      }
                                       onChange={(newValue) =>
                                         handleSubissueDraftChange(
                                           subissue.id,
