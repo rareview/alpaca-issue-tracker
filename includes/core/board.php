@@ -55,6 +55,63 @@ add_action( 'edit_comment', 'alpaca_clear_board_cache' );
 add_action( 'delete_comment', 'alpaca_clear_board_cache' );
 
 /**
+ * Get checklist progress grouped by parent issue IDs.
+ *
+ * @param array $parent_issue_ids Parent issue post IDs.
+ * @return array<int, array<string, int>> Progress keyed by parent ID.
+ */
+function alpaca_get_subissue_progress_by_parent( $parent_issue_ids ) {
+	$parent_issue_ids = array_map( 'intval', (array) $parent_issue_ids );
+	$parent_issue_ids = array_filter(
+		$parent_issue_ids,
+		static function ( $parent_issue_id ) {
+			return $parent_issue_id > 0;
+		}
+	);
+	$parent_issue_ids = array_values( array_unique( $parent_issue_ids ) );
+	if ( empty( $parent_issue_ids ) ) {
+		return [];
+	}
+
+	$subissue_ids = get_posts(
+		[
+			'post_type'        => 'alpaca_issue',
+			'posts_per_page'   => -1,
+			'post_parent__in'  => $parent_issue_ids,
+			'fields'           => 'ids',
+			'suppress_filters' => false,
+		]
+	);
+
+	if ( empty( $subissue_ids ) ) {
+		return [];
+	}
+
+	$progress_by_parent = [];
+	foreach ( $subissue_ids as $subissue_id ) {
+		$subissue_id = (int) $subissue_id;
+		$parent_id   = (int) wp_get_post_parent_id( $subissue_id );
+		if ( $parent_id <= 0 ) {
+			continue;
+		}
+
+		if ( ! isset( $progress_by_parent[ $parent_id ] ) ) {
+			$progress_by_parent[ $parent_id ] = [
+				'total'     => 0,
+				'completed' => 0,
+			];
+		}
+
+		$progress_by_parent[ $parent_id ]['total']++;
+		if ( ! empty( get_post_meta( $subissue_id, 'alpaca_subissue_completed', true ) ) ) {
+			$progress_by_parent[ $parent_id ]['completed']++;
+		}
+	}
+
+	return $progress_by_parent;
+}
+
+/**
  * Get board data with all issues organized by status.
  *
  * @return array Board data with statuses and issues.
@@ -102,6 +159,7 @@ function alpaca_get_board_data() {
 	);
 
 	$post_ids = wp_list_pluck( $posts, 'ID' );
+	$subissue_progress_by_parent = alpaca_get_subissue_progress_by_parent( $post_ids );
 
 	// Group posts by status term.
 	$posts_by_status = [];
@@ -200,12 +258,11 @@ function alpaca_get_board_data() {
 			$meta_vals_for_card['alpaca_high_priority'] = (bool) get_post_meta( $post->ID, 'alpaca_high_priority', true );
 			$meta_vals_for_card['lastActivity'] = get_post_meta( $post->ID, 'alpaca_lastActivity', true );
 
-			$checklist_json = get_post_meta( $post->ID, 'alpaca_checklist', true );
-			if ( $checklist_json ) {
-				$decoded_checklist = json_decode( $checklist_json, true );
-				if ( is_array( $decoded_checklist ) ) {
-					$meta_vals_for_card['checklist'] = $decoded_checklist;
-				}
+			if ( ! empty( $subissue_progress_by_parent[ $post->ID ] ) ) {
+				$meta_vals_for_card['subissue_progress'] = [
+					'total'     => (int) $subissue_progress_by_parent[ $post->ID ]['total'],
+					'completed' => (int) $subissue_progress_by_parent[ $post->ID ]['completed'],
+				];
 			}
 
 			$issues[] = [

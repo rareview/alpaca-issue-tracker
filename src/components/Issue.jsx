@@ -585,6 +585,27 @@ const AlpacaIssue = ({
     }
   }, [issueDetails, allUserObjects, isCreating]);
 
+  useEffect(() => {
+    if (isCreating || !issueId) {
+      return;
+    }
+
+    const savedSubissues = subissues.filter(
+      (subissue) => !subissue?.isDraft && subissue?.id,
+    );
+    const completedSubissues = savedSubissues.filter(
+      (subissue) => subissue?.isCompleted,
+    );
+
+    wp.hooks.doAction('alpaca.subissueProgressChanged', {
+      issueId,
+      progress: {
+        total: savedSubissues.length,
+        completed: completedSubissues.length,
+      },
+    });
+  }, [isCreating, issueId, subissues]);
+
   // Update assignees API call
   const updateAssignees = useCallback(
     async (updatedIssueId, slugs, newAssignees, added, removed) => {

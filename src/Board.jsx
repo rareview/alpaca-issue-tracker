@@ -294,7 +294,10 @@ export function AlpacaBoard() {
     );
   }, []);
 
-  const handleChecklistChange = useCallback((issueId, newChecklist) => {
+  const handleSubissueProgressChange = useCallback((issueId, progress) => {
+    const total = Number(progress?.total);
+    const completed = Number(progress?.completed);
+
     setContainers((prevContainers) =>
       prevContainers.map((container) => {
         const itemIndex = container.items.findIndex(
@@ -310,7 +313,11 @@ export function AlpacaBoard() {
           ...newItems[itemIndex],
           meta: {
             ...newItems[itemIndex].meta,
-            checklist: newChecklist,
+            // eslint-disable-next-line camelcase
+            subissue_progress: {
+              total: Number.isFinite(total) ? total : 0,
+              completed: Number.isFinite(completed) ? completed : 0,
+            },
           },
         };
 
@@ -346,14 +353,14 @@ export function AlpacaBoard() {
   }, []);
 
   useEffect(() => {
-    const checklistChangedCallback = (data) => {
-      const { issueId, checklist } = data;
-      handleChecklistChange(issueId, checklist);
-    };
-
     const priorityUpdatedCallback = (data) => {
       const { issueId, isHighPriority } = data;
       handlePriorityChange(issueId, isHighPriority);
+    };
+
+    const subissueProgressChangedCallback = (data) => {
+      const { issueId, progress } = data;
+      handleSubissueProgressChange(issueId, progress);
     };
 
     const lastActivityChangedCallback = (data) => {
@@ -362,15 +369,15 @@ export function AlpacaBoard() {
     };
 
     wp.hooks.addAction(
-      'alpaca.checklistChanged',
-      'alpaca/boardmain',
-      checklistChangedCallback,
-    );
-
-    wp.hooks.addAction(
       'alpaca.priorityUpdated',
       'alpaca/boardmain',
       priorityUpdatedCallback,
+    );
+
+    wp.hooks.addAction(
+      'alpaca.subissueProgressChanged',
+      'alpaca/boardmain',
+      subissueProgressChangedCallback,
     );
 
     wp.hooks.addAction(
@@ -380,11 +387,18 @@ export function AlpacaBoard() {
     );
 
     return () => {
-      wp.hooks.removeAction('alpaca.checklistChanged', 'alpaca/boardmain');
       wp.hooks.removeAction('alpaca.priorityUpdated', 'alpaca/boardmain');
+      wp.hooks.removeAction(
+        'alpaca.subissueProgressChanged',
+        'alpaca/boardmain',
+      );
       wp.hooks.removeAction('alpaca.lastActivityChanged', 'alpaca/boardmain');
     };
-  }, [handleChecklistChange, handlePriorityChange, handleLastActivityChange]);
+  }, [
+    handlePriorityChange,
+    handleSubissueProgressChange,
+    handleLastActivityChange,
+  ]);
 
   const moveAllItemsToNextContainer = (sourceContainerId) => {
     const containersCopy = containers.map((c) => ({

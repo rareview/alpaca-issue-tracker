@@ -4,6 +4,7 @@ import User from '../components/User';
 import CommentIcon from '../components/icons/CommentIcon';
 import CalendarIcon from '../components/icons/CalendarIcon';
 import PriorityIcon from '../components/icons/PriorityIcon';
+import Check2SquareIcon from '../components/icons/Check2SquareIcon';
 
 /**
  * Filter to add priority badge to item datapoints.
@@ -83,6 +84,36 @@ export const addCommentCountDatapoint = (originalContent, itemProps) => {
         <div className="alpaca-item-icon alpaca-item-comment-count">
           <CommentIcon />
           {commentCount}
+        </div>
+      </>
+    );
+  }
+  return originalContent;
+};
+
+/**
+ * Filter to add checklist progress to item datapoints.
+ *
+ * @param {JSX.Element|null} originalContent The original content of the filter.
+ * @param {Object}           itemProps       Props passed to the Item component.
+ * @return {JSX.Element|null} The checklist progress JSX or null.
+ */
+export const addChecklistProgressDatapoint = (originalContent, itemProps) => {
+  const subissueProgress = itemProps?.meta?.subissue_progress;
+  const subissueTotal = Number(subissueProgress?.total);
+  const subissueCompleted = Number(subissueProgress?.completed);
+
+  if (
+    Number.isFinite(subissueTotal) &&
+    Number.isFinite(subissueCompleted) &&
+    subissueTotal > 0
+  ) {
+    return (
+      <>
+        {originalContent}
+        <div className="alpaca-item-icon alpaca-item-checklist-progress">
+          <Check2SquareIcon />
+          {`${subissueCompleted}/${subissueTotal}`}
         </div>
       </>
     );
@@ -224,6 +255,12 @@ wp.hooks.addFilter(
   'alpaca.item.datapoints',
   'alpaca/item/addCommentCountDatapoint',
   addCommentCountDatapoint,
+);
+
+wp.hooks.addFilter(
+  'alpaca.item.datapoints',
+  'alpaca/item/addChecklistProgressDatapoint',
+  addChecklistProgressDatapoint,
 );
 
 wp.hooks.addFilter(
