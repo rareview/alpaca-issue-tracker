@@ -35,15 +35,15 @@ const stripHtmlAndMarkdown = (input) => {
 };
 
 /**
- * Safely format a subtask title for comments.
+ * Safely format a subissue title for comments.
  *
- * @param {Object} subtask Subtask object.
- * @return {string} Formatted subtask title.
+ * @param {Object} subissue Subissue object.
+ * @return {string} Formatted subissue title.
  */
-const getSubtaskLabel = (subtask) => {
-  const title = subtask?.title || subtask?.content || '';
+const getSubissueLabel = (subissue) => {
+  const title = subissue?.title || subissue?.content || '';
   const cleanedTitle = stripHtmlAndMarkdown(title).trim();
-  return cleanedTitle || 'Untitled subtask';
+  return cleanedTitle || 'Untitled subissue';
 };
 
 /**
@@ -265,13 +265,13 @@ addAction(
 );
 
 addAction(
-  'alpaca.subtaskCreated',
-  'alpaca/addSubtaskCreatedComment',
-  async (issue, subtask) => {
+  'alpaca.subissueCreated',
+  'alpaca/addSubissueCreatedComment',
+  async (issue, subissue) => {
     const currentUser = await getUser();
-    const actionClass = ['subtask-created'];
-    const subtaskLabel = getSubtaskLabel(subtask);
-    const commentContent = `Subtask **${subtaskLabel}** created by ${generateAssigneeSpan(
+    const actionClass = ['subissue-created'];
+    const subissueLabel = getSubissueLabel(subissue);
+    const commentContent = `Checklist item **${subissueLabel}** created by ${generateAssigneeSpan(
       currentUser,
     )}`;
 
@@ -280,14 +280,14 @@ addAction(
 );
 
 addAction(
-  'alpaca.subtaskCompletionToggled',
-  'alpaca/addSubtaskCompletionComment',
-  async (issue, subtask, isCompleted) => {
+  'alpaca.subissueCompletionToggled',
+  'alpaca/addSubissueCompletionComment',
+  async (issue, subissue, isCompleted) => {
     const currentUser = await getUser();
-    const actionClass = ['subtask-completion-changed'];
-    const subtaskLabel = getSubtaskLabel(subtask);
+    const actionClass = ['subissue-completion-changed'];
+    const subissueLabel = getSubissueLabel(subissue);
     const stateLabel = isCompleted ? 'completed' : 'reopened';
-    const commentContent = `Subtask **${subtaskLabel}** marked as **${stateLabel}** by ${generateAssigneeSpan(
+    const commentContent = `Checklist item **${subissueLabel}** marked as **${stateLabel}** by ${generateAssigneeSpan(
       currentUser,
     )}`;
 
@@ -296,20 +296,20 @@ addAction(
 );
 
 addAction(
-  'alpaca.subtaskAssigneeChanged',
-  'alpaca/addSubtaskAssigneeComment',
-  async (issue, subtask, user, isAssigned) => {
+  'alpaca.subissueAssigneeChanged',
+  'alpaca/addSubissueAssigneeComment',
+  async (issue, subissue, user, isAssigned) => {
     const currentUser = await getUser();
     const actionText = isAssigned ? 'assigned to' : 'unassigned from';
     const actionClass = [
-      'subtask-assignee-changed',
+      'subissue-assignee-changed',
       isAssigned ? 'action-add' : 'action-remove',
     ];
-    const subtaskLabel = getSubtaskLabel(subtask);
+    const subissueLabel = getSubissueLabel(subissue);
     const targetUserLabel = user
       ? generateAssigneeSpan(user, true)
       : __('Unknown user', 'alpaca');
-    const commentContent = `${targetUserLabel} was ${actionText} subtask **${subtaskLabel}** by ${generateAssigneeSpan(
+    const commentContent = `${targetUserLabel} was ${actionText} checklist item **${subissueLabel}** by ${generateAssigneeSpan(
       currentUser,
     )}`;
 
@@ -318,32 +318,34 @@ addAction(
 );
 
 addAction(
-  'alpaca.subtaskPromoted',
-  'alpaca/addSubtaskPromotedComment',
+  'alpaca.subissuePromoted',
+  'alpaca/addSubissuePromotedComment',
   async (payload) => {
-    const { parentIssue, promotedIssue, subtask } = payload || {};
+    const { parentIssue, promotedIssue, subissue } = payload || {};
     const currentUser = await getUser();
-    const actionClass = ['subtask-promoted'];
-    const subtaskLabel = getSubtaskLabel(subtask);
+    const actionClass = ['subissue-promoted'];
+    const subissueLabel = getSubissueLabel(subissue);
 
     const parentTitle = stripHtmlAndMarkdown(parentIssue?.title || '').trim();
     const parentLabel = parentTitle || __('Unknown issue', 'alpaca');
     const parentIssueLink = getIssueLinkLabel(parentIssue, parentLabel);
 
-    const promotedId = promotedIssue?.id || subtask?.id;
-    const promotedTitle = stripHtmlAndMarkdown(promotedIssue?.title || '').trim();
+    const promotedId = promotedIssue?.id || subissue?.id;
+    const promotedTitle = stripHtmlAndMarkdown(
+      promotedIssue?.title || '',
+    ).trim();
     const promotedLabel = promotedTitle || __('Issue', 'alpaca');
     const promotedIssueLink = getIssueLinkLabel(
       {
-        slug: promotedIssue?.slug || subtask?.slug || '',
+        slug: promotedIssue?.slug || subissue?.slug || '',
       },
       promotedLabel,
     );
 
-    const parentComment = `Subtask **${subtaskLabel}** was promoted to issue ${promotedIssueLink} by ${generateAssigneeSpan(
+    const parentComment = `Checklist item **${subissueLabel}** was promoted to issue ${promotedIssueLink} by ${generateAssigneeSpan(
       currentUser,
     )}`;
-    const promotedComment = `Issue created from checklist subtask **${subtaskLabel}** on ${parentIssueLink} by ${generateAssigneeSpan(
+    const promotedComment = `Issue created from checklist item **${subissueLabel}** on ${parentIssueLink} by ${generateAssigneeSpan(
       currentUser,
     )}`;
 
@@ -358,13 +360,13 @@ addAction(
 );
 
 addAction(
-  'alpaca.subtaskDeleted',
-  'alpaca/addSubtaskDeletedComment',
-  async (issue, subtask) => {
+  'alpaca.subissueDeleted',
+  'alpaca/addSubissueDeletedComment',
+  async (issue, subissue) => {
     const currentUser = await getUser();
-    const actionClass = ['subtask-deleted'];
-    const subtaskLabel = getSubtaskLabel(subtask);
-    const commentContent = `Subtask **${subtaskLabel}** deleted by ${generateAssigneeSpan(
+    const actionClass = ['subissue-deleted'];
+    const subissueLabel = getSubissueLabel(subissue);
+    const commentContent = `Checklist item **${subissueLabel}** deleted by ${generateAssigneeSpan(
       currentUser,
     )}`;
 

@@ -796,15 +796,15 @@ function alpaca_restore_default_statuses_callback() {
 }
 
 /**
- * Format a subtask issue for API responses.
+ * Format a subissue issue for API responses.
  *
- * @param WP_Post $post Subtask post object.
- * @return array Formatted subtask data.
+ * @param WP_Post $post Subissue post object.
+ * @return array Formatted subissue data.
  */
-function alpaca_get_subtask_response_data( WP_Post $post ) {
-	$subtask_id = (int) $post->ID;
+function alpaca_get_subissue_response_data( WP_Post $post ) {
+	$subissue_id = (int) $post->ID;
 	$assignees  = [];
-	$terms      = wp_get_object_terms( $subtask_id, 'alpaca_assignee', [ 'fields' => 'all' ] );
+	$terms      = wp_get_object_terms( $subissue_id, 'alpaca_assignee', [ 'fields' => 'all' ] );
 
 	if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) {
 		foreach ( $terms as $term ) {
@@ -818,7 +818,7 @@ function alpaca_get_subtask_response_data( WP_Post $post ) {
 		}
 	}
 
-	$status_terms = wp_get_object_terms( $subtask_id, 'alpaca_status', [ 'fields' => 'all' ] );
+	$status_terms = wp_get_object_terms( $subissue_id, 'alpaca_status', [ 'fields' => 'all' ] );
 	$status_data  = [];
 
 	if ( ! is_wp_error( $status_terms ) && ! empty( $status_terms ) ) {
@@ -835,25 +835,25 @@ function alpaca_get_subtask_response_data( WP_Post $post ) {
 	}
 
 	return [
-		'id'           => $subtask_id,
+		'id'           => $subissue_id,
 		'slug'         => (string) $post->post_name,
 		'title'        => (string) $post->post_title,
 		'content'      => (string) $post->post_content,
 		'post_parent'  => (int) $post->post_parent,
-		'is_completed' => ! empty( get_post_meta( $subtask_id, 'alpaca_subtask_completed', true ) ),
+		'is_completed' => ! empty( get_post_meta( $subissue_id, 'alpaca_subissue_completed', true ) ),
 		'assignees'    => $assignees,
 		'status'       => $status_data,
 	];
 }
 
 /**
- * Get all subtasks belonging to an issue.
+ * Get all subissues belonging to an issue.
  *
  * @param int $issue_id Parent issue post ID.
- * @return array Formatted subtasks data.
+ * @return array Formatted subissues data.
  */
-function alpaca_get_subtasks_for_issue( $issue_id ) {
-	$subtasks = get_children(
+function alpaca_get_subissues_for_issue( $issue_id ) {
+	$subissues = get_children(
 		[
 			'post_parent'    => (int) $issue_id,
 			'post_type'      => 'alpaca_issue',
@@ -864,28 +864,28 @@ function alpaca_get_subtasks_for_issue( $issue_id ) {
 		]
 	);
 
-	if ( empty( $subtasks ) ) {
+	if ( empty( $subissues ) ) {
 		return [];
 	}
 
-	$formatted_subtasks = [];
-	foreach ( $subtasks as $subtask ) {
-		$formatted_subtasks[] = alpaca_get_subtask_response_data( $subtask );
+	$formatted_subissues = [];
+	foreach ( $subissues as $subissue ) {
+		$formatted_subissues[] = alpaca_get_subissue_response_data( $subissue );
 	}
 
-	return $formatted_subtasks;
+	return $formatted_subissues;
 }
 
 /**
- * Register subtask create endpoint.
+ * Register subissue create endpoint.
  */
-function alpaca_register_subtask_endpoint() {
+function alpaca_register_subissue_endpoint() {
 	register_rest_route(
 		'alpaca/v1',
-		'/subtasks',
+		'/subissues',
 		[
 			'methods'             => 'POST',
-			'callback'            => 'alpaca_create_subtask_callback',
+			'callback'            => 'alpaca_create_subissue_callback',
 			'permission_callback' => function () {
 				return \Alpaca\Inc\Helpers::user_can( 'create_issue' );
 			},
@@ -906,15 +906,15 @@ function alpaca_register_subtask_endpoint() {
 		]
 	);
 }
-add_action( 'rest_api_init', 'alpaca_register_subtask_endpoint' );
+add_action( 'rest_api_init', 'alpaca_register_subissue_endpoint' );
 
 /**
- * Create a subtask issue under a parent issue.
+ * Create a subissue issue under a parent issue.
  *
  * @param WP_REST_Request $request REST request object.
- * @return WP_REST_Response REST response with created subtask data.
+ * @return WP_REST_Response REST response with created subissue data.
  */
-function alpaca_create_subtask_callback( WP_REST_Request $request ) {
+function alpaca_create_subissue_callback( WP_REST_Request $request ) {
 	$payload = $request->get_json_params();
 	$payload = is_array( $payload ) ? $payload : [];
 
@@ -938,7 +938,7 @@ function alpaca_create_subtask_callback( WP_REST_Request $request ) {
 			'',
 			[
 				'success' => false,
-				'message' => esc_html__( 'Subtask title is required.', 'alpaca' ),
+				'message' => esc_html__( 'Subissue title is required.', 'alpaca' ),
 			],
 			400
 		);
@@ -955,13 +955,13 @@ function alpaca_create_subtask_callback( WP_REST_Request $request ) {
 		'comment_status' => 'open',
 	];
 
-	$subtask_id = wp_insert_post( $post_args, true );
-	if ( is_wp_error( $subtask_id ) || 0 === (int) $subtask_id ) {
+	$subissue_id = wp_insert_post( $post_args, true );
+	if ( is_wp_error( $subissue_id ) || 0 === (int) $subissue_id ) {
 		return alpaca_rest_response(
 			'',
 			[
 				'success' => false,
-				'message' => esc_html__( 'Failed to create subtask.', 'alpaca' ),
+				'message' => esc_html__( 'Failed to create subissue.', 'alpaca' ),
 			],
 			500
 		);
@@ -969,17 +969,17 @@ function alpaca_create_subtask_callback( WP_REST_Request $request ) {
 
 	$parent_status_ids = wp_get_post_terms( $parent_id, 'alpaca_status', [ 'fields' => 'ids' ] );
 	if ( ! is_wp_error( $parent_status_ids ) && ! empty( $parent_status_ids ) ) {
-		wp_set_post_terms( $subtask_id, alpaca_to_int_ids( $parent_status_ids ), 'alpaca_status', false );
+		wp_set_post_terms( $subissue_id, alpaca_to_int_ids( $parent_status_ids ), 'alpaca_status', false );
 	}
 
-	$subtask_post = get_post( $subtask_id );
+	$subissue_post = get_post( $subissue_id );
 
 	return alpaca_rest_response(
-		'subtask_create',
+		'subissue_create',
 		[
 			'success' => true,
-			'message' => esc_html__( 'Subtask created successfully.', 'alpaca' ),
-			'subtask' => alpaca_get_subtask_response_data( $subtask_post ),
+			'message' => esc_html__( 'Subissue created successfully.', 'alpaca' ),
+			'subissue' => alpaca_get_subissue_response_data( $subissue_post ),
 		],
 		200
 	);
@@ -1077,7 +1077,7 @@ function alpaca_get_issue_data_callback( WP_REST_Request $request ) {
 			'count'   => true,
 		]
 	);
-	$subtasks           = alpaca_get_subtasks_for_issue( $issue_id );
+	$subissues           = alpaca_get_subissues_for_issue( $issue_id );
 
 	return alpaca_rest_response(
 		'',
@@ -1088,7 +1088,7 @@ function alpaca_get_issue_data_callback( WP_REST_Request $request ) {
 			'post_data'     => $post_data,
 			'meta'          => $formatted_meta,
 			'taxonomies'    => $terms_data,
-			'subtasks'      => $subtasks,
+			'subissues'      => $subissues,
 			'comment_count' => (int) $issue_comment_count,
 		],
 		200

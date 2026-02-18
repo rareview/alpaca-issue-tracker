@@ -16,9 +16,9 @@ export const createIssue = (data) => {
   });
 };
 
-export const createSubtask = (data) => {
+export const createSubissue = (data) => {
   return wp.apiFetch({
-    path: '/alpaca/v1/subtasks',
+    path: '/alpaca/v1/subissues',
     method: 'POST',
     data,
   });

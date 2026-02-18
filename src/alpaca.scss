@@ -869,11 +869,11 @@ $core-font-stack:
   /*
      * 4.5 - Checklists
    */
-  .alpaca-subtasks {
+  .alpaca-subissues {
     padding: 2px 0;
   }
 
-  .alpaca-subtasks-list {
+  .alpaca-subissues-list {
     list-style: none;
     margin: 0 0 4px 0;
     padding: 0;
@@ -882,17 +882,17 @@ $core-font-stack:
     gap: 0;
   }
 
-  li.alpaca-subtasks-item {
+  li.alpaca-subissues-item {
     position: relative;
     margin-bottom: 0;
 
-    &.is-completed .alpaca-subtasks-text-control textarea {
+    &.is-completed .alpaca-subissues-text-control textarea {
       text-decoration: line-through;
       color: $greytext;
     }
   }
 
-  .alpaca-subtasks-main {
+  .alpaca-subissues-main {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto auto auto;
     column-gap: 8px;
@@ -900,7 +900,7 @@ $core-font-stack:
     width: 100%;
   }
 
-  .alpaca-subtasks-text-control {
+  .alpaca-subissues-text-control {
     min-width: 0;
     width: 100%;
 
@@ -927,7 +927,7 @@ $core-font-stack:
     }
   }
 
-  .alpaca-subtasks-main > .components-button {
+  .alpaca-subissues-main > .components-button {
     width: 30px;
     min-width: 30px;
     padding: 0;
@@ -938,7 +938,7 @@ $core-font-stack:
     white-space: nowrap;
   }
 
-  .alpaca-subtasks-assignee {
+  .alpaca-subissues-assignee {
     display: inline-flex;
     align-items: center;
     gap: 0;
@@ -951,7 +951,7 @@ $core-font-stack:
     }
   }
 
-  .alpaca-subtasks-assignee-preview {
+  .alpaca-subissues-assignee-preview {
     display: inline-flex;
     align-items: center;
     gap: 4px;
@@ -969,19 +969,19 @@ $core-font-stack:
     }
   }
 
-  .alpaca-subtasks-assignee-fallback {
+  .alpaca-subissues-assignee-fallback {
     color: $greytext;
     font-size: 16px;
     width: 20px;
     height: 20px;
   }
 
-  .alpaca-subtasks-promote,
-  .alpaca-subtasks-delete {
+  .alpaca-subissues-promote,
+  .alpaca-subissues-delete {
     justify-self: end;
   }
 
-  .alpaca-subtasks-assignee-popover {
+  .alpaca-subissues-assignee-popover {
     z-index: 999000020;
 
     .components-popover__content {
@@ -992,7 +992,7 @@ $core-font-stack:
     }
   }
 
-  .alpaca-subtasks-assignee-popover-content {
+  .alpaca-subissues-assignee-popover-content {
     .components-form-token-field {
       margin-bottom: 0;
     }
@@ -1002,7 +1002,7 @@ $core-font-stack:
     }
   }
 
-  .alpaca-subtasks-add-button.components-button {
+  .alpaca-subissues-add-button.components-button {
     height: 28px;
     min-height: 28px;
     padding: 0 10px;
@@ -1031,7 +1031,7 @@ $core-font-stack:
     mask-image: url('components/icons/svg/person-plus.svg');
   }
 
-  #subtasks .components-checkbox-control__input-container {
+  #subissues .components-checkbox-control__input-container {
     border: 1px solid $greyborder;
     background: $bgwhite;
   }
@@ -1352,29 +1352,29 @@ $core-font-stack:
       }
     }
 
-    &.subtask-created {
+    &.subissue-created {
       .alpaca-timeline-icon::before {
         mask-image: url('components/icons/svg/plus-lg.svg');
         background-color: $greytext;
       }
     }
 
-    &.subtask-assignee-changed {
+    &.subissue-assignee-changed {
       .alpaca-timeline-icon::before {
         mask-image: url('components/icons/svg/person.svg');
         background-color: $greytext;
       }
     }
 
-    &.subtask-completion-changed,
-    &.subtask-deleted {
+    &.subissue-completion-changed,
+    &.subissue-deleted {
       .alpaca-timeline-icon::before {
         mask-image: url('components/icons/svg/columns.svg');
         background-color: $greytext;
       }
     }
 
-    &.subtask-promoted {
+    &.subissue-promoted {
       .alpaca-timeline-icon::before {
         mask-image: url('components/icons/svg/box-arrow-up-right.svg');
         background-color: $greytext;

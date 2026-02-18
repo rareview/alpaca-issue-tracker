@@ -13,7 +13,7 @@ import {
   fetchStatuses,
   updateIssue,
   createIssue,
-  createSubtask,
+  createSubissue,
   deleteIssue,
 } from '../services/issueApi';
 
@@ -169,15 +169,8 @@ const EditableTitle = memo(
     prev.isEditing === next.isEditing && prev.title === next.title,
 );
 
-const SubtaskAssigneeControl = memo(
-  ({
-    assignees,
-    allUsers,
-    allUserObjects,
-    onChange,
-    isDraft,
-    isLoading,
-  }) => {
+const SubissueAssigneeControl = memo(
+  ({ assignees, allUsers, allUserObjects, onChange, isDraft, isLoading }) => {
     const [isOpen, setIsOpen] = useState(false);
     const containerRef = useRef(null);
     const hasAssignees = assignees.length > 0;
@@ -185,7 +178,8 @@ const SubtaskAssigneeControl = memo(
       .map((assigneeValue) =>
         allUserObjects.find(
           (userObject) =>
-            userObject.name === assigneeValue || userObject.slug === assigneeValue,
+            userObject.name === assigneeValue ||
+            userObject.slug === assigneeValue,
         ),
       )
       .filter(Boolean);
@@ -205,7 +199,7 @@ const SubtaskAssigneeControl = memo(
         const target = event.target;
         const isInsideTrigger = containerRef.current?.contains(target);
         const isInsidePopover = Boolean(
-          target?.closest?.('.alpaca-subtasks-assignee-popover'),
+          target?.closest?.('.alpaca-subissues-assignee-popover'),
         );
 
         if (!isInsideTrigger && !isInsidePopover) {
@@ -236,7 +230,7 @@ const SubtaskAssigneeControl = memo(
       let animationFrameId = null;
       const focusInput = () => {
         const input = document.querySelector(
-          '.alpaca-subtasks-assignee-popover .components-form-token-field__input',
+          '.alpaca-subissues-assignee-popover .components-form-token-field__input',
         );
         if (input && typeof input.focus === 'function') {
           input.focus();
@@ -253,11 +247,11 @@ const SubtaskAssigneeControl = memo(
     }, [isOpen]);
 
     return (
-      <div className="alpaca-subtasks-assignee" ref={containerRef}>
+      <div className="alpaca-subissues-assignee" ref={containerRef}>
         {hasAssignees ? (
           <button
             type="button"
-            className="alpaca-subtasks-assignee-preview"
+            className="alpaca-subissues-assignee-preview"
             title={assigneeText}
             aria-label={__('Edit assignees', 'alpaca')}
             onMouseDown={(event) => event.preventDefault()}
@@ -272,7 +266,7 @@ const SubtaskAssigneeControl = memo(
                 />
               ))
             ) : (
-              <span className="alpaca-subtasks-assignee-fallback dashicons dashicons-admin-users"></span>
+              <span className="alpaca-subissues-assignee-fallback dashicons dashicons-admin-users"></span>
             )}
           </button>
         ) : (
@@ -292,10 +286,10 @@ const SubtaskAssigneeControl = memo(
             anchor={containerRef.current}
             placement="bottom-end"
             onClose={() => setIsOpen(false)}
-            className="alpaca-subtasks-assignee-popover"
+            className="alpaca-subissues-assignee-popover"
             focusOnMount={false}
           >
-            <div className="alpaca-subtasks-assignee-popover-content">
+            <div className="alpaca-subissues-assignee-popover-content">
               <AssigneeSelector
                 assignees={assignees}
                 allUsers={allUsers}
@@ -310,22 +304,14 @@ const SubtaskAssigneeControl = memo(
   },
 );
 
-const SubtaskTitleField = memo(
-  ({
-    value,
-    placeholder,
-    disabled,
-    onChange,
-    onFocus,
-    onBlur,
-    onKeyDown,
-  }) => {
+const SubissueTitleField = memo(
+  ({ value, placeholder, disabled, onChange, onFocus, onBlur, onKeyDown }) => {
     const textareaRef = useRef(null);
     useAutoExpandTextarea(textareaRef, value, true);
 
     return (
       <TextareaControl
-        className="alpaca-subtasks-text-control"
+        className="alpaca-subissues-text-control"
         value={value}
         placeholder={placeholder}
         onChange={onChange}
@@ -342,39 +328,41 @@ const SubtaskTitleField = memo(
 );
 
 /**
- * Normalize one subtask object from API or local draft state.
+ * Normalize one subissue object from API or local draft state.
  *
- * @param {Object} subtask Raw subtask object.
- * @return {Object} Normalized subtask object.
+ * @param {Object} subissue Raw subissue object.
+ * @return {Object} Normalized subissue object.
  */
-const normalizeSubtask = (subtask) => {
-  const assignees = Array.isArray(subtask?.assignees) ? subtask.assignees : [];
-  const status = Array.isArray(subtask?.status) ? subtask.status : [];
-  const isCompletedValue = subtask?.is_completed ?? subtask?.isCompleted;
+const normalizeSubissue = (subissue) => {
+  const assignees = Array.isArray(subissue?.assignees)
+    ? subissue.assignees
+    : [];
+  const status = Array.isArray(subissue?.status) ? subissue.status : [];
+  const isCompletedValue = subissue?.is_completed ?? subissue?.isCompleted;
 
   return {
-    id: subtask?.id,
-    slug: subtask?.slug || '',
-    title: subtask?.title || subtask?.content || '',
-    postParent: Number(subtask?.post_parent || subtask?.postParent || 0),
+    id: subissue?.id,
+    slug: subissue?.slug || '',
+    title: subissue?.title || subissue?.content || '',
+    postParent: Number(subissue?.post_parent || subissue?.postParent || 0),
     isCompleted:
       isCompletedValue === true ||
       isCompletedValue === 1 ||
       isCompletedValue === '1',
     assignees,
     status,
-    isDraft: Boolean(subtask?.isDraft),
-    isEditing: Boolean(subtask?.isEditing),
-    showAssignControl: Boolean(subtask?.showAssignControl),
+    isDraft: Boolean(subissue?.isDraft),
+    isEditing: Boolean(subissue?.isEditing),
+    showAssignControl: Boolean(subissue?.showAssignControl),
   };
 };
 
 /**
- * Build a draft subtask object.
+ * Build a draft subissue object.
  *
- * @return {Object} Draft subtask.
+ * @return {Object} Draft subissue.
  */
-const createDraftSubtask = () => ({
+const createDraftSubissue = () => ({
   id: `draft-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
   title: '',
   postParent: 0,
@@ -422,8 +410,11 @@ const AlpacaIssue = ({
 
   const { allUsers, allUserObjects, userMap } = useUserManagement();
   const { loadingStates, setLoading } = useLoadingStates();
-  const { isWatched, toggleWatch, loading: isWatchlistLoading } =
-    useWatchlist();
+  const {
+    isWatched,
+    toggleWatch,
+    loading: isWatchlistLoading,
+  } = useWatchlist();
 
   const [assignees, setAssignees] = useState([]);
   const [deadline, setDeadline] = useState(null);
@@ -432,7 +423,7 @@ const AlpacaIssue = ({
   const [allStatuses, setAllStatuses] = useState([]);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState('');
-  const [subtasks, setSubtasks] = useState([]);
+  const [subissues, setSubissues] = useState([]);
   const [commentRefreshKey] = useState(0);
   const [snackbars, setSnackbars] = useState([]);
   const snackbarTimersRef = useRef({});
@@ -516,7 +507,7 @@ const AlpacaIssue = ({
       setAssignees([]);
       setDeadline(null);
       setIsHighPriority(false);
-      setSubtasks([]);
+      setSubissues([]);
     }
 
     // Cleanup: reset form state when modal closes in create mode
@@ -526,7 +517,7 @@ const AlpacaIssue = ({
       setDeadline(null);
       setIsHighPriority(false);
       setIsEditingTitle(false);
-      setSubtasks([]);
+      setSubissues([]);
     }
   }, [isOpen, isCreating]);
 
@@ -555,9 +546,11 @@ const AlpacaIssue = ({
 
       // Title
       setEditedTitle(decodeEntities(issueDetails.post_data.post_content));
-      setSubtasks(
-        Array.isArray(issueDetails.subtasks)
-          ? issueDetails.subtasks.map((subtask) => normalizeSubtask(subtask))
+      setSubissues(
+        Array.isArray(issueDetails.subissues)
+          ? issueDetails.subissues.map((subissue) =>
+              normalizeSubissue(subissue),
+            )
           : [],
       );
     }
@@ -665,9 +658,11 @@ const AlpacaIssue = ({
         setAssignees([]);
       }
 
-      setSubtasks(
-        Array.isArray(issueDetails.subtasks)
-          ? issueDetails.subtasks.map((subtask) => normalizeSubtask(subtask))
+      setSubissues(
+        Array.isArray(issueDetails.subissues)
+          ? issueDetails.subissues.map((subissue) =>
+              normalizeSubissue(subissue),
+            )
           : [],
       );
     }
@@ -996,88 +991,94 @@ const AlpacaIssue = ({
     updateAssignees,
   ]);
 
-  const handleAddSubtaskDraft = useCallback(() => {
-    setSubtasks((prev) => {
-      const hasDraft = prev.some((subtask) => subtask.isDraft);
+  const handleAddSubissueDraft = useCallback(() => {
+    setSubissues((prev) => {
+      const hasDraft = prev.some((subissue) => subissue.isDraft);
       if (hasDraft) {
         return prev;
       }
-      return [...prev, createDraftSubtask()];
+      return [...prev, createDraftSubissue()];
     });
   }, []);
 
-  const handleSubtaskDraftChange = useCallback((subtaskId, newTitle) => {
-    setSubtasks((prev) =>
-      prev.map((subtask) =>
-        subtask.id === subtaskId ? { ...subtask, title: newTitle } : subtask,
+  const handleSubissueDraftChange = useCallback((subissueId, newTitle) => {
+    setSubissues((prev) =>
+      prev.map((subissue) =>
+        subissue.id === subissueId
+          ? { ...subissue, title: newTitle }
+          : subissue,
       ),
     );
   }, []);
 
-  const handleSubtaskTitleSave = useCallback(
-    async (subtaskId) => {
-      const subtask = subtasks.find((item) => item.id === subtaskId);
-      if (!subtask) {
+  const handleSubissueTitleSave = useCallback(
+    async (subissueId) => {
+      const subissue = subissues.find((item) => item.id === subissueId);
+      if (!subissue) {
         return;
       }
 
-      const trimmedTitle = subtask.title.trim();
+      const trimmedTitle = subissue.title.trim();
 
       if (!trimmedTitle) {
-        if (subtask.isDraft) {
-          setSubtasks((prev) => prev.filter((item) => item.id !== subtaskId));
+        if (subissue.isDraft) {
+          setSubissues((prev) => prev.filter((item) => item.id !== subissueId));
         } else {
-          setSubtasks((prev) =>
+          setSubissues((prev) =>
             prev.map((item) =>
-              item.id === subtaskId ? { ...item, isEditing: false } : item,
+              item.id === subissueId ? { ...item, isEditing: false } : item,
             ),
           );
         }
         return;
       }
 
-      if (subtask.isDraft) {
-        setLoading(`subtask-${subtaskId}`, true);
+      if (subissue.isDraft) {
+        setLoading(`subissue-${subissueId}`, true);
         try {
-          const response = await createSubtask({
+          const response = await createSubissue({
             // eslint-disable-next-line camelcase
             parent_id: issueId,
             content: trimmedTitle,
           });
-          const createdSubtask = normalizeSubtask(response?.subtask || {});
-          setSubtasks((prev) =>
+          const createdSubissue = normalizeSubissue(response?.subissue || {});
+          setSubissues((prev) =>
             prev.map((item) =>
-              item.id === subtaskId
+              item.id === subissueId
                 ? {
-                    ...createdSubtask,
+                    ...createdSubissue,
                     isDraft: false,
                     isEditing: false,
                   }
                 : item,
             ),
           );
-          wp.hooks.doAction('alpaca.subtaskCreated', issueDetails, createdSubtask);
+          wp.hooks.doAction(
+            'alpaca.subissueCreated',
+            issueDetails,
+            createdSubissue,
+          );
         } catch (err) {
           // eslint-disable-next-line no-console
-          console.error('Error creating subtask:', err);
-          showNotification(__('Failed to create subtask.', 'alpaca'), 'error');
+          console.error('Error creating subissue:', err);
+          showNotification(__('Failed to create subissue.', 'alpaca'), 'error');
         } finally {
-          setLoading(`subtask-${subtaskId}`, false);
+          setLoading(`subissue-${subissueId}`, false);
         }
         return;
       }
 
-      const oldTitle = subtask.title;
-      setLoading(`subtask-${subtaskId}`, true);
+      const oldTitle = subissue.title;
+      setLoading(`subissue-${subissueId}`, true);
       try {
-        await updateIssue(subtask.id, {
+        await updateIssue(subissue.id, {
           title: trimmedTitle,
           content: trimmedTitle,
         });
 
-        setSubtasks((prev) =>
+        setSubissues((prev) =>
           prev.map((item) =>
-            item.id === subtaskId
+            item.id === subissueId
               ? {
                   ...item,
                   title: trimmedTitle,
@@ -1089,98 +1090,101 @@ const AlpacaIssue = ({
 
         if (oldTitle !== trimmedTitle) {
           wp.hooks.doAction(
-            'alpaca.subtaskTitleChanged',
+            'alpaca.subissueTitleChanged',
             issueDetails,
-            { ...subtask, title: trimmedTitle },
+            { ...subissue, title: trimmedTitle },
             oldTitle,
             trimmedTitle,
           );
         }
       } catch (err) {
         // eslint-disable-next-line no-console
-        console.error('Error updating subtask title:', err);
+        console.error('Error updating subissue title:', err);
         showNotification(
-          __('Failed to update subtask title.', 'alpaca'),
+          __('Failed to update subissue title.', 'alpaca'),
           'error',
         );
       } finally {
-        setLoading(`subtask-${subtaskId}`, false);
+        setLoading(`subissue-${subissueId}`, false);
       }
     },
-    [issueDetails, issueId, setLoading, showNotification, subtasks],
+    [issueDetails, issueId, setLoading, showNotification, subissues],
   );
 
-  const handleSubtaskTitleCancel = useCallback((subtaskId) => {
-    setSubtasks((prev) => {
-      const subtask = prev.find((item) => item.id === subtaskId);
-      if (!subtask) {
+  const handleSubissueTitleCancel = useCallback((subissueId) => {
+    setSubissues((prev) => {
+      const subissue = prev.find((item) => item.id === subissueId);
+      if (!subissue) {
         return prev;
       }
-      if (subtask.isDraft) {
-        return prev.filter((item) => item.id !== subtaskId);
+      if (subissue.isDraft) {
+        return prev.filter((item) => item.id !== subissueId);
       }
       return prev.map((item) =>
-        item.id === subtaskId ? { ...item, isEditing: false } : item,
+        item.id === subissueId ? { ...item, isEditing: false } : item,
       );
     });
   }, []);
 
-  const handleSubtaskToggleCompleted = useCallback(
-    async (subtaskId, isCompleted) => {
-      const subtask = subtasks.find((item) => item.id === subtaskId);
-      if (!subtask || subtask.isDraft) {
+  const handleSubissueToggleCompleted = useCallback(
+    async (subissueId, isCompleted) => {
+      const subissue = subissues.find((item) => item.id === subissueId);
+      if (!subissue || subissue.isDraft) {
         return;
       }
 
-      setSubtasks((prev) =>
+      setSubissues((prev) =>
         prev.map((item) =>
-          item.id === subtaskId ? { ...item, isCompleted } : item,
+          item.id === subissueId ? { ...item, isCompleted } : item,
         ),
       );
-      setLoading(`subtask-complete-${subtaskId}`, true);
+      setLoading(`subissue-complete-${subissueId}`, true);
       try {
-        await updateIssue(subtask.id, {
+        await updateIssue(subissue.id, {
           meta: {
             // eslint-disable-next-line camelcase
-            subtask_completed: isCompleted ? 1 : 0,
+            subissue_completed: isCompleted ? 1 : 0,
           },
         });
         wp.hooks.doAction(
-          'alpaca.subtaskCompletionToggled',
+          'alpaca.subissueCompletionToggled',
           issueDetails,
-          { ...subtask, isCompleted },
+          { ...subissue, isCompleted },
           isCompleted,
         );
       } catch (err) {
         // eslint-disable-next-line no-console
-        console.error('Error updating subtask completion:', err);
-        setSubtasks((prev) =>
+        console.error('Error updating subissue completion:', err);
+        setSubissues((prev) =>
           prev.map((item) =>
-            item.id === subtaskId
+            item.id === subissueId
               ? { ...item, isCompleted: !isCompleted }
               : item,
           ),
         );
         showNotification(
-          __('Failed to update subtask completion.', 'alpaca'),
+          __('Failed to update subissue completion.', 'alpaca'),
           'error',
         );
       } finally {
-        setLoading(`subtask-complete-${subtaskId}`, false);
+        setLoading(`subissue-complete-${subissueId}`, false);
       }
     },
-    [issueDetails, setLoading, showNotification, subtasks],
+    [issueDetails, setLoading, showNotification, subissues],
   );
 
-  const handleSubtaskAssigneeChange = useCallback(
-    async (subtaskId, newAssignees) => {
-      const subtask = subtasks.find((item) => item.id === subtaskId);
-      if (!subtask || subtask.isDraft) {
+  const handleSubissueAssigneeChange = useCallback(
+    async (subissueId, newAssignees) => {
+      const subissue = subissues.find((item) => item.id === subissueId);
+      if (!subissue || subissue.isDraft) {
         return;
       }
 
-      const oldAssignees = subtask.assignees.map((assignee) => assignee.name);
-      const { added, removed } = processAssigneeChanges(oldAssignees, newAssignees);
+      const oldAssignees = subissue.assignees.map((assignee) => assignee.name);
+      const { added, removed } = processAssigneeChanges(
+        oldAssignees,
+        newAssignees,
+      );
 
       const normalizedAssignees = newAssignees
         .map((nameOrSlug) =>
@@ -1196,24 +1200,24 @@ const AlpacaIssue = ({
           slug: userObject.slug,
         }));
 
-      setSubtasks((prev) =>
+      setSubissues((prev) =>
         prev.map((item) =>
-          item.id === subtaskId
+          item.id === subissueId
             ? { ...item, assignees: normalizedAssignees }
             : item,
         ),
       );
 
       const slugs = newAssignees.map((name) => userMap[name] || name);
-      setLoading(`subtask-assignees-${subtaskId}`, true);
+      setLoading(`subissue-assignees-${subissueId}`, true);
       try {
-        await updateIssue(subtask.id, { taxonomies: { assignee: slugs } });
+        await updateIssue(subissue.id, { taxonomies: { assignee: slugs } });
         added.forEach((name) => {
           const user = allUserObjects.find((u) => u.name === name);
           wp.hooks.doAction(
-            'alpaca.subtaskAssigneeChanged',
+            'alpaca.subissueAssigneeChanged',
             issueDetails,
-            subtask,
+            subissue,
             user,
             true,
           );
@@ -1221,31 +1225,38 @@ const AlpacaIssue = ({
         removed.forEach((name) => {
           const user = allUserObjects.find((u) => u.name === name);
           wp.hooks.doAction(
-            'alpaca.subtaskAssigneeChanged',
+            'alpaca.subissueAssigneeChanged',
             issueDetails,
-            subtask,
+            subissue,
             user,
             false,
           );
         });
       } catch (err) {
         // eslint-disable-next-line no-console
-        console.error('Error updating subtask assignees:', err);
+        console.error('Error updating subissue assignees:', err);
         showNotification(
-          __('Failed to update subtask assignees.', 'alpaca'),
+          __('Failed to update subissue assignees.', 'alpaca'),
           'error',
         );
       } finally {
-        setLoading(`subtask-assignees-${subtaskId}`, false);
+        setLoading(`subissue-assignees-${subissueId}`, false);
       }
     },
-    [allUserObjects, issueDetails, setLoading, showNotification, subtasks, userMap],
+    [
+      allUserObjects,
+      issueDetails,
+      setLoading,
+      showNotification,
+      subissues,
+      userMap,
+    ],
   );
 
-  const handleSubtaskPromote = useCallback(
-    async (subtaskId) => {
-      const subtask = subtasks.find((item) => item.id === subtaskId);
-      if (!subtask || subtask.isDraft) {
+  const handleSubissuePromote = useCallback(
+    async (subissueId) => {
+      const subissue = subissues.find((item) => item.id === subissueId);
+      if (!subissue || subissue.isDraft) {
         return;
       }
 
@@ -1261,10 +1272,10 @@ const AlpacaIssue = ({
         };
       }
 
-      setLoading(`subtask-promote-${subtaskId}`, true);
+      setLoading(`subissue-promote-${subissueId}`, true);
       try {
-        const optimisticSlug = subtask.slug || '';
-        const promotedAssignees = (subtask.assignees || [])
+        const optimisticSlug = subissue.slug || '';
+        const promotedAssignees = (subissue.assignees || [])
           .map((assignee) =>
             allUserObjects.find(
               (userObject) =>
@@ -1286,9 +1297,9 @@ const AlpacaIssue = ({
           wp.hooks.doAction(
             'alpaca.issueInserted',
             {
-              id: subtask.id,
+              id: subissue.id,
               slug: optimisticSlug,
-              title: subtask.title,
+              title: subissue.title,
               // eslint-disable-next-line camelcase
               post_date: new Date().toISOString(),
               assignees: promotedAssignees,
@@ -1299,19 +1310,18 @@ const AlpacaIssue = ({
           );
         }
 
-        const promoteResponse = await updateIssue(subtask.id, payload);
-        const promotedSlug =
-          promoteResponse?.issue?.slug || optimisticSlug;
-        setSubtasks((prev) => prev.filter((item) => item.id !== subtaskId));
+        const promoteResponse = await updateIssue(subissue.id, payload);
+        const promotedSlug = promoteResponse?.issue?.slug || optimisticSlug;
+        setSubissues((prev) => prev.filter((item) => item.id !== subissueId));
 
         if (parentStatusId && promotedSlug && promotedSlug !== optimisticSlug) {
-          wp.hooks.doAction('alpaca.issueDeleted', subtask.id);
+          wp.hooks.doAction('alpaca.issueDeleted', subissue.id);
           wp.hooks.doAction(
             'alpaca.issueInserted',
             {
-              id: subtask.id,
+              id: subissue.id,
               slug: promotedSlug,
-              title: subtask.title,
+              title: subissue.title,
               // eslint-disable-next-line camelcase
               post_date: new Date().toISOString(),
               assignees: promotedAssignees,
@@ -1322,62 +1332,66 @@ const AlpacaIssue = ({
           );
         }
 
-        wp.hooks.doAction(
-          'alpaca.subtaskPromoted',
-          {
-            parentIssue: {
-              id: issueDetails?.post_id || issueId,
-              slug: issueDetails?.post_data?.post_name || '',
-              title:
-                issueDetails?.post_data?.post_title ||
-                issueDetails?.post_data?.post_content ||
-                __('Unknown issue', 'alpaca'),
-            },
-            promotedIssue: {
-              id: subtask.id,
-              slug: promotedSlug,
-              title: subtask.title,
-            },
-            subtask,
+        wp.hooks.doAction('alpaca.subissuePromoted', {
+          parentIssue: {
+            id: issueDetails?.post_id || issueId,
+            slug: issueDetails?.post_data?.post_name || '',
+            title:
+              issueDetails?.post_data?.post_title ||
+              issueDetails?.post_data?.post_content ||
+              __('Unknown issue', 'alpaca'),
           },
-        );
+          promotedIssue: {
+            id: subissue.id,
+            slug: promotedSlug,
+            title: subissue.title,
+          },
+          subissue,
+        });
       } catch (err) {
-        wp.hooks.doAction('alpaca.issueDeleted', subtask.id);
+        wp.hooks.doAction('alpaca.issueDeleted', subissue.id);
         // eslint-disable-next-line no-console
-        console.error('Error promoting subtask:', err);
-        showNotification(__('Failed to promote subtask.', 'alpaca'), 'error');
+        console.error('Error promoting subissue:', err);
+        showNotification(__('Failed to promote subissue.', 'alpaca'), 'error');
       } finally {
-        setLoading(`subtask-promote-${subtaskId}`, false);
+        setLoading(`subissue-promote-${subissueId}`, false);
       }
     },
-    [allUserObjects, issueDetails, issueId, setLoading, showNotification, subtasks],
+    [
+      allUserObjects,
+      issueDetails,
+      issueId,
+      setLoading,
+      showNotification,
+      subissues,
+    ],
   );
 
-  const handleSubtaskDelete = useCallback(
-    async (subtaskId) => {
-      const subtask = subtasks.find((item) => item.id === subtaskId);
-      if (!subtask) {
+  const handleSubissueDelete = useCallback(
+    async (subissueId) => {
+      const subissue = subissues.find((item) => item.id === subissueId);
+      if (!subissue) {
         return;
       }
-      if (subtask.isDraft) {
-        setSubtasks((prev) => prev.filter((item) => item.id !== subtaskId));
+      if (subissue.isDraft) {
+        setSubissues((prev) => prev.filter((item) => item.id !== subissueId));
         return;
       }
 
-      setLoading(`subtask-delete-${subtaskId}`, true);
+      setLoading(`subissue-delete-${subissueId}`, true);
       try {
-        await deleteIssue(subtask.id);
-        setSubtasks((prev) => prev.filter((item) => item.id !== subtaskId));
-        wp.hooks.doAction('alpaca.subtaskDeleted', issueDetails, subtask);
+        await deleteIssue(subissue.id);
+        setSubissues((prev) => prev.filter((item) => item.id !== subissueId));
+        wp.hooks.doAction('alpaca.subissueDeleted', issueDetails, subissue);
       } catch (err) {
         // eslint-disable-next-line no-console
-        console.error('Error deleting subtask:', err);
-        showNotification(__('Failed to delete subtask.', 'alpaca'), 'error');
+        console.error('Error deleting subissue:', err);
+        showNotification(__('Failed to delete subissue.', 'alpaca'), 'error');
       } finally {
-        setLoading(`subtask-delete-${subtaskId}`, false);
+        setLoading(`subissue-delete-${subissueId}`, false);
       }
     },
-    [issueDetails, setLoading, showNotification, subtasks],
+    [issueDetails, setLoading, showNotification, subissues],
   );
 
   // Memoized stable props
@@ -1530,102 +1544,108 @@ const AlpacaIssue = ({
                   />
 
                   {!isCreating && (
-                    <tr id="subtasks">
-                      <th scope="row">{__('Subtasks', 'alpaca')}</th>
+                    <tr id="subissues">
+                      <th scope="row">{__('Checklist', 'alpaca')}</th>
                       <td>
-                        <div className="alpaca-subtasks">
-                          <ul className="alpaca-subtasks-list">
-                            {subtasks.map((subtask) => {
-                              const subtaskAssignees = (
-                                Array.isArray(subtask.assignees)
-                                  ? subtask.assignees
+                        <div className="alpaca-subissues">
+                          <ul className="alpaca-subissues-list">
+                            {subissues.map((subissue) => {
+                              const subissueAssignees = (
+                                Array.isArray(subissue.assignees)
+                                  ? subissue.assignees
                                   : []
                               ).map((assignee) => assignee.name);
                               const isCompleteLoading =
-                                loadingStates[`subtask-complete-${subtask.id}`];
+                                loadingStates[
+                                  `subissue-complete-${subissue.id}`
+                                ];
                               const isDeleteLoading =
-                                loadingStates[`subtask-delete-${subtask.id}`];
+                                loadingStates[`subissue-delete-${subissue.id}`];
                               const isPromoteLoading =
-                                loadingStates[`subtask-promote-${subtask.id}`];
+                                loadingStates[
+                                  `subissue-promote-${subissue.id}`
+                                ];
                               const isSaveLoading =
-                                loadingStates[`subtask-${subtask.id}`];
+                                loadingStates[`subissue-${subissue.id}`];
                               const isAssigneeLoading =
                                 loadingStates[
-                                  `subtask-assignees-${subtask.id}`
+                                  `subissue-assignees-${subissue.id}`
                                 ];
 
                               return (
                                 <li
-                                  key={subtask.id}
-                                  className={`alpaca-subtasks-item ${
-                                    subtask.isCompleted ? 'is-completed' : ''
+                                  key={subissue.id}
+                                  className={`alpaca-subissues-item ${
+                                    subissue.isCompleted ? 'is-completed' : ''
                                   }`}
                                 >
-                                  <div className="alpaca-subtasks-main">
+                                  <div className="alpaca-subissues-main">
                                     <CheckboxControl
                                       label=""
                                       hideLabelFromVision
-                                      checked={subtask.isCompleted}
+                                      checked={subissue.isCompleted}
                                       onChange={(isChecked) =>
-                                        handleSubtaskToggleCompleted(
-                                          subtask.id,
+                                        handleSubissueToggleCompleted(
+                                          subissue.id,
                                           isChecked,
                                         )
                                       }
                                       disabled={
-                                        subtask.isDraft || isCompleteLoading
+                                        subissue.isDraft || isCompleteLoading
                                       }
                                     />
-                                    <SubtaskTitleField
-                                      value={subtask.title}
+                                    <SubissueTitleField
+                                      value={subissue.title}
                                       placeholder={__(
-                                        'Enter subtask title…',
+                                        'Enter subissue title…',
                                         'alpaca',
                                       )}
                                       onChange={(newValue) =>
-                                        handleSubtaskDraftChange(
-                                          subtask.id,
+                                        handleSubissueDraftChange(
+                                          subissue.id,
                                           newValue,
                                         )
                                       }
                                       onFocus={() =>
-                                        setSubtasks((prev) =>
+                                        setSubissues((prev) =>
                                           prev.map((item) =>
-                                            item.id === subtask.id
+                                            item.id === subissue.id
                                               ? { ...item, isEditing: true }
                                               : item,
                                           ),
                                         )
                                       }
                                       onBlur={() =>
-                                        handleSubtaskTitleSave(subtask.id)
+                                        handleSubissueTitleSave(subissue.id)
                                       }
                                       onKeyDown={(event) => {
                                         if (event.key === 'Enter') {
                                           event.preventDefault();
-                                          handleSubtaskTitleSave(subtask.id);
+                                          handleSubissueTitleSave(subissue.id);
                                         } else if (event.key === 'Escape') {
                                           event.preventDefault();
-                                          handleSubtaskTitleCancel(subtask.id);
+                                          handleSubissueTitleCancel(
+                                            subissue.id,
+                                          );
                                         }
                                       }}
                                       disabled={isSaveLoading}
                                     />
-                                      <SubtaskAssigneeControl
-                                        assignees={subtaskAssignees}
-                                        allUsers={stableUsers}
-                                        allUserObjects={allUserObjects}
-                                        onChange={(newAssignees) =>
-                                          handleSubtaskAssigneeChange(
-                                            subtask.id,
+                                    <SubissueAssigneeControl
+                                      assignees={subissueAssignees}
+                                      allUsers={stableUsers}
+                                      allUserObjects={allUserObjects}
+                                      onChange={(newAssignees) =>
+                                        handleSubissueAssigneeChange(
+                                          subissue.id,
                                           newAssignees,
                                         )
                                       }
-                                      isDraft={subtask.isDraft}
+                                      isDraft={subissue.isDraft}
                                       isLoading={isAssigneeLoading}
                                     />
                                     <Button
-                                      className="alpaca-subtasks-promote"
+                                      className="alpaca-subissues-promote"
                                       icon={
                                         <span className="alpaca-icon-promote"></span>
                                       }
@@ -1636,14 +1656,14 @@ const AlpacaIssue = ({
                                         event.preventDefault()
                                       }
                                       onClick={() =>
-                                        handleSubtaskPromote(subtask.id)
+                                        handleSubissuePromote(subissue.id)
                                       }
                                       disabled={
-                                        subtask.isDraft || isPromoteLoading
+                                        subissue.isDraft || isPromoteLoading
                                       }
                                     />
                                     <Button
-                                      className="alpaca-subtasks-delete"
+                                      className="alpaca-subissues-delete"
                                       icon="trash"
                                       label={__('Delete', 'alpaca')}
                                       showTooltip
@@ -1653,7 +1673,7 @@ const AlpacaIssue = ({
                                         event.preventDefault()
                                       }
                                       onClick={() =>
-                                        handleSubtaskDelete(subtask.id)
+                                        handleSubissueDelete(subissue.id)
                                       }
                                       disabled={isDeleteLoading}
                                     />
@@ -1664,8 +1684,8 @@ const AlpacaIssue = ({
                           </ul>
                           <Button
                             variant="secondary"
-                            className="alpaca-subtasks-add-button"
-                            onClick={handleAddSubtaskDraft}
+                            className="alpaca-subissues-add-button"
+                            onClick={handleAddSubissueDraft}
                           >
                             {__('Add New', 'alpaca')}
                           </Button>
