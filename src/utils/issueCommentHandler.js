@@ -7,6 +7,7 @@ import { fetchIssueCommentCount } from '../services/issueApi.js';
  */
 const { addAction, doAction, addFilter, applyFilters } = wp.hooks;
 const apiFetch = wp.apiFetch;
+const { __ } = wp.i18n;
 
 /**
  * Strips HTML and basic Markdown from a string.
@@ -31,6 +32,18 @@ const stripHtmlAndMarkdown = (input) => {
   output = output.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1');
 
   return output;
+};
+
+/**
+ * Safely format a subtask title for comments.
+ *
+ * @param {Object} subtask Subtask object.
+ * @return {string} Formatted subtask title.
+ */
+const getSubtaskLabel = (subtask) => {
+  const title = subtask?.title || subtask?.content || '';
+  const cleanedTitle = stripHtmlAndMarkdown(title).trim();
+  return cleanedTitle || 'Untitled subtask';
 };
 
 addFilter('alpaca.commentObject', 'alpaca/addPlainText', (comment) => {
@@ -220,5 +233,88 @@ addAction(
     if (commentContent) {
       await postComment(issue, commentContent, actionClass);
     }
+  },
+);
+
+addAction(
+  'alpaca.subtaskCreated',
+  'alpaca/addSubtaskCreatedComment',
+  async (issue, subtask) => {
+    const currentUser = await getUser();
+    const actionClass = ['subtask-created'];
+    const subtaskLabel = getSubtaskLabel(subtask);
+    const commentContent = `Subtask **${subtaskLabel}** created by ${generateAssigneeSpan(
+      currentUser,
+    )}`;
+
+    await postComment(issue, commentContent, actionClass);
+  },
+);
+
+addAction(
+  'alpaca.subtaskCompletionToggled',
+  'alpaca/addSubtaskCompletionComment',
+  async (issue, subtask, isCompleted) => {
+    const currentUser = await getUser();
+    const actionClass = ['subtask-completion-changed'];
+    const subtaskLabel = getSubtaskLabel(subtask);
+    const stateLabel = isCompleted ? 'completed' : 'reopened';
+    const commentContent = `Subtask **${subtaskLabel}** marked as **${stateLabel}** by ${generateAssigneeSpan(
+      currentUser,
+    )}`;
+
+    await postComment(issue, commentContent, actionClass);
+  },
+);
+
+addAction(
+  'alpaca.subtaskAssigneeChanged',
+  'alpaca/addSubtaskAssigneeComment',
+  async (issue, subtask, user, isAssigned) => {
+    const currentUser = await getUser();
+    const actionText = isAssigned ? 'assigned to' : 'unassigned from';
+    const actionClass = [
+      'subtask-assignee-changed',
+      isAssigned ? 'action-add' : 'action-remove',
+    ];
+    const subtaskLabel = getSubtaskLabel(subtask);
+    const targetUserLabel = user
+      ? generateAssigneeSpan(user, true)
+      : __('Unknown user', 'alpaca');
+    const commentContent = `${targetUserLabel} was ${actionText} subtask **${subtaskLabel}** by ${generateAssigneeSpan(
+      currentUser,
+    )}`;
+
+    await postComment(issue, commentContent, actionClass);
+  },
+);
+
+addAction(
+  'alpaca.subtaskPromoted',
+  'alpaca/addSubtaskPromotedComment',
+  async (issue, subtask) => {
+    const currentUser = await getUser();
+    const actionClass = ['subtask-promoted'];
+    const subtaskLabel = getSubtaskLabel(subtask);
+    const commentContent = `Subtask **${subtaskLabel}** promoted to issue by ${generateAssigneeSpan(
+      currentUser,
+    )}`;
+
+    await postComment(issue, commentContent, actionClass);
+  },
+);
+
+addAction(
+  'alpaca.subtaskDeleted',
+  'alpaca/addSubtaskDeletedComment',
+  async (issue, subtask) => {
+    const currentUser = await getUser();
+    const actionClass = ['subtask-deleted'];
+    const subtaskLabel = getSubtaskLabel(subtask);
+    const commentContent = `Subtask **${subtaskLabel}** deleted by ${generateAssigneeSpan(
+      currentUser,
+    )}`;
+
+    await postComment(issue, commentContent, actionClass);
   },
 );

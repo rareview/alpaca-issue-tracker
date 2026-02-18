@@ -566,6 +566,9 @@ function alpaca_update_issue_callback( WP_REST_Request $request ) {
 		'post_modified'     => current_time( 'mysql' ),
 		'post_modified_gmt' => current_time( 'mysql', 1 ),
 	];
+	if ( array_key_exists( 'post_parent', (array) $data ) ) {
+		$post_args['post_parent'] = (int) $data['post_parent'];
+	}
 
 	$update_result = wp_update_post( $post_args, true );
 	if ( is_wp_error( $update_result ) ) {
@@ -791,6 +794,194 @@ function alpaca_restore_default_statuses_callback() {
 	);
 }
 
+/**
+ * Format a subtask issue for API responses.
+ *
+ * @param WP_Post $post Subtask post object.
+ * @return array Formatted subtask data.
+ */
+function alpaca_get_subtask_response_data( WP_Post $post ) {
+	$subtask_id = (int) $post->ID;
+	$assignees  = [];
+	$terms      = wp_get_object_terms( $subtask_id, 'alpaca_assignee', [ 'fields' => 'all' ] );
+
+	if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) {
+		foreach ( $terms as $term ) {
+			$assignees[] = [
+				'term_id'      => (int) $term->term_id,
+				'name'         => $term->name,
+				'slug'         => $term->slug,
+				'username'     => $term->name,
+				'display_name' => $term->description,
+			];
+		}
+	}
+
+	$status_terms = wp_get_object_terms( $subtask_id, 'alpaca_status', [ 'fields' => 'all' ] );
+	$status_data  = [];
+
+	if ( ! is_wp_error( $status_terms ) && ! empty( $status_terms ) ) {
+		$status_data = array_map(
+			static function ( $term ) {
+				return [
+					'term_id' => (int) $term->term_id,
+					'name'    => $term->name,
+					'slug'    => $term->slug,
+				];
+			},
+			$status_terms
+		);
+	}
+
+	return [
+		'id'           => $subtask_id,
+		'title'        => (string) $post->post_title,
+		'content'      => (string) $post->post_content,
+		'post_parent'  => (int) $post->post_parent,
+		'is_completed' => ! empty( get_post_meta( $subtask_id, 'alpaca_subtask_completed', true ) ),
+		'assignees'    => $assignees,
+		'status'       => $status_data,
+	];
+}
+
+/**
+ * Get all subtasks belonging to an issue.
+ *
+ * @param int $issue_id Parent issue post ID.
+ * @return array Formatted subtasks data.
+ */
+function alpaca_get_subtasks_for_issue( $issue_id ) {
+	$subtasks = get_children(
+		[
+			'post_parent'    => (int) $issue_id,
+			'post_type'      => 'alpaca_issue',
+			'post_status'    => [ 'publish', 'private' ],
+			'posts_per_page' => -1,
+			'orderby'        => 'date',
+			'order'          => 'ASC',
+		]
+	);
+
+	if ( empty( $subtasks ) ) {
+		return [];
+	}
+
+	$formatted_subtasks = [];
+	foreach ( $subtasks as $subtask ) {
+		$formatted_subtasks[] = alpaca_get_subtask_response_data( $subtask );
+	}
+
+	return $formatted_subtasks;
+}
+
+/**
+ * Register subtask create endpoint.
+ */
+function alpaca_register_subtask_endpoint() {
+	register_rest_route(
+		'alpaca/v1',
+		'/subtasks',
+		[
+			'methods'             => 'POST',
+			'callback'            => 'alpaca_create_subtask_callback',
+			'permission_callback' => function () {
+				return \Alpaca\Inc\Helpers::user_can( 'create_issue' );
+			},
+			'args'                => [
+				'parent_id' => [
+					'required'          => true,
+					'validate_callback' => function ( $param ) {
+						return is_numeric( $param ) && (int) $param > 0;
+					},
+				],
+				'content'   => [
+					'required'          => true,
+					'validate_callback' => function ( $param ) {
+						return is_string( $param ) && '' !== trim( $param );
+					},
+				],
+			],
+		]
+	);
+}
+add_action( 'rest_api_init', 'alpaca_register_subtask_endpoint' );
+
+/**
+ * Create a subtask issue under a parent issue.
+ *
+ * @param WP_REST_Request $request REST request object.
+ * @return WP_REST_Response REST response with created subtask data.
+ */
+function alpaca_create_subtask_callback( WP_REST_Request $request ) {
+	$payload = $request->get_json_params();
+	$payload = is_array( $payload ) ? $payload : [];
+
+	$parent_id = isset( $payload['parent_id'] ) ? (int) $payload['parent_id'] : 0;
+	$content   = isset( $payload['content'] ) ? trim( (string) $payload['content'] ) : '';
+
+	$parent_issue = alpaca_assert_issue_exists( $parent_id );
+	if ( ! $parent_issue ) {
+		return alpaca_rest_response(
+			'',
+			[
+				'success' => false,
+				'message' => esc_html__( 'Parent issue not found.', 'alpaca' ),
+			],
+			404
+		);
+	}
+
+	if ( '' === $content ) {
+		return alpaca_rest_response(
+			'',
+			[
+				'success' => false,
+				'message' => esc_html__( 'Subtask title is required.', 'alpaca' ),
+			],
+			400
+		);
+	}
+
+	$post_args = [
+		'post_type'      => 'alpaca_issue',
+		'post_status'    => 'publish',
+		'post_author'    => get_current_user_id(),
+		'post_title'     => wp_kses_post( $content ),
+		'post_content'   => wp_kses_post( $content ),
+		'post_parent'    => $parent_id,
+		'comment_status' => 'open',
+	];
+
+	$subtask_id = wp_insert_post( $post_args, true );
+	if ( is_wp_error( $subtask_id ) || 0 === (int) $subtask_id ) {
+		return alpaca_rest_response(
+			'',
+			[
+				'success' => false,
+				'message' => esc_html__( 'Failed to create subtask.', 'alpaca' ),
+			],
+			500
+		);
+	}
+
+	$parent_status_ids = wp_get_post_terms( $parent_id, 'alpaca_status', [ 'fields' => 'ids' ] );
+	if ( ! is_wp_error( $parent_status_ids ) && ! empty( $parent_status_ids ) ) {
+		wp_set_post_terms( $subtask_id, alpaca_to_int_ids( $parent_status_ids ), 'alpaca_status', false );
+	}
+
+	$subtask_post = get_post( $subtask_id );
+
+	return alpaca_rest_response(
+		'subtask_create',
+		[
+			'success' => true,
+			'message' => esc_html__( 'Subtask created successfully.', 'alpaca' ),
+			'subtask' => alpaca_get_subtask_response_data( $subtask_post ),
+		],
+		200
+	);
+}
+
 /*
  * Issue: get details endpoints.
  */
@@ -883,6 +1074,7 @@ function alpaca_get_issue_data_callback( WP_REST_Request $request ) {
 			'count'   => true,
 		]
 	);
+	$subtasks           = alpaca_get_subtasks_for_issue( $issue_id );
 
 	return alpaca_rest_response(
 		'',
@@ -893,6 +1085,7 @@ function alpaca_get_issue_data_callback( WP_REST_Request $request ) {
 			'post_data'     => $post_data,
 			'meta'          => $formatted_meta,
 			'taxonomies'    => $terms_data,
+			'subtasks'      => $subtasks,
 			'comment_count' => (int) $issue_comment_count,
 		],
 		200

@@ -8,7 +8,13 @@ import useLoadingStates from '../hooks/useLoadingStates';
 import { getUser, generateAssigneeSpan } from '../hooks/useUser';
 
 import { processAssigneeChanges } from '../utils/assigneeUtils';
-import { fetchStatuses, updateIssue, createIssue } from '../services/issueApi';
+import {
+  fetchStatuses,
+  updateIssue,
+  createIssue,
+  createSubtask,
+  deleteIssue,
+} from '../services/issueApi';
 
 import AssigneeSelector from './issue/AssigneeSelector';
 import DeadlineControl from './issue/DeadlineControl';
@@ -34,6 +40,8 @@ const {
   MenuItem,
   ToggleControl,
   Snackbar,
+  TextControl,
+  CheckboxControl,
 } = wp.components;
 
 const { decodeEntities } = wp.htmlEntities;
@@ -159,6 +167,50 @@ const EditableTitle = memo(
     prev.isEditing === next.isEditing && prev.title === next.title,
 );
 
+/**
+ * Normalize one subtask object from API or local draft state.
+ *
+ * @param {Object} subtask Raw subtask object.
+ * @return {Object} Normalized subtask object.
+ */
+const normalizeSubtask = (subtask) => {
+  const assignees = Array.isArray(subtask?.assignees) ? subtask.assignees : [];
+  const status = Array.isArray(subtask?.status) ? subtask.status : [];
+  const isCompletedValue = subtask?.is_completed ?? subtask?.isCompleted;
+
+  return {
+    id: subtask?.id,
+    title: subtask?.title || subtask?.content || '',
+    postParent: Number(subtask?.post_parent || subtask?.postParent || 0),
+    isCompleted:
+      isCompletedValue === true ||
+      isCompletedValue === 1 ||
+      isCompletedValue === '1',
+    assignees,
+    status,
+    isDraft: Boolean(subtask?.isDraft),
+    isEditing: Boolean(subtask?.isEditing),
+    showAssignControl: Boolean(subtask?.showAssignControl),
+  };
+};
+
+/**
+ * Build a draft subtask object.
+ *
+ * @return {Object} Draft subtask.
+ */
+const createDraftSubtask = () => ({
+  id: `draft-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+  title: '',
+  postParent: 0,
+  isCompleted: false,
+  assignees: [],
+  status: [],
+  isDraft: true,
+  isEditing: true,
+  showAssignControl: false,
+});
+
 // ----- Main Component -----
 const AlpacaIssue = ({
   issueId,
@@ -192,6 +244,7 @@ const AlpacaIssue = ({
   const [allStatuses, setAllStatuses] = useState([]);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState('');
+  const [subtasks, setSubtasks] = useState([]);
   const [commentRefreshKey] = useState(0);
   const [snackbars, setSnackbars] = useState([]);
   const snackbarTimersRef = useRef({});
@@ -275,6 +328,7 @@ const AlpacaIssue = ({
       setAssignees([]);
       setDeadline(null);
       setIsHighPriority(false);
+      setSubtasks([]);
     }
 
     // Cleanup: reset form state when modal closes in create mode
@@ -284,6 +338,7 @@ const AlpacaIssue = ({
       setDeadline(null);
       setIsHighPriority(false);
       setIsEditingTitle(false);
+      setSubtasks([]);
     }
   }, [isOpen, isCreating]);
 
@@ -312,6 +367,11 @@ const AlpacaIssue = ({
 
       // Title
       setEditedTitle(decodeEntities(issueDetails.post_data.post_content));
+      setSubtasks(
+        Array.isArray(issueDetails.subtasks)
+          ? issueDetails.subtasks.map((subtask) => normalizeSubtask(subtask))
+          : [],
+      );
     }
   }, [issueDetails, allUserObjects, isCreating]);
 
@@ -416,6 +476,12 @@ const AlpacaIssue = ({
       } else {
         setAssignees([]);
       }
+
+      setSubtasks(
+        Array.isArray(issueDetails.subtasks)
+          ? issueDetails.subtasks.map((subtask) => normalizeSubtask(subtask))
+          : [],
+      );
     }
   }, [issueDetails, allUserObjects]);
 
@@ -742,6 +808,324 @@ const AlpacaIssue = ({
     updateAssignees,
   ]);
 
+  const handleAddSubtaskDraft = useCallback(() => {
+    setSubtasks((prev) => {
+      const hasDraft = prev.some((subtask) => subtask.isDraft);
+      if (hasDraft) {
+        return prev;
+      }
+      return [...prev, createDraftSubtask()];
+    });
+  }, []);
+
+  const handleSubtaskDraftChange = useCallback((subtaskId, newTitle) => {
+    setSubtasks((prev) =>
+      prev.map((subtask) =>
+        subtask.id === subtaskId ? { ...subtask, title: newTitle } : subtask,
+      ),
+    );
+  }, []);
+
+  const handleSubtaskTitleSave = useCallback(
+    async (subtaskId) => {
+      const subtask = subtasks.find((item) => item.id === subtaskId);
+      if (!subtask) {
+        return;
+      }
+
+      const trimmedTitle = subtask.title.trim();
+
+      if (!trimmedTitle) {
+        if (subtask.isDraft) {
+          setSubtasks((prev) => prev.filter((item) => item.id !== subtaskId));
+        } else {
+          setSubtasks((prev) =>
+            prev.map((item) =>
+              item.id === subtaskId ? { ...item, isEditing: false } : item,
+            ),
+          );
+        }
+        return;
+      }
+
+      if (subtask.isDraft) {
+        setLoading(`subtask-${subtaskId}`, true);
+        try {
+          const response = await createSubtask({
+            // eslint-disable-next-line camelcase
+            parent_id: issueId,
+            content: trimmedTitle,
+          });
+          const createdSubtask = normalizeSubtask(response?.subtask || {});
+          setSubtasks((prev) =>
+            prev.map((item) =>
+              item.id === subtaskId
+                ? {
+                    ...createdSubtask,
+                    isDraft: false,
+                    isEditing: false,
+                  }
+                : item,
+            ),
+          );
+          wp.hooks.doAction('alpaca.subtaskCreated', issueDetails, createdSubtask);
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.error('Error creating subtask:', err);
+          showNotification(__('Failed to create subtask.', 'alpaca'), 'error');
+        } finally {
+          setLoading(`subtask-${subtaskId}`, false);
+        }
+        return;
+      }
+
+      const oldTitle = subtask.title;
+      setLoading(`subtask-${subtaskId}`, true);
+      try {
+        await updateIssue(subtask.id, {
+          title: trimmedTitle,
+          content: trimmedTitle,
+        });
+
+        setSubtasks((prev) =>
+          prev.map((item) =>
+            item.id === subtaskId
+              ? {
+                  ...item,
+                  title: trimmedTitle,
+                  isEditing: false,
+                }
+              : item,
+          ),
+        );
+
+        if (oldTitle !== trimmedTitle) {
+          wp.hooks.doAction(
+            'alpaca.subtaskTitleChanged',
+            issueDetails,
+            { ...subtask, title: trimmedTitle },
+            oldTitle,
+            trimmedTitle,
+          );
+        }
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Error updating subtask title:', err);
+        showNotification(
+          __('Failed to update subtask title.', 'alpaca'),
+          'error',
+        );
+      } finally {
+        setLoading(`subtask-${subtaskId}`, false);
+      }
+    },
+    [issueDetails, issueId, setLoading, showNotification, subtasks],
+  );
+
+  const handleSubtaskTitleCancel = useCallback((subtaskId) => {
+    setSubtasks((prev) => {
+      const subtask = prev.find((item) => item.id === subtaskId);
+      if (!subtask) {
+        return prev;
+      }
+      if (subtask.isDraft) {
+        return prev.filter((item) => item.id !== subtaskId);
+      }
+      return prev.map((item) =>
+        item.id === subtaskId ? { ...item, isEditing: false } : item,
+      );
+    });
+  }, []);
+
+  const handleSubtaskToggleCompleted = useCallback(
+    async (subtaskId, isCompleted) => {
+      const subtask = subtasks.find((item) => item.id === subtaskId);
+      if (!subtask || subtask.isDraft) {
+        return;
+      }
+
+      setSubtasks((prev) =>
+        prev.map((item) =>
+          item.id === subtaskId ? { ...item, isCompleted } : item,
+        ),
+      );
+      setLoading(`subtask-complete-${subtaskId}`, true);
+      try {
+        await updateIssue(subtask.id, {
+          meta: {
+            // eslint-disable-next-line camelcase
+            subtask_completed: isCompleted ? 1 : 0,
+          },
+        });
+        wp.hooks.doAction(
+          'alpaca.subtaskCompletionToggled',
+          issueDetails,
+          { ...subtask, isCompleted },
+          isCompleted,
+        );
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Error updating subtask completion:', err);
+        setSubtasks((prev) =>
+          prev.map((item) =>
+            item.id === subtaskId
+              ? { ...item, isCompleted: !isCompleted }
+              : item,
+          ),
+        );
+        showNotification(
+          __('Failed to update subtask completion.', 'alpaca'),
+          'error',
+        );
+      } finally {
+        setLoading(`subtask-complete-${subtaskId}`, false);
+      }
+    },
+    [issueDetails, setLoading, showNotification, subtasks],
+  );
+
+  const handleSubtaskAssignToggle = useCallback((subtaskId) => {
+    setSubtasks((prev) =>
+      prev.map((item) =>
+        item.id === subtaskId
+          ? { ...item, showAssignControl: !item.showAssignControl }
+          : item,
+      ),
+    );
+  }, []);
+
+  const handleSubtaskAssigneeChange = useCallback(
+    async (subtaskId, newAssignees) => {
+      const subtask = subtasks.find((item) => item.id === subtaskId);
+      if (!subtask || subtask.isDraft) {
+        return;
+      }
+
+      const oldAssignees = subtask.assignees.map((assignee) => assignee.name);
+      const { added, removed } = processAssigneeChanges(oldAssignees, newAssignees);
+
+      const normalizedAssignees = newAssignees
+        .map((nameOrSlug) =>
+          allUserObjects.find(
+            (userObject) =>
+              userObject.name === nameOrSlug || userObject.slug === nameOrSlug,
+          ),
+        )
+        .filter(Boolean)
+        .map((userObject) => ({
+          id: userObject.id,
+          name: userObject.name,
+          slug: userObject.slug,
+        }));
+
+      setSubtasks((prev) =>
+        prev.map((item) =>
+          item.id === subtaskId
+            ? { ...item, assignees: normalizedAssignees }
+            : item,
+        ),
+      );
+
+      const slugs = newAssignees.map((name) => userMap[name] || name);
+      setLoading(`subtask-assignees-${subtaskId}`, true);
+      try {
+        await updateIssue(subtask.id, { taxonomies: { assignee: slugs } });
+        added.forEach((name) => {
+          const user = allUserObjects.find((u) => u.name === name);
+          wp.hooks.doAction(
+            'alpaca.subtaskAssigneeChanged',
+            issueDetails,
+            subtask,
+            user,
+            true,
+          );
+        });
+        removed.forEach((name) => {
+          const user = allUserObjects.find((u) => u.name === name);
+          wp.hooks.doAction(
+            'alpaca.subtaskAssigneeChanged',
+            issueDetails,
+            subtask,
+            user,
+            false,
+          );
+        });
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Error updating subtask assignees:', err);
+        showNotification(
+          __('Failed to update subtask assignees.', 'alpaca'),
+          'error',
+        );
+      } finally {
+        setLoading(`subtask-assignees-${subtaskId}`, false);
+      }
+    },
+    [allUserObjects, issueDetails, setLoading, showNotification, subtasks, userMap],
+  );
+
+  const handleSubtaskPromote = useCallback(
+    async (subtaskId) => {
+      const subtask = subtasks.find((item) => item.id === subtaskId);
+      if (!subtask || subtask.isDraft) {
+        return;
+      }
+
+      const parentStatusId = issueDetails?.taxonomies?.status?.[0]?.term_id;
+      const payload = {
+        // eslint-disable-next-line camelcase
+        post_parent: 0,
+      };
+
+      if (parentStatusId) {
+        payload.taxonomies = {
+          status: [parentStatusId],
+        };
+      }
+
+      setLoading(`subtask-promote-${subtaskId}`, true);
+      try {
+        await updateIssue(subtask.id, payload);
+        setSubtasks((prev) => prev.filter((item) => item.id !== subtaskId));
+        wp.hooks.doAction('alpaca.subtaskPromoted', issueDetails, subtask);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Error promoting subtask:', err);
+        showNotification(__('Failed to promote subtask.', 'alpaca'), 'error');
+      } finally {
+        setLoading(`subtask-promote-${subtaskId}`, false);
+      }
+    },
+    [issueDetails, setLoading, showNotification, subtasks],
+  );
+
+  const handleSubtaskDelete = useCallback(
+    async (subtaskId) => {
+      const subtask = subtasks.find((item) => item.id === subtaskId);
+      if (!subtask) {
+        return;
+      }
+      if (subtask.isDraft) {
+        setSubtasks((prev) => prev.filter((item) => item.id !== subtaskId));
+        return;
+      }
+
+      setLoading(`subtask-delete-${subtaskId}`, true);
+      try {
+        await deleteIssue(subtask.id);
+        setSubtasks((prev) => prev.filter((item) => item.id !== subtaskId));
+        wp.hooks.doAction('alpaca.subtaskDeleted', issueDetails, subtask);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Error deleting subtask:', err);
+        showNotification(__('Failed to delete subtask.', 'alpaca'), 'error');
+      } finally {
+        setLoading(`subtask-delete-${subtaskId}`, false);
+      }
+    },
+    [issueDetails, setLoading, showNotification, subtasks],
+  );
+
   // Memoized stable props
   const stableUsers = useMemo(() => allUsers, [allUsers]);
   const stableAssignees = useMemo(() => assignees, [assignees]);
@@ -890,6 +1274,169 @@ const AlpacaIssue = ({
                     onChange={handleAssigneeChange}
                     isLoading={stableIsLoading}
                   />
+
+                  {!isCreating && (
+                    <tr id="subtasks">
+                      <th scope="row">{__('Subtasks', 'alpaca')}</th>
+                      <td>
+                        <div className="alpaca-subtasks">
+                          <ul className="alpaca-subtasks-list">
+                            {subtasks.map((subtask) => {
+                              const subtaskAssignees = (
+                                Array.isArray(subtask.assignees)
+                                  ? subtask.assignees
+                                  : []
+                              ).map((assignee) => assignee.name);
+                              const isCompleteLoading =
+                                loadingStates[`subtask-complete-${subtask.id}`];
+                              const isDeleteLoading =
+                                loadingStates[`subtask-delete-${subtask.id}`];
+                              const isPromoteLoading =
+                                loadingStates[`subtask-promote-${subtask.id}`];
+                              const isSaveLoading =
+                                loadingStates[`subtask-${subtask.id}`];
+                              const isAssigneeLoading =
+                                loadingStates[
+                                  `subtask-assignees-${subtask.id}`
+                                ];
+
+                              return (
+                                <li
+                                  key={subtask.id}
+                                  className={`alpaca-subtasks-item ${
+                                    subtask.isCompleted ? 'is-completed' : ''
+                                  }`}
+                                >
+                                  <div className="alpaca-subtasks-main">
+                                    <CheckboxControl
+                                      label=""
+                                      hideLabelFromVision
+                                      checked={subtask.isCompleted}
+                                      onChange={(isChecked) =>
+                                        handleSubtaskToggleCompleted(
+                                          subtask.id,
+                                          isChecked,
+                                        )
+                                      }
+                                      disabled={
+                                        subtask.isDraft || isCompleteLoading
+                                      }
+                                    />
+                                    <TextControl
+                                      className="alpaca-subtasks-text-control"
+                                      value={subtask.title}
+                                      placeholder={__(
+                                        'Enter subtask title…',
+                                        'alpaca',
+                                      )}
+                                      onChange={(newValue) =>
+                                        handleSubtaskDraftChange(
+                                          subtask.id,
+                                          newValue,
+                                        )
+                                      }
+                                      onFocus={() =>
+                                        setSubtasks((prev) =>
+                                          prev.map((item) =>
+                                            item.id === subtask.id
+                                              ? { ...item, isEditing: true }
+                                              : item,
+                                          ),
+                                        )
+                                      }
+                                      onBlur={() =>
+                                        handleSubtaskTitleSave(subtask.id)
+                                      }
+                                      onKeyDown={(event) => {
+                                        if (event.key === 'Enter') {
+                                          event.preventDefault();
+                                          handleSubtaskTitleSave(subtask.id);
+                                        } else if (event.key === 'Escape') {
+                                          event.preventDefault();
+                                          handleSubtaskTitleCancel(subtask.id);
+                                        }
+                                      }}
+                                      disabled={isSaveLoading}
+                                      __nextHasNoMarginBottom
+                                    />
+                                    <div className="alpaca-subtasks-actions">
+                                      <Button
+                                        variant="tertiary"
+                                        className="alpaca-subtask-assign-button"
+                                        onMouseDown={(event) =>
+                                          event.preventDefault()
+                                        }
+                                        onClick={() =>
+                                          handleSubtaskAssignToggle(subtask.id)
+                                        }
+                                        disabled={subtask.isDraft}
+                                      >
+                                        {__('Assign', 'alpaca')}
+                                      </Button>
+                                      <Button
+                                        icon={
+                                          <span className="alpaca-icon-promote"></span>
+                                        }
+                                        label={__('Promote', 'alpaca')}
+                                        showTooltip
+                                        tooltipPosition="top"
+                                        onMouseDown={(event) =>
+                                          event.preventDefault()
+                                        }
+                                        onClick={() =>
+                                          handleSubtaskPromote(subtask.id)
+                                        }
+                                        disabled={
+                                          subtask.isDraft || isPromoteLoading
+                                        }
+                                      />
+                                      <Button
+                                        icon="trash"
+                                        label={__('Delete', 'alpaca')}
+                                        showTooltip
+                                        tooltipPosition="top"
+                                        isDestructive
+                                        onMouseDown={(event) =>
+                                          event.preventDefault()
+                                        }
+                                        onClick={() =>
+                                          handleSubtaskDelete(subtask.id)
+                                        }
+                                        disabled={isDeleteLoading}
+                                      />
+                                    </div>
+                                  </div>
+
+                                  {subtask.showAssignControl && (
+                                    <div className="alpaca-subtasks-assignee">
+                                      <AssigneeSelector
+                                        assignees={subtaskAssignees}
+                                        allUsers={stableUsers}
+                                        onChange={(newAssignees) =>
+                                          handleSubtaskAssigneeChange(
+                                            subtask.id,
+                                            newAssignees,
+                                          )
+                                        }
+                                        isLoading={isAssigneeLoading}
+                                      />
+                                    </div>
+                                  )}
+                                </li>
+                              );
+                            })}
+                          </ul>
+                          <Button
+                            variant="secondary"
+                            className="alpaca-subtasks-add-button"
+                            onClick={handleAddSubtaskDraft}
+                          >
+                            {__('Add New', 'alpaca')}
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
 
                   {!isCreating && (
                     <AttachmentRow

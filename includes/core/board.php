@@ -90,6 +90,7 @@ function alpaca_get_board_data() {
 		[
 			'post_type'      => 'alpaca_issue',
 			'posts_per_page' => -1,
+			'post_parent'    => 0,
 			'tax_query'      => [ // phpcs:ignore-line WordPress.DB.SlowDBQuery.slow_db_query_tax_query
 				[
 					'taxonomy' => 'alpaca_status',

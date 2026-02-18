@@ -867,58 +867,99 @@ $core-font-stack:
   }
 
   /*
-   * 4.5 - Checklists
+     * 4.5 - Checklists
    */
-  .alpaca-checklist-container {
-    .alpaca-checklist {
-      padding-bottom: 0.5rem;
-    }
-
-    padding: 1em 0;
+  .alpaca-subtasks {
+    padding: 2px 0;
   }
 
-  .alpaca-checklist-item {
+  .alpaca-subtasks-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .alpaca-subtasks-item {
+    border: 1px solid $greyborder;
+    border-radius: 4px;
+    padding: 8px;
+    background: $bgwhite;
+
+    &.is-completed .alpaca-subtasks-text-control input {
+      text-decoration: line-through;
+      color: $greytext;
+    }
+  }
+
+  .alpaca-subtasks-main {
     display: flex;
     align-items: center;
+    gap: 8px;
+  }
+
+  .alpaca-subtasks-text-control {
+    flex: 1;
 
     .components-base-control__field {
       margin: 0;
     }
 
-    input[type='text'] {
-      border-color: transparent;
-    }
-
-    .alpaca-textinput {
+    input {
       width: 100%;
+      border: 1px solid transparent;
+      box-shadow: none;
+      min-height: 30px;
+      line-height: 1.3;
 
-      input[type='text'] {
-        width: 100%;
+      &:focus {
+        border-color: $greyborder;
       }
     }
+  }
 
-    &.checked {
-      input[type='text'] {
-        text-decoration: line-through;
-      }
-    }
+  .alpaca-subtasks-actions {
+    display: flex;
+    align-items: center;
+    gap: 2px;
 
-    &.active {
-      input[type='text'] {
-        border-color: inherit;
-      }
-    }
-
-    .alpaca-checklist-controls {
-      display: flex;
-      gap: 5px;
-    }
-
-    button {
-      padding: 0;
-      height: auto;
+    .components-button {
       min-width: auto;
+      padding: 4px;
+      height: 30px;
     }
+  }
+
+  .alpaca-subtask-assign-button.components-button {
+    font-size: 12px;
+    height: 30px;
+    padding: 0 8px;
+  }
+
+  .alpaca-subtasks-assignee {
+    margin-top: 8px;
+    margin-left: 28px;
+  }
+
+  .alpaca-subtasks-add-button.components-button {
+    margin-top: 8px;
+    height: 28px;
+    min-height: 28px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+
+  .alpaca-icon-promote {
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+    background-color: currentcolor;
+    mask-size: 16px;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-image: url('components/icons/svg/box-arrow-up-right.svg');
   }
 
   /*
@@ -1233,6 +1274,35 @@ $core-font-stack:
     &.deadline-changed {
       .alpaca-timeline-icon::before {
         mask-image: url('components/icons/svg/calendar2-week.svg');
+        background-color: $greytext;
+      }
+    }
+
+    &.subtask-created {
+      .alpaca-timeline-icon::before {
+        mask-image: url('components/icons/svg/plus-lg.svg');
+        background-color: $greytext;
+      }
+    }
+
+    &.subtask-assignee-changed {
+      .alpaca-timeline-icon::before {
+        mask-image: url('components/icons/svg/person.svg');
+        background-color: $greytext;
+      }
+    }
+
+    &.subtask-completion-changed,
+    &.subtask-deleted {
+      .alpaca-timeline-icon::before {
+        mask-image: url('components/icons/svg/columns.svg');
+        background-color: $greytext;
+      }
+    }
+
+    &.subtask-promoted {
+      .alpaca-timeline-icon::before {
+        mask-image: url('components/icons/svg/box-arrow-up-right.svg');
         background-color: $greytext;
       }
     }

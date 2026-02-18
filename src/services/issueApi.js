@@ -16,10 +16,25 @@ export const createIssue = (data) => {
   });
 };
 
+export const createSubtask = (data) => {
+  return wp.apiFetch({
+    path: '/alpaca/v1/subtasks',
+    method: 'POST',
+    data,
+  });
+};
+
 export const fetchStatuses = () => wp.apiFetch({ path: '/alpaca/v1/statuses' });
 
 export const fetchUsers = () => wp.apiFetch({ path: '/alpaca/v1/users' });
 
 export const fetchIssueCommentCount = (id) => {
   return wp.apiFetch({ path: `/alpaca/v1/comment-count/${id}` });
+};
+
+export const deleteIssue = (id) => {
+  return wp.apiFetch({
+    path: `/alpaca/v1/delete/${id}`,
+    method: 'DELETE',
+  });
 };
