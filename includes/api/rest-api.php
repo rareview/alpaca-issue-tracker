@@ -586,15 +586,19 @@ function alpaca_update_issue_callback( WP_REST_Request $request ) {
 			$taxonomy = sanitize_key( $taxonomy );
 
 			// Map old taxonomy names to new ones if necessary (for backward compat in JS payload)
-			if ( 'status' === $taxonomy ) $taxonomy = 'alpaca_status';
-			if ( 'assignee' === $taxonomy ) $taxonomy = 'alpaca_assignee';
+			if ( 'status' === $taxonomy ) {
+				$taxonomy = 'alpaca_status';
+			}
+			if ( 'assignee' === $taxonomy ) {
+				$taxonomy = 'alpaca_assignee';
+			}
 
 			if ( ! taxonomy_exists( $taxonomy ) ) {
 				continue;
 			}
 
 			if ( 'alpaca_assignee' === $taxonomy ) {
-				$term_ids = [];
+				$term_ids = array();
 				foreach ( (array) $terms as $user_slug ) {
 					// Sanitize user slug to prevent XSS/injection.
 					$user_slug = sanitize_user( (string) $user_slug );
@@ -606,20 +610,7 @@ function alpaca_update_issue_callback( WP_REST_Request $request ) {
 						continue;
 					}
 
-					$existing = get_term_by( 'slug', $user->user_nicename, 'alpaca_assignee' );
-					if ( ! $existing ) {
-						$inserted = wp_insert_term(
-							$user->display_name,
-							'alpaca_assignee',
-							[
-								'slug'        => $user->user_nicename,
-								'description' => $user->user_login,
-							]
-						);
-						$term_id  = is_wp_error( $inserted ) ? 0 : (int) ( is_array( $inserted ) ? $inserted['term_id'] : $inserted );
-					} else {
-						$term_id = (int) $existing->term_id;
-					}
+					$term_id = alpaca_get_or_create_user_taxonomy_term( $user, 'alpaca_assignee' );
 					if ( $term_id > 0 ) {
 						$term_ids[] = $term_id;
 					}
@@ -873,8 +864,15 @@ function alpaca_get_issue_data_callback( WP_REST_Request $request ) {
 		$terms_data[ $taxonomy_obj->name ] = $terms;
 	}
 
-	if ( isset( $terms_data['alpaca_status'] ) ) $terms_data['status'] = $terms_data['alpaca_status'];
-	if ( isset( $terms_data['alpaca_assignee'] ) ) $terms_data['assignee'] = $terms_data['alpaca_assignee'];
+	if ( isset( $terms_data['alpaca_status'] ) ) {
+		$terms_data['status'] = $terms_data['alpaca_status'];
+	}
+	if ( isset( $terms_data['alpaca_assignee'] ) ) {
+		$terms_data['assignee'] = $terms_data['alpaca_assignee'];
+	}
+	if ( isset( $terms_data['alpaca_watching'] ) ) {
+		$terms_data['watching'] = $terms_data['alpaca_watching'];
+	}
 
 	$issue_comment_count = get_comments(
 		[
@@ -1047,8 +1045,7 @@ function alpaca_watchlist_endpoint() {
  */
 function alpaca_get_watchlist_callback() {
 	$user_id   = get_current_user_id();
-	$watchlist = get_user_meta( $user_id, 'alpaca_watchlist', true );
-	$watchlist = alpaca_to_int_ids( is_array( $watchlist ) ? $watchlist : [] );
+	$watchlist = alpaca_get_watched_issue_ids_for_user( $user_id );
 
 	return alpaca_rest_response(
 		'',
@@ -1073,39 +1070,88 @@ function alpaca_update_watchlist_callback( WP_REST_Request $request ) {
 	}
 
 	$issue_id = isset( $params['issue_id'] ) ? (int) $params['issue_id'] : 0;
-	$user_id            = get_current_user_id();
-	$original_watchlist = get_user_meta( $user_id, 'alpaca_watchlist', true );
-	$original_watchlist = is_array( $original_watchlist ) ? $original_watchlist : [];
-	$watchlist          = alpaca_to_int_ids( $original_watchlist );
-	$watchlist_updated  = false;
+	$user_id  = get_current_user_id();
+	$user     = get_user_by( 'id', $user_id );
+	if ( ! ( $user instanceof WP_User ) ) {
+		return alpaca_rest_response(
+			'',
+			array(
+				'success' => false,
+				'message' => esc_html__( 'User not found.', 'alpaca' ),
+			),
+			404
+		);
+	}
+
+	$current_watchlist = alpaca_get_watched_issue_ids_for_user( $user_id );
+	$watchlist         = $current_watchlist;
 
 	// Preferred input: set the complete array for this user.
 	if ( isset( $params['watchlist'] ) && is_array( $params['watchlist'] ) ) {
-		$watchlist         = alpaca_to_int_ids( $params['watchlist'] );
-		$watchlist_updated = true;
-	}
-
-	// Backward compatible input: toggle one issue ID.
-	if ( ! $watchlist_updated && $issue_id > 0 ) {
-		if ( in_array( $issue_id, $watchlist, true ) ) {
-			$watchlist = array_values( array_diff( $watchlist, [ $issue_id ] ) );
-		} else {
-			$watchlist[] = $issue_id;
-		}
-	}
-
-	// Keep only valid Alpaca issues.
-	if ( ! empty( $watchlist ) ) {
-		$valid_watchlist = [];
-		foreach ( $watchlist as $post_id ) {
+		$desired_watchlist = alpaca_to_int_ids( $params['watchlist'] );
+		$valid_watchlist   = array();
+		foreach ( $desired_watchlist as $post_id ) {
 			if ( 'alpaca_issue' === get_post_type( $post_id ) ) {
 				$valid_watchlist[] = $post_id;
 			}
 		}
-		$watchlist = $valid_watchlist;
+		$watchlist = array_values( array_unique( $valid_watchlist ) );
+
+		$term_id = alpaca_get_or_create_user_taxonomy_term( $user, 'alpaca_watching' );
+		if ( $term_id <= 0 ) {
+			return alpaca_rest_response(
+				'',
+				array(
+					'success' => false,
+					'message' => esc_html__( 'Could not update watchlist.', 'alpaca' ),
+				),
+				500
+			);
+		}
+
+		$to_add    = array_diff( $watchlist, $current_watchlist );
+		$to_remove = array_diff( $current_watchlist, $watchlist );
+
+		foreach ( $to_add as $post_id ) {
+			wp_set_post_terms( $post_id, array( $term_id ), 'alpaca_watching', true );
+		}
+		foreach ( $to_remove as $post_id ) {
+			wp_remove_object_terms( $post_id, array( $term_id ), 'alpaca_watching' );
+		}
+	} elseif ( $issue_id > 0 ) {
+		// Backward compatible input: toggle one issue ID.
+		if ( 'alpaca_issue' !== get_post_type( $issue_id ) ) {
+			return alpaca_rest_response(
+				'',
+				array(
+					'success' => false,
+					'message' => esc_html__( 'Issue not found.', 'alpaca' ),
+				),
+				404
+			);
+		}
+
+		$term_id = alpaca_get_or_create_user_taxonomy_term( $user, 'alpaca_watching' );
+		if ( $term_id <= 0 ) {
+			return alpaca_rest_response(
+				'',
+				array(
+					'success' => false,
+					'message' => esc_html__( 'Could not update watchlist.', 'alpaca' ),
+				),
+				500
+			);
+		}
+
+		$is_watching = has_term( $term_id, 'alpaca_watching', $issue_id );
+		if ( $is_watching ) {
+			wp_remove_object_terms( $issue_id, array( $term_id ), 'alpaca_watching' );
+		} else {
+			wp_set_post_terms( $issue_id, array( $term_id ), 'alpaca_watching', true );
+		}
 	}
 
-	update_user_meta( $user_id, 'alpaca_watchlist', $watchlist );
+	$watchlist = alpaca_get_watched_issue_ids_for_user( $user_id );
 
 	return alpaca_rest_response(
 		'watchlist_update',

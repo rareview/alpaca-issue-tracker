@@ -60,7 +60,6 @@ export const WatchlistProvider = ({ children }) => {
         method: 'POST',
         data: {
           issue_id: numericId,
-          watchlist: newWatchlist,
         },
       });
       // If the server response is different, update the state again to ensure consistency
