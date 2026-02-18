@@ -85,44 +85,53 @@ const AlpacaDashboardWidget = memo(function AlpacaDashboardWidget({ data }) {
               </thead>
               <tbody>
                 {tab.issues.map((issue) => (
-                  <tr key={issue.id}>
-                    <td className="title">
-                      <a
-                        href={`${adminUrlBase}?page=project-board&issue=${encodeURIComponent(
-                          issue.slug || issue.post_name || issue.id,
-                        )}`}
-                        target="_self"
-                      >
-                        {issue.title}
-                      </a>
-                    </td>
-                    <td className="high-priority">
-                      {issue.high_priority ? <PriorityIcon /> : null}
-                    </td>
-                    <td className="deadline">{formatDate(issue.deadline)}</td>
-                    <td className="assignees">
-                      {issue.assignees &&
-                        issue.assignees.map((assignee) => {
-                          const userObject = allUserObjects.find(
-                            (u) => u.slug === assignee.slug,
-                          );
-                          return userObject ? (
-                            <User
-                              key={assignee.term_id}
-                              user={userObject}
-                              showName={false}
-                            />
-                          ) : null;
-                        })}
-                    </td>
-                    <td className="status">
-                      <span className="nowrap">
-                        {issue.status && issue.status[0]
-                          ? issue.status[0].name
-                          : ''}
-                      </span>
-                    </td>
-                  </tr>
+                  (() => {
+                    const linkSlug =
+                      tab.name === 'assignedToMe' && issue.post_parent_slug
+                        ? issue.post_parent_slug
+                        : issue.slug || issue.post_name || '';
+
+                    return (
+                      <tr key={issue.id}>
+                        <td className="title">
+                          <a
+                            href={`${adminUrlBase}?page=project-board&issue=${encodeURIComponent(
+                              linkSlug,
+                            )}`}
+                            target="_self"
+                          >
+                            {issue.title}
+                          </a>
+                        </td>
+                        <td className="high-priority">
+                          {issue.high_priority ? <PriorityIcon /> : null}
+                        </td>
+                        <td className="deadline">{formatDate(issue.deadline)}</td>
+                        <td className="assignees">
+                          {issue.assignees &&
+                            issue.assignees.map((assignee) => {
+                              const userObject = allUserObjects.find(
+                                (u) => u.slug === assignee.slug,
+                              );
+                              return userObject ? (
+                                <User
+                                  key={assignee.term_id}
+                                  user={userObject}
+                                  showName={false}
+                                />
+                              ) : null;
+                            })}
+                        </td>
+                        <td className="status">
+                          <span className="nowrap">
+                            {issue.status && issue.status[0]
+                              ? issue.status[0].name
+                              : ''}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })()
                 ))}
               </tbody>
             </table>
