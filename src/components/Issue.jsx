@@ -5,6 +5,7 @@ import { getTabsConfig } from '../utils/tabsConfig';
 import useIssueData from '../hooks/useIssueData';
 import useUserManagement from '../hooks/useUserManagement';
 import useLoadingStates from '../hooks/useLoadingStates';
+import useAutoExpandTextarea from '../hooks/useAutoExpandTextarea';
 import { getUser, generateAssigneeSpan } from '../hooks/useUser';
 
 import { processAssigneeChanges } from '../utils/assigneeUtils';
@@ -34,13 +35,14 @@ const {
   Modal,
   TabPanel,
   Button,
+  Popover,
   Tooltip,
   Dropdown,
   MenuGroup,
   MenuItem,
   ToggleControl,
   Snackbar,
-  TextControl,
+  TextareaControl,
   CheckboxControl,
 } = wp.components;
 
@@ -167,6 +169,178 @@ const EditableTitle = memo(
     prev.isEditing === next.isEditing && prev.title === next.title,
 );
 
+const SubtaskAssigneeControl = memo(
+  ({
+    assignees,
+    allUsers,
+    allUserObjects,
+    onChange,
+    isDraft,
+    isLoading,
+  }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const containerRef = useRef(null);
+    const hasAssignees = assignees.length > 0;
+    const previewUsers = assignees
+      .map((assigneeValue) =>
+        allUserObjects.find(
+          (userObject) =>
+            userObject.name === assigneeValue || userObject.slug === assigneeValue,
+        ),
+      )
+      .filter(Boolean);
+    const assigneeText = assignees.join(', ');
+
+    const openPopover = (event) => {
+      event.stopPropagation();
+      setIsOpen(true);
+    };
+
+    useEffect(() => {
+      if (!isOpen) {
+        return undefined;
+      }
+
+      const handlePointerDown = (event) => {
+        const target = event.target;
+        const isInsideTrigger = containerRef.current?.contains(target);
+        const isInsidePopover = Boolean(
+          target?.closest?.('.alpaca-subtasks-assignee-popover'),
+        );
+
+        if (!isInsideTrigger && !isInsidePopover) {
+          setIsOpen(false);
+        }
+      };
+
+      const handleEscape = (event) => {
+        if (event.key === 'Escape') {
+          setIsOpen(false);
+        }
+      };
+
+      document.addEventListener('mousedown', handlePointerDown, true);
+      document.addEventListener('keydown', handleEscape, true);
+
+      return () => {
+        document.removeEventListener('mousedown', handlePointerDown, true);
+        document.removeEventListener('keydown', handleEscape, true);
+      };
+    }, [isOpen]);
+
+    useEffect(() => {
+      if (!isOpen) {
+        return undefined;
+      }
+
+      let animationFrameId = null;
+      const focusInput = () => {
+        const input = document.querySelector(
+          '.alpaca-subtasks-assignee-popover .components-form-token-field__input',
+        );
+        if (input && typeof input.focus === 'function') {
+          input.focus();
+        }
+      };
+
+      animationFrameId = window.requestAnimationFrame(focusInput);
+
+      return () => {
+        if (animationFrameId) {
+          window.cancelAnimationFrame(animationFrameId);
+        }
+      };
+    }, [isOpen]);
+
+    return (
+      <div className="alpaca-subtasks-assignee" ref={containerRef}>
+        {hasAssignees ? (
+          <button
+            type="button"
+            className="alpaca-subtasks-assignee-preview"
+            title={assigneeText}
+            aria-label={__('Edit assignees', 'alpaca')}
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={openPopover}
+          >
+            {previewUsers.length > 0 ? (
+              previewUsers.map((userObject) => (
+                <img
+                  key={userObject.id}
+                  src={userObject.avatar}
+                  alt={userObject.name}
+                />
+              ))
+            ) : (
+              <span className="alpaca-subtasks-assignee-fallback dashicons dashicons-admin-users"></span>
+            )}
+          </button>
+        ) : (
+          <Button
+            icon={<span className="alpaca-icon-assign"></span>}
+            label={__('Assign', 'alpaca')}
+            showTooltip
+            tooltipPosition="top"
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={openPopover}
+            disabled={isDraft}
+          />
+        )}
+
+        {isOpen && containerRef.current && (
+          <Popover
+            anchor={containerRef.current}
+            placement="bottom-end"
+            onClose={() => setIsOpen(false)}
+            className="alpaca-subtasks-assignee-popover"
+            focusOnMount={false}
+          >
+            <div className="alpaca-subtasks-assignee-popover-content">
+              <AssigneeSelector
+                assignees={assignees}
+                allUsers={allUsers}
+                onChange={onChange}
+                isLoading={isLoading}
+              />
+            </div>
+          </Popover>
+        )}
+      </div>
+    );
+  },
+);
+
+const SubtaskTitleField = memo(
+  ({
+    value,
+    placeholder,
+    disabled,
+    onChange,
+    onFocus,
+    onBlur,
+    onKeyDown,
+  }) => {
+    const textareaRef = useRef(null);
+    useAutoExpandTextarea(textareaRef, value, true);
+
+    return (
+      <TextareaControl
+        className="alpaca-subtasks-text-control"
+        value={value}
+        placeholder={placeholder}
+        onChange={onChange}
+        onFocus={onFocus}
+        onBlur={onBlur}
+        onKeyDown={onKeyDown}
+        disabled={disabled}
+        rows={1}
+        ref={textareaRef}
+        __nextHasNoMarginBottom
+      />
+    );
+  },
+);
+
 /**
  * Normalize one subtask object from API or local draft state.
  *
@@ -180,6 +354,7 @@ const normalizeSubtask = (subtask) => {
 
   return {
     id: subtask?.id,
+    slug: subtask?.slug || '',
     title: subtask?.title || subtask?.content || '',
     postParent: Number(subtask?.post_parent || subtask?.postParent || 0),
     isCompleted:
@@ -984,16 +1159,6 @@ const AlpacaIssue = ({
     [issueDetails, setLoading, showNotification, subtasks],
   );
 
-  const handleSubtaskAssignToggle = useCallback((subtaskId) => {
-    setSubtasks((prev) =>
-      prev.map((item) =>
-        item.id === subtaskId
-          ? { ...item, showAssignControl: !item.showAssignControl }
-          : item,
-      ),
-    );
-  }, []);
-
   const handleSubtaskAssigneeChange = useCallback(
     async (subtaskId, newAssignees) => {
       const subtask = subtasks.find((item) => item.id === subtaskId);
@@ -1085,10 +1250,86 @@ const AlpacaIssue = ({
 
       setLoading(`subtask-promote-${subtaskId}`, true);
       try {
-        await updateIssue(subtask.id, payload);
+        const optimisticSlug = subtask.slug || '';
+        const promotedAssignees = (subtask.assignees || [])
+          .map((assignee) =>
+            allUserObjects.find(
+              (userObject) =>
+                userObject.id === assignee.id ||
+                userObject.slug === assignee.slug ||
+                userObject.name === assignee.name,
+            ),
+          )
+          .filter(Boolean)
+          .map((userObject) => ({
+            id: userObject.id,
+            slug: userObject.slug,
+            name: userObject.name,
+            displayName: userObject.name,
+            avatar: userObject.avatar,
+          }));
+
+        if (parentStatusId) {
+          wp.hooks.doAction(
+            'alpaca.issueInserted',
+            {
+              id: subtask.id,
+              slug: optimisticSlug,
+              title: subtask.title,
+              // eslint-disable-next-line camelcase
+              post_date: new Date().toISOString(),
+              assignees: promotedAssignees,
+              comment_count: 0,
+              meta: {},
+            },
+            parentStatusId,
+          );
+        }
+
+        const promoteResponse = await updateIssue(subtask.id, payload);
+        const promotedSlug =
+          promoteResponse?.issue?.slug || optimisticSlug;
         setSubtasks((prev) => prev.filter((item) => item.id !== subtaskId));
-        wp.hooks.doAction('alpaca.subtaskPromoted', issueDetails, subtask);
+
+        if (parentStatusId && promotedSlug && promotedSlug !== optimisticSlug) {
+          wp.hooks.doAction('alpaca.issueDeleted', subtask.id);
+          wp.hooks.doAction(
+            'alpaca.issueInserted',
+            {
+              id: subtask.id,
+              slug: promotedSlug,
+              title: subtask.title,
+              // eslint-disable-next-line camelcase
+              post_date: new Date().toISOString(),
+              assignees: promotedAssignees,
+              comment_count: 0,
+              meta: {},
+            },
+            parentStatusId,
+          );
+        }
+
+        wp.hooks.doAction(
+          'alpaca.subtaskPromoted',
+          {
+            parentIssue: {
+              id: issueDetails?.post_id || issueId,
+              slug: issueDetails?.post_data?.post_name || '',
+              title:
+                issueDetails?.post_data?.post_title ||
+                issueDetails?.post_data?.post_content ||
+                __('Unknown issue', 'alpaca'),
+            },
+            promotedIssue: {
+              id: subtask.id,
+              slug: promotedSlug,
+              title: subtask.title,
+            },
+            subtask,
+          },
+        );
       } catch (err) {
+        wp.hooks.doAction('alpaca.issueDeleted', subtask.id);
         // eslint-disable-next-line no-console
         console.error('Error promoting subtask:', err);
         showNotification(__('Failed to promote subtask.', 'alpaca'), 'error');
@@ -1096,7 +1337,7 @@ const AlpacaIssue = ({
         setLoading(`subtask-promote-${subtaskId}`, false);
       }
     },
-    [issueDetails, setLoading, showNotification, subtasks],
+    [allUserObjects, issueDetails, issueId, setLoading, showNotification, subtasks],
   );
 
   const handleSubtaskDelete = useCallback(
@@ -1322,8 +1563,7 @@ const AlpacaIssue = ({
                                         subtask.isDraft || isCompleteLoading
                                       }
                                     />
-                                    <TextControl
-                                      className="alpaca-subtasks-text-control"
+                                    <SubtaskTitleField
                                       value={subtask.title}
                                       placeholder={__(
                                         'Enter subtask title…',
@@ -1357,71 +1597,54 @@ const AlpacaIssue = ({
                                         }
                                       }}
                                       disabled={isSaveLoading}
-                                      __nextHasNoMarginBottom
                                     />
-                                    <div className="alpaca-subtasks-actions">
-                                      <Button
-                                        variant="tertiary"
-                                        className="alpaca-subtask-assign-button"
-                                        onMouseDown={(event) =>
-                                          event.preventDefault()
-                                        }
-                                        onClick={() =>
-                                          handleSubtaskAssignToggle(subtask.id)
-                                        }
-                                        disabled={subtask.isDraft}
-                                      >
-                                        {__('Assign', 'alpaca')}
-                                      </Button>
-                                      <Button
-                                        icon={
-                                          <span className="alpaca-icon-promote"></span>
-                                        }
-                                        label={__('Promote', 'alpaca')}
-                                        showTooltip
-                                        tooltipPosition="top"
-                                        onMouseDown={(event) =>
-                                          event.preventDefault()
-                                        }
-                                        onClick={() =>
-                                          handleSubtaskPromote(subtask.id)
-                                        }
-                                        disabled={
-                                          subtask.isDraft || isPromoteLoading
-                                        }
-                                      />
-                                      <Button
-                                        icon="trash"
-                                        label={__('Delete', 'alpaca')}
-                                        showTooltip
-                                        tooltipPosition="top"
-                                        isDestructive
-                                        onMouseDown={(event) =>
-                                          event.preventDefault()
-                                        }
-                                        onClick={() =>
-                                          handleSubtaskDelete(subtask.id)
-                                        }
-                                        disabled={isDeleteLoading}
-                                      />
-                                    </div>
-                                  </div>
-
-                                  {subtask.showAssignControl && (
-                                    <div className="alpaca-subtasks-assignee">
-                                      <AssigneeSelector
+                                      <SubtaskAssigneeControl
                                         assignees={subtaskAssignees}
                                         allUsers={stableUsers}
+                                        allUserObjects={allUserObjects}
                                         onChange={(newAssignees) =>
                                           handleSubtaskAssigneeChange(
                                             subtask.id,
-                                            newAssignees,
-                                          )
-                                        }
-                                        isLoading={isAssigneeLoading}
-                                      />
-                                    </div>
-                                  )}
+                                          newAssignees,
+                                        )
+                                      }
+                                      isDraft={subtask.isDraft}
+                                      isLoading={isAssigneeLoading}
+                                    />
+                                    <Button
+                                      className="alpaca-subtasks-promote"
+                                      icon={
+                                        <span className="alpaca-icon-promote"></span>
+                                      }
+                                      label={__('Promote', 'alpaca')}
+                                      showTooltip
+                                      tooltipPosition="top"
+                                      onMouseDown={(event) =>
+                                        event.preventDefault()
+                                      }
+                                      onClick={() =>
+                                        handleSubtaskPromote(subtask.id)
+                                      }
+                                      disabled={
+                                        subtask.isDraft || isPromoteLoading
+                                      }
+                                    />
+                                    <Button
+                                      className="alpaca-subtasks-delete"
+                                      icon="trash"
+                                      label={__('Delete', 'alpaca')}
+                                      showTooltip
+                                      tooltipPosition="top"
+                                      isDestructive
+                                      onMouseDown={(event) =>
+                                        event.preventDefault()
+                                      }
+                                      onClick={() =>
+                                        handleSubtaskDelete(subtask.id)
+                                      }
+                                      disabled={isDeleteLoading}
+                                    />
+                                  </div>
                                 </li>
                               );
                             })}

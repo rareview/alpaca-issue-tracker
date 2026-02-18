@@ -169,6 +169,7 @@ function alpaca_get_issue_response_data( $issue, $override_data = [] ) {
 		'post_id'  => $post_id,
 		'issue'    => [
 			'id'          => $post_id,
+			'slug'        => (string) $post->post_name,
 			'title'       => $title,
 			'author_id'   => $author_id,
 			'author_name' => get_the_author_meta( 'display_name', $author_id ),
@@ -835,6 +836,7 @@ function alpaca_get_subtask_response_data( WP_Post $post ) {
 
 	return [
 		'id'           => $subtask_id,
+		'slug'         => (string) $post->post_name,
 		'title'        => (string) $post->post_title,
 		'content'      => (string) $post->post_content,
 		'post_parent'  => (int) $post->post_parent,
@@ -947,6 +949,7 @@ function alpaca_create_subtask_callback( WP_REST_Request $request ) {
 		'post_status'    => 'publish',
 		'post_author'    => get_current_user_id(),
 		'post_title'     => wp_kses_post( $content ),
+		'post_name'      => hash( 'adler32', (string) $request->get_body() ),
 		'post_content'   => wp_kses_post( $content ),
 		'post_parent'    => $parent_id,
 		'comment_status' => 'open',

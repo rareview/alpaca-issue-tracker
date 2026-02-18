@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import { getUser } from '../hooks/useUser';
 import { fetchIssueCommentCount } from '../services/issueApi';
+import useAutoExpandTextarea from '../hooks/useAutoExpandTextarea';
 
 const { useState, useEffect, useRef, useCallback, useMemo, memo } = wp.element;
 const { __, _n, sprintf } = wp.i18n;
@@ -47,29 +48,6 @@ const injectAvatarStyles = (htmlString) => {
     console.error('Failed to process content for avatar styles', e);
     return htmlString; // Return original string on error
   }
-};
-
-const useAutoExpandTextarea = (ref, value, enabled = true) => {
-  useEffect(() => {
-    if (!enabled) {
-      return;
-    }
-
-    const textarea = ref?.current;
-
-    if (!textarea || typeof textarea.style === 'undefined') {
-      return;
-    }
-
-    textarea.style.height = 'auto';
-    textarea.style.height = `${textarea.scrollHeight}px`;
-
-    return () => {
-      if (textarea && textarea.style) {
-        textarea.style.height = '';
-      }
-    };
-  }, [ref, value, enabled]);
 };
 
 const deleteCommentAttachment = async (url, issueId) => {

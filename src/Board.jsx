@@ -78,6 +78,27 @@ export function AlpacaBoard() {
           return;
         }
 
+        // Only slug values are supported here.
+        if (issueSlug !== '' && !/^[a-f0-9]{8}$/i.test(issueSlug)) {
+          try {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('issue');
+            window.history.replaceState({}, '', url.toString());
+          } catch (error) {
+            const fallbackParams = new URLSearchParams(window.location.search);
+            fallbackParams.delete('issue');
+            const base = window.location.pathname + window.location.hash;
+            const search = fallbackParams.toString();
+            window.history.replaceState(
+              {},
+              '',
+              base + (search ? `?${search}` : ''),
+            );
+          }
+          setSelectedItem(null);
+          return;
+        }
+
         for (const container of containers) {
           const found = container.items.find(
             (it) =>
@@ -94,9 +115,7 @@ export function AlpacaBoard() {
           setSelectedItem(null);
           // Show snackbar with auto-dismiss and fade-out.
           setSnackbarClosing(false);
-          setSnackbarMessage(
-            __('Issue not found.', 'alpaca') + ` (${issueSlug})`,
-          );
+          setSnackbarMessage(__('Issue not found.', 'alpaca'));
           if (snackbarTimerRef.current) clearTimeout(snackbarTimerRef.current);
           if (snackbarFadeTimerRef.current) {
             clearTimeout(snackbarFadeTimerRef.current);
@@ -189,16 +208,21 @@ export function AlpacaBoard() {
 
     const item = getItemById(itemId);
     setSelectedItem(item);
-    // Update URL so the item can be shared via `?issue=slug` (fallback to id)
+    // Update URL so the item can be shared via `?issue=slug`.
     try {
       const url = new URL(window.location.href);
-      const value = item?.slug || item?.meta?.slug || itemId;
+      const value = item?.slug || item?.meta?.slug || '';
+      if (!value) {
+        return;
+      }
       url.searchParams.set('issue', value);
       window.history.pushState({}, '', url.toString());
     } catch (e) {
       const params = new URLSearchParams(window.location.search);
-      const value =
-        (item && (item.slug || (item.meta && item.meta.slug))) || itemId;
+      const value = (item && (item.slug || (item.meta && item.meta.slug))) || '';
+      if (!value) {
+        return;
+      }
       params.set('issue', value);
       const base = window.location.pathname + window.location.hash;
       const search = params.toString();
@@ -743,6 +767,7 @@ export function AlpacaBoard() {
         if (targetContainer) {
           const newItem = {
             id: issue.id.toString(),
+            slug: issue.slug || issue.post_name || '',
             content: decodeEntities(issue.title),
             postDate: issue.post_date,
             authorName: issue.author_name,
@@ -760,14 +785,38 @@ export function AlpacaBoard() {
       });
     };
 
+    const handleIssueDeletedFromHook = (issueId) => {
+      if (!issueId) {
+        return;
+      }
+      setContainers((prevContainers) =>
+        prevContainers.map((container) => ({
+          ...container,
+          items: container.items.filter((item) => item.id !== issueId.toString()),
+        })),
+      );
+    };
+
     wp.hooks.addAction(
       'alpaca.issueSubmitted',
       'alpaca/boardmain',
       handleIssueSubmitted,
     );
+    wp.hooks.addAction(
+      'alpaca.issueInserted',
+      'alpaca/boardmain',
+      handleIssueSubmitted,
+    );
+    wp.hooks.addAction(
+      'alpaca.issueDeleted',
+      'alpaca/boardmain',
+      handleIssueDeletedFromHook,
+    );
 
     return () => {
       wp.hooks.removeAction('alpaca.issueSubmitted', 'alpaca/boardmain');
+      wp.hooks.removeAction('alpaca.issueInserted', 'alpaca/boardmain');
+      wp.hooks.removeAction('alpaca.issueDeleted', 'alpaca/boardmain');
     };
   }, []);
 

@@ -46,6 +46,32 @@ const getSubtaskLabel = (subtask) => {
   return cleanedTitle || 'Untitled subtask';
 };
 
+/**
+ * Build an issue link using the current board URL when possible.
+ *
+ * @param {Object} issueData     Issue data (slug).
+ * @param {string} fallbackLabel Text to display when URL cannot be built.
+ * @return {string} Markdown link or plain fallback label.
+ */
+const getIssueLinkLabel = (issueData, fallbackLabel) => {
+  const issueSlug = issueData?.slug || '';
+  if (!issueSlug) {
+    return fallbackLabel;
+  }
+
+  try {
+    if (typeof window !== 'undefined' && window.location) {
+      const issueUrl = new URL(window.location.href);
+      issueUrl.searchParams.set('issue', issueSlug);
+      return `[${fallbackLabel}](${issueUrl.toString()})`;
+    }
+  } catch (error) {
+    // Fall through to plain text label.
+  }
+
+  return fallbackLabel;
+};
+
 addFilter('alpaca.commentObject', 'alpaca/addPlainText', (comment) => {
   if (comment && comment.content && comment.content.raw) {
     comment.content.txt = stripHtmlAndMarkdown(comment.content.raw);
@@ -292,15 +318,40 @@ addAction(
 addAction(
   'alpaca.subtaskPromoted',
   'alpaca/addSubtaskPromotedComment',
-  async (issue, subtask) => {
+  async (payload) => {
+    const { parentIssue, promotedIssue, subtask } = payload || {};
     const currentUser = await getUser();
     const actionClass = ['subtask-promoted'];
     const subtaskLabel = getSubtaskLabel(subtask);
-    const commentContent = `Subtask **${subtaskLabel}** promoted to issue by ${generateAssigneeSpan(
+
+    const parentTitle = stripHtmlAndMarkdown(parentIssue?.title || '').trim();
+    const parentLabel = parentTitle || __('Unknown issue', 'alpaca');
+    const parentIssueLink = getIssueLinkLabel(parentIssue, parentLabel);
+
+    const promotedId = promotedIssue?.id || subtask?.id;
+    const promotedTitle = stripHtmlAndMarkdown(promotedIssue?.title || '').trim();
+    const promotedLabel = promotedTitle || __('Issue', 'alpaca');
+    const promotedIssueLink = getIssueLinkLabel(
+      {
+        slug: promotedIssue?.slug || subtask?.slug || '',
+      },
+      promotedLabel,
+    );
+
+    const parentComment = `Subtask **${subtaskLabel}** was promoted to issue ${promotedIssueLink} by ${generateAssigneeSpan(
+      currentUser,
+    )}`;
+    const promotedComment = `Issue created from checklist subtask **${subtaskLabel}** on ${parentIssueLink} by ${generateAssigneeSpan(
       currentUser,
     )}`;
 
-    await postComment(issue, commentContent, actionClass);
+    if (parentIssue?.id) {
+      await postComment(parentIssue.id, parentComment, actionClass);
+    }
+
+    if (promotedId) {
+      await postComment(promotedId, promotedComment, actionClass);
+    }
   },
 );
 
