@@ -43,7 +43,7 @@ const stripHtmlAndMarkdown = (input) => {
 const getSubissueLabel = (subissue) => {
   const title = subissue?.title || subissue?.content || '';
   const cleanedTitle = stripHtmlAndMarkdown(title).trim();
-  return cleanedTitle || 'Untitled subissue';
+  return cleanedTitle || __('Untitled subissue', 'alpaca');
 };
 
 /**
@@ -144,14 +144,14 @@ addAction(
   async (issue, statusId, isHighPriority) => {
     const currentUser = await getUser();
     const actionClass = ['issue-created'];
-    let commentContent = `Issue created by ${generateAssigneeSpan(
+    let commentContent = `${__('Issue created by', 'alpaca')} ${generateAssigneeSpan(
       currentUser,
       true,
     )}`;
 
     if (isHighPriority) {
       actionClass.push('high-priority');
-      commentContent += ' with **High Priority**';
+      commentContent += __(' with **High Priority**', 'alpaca');
     }
 
     await postComment(issue, commentContent, actionClass); // Pass issue object
@@ -164,7 +164,12 @@ addAction(
   async (issue, fromStatus, toStatus) => {
     const currentUser = await getUser();
     const actionClass = ['status-changed'];
-    const commentContent = `Status changed from **${fromStatus}** to **${toStatus}** by ${generateAssigneeSpan(currentUser)}`;
+    const commentContent = `${__('Status changed from', 'alpaca')} **${fromStatus}** ${__(
+      'to',
+      'alpaca',
+    )} **${toStatus}** ${__('by', 'alpaca')} ${generateAssigneeSpan(
+      currentUser,
+    )}`;
     await postComment(issue, commentContent, actionClass); // Pass issue object
   },
 );
@@ -182,9 +187,10 @@ addAction(
     const targetUserLabel = user
       ? generateAssigneeSpan(user, true)
       : __('Unknown user', 'alpaca');
-    const commentContent = `${targetUserLabel} was ${actionText} this issue by ${generateAssigneeSpan(
-      currentUser,
-    )}`;
+    const commentContent = `${targetUserLabel} ${__('was', 'alpaca')} ${actionText} ${__(
+      'this issue by',
+      'alpaca',
+    )} ${generateAssigneeSpan(currentUser)}`;
     await postComment(issue, commentContent, actionClass); // Pass issue object
   },
 );
@@ -210,21 +216,21 @@ addAction(
     switch (changeType) {
       case 'added':
         actionClass.push('action-add');
-        commentContent = `Deadline set to **${formatDate(
+        commentContent = `${__('Deadline set to', 'alpaca')} **${formatDate(
           newDeadline,
-        )}** by ${generateAssigneeSpan(currentUser)}`;
+        )}** ${__('by', 'alpaca')} ${generateAssigneeSpan(currentUser)}`;
         break;
       case 'deleted':
         actionClass.push('action-remove');
-        commentContent = `Deadline removed by ${generateAssigneeSpan(
+        commentContent = `${__('Deadline removed by', 'alpaca')} ${generateAssigneeSpan(
           currentUser,
         )}`;
         break;
       case 'changed':
         actionClass.push('action-update');
-        commentContent = `Deadline changed to **${formatDate(newDeadline)}** by ${generateAssigneeSpan(
-          currentUser,
-        )}`;
+        commentContent = `${__('Deadline changed to', 'alpaca')} **${formatDate(
+          newDeadline,
+        )}** ${__('by', 'alpaca')} ${generateAssigneeSpan(currentUser)}`;
         break;
       default:
         // Do nothing if changeType is unknown
@@ -248,12 +254,12 @@ addAction(
     let commentContent = '';
     if (isHighPriority) {
       actionClass.push('action-add');
-      commentContent = `Priority set to **High** by ${generateAssigneeSpan(
+      commentContent = `${__('Priority set to **High** by', 'alpaca')} ${generateAssigneeSpan(
         currentUser,
       )}`;
     } else {
       actionClass.push('action-remove');
-      commentContent = `High priority removed by ${generateAssigneeSpan(
+      commentContent = `${__('High priority removed by', 'alpaca')} ${generateAssigneeSpan(
         currentUser,
       )}`;
     }
@@ -271,9 +277,10 @@ addAction(
     const currentUser = await getUser();
     const actionClass = ['subissue-created'];
     const subissueLabel = getSubissueLabel(subissue);
-    const commentContent = `Checklist item **${subissueLabel}** created by ${generateAssigneeSpan(
-      currentUser,
-    )}`;
+    const commentContent = `${__('Checklist item', 'alpaca')} **${subissueLabel}** ${__(
+      'created by',
+      'alpaca',
+    )} ${generateAssigneeSpan(currentUser)}`;
 
     await postComment(issue, commentContent, actionClass);
   },
@@ -287,7 +294,10 @@ addAction(
     const actionClass = ['subissue-completion-changed'];
     const subissueLabel = getSubissueLabel(subissue);
     const stateLabel = isCompleted ? 'completed' : 'reopened';
-    const commentContent = `Checklist item **${subissueLabel}** marked as **${stateLabel}** by ${generateAssigneeSpan(
+    const commentContent = `${__('Checklist item', 'alpaca')} **${subissueLabel}** ${__(
+      'marked as',
+      'alpaca',
+    )} **${stateLabel}** ${__('by', 'alpaca')} ${generateAssigneeSpan(
       currentUser,
     )}`;
 
@@ -309,7 +319,10 @@ addAction(
     const targetUserLabel = user
       ? generateAssigneeSpan(user, true)
       : __('Unknown user', 'alpaca');
-    const commentContent = `${targetUserLabel} was ${actionText} checklist item **${subissueLabel}** by ${generateAssigneeSpan(
+    const commentContent = `${targetUserLabel} ${__('was', 'alpaca')} ${actionText} ${__(
+      'checklist item',
+      'alpaca',
+    )} **${subissueLabel}** ${__('by', 'alpaca')} ${generateAssigneeSpan(
       currentUser,
     )}`;
 
@@ -342,10 +355,16 @@ addAction(
       promotedLabel,
     );
 
-    const parentComment = `Checklist item **${subissueLabel}** was promoted to issue ${promotedIssueLink} by ${generateAssigneeSpan(
+    const parentComment = `${__('Checklist item', 'alpaca')} **${subissueLabel}** ${__(
+      'was promoted to issue',
+      'alpaca',
+    )} ${promotedIssueLink} ${__('by', 'alpaca')} ${generateAssigneeSpan(
       currentUser,
     )}`;
-    const promotedComment = `Issue created from checklist item **${subissueLabel}** on ${parentIssueLink} by ${generateAssigneeSpan(
+    const promotedComment = `${__('Issue created from checklist item', 'alpaca')} **${subissueLabel}** ${__(
+      'on',
+      'alpaca',
+    )} ${parentIssueLink} ${__('by', 'alpaca')} ${generateAssigneeSpan(
       currentUser,
     )}`;
 
@@ -366,9 +385,10 @@ addAction(
     const currentUser = await getUser();
     const actionClass = ['subissue-deleted'];
     const subissueLabel = getSubissueLabel(subissue);
-    const commentContent = `Checklist item **${subissueLabel}** deleted by ${generateAssigneeSpan(
-      currentUser,
-    )}`;
+    const commentContent = `${__('Checklist item', 'alpaca')} **${subissueLabel}** ${__(
+      'deleted by',
+      'alpaca',
+    )} ${generateAssigneeSpan(currentUser)}`;
 
     await postComment(issue, commentContent, actionClass);
   },
