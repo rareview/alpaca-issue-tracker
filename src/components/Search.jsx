@@ -34,6 +34,10 @@ function getIssueTitle(post) {
     return '';
   }
 
+  if (post.post_title && String(post.post_title).trim()) {
+    return decodeEntities(String(post.post_title).trim());
+  }
+
   if (post.title) {
     if (typeof post.title === 'string' && post.title.trim()) {
       return post.title.trim();
@@ -50,7 +54,7 @@ function getIssueTitle(post) {
     }
   }
 
-  return post.post_title || post.post_content || post.slug || post.post_name || '';
+  return post.post_content || post.slug || post.post_name || '';
 }
 
 /**
@@ -88,6 +92,8 @@ function buildBoardIssueIndex(boardData) {
       }
 
       index.set(id, {
+        title:
+          typeof issue.title === 'string' ? decodeEntities(issue.title) : '',
         status,
         commentCount,
         labels,
@@ -104,9 +110,16 @@ function buildBoardIssueIndex(boardData) {
 function buildResultItem(post, boardIssueIndex) {
   const id = String(post.id);
   const fromBoard = boardIssueIndex.get(id);
+  let title = '';
+  if (fromBoard && fromBoard.title) {
+    title = fromBoard.title;
+  } else {
+    title = getIssueTitle(post);
+  }
+
   return {
     id,
-    title: getIssueTitle(post) || id,
+    title: title || id,
     slug: post.slug || post.post_name || post.name || null,
     status: fromBoard && fromBoard.status ? fromBoard.status : '',
     commentCount:
