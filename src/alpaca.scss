@@ -1599,6 +1599,39 @@ $core-font-stack:
     .components-input-control__container {
       max-width: 25em;
     }
+
+    input[type='number'].small-text {
+      width: 65px;
+      padding-right: 0;
+    }
+
+    .alpaca-small-number-control {
+      .components-input-control__container {
+        width: 65px;
+        max-width: 65px;
+      }
+
+      .alpaca-number-control-suffix {
+        &::before {
+          content: '\00a0';
+        }
+      }
+
+      input[type='number'] {
+        width: 65px;
+        padding-right: 0;
+      }
+    }
+
+    .alpaca-idle-indicator-control-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+
+      .components-base-control {
+        margin-bottom: 0;
+      }
+    }
   }
 }
 

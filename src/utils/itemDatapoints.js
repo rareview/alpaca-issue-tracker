@@ -6,6 +6,24 @@ import CalendarIcon from '../components/icons/CalendarIcon';
 import PriorityIcon from '../components/icons/PriorityIcon';
 
 /**
+ * Get the idle indicator threshold in days.
+ *
+ * Falls back to 1 day when no valid setting exists.
+ *
+ * @return {number} Number of days before idle is shown.
+ */
+const getIdleIndicatorDaysThreshold = () => {
+  const configuredDays = window?.alpacaSettings?.idleIndicatorDays;
+  const parsedDays = Number.parseInt(configuredDays, 10);
+
+  if (Number.isNaN(parsedDays) || parsedDays < 1) {
+    return 1;
+  }
+
+  return parsedDays;
+};
+
+/**
  * Filter to add priority badge to item datapoints.
  *
  * @param {JSX.Element|null} originalContent The original content of the filter.
@@ -100,6 +118,7 @@ export const addCommentCountDatapoint = (originalContent, itemProps) => {
 export const addDaysIdleDatapoint = (originalContent, itemProps) => {
   const { meta } = itemProps;
   const { postDate } = itemProps;
+  const idleThresholdDays = getIdleIndicatorDaysThreshold();
 
   const lastActivityDateString = meta?.lastActivity || postDate;
   let idleText = null;
@@ -113,7 +132,7 @@ export const addDaysIdleDatapoint = (originalContent, itemProps) => {
       (today - lastActivityDate) / (1000 * 60 * 60 * 24),
     );
 
-    if (daysIdle > 0) {
+    if (daysIdle >= idleThresholdDays) {
       // translators: %d: Number of days
       idleText = sprintf(__('%dd idle', 'alpaca'), daysIdle);
       return (
