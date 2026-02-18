@@ -179,10 +179,12 @@ addAction(
       'assignee-changed',
       isAssigned ? 'action-add' : 'action-remove',
     ];
-    const commentContent = `${generateAssigneeSpan(
-      user,
-      true,
-    )} was ${actionText} this issue by ${generateAssigneeSpan(currentUser)}`;
+    const targetUserLabel = user
+      ? generateAssigneeSpan(user, true)
+      : __('Unknown user', 'alpaca');
+    const commentContent = `${targetUserLabel} was ${actionText} this issue by ${generateAssigneeSpan(
+      currentUser,
+    )}`;
     await postComment(issue, commentContent, actionClass); // Pass issue object
   },
 );

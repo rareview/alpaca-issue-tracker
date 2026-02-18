@@ -386,6 +386,19 @@ const createDraftSubtask = () => ({
   showAssignControl: false,
 });
 
+/**
+ * Resolve a user object by name or slug.
+ *
+ * @param {Array}  users      Available user objects.
+ * @param {string} identifier User name or slug.
+ * @return {Object|undefined} Matched user object.
+ */
+const findUserByNameOrSlug = (users, identifier) =>
+  users.find(
+    (userObject) =>
+      userObject.name === identifier || userObject.slug === identifier,
+  );
+
 // ----- Main Component -----
 const AlpacaIssue = ({
   issueId,
@@ -566,11 +579,11 @@ const AlpacaIssue = ({
         }
 
         added.forEach((name) => {
-          const user = allUserObjects.find((u) => u.name === name);
+          const user = findUserByNameOrSlug(allUserObjects, name);
           wp.hooks.doAction('alpaca.assigneeChanged', issueDetails, user, true);
         });
         removed.forEach((name) => {
-          const user = allUserObjects.find((u) => u.name === name);
+          const user = findUserByNameOrSlug(allUserObjects, name);
           wp.hooks.doAction(
             'alpaca.assigneeChanged',
             issueDetails,
