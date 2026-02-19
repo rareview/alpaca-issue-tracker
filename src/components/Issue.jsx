@@ -368,11 +368,13 @@ const normalizeSubissue = (subissue) => {
     : [];
   const status = Array.isArray(subissue?.status) ? subissue.status : [];
   const isCompletedValue = subissue?.is_completed ?? subissue?.isCompleted;
+  const normalizedTitle = subissue?.title || subissue?.content || '';
 
   return {
     id: subissue?.id,
     slug: subissue?.slug || '',
-    title: subissue?.title || subissue?.content || '',
+    title: normalizedTitle,
+    originalTitle: subissue?.originalTitle ?? normalizedTitle,
     postParent: Number(subissue?.post_parent || subissue?.postParent || 0),
     isCompleted:
       isCompletedValue === true ||
@@ -394,6 +396,7 @@ const normalizeSubissue = (subissue) => {
 const createDraftSubissue = () => ({
   id: `draft-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
   title: '',
+  originalTitle: '',
   postParent: 0,
   isCompleted: false,
   assignees: [],
@@ -1041,15 +1044,90 @@ const AlpacaIssue = ({
     updateAssignees,
   ]);
 
-  const handleAddSubissueDraft = useCallback(() => {
-    setSubissues((prev) => {
-      const hasDraft = prev.some((subissue) => subissue.isDraft);
-      if (hasDraft) {
-        return prev;
+  const persistDraftSubissue = useCallback(
+    async (subissueId, options = {}) => {
+      const { addNewDraftAfterSave = false } = options;
+      const draftSubissue = subissues.find(
+        (item) => item.id === subissueId && item.isDraft,
+      );
+      if (!draftSubissue) {
+        return null;
       }
-      return [...prev, createDraftSubissue()];
-    });
-  }, []);
+
+      const trimmedTitle = draftSubissue.title.trim();
+      if (!trimmedTitle) {
+        return null;
+      }
+
+      setLoading(`subissue-${subissueId}`, true);
+      try {
+        const response = await createSubissue({
+          // eslint-disable-next-line camelcase
+          parent_id: issueId,
+          content: trimmedTitle,
+        });
+        const createdSubissue = normalizeSubissue(response?.subissue || {});
+
+        setSubissues((prev) => {
+          const updated = prev.map((item) =>
+            item.id === subissueId
+              ? {
+                  ...createdSubissue,
+                  isDraft: false,
+                  isEditing: false,
+                }
+              : item,
+          );
+
+          if (addNewDraftAfterSave) {
+            updated.push(createDraftSubissue());
+          }
+
+          return updated;
+        });
+
+        wp.hooks.doAction(
+          'alpaca.subissueCreated',
+          issueDetails,
+          createdSubissue,
+        );
+
+        return createdSubissue;
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Error creating subissue:', err);
+        showNotification(__('Failed to create subissue.', 'alpaca'), 'error');
+        return null;
+      } finally {
+        setLoading(`subissue-${subissueId}`, false);
+      }
+    },
+    [issueDetails, issueId, setLoading, showNotification, subissues],
+  );
+
+  const handleAddSubissueDraft = useCallback(async () => {
+    const existingDraft = subissues.find((subissue) => subissue.isDraft);
+
+    if (!existingDraft) {
+      setSubissues((prev) => [...prev, createDraftSubissue()]);
+      return;
+    }
+
+    if (loadingStates[`subissue-${existingDraft.id}`]) {
+      return;
+    }
+
+    if (!existingDraft.title.trim()) {
+      setSubissues((prev) =>
+        prev.map((item) =>
+          item.id === existingDraft.id ? { ...item, isEditing: true } : item,
+        ),
+      );
+      return;
+    }
+
+    await persistDraftSubissue(existingDraft.id, { addNewDraftAfterSave: true });
+  }, [loadingStates, persistDraftSubissue, subissues]);
 
   const handleSubissueDraftChange = useCallback((subissueId, newTitle) => {
     setSubissues((prev) =>
@@ -1068,6 +1146,10 @@ const AlpacaIssue = ({
         return;
       }
 
+      const previousTitle =
+        typeof subissue.originalTitle === 'string'
+          ? subissue.originalTitle
+          : subissue.title;
       const trimmedTitle = subissue.title.trim();
 
       if (!trimmedTitle) {
@@ -1076,7 +1158,13 @@ const AlpacaIssue = ({
         } else {
           setSubissues((prev) =>
             prev.map((item) =>
-              item.id === subissueId ? { ...item, isEditing: false } : item,
+              item.id === subissueId
+                ? {
+                    ...item,
+                    title: item.originalTitle || '',
+                    isEditing: false,
+                  }
+                : item,
             ),
           );
         }
@@ -1084,41 +1172,12 @@ const AlpacaIssue = ({
       }
 
       if (subissue.isDraft) {
-        setLoading(`subissue-${subissueId}`, true);
-        try {
-          const response = await createSubissue({
-            // eslint-disable-next-line camelcase
-            parent_id: issueId,
-            content: trimmedTitle,
-          });
-          const createdSubissue = normalizeSubissue(response?.subissue || {});
-          setSubissues((prev) =>
-            prev.map((item) =>
-              item.id === subissueId
-                ? {
-                    ...createdSubissue,
-                    isDraft: false,
-                    isEditing: false,
-                  }
-                : item,
-            ),
-          );
-          wp.hooks.doAction(
-            'alpaca.subissueCreated',
-            issueDetails,
-            createdSubissue,
-          );
-        } catch (err) {
-          // eslint-disable-next-line no-console
-          console.error('Error creating subissue:', err);
-          showNotification(__('Failed to create subissue.', 'alpaca'), 'error');
-        } finally {
-          setLoading(`subissue-${subissueId}`, false);
-        }
+        await persistDraftSubissue(subissueId);
         return;
       }
 
-      const oldTitle = subissue.title;
+      const oldTitle =
+        typeof previousTitle === 'string' ? previousTitle.trim() : '';
       setLoading(`subissue-${subissueId}`, true);
       try {
         await updateIssue(subissue.id, {
@@ -1132,6 +1191,7 @@ const AlpacaIssue = ({
               ? {
                   ...item,
                   title: trimmedTitle,
+                  originalTitle: trimmedTitle,
                   isEditing: false,
                 }
               : item,
@@ -1158,7 +1218,7 @@ const AlpacaIssue = ({
         setLoading(`subissue-${subissueId}`, false);
       }
     },
-    [issueDetails, issueId, setLoading, showNotification, subissues],
+    [issueDetails, persistDraftSubissue, setLoading, showNotification, subissues],
   );
 
   const handleSubissueTitleCancel = useCallback((subissueId) => {
@@ -1171,7 +1231,13 @@ const AlpacaIssue = ({
         return prev.filter((item) => item.id !== subissueId);
       }
       return prev.map((item) =>
-        item.id === subissueId ? { ...item, isEditing: false } : item,
+        item.id === subissueId
+          ? {
+              ...item,
+              title: item.originalTitle || '',
+              isEditing: false,
+            }
+          : item,
       );
     });
   }, []);
@@ -1235,6 +1301,10 @@ const AlpacaIssue = ({
         oldAssignees,
         newAssignees,
       );
+      const previousAssignees = (Array.isArray(subissue.assignees)
+        ? subissue.assignees
+        : []
+      ).map((assignee) => ({ ...assignee }));
 
       const normalizedAssignees = newAssignees
         .map((nameOrSlug) =>
@@ -1285,6 +1355,13 @@ const AlpacaIssue = ({
       } catch (err) {
         // eslint-disable-next-line no-console
         console.error('Error updating subissue assignees:', err);
+        setSubissues((prev) =>
+          prev.map((item) =>
+            item.id === subissueId
+              ? { ...item, assignees: previousAssignees }
+              : item,
+          ),
+        );
         showNotification(
           __('Failed to update subissue assignees.', 'alpaca'),
           'error',
@@ -1450,6 +1527,14 @@ const AlpacaIssue = ({
   const stableIsLoading = useMemo(
     () => loadingStates.assignees,
     [loadingStates.assignees],
+  );
+  const isSubissueAddDisabled = useMemo(
+    () =>
+      subissues.some(
+        (subissue) =>
+          subissue.isDraft && loadingStates[`subissue-${subissue.id}`],
+      ),
+    [loadingStates, subissues],
   );
   const currentStatus = issueDetails?.taxonomies?.status?.[0];
   const isLastStatus = useMemo(() => {
@@ -1735,7 +1820,9 @@ const AlpacaIssue = ({
                           <Button
                             variant="secondary"
                             className="alpaca-subissues-add-button"
+                            onMouseDown={(event) => event.preventDefault()}
                             onClick={handleAddSubissueDraft}
+                            disabled={isSubissueAddDisabled}
                           >
                             {__('Add New', 'alpaca')}
                           </Button>

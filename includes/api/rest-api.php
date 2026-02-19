@@ -568,7 +568,57 @@ function alpaca_update_issue_callback( WP_REST_Request $request ) {
 		'post_modified_gmt' => current_time( 'mysql', 1 ),
 	];
 	if ( array_key_exists( 'post_parent', (array) $data ) ) {
-		$post_args['post_parent'] = (int) $data['post_parent'];
+		$post_parent = (int) $data['post_parent'];
+
+		if ( $post_parent < 0 ) {
+			return alpaca_rest_response(
+				'',
+				[
+					'success' => false,
+					'message' => esc_html__( 'Invalid parent issue.', 'alpaca' ),
+				],
+				400
+			);
+		}
+
+		if ( $post_parent === $issue_id ) {
+			return alpaca_rest_response(
+				'',
+				[
+					'success' => false,
+					'message' => esc_html__( 'An issue cannot be its own parent.', 'alpaca' ),
+				],
+				400
+			);
+		}
+
+		if ( $post_parent > 0 ) {
+			$parent_post = alpaca_assert_issue_exists( $post_parent );
+			if ( ! $parent_post ) {
+				return alpaca_rest_response(
+					'',
+					[
+						'success' => false,
+						'message' => esc_html__( 'Parent issue not found.', 'alpaca' ),
+					],
+					404
+				);
+			}
+
+			$parent_ancestors = array_map( 'intval', (array) get_post_ancestors( $parent_post ) );
+			if ( in_array( $issue_id, $parent_ancestors, true ) ) {
+				return alpaca_rest_response(
+					'',
+					[
+						'success' => false,
+						'message' => esc_html__( 'Invalid parent hierarchy.', 'alpaca' ),
+					],
+					400
+				);
+			}
+		}
+
+		$post_args['post_parent'] = $post_parent;
 	}
 
 	$update_result = wp_update_post( $post_args, true );
