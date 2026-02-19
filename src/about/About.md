@@ -1,58 +1,65 @@
 ## Thanks for testing Alpaca with us!
 
-_Let's face it, nobody loves their project management platform._ They all have their limitations, or force you into certain workflow patterns. They become bloated with features you don't want, and won't let you tweak it how you want it.
+_Let's face it, nobody loves their project management platform._ They all have their limitations, or force you into certain workflow patterns. They become bloated with features you don't want, and won't let you tweak the experience how you want it. They are rarely client-friendly. Hosted platforms may not meet your regulatory requirements. The cost soon mounts up.
 
 Content management systems were very much the same, not so long ago. So we've been thinking:
 
 - Is it possible to do for kanban boards, what WordPress did for publishing?
 - And can WordPress itself be part of that solution?
 
-**Alpaca uses the WordPress conventions of custom post types, taxonomies, comments, hooks, and filters to deliver a Trello-esque kanban experience within wp-admin.**
+**Alpaca uses the WordPress conventions of custom post types, taxonomies, comments, hooks, and filters to deliver a WordPress-like kanban experience inside wp-admin.**
 
-Out of the box, Alpaca presents itself as a solution for reporting and tracking issues on a WordPress site. Because: who knows more about your WordPress website than WordPress itself?
+Our original plan was to provide a solution for issue reporting and management. Clients would only need to write a single sentence explaining the problem. All other context, including a screenshot, would be captured automatically, and delivered into a basic kanban board. Issues would be instantly actionable.
 
-When you see a problem, you press the Report Issue button, write a one-sentence description, and press Submit. _That's it._
-
-Alpaca captures the full context of what's in your browser at the time (including a screenshot!) and creates a detailed issue in your Backlog. Every report is instantly actionable: you will never have to go back to your client, to ask what exactly they meant by 'broken'.
-
-But just as WordPress is capable of much more than its base use-case of blogging, we are building Alpaca to be much more ambitious than a single-site issue tracker.
+But we soon realised Alpaca could be a full collaboration solution, on par with platforms like Trello, Jira, or Asana.
 
 ---
 
 ### Current Features and Future Plans
 
-Beta 1 (Feb 2026):
+<details>
+<summary><strong>Beta 1: early Feb 2026</strong></summary>
 
-☑︎ Create Issues with context (front end)
-☑︎ Create open Issues (back end)
-☑︎ Customisable kanban board with drag-and-drop
-☑︎ Add assignees and deadlines to issues
-☑︎ Add comments on issues (including basic Markdown)
-☑︎ User actions create comments on Issues
-☑︎ Heavy use of Gutenberg components for UX consistency
-☑︎ WP-Admin Dashboard Widget
-☑︎ Basic 'presence' indicator
+- Create Issues with context (front end)
+- Create non-contextual Issues (back end)
+- Customisable kanban board with drag-and-drop
+- Add assignees and deadlines to issues
+- Add comments on issues (including basic Markdown)
+- User actions create comments on Issues
+- Heavy use of Gutenberg components for UX consistency
+- WP-Admin Dashboard Widget
+- Basic 'presence' indicator
+</details>
 
-Beta 2 (coming soon):
+---
 
-☑︎ Attach files of multiple filetypes to comments
-☑︎ Watchlist (Starred Items)
+<details open="">
+<summary><strong>Beta 2: late Feb 2026</strong></summary>
 
-In preparation:
+- Attach files of multiple filetypes to comments
+- Watchlist (Starred Items)
+- Labels taxonomy
+- Checklists with subtask assignment and promotion
+- Search function (across issues and comments)
+</details>
 
-▢ 'Tagging' of issues with a manageable taxonomy
-▢ Comments pushed to external channels (eg Slack)
-▢ Activity pulled from external platforms (eg GitHub)
-▢ User notifications
-▢ UI refinement
+---
 
-Longer-term:
+<details>
+<summary><strong>In planning</strong></summary>
 
-▢ Data storage in a different WP instance
-▢ Real-time collaboration / syncing
-▢ Consolidated multi-project view
-▢ AI-based issue analysis (and more?)
-▢ Make Alpaca available for other CMSes
+- Comments pushed to external channels (eg Slack)
+- Activity pulled from external platforms (eg GitHub)
+- User notifications
+- Data storage in a different WP instance
+- Real-time collaboration / syncing
+- Consolidated multi-project view
+- AI-based issue analysis (and more?)
+- Make Alpaca available for other CMSes
+
+_Note: some of these ideas would most likely require a cloud component, and would form part of a premium service._
+
+</details>
 
 ---
 
@@ -62,6 +69,14 @@ Alpaca should work on any current WordPress install, without further dependencie
 
 - [Simple Local Avatars](https://wordpress.org/plugins/simple-local-avatars/)
 - [User Switching](https://wordpress.org/plugins/user-switching/)
+
+---
+
+### External dependencies
+
+- [Bowser](https://github.com/bowser-js/bowser) for browser detection. Copyright 2015, Dustin Diaz (the "Original Author"). All rights reserved. [📜 MIT license.](https://github.com/bowser-js/bowser/blob/master/LICENSE)
+- [Snapdom](https://github.com/zumerlab/snapdom) for screenshot capture. Copyright (c) 2025 ZumerLab. [📜 MIT license.](https://github.com/zumerlab/snapdom/blob/main/LICENSE)
+- [Marked](https://marked.js.org/license) for Markdown processing. Copyright (c) 2018+, MarkedJS (https://github.com/markedjs/) Copyright (c) 2011-2018, Christopher Jeffrey (https://github.com/chjj/) [📜 License](https://github.com/markedjs/marked/blob/master/LICENSE.md)
 
 ---
 
@@ -89,8 +104,8 @@ Alpaca's fundamentals are sound, having gone through multiple prototypes to reac
 
 **Is my data secure?**
 
-- Recognising that screenshots could include sensitive data, we have opted to store them as obfuscated code in postmeta, not as image uploads which could become visible through the Media Library or URL guessing.
 - Alpaca comments are stored as a custom comment type in the WordPress comments table; but they are filtered out of all standard comment outputs, including the Comments admin screens, RSS feeds, and REST API output. At present this is done with custom code, but we hope to build on core's recent addition of the private 'note' comment type.
+- Alpaca relies on obfuscated slugs rather than sequential post IDs, reducing the possibility of guessing issue URLs.
 - Otherwise: Alpaca closely follows WordPress core development practices, and is as secure as your WordPress install.
 
 **Will I be able to tweak/extend Alpaca?**
@@ -99,4 +114,4 @@ Yes, naturally! Alpaca itself relies on hooks, actions and filters across its co
 
 **Are Pull Requests welcome?**
 
-We are not actively seeking external contributions in these early stages; but we will open up our development repository in the coming months for transparency and external submissions.
+Not yet. We are not actively seeking external contributions in these early stages; but we will open up our development repository in the coming months for transparency and external submissions.
