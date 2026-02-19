@@ -85,6 +85,42 @@ export const addAssigneesDatapoint = (originalContent, itemProps) => {
 };
 
 /**
+ * Filter to add labels to item datapoints.
+ *
+ * @param {JSX.Element|null} originalContent The original content of the filter.
+ * @param {Object}           itemProps       Props passed to the Item component.
+ * @return {JSX.Element|null} The labels JSX or null.
+ */
+export const addLabelsDatapoint = (originalContent, itemProps) => {
+  const { labels } = itemProps;
+
+  if (!Array.isArray(labels) || labels.length < 1) {
+    return originalContent;
+  }
+
+  return (
+    <>
+      {originalContent}
+      <div className="alpaca-item-labels">
+        {labels.map((label) => (
+          <span
+            key={label.term_id || `${label.slug}-${label.name}`}
+            className="alpaca-item-label alpaca-label-pill"
+            style={{
+              backgroundColor: label.color || '#172b4d',
+              color: '#fff',
+            }}
+            title={label.name}
+          >
+            {label.name}
+          </span>
+        ))}
+      </div>
+    </>
+  );
+};
+
+/**
  * Filter to add comment count to item datapoints.
  *
  * @param {JSX.Element|null} originalContent The original content of the filter.
@@ -231,6 +267,12 @@ wp.hooks.addFilter(
   'alpaca.item.datapoints',
   'alpaca/item/addAssigneesDatapoint',
   addAssigneesDatapoint,
+);
+
+wp.hooks.addFilter(
+  'alpaca.item.datapoints',
+  'alpaca/item/addLabelsDatapoint',
+  addLabelsDatapoint,
 );
 
 wp.hooks.addFilter(

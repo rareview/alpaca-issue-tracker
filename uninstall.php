@@ -25,7 +25,8 @@ delete_option( 'alpaca_default_status_id' );
 delete_option( 'alpaca_enable_test_logs' );
 
 // Delete term meta.
-$wpdb->query( "DELETE FROM {$wpdb->termmeta} WHERE meta_key LIKE 'alpaca_%'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+// Keep label color metadata because label terms are intentionally retained.
+$wpdb->query( "DELETE FROM {$wpdb->termmeta} WHERE meta_key LIKE 'alpaca_%' AND meta_key != 'alpaca_label_color'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 
 // Delete user meta (watchlists).
 $wpdb->query( "DELETE FROM {$wpdb->usermeta} WHERE meta_key = 'alpaca_watchlist'" ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching

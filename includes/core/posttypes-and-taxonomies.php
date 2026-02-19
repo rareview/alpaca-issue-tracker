@@ -43,6 +43,18 @@ function alpaca_register_cpts_and_taxonomies() {
 			'default'      => 0,
 		)
 	);
+	register_term_meta(
+		'alpaca_label',
+		'alpaca_label_color',
+		array(
+			'type'              => 'string',
+			'description'       => 'Display color for issue labels.',
+			'single'            => true,
+			'show_in_rest'      => true,
+			'default'           => '#172b4d',
+			'sanitize_callback' => 'sanitize_hex_color',
+		)
+	);
 
 	register_post_type(
 		'alpaca_issue',
@@ -81,6 +93,15 @@ function alpaca_register_cpts_and_taxonomies() {
 		array(
 			'show_in_rest' => true,
 			'label'        => esc_html__( 'Status', 'alpaca' ),
+		)
+	);
+	alpaca_register_taxonomy(
+		'alpaca_label',
+		array(
+			'public'       => true,
+			'show_ui'      => false,
+			'show_in_rest' => true,
+			'label'        => esc_html__( 'Labels', 'alpaca' ),
 		)
 	);
 	alpaca_register_taxonomy(

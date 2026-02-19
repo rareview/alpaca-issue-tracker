@@ -17,6 +17,7 @@ const transformDataForBoard = (data) => {
       authorName: issue.author_name,
       authorImg: issue.author_img,
       assignees: issue.assignees || [],
+      labels: issue.labels || [],
       commentCount: issue.comment_count ?? 0,
       meta: issue.meta || {},
     })),

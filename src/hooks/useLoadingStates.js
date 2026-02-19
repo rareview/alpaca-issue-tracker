@@ -3,6 +3,7 @@ const { useState, useCallback } = wp.element;
 const useLoadingStates = () => {
   const [loadingStates, setLoadingStates] = useState({
     assignees: false,
+    labels: false,
     deadline: false,
     screenshot: false,
     title: false,

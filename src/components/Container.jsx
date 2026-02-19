@@ -479,6 +479,7 @@ function Container({
                     containerId={id}
                     content={dragOverItem.content}
                     assignees={dragOverItem.assignees}
+                    labels={dragOverItem.labels}
                     commentCount={dragOverItem.commentCount}
                     postDate={dragOverItem.postDate}
                     meta={dragOverItem.meta}
@@ -529,6 +530,7 @@ function Container({
                     content={item.content}
                     postDate={item.postDate}
                     assignees={item.assignees}
+                    labels={item.labels}
                     commentCount={item.commentCount}
                     meta={item.meta}
                     onClick={onItemClick}
@@ -562,6 +564,7 @@ function Container({
                     content={item.content}
                     postDate={item.postDate}
                     assignees={item.assignees}
+                    labels={item.labels}
                     commentCount={item.commentCount}
                     meta={item.meta}
                     onClick={onItemClick}
@@ -587,6 +590,7 @@ Container.propTypes = {
       content: PropTypes.string,
       postDate: PropTypes.string,
       assignees: PropTypes.array,
+      labels: PropTypes.array,
       commentCount: PropTypes.number,
       meta: PropTypes.object,
     }),

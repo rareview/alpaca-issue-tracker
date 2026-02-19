@@ -525,6 +525,28 @@ export function AlpacaBoard() {
     );
   }, []);
 
+  const handleLabelsChange = useCallback((issueId, newLabels) => {
+    setContainers((prevContainers) =>
+      prevContainers.map((container) => {
+        const itemIndex = container.items.findIndex(
+          (item) => item.id === issueId.toString(),
+        );
+
+        if (itemIndex === -1) {
+          return container;
+        }
+
+        const newItems = [...container.items];
+        newItems[itemIndex] = {
+          ...newItems[itemIndex],
+          labels: newLabels,
+        };
+
+        return { ...container, items: newItems };
+      }),
+    );
+  }, []);
+
   const handleStatusChange = useCallback((issueId, newStatusTerm) => {
     setContainers((prevContainers) => {
       const newContainers = prevContainers.map((container) => ({
@@ -694,6 +716,7 @@ export function AlpacaBoard() {
         id: createdIssue.id.toString(),
         content: createdIssue.title,
         assignees: createdIssue.assignees || [],
+        labels: createdIssue.labels || [],
         commentCount: 1,
         meta: {
           deadline: createdIssue.deadline ? [createdIssue.deadline] : undefined,
@@ -748,6 +771,7 @@ export function AlpacaBoard() {
             authorName: issue.author_name,
             authorImg: issue.author_img,
             assignees: [],
+            labels: issue.labels || [],
             commentCount: issue.comment_count ?? 0,
             meta: issue.meta || {},
           };
@@ -949,6 +973,7 @@ export function AlpacaBoard() {
         onDelete={handleDeleteIssue}
         triggerRef={triggerRef}
         onAssigneesChange={handleAssigneesChange}
+        onLabelsChange={handleLabelsChange}
         onDeadlineChange={handleDeadlineChange}
         onStatusChange={handleStatusChange}
         onIssueTitleChange={handleIssueTitleChange}
