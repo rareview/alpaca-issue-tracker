@@ -1019,6 +1019,7 @@ const AlpacaIssue = ({
         if (onIssueCreated) {
           onIssueCreated({
             id: newIssueId,
+            slug: response.issue.slug || response.issue.post_name || '',
             title: editedTitle,
             assignees: assignees || [],
             deadline: deadline || null,

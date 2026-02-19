@@ -730,6 +730,7 @@ export function AlpacaBoard() {
 
       const newItem = {
         id: createdIssue.id.toString(),
+        slug: createdIssue.slug || '',
         content: createdIssue.title,
         assignees: createdIssue.assignees || [],
         commentCount: 1,
