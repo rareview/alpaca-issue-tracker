@@ -1,6 +1,7 @@
 import StatusManager from './components/StatusManager';
 import EnableTestLogsControl from './components/EnableTestLogsControl';
 import LabelsManager from './components/LabelsManager';
+import IdleIndicatorDaysControl from './components/IdleIndicatorDaysControl';
 const { useState, useEffect, useCallback } = wp.element;
 const { __ } = wp.i18n;
 
@@ -64,7 +65,7 @@ const AlpacaSettings = () => {
 
       <table className="form-table">
         <tbody>
-          <EnableTestLogsControl />
+          <IdleIndicatorDaysControl />
           {/*
            * Action hook for adding additional settings.
            * @param {Object} context - Contains statuses array.
@@ -72,6 +73,7 @@ const AlpacaSettings = () => {
           {wp.hooks.applyFilters('alpaca.settings.additionalRows', null, {
             statuses: currentStatuses,
           })}
+          <EnableTestLogsControl />
         </tbody>
       </table>
 

@@ -104,6 +104,16 @@ function alpaca_register_cpts_and_taxonomies() {
 			'label'        => esc_html__( 'Labels', 'alpaca' ),
 		)
 	);
+	alpaca_register_taxonomy(
+		'alpaca_watching',
+		array(
+			'public'             => false,
+			'publicly_queryable' => false,
+			'show_ui'            => false,
+			'show_in_rest'       => false,
+			'label'              => esc_html__( 'Watching', 'alpaca' ),
+		)
+	);
 
 	add_filter( 'rest_pre_insert_comment', 'alpaca_rest_pre_insert_comment', 10, 2 );
 	add_filter( 'rest_comment_query', 'alpaca_rest_comment_query', 10, 2 );
@@ -213,32 +223,73 @@ add_filter(
 );
 
 /**
- * Update assignee term name when user profile is updated.
+ * Update mirrored user terms when user profile is updated.
  *
- * When a user's profile is updated, find the corresponding 'assignee' term
- * and update its name to match the user's new display name.
- * The link between a user and an assignee term is the user's nicename (slug).
+ * When a user's profile is updated, find matching user terms in supported
+ * taxonomies and update the term name and slug to match current user data.
  *
  * @param int    $user_id       The ID of the user being updated.
  * @param object $old_user_data The old user data.
  */
-function alpaca_update_assignee_term_on_profile_update( $user_id, $old_user_data ) {
+function alpaca_update_user_terms_on_profile_update( $user_id, $old_user_data ) {
 	$user = get_userdata( $user_id );
-
-	// No need to do anything if the display name hasn't changed.
-	if ( $user->display_name === $old_user_data->display_name ) {
+	if ( ! ( $user instanceof WP_User ) ) {
 		return;
 	}
 
-	// Find the term in the 'assignee' taxonomy with a slug that matches the user's nicename.
-	$term = get_term_by( 'slug', $user->user_nicename, 'alpaca_assignee' );
+	$old_slug = '';
+	if ( isset( $old_user_data->user_nicename ) ) {
+		$old_slug = sanitize_user( (string) $old_user_data->user_nicename );
+	}
 
-	// If a term is found, update its name to the user's new display name.
-	if ( $term ) {
-		wp_update_term( $term->term_id, 'alpaca_assignee', array( 'name' => $user->display_name ) );
+	$new_slug = sanitize_user( (string) $user->user_nicename );
+	$slugs    = array_filter(
+		array(
+			$new_slug,
+			$old_slug,
+		)
+	);
+	$slugs    = array_values( array_unique( $slugs ) );
+
+	$old_display_name = '';
+	if ( isset( $old_user_data->display_name ) ) {
+		$old_display_name = (string) $old_user_data->display_name;
+	}
+
+	// No need to do anything if term-linked identity values are unchanged.
+	if ( $old_display_name === $user->display_name && $old_slug === $new_slug ) {
+		return;
+	}
+
+	$taxonomies = array(
+		'alpaca_assignee',
+		'alpaca_watching',
+	);
+	foreach ( $taxonomies as $taxonomy ) {
+		if ( ! taxonomy_exists( $taxonomy ) ) {
+			continue;
+		}
+
+		foreach ( $slugs as $slug ) {
+			$term = get_term_by( 'slug', $slug, $taxonomy );
+			if ( ! $term || is_wp_error( $term ) ) {
+				continue;
+			}
+
+			wp_update_term(
+				$term->term_id,
+				$taxonomy,
+				array(
+					'name' => $user->display_name,
+					'slug' => $new_slug,
+				)
+			);
+
+			break;
+		}
 	}
 }
-add_action( 'profile_update', 'alpaca_update_assignee_term_on_profile_update', 10, 2 );
+add_action( 'profile_update', 'alpaca_update_user_terms_on_profile_update', 10, 2 );
 
 /**
  * Get statuses ordered by score.

@@ -138,3 +138,170 @@ function alpaca_update_last_activity( $post_id ) {
 		update_post_meta( $post_id, 'alpaca_lastActivity', current_time( 'mysql' ) );
 	}
 }
+
+/**
+ * Get or create a taxonomy term that mirrors a user identity.
+ *
+ * @param WP_User $user     User object.
+ * @param string  $taxonomy Taxonomy slug.
+ * @return int Term ID when available, otherwise 0.
+ */
+function alpaca_get_or_create_user_taxonomy_term( $user, $taxonomy ) {
+	if ( ! ( $user instanceof WP_User ) ) {
+		return 0;
+	}
+
+	$taxonomy = sanitize_key( (string) $taxonomy );
+	if ( '' === $taxonomy || ! taxonomy_exists( $taxonomy ) ) {
+		return 0;
+	}
+
+	$existing = get_term_by( 'slug', $user->user_nicename, $taxonomy );
+	if ( $existing && ! is_wp_error( $existing ) ) {
+		return (int) $existing->term_id;
+	}
+
+	$inserted = wp_insert_term(
+		$user->display_name,
+		$taxonomy,
+		array(
+			'slug'        => $user->user_nicename,
+			'description' => $user->user_login,
+		)
+	);
+
+	if ( is_wp_error( $inserted ) ) {
+		return 0;
+	}
+
+	if ( is_array( $inserted ) && isset( $inserted['term_id'] ) ) {
+		return (int) $inserted['term_id'];
+	}
+
+	return (int) $inserted;
+}
+
+/**
+ * Migrate legacy usermeta watchlist entries to the watching taxonomy.
+ *
+ * @param int $user_id User ID.
+ * @return void
+ */
+function alpaca_migrate_watchlist_usermeta_to_taxonomy( $user_id ) {
+	$user_id = (int) $user_id;
+	if ( $user_id <= 0 ) {
+		return;
+	}
+
+	if ( ! taxonomy_exists( 'alpaca_watching' ) ) {
+		return;
+	}
+
+	$legacy_watchlist = get_user_meta( $user_id, 'alpaca_watchlist', true );
+	if ( ! is_array( $legacy_watchlist ) || empty( $legacy_watchlist ) ) {
+		return;
+	}
+
+	$user = get_user_by( 'id', $user_id );
+	if ( ! ( $user instanceof WP_User ) ) {
+		return;
+	}
+
+	$term_id = alpaca_get_or_create_user_taxonomy_term( $user, 'alpaca_watching' );
+	if ( $term_id <= 0 ) {
+		return;
+	}
+
+	$watchlist = alpaca_to_int_ids( $legacy_watchlist );
+	foreach ( $watchlist as $post_id ) {
+		if ( 'alpaca_issue' !== get_post_type( $post_id ) ) {
+			continue;
+		}
+
+		wp_set_post_terms( $post_id, array( $term_id ), 'alpaca_watching', true );
+	}
+
+	delete_user_meta( $user_id, 'alpaca_watchlist' );
+}
+
+/**
+ * Determine whether legacy watchlist migration should run.
+ *
+ * This temporary migration path can be removed in the future once legacy
+ * installs are no longer relevant.
+ *
+ * @return bool True when migration should run.
+ */
+function alpaca_should_migrate_legacy_watchlist() {
+	/**
+	 * Filter whether legacy watchlist usermeta should be migrated.
+	 *
+	 * Returning false disables migration while preserving taxonomy behavior.
+	 *
+	 * @param bool $should_migrate Whether migration should run.
+	 */
+	return (bool) apply_filters( 'alpaca_should_migrate_legacy_watchlist', true );
+}
+
+/**
+ * Migrate legacy watchlist usermeta when migration is enabled.
+ *
+ * @param int $user_id User ID.
+ * @return void
+ */
+function alpaca_maybe_migrate_watchlist_usermeta_to_taxonomy( $user_id ) {
+	if ( ! alpaca_should_migrate_legacy_watchlist() ) {
+		return;
+	}
+
+	alpaca_migrate_watchlist_usermeta_to_taxonomy( $user_id );
+}
+
+/**
+ * Get watched issue IDs for a user.
+ *
+ * @param int $user_id User ID.
+ * @return array Watched issue IDs.
+ */
+function alpaca_get_watched_issue_ids_for_user( $user_id ) {
+	$user_id = (int) $user_id;
+	if ( $user_id <= 0 ) {
+		return array();
+	}
+
+	if ( ! taxonomy_exists( 'alpaca_watching' ) ) {
+		return array();
+	}
+
+	alpaca_maybe_migrate_watchlist_usermeta_to_taxonomy( $user_id );
+
+	$user = get_user_by( 'id', $user_id );
+	if ( ! ( $user instanceof WP_User ) ) {
+		return array();
+	}
+
+	// phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+	$watchlist = get_posts(
+		array(
+			'post_type'              => 'alpaca_issue',
+			'post_status'            => 'any',
+			'posts_per_page'         => -1,
+			'fields'                 => 'ids',
+			'orderby'                => 'ID',
+			'order'                  => 'ASC',
+			'no_found_rows'          => true,
+			'update_post_meta_cache' => false,
+			'update_post_term_cache' => false,
+			'tax_query'              => array(
+				array(
+					'taxonomy' => 'alpaca_watching',
+					'field'    => 'slug',
+					'terms'    => $user->user_nicename,
+				),
+			),
+		)
+	);
+	// phpcs:enable WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+
+	return alpaca_to_int_ids( $watchlist );
+}
