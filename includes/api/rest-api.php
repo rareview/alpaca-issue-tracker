@@ -169,6 +169,7 @@ function alpaca_get_issue_response_data( $issue, $override_data = [] ) {
 		'post_id'  => $post_id,
 		'issue'    => [
 			'id'          => $post_id,
+			'slug'        => (string) $post->post_name,
 			'title'       => $title,
 			'author_id'   => $author_id,
 			'author_name' => get_the_author_meta( 'display_name', $author_id ),
@@ -566,6 +567,59 @@ function alpaca_update_issue_callback( WP_REST_Request $request ) {
 		'post_modified'     => current_time( 'mysql' ),
 		'post_modified_gmt' => current_time( 'mysql', 1 ),
 	];
+	if ( array_key_exists( 'post_parent', (array) $data ) ) {
+		$post_parent = (int) $data['post_parent'];
+
+		if ( $post_parent < 0 ) {
+			return alpaca_rest_response(
+				'',
+				[
+					'success' => false,
+					'message' => esc_html__( 'Invalid parent issue.', 'alpaca' ),
+				],
+				400
+			);
+		}
+
+		if ( $post_parent === $issue_id ) {
+			return alpaca_rest_response(
+				'',
+				[
+					'success' => false,
+					'message' => esc_html__( 'An issue cannot be its own parent.', 'alpaca' ),
+				],
+				400
+			);
+		}
+
+		if ( $post_parent > 0 ) {
+			$parent_post = alpaca_assert_issue_exists( $post_parent );
+			if ( ! $parent_post ) {
+				return alpaca_rest_response(
+					'',
+					[
+						'success' => false,
+						'message' => esc_html__( 'Parent issue not found.', 'alpaca' ),
+					],
+					404
+				);
+			}
+
+			$parent_ancestors = array_map( 'intval', (array) get_post_ancestors( $parent_post ) );
+			if ( in_array( $issue_id, $parent_ancestors, true ) ) {
+				return alpaca_rest_response(
+					'',
+					[
+						'success' => false,
+						'message' => esc_html__( 'Invalid parent hierarchy.', 'alpaca' ),
+					],
+					400
+				);
+			}
+		}
+
+		$post_args['post_parent'] = $post_parent;
+	}
 
 	$update_result = wp_update_post( $post_args, true );
 	if ( is_wp_error( $update_result ) ) {
@@ -786,6 +840,196 @@ function alpaca_restore_default_statuses_callback() {
 	);
 }
 
+/**
+ * Format a subissue issue for API responses.
+ *
+ * @param WP_Post $post Subissue post object.
+ * @return array Formatted subissue data.
+ */
+function alpaca_get_subissue_response_data( WP_Post $post ) {
+	$subissue_id = (int) $post->ID;
+	$assignees  = [];
+	$terms      = wp_get_object_terms( $subissue_id, 'alpaca_assignee', [ 'fields' => 'all' ] );
+
+	if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) {
+		foreach ( $terms as $term ) {
+			$assignees[] = [
+				'term_id'      => (int) $term->term_id,
+				'name'         => $term->name,
+				'slug'         => $term->slug,
+				'username'     => $term->name,
+				'display_name' => $term->description,
+			];
+		}
+	}
+
+	$status_terms = wp_get_object_terms( $subissue_id, 'alpaca_status', [ 'fields' => 'all' ] );
+	$status_data  = [];
+
+	if ( ! is_wp_error( $status_terms ) && ! empty( $status_terms ) ) {
+		$status_data = array_map(
+			static function ( $term ) {
+				return [
+					'term_id' => (int) $term->term_id,
+					'name'    => $term->name,
+					'slug'    => $term->slug,
+				];
+			},
+			$status_terms
+		);
+	}
+
+	return [
+		'id'           => $subissue_id,
+		'slug'         => (string) $post->post_name,
+		'title'        => (string) $post->post_title,
+		'content'      => (string) $post->post_content,
+		'post_parent'  => (int) $post->post_parent,
+		'is_completed' => ! empty( get_post_meta( $subissue_id, 'alpaca_subissue_completed', true ) ),
+		'assignees'    => $assignees,
+		'status'       => $status_data,
+	];
+}
+
+/**
+ * Get all subissues belonging to an issue.
+ *
+ * @param int $issue_id Parent issue post ID.
+ * @return array Formatted subissues data.
+ */
+function alpaca_get_subissues_for_issue( $issue_id ) {
+	$subissues = get_children(
+		[
+			'post_parent'    => (int) $issue_id,
+			'post_type'      => 'alpaca_issue',
+			'post_status'    => [ 'publish', 'private' ],
+			'posts_per_page' => -1,
+			'orderby'        => 'date',
+			'order'          => 'ASC',
+		]
+	);
+
+	if ( empty( $subissues ) ) {
+		return [];
+	}
+
+	$formatted_subissues = [];
+	foreach ( $subissues as $subissue ) {
+		$formatted_subissues[] = alpaca_get_subissue_response_data( $subissue );
+	}
+
+	return $formatted_subissues;
+}
+
+/**
+ * Register subissue create endpoint.
+ */
+function alpaca_register_subissue_endpoint() {
+	register_rest_route(
+		'alpaca/v1',
+		'/subissues',
+		[
+			'methods'             => 'POST',
+			'callback'            => 'alpaca_create_subissue_callback',
+			'permission_callback' => function () {
+				return \Alpaca\Inc\Helpers::user_can( 'create_issue' );
+			},
+			'args'                => [
+				'parent_id' => [
+					'required'          => true,
+					'validate_callback' => function ( $param ) {
+						return is_numeric( $param ) && (int) $param > 0;
+					},
+				],
+				'content'   => [
+					'required'          => true,
+					'validate_callback' => function ( $param ) {
+						return is_string( $param ) && '' !== trim( $param );
+					},
+				],
+			],
+		]
+	);
+}
+add_action( 'rest_api_init', 'alpaca_register_subissue_endpoint' );
+
+/**
+ * Create a subissue issue under a parent issue.
+ *
+ * @param WP_REST_Request $request REST request object.
+ * @return WP_REST_Response REST response with created subissue data.
+ */
+function alpaca_create_subissue_callback( WP_REST_Request $request ) {
+	$payload = $request->get_json_params();
+	$payload = is_array( $payload ) ? $payload : [];
+
+	$parent_id = isset( $payload['parent_id'] ) ? (int) $payload['parent_id'] : 0;
+	$content   = isset( $payload['content'] ) ? trim( (string) $payload['content'] ) : '';
+
+	$parent_issue = alpaca_assert_issue_exists( $parent_id );
+	if ( ! $parent_issue ) {
+		return alpaca_rest_response(
+			'',
+			[
+				'success' => false,
+				'message' => esc_html__( 'Parent issue not found.', 'alpaca' ),
+			],
+			404
+		);
+	}
+
+	if ( '' === $content ) {
+		return alpaca_rest_response(
+			'',
+			[
+				'success' => false,
+				'message' => esc_html__( 'Subissue title is required.', 'alpaca' ),
+			],
+			400
+		);
+	}
+
+	$post_args = [
+		'post_type'      => 'alpaca_issue',
+		'post_status'    => 'publish',
+		'post_author'    => get_current_user_id(),
+		'post_title'     => wp_kses_post( $content ),
+		'post_name'      => hash( 'adler32', (string) $request->get_body() ),
+		'post_content'   => wp_kses_post( $content ),
+		'post_parent'    => $parent_id,
+		'comment_status' => 'open',
+	];
+
+	$subissue_id = wp_insert_post( $post_args, true );
+	if ( is_wp_error( $subissue_id ) || 0 === (int) $subissue_id ) {
+		return alpaca_rest_response(
+			'',
+			[
+				'success' => false,
+				'message' => esc_html__( 'Failed to create subissue.', 'alpaca' ),
+			],
+			500
+		);
+	}
+
+	$parent_status_ids = wp_get_post_terms( $parent_id, 'alpaca_status', [ 'fields' => 'ids' ] );
+	if ( ! is_wp_error( $parent_status_ids ) && ! empty( $parent_status_ids ) ) {
+		wp_set_post_terms( $subissue_id, alpaca_to_int_ids( $parent_status_ids ), 'alpaca_status', false );
+	}
+
+	$subissue_post = get_post( $subissue_id );
+
+	return alpaca_rest_response(
+		'subissue_create',
+		[
+			'success' => true,
+			'message' => esc_html__( 'Subissue created successfully.', 'alpaca' ),
+			'subissue' => alpaca_get_subissue_response_data( $subissue_post ),
+		],
+		200
+	);
+}
+
 /*
  * Issue: get details endpoints.
  */
@@ -897,6 +1141,7 @@ function alpaca_get_issue_data_callback( WP_REST_Request $request ) {
 			'count'   => true,
 		]
 	);
+	$subissues           = alpaca_get_subissues_for_issue( $issue_id );
 
 	return alpaca_rest_response(
 		'',
@@ -907,6 +1152,7 @@ function alpaca_get_issue_data_callback( WP_REST_Request $request ) {
 			'post_data'     => $post_data,
 			'meta'          => $formatted_meta,
 			'taxonomies'    => $terms_data,
+			'subissues'      => $subissues,
 			'comment_count' => (int) $issue_comment_count,
 		],
 		200

@@ -171,6 +171,26 @@ export function AlpacaBoard() {
           return;
         }
 
+        // Ignore obviously malformed identifiers and clear the param.
+        if (issueSlug !== '' && !/^[A-Za-z0-9_-]+$/.test(issueSlug)) {
+          try {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('issue');
+            window.history.replaceState({}, '', url.toString());
+          } catch (error) {
+            const fallbackParams = new URLSearchParams(window.location.search);
+            fallbackParams.delete('issue');
+            const base = window.location.pathname + window.location.hash;
+            const search = fallbackParams.toString();
+            window.history.replaceState(
+              {},
+              '',
+              base + (search ? `?${search}` : ''),
+            );
+          }
+          setSelectedItem(null);
+          return;
+        }
         const found = findIssueByIdentifier(issueSlug);
         if (found) {
           setSelectedItem(found);
@@ -351,7 +371,10 @@ export function AlpacaBoard() {
     );
   }, []);
 
-  const handleChecklistChange = useCallback((issueId, newChecklist) => {
+  const handleSubissueProgressChange = useCallback((issueId, progress) => {
+    const total = Number(progress?.total);
+    const completed = Number(progress?.completed);
+
     setContainers((prevContainers) =>
       prevContainers.map((container) => {
         const itemIndex = container.items.findIndex(
@@ -367,7 +390,11 @@ export function AlpacaBoard() {
           ...newItems[itemIndex],
           meta: {
             ...newItems[itemIndex].meta,
-            checklist: newChecklist,
+            // eslint-disable-next-line camelcase
+            subissue_progress: {
+              total: Number.isFinite(total) ? total : 0,
+              completed: Number.isFinite(completed) ? completed : 0,
+            },
           },
         };
 
@@ -403,14 +430,14 @@ export function AlpacaBoard() {
   }, []);
 
   useEffect(() => {
-    const checklistChangedCallback = (data) => {
-      const { issueId, checklist } = data;
-      handleChecklistChange(issueId, checklist);
-    };
-
     const priorityUpdatedCallback = (data) => {
       const { issueId, isHighPriority } = data;
       handlePriorityChange(issueId, isHighPriority);
+    };
+
+    const subissueProgressChangedCallback = (data) => {
+      const { issueId, progress } = data;
+      handleSubissueProgressChange(issueId, progress);
     };
 
     const lastActivityChangedCallback = (data) => {
@@ -419,15 +446,15 @@ export function AlpacaBoard() {
     };
 
     wp.hooks.addAction(
-      'alpaca.checklistChanged',
-      'alpaca/boardmain',
-      checklistChangedCallback,
-    );
-
-    wp.hooks.addAction(
       'alpaca.priorityUpdated',
       'alpaca/boardmain',
       priorityUpdatedCallback,
+    );
+
+    wp.hooks.addAction(
+      'alpaca.subissueProgressChanged',
+      'alpaca/boardmain',
+      subissueProgressChangedCallback,
     );
 
     wp.hooks.addAction(
@@ -437,11 +464,18 @@ export function AlpacaBoard() {
     );
 
     return () => {
-      wp.hooks.removeAction('alpaca.checklistChanged', 'alpaca/boardmain');
       wp.hooks.removeAction('alpaca.priorityUpdated', 'alpaca/boardmain');
+      wp.hooks.removeAction(
+        'alpaca.subissueProgressChanged',
+        'alpaca/boardmain',
+      );
       wp.hooks.removeAction('alpaca.lastActivityChanged', 'alpaca/boardmain');
     };
-  }, [handleChecklistChange, handlePriorityChange, handleLastActivityChange]);
+  }, [
+    handlePriorityChange,
+    handleSubissueProgressChange,
+    handleLastActivityChange,
+  ]);
 
   const moveAllItemsToNextContainer = (sourceContainerId) => {
     const containersCopy = containers.map((c) => ({
@@ -785,6 +819,7 @@ export function AlpacaBoard() {
 
       const newItem = {
         id: createdIssue.id.toString(),
+        slug: createdIssue.slug || '',
         content: createdIssue.title,
         assignees: createdIssue.assignees || [],
         labels: createdIssue.labels || [],
@@ -837,6 +872,7 @@ export function AlpacaBoard() {
         if (targetContainer) {
           const newItem = {
             id: issue.id.toString(),
+            slug: issue.slug || issue.post_name || '',
             content: decodeEntities(issue.title),
             postDate: issue.post_date,
             authorName: issue.author_name,
@@ -855,14 +891,38 @@ export function AlpacaBoard() {
       });
     };
 
+    const handleIssueDeletedFromHook = (issueId) => {
+      if (!issueId) {
+        return;
+      }
+      setContainers((prevContainers) =>
+        prevContainers.map((container) => ({
+          ...container,
+          items: container.items.filter((item) => item.id !== issueId.toString()),
+        })),
+      );
+    };
+
     wp.hooks.addAction(
       'alpaca.issueSubmitted',
       'alpaca/boardmain',
       handleIssueSubmitted,
     );
+    wp.hooks.addAction(
+      'alpaca.issueInserted',
+      'alpaca/boardmain',
+      handleIssueSubmitted,
+    );
+    wp.hooks.addAction(
+      'alpaca.issueDeleted',
+      'alpaca/boardmain',
+      handleIssueDeletedFromHook,
+    );
 
     return () => {
       wp.hooks.removeAction('alpaca.issueSubmitted', 'alpaca/boardmain');
+      wp.hooks.removeAction('alpaca.issueInserted', 'alpaca/boardmain');
+      wp.hooks.removeAction('alpaca.issueDeleted', 'alpaca/boardmain');
     };
   }, []);
 

@@ -157,19 +157,24 @@ function alpaca_get_watchlist_issues() {
  */
 function alpaca_prepare_issue_data( $post ) {
 
-	$deadline  = get_post_meta( $post->ID, 'alpaca_deadline', true );
-	$assignees = get_the_terms( $post->ID, 'alpaca_assignee' );
-	$status    = get_the_terms( $post->ID, 'alpaca_status' );
+	$deadline         = get_post_meta( $post->ID, 'alpaca_deadline', true );
+	$assignees        = get_the_terms( $post->ID, 'alpaca_assignee' );
+	$status           = get_the_terms( $post->ID, 'alpaca_status' );
+	$post_parent_id   = (int) $post->post_parent;
+	$post_parent      = $post_parent_id > 0 ? get_post( $post_parent_id ) : null;
+	$post_parent_slug = $post_parent ? $post_parent->post_name : '';
 
 	return array(
-		'id'            => $post->ID,
-		'title'         => $post->post_title,
-		'slug'          => $post->post_name,
-		'postDate'      => $post->post_date,
-		'deadline'      => $deadline,
-		'assignees'     => $assignees,
-		'status'        => $status,
-		'high_priority' => get_post_meta(
+		'id'               => $post->ID,
+		'title'            => $post->post_title,
+		'slug'             => $post->post_name,
+		'post_parent'      => $post_parent_id,
+		'post_parent_slug' => $post_parent_slug,
+		'postDate'         => $post->post_date,
+		'deadline'         => $deadline,
+		'assignees'        => $assignees,
+		'status'           => $status,
+		'high_priority'    => get_post_meta(
 			$post->ID,
 			'alpaca_high_priority',
 			true

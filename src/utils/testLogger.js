@@ -31,18 +31,6 @@ export const useTestLogger = (enable) => {
       console.log(`Issue submitted:`, issue, `with status ID:`, statusId);
     };
 
-    const logChecklistItemUpdated = (oldLabel, newLabel) => {
-      if (!oldLabel) {
-        // eslint-disable-next-line no-console
-        console.log(`Checklist item created: ${newLabel}`);
-      } else {
-        // eslint-disable-next-line no-console
-        console.log(
-          `Checklist item updated from "${oldLabel}" to "${newLabel}"`,
-        );
-      }
-    };
-
     const logCommentPosted = (comment) => {
       // eslint-disable-next-line no-console
       console.log(`Comment posted:`, comment);
@@ -79,11 +67,6 @@ export const useTestLogger = (enable) => {
       'alpaca/test',
       logIssueSubmitted,
     );
-    wp.hooks.addAction(
-      'alpaca.checklistItemUpdated',
-      'alpaca/test',
-      logChecklistItemUpdated,
-    );
     wp.hooks.addAction('alpaca.commentPosted', 'alpaca/test', logCommentPosted);
     wp.hooks.addAction(
       'alpaca.commentUpdated',
@@ -112,7 +95,6 @@ export const useTestLogger = (enable) => {
       wp.hooks.removeAction('alpaca.issueAssigneesChanged', 'alpaca/test');
       wp.hooks.removeAction('alpaca.allAssigneesUpdated', 'alpaca/test');
       wp.hooks.removeAction('alpaca.issueSubmitted', 'alpaca/test');
-      wp.hooks.removeAction('alpaca.checklistItemUpdated', 'alpaca/test');
       wp.hooks.removeAction('alpaca.commentPosted', 'alpaca/test');
       wp.hooks.removeAction('alpaca.commentUpdated', 'alpaca/test');
       wp.hooks.removeAction('alpaca.commentDeleted', 'alpaca/test');
