@@ -182,15 +182,22 @@ const LabelsManager = () => {
       return;
     } catch (error) {
       // If the label is already gone, treat as success.
-      if (error?.code === 'rest_no_route' || error?.data?.status === 404) {
+      if (error?.data?.status === 404 && error?.code !== 'rest_no_route') {
         return;
       }
     }
 
-    await wp.apiFetch({
-      path: `/wp/v2/alpaca_label/${id}?force=true`,
-      method: 'DELETE',
-    });
+    try {
+      await wp.apiFetch({
+        path: `/wp/v2/alpaca_label/${id}?force=true`,
+        method: 'DELETE',
+      });
+    } catch (error) {
+      if (error?.data?.status === 404) {
+        return;
+      }
+      throw error;
+    }
   }, []);
 
   const saveLabelDraft = useCallback(
@@ -212,6 +219,24 @@ const LabelsManager = () => {
       try {
         if (trimmedName === '' && labelDraft.term_id) {
           await deleteLabelTerm(labelDraft.term_id);
+          setLabels((previousLabels) => {
+            const labelIndex = previousLabels.findIndex(
+              (label) => label.key === key,
+            );
+
+            if (labelIndex < 0) {
+              return previousLabels;
+            }
+
+            const nextLabels = [...previousLabels];
+            if (labelIndex < INITIAL_LABEL_SLOT_COUNT) {
+              nextLabels[labelIndex] = createEmptyLabelRow(`slot-${labelIndex}`);
+            } else {
+              nextLabels.splice(labelIndex, 1);
+            }
+
+            return nextLabels;
+          });
           return;
         }
 

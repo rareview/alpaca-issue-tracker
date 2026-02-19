@@ -745,6 +745,7 @@ const AlpacaIssue = ({
 
       if (response && response.issue) {
         const newIssueId = response.issue.id;
+        let createdIssueLabels = [];
 
         if (deadline) {
           try {
@@ -768,9 +769,16 @@ const AlpacaIssue = ({
             await updateIssue(newIssueId, {
               taxonomies: { label: selectedLabelIds },
             });
+            createdIssueLabels = allLabels.filter((label) =>
+              selectedLabelIds.includes(Number(label.term_id)),
+            );
           } catch (err) {
             // eslint-disable-next-line no-console
             console.error('Failed to set labels:', err);
+            showNotification(
+              __('Issue created, but labels could not be saved.', 'alpaca'),
+              'error',
+            );
           }
         }
 
@@ -817,9 +825,7 @@ const AlpacaIssue = ({
             id: newIssueId,
             title: editedTitle,
             assignees: assignees || [],
-            labels: allLabels.filter((label) =>
-              selectedLabelIds.includes(Number(label.term_id)),
-            ),
+            labels: createdIssueLabels,
             deadline: deadline || null,
             isHighPriority,
           });
