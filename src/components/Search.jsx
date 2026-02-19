@@ -1,10 +1,10 @@
-const { useState, useEffect, useRef, useMemo } = wp.element;
+const { useState, useEffect, useRef, useMemo, createPortal } = wp.element;
 const { SearchControl, Popover } = wp.components;
 const { decodeEntities } = wp.htmlEntities;
 const { __ } = wp.i18n;
 const { doAction } = wp.hooks;
+import PropTypes from 'prop-types';
 import Item from './Item';
-import { WatchlistProvider } from '../context/WatchlistContext';
 
 const MIN_QUERY_LENGTH = 3;
 const MAX_RESULTS = 10;
@@ -181,6 +181,10 @@ function SearchContainer() {
       clearTimeout(debounceRef.current);
     }
 
+    // Invalidate any in-flight request as soon as the query changes.
+    const requestId = requestIdRef.current + 1;
+    requestIdRef.current = requestId;
+
     const query = value ? value.trim() : '';
     if (!query || query.length < MIN_QUERY_LENGTH) {
       setResults([]);
@@ -189,8 +193,6 @@ function SearchContainer() {
     }
 
     debounceRef.current = setTimeout(() => {
-      const requestId = requestIdRef.current + 1;
-      requestIdRef.current = requestId;
       setIsSearching(true);
       const q = query;
 
@@ -476,27 +478,25 @@ function SearchContainer() {
   );
 }
 
-function mountSearch(selector) {
-  try {
-    const el = document.querySelector(selector);
-    if (!el) return;
-    const { render } = wp.element;
-    render(
-      <WatchlistProvider>
-        <SearchContainer />
-      </WatchlistProvider>,
-      el,
-    );
-  } catch (e) {
-    // eslint-disable-next-line no-console
-    console.error('Error mounting Alpaca search control:', e);
+function SearchPortal({ selector }) {
+  if (typeof document === 'undefined' || typeof createPortal !== 'function') {
+    return null;
   }
+
+  const mountNode = document.querySelector(selector);
+  if (!mountNode) {
+    return null;
+  }
+
+  return createPortal(<SearchContainer />, mountNode);
 }
 
-// Register with the board controls hook so the control is added when the
-// board calls `doAction('alpaca_board_controls', selector)`.
-if (typeof wp !== 'undefined' && wp.hooks && wp.hooks.addAction) {
-  wp.hooks.addAction('alpaca_board_controls', 'alpaca/search', mountSearch);
-}
+SearchPortal.propTypes = {
+  selector: PropTypes.string,
+};
 
-export default SearchContainer;
+SearchPortal.defaultProps = {
+  selector: '#project-board-controls-mount',
+};
+
+export default SearchPortal;

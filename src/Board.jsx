@@ -8,6 +8,7 @@ const { doAction } = wp.hooks;
 
 import AlpacaIssue from './components/Issue';
 import Container from './components/Container';
+import SearchPortal from './components/Search';
 
 import { setCookie, getCookie } from './utils/cookies';
 import { transformDataForBoard, saveBoardOrder } from './utils/data';
@@ -953,6 +954,7 @@ export function AlpacaBoard() {
 
   return (
     <>
+      <SearchPortal selector="#project-board-controls-mount" />
       {hasNoStatuses ? (
         <div className="alpaca-empty-state">
           <Notice status="warning" isDismissible={false}>
