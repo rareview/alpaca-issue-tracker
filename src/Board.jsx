@@ -8,6 +8,7 @@ const { doAction } = wp.hooks;
 
 import AlpacaIssue from './components/Issue';
 import Container from './components/Container';
+import SearchPortal from './components/Search';
 
 import { setCookie, getCookie } from './utils/cookies';
 import { transformDataForBoard, saveBoardOrder } from './utils/data';
@@ -39,6 +40,98 @@ export function AlpacaBoard() {
   });
   const [isRestoring, setIsRestoring] = useState(false);
   const [restoreError, setRestoreError] = useState(null);
+
+  /**
+   * Update the `issue` query parameter in the URL.
+   *
+   * @param {string} issueValue The issue slug or ID.
+   */
+  const setIssueQueryParam = useCallback((issueValue) => {
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set('issue', issueValue);
+      window.history.pushState({}, '', url.toString());
+    } catch (e) {
+      const params = new URLSearchParams(window.location.search);
+      params.set('issue', issueValue);
+      const base = window.location.pathname + window.location.hash;
+      const search = params.toString();
+      window.history.pushState({}, '', base + (search ? `?${search}` : ''));
+    }
+  }, []);
+
+  /**
+   * Remove the `issue` query parameter from the URL.
+   */
+  const clearIssueQueryParam = useCallback(() => {
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('issue');
+      window.history.pushState({}, '', url.toString());
+    } catch (e) {
+      const params = new URLSearchParams(window.location.search);
+      params.delete('issue');
+      const base = window.location.pathname + window.location.hash;
+      const search = params.toString();
+      window.history.pushState({}, '', base + (search ? `?${search}` : ''));
+    }
+  }, []);
+
+  /**
+   * Show an issue not found snackbar.
+   *
+   * @param {string} issueSlug The unresolved issue identifier.
+   */
+  const showIssueNotFoundMessage = useCallback((issueSlug) => {
+    setSelectedItem(null);
+    setSnackbarClosing(false);
+    setSnackbarMessage(__('Issue not found.', 'alpaca') + ` (${issueSlug})`);
+    if (snackbarTimerRef.current) {
+      clearTimeout(snackbarTimerRef.current);
+    }
+    if (snackbarFadeTimerRef.current) {
+      clearTimeout(snackbarFadeTimerRef.current);
+      snackbarFadeTimerRef.current = null;
+    }
+    snackbarTimerRef.current = setTimeout(() => {
+      setSnackbarClosing(true);
+      snackbarFadeTimerRef.current = setTimeout(() => {
+        setSnackbarMessage(null);
+        setSnackbarClosing(false);
+        snackbarFadeTimerRef.current = null;
+      }, 300);
+      snackbarTimerRef.current = null;
+    }, 4000);
+  }, []);
+
+  /**
+   * Find an issue in containers by slug or ID.
+   *
+   * @param {string|number} issueIdentifier The issue identifier from URL/search.
+   * @return {Object|null} Matching issue item or null.
+   */
+  const findIssueByIdentifier = useCallback(
+    (issueIdentifier) => {
+      if (!issueIdentifier) {
+        return null;
+      }
+
+      const needle = String(issueIdentifier);
+      for (const container of containers) {
+        const found = container.items.find(
+          (it) =>
+            String(it.id) === needle ||
+            it.slug === needle ||
+            (it.meta && it.meta.slug === needle),
+        );
+        if (found) {
+          return found;
+        }
+      }
+      return null;
+    },
+    [containers],
+  );
 
   // From BoardFrame.jsx
   useEffect(() => {
@@ -78,40 +171,13 @@ export function AlpacaBoard() {
           return;
         }
 
-        for (const container of containers) {
-          const found = container.items.find(
-            (it) =>
-              it.slug === issueSlug || (it.meta && it.meta.slug === issueSlug),
-          );
-          if (found) {
-            setSelectedItem(found);
-            return;
-          }
+        const found = findIssueByIdentifier(issueSlug);
+        if (found) {
+          setSelectedItem(found);
+          return;
         }
 
-        // If an `issue` param was present but no matching issue found, show a snackbar.
-        if (issueSlug) {
-          setSelectedItem(null);
-          // Show snackbar with auto-dismiss and fade-out.
-          setSnackbarClosing(false);
-          setSnackbarMessage(
-            __('Issue not found.', 'alpaca') + ` (${issueSlug})`,
-          );
-          if (snackbarTimerRef.current) clearTimeout(snackbarTimerRef.current);
-          if (snackbarFadeTimerRef.current) {
-            clearTimeout(snackbarFadeTimerRef.current);
-            snackbarFadeTimerRef.current = null;
-          }
-          snackbarTimerRef.current = setTimeout(() => {
-            setSnackbarClosing(true);
-            snackbarFadeTimerRef.current = setTimeout(() => {
-              setSnackbarMessage(null);
-              setSnackbarClosing(false);
-              snackbarFadeTimerRef.current = null;
-            }, 300);
-            snackbarTimerRef.current = null;
-          }, 4000);
-        }
+        showIssueNotFoundMessage(issueSlug);
       } catch (e) {
         // ignore malformed URL
       }
@@ -135,7 +201,34 @@ export function AlpacaBoard() {
       window.removeEventListener('popstate', popHandler);
       if (popTimer) clearTimeout(popTimer);
     };
-  }, [containers]);
+  }, [findIssueByIdentifier, showIssueNotFoundMessage]);
+
+  // Open an issue via global action, used by cross-component controls such as search.
+  useEffect(() => {
+    const handleOpenIssue = (payload = {}) => {
+      const issueSlug = payload.slug || payload.id;
+      if (!issueSlug) {
+        return;
+      }
+
+      const found = findIssueByIdentifier(issueSlug);
+      if (found) {
+        setSelectedItem(found);
+        const value = found.slug || (found.meta && found.meta.slug) || found.id;
+        setIssueQueryParam(value);
+        return;
+      }
+
+      setIssueQueryParam(issueSlug);
+      showIssueNotFoundMessage(issueSlug);
+    };
+
+    wp.hooks.addAction('alpaca.openIssue', 'alpaca/board', handleOpenIssue);
+
+    return () => {
+      wp.hooks.removeAction('alpaca.openIssue', 'alpaca/board');
+    };
+  }, [findIssueByIdentifier, setIssueQueryParam, showIssueNotFoundMessage]);
 
   const handleToggleHidden = (containerId) => {
     setHiddenContainerIds((prev) => {
@@ -190,20 +283,8 @@ export function AlpacaBoard() {
     const item = getItemById(itemId);
     setSelectedItem(item);
     // Update URL so the item can be shared via `?issue=slug` (fallback to id)
-    try {
-      const url = new URL(window.location.href);
-      const value = item?.slug || item?.meta?.slug || itemId;
-      url.searchParams.set('issue', value);
-      window.history.pushState({}, '', url.toString());
-    } catch (e) {
-      const params = new URLSearchParams(window.location.search);
-      const value =
-        (item && (item.slug || (item.meta && item.meta.slug))) || itemId;
-      params.set('issue', value);
-      const base = window.location.pathname + window.location.hash;
-      const search = params.toString();
-      window.history.pushState({}, '', base + (search ? `?${search}` : ''));
-    }
+    const value = item?.slug || item?.meta?.slug || itemId;
+    setIssueQueryParam(value);
   };
 
   const handleCommentCountChange = useCallback((issueId, newCount) => {
@@ -626,17 +707,7 @@ export function AlpacaBoard() {
   const closeModal = () => {
     setSelectedItem(null);
     // Remove `issue` param from URL when modal is closed (create history entry).
-    try {
-      const url = new URL(window.location.href);
-      url.searchParams.delete('issue');
-      window.history.pushState({}, '', url.toString());
-    } catch (e) {
-      const params = new URLSearchParams(window.location.search);
-      params.delete('issue');
-      const base = window.location.pathname + window.location.hash;
-      const search = params.toString();
-      window.history.pushState({}, '', base + (search ? `?${search}` : ''));
-    }
+    clearIssueQueryParam();
   };
 
   const handleRestoreDefaults = () => {
@@ -907,8 +978,7 @@ export function AlpacaBoard() {
 
   return (
     <>
-      <ul className="subsubsub"></ul>
-      <div id="project-board-controls-mount"></div>
+      <SearchPortal selector="#project-board-controls-mount" />
       {hasNoStatuses ? (
         <div className="alpaca-empty-state">
           <Notice status="warning" isDismissible={false}>
