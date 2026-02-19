@@ -4,6 +4,7 @@ import './apiTest.js';
 import './utils/issueCommentHandler.js';
 import './utils/dataDump.js';
 import './utils/boardHelpers.js';
+import { installAlpacaApiRootMiddleware } from './utils/restApiRoot.js';
 
 // Import Prism.js and required languages
 import Prism from 'prismjs';
@@ -42,6 +43,8 @@ if (!window.alpaca) {
 if (!window.alpaca.services) {
   window.alpaca.services = {};
 }
+
+installAlpacaApiRootMiddleware();
 
 window.alpaca.services.userApi = { fetchAllAssignees };
 window.alpaca.services.issueApi = {

@@ -4,6 +4,7 @@ import { dataUrlToFile, uploadIssueAttachment } from './utils/attachmentUpload';
 import { useTestLogger } from './utils/testLogger.js';
 import ReportIcon from './components/icons/ReportIcon';
 import BoardIcon from './components/icons/BoardIcon';
+import { buildAlpacaRestUrl, getAlpacaRestRoot } from './utils/restApiRoot.js';
 
 const { __ } = wp.i18n;
 const { Button, TextareaControl, Spinner, ToggleControl } = wp.components;
@@ -133,7 +134,7 @@ const AlpacaToolbar = () => {
 
       const payload = { ...submitted, ...server };
 
-      const response = await fetch(wpApiSettings.root + 'alpaca/v1/submit', {
+      const response = await fetch(buildAlpacaRestUrl('/alpaca/v1/submit'), {
         method: 'POST',
         credentials: 'include',
         headers: new Headers({
@@ -194,6 +195,22 @@ const AlpacaToolbar = () => {
     }
   }, [feedback, isHighPriority, closeForm]);
 
+  const projectBoardUrl = (() => {
+    if (
+      window.alpacaSettings?.adminUrl &&
+      typeof window.alpacaSettings.adminUrl === 'string'
+    ) {
+      return `${window.alpacaSettings.adminUrl}?page=project-board`;
+    }
+
+    const restRoot = getAlpacaRestRoot();
+    if (typeof restRoot === 'string' && restRoot.includes('/wp-json/')) {
+      return `${restRoot.replace('/wp-json/', '/wp-admin/')}admin.php?page=project-board`;
+    }
+
+    return `${window.location.origin}/wp-admin/admin.php?page=project-board`;
+  })();
+
   return (
     <>
       <div className={`alpaca-bottom-toolbar ${isExpanded ? 'expanded' : ''}`}>
@@ -205,13 +222,7 @@ const AlpacaToolbar = () => {
           <ReportIcon />
           {__('Report An Issue', 'alpaca')}
         </button>
-        <a
-          href={
-            wpApiSettings.root.replace('/wp-json/', '/wp-admin/') +
-            'admin.php?page=project-board'
-          }
-          className="project-board-link"
-        >
+        <a href={projectBoardUrl} className="project-board-link">
           <BoardIcon />
           {__('Project Board', 'alpaca')}
         </a>
