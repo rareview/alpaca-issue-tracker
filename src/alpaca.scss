@@ -1386,10 +1386,16 @@ $core-font-stack:
       }
     }
 
-    &.subissue-completion-changed,
+    &.subissue-completion-changed {
+      .alpaca-timeline-icon::before {
+        mask-image: url('components/icons/svg/check2-square.svg');
+        background-color: $greytext;
+      }
+    }
+
     &.subissue-deleted {
       .alpaca-timeline-icon::before {
-        mask-image: url('components/icons/svg/columns.svg');
+        mask-image: url('components/icons/svg/x-lg.svg');
         background-color: $greytext;
       }
     }
