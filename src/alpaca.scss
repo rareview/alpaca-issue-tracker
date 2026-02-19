@@ -874,13 +874,20 @@ $core-font-stack:
   /*
      * 4.5 - Checklists
    */
+
+  tr#subissues {
+    td {
+      padding-top: 0;
+    }
+  }
+
   .alpaca-subissues {
     padding: 2px 0;
   }
 
   .alpaca-subissues-list {
     list-style: none;
-    margin: 0 0 8px 0;
+    margin: 0 0 5px 0;
     padding: 0;
     display: flex;
     flex-direction: column;
@@ -890,6 +897,10 @@ $core-font-stack:
   li.alpaca-subissues-item {
     position: relative;
     margin-bottom: 0;
+
+    &:last-child {
+      margin-bottom: 5px;
+    }
 
     &.is-completed .alpaca-subissues-text-control textarea {
       text-decoration: line-through;
