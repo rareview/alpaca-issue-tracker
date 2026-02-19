@@ -1,3 +1,5 @@
+import { buildAlpacaRestUrl } from './utils/restApiRoot.js';
+
 // --- Basic API Endpoint Tests ---
 // To enable, set ALPACA_RUN_API_TESTS to true below.
 // The results will be logged to your browser's developer console when the
@@ -47,7 +49,7 @@ if (ALPACA_RUN_API_TESTS && document.querySelector('#project-board')) {
 
     // Test GET /alpaca/v1/board
     testEndpoint(
-      `${wpApiSettings.root}alpaca/v1/board`,
+      buildAlpacaRestUrl('/alpaca/v1/board'),
       { method: 'GET', headers: nonceHeader },
       'GET /alpaca/v1/board',
     );

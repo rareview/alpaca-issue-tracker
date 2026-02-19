@@ -2,6 +2,7 @@ import handleSnapdomCapture from './snapdomHandler.js';
 import { updateIssue } from './services/issueApi';
 import { dataUrlToFile, uploadIssueAttachment } from './utils/attachmentUpload';
 import { useTestLogger } from './utils/testLogger.js';
+import { buildAlpacaRestUrl } from './utils/restApiRoot.js';
 
 const { __ } = wp.i18n;
 const { Button, Modal, TextareaControl, Spinner, ToggleControl } =
@@ -106,7 +107,7 @@ const AlpacaModal = () => {
 
       const payload = { ...submitted, ...server };
 
-      const response = await fetch(wpApiSettings.root + 'alpaca/v1/submit', {
+      const response = await fetch(buildAlpacaRestUrl('/alpaca/v1/submit'), {
         method: 'POST',
         credentials: 'include',
         headers: new Headers({
