@@ -15,6 +15,7 @@ const DraggableItem = forwardRef(
       isDragDisabled = false,
       onClick,
       assignees = [],
+      labels = [],
       commentCount,
       meta,
     },
@@ -38,6 +39,7 @@ const DraggableItem = forwardRef(
         content,
         postDate,
         assignees,
+        labels,
         commentCount,
         meta,
       };
@@ -152,6 +154,7 @@ const DraggableItem = forwardRef(
           content={content}
           postDate={postDate}
           assignees={assignees}
+          labels={labels}
           commentCount={commentCount}
           meta={meta}
           className="alpaca-item-inner"
@@ -174,6 +177,7 @@ DraggableItem.propTypes = {
   isDragDisabled: PropTypes.bool,
   onClick: PropTypes.func,
   assignees: PropTypes.array,
+  labels: PropTypes.array,
   commentCount: PropTypes.number,
   meta: PropTypes.object,
 };

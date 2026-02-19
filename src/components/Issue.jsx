@@ -11,6 +11,7 @@ import { getUser, generateAssigneeSpan } from '../hooks/useUser';
 import { processAssigneeChanges } from '../utils/assigneeUtils';
 import {
   fetchStatuses,
+  fetchLabels,
   updateIssue,
   createIssue,
   createSubissue,
@@ -18,6 +19,7 @@ import {
 } from '../services/issueApi';
 
 import AssigneeSelector from './issue/AssigneeSelector';
+import LabelsSelector from './issue/LabelsSelector';
 import DeadlineControl from './issue/DeadlineControl';
 import TabContent from './issue/TabContent';
 import Lightbox from './issue/Lightbox';
@@ -87,6 +89,26 @@ const AssigneeRow = memo(
     prev.isLoading === next.isLoading &&
     prev.assignees.join(',') === next.assignees.join(',') &&
     prev.allUsers.join(',') === next.allUsers.join(','),
+);
+
+const LabelsRow = memo(
+  ({ labels, selectedIds, onChange, isLoading }) => (
+    <tr id="labels">
+      <th scope="row">{__('Labels', 'alpaca')}</th>
+      <td className="flexalign alpaca-issue-labels-cell">
+        <LabelsSelector
+          labels={labels}
+          selectedIds={selectedIds}
+          onChange={onChange}
+          isLoading={isLoading}
+        />
+      </td>
+    </tr>
+  ),
+  (prev, next) =>
+    prev.isLoading === next.isLoading &&
+    prev.labels === next.labels &&
+    prev.selectedIds.join(',') === next.selectedIds.join(','),
 );
 
 const DeadlineRow = memo(
@@ -431,6 +453,7 @@ const AlpacaIssue = ({
   onStatusChange,
   onIssueTitleChange,
   onIssueCreated,
+  onLabelsChange,
 }) => {
   const {
     issueDetails,
@@ -449,6 +472,8 @@ const AlpacaIssue = ({
   } = useWatchlist();
 
   const [assignees, setAssignees] = useState([]);
+  const [allLabels, setAllLabels] = useState([]);
+  const [selectedLabelIds, setSelectedLabelIds] = useState([]);
   const [deadline, setDeadline] = useState(null);
   const [isHighPriority, setIsHighPriority] = useState(false);
   const [lightboxSrc, setLightboxSrc] = useState(null);
@@ -533,10 +558,57 @@ const AlpacaIssue = ({
   }, [showNotification]);
 
   useEffect(() => {
+    fetchLabels()
+      .then((labels) => setAllLabels(Array.isArray(labels) ? labels : []))
+      .catch(() =>
+        showNotification(__('Failed to load labels.', 'alpaca'), 'error'),
+      );
+  }, [showNotification]);
+
+  const getAssigneeNamesFromIssue = useCallback(
+    (details) => {
+      if (
+        !details ||
+        !details.taxonomies ||
+        !Array.isArray(details.taxonomies.assignee)
+      ) {
+        return [];
+      }
+
+      return details.taxonomies.assignee.map((term) => {
+        const userObject = allUserObjects.find(
+          (user) => user.slug === term.slug,
+        );
+        if (userObject) {
+          return userObject.name;
+        }
+
+        return term.name;
+      });
+    },
+    [allUserObjects],
+  );
+
+  const getLabelIdsFromIssue = useCallback((details) => {
+    if (
+      !details ||
+      !details.taxonomies ||
+      !Array.isArray(details.taxonomies.label)
+    ) {
+      return [];
+    }
+
+    return details.taxonomies.label
+      .map((term) => Number(term.term_id))
+      .filter((value) => value > 0);
+  }, []);
+
+  useEffect(() => {
     if (isOpen && isCreating) {
       setIsEditingTitle(true);
       setEditedTitle('');
       setAssignees([]);
+      setSelectedLabelIds([]);
       setDeadline(null);
       setIsHighPriority(false);
       setSubissues([]);
@@ -546,6 +618,7 @@ const AlpacaIssue = ({
     if (!isOpen && isCreating) {
       setEditedTitle('');
       setAssignees([]);
+      setSelectedLabelIds([]);
       setDeadline(null);
       setIsHighPriority(false);
       setIsEditingTitle(false);
@@ -555,38 +628,32 @@ const AlpacaIssue = ({
 
   // Initialize issue data
   useEffect(() => {
-    if (
-      !isCreating &&
-      issueDetails &&
-      issueDetails.success &&
-      allUserObjects.length > 0
-    ) {
-      setDeadline(issueDetails.meta.deadline || null);
-      setIsHighPriority(
-        issueDetails.meta.alpaca_high_priority === '1' ||
-          issueDetails.meta.alpaca_high_priority === 1 ||
-          issueDetails.meta.alpaca_high_priority === true,
-      );
-
-      // Assignees
-      const assigneeNames =
-        issueDetails.taxonomies?.assignee?.map((t) => {
-          const userObj = allUserObjects.find((u) => u.slug === t.slug);
-          return userObj ? userObj.name : t.name;
-        }) || [];
-      setAssignees(assigneeNames);
-
-      // Title
-      setEditedTitle(decodeEntities(issueDetails.post_data.post_content));
-      setSubissues(
-        Array.isArray(issueDetails.subissues)
-          ? issueDetails.subissues.map((subissue) =>
-              normalizeSubissue(subissue),
-            )
-          : [],
-      );
+    if (isCreating || !issueDetails || !issueDetails.success) {
+      return;
     }
-  }, [issueDetails, allUserObjects, isCreating]);
+
+    setDeadline(
+      issueDetails.meta.alpaca_deadline || issueDetails.meta.deadline || null,
+    );
+    setIsHighPriority(
+      issueDetails.meta.alpaca_high_priority === '1' ||
+        issueDetails.meta.alpaca_high_priority === 1 ||
+        issueDetails.meta.alpaca_high_priority === true,
+    );
+    setAssignees(getAssigneeNamesFromIssue(issueDetails));
+    setSelectedLabelIds(getLabelIdsFromIssue(issueDetails));
+    setEditedTitle(decodeEntities(issueDetails.post_data.post_content));
+    setSubissues(
+      Array.isArray(issueDetails.subissues)
+        ? issueDetails.subissues.map((subissue) => normalizeSubissue(subissue))
+        : [],
+    );
+  }, [
+    getAssigneeNamesFromIssue,
+    getLabelIdsFromIssue,
+    isCreating,
+    issueDetails,
+  ]);
 
   useEffect(() => {
     if (isCreating || !issueId) {
@@ -688,39 +755,6 @@ const AlpacaIssue = ({
     [isCreating, issueId, issueDetails, setLoading, showNotification],
   );
 
-  useEffect(() => {
-    if (issueDetails && issueDetails.success && allUserObjects.length > 0) {
-      setDeadline(
-        issueDetails.meta.alpaca_deadline || issueDetails.meta.deadline || null,
-      );
-
-      // Handle assignees
-      if (
-        issueDetails.taxonomies &&
-        issueDetails.taxonomies.assignee &&
-        Array.isArray(issueDetails.taxonomies.assignee)
-      ) {
-        const assigneeNames = issueDetails.taxonomies.assignee.map((t) => {
-          const userObject = allUserObjects.find(
-            (user) => user.slug === t.slug,
-          );
-          return userObject ? userObject.name : t.name;
-        });
-        setAssignees(assigneeNames);
-      } else {
-        setAssignees([]);
-      }
-
-      setSubissues(
-        Array.isArray(issueDetails.subissues)
-          ? issueDetails.subissues.map((subissue) =>
-              normalizeSubissue(subissue),
-            )
-          : [],
-      );
-    }
-  }, [issueDetails, allUserObjects]);
-
   // Event handlers
   const handleAssigneeChange = useCallback(
     (newAssignees) => {
@@ -740,6 +774,44 @@ const AlpacaIssue = ({
       updateAssignees(issueId, slugs, newAssignees, added, removed);
     },
     [isCreating, assignees, issueId, updateAssignees, userMap],
+  );
+
+  const handleLabelChange = useCallback(
+    async (newSelectedIds) => {
+      const normalizedIds = newSelectedIds
+        .map((termId) => Number(termId))
+        .filter((termId) => termId > 0);
+      setSelectedLabelIds(normalizedIds);
+
+      if (isCreating) {
+        return;
+      }
+
+      setLoading('labels', true);
+      try {
+        await updateIssue(issueId, { taxonomies: { label: normalizedIds } });
+        if (typeof onLabelsChange === 'function') {
+          const selectedLabels = allLabels.filter((label) =>
+            normalizedIds.includes(Number(label.term_id)),
+          );
+          onLabelsChange(issueId, selectedLabels);
+        }
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error(err);
+        showNotification(__('Failed to update labels.', 'alpaca'), 'error');
+      } finally {
+        setLoading('labels', false);
+      }
+    },
+    [
+      allLabels,
+      isCreating,
+      issueId,
+      onLabelsChange,
+      setLoading,
+      showNotification,
+    ],
   );
 
   // Deadline handlers
@@ -961,6 +1033,7 @@ const AlpacaIssue = ({
 
       if (response && response.issue) {
         const newIssueId = response.issue.id;
+        let createdIssueLabels = [];
 
         if (deadline) {
           try {
@@ -976,6 +1049,24 @@ const AlpacaIssue = ({
             await updateAssignees(newIssueId, slugs, assignees, assignees, []);
           } catch (err) {
             console.error('Failed to set assignees:', err);
+          }
+        }
+
+        if (selectedLabelIds.length > 0) {
+          try {
+            await updateIssue(newIssueId, {
+              taxonomies: { label: selectedLabelIds },
+            });
+            createdIssueLabels = allLabels.filter((label) =>
+              selectedLabelIds.includes(Number(label.term_id)),
+            );
+          } catch (err) {
+            // eslint-disable-next-line no-console
+            console.error('Failed to set labels:', err);
+            showNotification(
+              __('Issue created, but labels could not be saved.', 'alpaca'),
+              'error',
+            );
           }
         }
 
@@ -1012,6 +1103,7 @@ const AlpacaIssue = ({
 
         setEditedTitle('');
         setAssignees([]);
+        setSelectedLabelIds([]);
         setDeadline(null);
         setIsHighPriority(false);
         setLoading('title', false);
@@ -1022,6 +1114,7 @@ const AlpacaIssue = ({
             slug: response.issue.slug || response.issue.post_name || '',
             title: editedTitle,
             assignees: assignees || [],
+            labels: createdIssueLabels,
             deadline: deadline || null,
             isHighPriority,
           });
@@ -1041,8 +1134,10 @@ const AlpacaIssue = ({
     onIssueCreated,
     deadline,
     assignees,
+    allLabels,
     userMap,
     updateAssignees,
+    selectedLabelIds,
   ]);
 
   const persistDraftSubissue = useCallback(
@@ -1525,6 +1620,11 @@ const AlpacaIssue = ({
   // Memoized stable props
   const stableUsers = useMemo(() => allUsers, [allUsers]);
   const stableAssignees = useMemo(() => assignees, [assignees]);
+  const stableLabels = useMemo(() => allLabels, [allLabels]);
+  const stableSelectedLabelIds = useMemo(
+    () => selectedLabelIds,
+    [selectedLabelIds],
+  );
   const stableIsLoading = useMemo(
     () => loadingStates.assignees,
     [loadingStates.assignees],
@@ -1536,6 +1636,10 @@ const AlpacaIssue = ({
           subissue.isDraft && loadingStates[`subissue-${subissue.id}`],
       ),
     [loadingStates, subissues],
+  );
+  const stableIsLabelLoading = useMemo(
+    () => loadingStates.labels,
+    [loadingStates.labels],
   );
   const currentStatus = issueDetails?.taxonomies?.status?.[0];
   const isLastStatus = useMemo(() => {
@@ -1677,6 +1781,13 @@ const AlpacaIssue = ({
                     allUsers={stableUsers}
                     onChange={handleAssigneeChange}
                     isLoading={stableIsLoading}
+                  />
+
+                  <LabelsRow
+                    labels={stableLabels}
+                    selectedIds={stableSelectedLabelIds}
+                    onChange={handleLabelChange}
+                    isLoading={stableIsLabelLoading}
                   />
 
                   {!isCreating && (
@@ -2008,6 +2119,7 @@ AlpacaIssue.propTypes = {
   onDeadlineChange: PropTypes.func.isRequired,
   onStatusChange: PropTypes.func.isRequired,
   onIssueTitleChange: PropTypes.func.isRequired,
+  onLabelsChange: PropTypes.func,
   isCreating: PropTypes.bool,
   onIssueCreated: PropTypes.func,
 };

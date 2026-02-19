@@ -57,6 +57,7 @@ $z-index-attachment-delete: 10;
 $z-index-report-form: 99998;
 $z-index-bottom-toolbar: 99999;
 $timeline-width: 1px;
+$common-radius: 8px;
 
 $core-font-stack:
   -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu,
@@ -185,24 +186,13 @@ $core-font-stack:
   }
 
   #project-board-controls {
-    .project-board-filter {
-      width: fit-content;
-      background: transparent;
-      border-width: 0;
+    display: flex;
+    align-items: center;
+    gap: $spacegap;
+    width: 100%;
 
-      & > div {
-        flex: none;
-      }
-
-      &:focus-within {
-        outline: none;
-        box-shadow: none;
-        border-width: 0;
-      }
-    }
-
-    .components-combobox-control {
-      width: $control-width-large;
+    > :first-child {
+      margin-right: auto;
     }
   }
 
@@ -332,7 +322,7 @@ $core-font-stack:
     }
 
     .alpaca-item-deadline {
-      border-radius: 8px;
+      border-radius: $common-radius;
     }
 
     &.is-high-priority {
@@ -458,6 +448,12 @@ $core-font-stack:
           vertical-align: middle;
           margin-right: -2px;
         }
+      }
+
+      .alpaca-item-labels {
+        display: inline-flex;
+        flex-wrap: wrap;
+        gap: 4px;
       }
 
       .alpaca-item-icon {
@@ -702,6 +698,12 @@ $core-font-stack:
       margin-left: 0;
     }
 
+    td.alpaca-issue-labels-cell {
+      align-items: flex-start;
+      display: flex;
+      width: 100%;
+    }
+
     div {
       margin: 0;
       padding: 0;
@@ -727,6 +729,34 @@ $core-font-stack:
 
     .components-form-token-field {
       width: 100%;
+    }
+
+    .alpaca-labels-selector {
+      width: 100%;
+
+      .alpaca-labels-selector-toggle.components-button.is-link {
+        align-items: center;
+        color: inherit;
+        display: inline-flex;
+        gap: 8px;
+        min-height: 32px;
+        padding-left: 0;
+        text-decoration: none;
+
+        &:focus {
+          box-shadow: none;
+        }
+      }
+
+      .alpaca-labels-selector-pills {
+        display: inline-flex;
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+
+      .alpaca-labels-selector-toggle-text {
+        color: $greytext;
+      }
     }
 
     .components-form-token-field__help {
@@ -1112,7 +1142,7 @@ $core-font-stack:
 
     .alpaca-comment-form {
       border: 1px solid $greyborder;
-      border-radius: 8px;
+      border-radius: $common-radius;
 
       .alpaca-user {
         top: -1px; // Needed, not sure why
@@ -1124,7 +1154,7 @@ $core-font-stack:
 
       .alpaca-comment-dropzone .components-drop-zone {
         border: 2px dashed $greyborder;
-        border-radius: 8px;
+        border-radius: $common-radius;
         position: absolute;
         inset: 0;
         background: rgba(255, 255, 255, 0.85);
@@ -1175,7 +1205,7 @@ $core-font-stack:
   }
 
   .alpaca-timeline-item[data-source='human'] .alpaca-timeline-content {
-    border-radius: 8px;
+    border-radius: $common-radius;
     border: 1px solid $greyborder;
   }
 
@@ -1613,6 +1643,78 @@ $core-font-stack:
       padding: 1em;
     }
   }
+
+  .alpaca-search-popover {
+    z-index: 100003;
+    transition: none;
+
+    .components-popover__content {
+      width: var(--alpaca-search-popover-width, 300px);
+      padding: 8px;
+      background: $container-bg;
+      border: 1px solid #c3c4c7;
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+      box-shadow:
+        0 12px 28px rgb(0 0 0 / 18%),
+        0 2px 8px rgb(0 0 0 / 10%);
+      margin-top: -14px;
+      transform-origin: top center;
+      transition: none;
+    }
+
+    .alpaca-search-results-wrap {
+      max-height: 420px;
+      overflow-y: auto;
+      transform-origin: top center;
+      animation: alpaca-search-popover-in 240ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .alpaca-search-title-wrap {
+      display: inline;
+    }
+
+    .alpaca-search-title-text {
+      overflow-wrap: anywhere;
+    }
+
+    .alpaca-search-status-pill {
+      display: inline-block;
+      padding: 1px 8px;
+      border-radius: 999px;
+      border: 1px solid #b3b8bf;
+      background: $bgwhite;
+      color: #50575e;
+      font-size: 11px;
+      line-height: 1.4;
+      font-weight: 600;
+      white-space: nowrap;
+      vertical-align: baseline;
+    }
+  }
+
+  .alpaca-board-search.is-search-open {
+    z-index: 100002;
+
+    .components-search-control__input,
+    .components-search-control input[type='search'] {
+      border-color: #2271b1;
+      box-shadow: 0 0 0 1px #2271b1;
+      background: $bgwhite;
+    }
+  }
+
+  @keyframes alpaca-search-popover-in {
+    0% {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }
 
 /*
@@ -1687,63 +1789,23 @@ $core-font-stack:
 
 .alpaca-status-manager {
   .status-grid {
-    border: 1px solid $greyborder;
-    border-radius: 8px;
-    overflow: hidden;
-    font-size: 14px;
-    max-width: 600px;
+    .status-row-content {
+      gap: $spacegap;
 
-    .status-grid-header {
-      display: grid;
-      grid-template-columns: 1fr 150px; // name + actions
-      background: #f7f7f7;
-      border-bottom: 1px solid $greyborder;
-      font-weight: 600;
-
-      .status-grid-cell {
-        padding: 8px 12px;
-      }
-
-      .actions-cell {
-        text-align: right;
+      .drag-handle {
+        cursor: grab;
+        padding: 4px;
+        color: $greytext;
+        display: inline-flex;
+        flex: 0 0 24px;
+        justify-content: center;
+        width: 24px;
       }
     }
 
-    .status-grid-body {
-      display: flex;
-      flex-direction: column; // ✅ allows placeholder to insert space
-      min-height: 1px; // prevents collapse when empty
-    }
-
-    .status-grid-row {
-      display: grid;
-      grid-template-columns: 1fr 150px; // name + actions
-      align-items: center;
-      border-bottom: 1px solid $greyborder;
-      background: #fff;
-      transition: background 0.2s;
-
-      &:last-child {
-        border-bottom: none;
-      }
-
-      .status-grid-cell {
-        padding: 8px 12px;
-
-        &.actions-cell {
-          text-align: right;
-          white-space: nowrap;
-        }
-      }
-
-      .status-row-content {
-        gap: $spacegap;
-
-        .drag-handle {
-          cursor: grab;
-          padding: 4px;
-          color: $greytext;
-        }
+    .status-grid-row.placeholder {
+      .drag-handle {
+        visibility: hidden;
       }
     }
   }
@@ -1765,10 +1827,214 @@ $core-font-stack:
     margin: 2em 0;
   }
 
+  .alpaca-settings-table {
+    border: 1px solid $greyborder;
+    border-radius: $common-radius;
+    font-size: 14px;
+    max-width: 600px;
+    overflow: hidden;
+    width: 100%;
+
+    .alpaca-settings-table-delete.components-button {
+      color: #b32d2e;
+    }
+
+    .alpaca-settings-list-body {
+      display: flex;
+      flex-direction: column;
+      min-height: 1px;
+    }
+
+    .alpaca-settings-list-row {
+      align-items: center;
+      background: #fff;
+      display: grid;
+      gap: 10px;
+      grid-template-columns: minmax(0, 1fr) auto;
+      padding: 8px 12px;
+      transition: background 0.2s;
+
+      &:not(:last-child) {
+        border-bottom: 1px solid $greyborder;
+      }
+    }
+
+    .alpaca-settings-list-name {
+      min-width: 0;
+      width: 100%;
+    }
+
+    .alpaca-settings-list-actions,
+    .actions-cell {
+      justify-self: end;
+      white-space: nowrap;
+      width: auto;
+    }
+  }
+
   #alpaca-settings-internal {
     .components-input-control__container {
       max-width: 25em;
     }
+
+    input[type='number'].small-text {
+      width: 65px;
+      padding-right: 0;
+    }
+
+    .alpaca-small-number-control {
+      .components-input-control__container {
+        width: 65px;
+        max-width: 65px;
+      }
+
+      .alpaca-number-control-suffix {
+        &::before {
+          content: '\00a0';
+        }
+      }
+
+      input[type='number'] {
+        width: 65px;
+        padding-right: 0;
+      }
+    }
+
+    .alpaca-idle-indicator-control-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+
+      .components-base-control {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  .alpaca-labels-manager {
+    .alpaca-labels-list {
+      margin-top: 1em;
+
+      .alpaca-settings-list-row {
+        grid-template-columns: minmax(0, 1fr) 112px 32px;
+      }
+    }
+
+    .alpaca-label-name-input {
+      width: 100%;
+
+      .components-base-control__field {
+        margin-bottom: 0;
+      }
+
+      .components-input-control__container {
+        max-width: none;
+        width: 100%;
+      }
+    }
+
+    .alpaca-label-color-button {
+      align-items: center;
+      display: inline-flex;
+      gap: 6px;
+    }
+
+    .alpaca-label-color-cell {
+      justify-self: end;
+    }
+
+    .alpaca-label-delete-cell {
+      justify-self: end;
+      width: 32px;
+    }
+
+    .alpaca-label-delete-slot {
+      display: inline-block;
+      height: 32px;
+      width: 32px;
+    }
+
+    .alpaca-label-color-fallback {
+      border: 1px solid $greyborder;
+      border-radius: 50%;
+      display: inline-block;
+      height: 14px;
+      width: 14px;
+    }
+
+    .alpaca-label-color-popover {
+      padding: 10px;
+      width: 220px;
+    }
+
+    .alpaca-label-empty-slot {
+      color: $greytext;
+      font-size: $smallfont;
+      line-height: 32px;
+    }
+
+    .alpaca-labels-actions {
+      align-items: center;
+      display: flex;
+      gap: 10px;
+      margin-top: 1em;
+    }
+  }
+}
+
+.alpaca-label-pill {
+  border-radius: $common-radius;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 8px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.wp-admin .components-popover__content {
+  .alpaca-labels-selector-menu {
+    min-width: 240px;
+    max-height: 280px;
+    overflow-y: auto;
+    padding: 12px;
+  }
+
+  .alpaca-labels-selector-empty {
+    color: $greytext;
+    margin: 6px 0;
+  }
+
+  .alpaca-labels-selector-option {
+    align-items: center;
+    display: grid;
+    gap: 10px;
+    grid-template-columns: 16px 180px;
+    margin-bottom: 8px;
+    padding: 2px 0;
+  }
+
+  .alpaca-labels-selector-checkbox {
+    display: block;
+    height: 16px;
+    margin: 0;
+    width: 16px;
+  }
+
+  .alpaca-labels-selector-option-pill {
+    align-items: center;
+    box-sizing: border-box;
+    cursor: pointer;
+    display: inline-flex !important;
+    float: none;
+    height: 26px;
+    margin: 0 !important;
+    max-width: 180px;
+    min-width: 180px;
+    padding: 0 10px;
+    text-align: left;
+    width: 180px;
   }
 }
 
@@ -2057,6 +2323,34 @@ $core-font-stack:
       }
     }
   }
+}
+
+.wp-admin.alpaca-search-active #project-board .alpaca-wrap {
+  opacity: 0.82;
+  filter: saturate(0.88);
+  transition:
+    opacity 160ms ease,
+    filter 160ms ease;
+}
+
+.wp-admin #project-board-controls .alpaca-board-search {
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 6px;
+  background: transparent;
+  box-shadow: 0 0 0 rgb(0 0 0 / 0%);
+  transition:
+    box-shadow 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.wp-admin #project-board-controls .alpaca-board-search.is-search-open {
+  background: $bgwhite;
+  border-color: #c3c4c7;
+  box-shadow:
+    0 10px 26px rgb(0 0 0 / 16%),
+    0 2px 8px rgb(0 0 0 / 10%);
 }
 
 /*

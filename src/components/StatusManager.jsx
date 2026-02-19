@@ -6,6 +6,13 @@ import PropTypes from 'prop-types';
 // Using native HTML5 drag/drop instead of Atlaskit
 import DragHandleIcon from './icons/DragHandleIcon';
 import { updateIssue } from '../services/issueApi';
+import {
+  SettingsList,
+  SettingsListBody,
+  SettingsListRow,
+  SettingsListNameCell,
+  SettingsListActionsCell,
+} from './settings/SettingsList';
 
 const StatusManager = ({
   statuses,
@@ -56,8 +63,8 @@ const StatusManager = ({
         ),
       );
 
-      // Refresh the statuses to get updated scores
-      fetchStatusesCallback();
+      // Refresh in the background to keep the UI stable during drag/drop saves.
+      fetchStatusesCallback({ silent: true });
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error('Error updating term scores:', err);
@@ -128,7 +135,9 @@ const StatusManager = ({
   const getDropIndex = (e) => {
     const el = listRef.current;
     if (!el) return localStatuses.length - 1;
-    const children = Array.from(el.querySelectorAll('.status-grid-row'));
+    const children = Array.from(
+      el.querySelectorAll('.alpaca-settings-list-row'),
+    );
     for (let i = 0; i < children.length; i++) {
       const rect = children[i].getBoundingClientRect();
       if (e.clientY < rect.top + rect.height / 2) return i;
@@ -183,64 +192,63 @@ const StatusManager = ({
       // ignore
     }
 
-    // optional drag image
-    // clone the full row (not just the handle) so the user sees a preview
+    // Use a compact custom drag image that does not inherit UI component padding.
     const rowEl =
       e.currentTarget && e.currentTarget.closest
-        ? e.currentTarget.closest('.status-grid-row')
+        ? e.currentTarget.closest('.status-grid-row') ||
+          e.currentTarget.closest('.alpaca-settings-list-row')
         : e.currentTarget;
+
     if (rowEl && e.dataTransfer && e.dataTransfer.setDragImage) {
-      const original = rowEl;
-      const clone = original.cloneNode(true);
-      const rect = original.getBoundingClientRect();
+      const ghost = document.createElement('div');
+      const iconWrap = document.createElement('span');
+      const text = document.createElement('span');
+      const statusName =
+        localStatuses[index] && localStatuses[index].name
+          ? localStatuses[index].name
+          : '';
 
-      // Recursively copy computed styles so the clone preserves display (flex/grid)
-      // and children styling to match the rendered row.
-      const copyComputedStylesRecursive = (src, dest) => {
-        try {
-          const cs = window.getComputedStyle(src);
-          for (let i = 0; i < cs.length; i++) {
-            const prop = cs[i];
-            dest.style.setProperty(
-              prop,
-              cs.getPropertyValue(prop),
-              cs.getPropertyPriority(prop),
-            );
-          }
-        } catch (err) {
-          // ignore
-        }
+      ghost.className = 'alpaca-status-drag-ghost';
+      ghost.style.position = 'absolute';
+      ghost.style.top = '-10000px';
+      ghost.style.left = '-10000px';
+      ghost.style.display = 'inline-flex';
+      ghost.style.alignItems = 'center';
+      ghost.style.padding = '6px 10px';
+      ghost.style.border = '1px solid #d0d7de';
+      ghost.style.borderRadius = '8px';
+      ghost.style.background = '#fff';
+      ghost.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.08)';
+      ghost.style.maxWidth = '320px';
+      ghost.style.gap = '8px';
+      ghost.style.fontSize = '13px';
+      ghost.style.lineHeight = '1.4';
 
-        const srcChildren = src.children || [];
-        const destChildren = dest.children || [];
-        for (
-          let i = 0;
-          i < srcChildren.length && i < destChildren.length;
-          i++
-        ) {
-          copyComputedStylesRecursive(srcChildren[i], destChildren[i]);
-        }
-      };
+      iconWrap.textContent = '⋮⋮';
+      iconWrap.style.color = '#8c8f94';
+      iconWrap.style.fontSize = '12px';
+      iconWrap.style.letterSpacing = '-1px';
+      iconWrap.style.flex = '0 0 16px';
 
-      copyComputedStylesRecursive(original, clone);
+      text.textContent = statusName;
+      text.style.color = '#1d2327';
+      text.style.whiteSpace = 'nowrap';
+      text.style.overflow = 'hidden';
+      text.style.textOverflow = 'ellipsis';
 
-      clone.style.position = 'absolute';
-      clone.style.top = '-10000px';
-      clone.style.left = '-10000px';
-      clone.style.width = `${rect.width}px`;
-      clone.style.height = `${rect.height}px`;
-      clone.style.margin = '0';
-      clone.classList.add('alpaca-drag-clone');
+      ghost.appendChild(iconWrap);
+      ghost.appendChild(text);
+      document.body.appendChild(ghost);
 
-      document.body.appendChild(clone);
       try {
-        e.dataTransfer.setDragImage(clone, 10, 10);
+        e.dataTransfer.setDragImage(ghost, 16, 16);
       } catch (err) {
         // ignore
       }
+
       setTimeout(() => {
         try {
-          document.body.removeChild(clone);
+          document.body.removeChild(ghost);
         } catch (err) {
           // ignore
         }
@@ -393,21 +401,10 @@ const StatusManager = ({
     <>
       <h2>{__('Status Manager', 'alpaca')}</h2>
       <div className="alpaca-status-manager">
-        <div className="status-grid">
-          {/* Grid header */}
-          <div className="status-grid-header">
-            <div className="status-grid-cell">
-              <strong>{__('Name', 'alpaca')}</strong>
-            </div>
-            <div className="status-grid-cell actions-cell">
-              <strong>{__('Actions', 'alpaca')}</strong>
-            </div>
-          </div>
-
+        <SettingsList className="status-grid">
           {/* Draggable grid body (native HTML5 drag/drop) */}
-          <div
-            ref={listRef}
-            role="list"
+          <SettingsListBody
+            bodyRef={listRef}
             className={`status-grid-body ${isDragOver ? 'dragging-over' : ''}`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
@@ -461,20 +458,20 @@ const StatusManager = ({
                       );
                     })}
 
-                    <div
+                    <SettingsListRow
                       className="status-grid-row placeholder"
                       key="status-placeholder"
                     >
-                      <div className="status-grid-cell">
+                      <SettingsListNameCell className="status-grid-cell">
                         <div className="status-row-content flexalign">
                           <div className="drag-handle flexalign" />
                           <Button isTertiary className="placeholder-label">
                             {dragOverStatus.name}
                           </Button>
                         </div>
-                      </div>
-                      <div className="status-grid-cell actions-cell" />
-                    </div>
+                      </SettingsListNameCell>
+                      <SettingsListActionsCell className="status-grid-cell actions-cell" />
+                    </SettingsListRow>
 
                     {preview.slice(insertAt).map((status, i) => {
                       const idx = insertAt + i;
@@ -522,8 +519,8 @@ const StatusManager = ({
                 />
               ));
             })()}
-          </div>
-        </div>
+          </SettingsListBody>
+        </SettingsList>
 
         <p>
           <Button isPrimary onClick={handleAddStatus}>
@@ -612,13 +609,13 @@ const StatusRow = wp.element.forwardRef(
     const handleProps = dragHandleProps || {};
 
     return (
-      <div
+      <SettingsListRow
         ref={ref}
         {...props}
         className={`status-grid-row ${isDragging ? 'is-dragging' : ''}`}
         style={{ opacity: isDragging ? 0.35 : 1 }}
       >
-        <div className="status-grid-cell">
+        <SettingsListNameCell className="status-grid-cell">
           <div className="status-row-content flexalign">
             <div
               {...handleProps}
@@ -647,15 +644,17 @@ const StatusRow = wp.element.forwardRef(
               </Button>
             )}
           </div>
-        </div>
-        <div className="status-grid-cell actions-cell">
+        </SettingsListNameCell>
+        <SettingsListActionsCell className="status-grid-cell actions-cell">
           <Button
             icon="trash"
+            className="alpaca-settings-table-delete"
             label={__('Delete', 'alpaca')}
+            isDestructive
             onClick={() => onDelete(status.term_id)}
           />
-        </div>
-      </div>
+        </SettingsListActionsCell>
+      </SettingsListRow>
     );
   },
 );

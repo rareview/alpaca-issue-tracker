@@ -7,6 +7,24 @@ import PriorityIcon from '../components/icons/PriorityIcon';
 import Check2SquareIcon from '../components/icons/Check2SquareIcon';
 
 /**
+ * Get the idle indicator threshold in days.
+ *
+ * Falls back to 1 day when no valid setting exists.
+ *
+ * @return {number} Number of days before idle is shown.
+ */
+const getIdleIndicatorDaysThreshold = () => {
+  const configuredDays = window?.alpacaSettings?.idleIndicatorDays;
+  const parsedDays = Number.parseInt(configuredDays, 10);
+
+  if (Number.isNaN(parsedDays) || parsedDays < 1) {
+    return 1;
+  }
+
+  return parsedDays;
+};
+
+/**
  * Filter to add priority badge to item datapoints.
  *
  * @param {JSX.Element|null} originalContent The original content of the filter.
@@ -65,6 +83,42 @@ export const addAssigneesDatapoint = (originalContent, itemProps) => {
     );
   }
   return originalContent;
+};
+
+/**
+ * Filter to add labels to item datapoints.
+ *
+ * @param {JSX.Element|null} originalContent The original content of the filter.
+ * @param {Object}           itemProps       Props passed to the Item component.
+ * @return {JSX.Element|null} The labels JSX or null.
+ */
+export const addLabelsDatapoint = (originalContent, itemProps) => {
+  const { labels } = itemProps;
+
+  if (!Array.isArray(labels) || labels.length < 1) {
+    return originalContent;
+  }
+
+  return (
+    <>
+      {originalContent}
+      <div className="alpaca-item-labels">
+        {labels.map((label) => (
+          <span
+            key={label.term_id || `${label.slug}-${label.name}`}
+            className="alpaca-item-label alpaca-label-pill"
+            style={{
+              backgroundColor: label.color || '#172b4d',
+              color: '#fff',
+            }}
+            title={label.name}
+          >
+            {label.name}
+          </span>
+        ))}
+      </div>
+    </>
+  );
 };
 
 /**
@@ -131,6 +185,7 @@ export const addChecklistProgressDatapoint = (originalContent, itemProps) => {
 export const addDaysIdleDatapoint = (originalContent, itemProps) => {
   const { meta } = itemProps;
   const { postDate } = itemProps;
+  const idleThresholdDays = getIdleIndicatorDaysThreshold();
 
   const lastActivityDateString = meta?.lastActivity || postDate;
   let idleText = null;
@@ -144,7 +199,7 @@ export const addDaysIdleDatapoint = (originalContent, itemProps) => {
       (today - lastActivityDate) / (1000 * 60 * 60 * 24),
     );
 
-    if (daysIdle > 0) {
+    if (daysIdle >= idleThresholdDays) {
       // translators: %d: Number of days
       idleText = sprintf(__('%dd idle', 'alpaca'), daysIdle);
       return (
@@ -243,6 +298,12 @@ wp.hooks.addFilter(
   'alpaca.item.datapoints',
   'alpaca/item/addAssigneesDatapoint',
   addAssigneesDatapoint,
+);
+
+wp.hooks.addFilter(
+  'alpaca.item.datapoints',
+  'alpaca/item/addLabelsDatapoint',
+  addLabelsDatapoint,
 );
 
 wp.hooks.addFilter(

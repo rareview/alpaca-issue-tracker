@@ -132,20 +132,7 @@ function alpaca_get_watchlist_issues() {
 		return array();
 	}
 
-	$watchlist = get_user_meta( $user_id, 'alpaca_watchlist', true );
-	if ( ! is_array( $watchlist ) || empty( $watchlist ) ) {
-		return array();
-	}
-
-	$watchlist = array_map( 'intval', $watchlist );
-	$watchlist = array_filter(
-		$watchlist,
-		static function ( $post_id ) {
-
-			return $post_id > 0;
-		}
-	);
-	$watchlist = array_values( array_unique( $watchlist ) );
+	$watchlist = alpaca_get_watched_issue_ids_for_user( $user_id );
 
 	if ( empty( $watchlist ) ) {
 		return array();

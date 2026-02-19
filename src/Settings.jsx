@@ -1,5 +1,7 @@
 import StatusManager from './components/StatusManager';
 import EnableTestLogsControl from './components/EnableTestLogsControl';
+import LabelsManager from './components/LabelsManager';
+import IdleIndicatorDaysControl from './components/IdleIndicatorDaysControl';
 const { useState, useEffect, useCallback } = wp.element;
 const { __ } = wp.i18n;
 
@@ -9,17 +11,28 @@ const AlpacaSettings = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchStatuses = useCallback(() => {
-    setIsLoading(true);
+  const fetchStatuses = useCallback((options = {}) => {
+    const { silent = false } = options;
+
+    if (!silent) {
+      setIsLoading(true);
+    }
+
     wp.apiFetch({ path: '/alpaca/v1/statuses' })
       .then((data) => {
         setStatuses(data);
         setCurrentStatuses(data); // Initialize current order
-        setIsLoading(false);
+
+        if (!silent) {
+          setIsLoading(false);
+        }
       })
       .catch((err) => {
         setError(err.message);
-        setIsLoading(false);
+
+        if (!silent) {
+          setIsLoading(false);
+        }
       });
   }, []);
 
@@ -44,11 +57,15 @@ const AlpacaSettings = () => {
 
       <hr />
 
+      <LabelsManager />
+
+      <hr />
+
       <h3>{__('Settings', 'alpaca')}</h3>
 
       <table className="form-table">
         <tbody>
-          <EnableTestLogsControl />
+          <IdleIndicatorDaysControl />
           {/*
            * Action hook for adding additional settings.
            * @param {Object} context - Contains statuses array.
@@ -56,6 +73,7 @@ const AlpacaSettings = () => {
           {wp.hooks.applyFilters('alpaca.settings.additionalRows', null, {
             statuses: currentStatuses,
           })}
+          <EnableTestLogsControl />
         </tbody>
       </table>
 

@@ -17,16 +17,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 function alpaca_project_board_page() {
 	?>
 	<div class="wrap">
-	<h1 class="wp-heading-inline"><?php echo esc_html__( 'Project Board', 'alpaca' ); ?></h1>
-	<a id="alpaca-add-issue" href="#" class="page-title-action aria-button-if-js" role="button" aria-expanded="false"><?php echo esc_html__( 'Add Issue', 'alpaca' ); ?></a>
-	
-	<hr class="wp-header-end">
+        <h1 class="wp-heading-inline"><?php echo esc_html__( 'Project Board', 'alpaca' ); ?></h1>
+        <a id="alpaca-add-issue" href="#" class="page-title-action aria-button-if-js" role="button" aria-expanded="false"><?php echo esc_html__( 'Add Issue', 'alpaca' ); ?></a>
+        
+        <hr class="wp-header-end">
 
-	<div id="project-board-controls"></div>
+        <div id="project-board-controls">
+            <div id="alpaca-presence"></div>
+            <div id="project-board-controls-mount"></div>
+        </div>
 
-    <div id="alpaca-presence"></div>
-
-	<div id="project-board"></div>
+        <div id="project-board"></div>
 	</div>
 	<?php
 }
@@ -209,6 +210,23 @@ function alpaca_get_board_data() {
 		$users_by_slug[ $user->user_nicename ] = $user;
 	}
 
+	// Batch labels.
+	$label_terms    = wp_get_object_terms( $post_ids, 'alpaca_label', [ 'fields' => 'all_with_object_id' ] );
+	$labels_by_post = [];
+	foreach ( $label_terms as $term ) {
+		$color = get_term_meta( $term->term_id, 'alpaca_label_color', true );
+		if ( ! is_string( $color ) || '' === $color ) {
+			$color = '#172b4d';
+		}
+
+		$labels_by_post[ $term->object_id ][] = [
+			'term_id' => (int) $term->term_id,
+			'name'    => $term->name,
+			'slug'    => $term->slug,
+			'color'   => $color,
+		];
+	}
+
 	// Build final board data.
 	foreach ( $desired_statuses as $status ) {
 		$posts = isset( $posts_by_status[ $status->term_id ] ) ? $posts_by_status[ $status->term_id ] : [];
@@ -253,6 +271,12 @@ function alpaca_get_board_data() {
 				}
 			}
 
+			// Get labels.
+			$labels = [];
+			if ( isset( $labels_by_post[ $post->ID ] ) && is_array( $labels_by_post[ $post->ID ] ) ) {
+				$labels = $labels_by_post[ $post->ID ];
+			}
+
 			$meta_vals_for_card             = [];
 			$meta_vals_for_card['deadline'] = get_post_meta( $post->ID, 'alpaca_deadline', false );
 			$meta_vals_for_card['alpaca_high_priority'] = (bool) get_post_meta( $post->ID, 'alpaca_high_priority', true );
@@ -272,6 +296,7 @@ function alpaca_get_board_data() {
 				'post_date'     => $post->post_date,
 				'comment_count' => $comment_count,
 				'assignees'     => $assignees,
+				'labels'        => $labels,
 				'meta'          => $meta_vals_for_card,
 			];
 		}

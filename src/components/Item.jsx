@@ -11,8 +11,9 @@ import '../utils/itemDatapoints';
  *
  * @param {Object}   root0              - Props object
  * @param {number}   root0.id           - Item ID
- * @param {string}   root0.content      - Item content text
+ * @param {string|*} root0.content      - Item content text or inline markup
  * @param {Array}    root0.assignees    - Array of assignees
+ * @param {Array}    root0.labels       - Array of labels
  * @param {number}   root0.commentCount - Number of comments
  * @param {Object}   root0.meta         - Metadata object
  * @param {string}   root0.postDate     - Post creation date
@@ -29,6 +30,7 @@ const Item = forwardRef(
       id,
       content,
       assignees = [],
+      labels = [],
       commentCount,
       meta,
       postDate,
@@ -88,6 +90,7 @@ const Item = forwardRef(
               meta,
               postDate,
               assignees,
+              labels,
               commentCount,
             })}
           </div>
@@ -99,8 +102,9 @@ const Item = forwardRef(
 
 Item.propTypes = {
   id: PropTypes.number.isRequired,
-  content: PropTypes.string.isRequired,
+  content: PropTypes.oneOfType([PropTypes.string, PropTypes.node]).isRequired,
   assignees: PropTypes.arrayOf(PropTypes.object),
+  labels: PropTypes.arrayOf(PropTypes.object),
   commentCount: PropTypes.number,
   meta: PropTypes.object,
   postDate: PropTypes.string,
