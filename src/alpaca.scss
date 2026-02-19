@@ -720,6 +720,11 @@ $core-font-stack:
       font-size: $midfont;
     }
 
+    .components-toggle-control {
+      font-size: $midfont;
+      margin-top: 5px;
+    }
+
     .components-form-token-field {
       width: 100%;
     }
@@ -875,7 +880,7 @@ $core-font-stack:
 
   .alpaca-subissues-list {
     list-style: none;
-    margin: 0 0 4px 0;
+    margin: 0 0 8px 0;
     padding: 0;
     display: flex;
     flex-direction: column;
@@ -955,7 +960,7 @@ $core-font-stack:
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    margin-right: 0;
+    margin-right: 6px;
     padding: 0;
     border: 0;
     background: transparent;
@@ -987,7 +992,7 @@ $core-font-stack:
     .components-popover__content {
       min-width: 260px;
       max-width: 320px;
-      padding: 8px;
+      padding: 8px 8px 0 8px;
       overflow: visible;
     }
   }
@@ -1031,9 +1036,13 @@ $core-font-stack:
     mask-image: url('components/icons/svg/person-plus.svg');
   }
 
+  #subissues .components-checkbox-control__input[type='checkbox'],
   #subissues .components-checkbox-control__input-container {
-    border: 1px solid $greyborder;
-    background: $bgwhite;
+    border-radius: 3px;
+  }
+
+  #subissues .components-checkbox-control__input-container {
+    background: $greyshade;
   }
 
   /*
