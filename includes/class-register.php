@@ -116,6 +116,17 @@ class Register {
 			'alpacaSettings',
 			array(
 				'idleIndicatorDays' => $idle_indicator_days,
+				// SnapDOM expects the proxy string to be a prefix the library will append the target URL to.
+				// Provide the proxy endpoint with the query param prefix so SnapDOM can append the encoded target URL.
+				// Provide a signed proxy token that does not rely on browser cookies.
+				// This keeps proxy requests working when SnapDOM fetches across origins.
+				'snapdomProxy'      => esc_url_raw(
+					rest_url(
+						'alpaca/v1/proxy?proxy_token=' .
+						rawurlencode( function_exists( 'alpaca_get_proxy_auth_token' ) ? alpaca_get_proxy_auth_token() : '' ) .
+						'&url='
+					)
+				),
 			)
 		);
 	}
