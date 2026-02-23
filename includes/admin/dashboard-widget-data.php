@@ -71,6 +71,7 @@ function alpaca_get_newly_created_issues() {
 		array(
 			'post_type'      => 'alpaca_issue',
 			'posts_per_page' => 5,
+			'post_parent'    => 0, // Exclude checklist items.
 			'date_query'     => array(
 				array(
 					'after' => '1 week ago',
