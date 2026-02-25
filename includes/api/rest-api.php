@@ -1212,6 +1212,7 @@ function alpaca_get_issue_data_callback( WP_REST_Request $request ) {
 
 	$all_taxonomies = get_object_taxonomies( 'alpaca_issue', 'objects' );
 	$terms_data     = [];
+	$taxonomy_labels = [];
 	foreach ( $all_taxonomies as $taxonomy_obj ) {
 		$terms = wp_get_object_terms( $issue_id, $taxonomy_obj->name, [ 'fields' => 'all' ] );
 		if ( is_wp_error( $terms ) || empty( $terms ) ) {
@@ -1235,19 +1236,24 @@ function alpaca_get_issue_data_callback( WP_REST_Request $request ) {
 		}
 
 		$terms_data[ $taxonomy_obj->name ] = $terms;
+		$taxonomy_labels[ $taxonomy_obj->name ] = $taxonomy_obj->label;
 	}
 
 	if ( isset( $terms_data['alpaca_status'] ) ) {
 		$terms_data['status'] = $terms_data['alpaca_status'];
+		$taxonomy_labels['status'] = $taxonomy_labels['alpaca_status'];
 	}
 	if ( isset( $terms_data['alpaca_assignee'] ) ) {
 		$terms_data['assignee'] = $terms_data['alpaca_assignee'];
+		$taxonomy_labels['assignee'] = $taxonomy_labels['alpaca_assignee'];
 	}
 	if ( isset( $terms_data['alpaca_label'] ) ) {
 		$terms_data['label'] = $terms_data['alpaca_label'];
+		$taxonomy_labels['label'] = $taxonomy_labels['alpaca_label'];
 	}
 	if ( isset( $terms_data['alpaca_watching'] ) ) {
 		$terms_data['watching'] = $terms_data['alpaca_watching'];
+		$taxonomy_labels['watching'] = $taxonomy_labels['alpaca_watching'];
 	}
 
 	$issue_comment_count = get_comments(
@@ -1268,7 +1274,8 @@ function alpaca_get_issue_data_callback( WP_REST_Request $request ) {
 			'post_data'     => $post_data,
 			'meta'          => $formatted_meta,
 			'taxonomies'    => $terms_data,
-			'subissues'      => $subissues,
+			'taxonomy_labels' => $taxonomy_labels,
+			'subissues'     => $subissues,
 			'comment_count' => (int) $issue_comment_count,
 		],
 		200
