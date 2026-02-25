@@ -12,6 +12,11 @@ Non equidem invideo, miror magis posuere velit aliquet. Quisque placerat facilis
 
 Plura mihi bona sunt, inclinet, amari petere vellent. Ab illo tempore, ab est sed immemorabili. Ullamco laboris nisi ut aliquid ex ea commodi consequat. Quae vero auctorem tractata ab fiducia dicuntur. At nos hinc posthac, sitientis piros Afros.
 
+```basic title="This is how we used to do it"
+10 PRINT "HELLO WORLD"
+20 GOTO 10
+```
+
 Morbi fringilla convallis sapien, id pulvinar odio volutpat. Hi omnes lingua, institutis, legibus inter se differunt. Non equidem invideo, miror magis posuere velit aliquet. Quid securi etiam tamquam eu fugiat nulla pariatur. Inmensae subtilitatis, obscuris et malesuada fames. Fictum, deserunt mollit anim laborum astutumque!
 
 ## Second subheading
