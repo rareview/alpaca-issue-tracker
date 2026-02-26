@@ -79,7 +79,7 @@ addFilter('alpaca.commentObject', 'alpaca/addPlainText', (comment) => {
   return comment;
 });
 
-const postComment = async (issueOrId, content, commentTags = []) => {
+const postComment = async (issueOrId, content, commentTags = [], options = {}) => {
   let postId;
   if (issueOrId && typeof issueOrId === 'object') {
     // Prioritize issue.post_id if available (for full issue objects)
@@ -95,66 +95,103 @@ const postComment = async (issueOrId, content, commentTags = []) => {
       'postComment: No valid post ID found for comment.',
       issueOrId,
     );
-    return;
+    return null;
   }
+
+  const authorUserAgent =
+    typeof options.authorUserAgent === 'string' &&
+    options.authorUserAgent.trim()
+      ? options.authorUserAgent.trim()
+      : 'audit';
 
   const commentData = {
     post: postId,
     content,
     comment_type: 'issuecomment',
-    author_user_agent: 'audit',
+    author_user_agent: authorUserAgent,
   };
+
+  const commentMeta =
+    options && options.meta && typeof options.meta === 'object'
+      ? options.meta
+      : {};
 
   if (commentTags && commentTags.length > 0) {
     commentData.meta = {
       alpacaCommentTags: commentTags,
+      ...commentMeta,
     };
+  } else if (Object.keys(commentMeta).length > 0) {
+    commentData.meta = commentMeta;
   }
 
   try {
-    await apiFetch({
+    const newlyCreatedComment = await apiFetch({
       path: '/wp/v2/comments',
       method: 'POST',
       data: commentData,
-    }).then(async (newlyCreatedComment) => {
-      doAction(
-        'alpaca.commentPosted',
-        applyFilters('alpaca.commentObject', newlyCreatedComment),
-      );
-      const response = await fetchIssueCommentCount(postId);
-      if (response && typeof response.comment_count !== 'undefined') {
-        doAction('alpaca.commentCountChanged', {
-          issueId: postId.toString(),
-          newCount: response.comment_count,
-        });
-        doAction('alpaca.lastActivityChanged', {
-          issueId: postId.toString(),
-          lastActivity: new Date().toISOString(),
-        });
-      }
     });
+
+    doAction(
+      'alpaca.commentPosted',
+      applyFilters('alpaca.commentObject', newlyCreatedComment),
+    );
+
+    const response = await fetchIssueCommentCount(postId);
+    if (response && typeof response.comment_count !== 'undefined') {
+      doAction('alpaca.commentCountChanged', {
+        issueId: postId.toString(),
+        newCount: response.comment_count,
+      });
+      doAction('alpaca.lastActivityChanged', {
+        issueId: postId.toString(),
+        lastActivity: new Date().toISOString(),
+      });
+    }
+
+    return newlyCreatedComment;
   } catch (error) {
     console.error('issueCommentHandler.js: Error adding comment:', error);
+    return null;
   }
 };
 
 addAction(
   'alpaca.issueSubmitted',
-  'alpaca/addIssueComment',
-  async (issue, statusId, isHighPriority) => {
-    const currentUser = await getUser();
-    const actionClass = ['issue-created'];
-    let commentContent = `${__('Issue created by', 'alpaca')} ${generateAssigneeSpan(
-      currentUser,
-      true,
-    )}`;
-
-    if (isHighPriority) {
-      actionClass.push('high-priority');
-      commentContent += __(' with **High Priority**', 'alpaca');
+  'alpaca/addIssueSubmittedComment',
+  async (issue, _statusId, isHighPriority, submission = {}) => {
+    if (!issue || !issue.id) {
+      return;
     }
 
-    await postComment(issue, commentContent, actionClass); // Pass issue object
+    const submittedText =
+      typeof submission.feedback === 'string' ? submission.feedback.trim() : '';
+    const fallbackTitle =
+      typeof issue.title === 'string' ? stripHtmlAndMarkdown(issue.title).trim() : '';
+    const commentContent = submittedText || fallbackTitle;
+
+    if (!commentContent) {
+      return;
+    }
+
+    const screenshotUrl =
+      typeof submission.screenshotUrl === 'string'
+        ? submission.screenshotUrl.trim()
+        : '';
+    const commentMeta = {};
+    if (screenshotUrl) {
+      commentMeta.alpacaCommentAttachments = [screenshotUrl];
+    }
+
+    const commentTags = ['issue-created'];
+    if (isHighPriority) {
+      commentTags.push('high-priority');
+    }
+
+    await postComment(issue.id, commentContent, commentTags, {
+      authorUserAgent: 'human',
+      meta: commentMeta,
+    });
   },
 );
 
