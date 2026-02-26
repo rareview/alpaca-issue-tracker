@@ -1182,12 +1182,17 @@ $core-font-stack:
       }
     }
 
-    .components-textarea-control__input,
-    .alpaca-timeline-item[data-source='human'] .alpaca-comment-content p,
-    .alpaca-timeline-item[data-source='human'] .alpaca-comment-content li {
+    .components-textarea-control__input {
       line-height: 1.5em;
       margin-top: 0;
     }
+  }
+
+  .alpaca-timeline-item[data-source='human'] .alpaca-comment-content p,
+  .alpaca-timeline-item[data-source='human'] .alpaca-comment-content li {
+    font-size: $midfont;
+    line-height: 1.5em;
+    margin-top: 0;
   }
 
   .alpaca-timeline-item[data-source='human'] .alpaca-timeline-content,
