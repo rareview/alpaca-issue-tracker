@@ -1,5 +1,10 @@
 import AlpacaIssue from './components/Issue';
 import TimelineEntry from './components/comment/TimelineEntry';
+import {
+  buildStatusIssuePayload,
+  dispatchStatusChangedAction,
+  getStatusName,
+} from './utils/statusChange';
 
 const { __ } = wp.i18n;
 const { decodeEntities } = wp.htmlEntities;
@@ -379,6 +384,35 @@ const Activity = () => {
     setSelectedIssue(null);
   }, []);
 
+  /**
+   * Mirror board status-change hook dispatch so audit comments are generated.
+   *
+   * @param {string|number} issueId        Issue ID.
+   * @param {Object}        newStatus      New status term object.
+   * @param {Object}        previousStatus Previous status term object.
+   * @param {Object}        issueDetails   Full issue details payload.
+   */
+  const handleStatusChange = useCallback(
+    (issueId, newStatus, previousStatus, issueDetails) => {
+      const statusIssuePayload = buildStatusIssuePayload(
+        issueId,
+        issueDetails,
+        issueLookupRef.current,
+      );
+
+      if (!statusIssuePayload) {
+        return;
+      }
+
+      dispatchStatusChangedAction(
+        statusIssuePayload,
+        getStatusName(previousStatus),
+        getStatusName(newStatus),
+      );
+    },
+    [],
+  );
+
   const handleIssueTitleChange = useCallback((issueId, newTitle) => {
     const normalizedIssueId = Number(issueId);
     if (normalizedIssueId <= 0) {
@@ -481,7 +515,7 @@ const Activity = () => {
         onDelete={handleIssueDeleted}
         onAssigneesChange={noop}
         onDeadlineChange={noop}
-        onStatusChange={noop}
+        onStatusChange={handleStatusChange}
         onIssueTitleChange={handleIssueTitleChange}
         onIssueCreated={noop}
         onLabelsChange={noop}

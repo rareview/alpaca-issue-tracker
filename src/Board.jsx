@@ -13,6 +13,7 @@ import SearchPortal from './components/Search';
 import { setCookie, getCookie } from './utils/cookies';
 import { transformDataForBoard, saveBoardOrder } from './utils/data';
 import { getUser } from './hooks/useUser';
+import { dispatchStatusChangedAction } from './utils/statusChange';
 
 import { updateIssue } from './services/issueApi';
 
@@ -503,8 +504,7 @@ export function AlpacaBoard() {
     nextContainer.items.push(...itemsToMove);
 
     itemsToMove.forEach((item) => {
-      wp.hooks.doAction(
-        'alpaca.statusChanged',
+      dispatchStatusChangedAction(
         item,
         sourceContainer.title,
         nextContainer.title,
@@ -701,8 +701,7 @@ export function AlpacaBoard() {
             (c) => c.id === oldContainerId,
           );
           if (sourceContainer) {
-            wp.hooks.doAction(
-              'alpaca.statusChanged',
+            dispatchStatusChangedAction(
               movedItem,
               sourceContainer.title,
               targetContainer.title,
@@ -1008,8 +1007,7 @@ export function AlpacaBoard() {
         }),
       );
 
-      wp.hooks.doAction(
-        'alpaca.statusChanged',
+      dispatchStatusChangedAction(
         movedItem,
         sourceContainer.title,
         destinationContainer.title,

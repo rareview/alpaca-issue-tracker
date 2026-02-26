@@ -926,7 +926,7 @@ const AlpacaIssue = ({
         ...prev,
         taxonomies: { ...prev.taxonomies, status: [nextStatus] },
       }));
-      onStatusChange?.(issueId, nextStatus);
+      onStatusChange?.(issueId, nextStatus, currentStatus, issueDetails);
     } catch (err) {
       showNotification(
         __('Failed to progress issue status.', 'alpaca'),
