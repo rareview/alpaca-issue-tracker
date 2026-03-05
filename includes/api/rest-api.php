@@ -474,19 +474,7 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 			update_post_meta( $post_id, 'alpaca_headers', $headers );
 		}
 
-		// Parent link when singular.
-		if ( in_array( 'singular', $wp_types, true ) ) {
-			$parent_id = (int) alpaca_arr_get( $payload, [ 'wp', 'queriedObject', 'ID' ], 0 );
-			if ( $parent_id > 0 ) {
-				wp_update_post(
-					[
-						'ID'          => $post_id,
-						'post_parent' => $parent_id,
-					]
-				);
-			}
 		}
-	}
 
 	// Save JavaScript errors if present.
 	$errors = alpaca_arr_get( $payload, [ 'errors' ], null );
