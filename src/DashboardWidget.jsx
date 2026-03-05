@@ -84,7 +84,7 @@ const AlpacaDashboardWidget = memo(function AlpacaDashboardWidget({ data }) {
                 </tr>
               </thead>
               <tbody>
-                {tab.issues.map((issue) => (
+                {tab.issues.map((issue) =>
                   (() => {
                     const linkSlug =
                       tab.name === 'assignedToMe' && issue.post_parent_slug
@@ -106,7 +106,9 @@ const AlpacaDashboardWidget = memo(function AlpacaDashboardWidget({ data }) {
                         <td className="high-priority">
                           {issue.high_priority ? <PriorityIcon /> : null}
                         </td>
-                        <td className="deadline">{formatDate(issue.deadline)}</td>
+                        <td className="deadline">
+                          {formatDate(issue.deadline)}
+                        </td>
                         <td className="assignees">
                           {issue.assignees &&
                             issue.assignees.map((assignee) => {
@@ -131,8 +133,8 @@ const AlpacaDashboardWidget = memo(function AlpacaDashboardWidget({ data }) {
                         </td>
                       </tr>
                     );
-                  })()
-                ))}
+                  })(),
+                )}
               </tbody>
             </table>
           ) : (

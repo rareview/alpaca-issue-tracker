@@ -112,10 +112,7 @@ const LabelsSelector = memo(
                 const checkboxId = `alpaca-label-option-${labelId}`;
                 const isChecked = selectedIds.includes(labelId);
                 return (
-                  <div
-                    key={labelId}
-                    className="alpaca-labels-selector-option"
-                  >
+                  <div key={labelId} className="alpaca-labels-selector-option">
                     <input
                       className="alpaca-labels-selector-checkbox"
                       id={checkboxId}
