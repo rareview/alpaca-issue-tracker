@@ -90,7 +90,10 @@ SettingsListRow.displayName = 'SettingsListRow';
 
 export const SettingsListNameCell = ({ children, className }) => {
   return (
-    <div className={`alpaca-settings-list-name ${className}`.trim()} role="cell">
+    <div
+      className={`alpaca-settings-list-name ${className}`.trim()}
+      role="cell"
+    >
       {children}
     </div>
   );

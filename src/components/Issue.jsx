@@ -1147,7 +1147,9 @@ const AlpacaIssue = ({
       return;
     }
 
-    await persistDraftSubissue(existingDraft.id, { addNewDraftAfterSave: true });
+    await persistDraftSubissue(existingDraft.id, {
+      addNewDraftAfterSave: true,
+    });
   }, [loadingStates, persistDraftSubissue, subissues]);
 
   const handleSubissueDraftChange = useCallback((subissueId, newTitle) => {
@@ -1239,7 +1241,13 @@ const AlpacaIssue = ({
         setLoading(`subissue-${subissueId}`, false);
       }
     },
-    [issueDetails, persistDraftSubissue, setLoading, showNotification, subissues],
+    [
+      issueDetails,
+      persistDraftSubissue,
+      setLoading,
+      showNotification,
+      subissues,
+    ],
   );
 
   const handleSubissueTitleCancel = useCallback((subissueId) => {
@@ -1322,9 +1330,8 @@ const AlpacaIssue = ({
         oldAssignees,
         newAssignees,
       );
-      const previousAssignees = (Array.isArray(subissue.assignees)
-        ? subissue.assignees
-        : []
+      const previousAssignees = (
+        Array.isArray(subissue.assignees) ? subissue.assignees : []
       ).map((assignee) => ({ ...assignee }));
 
       const normalizedAssignees = newAssignees

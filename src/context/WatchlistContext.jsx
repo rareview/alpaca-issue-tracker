@@ -72,27 +72,30 @@ export const WatchlistProvider = ({ children }) => {
     `alpaca/watchlist/${Math.random().toString(36).slice(2)}`,
   );
 
-  const applyWatchlist = useCallback((nextWatchlist, shouldBroadcast = true) => {
-    const normalized = normalizeWatchlist(nextWatchlist);
-    if (areWatchlistsEqual(watchlistRef.current, normalized)) {
-      return;
-    }
+  const applyWatchlist = useCallback(
+    (nextWatchlist, shouldBroadcast = true) => {
+      const normalized = normalizeWatchlist(nextWatchlist);
+      if (areWatchlistsEqual(watchlistRef.current, normalized)) {
+        return;
+      }
 
-    setWatchlist(normalized);
-    watchlistRef.current = normalized;
+      setWatchlist(normalized);
+      watchlistRef.current = normalized;
 
-    if (
-      shouldBroadcast &&
-      wp &&
-      wp.hooks &&
-      typeof wp.hooks.doAction === 'function'
-    ) {
-      wp.hooks.doAction(WATCHLIST_UPDATED_ACTION, {
-        source: instanceIdRef.current,
-        watchlist: normalized,
-      });
-    }
-  }, []);
+      if (
+        shouldBroadcast &&
+        wp &&
+        wp.hooks &&
+        typeof wp.hooks.doAction === 'function'
+      ) {
+        wp.hooks.doAction(WATCHLIST_UPDATED_ACTION, {
+          source: instanceIdRef.current,
+          watchlist: normalized,
+        });
+      }
+    },
+    [],
+  );
 
   const emitWatchlistSyncedDebug = useCallback(
     (source, syncedWatchlist) => {
@@ -186,39 +189,42 @@ export const WatchlistProvider = ({ children }) => {
     };
   }, [applyWatchlist, emitWatchlistSyncedDebug]);
 
-  const toggleWatch = useCallback(async (issueId) => {
-    const numericId = Number(issueId);
-    if (numericId <= 0) {
-      return;
-    }
-
-    const currentWatchlist = watchlistRef.current;
-
-    // Optimistically update the UI
-    const newWatchlist = currentWatchlist.includes(numericId)
-      ? currentWatchlist.filter((id) => id !== numericId)
-      : [...currentWatchlist, numericId];
-    applyWatchlist(newWatchlist, true);
-
-    // Then send the request to the server
-    try {
-      const response = await wp.apiFetch({
-        path: '/alpaca/v1/watchlist',
-        method: 'POST',
-        data: {
-          issue_id: numericId,
-        },
-      });
-      // If the server response is different, update the state again to ensure consistency
-      if (response.success && Array.isArray(response.watchlist)) {
-        applyWatchlist(response.watchlist, true);
+  const toggleWatch = useCallback(
+    async (issueId) => {
+      const numericId = Number(issueId);
+      if (numericId <= 0) {
+        return;
       }
-    } catch (error) {
-      console.error('Error updating watchlist:', error);
-      // If the API call fails, revert the optimistic update
-      applyWatchlist(currentWatchlist, true);
-    }
-  }, [applyWatchlist]);
+
+      const currentWatchlist = watchlistRef.current;
+
+      // Optimistically update the UI
+      const newWatchlist = currentWatchlist.includes(numericId)
+        ? currentWatchlist.filter((id) => id !== numericId)
+        : [...currentWatchlist, numericId];
+      applyWatchlist(newWatchlist, true);
+
+      // Then send the request to the server
+      try {
+        const response = await wp.apiFetch({
+          path: '/alpaca/v1/watchlist',
+          method: 'POST',
+          data: {
+            issue_id: numericId,
+          },
+        });
+        // If the server response is different, update the state again to ensure consistency
+        if (response.success && Array.isArray(response.watchlist)) {
+          applyWatchlist(response.watchlist, true);
+        }
+      } catch (error) {
+        console.error('Error updating watchlist:', error);
+        // If the API call fails, revert the optimistic update
+        applyWatchlist(currentWatchlist, true);
+      }
+    },
+    [applyWatchlist],
+  );
 
   const isWatched = (issueId) => {
     return watchlist.includes(Number(issueId));

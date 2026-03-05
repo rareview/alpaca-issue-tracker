@@ -37,6 +37,21 @@ class Register {
 	}
 
 	/**
+	 * Get the SnapDOM proxy URL prefix for image capture requests.
+	 *
+	 * @return string Proxy URL prefix.
+	 */
+	private function get_snapdom_proxy_setting() {
+		return esc_url_raw(
+			rest_url(
+				'alpaca/v1/proxy?proxy_token=' .
+				rawurlencode( function_exists( 'alpaca_get_proxy_auth_token' ) ? alpaca_get_proxy_auth_token() : '' ) .
+				'&url='
+			)
+		);
+	}
+
+	/**
 	 * Enqueue frontend assets.
 	 *
 	 * @return void
@@ -116,6 +131,11 @@ class Register {
 			'alpacaSettings',
 			array(
 				'idleIndicatorDays' => $idle_indicator_days,
+				// SnapDOM expects the proxy string to be a prefix the library will append the target URL to.
+				// Provide the proxy endpoint with the query param prefix so SnapDOM can append the encoded target URL.
+				// Provide a signed proxy token that does not rely on browser cookies.
+				// This keeps proxy requests working when SnapDOM fetches across origins.
+				'snapdomProxy'      => $this->get_snapdom_proxy_setting(),
 			)
 		);
 	}
@@ -140,6 +160,7 @@ class Register {
 			array(
 				'adminUrl'          => admin_url( 'admin.php' ),
 				'idleIndicatorDays' => $idle_indicator_days,
+				'snapdomProxy'      => $this->get_snapdom_proxy_setting(),
 			)
 		);
 

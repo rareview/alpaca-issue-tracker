@@ -907,7 +907,9 @@ export function AlpacaBoard() {
       setContainers((prevContainers) =>
         prevContainers.map((container) => ({
           ...container,
-          items: container.items.filter((item) => item.id !== issueId.toString()),
+          items: container.items.filter(
+            (item) => item.id !== issueId.toString(),
+          ),
         })),
       );
     };
