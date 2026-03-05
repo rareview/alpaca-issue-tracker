@@ -7,6 +7,19 @@ const { date } = wp;
 const datesettings = wp.date.getSettings();
 
 /**
+ * Convert a taxonomy slug into a readable fallback label.
+ *
+ * @param {string} taxonomy Taxonomy slug.
+ * @return {string} Human-readable taxonomy label.
+ */
+function getTaxonomyFallbackLabel(taxonomy) {
+  return taxonomy
+    .replace(/^alpaca_/, '')
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+/**
  * ReportTab component for displaying issue report information.
  *
  * @param {Object} root0              - Props object
@@ -18,6 +31,7 @@ const ReportTab = memo(({ issueDetails }) => {
   const urlCellRef = useRef(null);
 
   const urlValue = issueDetails.meta.alpaca_url || issueDetails.meta.URL;
+  const taxonomyLabels = issueDetails.taxonomy_labels || {};
 
   // Apply syntax highlighting to table cells after render
   useEffect(() => {
@@ -90,7 +104,7 @@ const ReportTab = memo(({ issueDetails }) => {
             .filter(([taxonomy]) => taxonomy !== 'assignee')
             .map(([taxonomy, terms]) => (
               <tr key={taxonomy}>
-                <th style={{ textTransform: 'capitalize' }}>{taxonomy}</th>
+                <th>{taxonomyLabels[taxonomy] || getTaxonomyFallbackLabel(taxonomy)}</th>
                 <td>{terms.map((term) => term.name).join(', ')}</td>
               </tr>
             ))}
