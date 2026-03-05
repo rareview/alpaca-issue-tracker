@@ -12,7 +12,12 @@ export const dispatchStatusChangedAction = (
   fromStatusName,
   toStatusName,
 ) => {
-  wp.hooks.doAction('alpaca.statusChanged', issue, fromStatusName, toStatusName);
+  wp.hooks.doAction(
+    'alpaca.statusChanged',
+    issue,
+    fromStatusName,
+    toStatusName,
+  );
 };
 
 /**
@@ -62,6 +67,7 @@ export const buildStatusIssuePayload = (issueId, issueDetails, issueLookup) => {
 
   return {
     id: String(normalizedIssueId),
+    // Snake-case key to match the PHP payload shape expected by hook listeners.
     'post_id': normalizedIssueId,
     slug: issueSlug,
     content: issueTitle,

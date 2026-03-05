@@ -76,6 +76,7 @@ export const getProcessedCommentContent = (comment) => {
  * @param {boolean}  props.isEditing         Whether the entry is in edit mode.
  * @param {Object}   props.editBody          Edit form body.
  * @param {boolean}  props.isSubmitting      Whether submit is in progress.
+ * @param {boolean}  props.stripInteractive  Remove interactive HTML elements from rendered body.
  * @return {JSX.Element} Rendered timeline entry.
  */
 const TimelineEntry = ({
@@ -89,6 +90,7 @@ const TimelineEntry = ({
   isEditing,
   editBody,
   isSubmitting,
+  stripInteractive,
 }) => {
   const author = comment.author_details ||
     comment._embedded?.author?.[0] ||
@@ -106,10 +108,18 @@ const TimelineEntry = ({
     __('on %s', 'alpaca'),
     '',
   ).trim();
-  const processedContent = useMemo(
-    () => getProcessedCommentContent(comment),
-    [comment],
-  );
+  const processedContent = useMemo(() => {
+    let html = getProcessedCommentContent(comment);
+    if (stripInteractive && html) {
+      // Remove interactive elements that would nest inside a clickable wrapper.
+      html = html.replace(
+        /<(a|button|input|select|textarea)\b[^>]*>([\s\S]*?)<\/\1>/gi,
+        '$2',
+      );
+      html = html.replace(/<input\b[^>]*\/?>/gi, '');
+    }
+    return html;
+  }, [comment, stripInteractive]);
 
   if (isAudit) {
     return (
@@ -138,7 +148,11 @@ const TimelineEntry = ({
   return (
     <div className={timelineItemClasses} data-source={dataSource}>
       <div className="alpaca-timeline-content">
-        <div className="alpaca-comment-header flexalign">
+        <div
+          className={`alpaca-comment-header flexalign${
+            showIssueTitle && issueTitle ? ' has-issue-title' : ''
+          }`}
+        >
           <User user={author} showName={false} />
           <div className="alpaca-comment-author">
             <strong>{author.name}</strong>
@@ -200,6 +214,7 @@ TimelineEntry.propTypes = {
   isEditing: PropTypes.bool,
   editBody: PropTypes.node,
   isSubmitting: PropTypes.bool,
+  stripInteractive: PropTypes.bool,
 };
 
 TimelineEntry.defaultProps = {
@@ -211,6 +226,7 @@ TimelineEntry.defaultProps = {
   isEditing: false,
   editBody: null,
   isSubmitting: false,
+  stripInteractive: false,
 };
 
 export default memo(TimelineEntry);

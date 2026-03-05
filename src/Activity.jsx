@@ -24,7 +24,9 @@ const stripHtml = (maybeHtml) => {
     return '';
   }
 
-  return String(maybeHtml).replace(/<[^>]*>/g, '').trim();
+  return String(maybeHtml)
+    .replace(/<[^>]*>/g, '')
+    .trim();
 };
 
 /**
@@ -158,7 +160,7 @@ const Activity = () => {
     try {
       const posts = await wp.apiFetch({
         path:
-          '/wp/v2/alpaca_issue?context=edit&_fields=id,title,content,slug,post_title,post_content,post_name&per_page=' +
+          '/wp/v2/alpaca_issue?context=view&_fields=id,title,content,slug&per_page=' +
           unknownIssueIds.length +
           '&include=' +
           unknownIssueIds.join(','),
@@ -193,6 +195,7 @@ const Activity = () => {
       }
 
       try {
+        // context=edit is required so show_hidden_comments surfaces audit entries.
         const response = await wp.apiFetch({
           path:
             '/wp/v2/comments?' +
@@ -235,7 +238,9 @@ const Activity = () => {
         setHasMorePages(page < nextTotalPages);
 
         if (normalizedComments.length > 0) {
-          const commentIssueIds = normalizedComments.map((comment) => comment.post);
+          const commentIssueIds = normalizedComments.map(
+            (comment) => comment.post,
+          );
           await loadIssueTitles(commentIssueIds);
         }
       } catch (error) {
@@ -294,36 +299,7 @@ const Activity = () => {
     };
   }, [hasMorePages, requestNextPage]);
 
-  useEffect(() => {
-    if (!hasMorePages) {
-      return undefined;
-    }
-
-    const handleScroll = () => {
-      if (loadingRef.current) {
-        return;
-      }
-
-      const scrollTop =
-        window.pageYOffset || document.documentElement.scrollTop || 0;
-      const viewportHeight = window.innerHeight || 0;
-      const documentHeight = document.documentElement.scrollHeight || 0;
-      const threshold = 240;
-
-      if (scrollTop + viewportHeight >= documentHeight - threshold) {
-        requestNextPage();
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('resize', handleScroll);
-
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', handleScroll);
-    };
-  }, [hasMorePages, requestNextPage]);
-
+  // If the initial batch does not fill the viewport, eagerly load the next page.
   useEffect(() => {
     if (isLoading || isLoadingMore || !hasMorePages || loadingRef.current) {
       return;
@@ -335,7 +311,13 @@ const Activity = () => {
     if (documentHeight <= viewportHeight + 120) {
       requestNextPage();
     }
-  }, [comments.length, hasMorePages, isLoading, isLoadingMore, requestNextPage]);
+  }, [
+    comments.length,
+    hasMorePages,
+    isLoading,
+    isLoadingMore,
+    requestNextPage,
+  ]);
 
   const groupedComments = useMemo(() => {
     const grouped = [];
@@ -488,6 +470,7 @@ const Activity = () => {
                         }
                         showIssueTitle
                         showTime={false}
+                        stripInteractive
                       />
                     </div>
                   );
@@ -502,7 +485,9 @@ const Activity = () => {
             </div>
           )}
 
-          {hasMorePages && <div ref={sentinelRef} className="alpaca-activity-sentinel" />}
+          {hasMorePages && (
+            <div ref={sentinelRef} className="alpaca-activity-sentinel" />
+          )}
         </div>
       )}
 

@@ -1234,31 +1234,33 @@ $core-font-stack:
         color: #000;
       }
 
-      .alpaca-comment-author {
-        display: flex;
-        align-items: baseline;
-        gap: 4px;
-        min-width: 0;
-        flex: 1 1 auto;
-      }
+      &.has-issue-title {
+        .alpaca-comment-author {
+          display: flex;
+          align-items: baseline;
+          gap: 4px;
+          min-width: 0;
+          flex: 1 1 auto;
+        }
 
-      .alpaca-comment-on-title {
-        display: flex;
-        align-items: baseline;
-        gap: 4px;
-        min-width: 0;
-        flex: 1 1 auto;
-        color: $greytext;
-        font-weight: 400;
-      }
+        .alpaca-comment-on-title {
+          display: flex;
+          align-items: baseline;
+          gap: 4px;
+          min-width: 0;
+          flex: 1 1 auto;
+          color: $greytext;
+          font-weight: 400;
+        }
 
-      .alpaca-comment-on-title-text {
-        display: block;
-        min-width: 0;
-        flex: 1 1 auto;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        .alpaca-comment-on-title-text {
+          display: block;
+          min-width: 0;
+          flex: 1 1 auto;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
       }
     }
 
@@ -1820,7 +1822,7 @@ $core-font-stack:
 
 #alpaca-activity {
   margin-top: 16px;
-  margin-right: 600px;
+  max-width: 720px;
 
   .alpaca-activity-loading {
     display: flex;
@@ -1880,7 +1882,6 @@ $core-font-stack:
     outline: 2px solid #2271b1;
     outline-offset: 2px;
   }
-
 }
 
 .alpaca-align-controls {

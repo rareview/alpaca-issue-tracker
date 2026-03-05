@@ -1222,7 +1222,9 @@ const AlpacaIssue = ({
       return;
     }
 
-    await persistDraftSubissue(existingDraft.id, { addNewDraftAfterSave: true });
+    await persistDraftSubissue(existingDraft.id, {
+      addNewDraftAfterSave: true,
+    });
   }, [loadingStates, persistDraftSubissue, subissues]);
 
   const handleSubissueDraftChange = useCallback((subissueId, newTitle) => {
@@ -1314,7 +1316,13 @@ const AlpacaIssue = ({
         setLoading(`subissue-${subissueId}`, false);
       }
     },
-    [issueDetails, persistDraftSubissue, setLoading, showNotification, subissues],
+    [
+      issueDetails,
+      persistDraftSubissue,
+      setLoading,
+      showNotification,
+      subissues,
+    ],
   );
 
   const handleSubissueTitleCancel = useCallback((subissueId) => {
@@ -1397,9 +1405,8 @@ const AlpacaIssue = ({
         oldAssignees,
         newAssignees,
       );
-      const previousAssignees = (Array.isArray(subissue.assignees)
-        ? subissue.assignees
-        : []
+      const previousAssignees = (
+        Array.isArray(subissue.assignees) ? subissue.assignees : []
       ).map((assignee) => ({ ...assignee }));
 
       const normalizedAssignees = newAssignees
@@ -2117,6 +2124,14 @@ AlpacaIssue.propTypes = {
   onDelete: PropTypes.func.isRequired,
   onAssigneesChange: PropTypes.func.isRequired,
   onDeadlineChange: PropTypes.func.isRequired,
+  /**
+   * Called when the issue status changes.
+   *
+   * @param {number} issueId       Issue ID.
+   * @param {Object} nextStatus    New status term object.
+   * @param {Object} currentStatus Previous status term object.
+   * @param {Object} issueDetails  Full issue details.
+   */
   onStatusChange: PropTypes.func.isRequired,
   onIssueTitleChange: PropTypes.func.isRequired,
   onLabelsChange: PropTypes.func,

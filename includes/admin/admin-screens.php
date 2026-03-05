@@ -27,7 +27,7 @@ add_action(
 			'project-board',
 			esc_html__( 'Project Activity', 'alpaca' ),
 			esc_html__( 'Project Activity', 'alpaca' ),
-			'manage_options',
+			'edit_posts',
 			'project-activity',
 			'alpaca_activity_page'
 		);

@@ -2,9 +2,7 @@ import PropTypes from 'prop-types';
 import { getUser } from '../hooks/useUser';
 import { fetchIssueCommentCount } from '../services/issueApi';
 import useAutoExpandTextarea from '../hooks/useAutoExpandTextarea';
-import TimelineEntry, {
-  injectAvatarStyles,
-} from './comment/TimelineEntry';
+import TimelineEntry, { injectAvatarStyles } from './comment/TimelineEntry';
 
 const { useState, useEffect, useRef, useCallback, memo } = wp.element;
 const { __, _n, sprintf } = wp.i18n;
