@@ -104,7 +104,10 @@ const ReportTab = memo(({ issueDetails }) => {
             .filter(([taxonomy]) => taxonomy !== 'assignee')
             .map(([taxonomy, terms]) => (
               <tr key={taxonomy}>
-                <th>{taxonomyLabels[taxonomy] || getTaxonomyFallbackLabel(taxonomy)}</th>
+                <th>
+                  {taxonomyLabels[taxonomy] ||
+                    getTaxonomyFallbackLabel(taxonomy)}
+                </th>
                 <td>{terms.map((term) => term.name).join(', ')}</td>
               </tr>
             ))}

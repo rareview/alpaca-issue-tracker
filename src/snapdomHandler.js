@@ -113,17 +113,19 @@ const handleSnapdomCapture = async () => {
   hide_from_snapdom('.components-modal__screen-overlay');
   hide_from_snapdom('#alpaca-toolbar-mount');
 
-  const restoreResponsiveSources = prepareResponsiveSourcesForCapture();
-
-  const snapdomOptions = {
-    type: 'webp',
-    embedFonts: true,
-    ignoreErrors: true,
-    skipAutoScale: false,
-    fallbackURL: null,
-  };
+  let restoreResponsiveSources = () => {};
 
   try {
+    restoreResponsiveSources = prepareResponsiveSourcesForCapture();
+
+    const snapdomOptions = {
+      type: 'webp',
+      embedFonts: true,
+      ignoreErrors: true,
+      skipAutoScale: false,
+      fallbackURL: null,
+    };
+
     if (
       typeof window !== 'undefined' &&
       window.alpacaSettings &&
