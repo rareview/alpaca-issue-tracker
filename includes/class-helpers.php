@@ -100,4 +100,38 @@ class Helpers {
 		 */
 		return (bool) apply_filters( 'alpaca_user_can', $allowed, $action, $args );
 	}
+
+	/**
+	 * Validate a REST request against an optional Alpaca capability and WP REST nonce.
+	 *
+	 * @param \WP_REST_Request $request           REST request object.
+	 * @param string           $capability_action Optional. Action name passed to user_can().
+	 * @return true|\WP_Error True when valid, WP_Error otherwise.
+	 */
+	public static function validate_rest_nonce_permission( \WP_REST_Request $request, $capability_action = '' ) {
+		$capability_action = is_string( $capability_action ) ? trim( $capability_action ) : '';
+
+		if ( '' !== $capability_action && ! self::user_can( $capability_action ) ) {
+			return new \WP_Error(
+				'rest_forbidden',
+				esc_html__( 'You are not allowed to access this endpoint.', 'alpaca' ),
+				array( 'status' => 403 )
+			);
+		}
+
+		$nonce = (string) $request->get_param( 'nonce' );
+		if ( '' === $nonce ) {
+			$nonce = (string) $request->get_header( 'X-WP-Nonce' );
+		}
+
+		if ( '' === $nonce || ! wp_verify_nonce( $nonce, 'wp_rest' ) ) {
+			return new \WP_Error(
+				'rest_forbidden',
+				esc_html__( 'Invalid nonce.', 'alpaca' ),
+				array( 'status' => 401 )
+			);
+		}
+
+		return true;
+	}
 }
