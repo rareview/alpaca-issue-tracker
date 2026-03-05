@@ -474,23 +474,7 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 			update_post_meta( $post_id, 'alpaca_headers', $headers );
 		}
 
-		// Parent link when singular — only set if the queried object is an Alpaca issue.
-        // TODO: Do we need this section, now that we use post_parent for checklist?
-		if ( in_array( 'singular', $wp_types, true ) ) {
-			$qo = alpaca_arr_get( $payload, [ 'wp', 'queriedObject' ], null );
-			$qo_post_type = is_array( $qo ) ? (string) ( $qo['post_type'] ?? '' ) : '';
-			$parent_id = (int) alpaca_arr_get( $payload, [ 'wp', 'queriedObject', 'ID' ], 0 );
-
-			if ( $parent_id > 0 && 'alpaca_issue' === $qo_post_type ) {
-				wp_update_post(
-					[
-						'ID'          => $post_id,
-						'post_parent' => $parent_id,
-					]
-				);
-			}
 		}
-	}
 
 	// Save JavaScript errors if present.
 	$errors = alpaca_arr_get( $payload, [ 'errors' ], null );

@@ -20,7 +20,9 @@ function stripHtml(maybeHtml) {
     return '';
   }
 
-  return String(maybeHtml).replace(/<[^>]*>/g, '').trim();
+  return String(maybeHtml)
+    .replace(/<[^>]*>/g, '')
+    .trim();
 }
 
 /**
@@ -80,7 +82,8 @@ function buildBoardIssueIndex(boardData) {
       }
 
       const id = String(issue.id);
-      const meta = issue.meta && typeof issue.meta === 'object' ? issue.meta : {};
+      const meta =
+        issue.meta && typeof issue.meta === 'object' ? issue.meta : {};
       const labels = Array.isArray(meta.labels)
         ? meta.labels.filter((label) => typeof label === 'string')
         : [];
@@ -129,7 +132,9 @@ function buildResultItem(post, boardIssueIndex) {
     labels:
       fromBoard && Array.isArray(fromBoard.labels) ? fromBoard.labels : [],
     assignees:
-      fromBoard && Array.isArray(fromBoard.assignees) ? fromBoard.assignees : [],
+      fromBoard && Array.isArray(fromBoard.assignees)
+        ? fromBoard.assignees
+        : [],
     meta: fromBoard && fromBoard.meta ? fromBoard.meta : {},
     postDate: fromBoard && fromBoard.postDate ? fromBoard.postDate : '',
   };
@@ -238,11 +243,10 @@ function SearchContainer() {
           const commentPostIds = Array.from(
             new Set(
               (comments || [])
-                .map(
-                  (c) =>
-                    c && (c.post || c.comment_post_ID)
-                      ? String(c.post || c.comment_post_ID)
-                      : null,
+                .map((c) =>
+                  c && (c.post || c.comment_post_ID)
+                    ? String(c.post || c.comment_post_ID)
+                    : null,
                 )
                 .filter(Boolean),
             ),
@@ -355,7 +359,11 @@ function SearchContainer() {
     document.addEventListener('touchstart', handleDocumentPointerDown, true);
 
     return () => {
-      document.removeEventListener('mousedown', handleDocumentPointerDown, true);
+      document.removeEventListener(
+        'mousedown',
+        handleDocumentPointerDown,
+        true,
+      );
       document.removeEventListener(
         'touchstart',
         handleDocumentPointerDown,
@@ -449,7 +457,9 @@ function SearchContainer() {
                     {r.status ? (
                       <>
                         {'\u00A0\u00A0'}
-                        <span className="alpaca-search-status-pill">{r.status}</span>
+                        <span className="alpaca-search-status-pill">
+                          {r.status}
+                        </span>
                       </>
                     ) : null}
                   </span>
