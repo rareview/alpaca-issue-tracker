@@ -230,7 +230,9 @@ const LabelsManager = () => {
 
             const nextLabels = [...previousLabels];
             if (labelIndex < INITIAL_LABEL_SLOT_COUNT) {
-              nextLabels[labelIndex] = createEmptyLabelRow(`slot-${labelIndex}`);
+              nextLabels[labelIndex] = createEmptyLabelRow(
+                `slot-${labelIndex}`,
+              );
             } else {
               nextLabels.splice(labelIndex, 1);
             }
