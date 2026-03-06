@@ -106,12 +106,14 @@ class Helpers {
 	 *
 	 * @param \WP_REST_Request $request           REST request object.
 	 * @param string           $capability_action Optional. Action name passed to user_can().
+	 * @param array            $capability_args   Optional. Context passed to user_can().
 	 * @return true|\WP_Error True when valid, WP_Error otherwise.
 	 */
-	public static function validate_rest_nonce_permission( \WP_REST_Request $request, $capability_action = '' ) {
+	public static function validate_rest_nonce_permission( \WP_REST_Request $request, $capability_action = '', $capability_args = array() ) {
 		$capability_action = is_string( $capability_action ) ? trim( $capability_action ) : '';
+		$capability_args   = is_array( $capability_args ) ? $capability_args : array();
 
-		if ( '' !== $capability_action && ! self::user_can( $capability_action ) ) {
+		if ( '' !== $capability_action && ! self::user_can( $capability_action, $capability_args ) ) {
 			return new \WP_Error(
 				'rest_forbidden',
 				esc_html__( 'You are not allowed to access this endpoint.', 'alpaca' ),

@@ -19,8 +19,8 @@ function alpaca_issue_submit() {
 		array(
 			'methods'             => 'POST',
 			'callback'            => 'alpaca_issue_callback',
-			'permission_callback' => function () {
-				return \Alpaca\Inc\Helpers::user_can( 'create_issue' );
+			'permission_callback' => function ( WP_REST_Request $request ) {
+				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'create_issue' );
 			},
 		)
 	);
@@ -47,7 +47,7 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 	}
 
 	// Extract user + input safely.
-	$user_id          = (int) alpaca_arr_get( $payload, array( 'user', 'id' ), get_current_user_id() );
+	$user_id          = get_current_user_id();
 	$feedback_raw     = (string) alpaca_arr_get( $payload, array( 'userinput', 'feedback' ), '' );
 	$include_ctx      = (bool) alpaca_arr_get( $payload, array( 'userinput', 'includeContext' ), false );
 	$is_high_priority = (bool) alpaca_arr_get( $payload, array( 'userinput', 'isHighPriority' ), false );
@@ -243,8 +243,8 @@ function alpaca_update_issue() {
 		array(
 			'methods'             => 'POST',
 			'callback'            => 'alpaca_update_issue_callback',
-			'permission_callback' => function () {
-				return \Alpaca\Inc\Helpers::user_can( 'get_issue' );
+			'permission_callback' => function ( WP_REST_Request $request ) {
+				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'update_issue' );
 			},
 			'args'                => array(
 				'id' => array(
@@ -852,7 +852,13 @@ function alpaca_delete_issue() {
 			'callback'            => 'alpaca_delete_issue_callback',
 			'permission_callback' => function ( WP_REST_Request $request ) {
 				$post_id = (int) $request['id'];
-				return \Alpaca\Inc\Helpers::user_can( 'delete_post', array( 'post_id' => $post_id ) );
+				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission(
+					$request,
+					'delete_post',
+					array(
+						'post_id' => $post_id,
+					)
+				);
 			},
 			'args'                => array(
 				'id' => array(
