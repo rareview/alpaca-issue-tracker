@@ -27,6 +27,7 @@ import { AlpacaBoard } from './Board.jsx';
 import Presence from './components/Presence';
 import AlpacaDashboardWidget from './DashboardWidget.jsx';
 import About from './about/About.jsx';
+import Activity from './Activity.jsx';
 
 import { fetchAllAssignees } from './services/userApi.js';
 import {
@@ -111,4 +112,13 @@ if (document.querySelector('#alpaca-dashboard-widget')) {
 
 if (document.querySelector('#alpaca-about-page')) {
   render(<About />, document.querySelector('#alpaca-about-page'));
+}
+
+if (document.querySelector('#alpaca-activity-page')) {
+  render(
+    <WatchlistProvider>
+      <Activity />
+    </WatchlistProvider>,
+    document.querySelector('#alpaca-activity-page'),
+  );
 }

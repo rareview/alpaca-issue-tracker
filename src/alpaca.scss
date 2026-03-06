@@ -1182,12 +1182,17 @@ $core-font-stack:
       }
     }
 
-    .components-textarea-control__input,
-    .alpaca-timeline-item[data-source='human'] .alpaca-comment-content p,
-    .alpaca-timeline-item[data-source='human'] .alpaca-comment-content li {
+    .components-textarea-control__input {
       line-height: 1.5em;
       margin-top: 0;
     }
+  }
+
+  .alpaca-timeline-item[data-source='human'] .alpaca-comment-content p,
+  .alpaca-timeline-item[data-source='human'] .alpaca-comment-content li {
+    font-size: $midfont;
+    line-height: 1.5em;
+    margin-top: 0;
   }
 
   .alpaca-timeline-item[data-source='human'] .alpaca-timeline-content,
@@ -1227,6 +1232,35 @@ $core-font-stack:
 
       strong {
         color: #000;
+      }
+
+      &.has-issue-title {
+        .alpaca-comment-author {
+          display: flex;
+          align-items: baseline;
+          gap: 4px;
+          min-width: 0;
+          flex: 1 1 auto;
+        }
+
+        .alpaca-comment-on-title {
+          display: flex;
+          align-items: baseline;
+          gap: 4px;
+          min-width: 0;
+          flex: 1 1 auto;
+          color: $greytext;
+          font-weight: 400;
+        }
+
+        .alpaca-comment-on-title-text {
+          display: block;
+          min-width: 0;
+          flex: 1 1 auto;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
       }
     }
 
@@ -1776,6 +1810,78 @@ $core-font-stack:
 
 #alpaca-comments-wrapper {
   position: relative;
+}
+
+.alpaca-comment-issue-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: $greytext;
+  letter-spacing: 0.02em;
+  margin-bottom: 8px;
+}
+
+#alpaca-activity {
+  margin-top: 16px;
+  max-width: 720px;
+
+  .alpaca-activity-loading {
+    display: flex;
+    justify-content: center;
+    padding: 24px 0;
+  }
+
+  .alpaca-activity-loading-more {
+    display: flex;
+    justify-content: center;
+    padding: 8px 0 24px 0;
+  }
+
+  .alpaca-activity-sentinel {
+    height: 1px;
+  }
+
+  .alpaca-activity-date-group + .alpaca-activity-date-group {
+    margin-top: 24px;
+  }
+
+  .alpaca-activity-date-heading {
+    margin: 0 0 10px 0;
+    font-size: 13px;
+    color: $greytext;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .alpaca-comments-timeline {
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: $commenthead-hpad;
+      left: 36px;
+      width: $timeline-width;
+      background-color: $greyborder;
+    }
+  }
+
+  .alpaca-activity-entry-button {
+    display: block;
+    width: 100%;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 8px;
+  }
+
+  .alpaca-activity-entry-button:focus-visible {
+    outline: 2px solid #2271b1;
+    outline-offset: 2px;
+  }
 }
 
 .alpaca-align-controls {

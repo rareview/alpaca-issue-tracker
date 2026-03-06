@@ -926,7 +926,7 @@ const AlpacaIssue = ({
         ...prev,
         taxonomies: { ...prev.taxonomies, status: [nextStatus] },
       }));
-      onStatusChange?.(issueId, nextStatus);
+      onStatusChange?.(issueId, nextStatus, currentStatus, issueDetails);
     } catch (err) {
       showNotification(
         __('Failed to progress issue status.', 'alpaca'),
@@ -2124,6 +2124,14 @@ AlpacaIssue.propTypes = {
   onDelete: PropTypes.func.isRequired,
   onAssigneesChange: PropTypes.func.isRequired,
   onDeadlineChange: PropTypes.func.isRequired,
+  /**
+   * Called when the issue status changes.
+   *
+   * @param {number} issueId       Issue ID.
+   * @param {Object} nextStatus    New status term object.
+   * @param {Object} currentStatus Previous status term object.
+   * @param {Object} issueDetails  Full issue details.
+   */
   onStatusChange: PropTypes.func.isRequired,
   onIssueTitleChange: PropTypes.func.isRequired,
   onLabelsChange: PropTypes.func,
