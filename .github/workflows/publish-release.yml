@@ -1,0 +1,33 @@
+name: Publish Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_TAG: ${{ github.event.release.tag_name }}
+      RELEASE_NAME: ${{ github.event.release.name }}
+      RELEASE_BODY: ${{ github.event.release.body }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - run: npm ci
+
+      - run: npm run zip
+
+      - name: Publish to public repo
+        uses: softprops/action-gh-release@v2
+        with:
+          repository: rareview/alpaca-beta
+          token: ${{ secrets.PUBLIC_REPO_TOKEN }}
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: ${{ env.RELEASE_NAME }}
+          body: ${{ env.RELEASE_BODY }}
+          files: alpaca.zip
