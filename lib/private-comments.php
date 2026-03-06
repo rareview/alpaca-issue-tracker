@@ -84,7 +84,7 @@ function alpaca_hide_comment_type( $type = '', $exclude_from_count = true ) {
 		'comment_feed_where',
 		function ( $where ) use ( $type, $should_hide, $wpdb ) {
 			if ( $should_hide() ) {
-				$where .= $wpdb->prepare( ' AND comment_type != %s', esc_sql( $type ) );
+				$where .= $wpdb->prepare( ' AND comment_type != %s', $type );
 			}
 			return $where;
 		},
@@ -109,7 +109,7 @@ function alpaca_hide_comment_type( $type = '', $exclude_from_count = true ) {
                 AND comment_approved = '1'
             ",
 						$post_id,
-						esc_sql( $type )
+						$type
 					)
 				);
 				return max( 0, $count - (int) $count_hidden );

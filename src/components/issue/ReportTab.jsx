@@ -2,6 +2,7 @@ const { memo, useEffect, useRef } = wp.element;
 const { __ } = wp.i18n;
 import PropTypes from 'prop-types';
 import { highlightTableCells } from '../../utils/syntaxHighlight';
+import { isValidHttpUrl } from '../../utils/sanitize';
 
 const { date } = wp;
 const datesettings = wp.date.getSettings();
@@ -41,7 +42,7 @@ const ReportTab = memo(({ issueDetails }) => {
       highlightTableCells(tableRef.current);
 
       // Make highlighted URLs clickable
-      if (urlValue && urlCellRef.current) {
+      if (urlValue && isValidHttpUrl(urlValue) && urlCellRef.current) {
         const codeEl = urlCellRef.current.querySelector('code.language-uri');
         if (codeEl) {
           codeEl.style.cursor = 'pointer';

@@ -3,6 +3,7 @@ const { __ } = wp.i18n;
 import PropTypes from 'prop-types';
 import { highlightTableCells } from '../../utils/syntaxHighlight';
 import registerKeyValueLanguage from '../../utils/prismKeyValue';
+import { isValidHttpUrl } from '../../utils/sanitize';
 
 /**
  * Unified data table component with syntax highlighting support.
@@ -33,7 +34,7 @@ const DataTable = memo(
         const urlCells = tableRef.current.querySelectorAll('code.language-uri');
         urlCells.forEach((codeEl) => {
           const url = codeEl.textContent;
-          if (url) {
+          if (url && isValidHttpUrl(url)) {
             codeEl.style.cursor = 'pointer';
             codeEl.addEventListener('click', () => {
               window.open(url, '_blank', 'noopener,noreferrer');

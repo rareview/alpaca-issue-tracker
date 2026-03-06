@@ -19,6 +19,7 @@ const {
 } = wp.components;
 import { getCookie, setCookie } from '../utils/cookies';
 import { marked } from 'marked';
+import { sanitizeHtml } from '../utils/sanitize';
 import Lightbox from './issue/Lightbox';
 import { Attachment } from './issue/AttachmentRow';
 import { uploadIssueAttachment } from '../utils/attachmentUpload';
@@ -365,7 +366,9 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
     }
     setIsSubmitting(true);
 
-    const processedOptimisticContent = injectAvatarStyles(marked(newComment));
+    const processedOptimisticContent = injectAvatarStyles(
+      sanitizeHtml(marked(newComment)),
+    );
     const attachmentUrls = pendingAttachments.map(
       (attachment) => attachment.url,
     );

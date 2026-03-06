@@ -164,7 +164,7 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 		update_post_meta( $post_id, 'alpaca_screenshot', (string) alpaca_arr_get( $payload, array( 'screenshot' ), '' ) );
 		update_post_meta( $post_id, 'alpaca_screenwidth', (int) alpaca_arr_get( $payload, array( 'client', 'browser', 'width' ), 0 ) );
 		update_post_meta( $post_id, 'alpaca_screenheight', (int) alpaca_arr_get( $payload, array( 'client', 'browser', 'height' ), 0 ) );
-		update_post_meta( $post_id, 'alpaca_url', (string) alpaca_arr_get( $payload, array( 'server', 'REQUEST_URI' ), '' ) );
+		update_post_meta( $post_id, 'alpaca_url', esc_url_raw( (string) alpaca_arr_get( $payload, array( 'server', 'REQUEST_URI' ), '' ) ) );
 
 		$qo = alpaca_arr_get( $payload, array( 'wp', 'queriedObject' ), null );
 		if ( is_array( $qo ) ) {
@@ -173,11 +173,27 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 				unset( $qo['post_content'] );
 			}
 
+			array_walk_recursive(
+				$qo,
+				function ( &$value ) {
+					if ( is_string( $value ) ) {
+						$value = sanitize_text_field( $value );
+					}
+				}
+			);
 			update_post_meta( $post_id, 'alpaca_queried_object', $qo );
 		}
 
 		$headers = alpaca_arr_get( $payload, array( 'headers' ), null );
 		if ( is_array( $headers ) ) {
+			array_walk_recursive(
+				$headers,
+				function ( &$value ) {
+					if ( is_string( $value ) ) {
+						$value = sanitize_text_field( $value );
+					}
+				}
+			);
 			update_post_meta( $post_id, 'alpaca_headers', $headers );
 		}
 	}
