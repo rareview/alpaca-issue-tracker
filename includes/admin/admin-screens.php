@@ -25,6 +25,15 @@ add_action(
 
 		add_submenu_page(
 			'project-board',
+			esc_html__( 'Project Activity', 'alpaca' ),
+			esc_html__( 'Project Activity', 'alpaca' ),
+			'edit_posts',
+			'project-activity',
+			'alpaca_activity_page'
+		);
+
+		add_submenu_page(
+			'project-board',
 			esc_html__( 'Configure', 'alpaca' ),
 			esc_html__( 'Configure', 'alpaca' ),
 			'manage_options',
@@ -71,6 +80,18 @@ function alpaca_about_page() {
 	<div class="wrap">
 		<h1><?php echo esc_html__( 'About Alpaca', 'alpaca' ); ?></h1>
 		<div id="alpaca-about-page"></div>
+	</div>
+	<?php
+}
+
+/**
+ * Render the Alpaca activity page.
+ */
+function alpaca_activity_page() {
+	?>
+	<div class="wrap">
+		<h1><?php echo esc_html__( 'Project Activity', 'alpaca' ); ?></h1>
+		<div id="alpaca-activity-page"></div>
 	</div>
 	<?php
 }

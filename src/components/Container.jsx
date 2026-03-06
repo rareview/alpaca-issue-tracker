@@ -2,27 +2,29 @@ const { Card, CardHeader, CardBody, DropdownMenu, TextControl } = wp.components;
 const { Heading = wp.components.__experimentalHeading } = wp.components;
 const { __ } = wp.i18n;
 
-const { useState, useEffect, useRef, useLayoutEffect, createRef } = wp.element;
+const { useState, useEffect, useRef } = wp.element;
 
 import DraggableItem from './DraggableItem';
+import useFlipListAnimation from '../hooks/useFlipListAnimation';
 
 import PropTypes from 'prop-types';
 
 /**
  * Container component (delegates rename to parent via onRename).
  *
- * @param {Object}   root0                 - Props object
- * @param {number}   root0.id              - Container ID
- * @param {string}   root0.title           - Container title
- * @param {Array}    root0.items           - Array of items in the container
- * @param {Function} root0.onItemClick     - Callback when item is clicked
- * @param {Function} root0.onMoveAllToNext - Callback to move all items to next container
- * @param {Function} root0.onDeleteAll     - Callback to delete all items
- * @param {boolean}  root0.isLastContainer - Whether this is the last container
- * @param {boolean}  root0.isHidden        - Whether container is hidden
- * @param {Function} root0.onToggleHidden  - Callback to toggle hidden state
- * @param {Function} root0.onRename        - Callback to rename container
- * @param {Function} root0.onItemDrop
+ * @param {Object}   root0                   - Props object
+ * @param {number}   root0.id                - Container ID
+ * @param {string}   root0.title             - Container title
+ * @param {Array}    root0.items             - Array of items in the container
+ * @param {Function} root0.onItemClick       - Callback when item is clicked
+ * @param {Function} root0.onMoveAllToNext   - Callback to move all items to next container
+ * @param {Function} root0.onDeleteAll       - Callback to delete all items
+ * @param {boolean}  root0.isLastContainer   - Whether this is the last container
+ * @param {boolean}  root0.isHidden          - Whether container is hidden
+ * @param {Function} root0.onToggleHidden    - Callback to toggle hidden state
+ * @param {Function} root0.onRename          - Callback to rename container
+ * @param {Function} root0.onItemDrop        - Callback for drag-and-drop moves
+ * @param {Function} root0.onBulkItemReorder - Callback for bulk item reordering
  * @return {JSX.Element} Container component
  */
 function Container({
@@ -37,6 +39,7 @@ function Container({
   onToggleHidden,
   onRename,
   onItemDrop,
+  onBulkItemReorder,
 }) {
   const [isRenaming, setIsRenaming] = useState(false);
   const [newTitle, setNewTitle] = useState(title);
@@ -48,67 +51,13 @@ function Container({
   const [, forceUpdate] = useState(0);
   const hasItems = items.length > 0;
 
-  // --- FLIP Animation ---
-  const isSortingRef = useRef(false);
-  const itemRefs = useRef({});
-  const [boundingBoxes, setBoundingBoxes] = useState({});
-  const prevItemsRef = useRef(items);
-
-  // Create refs for any new items
-  items.forEach((item) => {
-    if (!itemRefs.current[item.id]) {
-      itemRefs.current[item.id] = createRef();
-    }
-  });
-
-  useLayoutEffect(() => {
-    const newBoxes = {};
-    const prevItems = prevItemsRef.current;
-    prevItems.forEach((item) => {
-      const ref = itemRefs.current[item.id];
-      if (ref && ref.current) {
-        newBoxes[item.id] = ref.current.getBoundingClientRect();
-      }
-    });
-    setBoundingBoxes(newBoxes);
-    prevItemsRef.current = items;
-  }, [items]);
-
-  useLayoutEffect(() => {
-    // Only animate when the automatic sort is running.
-    if (!isSortingRef.current) {
-      return;
-    }
-
-    const hasMoved = (box1, box2) => {
-      if (!box1 || !box2) return false;
-      return box1.top !== box2.top || box1.left !== box2.left;
-    };
-
-    items.forEach((item) => {
-      const ref = itemRefs.current[item.id];
-      if (!ref || !ref.current) return;
-
-      const newBox = ref.current.getBoundingClientRect();
-      const oldBox = boundingBoxes[item.id];
-
-      if (hasMoved(oldBox, newBox)) {
-        const deltaX = oldBox.left - newBox.left;
-        const deltaY = oldBox.top - newBox.top;
-
-        requestAnimationFrame(() => {
-          ref.current.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
-          ref.current.style.transition = 'transform 0s';
-
-          requestAnimationFrame(() => {
-            ref.current.style.transform = '';
-            ref.current.style.transition = 'transform 300ms ease-out';
-          });
-        });
-      }
-    });
-  }, [boundingBoxes, items]);
-  // --- End FLIP Animation ---
+  const {
+    itemRefs,
+    startAnimation,
+    stopAnimation,
+    waitForTransitions,
+    isAnimatingRef,
+  } = useFlipListAnimation(items, 300, 'ease-out');
 
   // keep local input in sync if parent updates title
   useEffect(() => {
@@ -170,7 +119,11 @@ function Container({
       icon: 'arrow-up-alt',
       title: __('Lift Priority Items', 'alpaca'),
       onClick: () => {
-        if (!onItemDrop) {
+        if (!onBulkItemReorder) {
+          return;
+        }
+
+        if (isAnimatingRef.current) {
           return;
         }
 
@@ -193,45 +146,30 @@ function Container({
         );
 
         const newItems = [...priorityItems, ...otherItems];
-        const currentItemsState = [...items];
-        const moves = [];
+        const movedItemIds = newItems
+          .filter((item, index) => items[index] && items[index].id !== item.id)
+          .map((item) => item.id);
 
-        // First, calculate the sequence of moves required.
-        for (let i = 0; i < newItems.length; i++) {
-          const desiredItem = newItems[i];
-          const currentIndex = currentItemsState.findIndex(
-            (item) => item.id === desiredItem.id,
-          );
+        if (movedItemIds.length < 1) {
+          return;
+        }
 
-          if (currentIndex !== i) {
-            moves.push({
-              itemId: desiredItem.id,
-              sourceContainerId: id,
-              sourceIndex: currentIndex,
-              destinationContainerId: id,
-              destinationIndex: i,
-            });
+        startAnimation();
 
-            const [movedItem] = currentItemsState.splice(currentIndex, 1);
-            currentItemsState.splice(i, 0, movedItem);
+        const runLiftPriorityAnimation = async () => {
+          try {
+            onBulkItemReorder(
+              id,
+              newItems.map((item) => item.id),
+            );
+
+            await waitForTransitions(movedItemIds);
+          } finally {
+            stopAnimation();
           }
-        }
+        };
 
-        if (moves.length > 0) {
-          isSortingRef.current = true;
-        }
-
-        // Now, execute the moves with a delay for animation.
-        moves.forEach((move, index) => {
-          setTimeout(() => {
-            onItemDrop(move);
-          }, index * 150); // 150ms delay between moves
-        });
-
-        // After the animation is complete, reset the flag.
-        setTimeout(() => {
-          isSortingRef.current = false;
-        }, moves.length * 150);
+        runLiftPriorityAnimation();
       },
     },
   ];
@@ -314,7 +252,7 @@ function Container({
       setIsDragOver(false);
       setDragOverIndex(null);
       setDragOverItem(null);
-      isSortingRef.current = false;
+      stopAnimation();
 
       // Also ensure global state is cleared if not already
       try {
@@ -331,20 +269,39 @@ function Container({
     return () => {
       window.removeEventListener('dragend', handleGlobalDragEnd);
     };
-  }, []);
+  }, [stopAnimation]);
 
   const getDropIndex = (e) => {
     const el = containerRef.current;
-    if (!el) return items.length;
+    if (!el) {
+      return items.length;
+    }
+
+    const computedStyle = window.getComputedStyle(el);
+    const isFlexContainer =
+      computedStyle.display === 'flex' ||
+      computedStyle.display === 'inline-flex';
+    const isHorizontalLayout =
+      isFlexContainer && computedStyle.flexDirection === 'row';
+
     const children = Array.from(
       el.querySelectorAll(
         '.alpaca-item:not(.empty):not(.placeholder):not(.is-source-hidden)',
       ),
     );
+
     for (let i = 0; i < children.length; i++) {
       const rect = children[i].getBoundingClientRect();
-      if (e.clientY < rect.top + rect.height / 2) return i;
+
+      if (isHorizontalLayout) {
+        if (e.clientX < rect.left + rect.width / 2) {
+          return i;
+        }
+      } else if (e.clientY < rect.top + rect.height / 2) {
+        return i;
+      }
     }
+
     return children.length;
   };
 
@@ -603,6 +560,7 @@ Container.propTypes = {
   onToggleHidden: PropTypes.func.isRequired,
   onRename: PropTypes.func.isRequired,
   onItemDrop: PropTypes.func,
+  onBulkItemReorder: PropTypes.func,
 };
 
 export default Container;

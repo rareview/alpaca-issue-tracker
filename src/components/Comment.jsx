@@ -2,11 +2,10 @@ import PropTypes from 'prop-types';
 import { getUser } from '../hooks/useUser';
 import { fetchIssueCommentCount } from '../services/issueApi';
 import useAutoExpandTextarea from '../hooks/useAutoExpandTextarea';
+import TimelineEntry, { injectAvatarStyles } from './comment/TimelineEntry';
 
-const { useState, useEffect, useRef, useCallback, useMemo, memo } = wp.element;
+const { useState, useEffect, useRef, useCallback, memo } = wp.element;
 const { __, _n, sprintf } = wp.i18n;
-import User from './User';
-import Time from './Time';
 const {
   TextareaControl,
   Button,
@@ -23,32 +22,6 @@ import { marked } from 'marked';
 import Lightbox from './issue/Lightbox';
 import { Attachment } from './issue/AttachmentRow';
 import { uploadIssueAttachment } from '../utils/attachmentUpload';
-
-const injectAvatarStyles = (htmlString) => {
-  if (
-    typeof DOMParser === 'undefined' ||
-    !htmlString ||
-    !htmlString.includes('data-avatar')
-  ) {
-    return htmlString;
-  }
-
-  try {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(htmlString, 'text/html');
-    const spans = doc.querySelectorAll('[data-avatar]');
-    spans.forEach((span) => {
-      const avatarUrl = span.dataset.avatar;
-      if (avatarUrl) {
-        span.style.setProperty('--avatar-url', `url('${avatarUrl}')`);
-      }
-    });
-    return doc.body.innerHTML;
-  } catch (e) {
-    console.error('Failed to process content for avatar styles', e);
-    return htmlString; // Return original string on error
-  }
-};
 
 const deleteCommentAttachment = async (url, issueId) => {
   if (!url || !issueId) {
@@ -183,157 +156,81 @@ const Comment = memo(
     onEditAttachRemove,
     isProcessingAttachments,
   }) => {
-    const author = comment.author_details ||
-      comment._embedded?.author?.[0] ||
-      currentUser || { name: __('Unknown', 'alpaca') };
-
-    const dataSource =
-      comment.author_user_agent === 'audit' ? 'audit' : 'human';
-    const isAudit = dataSource === 'audit';
-
-    const commentTags = comment.meta?.alpacaCommentTags || [];
-    const commentAttachments = comment.meta?.alpacaCommentAttachments || [];
-    const timelineItemClasses = ['alpaca-timeline-item', ...commentTags].join(
-      ' ',
-    );
-
-    const processedContent = useMemo(() => {
-      // Optimistic comments have pre-rendered content
-      if (!comment.meta && comment.content.rendered) {
-        return comment.content.rendered;
-      }
-
-      const content = comment.content.raw
-        ? marked(comment.content.raw)
-        : comment.content.rendered;
-
-      return injectAvatarStyles(content);
-    }, [comment]);
-
-    if (isAudit) {
-      return (
-        <div className={timelineItemClasses} data-source={dataSource}>
-          <div className="alpaca-timeline-icon" />
-          <div className="alpaca-timeline-msg">
-            <div
-              className="alpaca-timeline-msg-content with-avatar-meta"
-              dangerouslySetInnerHTML={{ __html: processedContent }}
-            />
-            <Time
-              value={comment.date}
-              type="relative"
-              className="alpaca-comment-date"
-            />
-          </div>
-        </div>
-      );
-    }
-
     return (
-      <div className={timelineItemClasses} data-source={dataSource}>
-        <div className="alpaca-timeline-content">
-          <div className="alpaca-comment-header flexalign">
-            <User user={author} showName={false} />
-            <div className="alpaca-comment-author">
-              <strong>{author.name}</strong>
-            </div>
-            <div className="alpaca-comment-date">
-              <Time value={comment.date} type="relative" />
-            </div>
-            <div className="alpaca-comment-buttons">
-              <Dropdown
-                popoverProps={{ placement: 'bottom-end' }}
-                renderToggle={({ isOpen, onToggle }) => (
-                  <Tooltip text={__('Options', 'alpaca')}>
-                    <Button
-                      icon="ellipsis"
-                      onClick={onToggle}
-                      aria-expanded={isOpen}
-                      className="rotate90"
-                    />
-                  </Tooltip>
-                )}
-                renderContent={({ onClose }) => (
-                  <MenuGroup>
-                    <MenuItem
-                      icon="edit"
-                      onClick={() => {
-                        startEditing(comment);
-                        onClose();
-                      }}
-                    >
-                      {__('Edit', 'alpaca')}
-                    </MenuItem>
-                    <MenuItem
-                      icon="trash"
-                      isDestructive
-                      onClick={() => confirmDeleteComment(comment.id)}
-                    >
-                      {__('Delete', 'alpaca')}
-                    </MenuItem>
-                  </MenuGroup>
-                )}
-              />
-            </div>
-          </div>
-          <div className="alpaca-comment-body">
-            {editingCommentId === comment.id ? (
-              <>
-                <AttachmentControls
-                  attachments={editingAttachments}
-                  onDrop={onEditAttachDrop}
-                  onUpload={onEditAttachFiles}
-                  onRemove={onEditAttachRemove}
-                  onClick={onAttachmentClick}
-                  isSubmitting={isSubmitting}
-                  isProcessing={isProcessingAttachments}
-                  pendingAltText={__('Pending comment attachment', 'alpaca')}
-                  actions={
-                    <>
-                      <Button onClick={cancelEditing} disabled={isSubmitting}>
-                        {__('Cancel', 'alpaca')}
-                      </Button>
-                      <Button
-                        isPrimary
-                        onClick={() => saveEdit(comment.id)}
-                        disabled={isSubmitting || isProcessingAttachments}
-                      >
-                        {__('Save', 'alpaca')}
-                      </Button>
-                    </>
-                  }
-                >
-                  <TextareaControl
-                    value={editingContent}
-                    onChange={setEditingContent}
-                    ref={editingRef}
-                  />
-                </AttachmentControls>
-              </>
-            ) : (
-              <div
-                className="alpaca-comment-content with-avatar-meta"
-                dangerouslySetInnerHTML={{ __html: processedContent }}
-              />
+      <TimelineEntry
+        comment={comment}
+        currentUser={currentUser}
+        onAttachmentClick={onAttachmentClick}
+        isEditing={editingCommentId === comment.id}
+        isSubmitting={isSubmitting}
+        headerActions={
+          <Dropdown
+            popoverProps={{ placement: 'bottom-end' }}
+            renderToggle={({ isOpen, onToggle }) => (
+              <Tooltip text={__('Options', 'alpaca')}>
+                <Button
+                  icon="ellipsis"
+                  onClick={onToggle}
+                  aria-expanded={isOpen}
+                  className="rotate90"
+                />
+              </Tooltip>
             )}
-            {editingCommentId !== comment.id &&
-              !isSubmitting &&
-              commentAttachments.length > 0 && (
-                <div className="alpaca-attachments-wrapper alpaca-comment-attachments">
-                  {commentAttachments.map((attachmentUrl, index) => (
-                    <Attachment
-                      key={`${comment.id}-${index}`}
-                      attachment={{ url: attachmentUrl }}
-                      onAttachmentClick={onAttachmentClick}
-                      showDelete={false}
-                      altText={__('Comment attachment', 'alpaca')}
-                    />
-                  ))}
-                </div>
-              )}
-          </div>
-        </div>
-      </div>
+            renderContent={({ onClose }) => (
+              <MenuGroup>
+                <MenuItem
+                  icon="edit"
+                  onClick={() => {
+                    startEditing(comment);
+                    onClose();
+                  }}
+                >
+                  {__('Edit', 'alpaca')}
+                </MenuItem>
+                <MenuItem
+                  icon="trash"
+                  isDestructive
+                  onClick={() => confirmDeleteComment(comment.id)}
+                >
+                  {__('Delete', 'alpaca')}
+                </MenuItem>
+              </MenuGroup>
+            )}
+          />
+        }
+        editBody={
+          <AttachmentControls
+            attachments={editingAttachments}
+            onDrop={onEditAttachDrop}
+            onUpload={onEditAttachFiles}
+            onRemove={onEditAttachRemove}
+            onClick={onAttachmentClick}
+            isSubmitting={isSubmitting}
+            isProcessing={isProcessingAttachments}
+            pendingAltText={__('Pending comment attachment', 'alpaca')}
+            actions={
+              <>
+                <Button onClick={cancelEditing} disabled={isSubmitting}>
+                  {__('Cancel', 'alpaca')}
+                </Button>
+                <Button
+                  isPrimary
+                  onClick={() => saveEdit(comment.id)}
+                  disabled={isSubmitting || isProcessingAttachments}
+                >
+                  {__('Save', 'alpaca')}
+                </Button>
+              </>
+            }
+          >
+            <TextareaControl
+              value={editingContent}
+              onChange={setEditingContent}
+              ref={editingRef}
+            />
+          </AttachmentControls>
+        }
+      />
     );
   },
   (prev, next) =>
