@@ -299,6 +299,36 @@ const Activity = () => {
     };
   }, [hasMorePages, requestNextPage]);
 
+  useEffect(() => {
+    if (!hasMorePages) {
+      return undefined;
+    }
+
+    const handleScroll = () => {
+      if (loadingRef.current) {
+        return;
+      }
+
+      const scrollTop =
+        window.pageYOffset || document.documentElement.scrollTop || 0;
+      const viewportHeight = window.innerHeight || 0;
+      const documentHeight = document.documentElement.scrollHeight || 0;
+      const threshold = 240;
+
+      if (scrollTop + viewportHeight >= documentHeight - threshold) {
+        requestNextPage();
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', handleScroll);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleScroll);
+    };
+  }, [hasMorePages, requestNextPage]);
+
   // If the initial batch does not fill the viewport, eagerly load the next page.
   useEffect(() => {
     if (isLoading || isLoadingMore || !hasMorePages || loadingRef.current) {

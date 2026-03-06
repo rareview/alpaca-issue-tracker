@@ -68,7 +68,8 @@ export const buildStatusIssuePayload = (issueId, issueDetails, issueLookup) => {
   return {
     id: String(normalizedIssueId),
     // Snake-case key to match the PHP payload shape expected by hook listeners.
-    'post_id': normalizedIssueId,
+    // eslint-disable-next-line camelcase
+    post_id: normalizedIssueId,
     slug: issueSlug,
     content: issueTitle,
   };

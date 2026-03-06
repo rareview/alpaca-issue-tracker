@@ -15,7 +15,11 @@ import {
  * @param {string}        easing     Transition easing value.
  * @return {Object} Hook API.
  */
-export function useFlipListAnimation(items, durationMs = 300, easing = 'ease-out') {
+export function useFlipListAnimation(
+  items,
+  durationMs = 300,
+  easing = 'ease-out',
+) {
   const itemRefs = useRef({});
   const isAnimatingRef = useRef(false);
   const [boundingBoxes, setBoundingBoxes] = useState({});
@@ -39,7 +43,13 @@ export function useFlipListAnimation(items, durationMs = 300, easing = 'ease-out
       return;
     }
 
-    applyFlipAnimation(items, boundingBoxes, itemRefs.current, durationMs, easing);
+    applyFlipAnimation(
+      items,
+      boundingBoxes,
+      itemRefs.current,
+      durationMs,
+      easing,
+    );
   }, [boundingBoxes, durationMs, easing, items]);
 
   /**
@@ -68,7 +78,11 @@ export function useFlipListAnimation(items, durationMs = 300, easing = 'ease-out
    */
   const waitForTransitions = async (itemIds) => {
     await waitForNextPaint();
-    await waitForTransformTransitionsByIds(itemIds, itemRefs.current, durationMs);
+    await waitForTransformTransitionsByIds(
+      itemIds,
+      itemRefs.current,
+      durationMs,
+    );
   };
 
   return {

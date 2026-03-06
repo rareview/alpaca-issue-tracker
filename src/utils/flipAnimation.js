@@ -44,8 +44,7 @@ export function applyFlipAnimation(
     const newBox = ref.current.getBoundingClientRect();
     const oldBox = oldBoxes[item.id];
     const hasMoved =
-      !!oldBox &&
-      (oldBox.top !== newBox.top || oldBox.left !== newBox.left);
+      !!oldBox && (oldBox.top !== newBox.top || oldBox.left !== newBox.left);
 
     if (!hasMoved) {
       return;
@@ -129,7 +128,11 @@ export function waitForTransformTransition(element, durationMs) {
  * @param {number}               durationMs Transition duration in milliseconds.
  * @return {Promise<void>} Resolves when all watched transitions complete.
  */
-export function waitForTransformTransitionsByIds(itemIds, itemRefs, durationMs) {
+export function waitForTransformTransitionsByIds(
+  itemIds,
+  itemRefs,
+  durationMs,
+) {
   return Promise.all(
     itemIds.map((itemId) => {
       const ref = itemRefs[itemId];
