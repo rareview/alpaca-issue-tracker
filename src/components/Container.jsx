@@ -335,16 +335,34 @@ function Container({
 
   const getDropIndex = (e) => {
     const el = containerRef.current;
-    if (!el) return items.length;
+    if (!el) {
+      return items.length;
+    }
+
+    const computedStyle = window.getComputedStyle(el);
+    const isFlexContainer =
+      computedStyle.display === 'flex' || computedStyle.display === 'inline-flex';
+    const isHorizontalLayout =
+      isFlexContainer && computedStyle.flexDirection === 'row';
+
     const children = Array.from(
       el.querySelectorAll(
         '.alpaca-item:not(.empty):not(.placeholder):not(.is-source-hidden)',
       ),
     );
+
     for (let i = 0; i < children.length; i++) {
       const rect = children[i].getBoundingClientRect();
-      if (e.clientY < rect.top + rect.height / 2) return i;
+
+      if (isHorizontalLayout) {
+        if (e.clientX < rect.left + rect.width / 2) {
+          return i;
+        }
+      } else if (e.clientY < rect.top + rect.height / 2) {
+        return i;
+      }
     }
+
     return children.length;
   };
 
