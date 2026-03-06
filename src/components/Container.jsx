@@ -279,7 +279,8 @@ function Container({
 
     const computedStyle = window.getComputedStyle(el);
     const isFlexContainer =
-      computedStyle.display === 'flex' || computedStyle.display === 'inline-flex';
+      computedStyle.display === 'flex' ||
+      computedStyle.display === 'inline-flex';
     const isHorizontalLayout =
       isFlexContainer && computedStyle.flexDirection === 'row';
 
