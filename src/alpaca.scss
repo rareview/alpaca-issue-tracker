@@ -676,7 +676,8 @@ $core-font-stack:
     width: 100%;
 
     th,
-    td {
+    td,
+    button {
       font-size: $midfont;
       line-height: 1.8;
       text-align: left;
@@ -739,7 +740,6 @@ $core-font-stack:
         color: inherit;
         display: inline-flex;
         gap: 8px;
-        min-height: 32px;
         padding-left: 0;
         text-decoration: none;
 
