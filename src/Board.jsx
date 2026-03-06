@@ -958,7 +958,7 @@ export function AlpacaBoard() {
   /**
    * Reorder items inside a container using a full ordered item ID list.
    *
-   * @param {number|string} containerId Container identifier.
+   * @param {number|string}        containerId    Container identifier.
    * @param {Array<number|string>} orderedItemIds Ordered list of item IDs.
    * @return {void}
    */

@@ -10,9 +10,9 @@ import {
 /**
  * Manage FLIP animations for a list of items keyed by `item.id`.
  *
- * @param {Array<Object>} items           Current ordered item list.
- * @param {number}        durationMs      Transition duration in milliseconds.
- * @param {string}        easing          Transition easing value.
+ * @param {Array<Object>} items      Current ordered item list.
+ * @param {number}        durationMs Transition duration in milliseconds.
+ * @param {string}        easing     Transition easing value.
  * @return {Object} Hook API.
  */
 export function useFlipListAnimation(items, durationMs = 300, easing = 'ease-out') {

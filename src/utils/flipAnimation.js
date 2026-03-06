@@ -21,11 +21,11 @@ export function captureBoundingBoxes(items, itemRefs) {
 /**
  * Apply FLIP transform transitions for moved items.
  *
- * @param {Array<Object>} items         Current items after reorder.
- * @param {Object}        oldBoxes      Previous bounding boxes.
- * @param {Object}        itemRefs      Map of React refs keyed by item ID.
- * @param {number}        durationMs    Transition duration.
- * @param {string}        easing        Transition easing.
+ * @param {Array<Object>} items      Current items after reorder.
+ * @param {Object}        oldBoxes   Previous bounding boxes.
+ * @param {Object}        itemRefs   Map of React refs keyed by item ID.
+ * @param {number}        durationMs Transition duration.
+ * @param {string}        easing     Transition easing.
  * @return {void}
  */
 export function applyFlipAnimation(
@@ -124,8 +124,8 @@ export function waitForTransformTransition(element, durationMs) {
 /**
  * Wait for transform transitions on multiple items.
  *
- * @param {Array<number|string>} itemIds   Item IDs that should animate.
- * @param {Object}               itemRefs  Map of React refs keyed by item ID.
+ * @param {Array<number|string>} itemIds    Item IDs that should animate.
+ * @param {Object}               itemRefs   Map of React refs keyed by item ID.
  * @param {number}               durationMs Transition duration in milliseconds.
  * @return {Promise<void>} Resolves when all watched transitions complete.
  */
