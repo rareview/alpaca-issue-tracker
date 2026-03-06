@@ -1014,13 +1014,6 @@ const AlpacaIssue = ({
           }
         }
 
-        setEditedTitle('');
-        setAssignees([]);
-        setSelectedLabelIds([]);
-        setDeadline(null);
-        setIsHighPriority(false);
-        setLoading('title', false);
-
         wp.hooks.doAction(
           'alpaca.issueSubmitted',
           response.issue,
@@ -1044,6 +1037,13 @@ const AlpacaIssue = ({
             isHighPriority,
           });
         }
+
+        setEditedTitle('');
+        setAssignees([]);
+        setSelectedLabelIds([]);
+        setDeadline(null);
+        setIsHighPriority(false);
+        setLoading('title', false);
       }
     } catch (err) {
       console.error(err);
@@ -1874,7 +1874,6 @@ const AlpacaIssue = ({
                       </td>
                     </tr>
                   )}
-
                 </tbody>
               </table>
 
@@ -1968,7 +1967,6 @@ const AlpacaIssue = ({
             ))}
           </div>
         )}
-
       </Modal>
 
       {showDeleteConfirm && (
@@ -1996,7 +1994,6 @@ const AlpacaIssue = ({
           </div>
         </div>
       )}
-
     </>
   );
 };

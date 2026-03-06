@@ -293,7 +293,9 @@ function SearchContainer() {
             commentPostIds.join(','),
           )}&per_page=${commentPostIds.length}&_fields=${issueFields}`;
 
-          const issues = await wp.apiFetch({ path: issuesPath }).catch(() => []);
+          const issues = await wp
+            .apiFetch({ path: issuesPath })
+            .catch(() => []);
           if (requestId !== requestIdRef.current) {
             return;
           }
@@ -338,7 +340,9 @@ function SearchContainer() {
               parentIdsToLoad.join(','),
             )}&per_page=${parentIdsToLoad.length}&_fields=${issueFields}`;
 
-            const parentIssues = await wp.apiFetch({ path: parentPath }).catch(() => []);
+            const parentIssues = await wp
+              .apiFetch({ path: parentPath })
+              .catch(() => []);
             if (requestId !== requestIdRef.current) {
               return;
             }
@@ -383,33 +387,6 @@ function SearchContainer() {
             seen.add(resultId);
             normalized.push(buildResultItem(resultPost, boardIssueIndex));
           });
-
-          const missingIds = commentPostIds
-            .filter((id) => !seen.has(id))
-            .slice(0, MAX_RESULTS);
-
-          if (missingIds.length > 0) {
-            const includePath = `/wp/v2/alpaca_issue?include=${encodeURIComponent(
-              missingIds.join(','),
-            )}&per_page=${MAX_RESULTS}&_fields=id,title,content,slug,post_name,post_title,post_content`;
-
-            const extraIssues = await wp.apiFetch({ path: includePath }).catch(
-              () => [],
-            );
-
-            if (requestId !== requestIdRef.current) {
-              return;
-            }
-
-            (extraIssues || []).forEach((post) => {
-              const id = String(post.id);
-              if (seen.has(id)) {
-                return;
-              }
-              seen.add(id);
-              normalized.push(buildResultItem(post, boardIssueIndex));
-            });
-          }
 
           setResults(normalized.slice(0, MAX_RESULTS));
         } catch (err) {

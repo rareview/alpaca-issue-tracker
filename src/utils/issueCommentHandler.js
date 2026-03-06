@@ -79,7 +79,12 @@ addFilter('alpaca.commentObject', 'alpaca/addPlainText', (comment) => {
   return comment;
 });
 
-const postComment = async (issueOrId, content, commentTags = [], options = {}) => {
+const postComment = async (
+  issueOrId,
+  content,
+  commentTags = [],
+  options = {},
+) => {
   let postId;
   if (issueOrId && typeof issueOrId === 'object') {
     // Prioritize issue.post_id if available (for full issue objects)
@@ -167,7 +172,9 @@ addAction(
     const submittedText =
       typeof submission.feedback === 'string' ? submission.feedback.trim() : '';
     const fallbackTitle =
-      typeof issue.title === 'string' ? stripHtmlAndMarkdown(issue.title).trim() : '';
+      typeof issue.title === 'string'
+        ? stripHtmlAndMarkdown(issue.title).trim()
+        : '';
     const commentContent = submittedText || fallbackTitle;
 
     if (!commentContent) {
