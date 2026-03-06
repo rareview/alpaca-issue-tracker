@@ -955,6 +955,52 @@ export function AlpacaBoard() {
 
   const hasNoStatuses = containers.length === 0;
 
+  /**
+   * Reorder items inside a container using a full ordered item ID list.
+   *
+   * @param {number|string} containerId Container identifier.
+   * @param {Array<number|string>} orderedItemIds Ordered list of item IDs.
+   * @return {void}
+   */
+  const handleBulkItemReorder = useCallback((containerId, orderedItemIds) => {
+    if (!containerId || !Array.isArray(orderedItemIds)) {
+      return;
+    }
+
+    setContainers((prevContainers) =>
+      prevContainers.map((container) => {
+        if (container.id.toString() !== containerId.toString()) {
+          return container;
+        }
+
+        const itemMap = new Map();
+        container.items.forEach((item) => {
+          itemMap.set(item.id.toString(), item);
+        });
+
+        const reorderedItems = [];
+        orderedItemIds.forEach((itemId) => {
+          const itemKey = itemId.toString();
+          if (itemMap.has(itemKey)) {
+            reorderedItems.push(itemMap.get(itemKey));
+            itemMap.delete(itemKey);
+          }
+        });
+
+        itemMap.forEach((item) => {
+          reorderedItems.push(item);
+        });
+
+        return {
+          ...container,
+          items: reorderedItems,
+        };
+      }),
+    );
+
+    setNeedsSave(true);
+  }, []);
+
   // Handler invoked by Containers when an item is dropped
   const handleItemDrop = (data) => {
     // data: { itemId, sourceContainerId, sourceIndex, destinationContainerId, destinationIndex }
@@ -1089,6 +1135,7 @@ export function AlpacaBoard() {
               onRename={handleRenameContainer}
               onDeleteAll={handleDeleteAll}
               onItemDrop={handleItemDrop}
+              onBulkItemReorder={handleBulkItemReorder}
             />
           ))}
         </div>
