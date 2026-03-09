@@ -1,4 +1,4 @@
-const { useState, useEffect, useRef, useMemo, createPortal } = wp.element;
+const { useState, useEffect, useRef, createPortal } = wp.element;
 const { SearchControl, Popover } = wp.components;
 const { decodeEntities } = wp.htmlEntities;
 const { __ } = wp.i18n;
@@ -149,12 +149,10 @@ function SearchContainer() {
   const wrapperRef = useRef(null);
   const debounceRef = useRef(null);
   const requestIdRef = useRef(0);
-  const boardIssueIndex = useMemo(
-    () =>
-      buildBoardIssueIndex(
-        typeof window !== 'undefined' ? window.alpacaBoardData : [],
-      ),
-    [],
+  const [boardIssueIndex, setBoardIssueIndex] = useState(() =>
+    buildBoardIssueIndex(
+      typeof window !== 'undefined' ? window.alpacaBoardData : [],
+    ),
   );
 
   useEffect(() => {
@@ -182,6 +180,47 @@ function SearchContainer() {
   }, []);
 
   useEffect(() => {
+    /**
+     * Update search status metadata when an issue moves between statuses.
+     *
+     * @param {Object} issue      Issue payload from status change action.
+     * @param {string} fromStatus Previous status label.
+     * @param {string} toStatus   Next status label.
+     */
+    const handleStatusChanged = (issue, fromStatus, toStatus) => {
+      const issueId =
+        issue && typeof issue.id !== 'undefined' && issue.id !== null
+          ? String(issue.id)
+          : '';
+      if (!issueId) {
+        return;
+      }
+
+      setBoardIssueIndex((prevIndex) => {
+        const nextIndex = new Map(prevIndex);
+        const existing = nextIndex.get(issueId) || {};
+
+        nextIndex.set(issueId, {
+          ...existing,
+          status: toStatus || existing.status || '',
+        });
+
+        return nextIndex;
+      });
+    };
+
+    wp.hooks.addAction(
+      'alpaca.statusChanged',
+      'alpaca/search',
+      handleStatusChanged,
+    );
+
+    return () => {
+      wp.hooks.removeAction('alpaca.statusChanged', 'alpaca/search');
+    };
+  }, []);
+
+  useEffect(() => {
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
@@ -200,21 +239,17 @@ function SearchContainer() {
     debounceRef.current = setTimeout(() => {
       setIsSearching(true);
       const q = query;
+      const issueFields =
+        'id,title,content,slug,post_name,post_title,post_content,post_parent,parent';
 
-      const issuesPromise = wp
-        .apiFetch({
-          path: `/wp/v2/alpaca_issue?search=${encodeURIComponent(q)}&per_page=${MAX_RESULTS}&_fields=id,title,content,slug,post_name,post_title,post_content`,
-        })
-        .catch(() => []);
+      const runSearch = async () => {
+        try {
+          const comments = await wp
+            .apiFetch({
+              path: `/wp/v2/comments?search=${encodeURIComponent(q)}&per_page=100&comment_type=issuecomment&type=issuecomment&context=edit&show_hidden_comments=1&_fields=post,comment_post_ID`,
+            })
+            .catch(() => []);
 
-      const commentsPromise = wp
-        .apiFetch({
-          path: `/wp/v2/comments?search=${encodeURIComponent(q)}&per_page=100&comment_type=issuecomment&type=issuecomment&context=edit&show_hidden_comments=1&_fields=post,comment_post_ID`,
-        })
-        .catch(() => []);
-
-      Promise.all([issuesPromise, commentsPromise])
-        .then(([issues, comments]) => {
           if (requestId !== requestIdRef.current) {
             return;
           }
@@ -223,73 +258,138 @@ function SearchContainer() {
             // eslint-disable-next-line no-console
             console.log('Alpaca search raw responses', {
               query: q,
-              issues,
               comments,
+            });
+          }
+
+          const commentPostIds = Array.from(
+            new Set(
+              (comments || [])
+                .map((c) => {
+                  if (!c) {
+                    return null;
+                  }
+
+                  if (c.comment_post_ID) {
+                    return String(c.comment_post_ID);
+                  }
+
+                  if (c.post) {
+                    return String(c.post);
+                  }
+
+                  return null;
+                })
+                .filter(Boolean),
+            ),
+          ).slice(0, MAX_RESULTS);
+
+          if (commentPostIds.length === 0) {
+            setResults([]);
+            return;
+          }
+
+          const issuesPath = `/wp/v2/alpaca_issue?include=${encodeURIComponent(
+            commentPostIds.join(','),
+          )}&per_page=${commentPostIds.length}&_fields=${issueFields}`;
+
+          const issues = await wp
+            .apiFetch({ path: issuesPath })
+            .catch(() => []);
+          if (requestId !== requestIdRef.current) {
+            return;
+          }
+
+          const issuesById = new Map();
+          (issues || []).forEach((post) => {
+            if (!post || typeof post.id === 'undefined' || post.id === null) {
+              return;
+            }
+            issuesById.set(String(post.id), post);
+          });
+
+          const parentIdsToLoad = Array.from(
+            new Set(
+              (issues || [])
+                .map((post) => {
+                  if (!post) {
+                    return 0;
+                  }
+
+                  const rawParent =
+                    typeof post.post_parent !== 'undefined' &&
+                    post.post_parent !== null
+                      ? post.post_parent
+                      : post.parent;
+                  const parentId = parseInt(rawParent, 10);
+                  if (Number.isNaN(parentId) || parentId <= 0) {
+                    return 0;
+                  }
+
+                  return parentId;
+                })
+                .filter(
+                  (parentId) =>
+                    parentId > 0 && !issuesById.has(String(parentId)),
+                ),
+            ),
+          );
+
+          if (parentIdsToLoad.length > 0) {
+            const parentPath = `/wp/v2/alpaca_issue?include=${encodeURIComponent(
+              parentIdsToLoad.join(','),
+            )}&per_page=${parentIdsToLoad.length}&_fields=${issueFields}`;
+
+            const parentIssues = await wp
+              .apiFetch({ path: parentPath })
+              .catch(() => []);
+            if (requestId !== requestIdRef.current) {
+              return;
+            }
+
+            (parentIssues || []).forEach((post) => {
+              if (!post || typeof post.id === 'undefined' || post.id === null) {
+                return;
+              }
+              issuesById.set(String(post.id), post);
             });
           }
 
           const seen = new Set();
           const normalized = [];
 
-          (issues || []).forEach((post) => {
-            const id = String(post.id);
-            if (seen.has(id)) {
+          commentPostIds.forEach((issueId) => {
+            const sourcePost = issuesById.get(String(issueId));
+            if (!sourcePost) {
               return;
             }
-            seen.add(id);
-            normalized.push(buildResultItem(post, boardIssueIndex));
+
+            const rawParent =
+              typeof sourcePost.post_parent !== 'undefined' &&
+              sourcePost.post_parent !== null
+                ? sourcePost.post_parent
+                : sourcePost.parent;
+            const parentId = parseInt(rawParent, 10);
+            const resultId =
+              !Number.isNaN(parentId) && parentId > 0
+                ? String(parentId)
+                : String(sourcePost.id);
+
+            if (seen.has(resultId)) {
+              return;
+            }
+
+            const resultPost = issuesById.get(resultId);
+            if (!resultPost) {
+              return;
+            }
+
+            seen.add(resultId);
+            normalized.push(buildResultItem(resultPost, boardIssueIndex));
           });
 
-          const commentPostIds = Array.from(
-            new Set(
-              (comments || [])
-                .map((c) =>
-                  c && (c.post || c.comment_post_ID)
-                    ? String(c.post || c.comment_post_ID)
-                    : null,
-                )
-                .filter(Boolean),
-            ),
-          );
-
-          const missingIds = commentPostIds
-            .filter((id) => !seen.has(id))
-            .slice(0, MAX_RESULTS);
-
-          if (missingIds.length === 0) {
-            setResults(normalized.slice(0, MAX_RESULTS));
-            return;
-          }
-
-          const includePath = `/wp/v2/alpaca_issue?include=${encodeURIComponent(
-            missingIds.join(','),
-          )}&per_page=${MAX_RESULTS}&_fields=id,title,content,slug,post_name,post_title,post_content`;
-
-          wp.apiFetch({ path: includePath })
-            .then((extraIssues) => {
-              if (requestId !== requestIdRef.current) {
-                return;
-              }
-
-              (extraIssues || []).forEach((post) => {
-                const id = String(post.id);
-                if (seen.has(id)) {
-                  return;
-                }
-                seen.add(id);
-                normalized.push(buildResultItem(post, boardIssueIndex));
-              });
-
-              setResults(normalized.slice(0, MAX_RESULTS));
-            })
-            .catch(() => {
-              if (requestId !== requestIdRef.current) {
-                return;
-              }
-              setResults(normalized.slice(0, MAX_RESULTS));
-            });
-        })
-        .catch((err) => {
+          setResults(normalized.slice(0, MAX_RESULTS));
+        } catch (err) {
           if (requestId !== requestIdRef.current) {
             return;
           }
@@ -298,12 +398,14 @@ function SearchContainer() {
             console.error('Search error', err);
           }
           setResults([]);
-        })
-        .finally(() => {
+        } finally {
           if (requestId === requestIdRef.current) {
             setIsSearching(false);
           }
-        });
+        }
+      };
+
+      runSearch();
     }, 300);
 
     return () => {

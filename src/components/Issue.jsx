@@ -6,7 +6,6 @@ import useIssueData from '../hooks/useIssueData';
 import useUserManagement from '../hooks/useUserManagement';
 import useLoadingStates from '../hooks/useLoadingStates';
 import useAutoExpandTextarea from '../hooks/useAutoExpandTextarea';
-import { getUser, generateAssigneeSpan } from '../hooks/useUser';
 
 import { processAssigneeChanges } from '../utils/assigneeUtils';
 import {
@@ -22,9 +21,7 @@ import AssigneeSelector from './issue/AssigneeSelector';
 import LabelsSelector from './issue/LabelsSelector';
 import DeadlineControl from './issue/DeadlineControl';
 import TabContent from './issue/TabContent';
-import Lightbox from './issue/Lightbox';
 import ErrorsTab from './issue/ErrorsTab';
-import AttachmentRow from './issue/AttachmentRow';
 import User from './User';
 import Time from './Time';
 import StarControl from './StarControl';
@@ -476,7 +473,6 @@ const AlpacaIssue = ({
   const [selectedLabelIds, setSelectedLabelIds] = useState([]);
   const [deadline, setDeadline] = useState(null);
   const [isHighPriority, setIsHighPriority] = useState(false);
-  const [lightboxSrc, setLightboxSrc] = useState(null);
   const [allStatuses, setAllStatuses] = useState([]);
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState('');
@@ -486,8 +482,6 @@ const AlpacaIssue = ({
   const snackbarTimersRef = useRef({});
   const snackbarCloseTimersRef = useRef({});
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [showDeleteScreenshotConfirm, setShowDeleteScreenshotConfirm] =
-    useState(false);
 
   const isIssueWatched = !isCreating && issueId && isWatched(issueId);
 
@@ -855,56 +849,6 @@ const AlpacaIssue = ({
     handleDeadlineChange(null);
   }, [handleDeadlineChange]);
 
-  // Lightbox
-  const handleLightboxClose = useCallback(() => setLightboxSrc(null), []);
-
-  const confirmScreenshotDelete = useCallback(() => {
-    setShowDeleteScreenshotConfirm(true);
-  }, []);
-
-  const handleScreenshotDelete = useCallback(async () => {
-    setShowDeleteScreenshotConfirm(false);
-    setLoading('screenshot', true);
-    try {
-      const screenshotUrl =
-        issueDetails?.meta?.alpaca_screenshot || issueDetails?.meta?.screenshot;
-
-      if (screenshotUrl) {
-        await wp.apiFetch({
-          path: '/alpaca/v1/comment-attachments/delete',
-          method: 'POST',
-          data: {
-            issue_id: issueId,
-            url: screenshotUrl,
-          },
-        });
-      }
-
-      await updateIssue(issueId, { meta: { screenshot: '' } });
-
-      // Update local state to remove screenshot
-      setIssueDetails((prev) => ({
-        ...prev,
-        meta: {
-          ...prev.meta,
-          alpaca_screenshot: null,
-          screenshot: null,
-        },
-      }));
-
-      showNotification(
-        __('Screenshot deleted successfully.', 'alpaca'),
-        'success',
-      );
-    } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error('Error deleting screenshot:', err);
-      showNotification(__('Failed to delete screenshot.', 'alpaca'), 'error');
-    } finally {
-      setLoading('screenshot', false);
-    }
-  }, [issueDetails, issueId, setIssueDetails, setLoading, showNotification]);
-
   // Status progression
   const handleProgressIssue = useCallback(async () => {
     if (!issueDetails || !allStatuses.length) return;
@@ -1070,43 +1014,17 @@ const AlpacaIssue = ({
           }
         }
 
-        try {
-          const currentUser = await getUser();
-          const actionClass = ['issue-created'];
-          let commentContent = `Issue created by ${generateAssigneeSpan(
-            currentUser,
-            true,
-          )}`;
-
-          if (isHighPriority) {
-            actionClass.push('high-priority');
-            commentContent += ' with **High Priority**';
-          }
-
-          await wp.apiFetch({
-            path: '/wp/v2/comments',
-            method: 'POST',
-            data: {
-              post: newIssueId,
-              content: commentContent,
-              comment_type: 'issuecomment',
-              status: 'approve',
-              author_user_agent: 'audit',
-              meta: {
-                alpacaCommentTags: actionClass,
-              },
-            },
-          });
-        } catch (commentErr) {
-          console.error('Failed to create issue comment:', commentErr);
-        }
-
-        setEditedTitle('');
-        setAssignees([]);
-        setSelectedLabelIds([]);
-        setDeadline(null);
-        setIsHighPriority(false);
-        setLoading('title', false);
+        wp.hooks.doAction(
+          'alpaca.issueSubmitted',
+          response.issue,
+          response.statusId,
+          isHighPriority,
+          {
+            feedback: editedTitle,
+            screenshotUrl: '',
+            skipBoardInsert: true,
+          },
+        );
 
         if (onIssueCreated) {
           onIssueCreated({
@@ -1119,6 +1037,13 @@ const AlpacaIssue = ({
             isHighPriority,
           });
         }
+
+        setEditedTitle('');
+        setAssignees([]);
+        setSelectedLabelIds([]);
+        setDeadline(null);
+        setIsHighPriority(false);
+        setLoading('title', false);
       }
     } catch (err) {
       console.error(err);
@@ -1949,26 +1874,6 @@ const AlpacaIssue = ({
                       </td>
                     </tr>
                   )}
-
-                  {!isCreating && (
-                    <AttachmentRow
-                      attachments={
-                        issueDetails.meta.alpaca_screenshot ||
-                        issueDetails.meta.screenshot
-                          ? [
-                              {
-                                url:
-                                  issueDetails.meta.alpaca_screenshot ||
-                                  issueDetails.meta.screenshot,
-                              },
-                            ]
-                          : []
-                      }
-                      onAttachmentClick={setLightboxSrc}
-                      onAttachmentDelete={confirmScreenshotDelete}
-                      isLoading={loadingStates.screenshot}
-                    />
-                  )}
                 </tbody>
               </table>
 
@@ -2062,26 +1967,6 @@ const AlpacaIssue = ({
             ))}
           </div>
         )}
-
-        {showDeleteScreenshotConfirm && (
-          <Modal
-            title={__('Delete Screenshot?', 'alpaca')}
-            onRequestClose={() => setShowDeleteScreenshotConfirm(false)}
-            className="alpaca-modal"
-          >
-            <p>
-              {__('Are you sure you want to delete this screenshot?', 'alpaca')}
-            </p>
-            <div className="alpaca-actions flexalign">
-              <Button isPrimary onClick={handleScreenshotDelete}>
-                {__('Delete', 'alpaca')}
-              </Button>
-              <Button onClick={() => setShowDeleteScreenshotConfirm(false)}>
-                {__('Cancel', 'alpaca')}
-              </Button>
-            </div>
-          </Modal>
-        )}
       </Modal>
 
       {showDeleteConfirm && (
@@ -2108,10 +1993,6 @@ const AlpacaIssue = ({
             </div>
           </div>
         </div>
-      )}
-
-      {lightboxSrc && (
-        <Lightbox src={lightboxSrc} onClose={handleLightboxClose} />
       )}
     </>
   );

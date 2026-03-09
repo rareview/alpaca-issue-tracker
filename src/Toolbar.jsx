@@ -1,5 +1,4 @@
 import handleSnapdomCapture from './snapdomHandler.js';
-import { updateIssue } from './services/issueApi';
 import { dataUrlToFile, uploadIssueAttachment } from './utils/attachmentUpload';
 import { useTestLogger } from './utils/testLogger.js';
 import ReportIcon from './components/icons/ReportIcon';
@@ -151,6 +150,7 @@ const AlpacaToolbar = () => {
         throw new Error(responseData.message || `HTTP ${response.status}`);
       }
 
+      let screenshotUrl = '';
       if (screenshot && responseData.issue?.id) {
         try {
           const screenshotFile = await dataUrlToFile(
@@ -161,11 +161,7 @@ const AlpacaToolbar = () => {
             screenshotFile,
             responseData.issue.id,
           );
-          await updateIssue(responseData.issue.id, {
-            meta: {
-              screenshot: uploaded.url,
-            },
-          });
+          screenshotUrl = uploaded.url || '';
         } catch (uploadError) {
           // eslint-disable-next-line no-console
           console.warn('Screenshot upload failed:', uploadError);
@@ -180,6 +176,10 @@ const AlpacaToolbar = () => {
         responseData.issue,
         responseData.statusId,
         isHighPriority,
+        {
+          feedback,
+          screenshotUrl,
+        },
       );
 
       setTimeout(closeForm, 1500);

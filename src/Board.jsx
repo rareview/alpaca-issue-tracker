@@ -854,7 +854,16 @@ export function AlpacaBoard() {
   }, [needsSave, containers]);
 
   useEffect(() => {
-    const handleIssueSubmitted = (issue, statusId) => {
+    const handleIssueSubmitted = (
+      issue,
+      statusId,
+      _isHighPriority,
+      submission = {},
+    ) => {
+      if (submission && submission.skipBoardInsert) {
+        return;
+      }
+
       if (!issue || !statusId) return;
 
       // Use functional update to ensure we have the latest state
