@@ -200,10 +200,10 @@ function alpaca_get_board_data() {
             WHERE comment_post_ID IN ({$placeholders_list})
               AND comment_type = %s
               AND comment_approved = '1'
-              AND comment_agent IN (%s, %s)
+							AND comment_agent != ''
             GROUP BY comment_post_ID, comment_agent";
 
-		$typed_prepared = $wpdb->prepare( $typed_sql, array_merge( $post_ids, [ 'issuecomment', 'human', 'audit' ] ) ); // phpcs:ignore WordPress.DB.PreparedSQL -- $typed_sql contains placeholders validated above
+		$typed_prepared = $wpdb->prepare( $typed_sql, array_merge( $post_ids, [ 'issuecomment' ] ) ); // phpcs:ignore WordPress.DB.PreparedSQL -- $typed_sql contains placeholders validated above
 		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery
 		$typed_results = $wpdb->get_results( $typed_prepared );
 
@@ -211,16 +211,15 @@ function alpaca_get_board_data() {
 			$post_id = (int) $typed_result->post_id;
 			$agent = strtolower( (string) $typed_result->comment_agent );
 
-			if ( ! isset( $comment_counts_by_agent[ $post_id ] ) || ! is_array( $comment_counts_by_agent[ $post_id ] ) ) {
-				$comment_counts_by_agent[ $post_id ] = [
-					'human' => 0,
-					'audit' => 0,
-				];
+			if ( '' === $agent ) {
+				continue;
 			}
 
-			if ( 'human' === $agent || 'audit' === $agent ) {
-				$comment_counts_by_agent[ $post_id ][ $agent ] = (int) $typed_result->count;
+			if ( ! isset( $comment_counts_by_agent[ $post_id ] ) || ! is_array( $comment_counts_by_agent[ $post_id ] ) ) {
+				$comment_counts_by_agent[ $post_id ] = [];
 			}
+
+			$comment_counts_by_agent[ $post_id ][ $agent ] = (int) $typed_result->count;
 		}
 	}
 
@@ -288,10 +287,7 @@ function alpaca_get_board_data() {
 			// Get typed comment counts by comment_agent.
 			$comment_count_by_agent = isset( $comment_counts_by_agent[ $post->ID ] ) && is_array( $comment_counts_by_agent[ $post->ID ] )
 				? $comment_counts_by_agent[ $post->ID ]
-				: [
-					'human' => 0,
-					'audit' => 0,
-				];
+				: [];
 
 			// Get assignees.
 			$assignees = [];

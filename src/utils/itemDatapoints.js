@@ -28,7 +28,7 @@ const getIdleIndicatorDaysThreshold = () => {
  * Normalize a comment agent type value.
  *
  * @param {string|null|undefined} agentType Raw comment agent type.
- * @return {string|null} Normalized agent type (`human` or `audit`) or null.
+ * @return {string|null} Normalized non-empty agent type or null.
  */
 const normalizeCommentAgentType = (agentType) => {
   if (typeof agentType !== 'string') {
@@ -37,7 +37,7 @@ const normalizeCommentAgentType = (agentType) => {
 
   const normalizedAgentType = agentType.trim().toLowerCase();
 
-  if ('human' === normalizedAgentType || 'audit' === normalizedAgentType) {
+  if (normalizedAgentType) {
     return normalizedAgentType;
   }
 
@@ -92,17 +92,18 @@ const getTypedCommentCount = (itemProps, requestedAgentTypes) => {
   for (const countMap of countMaps) {
     if (countMap && 'object' === typeof countMap && !Array.isArray(countMap)) {
       let typedCount = 0;
-      let hasTypedCount = false;
+      let hasCountMap = false;
 
       requestedAgentTypes.forEach((requestedAgentType) => {
         const agentCount = Number(countMap[requestedAgentType]);
         if (Number.isFinite(agentCount)) {
           typedCount += agentCount;
-          hasTypedCount = true;
         }
+
+        hasCountMap = true;
       });
 
-      if (hasTypedCount) {
+      if (hasCountMap) {
         return typedCount;
       }
     }
@@ -467,7 +468,7 @@ wp.hooks.addFilter(
 wp.hooks.addFilter(
   'alpaca.item.commentCount.agentType',
   'alpaca/item/comment-agent-type',
-  () => ['human', 'audit'],
+  () => ['human'],
 );
 
 wp.hooks.addFilter(

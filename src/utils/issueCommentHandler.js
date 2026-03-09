@@ -196,7 +196,7 @@ addAction(
     }
 
     await postComment(issue.id, commentContent, commentTags, {
-      authorUserAgent: 'human',
+      authorUserAgent: 'create',
       meta: commentMeta,
     });
   },
