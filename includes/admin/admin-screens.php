@@ -37,7 +37,7 @@ add_action(
 			esc_html__( 'Configure', 'alpaca' ),
 			esc_html__( 'Configure', 'alpaca' ),
 			'manage_options',
-			'settings.php',
+			'settings',
 			'alpaca_settings_page'
 		);
 
