@@ -510,11 +510,6 @@ export function AlpacaBoard() {
         nextContainer.title,
       );
 
-      wp.hooks.doAction('alpaca.lastActivityChanged', {
-        issueId: item.id.toString(),
-        lastActivity: new Date().toISOString(),
-      });
-
       updateIssue(item.id, {
         taxonomies: {
           status: [parseInt(nextContainer.id, 10)],
@@ -1069,11 +1064,6 @@ export function AlpacaBoard() {
         sourceContainer.title,
         destinationContainer.title,
       );
-
-      wp.hooks.doAction('alpaca.lastActivityChanged', {
-        issueId: movedItem.id.toString(),
-        lastActivity: new Date().toISOString(),
-      });
 
       const movedItemId = parseInt(movedItem.id, 10);
       const newStatusTermId = parseInt(destinationContainer.id, 10);

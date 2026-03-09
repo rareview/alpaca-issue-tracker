@@ -163,8 +163,11 @@ final class Alpaca {
 			return;
 		}
 
-		$post_id   = $comment->comment_post_ID;
-		$post_type = \get_post_type( $post_id );
+		if ( ! isset( $comment->comment_type ) || 'issuecomment' !== $comment->comment_type ) {
+			return;
+		}
+
+		$post_id = $comment->comment_post_ID;
 
 		alpaca_update_last_activity( $post_id );
 	}
@@ -189,26 +192,6 @@ final class Alpaca {
 				'description'  => esc_html__( 'Enable console messages for testing purposes.', 'alpaca' ),
 				'show_in_rest' => true,
 				'default'      => '0',
-			)
-		);
-
-		\register_setting(
-			'alpaca_options',
-			'alpaca_idle_indicator_days',
-			array(
-				'type'              => 'integer',
-				'description'       => esc_html__( 'Number of idle days before the board shows the idle indicator.', 'alpaca' ),
-				'show_in_rest'      => true,
-				'default'           => 1,
-				'sanitize_callback' => function ( $value ) {
-					$days = absint( $value );
-
-					if ( $days < 1 ) {
-						return 1;
-					}
-
-					return $days;
-				},
 			)
 		);
 	}
