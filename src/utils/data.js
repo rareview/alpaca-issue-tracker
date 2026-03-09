@@ -19,6 +19,7 @@ const transformDataForBoard = (data) => {
       assignees: issue.assignees || [],
       labels: issue.labels || [],
       commentCount: issue.comment_count ?? 0,
+      commentCountByAgent: issue.comment_count_by_agent || null,
       meta: issue.meta || {},
     })),
   }));

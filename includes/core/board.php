@@ -178,6 +178,7 @@ function alpaca_get_board_data() {
 
 	// Batch comment counts (only issuecomment type).
 	$comment_counts = [];
+	$comment_counts_by_agent = [];
 	if ( ! empty( $post_ids ) ) {
 		// Build placeholders for the IN clause.
 		$placeholders_list = implode( ', ', array_fill( 0, count( $post_ids ), '%d' ) );
@@ -192,6 +193,35 @@ function alpaca_get_board_data() {
 		$prepared = $wpdb->prepare( $sql, array_merge( $post_ids, [ 'issuecomment' ] ) ); // phpcs:ignore WordPress.DB.PreparedSQL -- $sql contains placeholders validated above
 		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery
 		$comment_counts = $wpdb->get_results( $prepared, OBJECT_K );
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Placeholders verified
+		$typed_sql = "SELECT comment_post_ID as post_id, comment_agent as comment_agent, COUNT(*) as count
+            FROM {$wpdb->comments}
+            WHERE comment_post_ID IN ({$placeholders_list})
+              AND comment_type = %s
+              AND comment_approved = '1'
+              AND comment_agent IN (%s, %s)
+            GROUP BY comment_post_ID, comment_agent";
+
+		$typed_prepared = $wpdb->prepare( $typed_sql, array_merge( $post_ids, [ 'issuecomment', 'human', 'audit' ] ) ); // phpcs:ignore WordPress.DB.PreparedSQL -- $typed_sql contains placeholders validated above
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery
+		$typed_results = $wpdb->get_results( $typed_prepared );
+
+		foreach ( $typed_results as $typed_result ) {
+			$post_id = (int) $typed_result->post_id;
+			$agent = strtolower( (string) $typed_result->comment_agent );
+
+			if ( ! isset( $comment_counts_by_agent[ $post_id ] ) || ! is_array( $comment_counts_by_agent[ $post_id ] ) ) {
+				$comment_counts_by_agent[ $post_id ] = [
+					'human' => 0,
+					'audit' => 0,
+				];
+			}
+
+			if ( 'human' === $agent || 'audit' === $agent ) {
+				$comment_counts_by_agent[ $post_id ][ $agent ] = (int) $typed_result->count;
+			}
+		}
 	}
 
 	// Batch assignees.
@@ -255,6 +285,14 @@ function alpaca_get_board_data() {
 				? intval( $comment_counts[ $post->ID ]->count )
 				: 0;
 
+			// Get typed comment counts by comment_agent.
+			$comment_count_by_agent = isset( $comment_counts_by_agent[ $post->ID ] ) && is_array( $comment_counts_by_agent[ $post->ID ] )
+				? $comment_counts_by_agent[ $post->ID ]
+				: [
+					'human' => 0,
+					'audit' => 0,
+				];
+
 			// Get assignees.
 			$assignees = [];
 			if ( ! empty( $assignees_by_post[ $post->ID ] ) ) {
@@ -295,6 +333,7 @@ function alpaca_get_board_data() {
 				'slug'          => $post->post_name,
 				'post_date'     => $post->post_date,
 				'comment_count' => $comment_count,
+				'comment_count_by_agent' => $comment_count_by_agent,
 				'assignees'     => $assignees,
 				'labels'        => $labels,
 				'meta'          => $meta_vals_for_card,

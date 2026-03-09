@@ -17,6 +17,7 @@ const DraggableItem = forwardRef(
       assignees = [],
       labels = [],
       commentCount,
+      commentCountByAgent,
       meta,
     },
     ref,
@@ -41,6 +42,7 @@ const DraggableItem = forwardRef(
         assignees,
         labels,
         commentCount,
+        commentCountByAgent,
         meta,
       };
 
@@ -156,6 +158,7 @@ const DraggableItem = forwardRef(
           assignees={assignees}
           labels={labels}
           commentCount={commentCount}
+          commentCountByAgent={commentCountByAgent}
           meta={meta}
           className="alpaca-item-inner"
           onClick={handleClick}
@@ -179,6 +182,7 @@ DraggableItem.propTypes = {
   assignees: PropTypes.array,
   labels: PropTypes.array,
   commentCount: PropTypes.number,
+  commentCountByAgent: PropTypes.object,
   meta: PropTypes.object,
 };
 
