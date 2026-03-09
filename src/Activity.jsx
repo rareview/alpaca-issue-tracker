@@ -107,6 +107,7 @@ const buildIssueLookupFromPosts = (posts) => {
       id: String(issueId),
       slug: post?.slug || '',
       title: extractTitle(post),
+      status: post.status,
     };
   });
 
@@ -160,7 +161,7 @@ const Activity = () => {
     try {
       const posts = await wp.apiFetch({
         path:
-          '/wp/v2/alpaca_issue?context=view&_fields=id,title,content,slug&per_page=' +
+          '/wp/v2/alpaca_issue?context=view&_fields=id,title,content,slug,status&per_page=' +
           unknownIssueIds.length +
           '&include=' +
           unknownIssueIds.join(','),
@@ -476,6 +477,13 @@ const Activity = () => {
                 {group.comments.map((comment) => {
                   const issueId = Number(comment.post);
                   const issueTitle = issueLookup[issueId]?.title || '';
+
+                  if (
+                    issueLookup[issueId] &&
+                    issueLookup[issueId].status !== 'publish'
+                  ) {
+                    return null;
+                  }
 
                   return (
                     <div
