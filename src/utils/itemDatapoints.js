@@ -5,6 +5,10 @@ import CommentIcon from '../components/icons/CommentIcon';
 import CalendarIcon from '../components/icons/CalendarIcon';
 import PriorityIcon from '../components/icons/PriorityIcon';
 import Check2SquareIcon from '../components/icons/Check2SquareIcon';
+import {
+  normalizeCommentAgentType,
+  normalizeCommentAgentTypes,
+} from './commentAgentFilters';
 
 /**
  * Get the idle indicator threshold in days.
@@ -22,47 +26,6 @@ const getIdleIndicatorDaysThreshold = () => {
   }
 
   return parsedDays;
-};
-
-/**
- * Normalize a comment agent type value.
- *
- * @param {string|null|undefined} agentType Raw comment agent type.
- * @return {string|null} Normalized non-empty agent type or null.
- */
-const normalizeCommentAgentType = (agentType) => {
-  if (typeof agentType !== 'string') {
-    return null;
-  }
-
-  const normalizedAgentType = agentType.trim().toLowerCase();
-
-  if (normalizedAgentType) {
-    return normalizedAgentType;
-  }
-
-  return null;
-};
-
-/**
- * Normalize one or many comment agent types.
- *
- * @param {string|Array|null|undefined} agentTypeFilter Raw comment agent type filter value.
- * @return {Array<string>} List of normalized agent types.
- */
-const normalizeCommentAgentTypes = (agentTypeFilter) => {
-  if (Array.isArray(agentTypeFilter)) {
-    return Array.from(
-      new Set(
-        agentTypeFilter
-          .map((agentType) => normalizeCommentAgentType(agentType))
-          .filter(Boolean),
-      ),
-    );
-  }
-
-  const normalizedAgentType = normalizeCommentAgentType(agentTypeFilter);
-  return normalizedAgentType ? [normalizedAgentType] : [];
 };
 
 /**

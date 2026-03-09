@@ -2,9 +2,13 @@ const { useState, useEffect, useRef, createPortal } = wp.element;
 const { SearchControl, Popover } = wp.components;
 const { decodeEntities } = wp.htmlEntities;
 const { __ } = wp.i18n;
-const { doAction } = wp.hooks;
+const { doAction, applyFilters } = wp.hooks;
 import PropTypes from 'prop-types';
 import Item from './Item';
+import {
+  getCommentAgentTypeFromComment,
+  normalizeCommentAgentTypes,
+} from '../utils/commentAgentFilters';
 
 const MIN_QUERY_LENGTH = 3;
 const MAX_RESULTS = 10;
@@ -246,7 +250,7 @@ function SearchContainer() {
         try {
           const comments = await wp
             .apiFetch({
-              path: `/wp/v2/comments?search=${encodeURIComponent(q)}&per_page=100&comment_type=issuecomment&type=issuecomment&context=edit&show_hidden_comments=1&_fields=post,comment_post_ID`,
+              path: `/wp/v2/comments?search=${encodeURIComponent(q)}&per_page=100&comment_type=issuecomment&type=issuecomment&context=edit&show_hidden_comments=1&_fields=post,comment_post_ID,author_user_agent`,
             })
             .catch(() => []);
 
@@ -262,9 +266,27 @@ function SearchContainer() {
             });
           }
 
+          const requestedAgentTypes = normalizeCommentAgentTypes(
+            applyFilters('alpaca.search.commentAgentTypes', null, {
+              query: q,
+              comments,
+            }),
+          );
+
+          const filteredComments =
+            requestedAgentTypes.length < 1
+              ? comments || []
+              : (comments || []).filter((comment) => {
+                  const commentAgent = getCommentAgentTypeFromComment(comment);
+
+                  return (
+                    commentAgent && requestedAgentTypes.includes(commentAgent)
+                  );
+                });
+
           const commentPostIds = Array.from(
             new Set(
-              (comments || [])
+              filteredComments
                 .map((c) => {
                   if (!c) {
                     return null;
@@ -610,5 +632,11 @@ SearchPortal.propTypes = {
 SearchPortal.defaultProps = {
   selector: '#project-board-controls-mount',
 };
+
+wp.hooks.addFilter(
+  'alpaca.search.commentAgentTypes',
+  'alpaca/search/comment-agent-types',
+  () => ['human', 'create'],
+);
 
 export default SearchPortal;
