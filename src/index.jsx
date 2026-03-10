@@ -25,6 +25,8 @@ import AlpacaSettings from './Settings.jsx';
 import { WatchlistProvider } from './context/WatchlistContext.jsx';
 import { AlpacaBoard } from './Board.jsx';
 import Presence from './components/Presence';
+import NotificationPreferences from './components/NotificationPreferences.jsx';
+import NotificationTemplateScreen from './components/NotificationTemplateScreen.jsx';
 import AlpacaDashboardWidget from './DashboardWidget.jsx';
 import About from './about/About.jsx';
 import Activity from './Activity.jsx';
@@ -120,5 +122,19 @@ if (document.querySelector('#alpaca-activity-page')) {
       <Activity />
     </WatchlistProvider>,
     document.querySelector('#alpaca-activity-page'),
+  );
+}
+
+if (document.querySelector('#alpaca-notifications-page')) {
+  render(
+    <NotificationPreferences />,
+    document.querySelector('#alpaca-notifications-page'),
+  );
+}
+
+if (document.querySelector('#alpaca-notification-template-page')) {
+  render(
+    <NotificationTemplateScreen />,
+    document.querySelector('#alpaca-notification-template-page'),
   );
 }

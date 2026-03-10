@@ -7,7 +7,6 @@ import TimelineEntry, { injectAvatarStyles } from './comment/TimelineEntry';
 const { useState, useEffect, useRef, useCallback, memo } = wp.element;
 const { __, _n, sprintf } = wp.i18n;
 const {
-  TextareaControl,
   Button,
   Modal,
   Dropdown,
@@ -22,6 +21,7 @@ import { marked } from 'marked';
 import Lightbox from './issue/Lightbox';
 import { Attachment } from './issue/AttachmentRow';
 import { uploadIssueAttachment } from '../utils/attachmentUpload';
+import MentionsTextarea from './notifications/MentionsTextarea';
 
 const deleteCommentAttachment = async (url, issueId) => {
   if (!url || !issueId) {
@@ -223,10 +223,12 @@ const Comment = memo(
               </>
             }
           >
-            <TextareaControl
+            <MentionsTextarea
               value={editingContent}
               onChange={setEditingContent}
-              ref={editingRef}
+              textareaRef={editingRef}
+              placeholder={__('Edit comment…', 'alpaca')}
+              disabled={isSubmitting}
             />
           </AttachmentControls>
         }
@@ -736,11 +738,11 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
                 </Button>
               }
             >
-              <TextareaControl
+              <MentionsTextarea
                 placeholder={__('Add a comment…', 'alpaca')}
                 value={newComment}
                 onChange={setNewComment}
-                ref={newCommentRef}
+                textareaRef={newCommentRef}
                 disabled={isSubmitting}
               />
             </AttachmentControls>

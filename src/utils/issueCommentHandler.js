@@ -47,6 +47,44 @@ const getSubissueLabel = (subissue) => {
 };
 
 /**
+ * Build structured notification context saved alongside audit comments.
+ *
+ * @param {Object} context Raw context object.
+ * @return {Object} Sanitized notification context.
+ */
+const buildNotificationContext = (context = {}) => {
+  const affectedUserIdsKey = 'affected_user_ids';
+  const subissueTitleKey = 'subissue_title';
+  const notificationContext = {};
+
+  if (typeof context.action === 'string' && context.action.trim()) {
+    notificationContext.action = context.action.trim();
+  }
+
+  if (Array.isArray(context.affectedUserIds)) {
+    notificationContext[affectedUserIdsKey] = context.affectedUserIds
+      .map((value) => Number(value))
+      .filter((value) => Number.isInteger(value) && value > 0);
+  }
+
+  if (
+    Number.isInteger(Number(context.subissueId)) &&
+    Number(context.subissueId) > 0
+  ) {
+    notificationContext.subissue_id = Number(context.subissueId);
+  }
+
+  if (
+    typeof context.subissueTitle === 'string' &&
+    context.subissueTitle.trim()
+  ) {
+    notificationContext[subissueTitleKey] = context.subissueTitle.trim();
+  }
+
+  return notificationContext;
+};
+
+/**
  * Build an issue link using the current board URL when possible.
  *
  * @param {Object} issueData     Issue data (slug).
@@ -214,7 +252,13 @@ addAction(
     )} **${toStatus}** ${__('by', 'alpaca')} ${generateAssigneeSpan(
       currentUser,
     )}`;
-    await postComment(issue, commentContent, actionClass); // Pass issue object
+    await postComment(issue, commentContent, actionClass, {
+      meta: {
+        alpacaNotificationContext: buildNotificationContext({
+          action: 'changed',
+        }),
+      },
+    });
   },
 );
 
@@ -235,7 +279,14 @@ addAction(
       'this issue by',
       'alpaca',
     )} ${generateAssigneeSpan(currentUser)}`;
-    await postComment(issue, commentContent, actionClass); // Pass issue object
+    await postComment(issue, commentContent, actionClass, {
+      meta: {
+        alpacaNotificationContext: buildNotificationContext({
+          action: isAssigned ? 'assign' : 'unassign',
+          affectedUserIds: user?.id ? [user.id] : [],
+        }),
+      },
+    });
   },
 );
 
@@ -282,7 +333,13 @@ addAction(
     }
 
     if (commentContent) {
-      await postComment(issue, commentContent, actionClass);
+      await postComment(issue, commentContent, actionClass, {
+        meta: {
+          alpacaNotificationContext: buildNotificationContext({
+            action: changeType,
+          }),
+        },
+      });
     }
   },
 );
@@ -309,7 +366,13 @@ addAction(
     }
 
     if (commentContent) {
-      await postComment(issue, commentContent, actionClass);
+      await postComment(issue, commentContent, actionClass, {
+        meta: {
+          alpacaNotificationContext: buildNotificationContext({
+            action: isHighPriority ? 'enable' : 'disable',
+          }),
+        },
+      });
     }
   },
 );
@@ -326,7 +389,15 @@ addAction(
       'alpaca',
     )} ${generateAssigneeSpan(currentUser)}`;
 
-    await postComment(issue, commentContent, actionClass);
+    await postComment(issue, commentContent, actionClass, {
+      meta: {
+        alpacaNotificationContext: buildNotificationContext({
+          action: 'create',
+          subissueId: subissue?.id,
+          subissueTitle: subissueLabel,
+        }),
+      },
+    });
   },
 );
 
@@ -345,7 +416,15 @@ addAction(
       currentUser,
     )}`;
 
-    await postComment(issue, commentContent, actionClass);
+    await postComment(issue, commentContent, actionClass, {
+      meta: {
+        alpacaNotificationContext: buildNotificationContext({
+          action: isCompleted ? 'complete' : 'reopen',
+          subissueId: subissue?.id,
+          subissueTitle: subissueLabel,
+        }),
+      },
+    });
   },
 );
 
@@ -370,7 +449,16 @@ addAction(
       currentUser,
     )}`;
 
-    await postComment(issue, commentContent, actionClass);
+    await postComment(issue, commentContent, actionClass, {
+      meta: {
+        alpacaNotificationContext: buildNotificationContext({
+          action: isAssigned ? 'assign' : 'unassign',
+          affectedUserIds: user?.id ? [user.id] : [],
+          subissueId: subissue?.id,
+          subissueTitle: subissueLabel,
+        }),
+      },
+    });
   },
 );
 
@@ -413,11 +501,27 @@ addAction(
     )}`;
 
     if (parentIssue?.id) {
-      await postComment(parentIssue.id, parentComment, actionClass);
+      await postComment(parentIssue.id, parentComment, actionClass, {
+        meta: {
+          alpacaNotificationContext: buildNotificationContext({
+            action: 'promote',
+            subissueId: subissue?.id,
+            subissueTitle: subissueLabel,
+          }),
+        },
+      });
     }
 
     if (promotedId) {
-      await postComment(promotedId, promotedComment, actionClass);
+      await postComment(promotedId, promotedComment, actionClass, {
+        meta: {
+          alpacaNotificationContext: buildNotificationContext({
+            action: 'promote',
+            subissueId: subissue?.id,
+            subissueTitle: subissueLabel,
+          }),
+        },
+      });
     }
   },
 );
@@ -434,6 +538,14 @@ addAction(
       'alpaca',
     )} ${generateAssigneeSpan(currentUser)}`;
 
-    await postComment(issue, commentContent, actionClass);
+    await postComment(issue, commentContent, actionClass, {
+      meta: {
+        alpacaNotificationContext: buildNotificationContext({
+          action: 'delete',
+          subissueId: subissue?.id,
+          subissueTitle: subissueLabel,
+        }),
+      },
+    });
   },
 );

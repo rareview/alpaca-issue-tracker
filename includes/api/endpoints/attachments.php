@@ -50,6 +50,75 @@ function alpaca_register_comment_meta_fields() {
 			},
 		)
 	);
+
+	register_meta(
+		'comment',
+		'alpacaMentionedUsers',
+		array(
+			'type'          => 'array',
+			'description'   => 'Mentioned users for Alpaca issue comments.',
+			'single'        => true,
+			'show_in_rest'  => array(
+				'schema' => array(
+					'type'  => 'array',
+					'items' => array(
+						'type'       => 'object',
+						'properties' => array(
+							'id'           => array(
+								'type' => 'integer',
+							),
+							'slug'         => array(
+								'type' => 'string',
+							),
+							'display_name' => array(
+								'type' => 'string',
+							),
+						),
+					),
+				),
+			),
+			'auth_callback' => function () {
+				return \Alpaca\Inc\Helpers::user_can( 'register_comment_meta' );
+			},
+		)
+	);
+
+	register_meta(
+		'comment',
+		'alpacaNotificationContext',
+		array(
+			'type'              => 'object',
+			'description'       => 'Structured notification context for Alpaca issue comments.',
+			'single'            => true,
+			'show_in_rest'      => array(
+				'schema' => array(
+					'type'                 => 'object',
+					'additionalProperties' => true,
+					'properties'           => array(
+						'action'            => array(
+							'type' => 'string',
+						),
+						'affected_user_ids' => array(
+							'type'  => 'array',
+							'items' => array(
+								'type' => 'integer',
+							),
+						),
+						'subissue_id'       => array(
+							'type' => 'integer',
+						),
+						'subissue_title'    => array(
+							'type' => 'string',
+						),
+					),
+				),
+			),
+			'sanitize_callback' => 'alpaca_sanitize_notification_context_meta',
+			'auth_callback'     => function () {
+				return \Alpaca\Inc\Helpers::user_can( 'register_comment_meta' );
+			},
+		)
+	);
 }
 add_action( 'rest_api_init', 'alpaca_register_comment_meta_fields' );
 

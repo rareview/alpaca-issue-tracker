@@ -51,12 +51,39 @@ export const getProcessedCommentContent = (comment) => {
     return '';
   }
 
+  const mentionMarkup = (rawContent) => {
+    const content = typeof rawContent === 'string' ? rawContent : '';
+    const mentions = Array.isArray(comment.meta?.alpacaMentionedUsers)
+      ? comment.meta.alpacaMentionedUsers
+      : [];
+
+    if (!content || !mentions.length) {
+      return content;
+    }
+
+    return mentions.reduce((processed, mention) => {
+      const slug = mention?.slug;
+      const displayName = mention?.display_name;
+
+      if (!slug || !displayName) {
+        return processed;
+      }
+
+      const escapedSlug = slug.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+      return processed.replace(
+        new RegExp(`(^|\\\\s)@${escapedSlug}(?=$|[^a-zA-Z0-9._-])`, 'g'),
+        `$1<span class="alpaca-comment-mention">@${displayName}</span>`,
+      );
+    }, content);
+  };
+
   if (!comment.meta && comment.content.rendered) {
     return comment.content.rendered;
   }
 
   const content = comment.content.raw
-    ? marked(comment.content.raw)
+    ? marked(mentionMarkup(comment.content.raw))
     : comment.content.rendered;
 
   return injectAvatarStyles(content);
