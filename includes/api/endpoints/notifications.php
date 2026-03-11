@@ -113,11 +113,13 @@ function alpaca_get_notification_request_params( WP_REST_Request $request ) {
  * @return array<string, mixed> REST payload.
  */
 function alpaca_get_notification_preferences_payload( $user_id ) {
-	$user = get_user_by( 'id', (int) $user_id );
+	$preferences    = alpaca_get_notification_preferences_for_user( $user_id );
+	$channel_status = alpaca_get_notification_channel_status_for_user( $user_id, $preferences );
 
 	return array(
-		'preferences' => alpaca_get_notification_preferences_for_user( $user_id ),
-		'email'       => $user instanceof WP_User ? (string) $user->user_email : '',
+		'preferences'        => $preferences,
+		'available_channels' => alpaca_get_available_notification_channels(),
+		'channel_status'     => $channel_status,
 	);
 }
 
@@ -141,7 +143,17 @@ function alpaca_update_notification_preferences_callback( WP_REST_Request $reque
 	$preferences = isset( $params['preferences'] ) && is_array( $params['preferences'] ) ? $params['preferences'] : array();
 	$user_id     = get_current_user_id();
 
-	alpaca_update_notification_preferences_for_user( $user_id, $preferences );
+	$updated = alpaca_update_notification_preferences_for_user( $user_id, $preferences );
+	if ( is_wp_error( $updated ) ) {
+		return alpaca_rest_response(
+			'',
+			array(
+				'success' => false,
+				'message' => $updated->get_error_message(),
+			),
+			400
+		);
+	}
 
 	return alpaca_rest_response( '', alpaca_get_notification_preferences_payload( $user_id ), 200 );
 }

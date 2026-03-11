@@ -83,6 +83,28 @@ function alpaca_get_issue_watcher_ids( $issue_id ) {
 }
 
 /**
+ * Return label term IDs for an issue.
+ *
+ * @param int $issue_id Issue ID.
+ * @return int[] Label term IDs.
+ */
+function alpaca_get_issue_label_ids( $issue_id ) {
+	$terms = wp_get_post_terms(
+		(int) $issue_id,
+		'alpaca_label',
+		array(
+			'fields' => 'ids',
+		)
+	);
+
+	if ( is_wp_error( $terms ) || ! is_array( $terms ) ) {
+		return array();
+	}
+
+	return array_values( array_unique( array_filter( array_map( 'absint', $terms ) ) ) );
+}
+
+/**
  * Get the issue URL used in email notifications.
  *
  * @param WP_Post $issue Issue post object.
@@ -255,6 +277,29 @@ function alpaca_get_comment_notification_context( $comment_id ) {
 }
 
 /**
+ * Determine whether an event represents a newly created task.
+ *
+ * @param array<string, mixed> $event Notification event.
+ * @return bool True when the event is a new task event.
+ */
+function alpaca_is_notification_new_task_event( $event ) {
+	$event_family = isset( $event['event_family'] ) ? (string) $event['event_family'] : '';
+	$tags         = isset( $event['comment']['tags'] ) && is_array( $event['comment']['tags'] ) ? $event['comment']['tags'] : array();
+	$context      = isset( $event['comment']['context'] ) && is_array( $event['comment']['context'] ) ? $event['comment']['context'] : array();
+	$action       = isset( $context['action'] ) ? sanitize_key( (string) $context['action'] ) : '';
+
+	if ( 'human_comments' === $event_family && in_array( 'issue-created', $tags, true ) ) {
+		return true;
+	}
+
+	if ( 'checklist_created_deleted' === $event_family && 'create' === $action ) {
+		return true;
+	}
+
+	return false;
+}
+
+/**
  * Build the normalized notification event for a comment.
  *
  * @param WP_Comment $comment Comment object.
@@ -283,6 +328,7 @@ function alpaca_get_notification_event_from_comment( $comment ) {
 	$actor                = $actor_id > 0 ? get_user_by( 'id', $actor_id ) : null;
 	$assignee_ids         = alpaca_get_issue_assignee_ids( $issue->ID );
 	$watcher_ids          = alpaca_get_issue_watcher_ids( $issue->ID );
+	$label_ids            = alpaca_get_issue_label_ids( $issue->ID );
 
 	return array(
 		'comment_id'   => (int) $comment->comment_ID,
@@ -316,6 +362,7 @@ function alpaca_get_notification_event_from_comment( $comment ) {
 			'creator_id'   => (int) $issue->post_author,
 			'assignee_ids' => $assignee_ids,
 			'watcher_ids'  => $watcher_ids,
+			'label_ids'    => $label_ids,
 		),
 		'site'         => array(
 			'title'   => wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ),
@@ -361,6 +408,7 @@ function alpaca_get_notification_sample_event() {
 			'creator_id'   => $current_user instanceof WP_User ? (int) $current_user->ID : 0,
 			'assignee_ids' => array(),
 			'watcher_ids'  => array(),
+			'label_ids'    => array(),
 		),
 		'site'         => array(
 			'title'   => wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ),

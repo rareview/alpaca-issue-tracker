@@ -731,6 +731,11 @@ $core-font-stack:
 
     .components-form-token-field {
       width: 100%;
+
+      &__token-text,
+      &__remove-token {
+        display: flex;
+      }
     }
 
     .alpaca-labels-selector {
@@ -2738,7 +2743,7 @@ $core-font-stack:
   padding: 20px;
 
   h2 {
-    margin: 0 0 8px;
+    margin: 0 0 14px;
     font-size: 18px;
     line-height: 1.35;
   }
@@ -2751,6 +2756,79 @@ $core-font-stack:
 .alpaca-notifications-options {
   display: grid;
   gap: 10px;
+}
+
+.alpaca-notifications-option-group {
+  display: grid;
+  gap: 8px;
+}
+
+.alpaca-notifications-channel-grid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.alpaca-notifications-channel-card {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid $greyborder;
+  border-radius: $common-radius;
+  background: $container-bg;
+}
+
+.alpaca-notifications-channel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+
+  h3 {
+    margin: 0 0 4px;
+    font-size: 16px;
+    line-height: 1.35;
+  }
+
+  p {
+    margin: 0;
+  }
+}
+
+.alpaca-notifications-channel-summary {
+  display: grid;
+  gap: 12px;
+}
+
+.alpaca-notifications-channel-row {
+  display: grid;
+  gap: 4px;
+}
+
+.alpaca-notifications-channel-label {
+  color: #1d2327;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.alpaca-notifications-channel-value {
+  color: #50575e;
+  font-size: 14px;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.alpaca-notifications-label-picker {
+  margin-top: 6px;
+  margin-left: 24px;
+  padding-top: 12px;
+  border-top: 1px solid $greyborder;
+}
+
+.alpaca-notifications-label-grid {
+  display: grid;
+  gap: 10px;
+  margin-top: 8px;
 }
 
 .alpaca-notifications-actions {
