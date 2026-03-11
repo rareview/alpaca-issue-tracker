@@ -2884,6 +2884,21 @@ $core-font-stack:
   margin-bottom: 14px;
 }
 
+.alpaca-notification-template-canvas .alpaca-notification-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.alpaca-notification-template-canvas .alpaca-notification-header__copy {
+  min-width: 0;
+}
+
+.alpaca-notification-template-canvas .alpaca-notification-header__title,
+.alpaca-notification-template-canvas .alpaca-notification-header__tagline {
+  margin: 0;
+}
+
 .alpaca-notification-template-canvas .wp-block-buttons {
   margin-top: 18px;
   margin-bottom: 18px;
@@ -2950,12 +2965,24 @@ $core-font-stack:
   top: 32px;
 }
 
-.alpaca-notification-preview-subject {
+.alpaca-notification-preview-frame {
+  border: 1px solid $greyborder;
+  border-radius: $common-radius;
+  background: $bgwhite;
+  overflow: hidden;
+}
+
+.alpaca-notification-preview-envelope {
+  display: grid;
+  gap: 10px;
+  padding: 16px 18px;
+  border-bottom: 1px solid $greyborder;
+  background: #f6f7f7;
+}
+
+.alpaca-notification-preview-meta {
   display: grid;
   gap: 4px;
-  margin-bottom: 16px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid $greyborder;
 
   span {
     color: #50575e;
@@ -2964,13 +2991,17 @@ $core-font-stack:
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
+
+  strong {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1d2327;
+    word-break: break-word;
+  }
 }
 
-.alpaca-notification-preview-frame {
-  border: 1px solid $greyborder;
-  border-radius: $common-radius;
+.alpaca-notification-preview-body {
   background: $bgwhite;
-  overflow: hidden;
 }
 
 .alpaca-mentions-textarea {
@@ -3086,12 +3117,15 @@ $core-font-stack:
     line-height: 1.65;
   }
 
+  p {
+    margin: 0;
+  }
+
   a {
     color: #2271b1;
   }
 
-  .alpaca-notification-comment-content,
-  .wp-block-group {
+  .alpaca-notification-comment-content {
     background: $bgwhite;
     border: 1px solid $greyborder;
     border-radius: $common-radius;
@@ -3134,6 +3168,44 @@ $core-font-stack:
     display: block;
     max-width: 180px;
     height: auto;
+  }
+
+  .alpaca-notification-site-icon {
+    display: block;
+    width: 40px;
+    max-width: 40px;
+    height: 40px;
+    object-fit: contain;
+  }
+
+  .alpaca-notification-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+  }
+
+  .alpaca-notification-header__copy {
+    min-width: 0;
+  }
+
+  .alpaca-notification-header__title {
+    margin: 0;
+    color: #1d2327;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+
+  .alpaca-notification-header__tagline {
+    margin: 0;
+    color: #646970;
+
+    &:empty {
+      display: none;
+    }
   }
 
   .alpaca-notification-attachments {

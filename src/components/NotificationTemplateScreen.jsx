@@ -573,16 +573,26 @@ const NotificationTemplateScreen = () => {
             </p>
           </div>
           {preview ? (
-            <>
-              <div className="alpaca-notification-preview-subject">
-                <span>{__('Subject', 'alpaca')}</span>
-                <strong>{preview.subject}</strong>
+            <div className="alpaca-notification-preview-frame">
+              <div className="alpaca-notification-preview-envelope">
+                <div className="alpaca-notification-preview-meta">
+                  <span>{__('From', 'alpaca')}</span>
+                  <strong>
+                    {preview.from_label ||
+                      preview.from_address ||
+                      __('WordPress', 'alpaca')}
+                  </strong>
+                </div>
+                <div className="alpaca-notification-preview-meta">
+                  <span>{__('Subject', 'alpaca')}</span>
+                  <strong>{preview.subject}</strong>
+                </div>
               </div>
               <div
-                className="alpaca-notification-preview-frame"
+                className="alpaca-notification-preview-body"
                 dangerouslySetInnerHTML={{ __html: preview.html }}
               />
-            </>
+            </div>
           ) : (
             <p>
               {__(

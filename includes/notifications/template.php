@@ -37,6 +37,21 @@ function alpaca_get_notification_email_body_template_default() {
 	return implode(
 		"\n",
 		array(
+			'<!-- wp:group {"className":"alpaca-notification-header","layout":{"type":"flex","flexWrap":"nowrap","verticalAlignment":"center"}} -->',
+			'<div class="wp-block-group alpaca-notification-header">',
+			'<!-- wp:alpaca/email-site-logo /-->',
+			'<!-- wp:group {"className":"alpaca-notification-header__copy","layout":{"type":"constrained"}} -->',
+			'<div class="wp-block-group alpaca-notification-header__copy">',
+			'<!-- wp:paragraph {"className":"alpaca-notification-header__title"} -->',
+			'<p class="alpaca-notification-header__title">{{site_title}}</p>',
+			'<!-- /wp:paragraph -->',
+			'<!-- wp:paragraph {"fontSize":"small","className":"alpaca-notification-header__tagline"} -->',
+			'<p class="alpaca-notification-header__tagline has-small-font-size">{{site_tagline}}</p>',
+			'<!-- /wp:paragraph -->',
+			'</div>',
+			'<!-- /wp:group -->',
+			'</div>',
+			'<!-- /wp:group -->',
 			'<!-- wp:heading {"level":2} -->',
 			'<h2>{{issue_title}}</h2>',
 			'<!-- /wp:heading -->',
@@ -46,7 +61,7 @@ function alpaca_get_notification_email_body_template_default() {
 			'<!-- wp:paragraph -->',
 			'<p>By {{performed_by}}</p>',
 			'<!-- /wp:paragraph -->',
-			'<!-- wp:alpaca/email-comment-content /-->',
+			'<!-- wp:alpaca/email-comment-content {"lock":{"move":false,"remove":true}} /-->',
 			'<!-- wp:buttons -->',
 			'<div class="wp-block-buttons"><!-- wp:button --><div class="wp-block-button"><a class="wp-block-button__link wp-element-button" href="{{issue_url}}">Open Issue</a></div><!-- /wp:button --></div>',
 			'<!-- /wp:buttons -->',
@@ -54,7 +69,7 @@ function alpaca_get_notification_email_body_template_default() {
 			'<hr class="wp-block-separator has-alpha-channel-opacity"/>',
 			'<!-- /wp:separator -->',
 			'<!-- wp:paragraph {"fontSize":"small"} -->',
-			'<p class="has-small-font-size">{{site_title}} · {{event_time}}</p>',
+			'<p class="has-small-font-size">{{event_time}}</p>',
 			'<!-- /wp:paragraph -->',
 		)
 	);
@@ -201,6 +216,17 @@ function alpaca_get_notification_site_logo_url( $template_context = array() ) {
 }
 
 /**
+ * Get the current site icon URL for notification emails.
+ *
+ * @return string Site icon URL.
+ */
+function alpaca_get_notification_site_icon_url() {
+	$icon_url = get_site_icon_url( 512 );
+
+	return is_string( $icon_url ) ? $icon_url : '';
+}
+
+/**
  * Determine whether a block is allowed in the notification template.
  *
  * @param string $block_name Block name.
@@ -240,6 +266,8 @@ function alpaca_get_notification_email_template() {
 	} elseif ( alpaca_get_notification_email_body_template_legacy_default() === $body ) {
 		$body = alpaca_get_notification_email_body_template_default();
 	}
+
+	$body = alpaca_normalize_notification_email_body_template( $body );
 
 	$context = alpaca_sanitize_notification_email_template_context( $context );
 
@@ -302,6 +330,41 @@ function alpaca_notification_template_has_comment_block( $blocks ) {
 }
 
 /**
+ * Return the lock attributes used for the required comment content block.
+ *
+ * @return array<string, bool> Comment block lock attributes.
+ */
+function alpaca_get_notification_template_comment_block_lock() {
+	return array(
+		'move'   => false,
+		'remove' => true,
+	);
+}
+
+/**
+ * Normalize a parsed notification email template block.
+ *
+ * @param array<string, mixed> $block Parsed block data.
+ * @return array<string, mixed> Normalized parsed block data.
+ */
+function alpaca_normalize_notification_template_block( $block ) {
+	$block_name = isset( $block['blockName'] ) ? (string) $block['blockName'] : '';
+
+	if ( 'alpaca/email-comment-content' === $block_name ) {
+		$attrs = array();
+
+		if ( isset( $block['attrs'] ) && is_array( $block['attrs'] ) ) {
+			$attrs = $block['attrs'];
+		}
+
+		$attrs['lock']  = alpaca_get_notification_template_comment_block_lock();
+		$block['attrs'] = $attrs;
+	}
+
+	return $block;
+}
+
+/**
  * Filter parsed blocks to the allowed email template block set.
  *
  * @param array<int, array<string, mixed>> $blocks Parsed blocks.
@@ -323,10 +386,33 @@ function alpaca_filter_notification_template_blocks( $blocks ) {
 		$block['innerBlocks'] = isset( $block['innerBlocks'] ) && is_array( $block['innerBlocks'] )
 			? alpaca_filter_notification_template_blocks( $block['innerBlocks'] )
 			: array();
-		$filtered[]           = $block;
+		$filtered[]           = alpaca_normalize_notification_template_block( $block );
 	}
 
 	return $filtered;
+}
+
+/**
+ * Normalize a serialized notification email body template.
+ *
+ * @param string $body Serialized block content.
+ * @return string Normalized serialized block content.
+ */
+function alpaca_normalize_notification_email_body_template( $body ) {
+	$body = is_string( $body ) ? trim( $body ) : '';
+
+	if ( '' === $body ) {
+		$body = alpaca_get_notification_email_body_template_default();
+	}
+
+	$blocks   = parse_blocks( $body );
+	$filtered = alpaca_filter_notification_template_blocks( $blocks );
+
+	if ( empty( $filtered ) ) {
+		return alpaca_get_notification_email_body_template_default();
+	}
+
+	return serialize_blocks( $filtered );
 }
 
 /**

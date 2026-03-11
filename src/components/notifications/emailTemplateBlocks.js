@@ -52,8 +52,8 @@ const blockDefinitions = [
   },
   {
     name: 'alpaca/email-site-logo',
-    title: __('Site Logo', 'alpaca'),
-    description: __('Insert the current site logo.', 'alpaca'),
+    title: __('Site Icon', 'alpaca'),
+    description: __('Insert the current site icon.', 'alpaca'),
   },
   {
     name: 'alpaca/email-event-time',
