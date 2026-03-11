@@ -3,6 +3,7 @@ import { marked } from 'marked';
 import User from '../User';
 import Time from '../Time';
 import { Attachment } from '../issue/AttachmentRow';
+import { generateAssigneeSpan } from '../../hooks/useUser';
 
 const { __, sprintf } = wp.i18n;
 const { useMemo, memo } = wp.element;
@@ -64,16 +65,26 @@ export const getProcessedCommentContent = (comment) => {
     return mentions.reduce((processed, mention) => {
       const slug = mention?.slug;
       const displayName = mention?.display_name;
+      const avatar = mention?.avatar;
+      const userId = mention?.id;
 
       if (!slug || !displayName) {
         return processed;
       }
 
       const escapedSlug = slug.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const replacement = generateAssigneeSpan(
+        {
+          id: userId,
+          display_name: displayName,
+          avatar,
+        },
+        Boolean(avatar),
+      );
 
       return processed.replace(
         new RegExp(`(^|\\\\s)@${escapedSlug}(?=$|[^a-zA-Z0-9._-])`, 'g'),
-        `$1<span class="alpaca-comment-mention">@${displayName}</span>`,
+        `$1${replacement}`,
       );
     }, content);
   };

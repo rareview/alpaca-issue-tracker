@@ -73,6 +73,9 @@ function alpaca_register_comment_meta_fields() {
 							'display_name' => array(
 								'type' => 'string',
 							),
+							'avatar'       => array(
+								'type' => 'string',
+							),
 						),
 					),
 				),

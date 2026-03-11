@@ -62,10 +62,18 @@ function alpaca_resolve_mention_users( $slugs ) {
 
 	$mentions = array();
 	foreach ( $users as $user ) {
+		$avatar_url = get_avatar_url(
+			$user->ID,
+			array(
+				'size' => 48,
+			)
+		);
+
 		$mentions[] = array(
 			'id'           => (int) $user->ID,
 			'slug'         => (string) $user->user_nicename,
 			'display_name' => (string) $user->display_name,
+			'avatar'       => is_string( $avatar_url ) ? $avatar_url : '',
 		);
 	}
 

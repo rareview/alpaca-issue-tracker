@@ -56,7 +56,7 @@ const subjectOptions = [
   },
   {
     key: 'all_new_tasks',
-    label: __('Whenever a new task is created', 'alpaca'),
+    label: __('Whenever a new issue is created', 'alpaca'),
     help: __(
       'Includes both new top-level issues and new checklist items, even when they are not otherwise related to you.',
       'alpaca',
