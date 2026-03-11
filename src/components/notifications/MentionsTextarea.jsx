@@ -239,9 +239,22 @@ const MentionsTextarea = ({
     ],
   );
 
-  const handleCaretUpdate = useCallback(() => {
-    updateMentionQuery(value);
-  }, [updateMentionQuery, value]);
+  const handleCaretUpdate = useCallback(
+    (event) => {
+      const ignoredKeys = ['ArrowDown', 'ArrowUp', 'Enter', 'Tab', 'Escape'];
+
+      if (
+        event &&
+        typeof event.key === 'string' &&
+        ignoredKeys.includes(event.key)
+      ) {
+        return;
+      }
+
+      updateMentionQuery(value);
+    },
+    [updateMentionQuery, value],
+  );
 
   return (
     <div className="alpaca-mentions-textarea" ref={wrapperRef}>
