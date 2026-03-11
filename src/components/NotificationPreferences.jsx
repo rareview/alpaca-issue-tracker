@@ -266,7 +266,7 @@ const NotificationPreferences = () => {
         <Button isPrimary onClick={handleSave} disabled={isSaving}>
           {isSaving
             ? __('Saving…', 'alpaca')
-            : __('Save preferences', 'alpaca')}
+            : __('Save Preferences', 'alpaca')}
         </Button>
       </div>
     </div>

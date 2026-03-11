@@ -2694,11 +2694,19 @@ $core-font-stack:
 
 .alpaca-notifications-screen,
 .alpaca-notification-template-screen {
-  margin-top: 16px;
+  margin-top: 20px;
+}
+
+.alpaca-notifications-screen > .alpaca-notifications-panel {
+  margin-top: 20px;
 }
 
 .alpaca-notification-template-intro {
   margin-bottom: 20px;
+  margin-top: 20px;
+  background: none !important;
+  border: 0 !important;
+  padding: 0 !important;
 
   p {
     margin: 0;
