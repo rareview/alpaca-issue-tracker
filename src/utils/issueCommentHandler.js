@@ -35,6 +35,26 @@ const stripHtmlAndMarkdown = (input) => {
 };
 
 /**
+ * Build a user label for audit comments.
+ *
+ * @param {Object|null} user       Candidate user object.
+ * @param {string}      identifier User name or slug fallback.
+ * @return {string} HTML-safe label.
+ */
+const getAuditCommentUserLabel = (user, identifier = '') => {
+  if (user) {
+    return generateAssigneeSpan(user, true);
+  }
+
+  const fallbackLabel =
+    typeof identifier === 'string' && identifier.trim()
+      ? identifier.trim()
+      : __('Unknown user', 'alpaca');
+
+  return fallbackLabel;
+};
+
+/**
  * Safely format a subissue title for comments.
  *
  * @param {Object} subissue Subissue object.
@@ -265,16 +285,14 @@ addAction(
 addAction(
   'alpaca.assigneeChanged',
   'alpaca/addAssigneeChangeComment',
-  async (issue, user, isAssigned) => {
+  async (issue, user, isAssigned, identifier = '') => {
     const currentUser = await getUser();
     const actionText = isAssigned ? 'assigned to' : 'unassigned from';
     const actionClass = [
       'assignee-changed',
       isAssigned ? 'action-add' : 'action-remove',
     ];
-    const targetUserLabel = user
-      ? generateAssigneeSpan(user, true)
-      : __('Unknown user', 'alpaca');
+    const targetUserLabel = getAuditCommentUserLabel(user, identifier);
     const commentContent = `${targetUserLabel} ${__('was', 'alpaca')} ${actionText} ${__(
       'this issue by',
       'alpaca',
@@ -431,7 +449,7 @@ addAction(
 addAction(
   'alpaca.subissueAssigneeChanged',
   'alpaca/addSubissueAssigneeComment',
-  async (issue, subissue, user, isAssigned) => {
+  async (issue, subissue, user, isAssigned, identifier = '') => {
     const currentUser = await getUser();
     const actionText = isAssigned ? 'assigned to' : 'unassigned from';
     const actionClass = [
@@ -439,9 +457,7 @@ addAction(
       isAssigned ? 'action-add' : 'action-remove',
     ];
     const subissueLabel = getSubissueLabel(subissue);
-    const targetUserLabel = user
-      ? generateAssigneeSpan(user, true)
-      : __('Unknown user', 'alpaca');
+    const targetUserLabel = getAuditCommentUserLabel(user, identifier);
     const commentContent = `${targetUserLabel} ${__('was', 'alpaca')} ${actionText} ${__(
       'checklist item',
       'alpaca',

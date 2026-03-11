@@ -687,7 +687,13 @@ const AlpacaIssue = ({
 
         added.forEach((name) => {
           const user = findUserByNameOrSlug(allUserObjects, name);
-          wp.hooks.doAction('alpaca.assigneeChanged', issueDetails, user, true);
+          wp.hooks.doAction(
+            'alpaca.assigneeChanged',
+            issueDetails,
+            user,
+            true,
+            name,
+          );
         });
         removed.forEach((name) => {
           const user = findUserByNameOrSlug(allUserObjects, name);
@@ -696,6 +702,7 @@ const AlpacaIssue = ({
             issueDetails,
             user,
             false,
+            name,
           );
         });
       } catch (err) {
@@ -1368,6 +1375,7 @@ const AlpacaIssue = ({
             subissue,
             user,
             true,
+            name,
           );
         });
         removed.forEach((name) => {
@@ -1378,6 +1386,7 @@ const AlpacaIssue = ({
             subissue,
             user,
             false,
+            name,
           );
         });
       } catch (err) {
