@@ -6,6 +6,7 @@ import {
   markNotificationInboxItemsRead,
   markNotificationInboxItemsUnread,
 } from '../services/notificationApi';
+import TimelineEntry from './comment/TimelineEntry';
 
 const { useCallback, useEffect, useMemo, useRef, useState, createPortal } =
   wp.element;
@@ -18,6 +19,35 @@ const POLL_INTERVAL_MS = 30000;
 const PANEL_CLOSE_ANIMATION_MS = 220;
 const IS_UNREAD_KEY = 'is_unread';
 const CREATED_GMT_KEY = 'created_gmt';
+const EVENT_FAMILY_HUMAN_COMMENTS = 'human_comments';
+const EVENT_FAMILY_TO_TIMELINE_TAG = {
+  status_changes: 'status-changed',
+  issue_assignment_changes: 'assignee-changed',
+  due_date_changes: 'deadline-changed',
+  checklist_created_deleted: 'subissue-created',
+  checklist_assignment_changes: 'subissue-assignee-changed',
+  checklist_completion_changes: 'subissue-completion-changed',
+  checklist_promotions: 'subissue-promoted',
+  priority_changes: 'priority-changed',
+};
+
+/**
+ * Determine whether the inbox event label should be shown.
+ *
+ * @param {string} eventFamily Event family key.
+ * @param {string} eventLabel  Localized event label.
+ * @return {boolean} True when label should be rendered.
+ */
+const shouldShowInboxEventLabel = (eventFamily, eventLabel) => {
+  if (EVENT_FAMILY_HUMAN_COMMENTS !== eventFamily) {
+    // Audit entries already include full change context in the comment body.
+    return false;
+  }
+
+  return (
+    eventLabel.toLowerCase() !== __('Comment added', 'alpaca').toLowerCase()
+  );
+};
 
 /**
  * Convert a MySQL GMT date string to a Date object.
@@ -43,23 +73,55 @@ const parseGmtDate = (value) => {
 };
 
 /**
- * Format an inbox item timestamp.
+ * Build a comment-like payload for TimelineEntry.
  *
- * @param {string} value GMT date string.
- * @return {string} Formatted timestamp.
+ * @param {Object} item Inbox API item.
+ * @return {Object} TimelineEntry-compatible comment payload.
  */
-const formatInboxTimestamp = (value) => {
-  const date = parseGmtDate(value);
-  if (!date) {
-    return '';
+const buildTimelineCommentFromInboxItem = (item) => {
+  const parsedCreatedDate = parseGmtDate(item?.[CREATED_GMT_KEY]);
+  const eventFamily = String(item?.event_family || '');
+  const eventLabel = String(item?.event_label || '').trim();
+  const showEventLabel = shouldShowInboxEventLabel(eventFamily, eventLabel);
+  const preview = String(item?.preview || '').trim();
+  const markdownBody = [
+    showEventLabel && eventLabel ? `**${eventLabel}**` : '',
+    preview,
+  ]
+    .filter(Boolean)
+    .join('\n\n');
+  const timelineTags = ['alpaca-inbox-timeline-item'];
+  const commentAttachments = Array.isArray(item?.comment_attachments)
+    ? item.comment_attachments.filter(
+        (attachmentUrl) =>
+          'string' === typeof attachmentUrl && attachmentUrl.trim().length > 0,
+      )
+    : [];
+  const mappedEventTag = EVENT_FAMILY_TO_TIMELINE_TAG[eventFamily];
+
+  if (mappedEventTag) {
+    timelineTags.push(mappedEventTag);
   }
 
-  return new Intl.DateTimeFormat(undefined, {
-    month: 'short',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  }).format(date);
+  return {
+    id: item?.id,
+    date: parsedCreatedDate
+      ? parsedCreatedDate.toISOString()
+      : item?.[CREATED_GMT_KEY] || '',
+    author_user_agent:
+      EVENT_FAMILY_HUMAN_COMMENTS === eventFamily ? 'human' : 'audit',
+    author_details: {
+      name: item?.actor?.display_name || __('Unknown user', 'alpaca'),
+      avatar: item?.actor?.avatar_url || '',
+    },
+    content: {
+      raw: markdownBody,
+    },
+    meta: {
+      alpacaCommentTags: timelineTags,
+      alpacaCommentAttachments: commentAttachments,
+    },
+  };
 };
 
 /**
@@ -385,67 +447,65 @@ function InboxControl({ selector }) {
     );
   } else if (items.length > 0) {
     panelBody = (
-      <div className="alpaca-inbox-list">
-        {items.map((item) => (
-          <article
-            key={item.id}
-            className={`alpaca-inbox-item ${
-              item[IS_UNREAD_KEY] ? 'is-unread' : ''
-            }`}
-          >
-            <button
-              type="button"
-              className="alpaca-inbox-item-main"
-              onClick={() => handleOpenItem(item)}
+      <div className="alpaca-inbox-list alpaca-comments-timeline">
+        {items.map((item) => {
+          const timelineComment = buildTimelineCommentFromInboxItem(item);
+          const issueTitle =
+            item?.issue?.title || __('Untitled issue', 'alpaca');
+          const isAuditEntry = timelineComment.author_user_agent === 'audit';
+          const readToggleAction = (
+            <Button
+              variant="link"
+              className="alpaca-inbox-entry-read-toggle"
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                handleMarkReadState(item.id, !item[IS_UNREAD_KEY]);
+              }}
+              disabled={isMutating}
             >
-              <div className="alpaca-inbox-item-topline">
-                <span className="alpaca-inbox-item-issue">
-                  {item?.issue?.title || __('Untitled issue', 'alpaca')}
-                </span>
-                <span className="alpaca-inbox-item-time">
-                  {formatInboxTimestamp(item[CREATED_GMT_KEY])}
-                </span>
-              </div>
-              <div className="alpaca-inbox-item-meta">
-                {item[IS_UNREAD_KEY] && (
-                  <span
-                    className="alpaca-inbox-item-unread-dot"
-                    aria-hidden="true"
-                  />
-                )}
-                <span className="alpaca-inbox-item-label">
-                  {item.event_label}
-                </span>
-              </div>
-              <p className="alpaca-inbox-item-preview">{item.preview}</p>
-              <div className="alpaca-inbox-item-actor">
-                {item?.actor?.avatar_url && (
-                  <img
-                    src={item.actor.avatar_url}
-                    alt=""
-                    className="alpaca-inbox-item-avatar"
-                  />
-                )}
-                <span>
-                  {item?.actor?.display_name || __('Unknown user', 'alpaca')}
-                </span>
-              </div>
-            </button>
-            <div className="alpaca-inbox-item-actions">
-              <Button
-                variant="link"
-                onClick={() =>
-                  handleMarkReadState(item.id, !item[IS_UNREAD_KEY])
-                }
-                disabled={isMutating}
+              {item[IS_UNREAD_KEY]
+                ? __('Mark Read', 'alpaca')
+                : __('Mark Unread', 'alpaca')}
+            </Button>
+          );
+
+          return (
+            <article
+              key={item.id}
+              className={`alpaca-inbox-entry ${
+                item[IS_UNREAD_KEY] ? 'is-unread' : 'is-read'
+              }`}
+            >
+              <div
+                role="button"
+                tabIndex={0}
+                className="alpaca-inbox-entry-button"
+                onClick={() => handleOpenItem(item)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    handleOpenItem(item);
+                  }
+                }}
               >
-                {item[IS_UNREAD_KEY]
-                  ? __('Mark Read', 'alpaca')
-                  : __('Mark Unread', 'alpaca')}
-              </Button>
-            </div>
-          </article>
-        ))}
+                <TimelineEntry
+                  comment={timelineComment}
+                  onAttachmentClick={null}
+                  issueTitle={issueTitle}
+                  showIssueTitle
+                  showTime
+                  stripInteractive
+                  enableAttachmentPreview={false}
+                  auditTimeInTopline={isAuditEntry}
+                  className="alpaca-inbox-entry-item"
+                  headerActions={isAuditEntry ? readToggleAction : null}
+                  footerActions={isAuditEntry ? null : readToggleAction}
+                />
+              </div>
+            </article>
+          );
+        })}
       </div>
     );
   }

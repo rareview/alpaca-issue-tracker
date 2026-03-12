@@ -108,6 +108,7 @@ export const getProcessedCommentContent = (comment) => {
  * @param {Object}   props.currentUser       Current user object.
  * @param {Function} props.onAttachmentClick Attachment click callback.
  * @param {Object}   props.headerActions     Header actions.
+ * @param {Object}   props.footerActions     Footer actions.
  * @param {string}   props.issueTitle        Issue title.
  * @param {boolean}  props.showIssueTitle    Whether to display issue title.
  * @param {boolean}  props.showTime          Whether to display time.
@@ -115,6 +116,9 @@ export const getProcessedCommentContent = (comment) => {
  * @param {Object}   props.editBody          Edit form body.
  * @param {boolean}  props.isSubmitting      Whether submit is in progress.
  * @param {boolean}  props.stripInteractive  Remove interactive HTML elements from rendered body.
+ * @param {boolean}  props.enableAttachmentPreview Whether image attachment zoom preview is enabled.
+ * @param {boolean}  props.auditTimeInTopline Whether audit timestamp renders in a title row.
+ * @param {string}   props.className         Optional extra class names for wrapper.
  * @return {JSX.Element} Rendered timeline entry.
  */
 const TimelineEntry = ({
@@ -122,6 +126,7 @@ const TimelineEntry = ({
   currentUser,
   onAttachmentClick,
   headerActions,
+  footerActions,
   issueTitle,
   showIssueTitle,
   showTime,
@@ -129,6 +134,9 @@ const TimelineEntry = ({
   editBody,
   isSubmitting,
   stripInteractive,
+  enableAttachmentPreview,
+  auditTimeInTopline,
+  className,
 }) => {
   const author = comment.author_details ||
     comment._embedded?.author?.[0] ||
@@ -138,9 +146,13 @@ const TimelineEntry = ({
   const isAudit = dataSource === 'audit';
   const commentTags = comment.meta?.alpacaCommentTags || [];
   const commentAttachments = comment.meta?.alpacaCommentAttachments || [];
-  const timelineItemClasses = ['alpaca-timeline-item', ...commentTags].join(
-    ' ',
-  );
+  const timelineItemClasses = [
+    'alpaca-timeline-item',
+    ...commentTags,
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
   const issuePrefix = sprintf(
     /* translators: Prefix before issue title in activity headers. */
     __('on %s', 'alpaca'),
@@ -164,20 +176,42 @@ const TimelineEntry = ({
       <div className={timelineItemClasses} data-source={dataSource}>
         <div className="alpaca-timeline-icon" />
         <div className="alpaca-timeline-msg">
-          {showIssueTitle && issueTitle && (
+          {auditTimeInTopline &&
+            ((showIssueTitle && issueTitle) || showTime) && (
+              <div className="alpaca-audit-topline">
+                {showIssueTitle && issueTitle && (
+                  <div className="alpaca-comment-issue-title">{issueTitle}</div>
+                )}
+                {showTime && (
+                  <Time
+                    value={comment.date}
+                    type="relative"
+                    className="alpaca-comment-date"
+                  />
+                )}
+              </div>
+            )}
+          {!auditTimeInTopline && showIssueTitle && issueTitle && (
             <div className="alpaca-comment-issue-title">{issueTitle}</div>
           )}
-          <div
-            className="alpaca-timeline-msg-content with-avatar-meta"
-            dangerouslySetInnerHTML={{ __html: processedContent }}
-          />
-          {showTime && (
-            <Time
-              value={comment.date}
-              type="relative"
-              className="alpaca-comment-date"
+          <div className="alpaca-audit-inline-row">
+            <div
+              className="alpaca-timeline-msg-content with-avatar-meta"
+              dangerouslySetInnerHTML={{ __html: processedContent }}
             />
-          )}
+            {showTime && !auditTimeInTopline && (
+              <Time
+                value={comment.date}
+                type="relative"
+                className="alpaca-comment-date alpaca-audit-inline-time"
+              />
+            )}
+          </div>
+          <div className="alpaca-timeline-msg-meta flexalign">
+            {headerActions && (
+              <div className="alpaca-comment-buttons">{headerActions}</div>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -228,7 +262,9 @@ const TimelineEntry = ({
                 <Attachment
                   key={`${comment.id}-${index}`}
                   attachment={{ url: attachmentUrl }}
-                  onAttachmentClick={onAttachmentClick}
+                  onAttachmentClick={
+                    enableAttachmentPreview ? onAttachmentClick : null
+                  }
                   showDelete={false}
                   altText={__('Comment attachment', 'alpaca')}
                 />
@@ -237,6 +273,9 @@ const TimelineEntry = ({
           )}
         </div>
       </div>
+      {footerActions && (
+        <div className="alpaca-timeline-footer-actions">{footerActions}</div>
+      )}
     </div>
   );
 };
@@ -244,8 +283,9 @@ const TimelineEntry = ({
 TimelineEntry.propTypes = {
   comment: PropTypes.object.isRequired,
   currentUser: PropTypes.object,
-  onAttachmentClick: PropTypes.func.isRequired,
+  onAttachmentClick: PropTypes.func,
   headerActions: PropTypes.node,
+  footerActions: PropTypes.node,
   issueTitle: PropTypes.string,
   showIssueTitle: PropTypes.bool,
   showTime: PropTypes.bool,
@@ -253,11 +293,16 @@ TimelineEntry.propTypes = {
   editBody: PropTypes.node,
   isSubmitting: PropTypes.bool,
   stripInteractive: PropTypes.bool,
+  enableAttachmentPreview: PropTypes.bool,
+  auditTimeInTopline: PropTypes.bool,
+  className: PropTypes.string,
 };
 
 TimelineEntry.defaultProps = {
   currentUser: null,
+  onAttachmentClick: null,
   headerActions: null,
+  footerActions: null,
   issueTitle: '',
   showIssueTitle: false,
   showTime: true,
@@ -265,6 +310,9 @@ TimelineEntry.defaultProps = {
   editBody: null,
   isSubmitting: false,
   stripInteractive: false,
+  enableAttachmentPreview: true,
+  auditTimeInTopline: false,
+  className: '',
 };
 
 export default memo(TimelineEntry);

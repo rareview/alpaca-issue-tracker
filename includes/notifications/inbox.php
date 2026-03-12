@@ -295,10 +295,14 @@ function alpaca_prepare_notification_inbox_item_payload_from_comment( $row, $com
 	}
 
 	$tags        = get_comment_meta( $comment->comment_ID, 'alpacaCommentTags', true );
+	$attachments = get_comment_meta( $comment->comment_ID, 'alpacaCommentAttachments', true );
 	$context     = alpaca_get_comment_notification_context( $comment->comment_ID );
 	$actor_id    = (int) $comment->user_id;
 	$actor       = $actor_id > 0 ? get_user_by( 'id', $actor_id ) : null;
 	$read_at_gmt = isset( $row['read_at_gmt'] ) ? (string) $row['read_at_gmt'] : '';
+
+	$attachments = is_array( $attachments ) ? $attachments : array();
+	$attachments = array_values( array_filter( array_map( 'esc_url_raw', $attachments ) ) );
 
 	$event = array(
 		'comment'      => array(
@@ -327,22 +331,23 @@ function alpaca_prepare_notification_inbox_item_payload_from_comment( $row, $com
 	);
 
 	return array(
-		'id'           => isset( $row['id'] ) ? absint( $row['id'] ) : 0,
-		'comment_id'   => (int) $comment->comment_ID,
-		'issue_id'     => (int) $issue->ID,
-		'event_family' => $event_family,
-		'event_label'  => (string) $event['event_label'],
-		'preview'      => alpaca_get_notification_inbox_preview_text( $event ),
-		'created_gmt'  => isset( $row['created_gmt'] ) ? (string) $row['created_gmt'] : '',
-		'read_at_gmt'  => $read_at_gmt,
-		'is_unread'    => '' === $read_at_gmt,
-		'issue'        => array(
+		'id'                  => isset( $row['id'] ) ? absint( $row['id'] ) : 0,
+		'comment_id'          => (int) $comment->comment_ID,
+		'issue_id'            => (int) $issue->ID,
+		'event_family'        => $event_family,
+		'event_label'         => (string) $event['event_label'],
+		'preview'             => alpaca_get_notification_inbox_preview_text( $event ),
+		'comment_attachments' => $attachments,
+		'created_gmt'         => isset( $row['created_gmt'] ) ? (string) $row['created_gmt'] : '',
+		'read_at_gmt'         => $read_at_gmt,
+		'is_unread'           => '' === $read_at_gmt,
+		'issue'               => array(
 			'id'    => (int) $issue->ID,
 			'slug'  => (string) $issue->post_name,
 			'title' => (string) $issue->post_title,
 			'url'   => alpaca_get_notification_issue_url( $issue ),
 		),
-		'actor'        => array(
+		'actor'               => array(
 			'id'           => $actor instanceof WP_User ? (int) $actor->ID : 0,
 			'display_name' => $actor instanceof WP_User ? (string) $actor->display_name : esc_html__( 'Unknown user', 'alpaca' ),
 			'avatar_url'   => $actor instanceof WP_User ? get_avatar_url( $actor->ID, array( 'size' => 48 ) ) : '',

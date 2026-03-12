@@ -587,6 +587,10 @@ $core-font-stack:
       // any tab styling
       padding: 1em 0;
     }
+
+    .alpaca-timeline-item[data-source='audit'] .alpaca-comment-buttons {
+      top: -8px;
+    }
   }
 
   .alpaca-issue-main {
@@ -1397,7 +1401,26 @@ $core-font-stack:
     position: relative;
 
     .alpaca-timeline-msg {
+      display: flex;
+      flex-direction: column;
       margin-left: 64px;
+      padding-right: 18px;
+      width: 100%;
+    }
+
+    .alpaca-audit-inline-row {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .alpaca-audit-inline-time {
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: 0.02em;
+      line-height: 1.2;
+      white-space: nowrap;
     }
 
     p {
@@ -1887,6 +1910,10 @@ $core-font-stack:
     color: $greytext;
     text-transform: uppercase;
     letter-spacing: 0.03em;
+  }
+
+  .alpaca-timeline-msg {
+    padding-top: 4px;
   }
 
   .alpaca-comments-timeline {
@@ -2647,67 +2674,140 @@ $core-font-stack:
   display: flex;
   flex-direction: column;
   gap: 12px;
-}
 
-.alpaca-inbox-item {
-  border: 1px solid $greyborder;
-  border-radius: 8px;
-  background: $container-bg;
-
-  &.is-unread {
-    border-color: #85b3d9;
-    background: #fff;
-    box-shadow: 0 0 0 1px rgb(34 113 177 / 10%);
+  &.alpaca-comments-timeline::before {
+    left: 20px;
+    bottom: 12px;
   }
 }
 
-.alpaca-inbox-item-main {
+.alpaca-inbox-entry-button {
   display: block;
   width: 100%;
   border: 0;
-  padding: 16px;
+  padding: 0;
   background: transparent;
   text-align: left;
   cursor: pointer;
+  border-radius: $common-radius;
 }
 
-.alpaca-inbox-item-topline,
-.alpaca-inbox-item-meta,
-.alpaca-inbox-item-actor {
+.alpaca-inbox-entry {
+  opacity: 1;
+  transition: opacity 200ms ease-in-out;
+  margin-bottom: 18px;
+
+  .alpaca-comment-issue-title {
+    margin: 4px 0;
+  }
+
+  &.is-read {
+    opacity: 0.62;
+  }
+}
+
+.alpaca-inbox-entry-button:focus-visible {
+  outline: 2px solid #2271b1;
+  outline-offset: 2px;
+}
+
+.alpaca-inbox-entry-item {
+  margin: 0;
+}
+
+.alpaca-inbox-entry-item[data-source='human'] {
   display: flex;
+  flex-direction: column;
+}
+
+.alpaca-inbox-entry-item[data-source='human'] .alpaca-timeline-content {
+  border-radius: $common-radius;
+  border: 1px solid $greyborder;
+  background: $container-bg;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.alpaca-inbox-entry-item[data-source='human'] .alpaca-timeline-footer-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 6px;
+}
+
+.alpaca-inbox-entry.is-unread
+  .alpaca-inbox-entry-item[data-source='human']
+  .alpaca-timeline-content {
+  border-color: #85b3d9;
+  background: $bgwhite;
+  box-shadow: 0 0 0 1px rgb(34 113 177 / 10%);
+}
+
+.wp-admin .alpaca-inbox-entry-item[data-source='audit'] {
+  margin: 0;
+
+  .alpaca-timeline-icon {
+    left: 0;
+  }
+
+  .alpaca-timeline-msg {
+    margin-left: 36px;
+  }
+
+  .alpaca-audit-topline {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    width: 100%;
+    margin: 0 0 4px 0;
+
+    .alpaca-comment-issue-title {
+      flex: 1 1 auto;
+      min-width: 0;
+      margin-bottom: 0;
+    }
+
+    .alpaca-comment-date {
+      margin-left: auto;
+      min-width: 9ch;
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: 0.02em;
+      line-height: 1.2;
+      text-align: right;
+      white-space: nowrap;
+    }
+  }
+
+  .alpaca-timeline-msg-meta .alpaca-comment-buttons {
+    margin-left: auto;
+  }
+
+  .alpaca-comment-buttons {
+    opacity: 1;
+    position: static;
+  }
+}
+
+.alpaca-inbox-entry.is-unread .alpaca-inbox-entry-item[data-source='audit'] {
+  .alpaca-timeline-icon {
+    border-color: #85b3d9;
+  }
+}
+
+.alpaca-inbox-entry-item .alpaca-comment-header {
   align-items: center;
 }
 
-.alpaca-inbox-item-topline {
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 8px;
+.alpaca-inbox-entry-item .alpaca-comment-buttons {
+  opacity: 1;
+  position: static;
+  margin-left: auto;
 }
 
-.alpaca-inbox-item-issue {
-  font-weight: 700;
-  color: $greytext;
-}
-
-.alpaca-inbox-item-time {
-  flex: 0 0 auto;
-  color: #646970;
-  font-size: 12px;
-}
-
-.alpaca-inbox-item-meta {
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.alpaca-inbox-item-unread-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #2271b1;
-}
-
-.alpaca-inbox-item-label {
+.alpaca-inbox-entry-label {
+  margin: 0 0 8px;
   color: #0a4b78;
   font-size: 12px;
   font-weight: 700;
@@ -2715,28 +2815,17 @@ $core-font-stack:
   letter-spacing: 0.03em;
 }
 
-.alpaca-inbox-item-preview {
-  margin: 0 0 12px 0;
+.alpaca-inbox-entry-preview {
+  margin: 0;
   color: $greytext;
   line-height: 1.5;
 }
 
-.alpaca-inbox-item-actor {
-  gap: 8px;
-  color: #646970;
-  font-size: 13px;
-}
-
-.alpaca-inbox-item-avatar {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-}
-
-.alpaca-inbox-item-actions {
-  display: flex;
-  justify-content: flex-end;
-  padding: 0 16px 12px 16px;
+.alpaca-inbox-entry-read-toggle.components-button {
+  color: #0a4b78;
+  min-height: auto;
+  padding: 0;
+  text-decoration: none;
 }
 
 .alpaca-inbox-panel-footer {
