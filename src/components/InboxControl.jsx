@@ -15,6 +15,7 @@ const { doAction } = wp.hooks;
 
 const PAGE_SIZE = 20;
 const POLL_INTERVAL_MS = 30000;
+const PANEL_CLOSE_ANIMATION_MS = 220;
 const IS_UNREAD_KEY = 'is_unread';
 const CREATED_GMT_KEY = 'created_gmt';
 
@@ -69,7 +70,8 @@ const formatInboxTimestamp = (value) => {
  * @return {JSX.Element|null} Inbox control.
  */
 function InboxControl({ selector }) {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isPanelVisible, setIsPanelVisible] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const [filter, setFilter] = useState('unread');
   const [items, setItems] = useState([]);
   const [page, setPage] = useState(1);
@@ -91,6 +93,34 @@ function InboxControl({ selector }) {
         setUnreadCount(0);
       });
   }, []);
+
+  const closePanel = useCallback(() => {
+    if (!isPanelVisible || isClosing) {
+      return;
+    }
+
+    setIsClosing(true);
+  }, [isClosing, isPanelVisible]);
+
+  const openPanel = useCallback(() => {
+    setIsClosing(false);
+    setIsPanelVisible(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isClosing) {
+      return undefined;
+    }
+
+    const closeTimerId = window.setTimeout(() => {
+      setIsPanelVisible(false);
+      setIsClosing(false);
+    }, PANEL_CLOSE_ANIMATION_MS);
+
+    return () => {
+      window.clearTimeout(closeTimerId);
+    };
+  }, [isClosing]);
 
   useEffect(() => {
     loadUnreadCount();
@@ -154,21 +184,21 @@ function InboxControl({ selector }) {
   );
 
   useEffect(() => {
-    if (!isOpen) {
+    if (!isPanelVisible) {
       return;
     }
 
     loadInbox({ nextPage: 1, nextFilter: filter, append: false });
-  }, [filter, isOpen, loadInbox]);
+  }, [filter, isPanelVisible, loadInbox]);
 
   useEffect(() => {
-    if (!isOpen) {
+    if (!isPanelVisible) {
       return undefined;
     }
 
     const handleKeyDown = (event) => {
       if ('Escape' === event.key) {
-        setIsOpen(false);
+        closePanel();
       }
     };
 
@@ -186,7 +216,7 @@ function InboxControl({ selector }) {
         return;
       }
 
-      setIsOpen(false);
+      closePanel();
     };
 
     document.addEventListener('keydown', handleKeyDown);
@@ -198,15 +228,15 @@ function InboxControl({ selector }) {
       document.removeEventListener('mousedown', handlePointerDown, true);
       document.removeEventListener('touchstart', handlePointerDown, true);
     };
-  }, [isOpen]);
+  }, [closePanel, isPanelVisible]);
 
   useEffect(() => {
-    document.body.classList.toggle('alpaca-inbox-open', isOpen);
+    document.body.classList.toggle('alpaca-inbox-open', isPanelVisible);
 
     return () => {
       document.body.classList.remove('alpaca-inbox-open');
     };
-  }, [isOpen]);
+  }, [isPanelVisible]);
 
   const hasMoreItems = useMemo(() => page < totalPages, [page, totalPages]);
 
@@ -270,7 +300,7 @@ function InboxControl({ selector }) {
           id: item?.issue?.id,
           slug: item?.issue?.slug,
         });
-        setIsOpen(false);
+        closePanel();
       };
 
       if (!item[IS_UNREAD_KEY]) {
@@ -297,7 +327,7 @@ function InboxControl({ selector }) {
           setIsMutating(false);
         });
     },
-    [updateLocalReadState],
+    [closePanel, updateLocalReadState],
   );
 
   const handleMarkAllRead = useCallback(() => {
@@ -435,11 +465,18 @@ function InboxControl({ selector }) {
         <div className="alpaca-inbox-control">
           <button
             type="button"
-            className={`alpaca-inbox-trigger ${isOpen ? 'is-open' : ''}`}
-            onClick={() => setIsOpen((current) => !current)}
+            className={`alpaca-inbox-trigger ${isPanelVisible ? 'is-open' : ''}`}
+            onClick={() => {
+              if (isPanelVisible) {
+                closePanel();
+                return;
+              }
+
+              openPanel();
+            }}
             ref={buttonRef}
             aria-haspopup="dialog"
-            aria-expanded={isOpen}
+            aria-expanded={isPanelVisible}
             aria-controls="alpaca-inbox-panel"
           >
             <span className="dashicons dashicons-bell" aria-hidden="true" />
@@ -451,25 +488,24 @@ function InboxControl({ selector }) {
         </div>,
         mountNode,
       )}
-      {isOpen &&
+      {isPanelVisible &&
         createPortal(
           <>
             <div className="alpaca-inbox-backdrop" />
             <aside
               id="alpaca-inbox-panel"
-              className="alpaca-inbox-panel"
+              className={`alpaca-inbox-panel alpaca-side-panel ${isClosing ? 'is-closing' : ''}`}
               ref={panelRef}
               aria-label={__('Inbox', 'alpaca')}
             >
               <div className="alpaca-inbox-panel-header">
                 <div>
                   <h2>{__('Inbox', 'alpaca')}</h2>
-                  <p>{__('Relevant issue activity for you.', 'alpaca')}</p>
                 </div>
                 <button
                   type="button"
                   className="alpaca-inbox-close"
-                  onClick={() => setIsOpen(false)}
+                  onClick={closePanel}
                 >
                   <span className="screen-reader-text">
                     {__('Close inbox', 'alpaca')}

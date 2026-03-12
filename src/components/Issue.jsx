@@ -1598,7 +1598,7 @@ const AlpacaIssue = ({
       <Modal
         size="fill"
         onRequestClose={onClose}
-        className="alpaca-details-modal"
+        className="alpaca-details-modal alpaca-side-panel"
         headerActions={
           !isCreating && (
             <Dropdown

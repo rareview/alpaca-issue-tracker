@@ -77,6 +77,11 @@ $core-font-stack:
   padding: 0 8px;
 }
 
+%alpaca-slide-right-enter {
+  animation: slide-in-right 300ms ease-out forwards;
+  transform-origin: 100% center;
+}
+
 /*
  * 2.0 - General / Helper Classes
  */
@@ -553,12 +558,18 @@ $core-font-stack:
   .components-modal__frame.alpaca-details-modal {
     position: absolute;
     top: 0;
-    right: -8px;
-    max-width: 750px;
-    height: calc(100% - 32px);
-    margin: 32px 0 0 0;
-    animation: slide-in-right 300ms ease-out forwards;
-    transform-origin: 100% center;
+    right: calc(-1 * var(--alpaca-side-panel-frame-overhang, 8px));
+    max-width: var(--alpaca-side-panel-max-width, 750px);
+    height: calc(100% - var(--alpaca-side-panel-top-offset, 32px));
+    margin: var(--alpaca-side-panel-top-offset, 32px) 0 0 0;
+
+    @extend %alpaca-slide-right-enter;
+  }
+
+  .alpaca-details-modal.alpaca-side-panel {
+    --alpaca-side-panel-top-offset: 32px;
+    --alpaca-side-panel-max-width: 750px;
+    --alpaca-side-panel-frame-overhang: 8px;
   }
 
   .alpaca-issue-details {
@@ -1805,6 +1816,19 @@ $core-font-stack:
   position: relative;
 }
 
+.alpaca-side-panel {
+  --alpaca-side-panel-border: 1px solid #{$greyborder};
+  --alpaca-side-panel-radius: #{$common-radius};
+  --alpaca-side-panel-shadow: -12px 0 32px rgb(0 0 0 / 16%);
+
+  background: $bgwhite;
+  border: var(--alpaca-side-panel-border);
+  border-top-left-radius: var(--alpaca-side-panel-radius);
+  border-bottom-left-radius: var(--alpaca-side-panel-radius);
+  box-shadow: var(--alpaca-side-panel-shadow);
+  overflow: hidden;
+}
+
 .alpaca-snackbar-stack {
   position: absolute;
   left: 24px;
@@ -2513,8 +2537,7 @@ $core-font-stack:
   right: -7px;
   min-width: 20px;
   height: 20px;
-  padding: 0 5px;
-  border-radius: 999px;
+  border-radius: 50%;
   background: #d63638;
   color: #fff;
   font-size: 11px;
@@ -2531,18 +2554,30 @@ $core-font-stack:
 }
 
 .alpaca-inbox-panel {
+  --alpaca-side-panel-top: 32px;
+  --alpaca-side-panel-right: 0;
+  --alpaca-side-panel-bottom: 0;
+  --alpaca-side-panel-width: 420px;
+  --alpaca-side-panel-max-width: calc(100vw - 24px);
+
   position: fixed;
-  top: 32px;
-  right: 0;
-  bottom: 0;
-  width: 420px;
-  max-width: calc(100vw - 24px);
+  top: var(--alpaca-side-panel-top);
+  right: var(--alpaca-side-panel-right);
+  bottom: var(--alpaca-side-panel-bottom);
+  width: var(--alpaca-side-panel-width);
+  max-width: var(--alpaca-side-panel-max-width);
   display: flex;
   flex-direction: column;
-  background: $bgwhite;
-  border-left: 1px solid $greyborder;
-  box-shadow: -12px 0 32px rgb(0 0 0 / 16%);
   z-index: 9999;
+  opacity: 1;
+  transition: opacity 220ms ease-in-out;
+
+  @extend %alpaca-slide-right-enter;
+
+  &.is-closing {
+    opacity: 0;
+    pointer-events: none;
+  }
 }
 
 .alpaca-inbox-panel-header {
@@ -2715,9 +2750,9 @@ $core-font-stack:
   }
 
   .alpaca-inbox-panel {
-    top: 46px;
-    width: 100%;
-    max-width: 100%;
+    --alpaca-side-panel-top: 46px;
+    --alpaca-side-panel-width: 100%;
+    --alpaca-side-panel-max-width: 100%;
   }
 }
 
