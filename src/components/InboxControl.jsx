@@ -6,6 +6,7 @@ import {
   markNotificationInboxItemsRead,
   markNotificationInboxItemsUnread,
 } from '../services/notificationApi';
+import UnreadCountBadge from './notifications/UnreadCountBadge';
 import TimelineEntry from './comment/TimelineEntry';
 
 const { useCallback, useEffect, useMemo, useRef, useState, createPortal } =
@@ -564,9 +565,7 @@ function InboxControl({ selector }) {
           >
             <span className="dashicons dashicons-bell" aria-hidden="true" />
             <span className="screen-reader-text">{__('Inbox', 'alpaca')}</span>
-            {unreadCount > 0 && (
-              <span className="alpaca-inbox-trigger-badge">{unreadCount}</span>
-            )}
+            <UnreadCountBadge count={unreadCount} variant="inbox-trigger" />
           </button>
         </div>,
         mountNode,

@@ -27,6 +27,7 @@ import { AlpacaBoard } from './Board.jsx';
 import Presence from './components/Presence';
 import NotificationPreferences from './components/NotificationPreferences.jsx';
 import NotificationTemplateScreen from './components/NotificationTemplateScreen.jsx';
+import AdminSidebarInboxBadge from './components/notifications/AdminSidebarInboxBadge.jsx';
 import AlpacaDashboardWidget from './DashboardWidget.jsx';
 import About from './about/About.jsx';
 import Activity from './Activity.jsx';
@@ -66,6 +67,26 @@ if (isAdmin && document.querySelector('#wp-admin-bar-alpaca-report')) {
   adminBarModalContainer.id = 'alpaca-admin-bar-modal-mount';
   document.body.appendChild(adminBarModalContainer);
   render(<AlpacaModal />, adminBarModalContainer);
+}
+
+if (isAdmin) {
+  const projectBoardSubmenuLink = document.querySelector(
+    '#toplevel_page_project-board .wp-submenu li.wp-first-item > a',
+  );
+
+  if (projectBoardSubmenuLink) {
+    let menuBadgeMount = projectBoardSubmenuLink.querySelector(
+      '.alpaca-admin-menu-badge-mount',
+    );
+
+    if (!menuBadgeMount) {
+      menuBadgeMount = document.createElement('span');
+      menuBadgeMount.className = 'alpaca-admin-menu-badge-mount';
+      projectBoardSubmenuLink.appendChild(menuBadgeMount);
+    }
+
+    render(<AdminSidebarInboxBadge />, menuBadgeMount);
+  }
 }
 
 if (!isAdmin) {
