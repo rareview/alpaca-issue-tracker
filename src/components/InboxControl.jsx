@@ -20,15 +20,34 @@ const PANEL_CLOSE_ANIMATION_MS = 220;
 const IS_UNREAD_KEY = 'is_unread';
 const CREATED_GMT_KEY = 'created_gmt';
 const EVENT_FAMILY_HUMAN_COMMENTS = 'human_comments';
-const EVENT_FAMILY_TO_TIMELINE_TAG = {
-  status_changes: 'status-changed',
-  issue_assignment_changes: 'assignee-changed',
-  due_date_changes: 'deadline-changed',
-  checklist_created_deleted: 'subissue-created',
-  checklist_assignment_changes: 'subissue-assignee-changed',
-  checklist_completion_changes: 'subissue-completion-changed',
-  checklist_promotions: 'subissue-promoted',
-  priority_changes: 'priority-changed',
+
+/**
+ * Map an inbox event family to an audit timeline tag.
+ *
+ * @param {string} eventFamily Inbox event family.
+ * @return {string} Timeline tag.
+ */
+const getTimelineTagForEventFamily = (eventFamily) => {
+  switch (eventFamily) {
+    case 'status_changes':
+      return 'status-changed';
+    case 'issue_assignment_changes':
+      return 'assignee-changed';
+    case 'due_date_changes':
+      return 'deadline-changed';
+    case 'checklist_created_deleted':
+      return 'subissue-created';
+    case 'checklist_assignment_changes':
+      return 'subissue-assignee-changed';
+    case 'checklist_completion_changes':
+      return 'subissue-completion-changed';
+    case 'checklist_promotions':
+      return 'subissue-promoted';
+    case 'priority_changes':
+      return 'priority-changed';
+    default:
+      return '';
+  }
 };
 
 /**
@@ -97,23 +116,19 @@ const buildTimelineCommentFromInboxItem = (item) => {
           'string' === typeof attachmentUrl && attachmentUrl.trim().length > 0,
       )
     : [];
-  const mappedEventTag = EVENT_FAMILY_TO_TIMELINE_TAG[eventFamily];
+  const mappedEventTag = getTimelineTagForEventFamily(eventFamily);
 
   if (mappedEventTag) {
     timelineTags.push(mappedEventTag);
   }
 
-  return {
+  const timelineComment = {
     id: item?.id,
     date: parsedCreatedDate
       ? parsedCreatedDate.toISOString()
       : item?.[CREATED_GMT_KEY] || '',
     author_user_agent:
       EVENT_FAMILY_HUMAN_COMMENTS === eventFamily ? 'human' : 'audit',
-    author_details: {
-      name: item?.actor?.display_name || __('Unknown user', 'alpaca'),
-      avatar: item?.actor?.avatar_url || '',
-    },
     content: {
       raw: markdownBody,
     },
@@ -122,6 +137,14 @@ const buildTimelineCommentFromInboxItem = (item) => {
       alpacaCommentAttachments: commentAttachments,
     },
   };
+
+  // eslint-disable-next-line camelcase
+  timelineComment.author_details = {
+    name: item?.actor?.display_name || __('Unknown user', 'alpaca'),
+    avatar: item?.actor?.avatar_url || '',
+  };
+
+  return timelineComment;
 };
 
 /**

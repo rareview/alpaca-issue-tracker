@@ -1404,7 +1404,7 @@ $core-font-stack:
       display: flex;
       flex-direction: column;
       margin-left: 64px;
-      padding-right: 18px;
+      padding-right: $commenthead-hpad;
       width: 100%;
     }
 
@@ -2734,6 +2734,7 @@ $core-font-stack:
   display: flex;
   justify-content: flex-end;
   margin-top: 6px;
+  padding-right: $commenthead-hpad;
 }
 
 .alpaca-inbox-entry.is-unread

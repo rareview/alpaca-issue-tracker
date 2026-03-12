@@ -103,22 +103,22 @@ export const getProcessedCommentContent = (comment) => {
 /**
  * Shared timeline entry renderer for issue comments.
  *
- * @param {Object}   props                   Component props.
- * @param {Object}   props.comment           Comment object.
- * @param {Object}   props.currentUser       Current user object.
- * @param {Function} props.onAttachmentClick Attachment click callback.
- * @param {Object}   props.headerActions     Header actions.
- * @param {Object}   props.footerActions     Footer actions.
- * @param {string}   props.issueTitle        Issue title.
- * @param {boolean}  props.showIssueTitle    Whether to display issue title.
- * @param {boolean}  props.showTime          Whether to display time.
- * @param {boolean}  props.isEditing         Whether the entry is in edit mode.
- * @param {Object}   props.editBody          Edit form body.
- * @param {boolean}  props.isSubmitting      Whether submit is in progress.
- * @param {boolean}  props.stripInteractive  Remove interactive HTML elements from rendered body.
+ * @param {Object}   props                         Component props.
+ * @param {Object}   props.comment                 Comment object.
+ * @param {Object}   props.currentUser             Current user object.
+ * @param {Function} props.onAttachmentClick       Attachment click callback.
+ * @param {Object}   props.headerActions           Header actions.
+ * @param {Object}   props.footerActions           Footer actions.
+ * @param {string}   props.issueTitle              Issue title.
+ * @param {boolean}  props.showIssueTitle          Whether to display issue title.
+ * @param {boolean}  props.showTime                Whether to display time.
+ * @param {boolean}  props.isEditing               Whether the entry is in edit mode.
+ * @param {Object}   props.editBody                Edit form body.
+ * @param {boolean}  props.isSubmitting            Whether submit is in progress.
+ * @param {boolean}  props.stripInteractive        Remove interactive HTML elements from rendered body.
  * @param {boolean}  props.enableAttachmentPreview Whether image attachment zoom preview is enabled.
- * @param {boolean}  props.auditTimeInTopline Whether audit timestamp renders in a title row.
- * @param {string}   props.className         Optional extra class names for wrapper.
+ * @param {boolean}  props.auditTimeInTopline      Whether audit timestamp renders in a title row.
+ * @param {string}   props.className               Optional extra class names for wrapper.
  * @return {JSX.Element} Rendered timeline entry.
  */
 const TimelineEntry = ({
