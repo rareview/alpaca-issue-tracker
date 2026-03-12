@@ -121,23 +121,40 @@ const isValidEmail = (email) => {
 /**
  * Get the fallback display value for a channel summary field.
  *
- * @param {string} channelKey Channel key.
- * @param {string} fieldKey   Summary field key.
  * @return {string} Fallback display value.
  */
-const getChannelSummaryFallback = (channelKey, fieldKey) => {
-  if ('email' === channelKey && 'profile_address' === fieldKey) {
-    return __('No email address is set on your WordPress profile.', 'alpaca');
+const getChannelSummaryFallback = () => __('Not configured.', 'alpaca');
+
+/**
+ * Get the displayed value for the email delivery field.
+ *
+ * @param {Object|null} nextPreferences   Notification preferences payload.
+ * @param {Object}      nextChannelStatus Channel status payload.
+ * @return {string} Displayed email field value.
+ */
+const getEmailDeliveryFieldValue = (nextPreferences, nextChannelStatus) => {
+  const channelPreferences =
+    nextPreferences &&
+    nextPreferences[CHANNELS_KEY] &&
+    nextPreferences[CHANNELS_KEY].email
+      ? nextPreferences[CHANNELS_KEY].email
+      : {};
+  const overrideValue =
+    'string' === typeof channelPreferences[ADDRESS_OVERRIDE_KEY]
+      ? channelPreferences[ADDRESS_OVERRIDE_KEY]
+      : '';
+  const profileAddress =
+    nextChannelStatus &&
+    nextChannelStatus.email &&
+    'string' === typeof nextChannelStatus.email.profile_address
+      ? nextChannelStatus.email.profile_address
+      : '';
+
+  if (overrideValue) {
+    return overrideValue;
   }
 
-  if ('email' === channelKey && 'effective_address' === fieldKey) {
-    return __(
-      'Set an override email or add one to your WordPress profile.',
-      'alpaca',
-    );
-  }
-
-  return __('Not configured.', 'alpaca');
+  return profileAddress;
 };
 
 /**
@@ -150,6 +167,7 @@ const NotificationPreferences = () => {
   const [availableChannels, setAvailableChannels] = useState([]);
   const [channelStatus, setChannelStatus] = useState({});
   const [labels, setLabels] = useState([]);
+  const [emailDeliveryValue, setEmailDeliveryValue] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
@@ -180,6 +198,15 @@ const NotificationPreferences = () => {
             'object' === typeof response[CHANNEL_STATUS_KEY]
             ? response[CHANNEL_STATUS_KEY]
             : {},
+        );
+        setEmailDeliveryValue(
+          getEmailDeliveryFieldValue(
+            response.preferences || null,
+            response[CHANNEL_STATUS_KEY] &&
+              'object' === typeof response[CHANNEL_STATUS_KEY]
+              ? response[CHANNEL_STATUS_KEY]
+              : {},
+          ),
         );
 
         if (
@@ -220,19 +247,15 @@ const NotificationPreferences = () => {
     return preferences[CHANNELS_KEY].email || {};
   }, [preferences]);
 
-  const emailAddressOverride = useMemo(() => {
-    const overrideValue = emailChannelPreferences[ADDRESS_OVERRIDE_KEY];
-    return 'string' === typeof overrideValue ? overrideValue : '';
-  }, [emailChannelPreferences]);
-
   const hasInvalidEmailOverride = useMemo(() => {
-    const trimmedOverride = emailAddressOverride.trim();
+    const trimmedOverride =
+      'string' === typeof emailDeliveryValue ? emailDeliveryValue.trim() : '';
     if (!trimmedOverride) {
       return false;
     }
 
     return !isValidEmail(trimmedOverride);
-  }, [emailAddressOverride]);
+  }, [emailDeliveryValue]);
 
   const selectedLabelIds = useMemo(() => {
     if (!preferences || !Array.isArray(preferences[LABEL_IDS_KEY])) {
@@ -318,11 +341,39 @@ const NotificationPreferences = () => {
       return;
     }
 
+    const nextPreferences = {
+      ...preferences,
+      [CHANNELS_KEY]: {
+        ...preferences[CHANNELS_KEY],
+        email: {
+          ...emailChannelPreferences,
+        },
+      },
+    };
+    const trimmedEmailValue =
+      'string' === typeof emailDeliveryValue ? emailDeliveryValue.trim() : '';
+    const profileAddress =
+      channelStatus?.email &&
+      'string' === typeof channelStatus.email.profile_address
+        ? channelStatus.email.profile_address.trim()
+        : '';
+
+    if (
+      '' === trimmedEmailValue ||
+      (profileAddress &&
+        trimmedEmailValue.toLowerCase() === profileAddress.toLowerCase())
+    ) {
+      nextPreferences[CHANNELS_KEY].email[ADDRESS_OVERRIDE_KEY] = '';
+    } else {
+      nextPreferences[CHANNELS_KEY].email[ADDRESS_OVERRIDE_KEY] =
+        trimmedEmailValue;
+    }
+
     setIsSaving(true);
     setError('');
     setNotice('');
 
-    updateNotificationPreferences(preferences)
+    updateNotificationPreferences(nextPreferences)
       .then((response) => {
         setPreferences(response.preferences || null);
         setAvailableChannels(
@@ -336,6 +387,15 @@ const NotificationPreferences = () => {
             ? response[CHANNEL_STATUS_KEY]
             : {},
         );
+        setEmailDeliveryValue(
+          getEmailDeliveryFieldValue(
+            response.preferences || null,
+            response[CHANNEL_STATUS_KEY] &&
+              'object' === typeof response[CHANNEL_STATUS_KEY]
+              ? response[CHANNEL_STATUS_KEY]
+              : {},
+          ),
+        );
         setNotice(__('Notification preferences saved.', 'alpaca'));
       })
       .catch((saveError) => {
@@ -347,7 +407,7 @@ const NotificationPreferences = () => {
       .finally(() => {
         setIsSaving(false);
       });
-  }, [preferences]);
+  }, [channelStatus, emailChannelPreferences, emailDeliveryValue, preferences]);
 
   const labelPicker = Boolean(preferences?.subjects?.labeled) && (
     <div className="alpaca-notifications-label-picker">
@@ -417,7 +477,45 @@ const NotificationPreferences = () => {
             const currentChannelPreferences =
               preferences[CHANNELS_KEY]?.[channelKey] || {};
             const currentChannelStatus = channelStatus?.[channelKey] || {};
-            const channelCanEnable = Boolean(currentChannelStatus.can_enable);
+            const isChannelEnabled = !!currentChannelPreferences.enabled;
+            const profileAddress =
+              'email' === channelKey &&
+              'string' === typeof currentChannelStatus.profile_address
+                ? currentChannelStatus.profile_address
+                : '';
+            const emailFieldValue =
+              'email' === channelKey ? emailDeliveryValue : '';
+            let channelCanEnable = Boolean(currentChannelStatus.can_enable);
+
+            if ('email' === channelKey) {
+              const trimmedEmailFieldValue = emailFieldValue.trim();
+              const effectiveEmailFieldValue =
+                trimmedEmailFieldValue || profileAddress;
+
+              channelCanEnable = isValidEmail(effectiveEmailFieldValue);
+            }
+
+            const channelSettingValue = (fieldKey) => {
+              if ('email' === channelKey) {
+                return emailDeliveryValue;
+              }
+
+              if ('string' === typeof currentChannelPreferences[fieldKey]) {
+                return currentChannelPreferences[fieldKey];
+              }
+
+              return '';
+            };
+
+            const handleChannelSettingChange = (fieldKey, value) => {
+              if ('email' === channelKey) {
+                setEmailDeliveryValue(value);
+                return;
+              }
+
+              updateChannelValue(channelKey, fieldKey, value);
+            };
+
             const enableChannelLabel = sprintf(
               /* translators: %s: notification channel label. */
               __('Enable %s notifications', 'alpaca'),
@@ -437,14 +535,12 @@ const NotificationPreferences = () => {
                   <ToggleControl
                     label={enableChannelLabel}
                     hideLabelFromVision
-                    checked={Boolean(currentChannelPreferences.enabled)}
+                    checked={isChannelEnabled}
                     onChange={(value) =>
                       updateChannelValue(channelKey, 'enabled', value)
                     }
                     disabled={
-                      isSaving ||
-                      !channelCanEnable ||
-                      ('email' === channelKey && hasInvalidEmailOverride)
+                      isSaving || (!isChannelEnabled && !channelCanEnable)
                     }
                   />
                 </div>
@@ -470,10 +566,7 @@ const NotificationPreferences = () => {
                             <span className="alpaca-notifications-channel-value">
                               {hasValue
                                 ? String(value)
-                                : getChannelSummaryFallback(
-                                    channelKey,
-                                    field.key,
-                                  )}
+                                : getChannelSummaryFallback()}
                             </span>
                           </div>
                         );
@@ -488,14 +581,9 @@ const NotificationPreferences = () => {
                         <TextControl
                           key={field.key}
                           label={field.label}
-                          value={
-                            'string' ===
-                            typeof currentChannelPreferences[field.key]
-                              ? currentChannelPreferences[field.key]
-                              : ''
-                          }
+                          value={channelSettingValue(field.key)}
                           onChange={(value) =>
-                            updateChannelValue(channelKey, field.key, value)
+                            handleChannelSettingChange(field.key, value)
                           }
                           disabled={isSaving}
                           help={

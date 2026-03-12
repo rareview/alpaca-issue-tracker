@@ -39,22 +39,13 @@ function alpaca_get_notification_channel_registry() {
 			'description'        => esc_html__( 'Send issue activity updates to an email inbox.', 'alpaca' ),
 			'enabled_by_default' => false,
 			'is_available'       => true,
-			'summary_fields'     => array(
-				array(
-					'key'   => 'profile_address',
-					'label' => esc_html__( 'WordPress profile email', 'alpaca' ),
-				),
-				array(
-					'key'   => 'effective_address',
-					'label' => esc_html__( 'Effective delivery address', 'alpaca' ),
-				),
-			),
+			'summary_fields'     => array(),
 			'settings_fields'    => array(
 				array(
 					'key'   => 'address_override',
 					'type'  => 'email',
-					'label' => esc_html__( 'Notification email override', 'alpaca' ),
-					'help'  => esc_html__( 'Leave blank to use your WordPress profile email.', 'alpaca' ),
+					'label' => esc_html__( 'Delivery email', 'alpaca' ),
+					'help'  => esc_html__( 'Defaults to your WordPress profile email unless you enter a different address here.', 'alpaca' ),
 				),
 			),
 		),
@@ -311,7 +302,15 @@ function alpaca_get_notification_channel_status_for_user( $user_id, $preferences
 	$channels            = alpaca_get_notification_channel_registry();
 	$profile_address     = alpaca_get_notification_profile_email( $user_id );
 	$effective_address   = alpaca_get_notification_effective_email( $user_id, $preferences );
-	$uses_email_override = alpaca_notification_preferences_use_email_override( $preferences );
+	$uses_email_override = false;
+
+	if ( '' !== $effective_address ) {
+		if ( '' === $profile_address ) {
+			$uses_email_override = alpaca_notification_preferences_use_email_override( $preferences );
+		} elseif ( 0 !== strcasecmp( $effective_address, $profile_address ) ) {
+			$uses_email_override = true;
+		}
+	}
 
 	foreach ( $channels as $channel_key => $channel ) {
 		if ( 'inbox' === $channel_key ) {
@@ -484,6 +483,15 @@ function alpaca_update_notification_preferences_for_user( $user_id, $preferences
 	}
 
 	$sanitized = alpaca_sanitize_notification_preferences( $preferences );
+	if ( isset( $sanitized['channels']['email']['address_override'] ) ) {
+		$profile_email = alpaca_get_notification_profile_email( $user_id );
+		$override      = trim( (string) $sanitized['channels']['email']['address_override'] );
+
+		if ( '' !== $override && '' !== $profile_email && 0 === strcasecmp( $override, $profile_email ) ) {
+			$sanitized['channels']['email']['address_override'] = '';
+		}
+	}
+
 	update_user_meta( (int) $user_id, 'alpaca_notification_preferences', $sanitized );
 	wp_cache_delete( 'notification_preference_user_ids', 'alpaca_notifications' );
 
