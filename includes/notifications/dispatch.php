@@ -33,6 +33,14 @@ function alpaca_get_notification_recipient_routes( $recipient, $event ) {
 			continue;
 		}
 
+		if ( 'inbox' === $channel_key ) {
+			$routes[] = array(
+				'channel'   => $channel_key,
+				'transport' => isset( $channel['transport'] ) ? (string) $channel['transport'] : $channel_key,
+			);
+			continue;
+		}
+
 		if ( 'email' === $channel_key ) {
 			$email = isset( $channel_status[ $channel_key ]['effective_address'] ) ? (string) $channel_status[ $channel_key ]['effective_address'] : '';
 			if ( '' === $email || ! is_email( $email ) ) {
@@ -56,6 +64,25 @@ function alpaca_get_notification_recipient_routes( $recipient, $event ) {
 	 * @param array<string, array<string, mixed>> $channels Registered channels.
 	 */
 	return apply_filters( 'alpaca_notification_recipient_routes', $routes, $recipient, $event, $channels );
+}
+
+/**
+ * Determine whether a notification transport requires a rendered message body.
+ *
+ * @param string $transport Transport key.
+ * @return bool True when the transport requires a rendered message.
+ */
+function alpaca_notification_transport_requires_message( $transport ) {
+	$transport = sanitize_key( (string) $transport );
+	$required  = in_array( $transport, array( 'email' ), true );
+
+	/**
+	 * Filter whether a notification transport requires a rendered message payload.
+	 *
+	 * @param bool   $required  Whether the transport requires a message payload.
+	 * @param string $transport Transport key.
+	 */
+	return (bool) apply_filters( 'alpaca_notification_transport_requires_message', $required, $transport );
 }
 
 /**
@@ -111,6 +138,10 @@ function alpaca_dispatch_notification_route( $route, $recipient, $event, $messag
 		return alpaca_send_notification_email_route( $route, $message );
 	}
 
+	if ( 'inbox' === $transport ) {
+		return alpaca_send_notification_inbox_route( $route, $recipient, $event );
+	}
+
 	return false;
 }
 
@@ -133,13 +164,8 @@ function alpaca_send_notifications_for_event( $event, $template = null ) {
 		return;
 	}
 
-	$message = alpaca_render_notification_message( $event, $template );
-	$message = apply_filters( 'alpaca_notifications_message', $message, $event, $recipients );
-	if ( ! is_array( $message ) || empty( $message['subject'] ) || empty( $message['html'] ) ) {
-		return;
-	}
-
-	$transports = apply_filters( 'alpaca_notifications_transports', array( 'email' ), $event, $recipients, $message );
+	$message    = null;
+	$transports = apply_filters( 'alpaca_notifications_transports', array( 'email', 'inbox' ), $event, $recipients, array() );
 	if ( ! is_array( $transports ) ) {
 		return;
 	}
@@ -156,9 +182,21 @@ function alpaca_send_notifications_for_event( $event, $template = null ) {
 				continue;
 			}
 
-			$route_message = alpaca_get_notification_message_for_route( $message, $route, $recipient, $event );
-			if ( empty( $route_message['subject'] ) || empty( $route_message['html'] ) ) {
-				continue;
+			$route_message = array();
+			if ( alpaca_notification_transport_requires_message( $transport ) ) {
+				if ( ! is_array( $message ) ) {
+					$message = alpaca_render_notification_message( $event, $template );
+					$message = apply_filters( 'alpaca_notifications_message', $message, $event, $recipients );
+				}
+
+				if ( ! is_array( $message ) || empty( $message['subject'] ) || empty( $message['html'] ) ) {
+					continue;
+				}
+
+				$route_message = alpaca_get_notification_message_for_route( $message, $route, $recipient, $event );
+				if ( empty( $route_message['subject'] ) || empty( $route_message['html'] ) ) {
+					continue;
+				}
 			}
 
 			$sent = alpaca_dispatch_notification_route( $route, $recipient, $event, $route_message );

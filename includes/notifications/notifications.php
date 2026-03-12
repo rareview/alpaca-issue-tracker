@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 require_once __DIR__ . '/template.php';
+require_once __DIR__ . '/inbox.php';
 require_once __DIR__ . '/preferences.php';
 require_once __DIR__ . '/mentions.php';
 require_once __DIR__ . '/events.php';

@@ -17,6 +17,21 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 function alpaca_get_notification_channel_registry() {
 	$channels = array(
+		'inbox' => array(
+			'key'                => 'inbox',
+			'transport'          => 'inbox',
+			'label'              => esc_html__( 'Inbox', 'alpaca' ),
+			'description'        => esc_html__( 'Keep relevant issue activity inside Project Board.', 'alpaca' ),
+			'enabled_by_default' => true,
+			'is_available'       => true,
+			'summary_fields'     => array(
+				array(
+					'key'   => 'unread_count',
+					'label' => esc_html__( 'Unread updates', 'alpaca' ),
+				),
+			),
+			'settings_fields'    => array(),
+		),
 		'email' => array(
 			'key'                => 'email',
 			'transport'          => 'email',
@@ -299,6 +314,14 @@ function alpaca_get_notification_channel_status_for_user( $user_id, $preferences
 	$uses_email_override = alpaca_notification_preferences_use_email_override( $preferences );
 
 	foreach ( $channels as $channel_key => $channel ) {
+		if ( 'inbox' === $channel_key ) {
+			$statuses[ $channel_key ] = array(
+				'unread_count' => alpaca_get_notification_inbox_unread_count( $user_id ),
+				'can_enable'   => ! empty( $channel['is_available'] ),
+			);
+			continue;
+		}
+
 		if ( 'email' === $channel_key ) {
 			$statuses[ $channel_key ] = array(
 				'profile_address'   => $profile_address,
@@ -388,7 +411,21 @@ function alpaca_sanitize_notification_preferences( $preferences ) {
 	);
 
 	if ( is_array( $preferences ) ) {
-		$sanitized['channels']['email'] = alpaca_get_notification_email_channel_preferences( $preferences );
+		foreach ( $defaults['channels'] as $channel_key => $channel_defaults ) {
+			if ( 'email' === $channel_key ) {
+				$sanitized['channels']['email'] = alpaca_get_notification_email_channel_preferences( $preferences );
+				continue;
+			}
+
+			$raw_channel = array();
+			if ( isset( $preferences['channels'] ) && is_array( $preferences['channels'] ) && isset( $preferences['channels'][ $channel_key ] ) && is_array( $preferences['channels'][ $channel_key ] ) ) {
+				$raw_channel = $preferences['channels'][ $channel_key ];
+			}
+
+			$sanitized['channels'][ $channel_key ] = array(
+				'enabled' => isset( $raw_channel['enabled'] ) ? ! empty( $raw_channel['enabled'] ) : ! empty( $channel_defaults['enabled'] ),
+			);
+		}
 	}
 
 	if ( is_array( $preferences ) && isset( $preferences['label_ids'] ) ) {

@@ -61,6 +61,7 @@ class Helpers {
 			case 'watchlist':
 			case 'get_statuses':
 			case 'notification_preferences':
+			case 'notification_inbox':
 				// Allow any logged-in user with basic read/edit capability (Contributor+).
 
 				$allowed = \current_user_can( 'edit_posts' );

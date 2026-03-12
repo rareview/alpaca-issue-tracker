@@ -8,6 +8,7 @@ const { doAction } = wp.hooks;
 
 import AlpacaIssue from './components/Issue';
 import Container from './components/Container';
+import InboxControl from './components/InboxControl';
 import SearchPortal from './components/Search';
 
 import { setCookie, getCookie } from './utils/cookies';
@@ -1093,6 +1094,7 @@ export function AlpacaBoard() {
 
   return (
     <>
+      <InboxControl selector="#project-board-controls-mount" />
       <SearchPortal selector="#project-board-controls-mount" />
       {hasNoStatuses ? (
         <div className="alpaca-empty-state">

@@ -34,6 +34,76 @@ function alpaca_register_notification_endpoints() {
 
 	register_rest_route(
 		'alpaca/v1',
+		'/notification-inbox',
+		array(
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => 'alpaca_get_notification_inbox_callback',
+				'permission_callback' => function () {
+					return \Alpaca\Inc\Helpers::user_can( 'notification_inbox' );
+				},
+			),
+		)
+	);
+
+	register_rest_route(
+		'alpaca/v1',
+		'/notification-inbox/count',
+		array(
+			array(
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => 'alpaca_get_notification_inbox_count_callback',
+				'permission_callback' => function () {
+					return \Alpaca\Inc\Helpers::user_can( 'notification_inbox' );
+				},
+			),
+		)
+	);
+
+	register_rest_route(
+		'alpaca/v1',
+		'/notification-inbox/mark-read',
+		array(
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => 'alpaca_mark_notification_inbox_read_callback',
+				'permission_callback' => function ( WP_REST_Request $request ) {
+					return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'notification_inbox' );
+				},
+			),
+		)
+	);
+
+	register_rest_route(
+		'alpaca/v1',
+		'/notification-inbox/mark-unread',
+		array(
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => 'alpaca_mark_notification_inbox_unread_callback',
+				'permission_callback' => function ( WP_REST_Request $request ) {
+					return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'notification_inbox' );
+				},
+			),
+		)
+	);
+
+	register_rest_route(
+		'alpaca/v1',
+		'/notification-inbox/mark-all-read',
+		array(
+			array(
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => 'alpaca_mark_all_notification_inbox_read_callback',
+				'permission_callback' => function ( WP_REST_Request $request ) {
+					return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'notification_inbox' );
+				},
+			),
+		)
+	);
+
+	register_rest_route(
+		'alpaca/v1',
 		'/notification-template',
 		array(
 			array(
@@ -130,6 +200,126 @@ function alpaca_get_notification_preferences_payload( $user_id ) {
  */
 function alpaca_get_notification_preferences_callback() {
 	return alpaca_rest_response( '', alpaca_get_notification_preferences_payload( get_current_user_id() ), 200 );
+}
+
+/**
+ * Build query args for inbox REST requests.
+ *
+ * @param WP_REST_Request $request REST request.
+ * @return array<string, mixed> Inbox query args.
+ */
+function alpaca_get_notification_inbox_query_args( WP_REST_Request $request ) {
+	$page     = absint( $request->get_param( 'page' ) );
+	$per_page = absint( $request->get_param( 'per_page' ) );
+	$filter   = sanitize_key( (string) $request->get_param( 'filter' ) );
+
+	if ( $page < 1 ) {
+		$page = 1;
+	}
+
+	if ( $per_page < 1 ) {
+		$per_page = 20;
+	}
+
+	if ( $per_page > 50 ) {
+		$per_page = 50;
+	}
+
+	if ( ! in_array( $filter, array( 'all', 'unread' ), true ) ) {
+		$filter = 'unread';
+	}
+
+	return array(
+		'page'     => $page,
+		'per_page' => $per_page,
+		'filter'   => $filter,
+	);
+}
+
+/**
+ * Handle GET inbox requests.
+ *
+ * @param WP_REST_Request $request REST request.
+ * @return WP_REST_Response REST response.
+ */
+function alpaca_get_notification_inbox_callback( WP_REST_Request $request ) {
+	$args = alpaca_get_notification_inbox_query_args( $request );
+
+	return alpaca_rest_response( '', alpaca_get_notification_inbox_items_for_user( get_current_user_id(), $args ), 200 );
+}
+
+/**
+ * Handle GET inbox unread count requests.
+ *
+ * @return WP_REST_Response REST response.
+ */
+function alpaca_get_notification_inbox_count_callback() {
+	return alpaca_rest_response(
+		'',
+		array(
+			'unread_count' => alpaca_get_notification_inbox_unread_count( get_current_user_id() ),
+		),
+		200
+	);
+}
+
+/**
+ * Handle POST mark-read requests for inbox items.
+ *
+ * @param WP_REST_Request $request REST request.
+ * @return WP_REST_Response REST response.
+ */
+function alpaca_mark_notification_inbox_read_callback( WP_REST_Request $request ) {
+	$params   = alpaca_get_notification_request_params( $request );
+	$item_ids = isset( $params['item_ids'] ) ? alpaca_get_valid_notification_inbox_item_ids( $params['item_ids'] ) : array();
+
+	alpaca_mark_notification_inbox_items_read( get_current_user_id(), $item_ids );
+
+	return alpaca_rest_response(
+		'',
+		array(
+			'unread_count' => alpaca_get_notification_inbox_unread_count( get_current_user_id() ),
+		),
+		200
+	);
+}
+
+/**
+ * Handle POST mark-unread requests for inbox items.
+ *
+ * @param WP_REST_Request $request REST request.
+ * @return WP_REST_Response REST response.
+ */
+function alpaca_mark_notification_inbox_unread_callback( WP_REST_Request $request ) {
+	$params   = alpaca_get_notification_request_params( $request );
+	$item_ids = isset( $params['item_ids'] ) ? alpaca_get_valid_notification_inbox_item_ids( $params['item_ids'] ) : array();
+
+	alpaca_mark_notification_inbox_items_unread( get_current_user_id(), $item_ids );
+
+	return alpaca_rest_response(
+		'',
+		array(
+			'unread_count' => alpaca_get_notification_inbox_unread_count( get_current_user_id() ),
+		),
+		200
+	);
+}
+
+/**
+ * Handle POST mark-all-read requests for inbox items.
+ *
+ * @return WP_REST_Response REST response.
+ */
+function alpaca_mark_all_notification_inbox_read_callback() {
+	alpaca_mark_all_notification_inbox_items_read( get_current_user_id() );
+
+	return alpaca_rest_response(
+		'',
+		array(
+			'unread_count' => alpaca_get_notification_inbox_unread_count( get_current_user_id() ),
+		),
+		200
+	);
 }
 
 /**

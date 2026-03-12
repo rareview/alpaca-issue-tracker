@@ -20,13 +20,13 @@ const subjectOptions = [
   {
     key: 'created',
     label: __('Issues I created', 'alpaca'),
-    help: __('Receive emails about issues you created.', 'alpaca'),
+    help: __('Receive updates about issues you created.', 'alpaca'),
   },
   {
     key: 'assigned',
     label: __('Issues assigned to me', 'alpaca'),
     help: __(
-      'Receive emails when you are assigned or when assigned issues change.',
+      'Receive updates when you are assigned or when assigned issues change.',
       'alpaca',
     ),
   },
@@ -42,7 +42,7 @@ const subjectOptions = [
     key: 'mentioned',
     label: __('Comments that mention me', 'alpaca'),
     help: __(
-      'Receive emails when another user mentions you with @username.',
+      'Receive updates when another user mentions you with @username.',
       'alpaca',
     ),
   },
@@ -50,7 +50,7 @@ const subjectOptions = [
     key: 'labeled',
     label: __('Issues with these labels', 'alpaca'),
     help: __(
-      'Receive emails about activity on issues with selected labels.',
+      'Receive updates about activity on issues with selected labels.',
       'alpaca',
     ),
   },
@@ -454,6 +454,10 @@ const NotificationPreferences = () => {
                     <div className="alpaca-notifications-channel-summary">
                       {channel.summary_fields.map((field) => {
                         const value = currentChannelStatus?.[field.key];
+                        const hasValue =
+                          null !== value &&
+                          typeof value !== 'undefined' &&
+                          '' !== value;
 
                         return (
                           <div
@@ -464,11 +468,12 @@ const NotificationPreferences = () => {
                               {field.label}
                             </span>
                             <span className="alpaca-notifications-channel-value">
-                              {value ||
-                                getChannelSummaryFallback(
-                                  channelKey,
-                                  field.key,
-                                )}
+                              {hasValue
+                                ? String(value)
+                                : getChannelSummaryFallback(
+                                    channelKey,
+                                    field.key,
+                                  )}
                             </span>
                           </div>
                         );
