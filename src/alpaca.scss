@@ -167,7 +167,8 @@ $core-font-stack:
     line-height: 32px;
 
     .alpaca-presence-msg {
-      margin-right: 8px;
+      margin-inline-end: 8px;
+      text-align: start;
     }
 
     .alpaca-presence-list {
@@ -199,7 +200,7 @@ $core-font-stack:
     margin-bottom: 20px;
 
     > :first-child {
-      margin-right: auto;
+      margin-inline-end: auto;
     }
   }
 
@@ -213,7 +214,8 @@ $core-font-stack:
      * 3.2 - Containers (Columns)
      */
   .alpaca-container {
-    margin: 0 10px 0 1px;
+    margin-block: 0;
+    margin-inline: 1px 10px;
     background: $container-bg;
     border-radius: 4px;
     display: flex;
@@ -2561,7 +2563,7 @@ $core-font-stack:
 .alpaca-inbox-trigger-badge {
   position: absolute;
   top: -7px;
-  right: -7px;
+  inset-inline-end: -7px;
   min-width: 20px;
   height: 20px;
   border-radius: 50%;
@@ -2571,6 +2573,12 @@ $core-font-stack:
   font-weight: 700;
   line-height: 20px;
   text-align: center;
+}
+
+html[dir='rtl'] .alpaca-inbox-trigger-badge,
+.rtl .alpaca-inbox-trigger-badge {
+  left: -7px;
+  right: auto;
 }
 
 .alpaca-admin-menu-badge-mount {
