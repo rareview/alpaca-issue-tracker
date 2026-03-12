@@ -25,13 +25,44 @@ const Time = memo(
     const spanClassName = ['timestamp', className].filter(Boolean).join(' ');
 
     if (type === 'relative') {
-      const secondsDiff = Math.floor((new Date() - dateObj) / 1000);
+      const now = new Date();
+      const secondsDiff = Math.floor((now - dateObj) / 1000);
 
-      // Show "just now" for the first minute
-      const relative =
-        secondsDiff < 60
-          ? __('just now', 'alpaca')
-          : window.moment(dateObj).fromNow();
+      // Show "just now" for the first minute.
+      let relative = __('just now', 'alpaca');
+
+      if (Math.abs(secondsDiff) >= 60) {
+        // Intl gives locale-native unit words and grammar (for example Arabic).
+        const locale = document.documentElement.lang || 'en';
+        const deltaSeconds = Math.round(
+          (dateObj.getTime() - now.getTime()) / 1000,
+        );
+        const absDelta = Math.abs(deltaSeconds);
+
+        let unit = 'minute';
+        let valueForUnit = Math.round(deltaSeconds / 60);
+
+        if (absDelta >= 60 * 60 * 24 * 365) {
+          unit = 'year';
+          valueForUnit = Math.round(deltaSeconds / (60 * 60 * 24 * 365));
+        } else if (absDelta >= 60 * 60 * 24 * 30) {
+          unit = 'month';
+          valueForUnit = Math.round(deltaSeconds / (60 * 60 * 24 * 30));
+        } else if (absDelta >= 60 * 60 * 24 * 7) {
+          unit = 'week';
+          valueForUnit = Math.round(deltaSeconds / (60 * 60 * 24 * 7));
+        } else if (absDelta >= 60 * 60 * 24) {
+          unit = 'day';
+          valueForUnit = Math.round(deltaSeconds / (60 * 60 * 24));
+        } else if (absDelta >= 60 * 60) {
+          unit = 'hour';
+          valueForUnit = Math.round(deltaSeconds / (60 * 60));
+        }
+
+        relative = new Intl.RelativeTimeFormat(locale, {
+          numeric: 'always',
+        }).format(valueForUnit, unit);
+      }
 
       return (
         <Tooltip text={formattedAbsolute}>

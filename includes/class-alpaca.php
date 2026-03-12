@@ -143,6 +143,7 @@ final class Alpaca {
 	 */
 	private function init_hooks() {
 		// Initialization.
+		\add_action( 'init', array( $this, 'load_textdomain' ), 1 );
 		\add_action( 'init', array( $this, 'init' ), 0 );
 
 		// REST API.
@@ -150,6 +151,46 @@ final class Alpaca {
 
 		// Update last activity on new comment.
 		\add_action( 'rest_insert_comment', array( $this, 'update_last_activity_on_rest_comment' ), 10, 3 );
+	}
+
+	/**
+	 * Load plugin translations.
+	 *
+	 * Supports locale-specific subfolders inside the plugin languages directory,
+	 * for example languages/ar/alpaca-ar.mo.
+	 *
+	 * @return void
+	 */
+	public function load_textdomain() {
+		$locale = \determine_locale();
+
+		/**
+		 * Filters the locale used to load Alpaca translations.
+		 *
+		 * @param string $locale The locale to load.
+		 */
+		$locale = \apply_filters( 'plugin_locale', $locale, 'alpaca' );
+
+		$locale_short = strtolower( substr( $locale, 0, 2 ) );
+		$candidates   = array(
+			ALPACA_PLUGIN_DIR . 'languages/' . $locale . '/alpaca-' . $locale . '.mo',
+			ALPACA_PLUGIN_DIR . 'languages/' . $locale_short . '/alpaca-' . $locale_short . '.mo',
+			ALPACA_PLUGIN_DIR . 'languages/alpaca-' . $locale . '.mo',
+			ALPACA_PLUGIN_DIR . 'languages/alpaca-' . $locale_short . '.mo',
+		);
+
+		foreach ( $candidates as $mofile ) {
+			if ( file_exists( $mofile ) ) {
+				\load_textdomain( 'alpaca', $mofile );
+				return;
+			}
+		}
+
+		\load_plugin_textdomain(
+			'alpaca',
+			false,
+			dirname( ALPACA_PLUGIN_BASENAME ) . '/languages'
+		);
 	}
 
 	/**

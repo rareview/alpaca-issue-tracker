@@ -1677,7 +1677,8 @@ const AlpacaIssue = ({
 
               {!isCreating && (
                 <div className="alpaca-issue-meta flexalign">
-                  Created by <User user={issueDetails.post_data.post_author} />{' '}
+                  {__('created by', 'alpaca')}{' '}
+                  <User user={issueDetails.post_data.post_author} />{' '}
                   <Time
                     value={issueDetails.post_data.post_date}
                     type="relative"

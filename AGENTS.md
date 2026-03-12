@@ -17,3 +17,15 @@ For JavaScript and UI development, always prefer WordPress core React components
 Code should prioritize maintainability, clarity, and compatibility with current and future WordPress core releases.
 
 All code must be compatible with typical WordPress environments ranging from cheap shared hosting to enterprise platforms like WordPress VIP. No build step should be required unless explicitly stated.
+
+## Translation workflow notes
+
+When generating JavaScript translation catalogs with `wp i18n make-json`, always include `--extensions=js,jsx` so strings in React `.jsx` files are exported.
+
+To keep the `languages/ar` folder tidy, keep only these Arabic runtime files:
+
+- `alpaca-ar.po`
+- `alpaca-ar.mo`
+- `alpaca-ar-alpaca-script.json`
+
+If hashed `alpaca-ar-*.json` files are generated, merge what is needed into `alpaca-ar-alpaca-script.json` and remove the hashed files afterward to minimize clutter.

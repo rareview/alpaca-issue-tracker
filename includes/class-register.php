@@ -74,6 +74,38 @@ class Register {
 			'wp-format-library',
 		);
 	}
+
+	/**
+	 * Get the translation path for JavaScript catalogs.
+	 *
+	 * @return string Absolute path to the translation directory.
+	 */
+	private function get_script_translation_path() {
+
+		$locale = determine_locale();
+
+		/**
+		 * Filters the locale used to load Alpaca script translations.
+		 *
+		 * @param string $locale The locale to load.
+		 */
+		$locale = apply_filters( 'plugin_locale', $locale, 'alpaca' );
+
+		$locale_short = strtolower( substr( $locale, 0, 2 ) );
+		$paths        = array(
+			ALPACA_PLUGIN_DIR . 'languages/' . $locale,
+			ALPACA_PLUGIN_DIR . 'languages/' . $locale_short,
+			ALPACA_PLUGIN_DIR . 'languages',
+		);
+
+		foreach ( $paths as $path ) {
+			if ( is_dir( $path ) ) {
+				return $path;
+			}
+		}
+
+		return ALPACA_PLUGIN_DIR . 'languages';
+	}
 	/**
 	 * Get the SnapDOM proxy URL prefix for image capture requests.
 	 *
@@ -147,6 +179,13 @@ class Register {
 			$script_version,
 			true
 		);
+
+		wp_set_script_translations(
+			self::PREFIX . '-script',
+			'alpaca',
+			$this->get_script_translation_path()
+		);
+
 		wp_enqueue_style(
 			self::PREFIX . '-style',
 			Helpers::asset_url( 'dist/index.css' ),
