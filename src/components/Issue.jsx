@@ -1617,12 +1617,8 @@ const AlpacaIssue = ({
                 <MenuGroup>
                   {!isLastStatus && (
                     <MenuItem
-                      icon={
-                        <span
-                          className="dashicons dashicons-arrow-right-alt rtl-mirror"
-                          aria-hidden="true"
-                        ></span>
-                      }
+                      className="alpaca-menu-item-progress-issue"
+                      icon="arrow-right-alt"
                       iconPosition="left"
                       onClick={handleProgressIssue}
                       disabled={loadingStates.status}

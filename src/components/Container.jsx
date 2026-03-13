@@ -1,4 +1,5 @@
-const { Card, CardHeader, CardBody, DropdownMenu, TextControl } = wp.components;
+const { Card, CardHeader, CardBody, DropdownMenu, TextControl } =
+  wp.components;
 const { Heading = wp.components.__experimentalHeading } = wp.components;
 const { __ } = wp.i18n;
 
@@ -178,7 +179,7 @@ function Container({
     menuControls.push({
       icon: (
         <span
-          className="dashicons dashicons-arrow-right-alt rtl-mirror"
+          className="dashicon dashicons dashicons-arrow-right-alt rtl-mirror"
           aria-hidden="true"
         ></span>
       ),
