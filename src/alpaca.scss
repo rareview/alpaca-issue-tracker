@@ -92,6 +92,11 @@ $core-font-stack:
  * 2.0 - General / Helper Classes
  */
 
+.rtl .rtl-mirror,
+html[dir='rtl'] .rtl-mirror {
+  transform: scaleX(-1);
+}
+
 .timestamp,
 .nowrap {
   white-space: nowrap;
@@ -1539,6 +1544,11 @@ $core-font-stack:
       .alpaca-timeline-icon::before {
         mask-image: url('components/icons/svg/box-arrow-up-right.svg');
         background-color: $greytext;
+
+        .rtl &,
+        html[dir='rtl'] & {
+          transform: scaleX(-1);
+        }
       }
     }
 
@@ -2238,7 +2248,7 @@ $core-font-stack:
  */
 
 .alpaca-bottom-toolbar {
-  direction: ltr;
+  direction: inherit;
   color: #c3c4c7;
   font-size: 13px;
   font-weight: 400;
@@ -2251,6 +2261,8 @@ $core-font-stack:
   background: #1d2327;
   outline: 1px solid transparent;
   bottom: 0;
+  left: 0;
+  right: auto;
   display: flex;
   flex-direction: row;
   gap: 14px;
@@ -2259,11 +2271,33 @@ $core-font-stack:
   transition: transform 0.3s ease;
   font-family: $core-font-stack !important;
 
+  html[dir='rtl'] &,
+  .rtl & {
+    left: auto;
+    right: 0;
+    transform: translateX(calc(100% - 32px));
+
+    &.expanded {
+      transform: translateX(0);
+    }
+  }
+
   &.expanded {
     transform: translateX(0);
 
     .toggle-pointer {
       transform: rotate(180deg);
+    }
+  }
+
+  html[dir='rtl'] &,
+  .rtl & {
+    .toggle-pointer {
+      transform: scaleX(-1);
+    }
+
+    &.expanded .toggle-pointer {
+      transform: rotate(180deg) scaleX(-1);
     }
   }
 
@@ -2300,7 +2334,7 @@ $core-font-stack:
   }
 
   .toggle-button {
-    margin-left: auto;
+    margin-inline-start: auto;
     background: none;
     border: none;
     display: flex;
@@ -2346,6 +2380,12 @@ $core-font-stack:
   visibility: hidden;
   opacity: 0;
   color: #000;
+
+  html[dir='rtl'] &,
+  .rtl & {
+    left: auto;
+    right: 0;
+  }
 
   &.visible {
     bottom: 31px;

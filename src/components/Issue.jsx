@@ -1617,7 +1617,12 @@ const AlpacaIssue = ({
                 <MenuGroup>
                   {!isLastStatus && (
                     <MenuItem
-                      icon="arrow-right-alt"
+                      icon={
+                        <span
+                          className="dashicons dashicons-arrow-right-alt rtl-mirror"
+                          aria-hidden="true"
+                        ></span>
+                      }
                       iconPosition="left"
                       onClick={handleProgressIssue}
                       disabled={loadingStates.status}
@@ -1836,7 +1841,7 @@ const AlpacaIssue = ({
                                     <Button
                                       className="alpaca-subissues-promote"
                                       icon={
-                                        <span className="alpaca-icon-promote"></span>
+                                        <span className="alpaca-icon-promote rtl-mirror"></span>
                                       }
                                       label={__('Promote', 'alpaca')}
                                       showTooltip

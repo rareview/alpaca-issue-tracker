@@ -176,7 +176,12 @@ function Container({
 
   if (!isLastContainer) {
     menuControls.push({
-      icon: 'arrow-right-alt',
+      icon: (
+        <span
+          className="dashicons dashicons-arrow-right-alt rtl-mirror"
+          aria-hidden="true"
+        ></span>
+      ),
       title: __('Move All To Next Column', 'alpaca'),
       onClick: () => onMoveAllToNext(id),
       disabled: !hasItems,
