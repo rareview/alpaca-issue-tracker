@@ -112,7 +112,9 @@ function Container({
     },
     {
       icon: isHidden ? 'visibility' : 'hidden',
-      title: isHidden ? 'Expand Column' : 'Collapse Column',
+      title: isHidden
+        ? __('Expand Column', 'alpaca')
+        : __('Collapse Column', 'alpaca'),
       onClick: toggleHidden,
     },
     {
