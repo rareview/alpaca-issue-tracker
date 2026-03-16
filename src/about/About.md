@@ -53,6 +53,7 @@ But we soon realised Alpaca could be a full collaboration solution, on par with 
 - Notifications: block-based email template designer
 - Project Activity screen: unfiltered timeline of all project activity
 - Full translation readiness, including support for RTL languages
+- New `alpaca-beta` release channel at GitHub
 </details>
 
 ---

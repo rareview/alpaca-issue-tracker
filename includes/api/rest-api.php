@@ -21,6 +21,7 @@ $alpaca_rest_api_modules = array(
 	'proxy/image-proxy.php',
 	'filters/comment-filters.php',
 	'endpoints/presence.php',
+	'endpoints/github-feeds.php',
 	'filters/comment-response.php',
 );
 
