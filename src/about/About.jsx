@@ -33,14 +33,24 @@ const About = () => {
 
   const renderRelease = () => {
     const release = feeds && feeds.releases ? feeds.releases : null;
-    if (!release) return <div className="alpaca-widget-empty">No release info available.</div>;
-    const updated = release.updated ? new Date(release.updated).toLocaleString() : '';
+    if (!release)
+      return (
+        <div className="alpaca-widget-empty">No release info available.</div>
+      );
+    const updated = release.updated
+      ? new Date(release.updated).toLocaleString()
+      : '';
     return (
       <div className="alpaca-widget alpaca-widget--release">
         <h3 className="alpaca-widget-title">Latest Beta Release</h3>
         <div className="alpaca-widget-body">
           {release.link ? (
-            <a href={release.link} target="_blank" rel="noreferrer noopener" className="alpaca-release-title">
+            <a
+              href={release.link}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="alpaca-release-title"
+            >
               {release.title}
             </a>
           ) : (
@@ -54,11 +64,17 @@ const About = () => {
 
   const renderAnnouncement = () => {
     const ann = feeds && feeds.announcements ? feeds.announcements : null;
-    if (!ann) return <div className="alpaca-widget-empty">No announcements available.</div>;
+    if (!ann)
+      return (
+        <div className="alpaca-widget-empty">No announcements available.</div>
+      );
 
     const truncateHtmlToText = (html, max = 300) => {
       if (!html) return '';
-      const text = html.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+      const text = html
+        .replace(/<[^>]+>/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
       if (text.length <= max) return text;
       let truncated = text.slice(0, max);
       const lastSpace = truncated.lastIndexOf(' ');
@@ -72,18 +88,27 @@ const About = () => {
           <h3 className="alpaca-widget-title">Latest Announcements</h3>
           <div className="alpaca-widget-body">
             {ann.slice(0, 3).map((item, idx) => {
-              const updated = item.updated ? new Date(item.updated).toLocaleString() : '';
+              const updated = item.updated
+                ? new Date(item.updated).toLocaleString()
+                : '';
               return (
                 <div key={idx} className="alpaca-ann-item">
                   {item.link ? (
-                    <a href={item.link} target="_blank" rel="noreferrer noopener" className="alpaca-ann-title">
+                    <a
+                      href={item.link}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="alpaca-ann-title"
+                    >
                       {item.title}
                     </a>
                   ) : (
                     <strong className="alpaca-ann-title">{item.title}</strong>
                   )}
                   <div className="alpaca-ann-updated">{updated}</div>
-                  <div className="alpaca-ann-excerpt">{truncateHtmlToText(item.content, 300)}</div>
+                  <div className="alpaca-ann-excerpt">
+                    {truncateHtmlToText(item.content, 300)}
+                  </div>
                 </div>
               );
             })}
@@ -98,14 +123,21 @@ const About = () => {
         <h3 className="alpaca-widget-title">Latest Announcement</h3>
         <div className="alpaca-widget-body">
           {ann.link ? (
-            <a href={ann.link} target="_blank" rel="noreferrer noopener" className="alpaca-ann-title">
+            <a
+              href={ann.link}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="alpaca-ann-title"
+            >
               {ann.title}
             </a>
           ) : (
             <strong className="alpaca-ann-title">{ann.title}</strong>
           )}
           <div className="alpaca-ann-updated">{updated}</div>
-          <div className="alpaca-ann-excerpt">{truncateHtmlToText(ann.content, 300)}</div>
+          <div className="alpaca-ann-excerpt">
+            {truncateHtmlToText(ann.content, 300)}
+          </div>
         </div>
       </div>
     );
@@ -114,12 +146,17 @@ const About = () => {
   return (
     <div className="alpaca-about-page layout-grid">
       <div className="alpaca-about-main">
-        <div className="alpaca-about-page-content" dangerouslySetInnerHTML={{ __html: marked(aboutMarkdown) }} />
+        <div
+          className="alpaca-about-page-content"
+          dangerouslySetInnerHTML={{ __html: marked(aboutMarkdown) }}
+        />
       </div>
 
       <aside className="alpaca-about-side">
         <div className="alpaca-widgets">
-          {loading && <div className="alpaca-loading">Loading GitHub data…</div>}
+          {loading && (
+            <div className="alpaca-loading">Loading GitHub data…</div>
+          )}
           {error && <div className="alpaca-error">Error: {error}</div>}
           {!loading && !error && feeds && (
             <>
@@ -127,7 +164,9 @@ const About = () => {
               {renderAnnouncement()}
             </>
           )}
-          {!loading && !error && !feeds && <div className="alpaca-widget-empty">No data.</div>}
+          {!loading && !error && !feeds && (
+            <div className="alpaca-widget-empty">No data.</div>
+          )}
         </div>
       </aside>
     </div>

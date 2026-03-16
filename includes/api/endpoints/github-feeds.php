@@ -116,7 +116,7 @@ function alpaca_get_github_feeds_callback() {
 					'link'    => $link,
 				);
 
-				$count++;
+				++$count;
 			}
 
 			$result[ $key ] = $items;
