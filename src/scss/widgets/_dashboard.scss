@@ -1,0 +1,72 @@
+/*
+ * Dashboard Widget
+ */
+#alpaca-dashboard-widget {
+    margin-top: -6px;
+
+    a {
+        text-decoration: none;
+    }
+
+    table {
+        border-spacing: 0;
+        border-collapse: collapse;
+        width: 100%;
+
+        tr {
+            &:first-child {
+                th {
+                    border-bottom: 1px solid $greyborder;
+                }
+            }
+
+            &:nth-child(even) {
+                background-color: $container-bg;
+            }
+        }
+
+        th,
+        td {
+            padding: 8px 5px;
+            vertical-align: top;
+            text-align: center;
+            white-space: nowrap;
+
+            &:first-child {
+                text-align: left;
+            }
+        }
+
+        th {
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        td {
+            width: 18%;
+
+            &.title {
+                white-space: unset;
+                width: auto;
+            }
+
+            &.high-priority {
+                width: 16px;
+                color: $priority-high-bg;
+            }
+        }
+    }
+
+    .alpaca-user {
+        display: inline-flex;
+
+        .alpaca-user-avatar {
+            margin: 0 2px;
+
+            img {
+                width: 18px;
+                height: 18px;
+            }
+        }
+    }
+}

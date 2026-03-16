@@ -1,0 +1,543 @@
+/*
+ * Notifications
+ */
+.alpaca-notifications-screen,
+.alpaca-notification-template-screen {
+    margin-top: 20px;
+}
+
+.alpaca-notifications-screen > .alpaca-notifications-panel {
+    margin-top: 20px;
+}
+
+.alpaca-notification-template-intro {
+    margin-bottom: 20px;
+    margin-top: 20px;
+    background: none !important;
+    border: 0 !important;
+    padding: 0 !important;
+
+    p {
+        margin: 0;
+        color: #50575e;
+        max-width: 72ch;
+    }
+}
+
+.alpaca-notifications-grid,
+.alpaca-notification-template-layout {
+    display: grid;
+    gap: 20px;
+}
+
+.alpaca-notifications-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    margin-top: 20px;
+}
+
+.alpaca-notification-template-layout {
+    grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.95fr);
+    align-items: start;
+}
+
+.alpaca-notifications-panel {
+    background: $bgwhite;
+    border: 1px solid $greyborder;
+    border-radius: $common-radius;
+    padding: 20px;
+
+    h2 {
+        margin: 0 0 14px;
+        font-size: 18px;
+        line-height: 1.35;
+    }
+
+    p {
+        color: #50575e;
+    }
+}
+
+.alpaca-notifications-options {
+    display: grid;
+    gap: 10px;
+}
+
+.alpaca-notifications-option-group {
+    display: grid;
+    gap: 8px;
+}
+
+.alpaca-notifications-channel-grid {
+    display: grid;
+    align-items: start;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.alpaca-notifications-channel-card {
+    display: grid;
+    align-content: start;
+    gap: 16px;
+    padding: 18px;
+    border: 1px solid $greyborder;
+    border-radius: $common-radius;
+    background: $container-bg;
+}
+
+.alpaca-notifications-channel-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+
+    h3 {
+        margin: 0 0 4px;
+        font-size: 16px;
+        line-height: 1.35;
+    }
+
+    p {
+        margin: 0;
+    }
+}
+
+.alpaca-notifications-channel-summary {
+    display: grid;
+    gap: 12px;
+}
+
+.alpaca-notifications-channel-row {
+    display: grid;
+    gap: 4px;
+}
+
+.alpaca-notifications-channel-label {
+    color: #1d2327;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.alpaca-notifications-channel-value {
+    color: #50575e;
+    font-size: 14px;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.alpaca-notifications-label-picker {
+    margin-top: 6px;
+    margin-left: 24px;
+    padding-top: 12px;
+    border-top: 1px solid $greyborder;
+}
+
+.alpaca-notifications-label-grid {
+    display: grid;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.alpaca-notifications-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid $greyborder;
+}
+
+.alpaca-notifications-help {
+    margin: -8px 0 0;
+    color: #50575e;
+    font-size: 13px;
+}
+
+.alpaca-notification-template-section-header {
+    margin-bottom: 16px;
+
+    h2 {
+        margin-bottom: 6px;
+    }
+
+    p {
+        margin: 0;
+        max-width: 60ch;
+    }
+}
+
+.alpaca-notification-template-editor-shell {
+    border: 1px solid $greyborder;
+    border-radius: $common-radius;
+    background: $bgwhite;
+}
+
+.alpaca-notification-template-canvas {
+    min-height: 460px;
+    padding: 20px;
+    background: $container-bg;
+    font-family: $core-font-stack;
+}
+
+.alpaca-notification-template-block-list {
+    max-width: 700px;
+    margin: 0;
+}
+
+.alpaca-notification-template-canvas
+.block-editor-block-list__layout
+> .wp-block {
+    margin-top: 0;
+    margin-bottom: 14px;
+}
+
+.alpaca-notification-template-canvas .alpaca-notification-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.alpaca-notification-template-canvas .alpaca-notification-header__copy {
+    min-width: 0;
+}
+
+.alpaca-notification-template-canvas .alpaca-notification-header__title,
+.alpaca-notification-template-canvas .alpaca-notification-header__tagline {
+    margin: 0;
+}
+
+.alpaca-notification-template-canvas .wp-block-buttons {
+    margin-top: 18px;
+    margin-bottom: 18px;
+}
+
+.alpaca-notification-template-canvas .wp-block-button__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    padding: 6px 12px;
+    border: 0;
+    border-radius: 2px;
+    background: #3858e9;
+    color: #fff;
+    font-size: 13px;
+    line-height: 1;
+    text-decoration: none;
+    box-sizing: border-box;
+
+    &:hover,
+    &:focus {
+        background: #2145e6;
+        color: #fff;
+    }
+}
+
+.alpaca-notification-template-canvas .wp-block-separator {
+    opacity: 1;
+    border-top: 1px solid $greyborder;
+}
+
+.alpaca-notification-template-appender {
+    max-width: 700px;
+    margin: 0;
+
+    .block-editor-default-block-appender,
+    .block-editor-button-block-appender {
+        margin-top: 12px;
+    }
+}
+
+.alpaca-notification-token-block {
+    border: 1px solid $greyborder;
+    border-radius: $common-radius;
+    background: $bgwhite;
+    padding: 14px 16px;
+
+    strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 13px;
+    }
+
+    p {
+        margin: 0;
+        color: #50575e;
+        font-size: 13px;
+    }
+}
+
+.alpaca-notification-template-preview-panel {
+    position: sticky;
+    top: 32px;
+}
+
+.alpaca-notification-preview-frame {
+    border: 1px solid $greyborder;
+    border-radius: $common-radius;
+    background: $bgwhite;
+    overflow: hidden;
+}
+
+.alpaca-notification-preview-envelope {
+    display: grid;
+    gap: 10px;
+    padding: 16px 18px;
+    border-bottom: 1px solid $greyborder;
+    background: #f6f7f7;
+}
+
+.alpaca-notification-preview-meta {
+    display: grid;
+    gap: 4px;
+
+    span {
+        color: #50575e;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    strong {
+        font-size: 13px;
+        font-weight: 600;
+        color: #1d2327;
+        word-break: break-word;
+    }
+}
+
+.alpaca-notification-preview-body {
+    background: $bgwhite;
+}
+
+.alpaca-mentions-textarea {
+    position: relative;
+}
+
+.alpaca-mentions-popover {
+    z-index: 100002;
+}
+
+.alpaca-mentions-popover-content {
+    min-width: 280px;
+    max-width: 340px;
+    padding: 8px;
+    display: grid;
+    gap: 4px;
+}
+
+.alpaca-mentions-empty {
+    margin: 0;
+    color: $greytext;
+    padding: 8px;
+}
+
+.alpaca-mentions-option.components-button {
+    width: 100%;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    color: #0f172a;
+
+    &.is-active,
+    &:hover {
+        background: #eff6ff;
+        color: #0f172a;
+    }
+}
+
+.alpaca-mentions-option-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    flex: 0 0 28px;
+    object-fit: cover;
+    border: 1px solid $greyborder;
+}
+
+.alpaca-mentions-option-avatar--fallback {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #e2e8f0;
+    color: #475569;
+}
+
+.alpaca-mentions-option-labels {
+    display: grid;
+    gap: 2px;
+    text-align: left;
+
+    span {
+        color: #64748b;
+        font-size: 12px;
+    }
+}
+
+.alpaca-comment-mention,
+.alpaca-notification-mention {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-weight: 600;
+    padding: 0 8px;
+}
+
+.alpaca-notification-email {
+    background: $container-bg;
+    color: #1d2327;
+    font-family: $core-font-stack;
+    padding: 24px 16px;
+
+    .alpaca-notification-email__inner {
+        max-width: 680px;
+        margin: 0 auto;
+    }
+
+    .alpaca-notification-email__inner > * {
+        box-sizing: border-box;
+        width: 100%;
+        margin-right: 0;
+        margin-left: 0;
+        margin-bottom: 16px;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        color: #1d2327;
+        margin-top: 0;
+    }
+
+    p,
+    li {
+        color: #50575e;
+        font-size: 15px;
+        line-height: 1.65;
+    }
+
+    p {
+        margin: 0;
+    }
+
+    a {
+        color: #2271b1;
+    }
+
+    .alpaca-notification-comment-content {
+        background: $bgwhite;
+        border: 1px solid $greyborder;
+        border-radius: $common-radius;
+        padding: 20px;
+        box-shadow: none;
+    }
+
+    .wp-block-buttons {
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+
+    .wp-block-buttons > .wp-block-button {
+        margin-right: 8px;
+    }
+
+    .wp-block-button__link {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 36px;
+        padding: 6px 12px;
+        border: 0;
+        border-radius: 2px;
+        background: #3858e9;
+        color: #fff;
+        font-size: 13px;
+        line-height: 1;
+        text-decoration: none;
+    }
+
+    .wp-block-separator {
+        border-top: 1px solid $greyborder;
+        opacity: 1;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+
+    .alpaca-notification-site-logo {
+        display: block;
+        max-width: 180px;
+        height: auto;
+    }
+
+    .alpaca-notification-site-icon {
+        display: block;
+        width: 40px;
+        max-width: 40px;
+        height: 40px;
+        object-fit: contain;
+    }
+
+    .alpaca-notification-header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 0;
+        background: transparent;
+        border: 0;
+    }
+
+    .alpaca-notification-header__copy {
+        min-width: 0;
+    }
+
+    .alpaca-notification-header__title {
+        margin: 0;
+        color: #1d2327;
+        font-size: 16px;
+        font-weight: 700;
+        line-height: 1.4;
+    }
+
+    .alpaca-notification-header__tagline {
+        margin: 0;
+        color: #646970;
+
+        &:empty {
+            display: none;
+        }
+    }
+
+    .alpaca-notification-attachments {
+        margin-top: 24px;
+
+        h3 {
+            font-size: 14px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #50575e;
+            margin-bottom: 8px;
+        }
+
+        ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+    }
+}
+
+@media (max-width: 1200px) {
+    .alpaca-notification-template-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .alpaca-notification-template-preview-panel {
+        position: static;
+    }
+}

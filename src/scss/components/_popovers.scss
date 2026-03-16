@@ -1,0 +1,99 @@
+/*
+* Popovers
+*/
+.wp-admin {
+    .alpaca-control-popover {
+        width: $control-width-large;
+        padding: 8px 16px 16px;
+
+        .alpaca-control {
+            padding: 8px 0;
+        }
+
+        .components-menu-group {
+            border: none;
+        }
+
+        .components-menu-group__label {
+            margin: 0;
+        }
+    }
+
+    .alpaca-deadline-popover {
+        .components-popover__content {
+            padding: 1em;
+        }
+    }
+
+    .alpaca-search-popover {
+        z-index: 100003;
+        transition: none;
+
+        .components-popover__content {
+            width: var(--alpaca-search-popover-width, 300px);
+            padding: 8px;
+            background: $container-bg;
+            border: 1px solid #c3c4c7;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            box-shadow:
+                    0 12px 28px rgb(0 0 0 / 18%),
+                    0 2px 8px rgb(0 0 0 / 10%);
+            margin-top: -14px;
+            transform-origin: top center;
+            transition: none;
+        }
+
+        .alpaca-search-results-wrap {
+            max-height: 420px;
+            overflow-y: auto;
+            transform-origin: top center;
+            animation: alpaca-search-popover-in 240ms cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .alpaca-search-title-wrap {
+            display: inline;
+        }
+
+        .alpaca-search-title-text {
+            overflow-wrap: anywhere;
+        }
+
+        .alpaca-search-status-pill {
+            display: inline-block;
+            padding: 1px 8px;
+            border-radius: 999px;
+            border: 1px solid #b3b8bf;
+            background: $bgwhite;
+            color: #50575e;
+            font-size: 11px;
+            line-height: 1.4;
+            font-weight: 600;
+            white-space: nowrap;
+            vertical-align: baseline;
+        }
+    }
+
+    .alpaca-board-search.is-search-open {
+        z-index: 100002;
+
+        .components-search-control__input,
+        .components-search-control input[type='search'] {
+            border-color: #2271b1;
+            box-shadow: 0 0 0 1px #2271b1;
+            background: $bgwhite;
+        }
+    }
+
+    @keyframes alpaca-search-popover-in {
+        0% {
+            opacity: 0;
+            transform: translateY(-8px);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+}

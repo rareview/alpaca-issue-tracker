@@ -1,0 +1,116 @@
+/*
+ * Media Queries
+ */
+@media (width >=861px) {
+    .wp-admin {
+        #project-board {
+            .alpaca-wrap {
+                flex-direction: row;
+                padding: 5px 0;
+                overflow-x: auto;
+                overflow-y: hidden;
+
+                .alpaca-container {
+                    flex-shrink: 0;
+                }
+            }
+
+            .alpaca-container {
+                height: 75vh;
+                display: flex;
+                flex: 1;
+                min-width: 18vw;
+                flex-direction: column;
+
+                &.is-collapsed {
+                    width: auto;
+
+                    .alpaca-container-header {
+                        height: 100%;
+                        writing-mode: vertical-rl;
+                        transform: rotate(180deg);
+
+                        h2,
+                        input {
+                            height: 100%;
+                        }
+
+                        h2 {
+                            margin: 5px 0;
+                        }
+
+                        input {
+                            margin: 5px -1px;
+                        }
+                    }
+                }
+
+                .alpaca-items {
+                    overflow-y: auto;
+                    padding: 10px 1px;
+                    margin-top: -10px;
+                    height: calc(75vh - 80px);
+                }
+            }
+        }
+    }
+}
+
+@media (width <=860px) {
+    .wp-admin {
+        #project-board {
+            .alpaca-wrap {
+                flex-direction: column;
+            }
+
+            .alpaca-container {
+                margin: 1em 0 0 0;
+                overflow-x: auto;
+                display: flex;
+                flex-direction: column;
+                height: auto;
+
+                .alpaca-items {
+                    flex-direction: row;
+                    display: flex;
+                    gap: $spacegap;
+                    overflow-x: auto;
+                    align-items: stretch;
+
+                    .alpaca-item {
+                        width: 200px;
+                        min-height: 100%;
+                        flex-shrink: 0;
+                        display: flex;
+
+                        .alpaca-item-inner {
+                            width: 100%;
+                            height: 100%;
+                            display: flex;
+                            flex-direction: column;
+                        }
+
+                        .alpaca-item-assignees {
+                            &[data-assignees='1'] {
+                                .alpaca-user .alpaca-user-name {
+                                    display: none;
+                                    padding-left: 0;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                &.is-collapsed {
+                    flex: 0 0 auto !important;
+                    min-height: auto !important;
+
+                    .alpaca-container-body {
+                        display: none;
+                        padding: 0;
+                    }
+                }
+            }
+        }
+    }
+}

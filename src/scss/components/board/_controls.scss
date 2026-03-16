@@ -1,0 +1,54 @@
+/*
+* 3.1 - Board Controls
+*/
+.wp-admin {
+    #alpaca-presence {
+        display: flex;
+        align-items: center;
+        margin: 0;
+        line-height: 32px;
+
+        .alpaca-presence-msg {
+            margin-inline-end: 8px;
+            text-align: start;
+        }
+
+        .alpaca-presence-list {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: $spacegap;
+
+            .alpaca-presence-user-wrap {
+                display: inline-flex;
+            }
+
+            img {
+                width: 24px;
+                height: 24px;
+            }
+
+            .alpaca-user-name {
+                display: none;
+            }
+        }
+    }
+
+    #project-board-controls {
+        display: flex;
+        align-items: center;
+        gap: $spacegap;
+        width: 100%;
+        margin-bottom: 20px;
+
+        > :first-child {
+            margin-inline-end: auto;
+        }
+    }
+
+    #project-board-controls-mount {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+}

@@ -1,0 +1,33 @@
+/*
+ * Status Manager
+ */
+.alpaca-status-manager {
+    .status-grid {
+        .status-row-content {
+            gap: $spacegap;
+
+            .drag-handle {
+                cursor: grab;
+                padding: 4px;
+                color: $greytext;
+                display: inline-flex;
+                flex: 0 0 24px;
+                justify-content: center;
+                width: 24px;
+            }
+        }
+
+        .status-grid-row.placeholder {
+            .drag-handle {
+                visibility: hidden;
+            }
+        }
+    }
+
+    .alpaca-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 16px;
+    }
+}

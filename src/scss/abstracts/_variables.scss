@@ -1,0 +1,33 @@
+/*
+ * 1.0 - Variables & Globals
+ */
+
+$bgwhite: #fff;
+$greyborder: #ddd;
+$greyshade: #f0f0f0;
+$greytext: #999;
+$smallfont: 14px;
+$midfont: 15px;
+$spacegap: 0.8ch;
+$commenthead-vpad: 12px;
+$commenthead-hpad: 18px;
+$code-font: 'Atkinson Hyperlegible Mono', monospace;
+
+// New variables
+$container-bg: #f9f9f9;
+$container-header-fontsize: 18px;
+$container-header-fontweight: 600;
+$priority-high-bg: #dc3545;
+$deadline-late-bg: #dc3545;
+$deadline-today-bg: #3b82f6;
+$deadline-soon-bg: #f59e0b;
+$control-width-large: 300px;
+$z-index-attachment-delete: 10;
+$z-index-report-form: 99998;
+$z-index-bottom-toolbar: 99999;
+$timeline-width: 1px;
+$common-radius: 8px;
+
+$core-font-stack:
+        -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu,
+        Cantarell, 'Helvetica Neue', sans-serif;

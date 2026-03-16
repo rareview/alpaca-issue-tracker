@@ -1,0 +1,14 @@
+.wp-admin #project-board {
+    & > * {
+        clear: both;
+    }
+
+    .alpaca-wrap {
+        display: flex;
+    }
+
+    .alpaca-item.is-filtered-out {
+        display: none; // because there is a really weird bug arising when I use opacity
+        pointer-events: none;
+    }
+}
