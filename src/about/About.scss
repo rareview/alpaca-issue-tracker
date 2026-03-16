@@ -81,22 +81,19 @@
 
 .alpaca-about-side {
   grid-area: side;
-}
-
-.alpaca-about-side {
   padding-top: 20px;
   background: transparent;
   align-self: start;
-  position: -webkit-sticky;
   position: sticky;
   top: 24px;
 }
 
-@media (max-width: 840px) {
+@media (width <= 840px) {
   .alpaca-about-side {
     position: static;
     top: auto;
   }
+
   .layout-grid {
     grid-template-columns: 1fr;
     grid-template-areas: 'side' 'main';
@@ -156,6 +153,7 @@
   border-bottom: 1px dashed #eee;
   padding-bottom: 12px;
 }
+
 .alpaca-ann-item:last-child {
   border-bottom: none;
   margin-bottom: 0;

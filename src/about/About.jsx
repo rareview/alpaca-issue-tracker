@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+const { useState, useEffect } = wp.element;
 import { marked } from 'marked';
 import './About.scss';
 // eslint-disable-next-line import/no-unresolved
