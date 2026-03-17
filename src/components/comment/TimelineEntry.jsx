@@ -3,6 +3,7 @@ import { marked } from 'marked';
 import User from '../User';
 import Time from '../Time';
 import { Attachment } from '../issue/AttachmentRow';
+import { sanitizeHtml, isValidHttpUrl } from '../../utils/sanitize';
 
 const { __, sprintf } = wp.i18n;
 const { useMemo, memo } = wp.element;
@@ -28,8 +29,9 @@ export const injectAvatarStyles = (htmlString) => {
     const spans = doc.querySelectorAll('[data-avatar]');
     spans.forEach((span) => {
       const avatarUrl = span.dataset.avatar;
-      if (avatarUrl) {
-        span.style.setProperty('--avatar-url', `url('${avatarUrl}')`);
+      if (avatarUrl && isValidHttpUrl(avatarUrl)) {
+        const safeUrl = avatarUrl.replace(/'/g, "\\'");
+        span.style.setProperty('--avatar-url', `url('${safeUrl}')`);
       }
     });
     return doc.body.innerHTML;
@@ -56,7 +58,7 @@ export const getProcessedCommentContent = (comment) => {
   }
 
   const content = comment.content.raw
-    ? marked(comment.content.raw)
+    ? sanitizeHtml(marked(comment.content.raw))
     : comment.content.rendered;
 
   return injectAvatarStyles(content);
