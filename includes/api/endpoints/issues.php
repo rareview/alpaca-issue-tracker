@@ -811,25 +811,28 @@ function alpaca_get_issue_comment_count_endpoint() {
  * @return WP_REST_Response REST response with comment count.
  */
 function alpaca_get_issue_comment_count_callback( WP_REST_Request $request ) {
-	$issue_id = (int) $request['id'];
 
-	global $wpdb;
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-	$issue_comment_count = $wpdb->get_var(
-		$wpdb->prepare(
-			"SELECT COUNT(*) FROM {$wpdb->comments} 
-		WHERE comment_post_ID = %d AND comment_type = %s AND comment_approved = 1",
-			$issue_id,
-			'issuecomment'
-		)
-	);
+	$issue_id                     = (int) $request['id'];
+	$comment_count_data           = function_exists( 'alpaca_get_issue_comment_counts' )
+	? alpaca_get_issue_comment_counts( array( $issue_id ) )
+		: array(
+			'totals'   => array(),
+			'by_agent' => array(),
+		);
+	$comment_counts               = isset( $comment_count_data['totals'] ) ? $comment_count_data['totals'] : array();
+	$comment_counts_by_agent      = isset( $comment_count_data['by_agent'] ) ? $comment_count_data['by_agent'] : array();
+	$issue_comment_count          = isset( $comment_counts[ $issue_id ] ) ? (int) $comment_counts[ $issue_id ] : 0;
+	$issue_comment_count_by_agent = isset( $comment_counts_by_agent[ $issue_id ] ) && is_array( $comment_counts_by_agent[ $issue_id ] )
+		? $comment_counts_by_agent[ $issue_id ]
+		: array();
 
 	return alpaca_rest_response(
 		'',
 		array(
-			'success'       => true,
-			'post_id'       => $issue_id,
-			'comment_count' => (int) $issue_comment_count,
+			'success'                => true,
+			'post_id'                => $issue_id,
+			'comment_count'          => $issue_comment_count,
+			'comment_count_by_agent' => $issue_comment_count_by_agent,
 		),
 		200
 	);

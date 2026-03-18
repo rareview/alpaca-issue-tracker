@@ -113,13 +113,143 @@ function alpaca_get_subissue_progress_by_parent( $parent_issue_ids ) {
 }
 
 /**
+ * Get issue comment totals and per-agent counts.
+ *
+ * Legacy issue-created comments were previously stored with a `human`
+ * `comment_agent`. Reclassify those rows into the `create` bucket at read time
+ * so card counts remain correct without requiring a database migration.
+ *
+ * @param array $post_ids Issue post IDs.
+ * @return array<string, array<int, int|array<string, int>>> Comment totals and
+ *                                                    per-agent counts keyed by
+ *                                                    post ID.
+ */
+function alpaca_get_issue_comment_counts( $post_ids ) {
+	global $wpdb;
+
+	$post_ids = array_map( 'intval', (array) $post_ids );
+	$post_ids = array_filter(
+		$post_ids,
+		static function ( $post_id ) {
+			return $post_id > 0;
+		}
+	);
+	$post_ids = array_values( array_unique( $post_ids ) );
+
+	$comment_counts          = [];
+	$comment_counts_by_agent = [];
+
+	if ( empty( $post_ids ) ) {
+		return [
+			'totals'   => $comment_counts,
+			'by_agent' => $comment_counts_by_agent,
+		];
+	}
+
+	$placeholders_list = implode( ', ', array_fill( 0, count( $post_ids ), '%d' ) );
+
+	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Placeholders verified above.
+	$total_sql = "SELECT comment_post_ID as post_id, COUNT(*) as count
+		FROM {$wpdb->comments}
+		WHERE comment_post_ID IN ({$placeholders_list})
+			AND comment_type = %s
+			AND comment_approved = '1'
+		GROUP BY comment_post_ID";
+
+	$total_prepared = $wpdb->prepare( $total_sql, array_merge( $post_ids, [ 'issuecomment' ] ) ); // phpcs:ignore WordPress.DB.PreparedSQL -- Query placeholders are fully prepared.
+	// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery
+	$total_results = $wpdb->get_results( $total_prepared );
+
+	foreach ( $total_results as $total_result ) {
+		$comment_counts[ (int) $total_result->post_id ] = (int) $total_result->count;
+	}
+
+	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Placeholders verified above.
+	$typed_sql = "SELECT comment_post_ID as post_id, comment_agent as comment_agent, COUNT(*) as count
+		FROM {$wpdb->comments}
+		WHERE comment_post_ID IN ({$placeholders_list})
+			AND comment_type = %s
+			AND comment_approved = '1'
+			AND comment_agent != ''
+		GROUP BY comment_post_ID, comment_agent";
+
+	$typed_prepared = $wpdb->prepare( $typed_sql, array_merge( $post_ids, [ 'issuecomment' ] ) ); // phpcs:ignore WordPress.DB.PreparedSQL -- Query placeholders are fully prepared.
+	// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery
+	$typed_results = $wpdb->get_results( $typed_prepared );
+
+	foreach ( $typed_results as $typed_result ) {
+		$post_id = (int) $typed_result->post_id;
+		$agent   = strtolower( (string) $typed_result->comment_agent );
+
+		if ( '' === $agent ) {
+			continue;
+		}
+
+		if ( ! isset( $comment_counts_by_agent[ $post_id ] ) || ! is_array( $comment_counts_by_agent[ $post_id ] ) ) {
+			$comment_counts_by_agent[ $post_id ] = [];
+		}
+
+		$comment_counts_by_agent[ $post_id ][ $agent ] = (int) $typed_result->count;
+	}
+
+	// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Placeholders verified above.
+	$legacy_create_sql = "SELECT c.comment_post_ID as post_id, COUNT(*) as count
+		FROM {$wpdb->comments} c
+		INNER JOIN {$wpdb->commentmeta} cm
+			ON cm.comment_id = c.comment_ID
+		WHERE c.comment_post_ID IN ({$placeholders_list})
+			AND c.comment_type = %s
+			AND c.comment_approved = '1'
+			AND c.comment_agent = %s
+			AND cm.meta_key = %s
+			AND cm.meta_value LIKE %s
+		GROUP BY c.comment_post_ID";
+
+	$legacy_create_prepared = $wpdb->prepare(
+		$legacy_create_sql,
+		array_merge(
+			$post_ids,
+			[
+				'issuecomment',
+				'human',
+				'alpacaCommentTags',
+				'%issue-created%',
+			]
+		)
+	); // phpcs:ignore WordPress.DB.PreparedSQL -- Query placeholders are fully prepared.
+	// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery
+	$legacy_create_results = $wpdb->get_results( $legacy_create_prepared );
+
+	foreach ( $legacy_create_results as $legacy_create_result ) {
+		$post_id              = (int) $legacy_create_result->post_id;
+		$legacy_create_count  = (int) $legacy_create_result->count;
+		$existing_human_count = isset( $comment_counts_by_agent[ $post_id ]['human'] )
+			? (int) $comment_counts_by_agent[ $post_id ]['human']
+			: 0;
+		$existing_create_count = isset( $comment_counts_by_agent[ $post_id ]['create'] )
+			? (int) $comment_counts_by_agent[ $post_id ]['create']
+			: 0;
+
+		if ( ! isset( $comment_counts_by_agent[ $post_id ] ) || ! is_array( $comment_counts_by_agent[ $post_id ] ) ) {
+			$comment_counts_by_agent[ $post_id ] = [];
+		}
+
+		$comment_counts_by_agent[ $post_id ]['human']  = max( 0, $existing_human_count - $legacy_create_count );
+		$comment_counts_by_agent[ $post_id ]['create'] = $existing_create_count + $legacy_create_count;
+	}
+
+	return [
+		'totals'   => $comment_counts,
+		'by_agent' => $comment_counts_by_agent,
+	];
+}
+
+/**
  * Get board data with all issues organized by status.
  *
  * @return array Board data with statuses and issues.
  */
 function alpaca_get_board_data() {
-	global $wpdb;
-
 	// Get statuses we want to display.
 	$statuses         = alpaca_get_statuses();
 	$desired_statuses = apply_filters( 'alpaca_board_statuses', $statuses );
@@ -176,52 +306,9 @@ function alpaca_get_board_data() {
 		$issue_orders[ $status->term_id ] = is_array( $order ) ? $order : [];
 	}
 
-	// Batch comment counts (only issuecomment type).
-	$comment_counts = [];
-	$comment_counts_by_agent = [];
-	if ( ! empty( $post_ids ) ) {
-		// Build placeholders for the IN clause.
-		$placeholders_list = implode( ', ', array_fill( 0, count( $post_ids ), '%d' ) );
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Placeholders verified
-		$sql = "SELECT comment_post_ID as post_id, COUNT(*) as count
-            FROM {$wpdb->comments}
-            WHERE comment_post_ID IN ({$placeholders_list})
-              AND comment_type = %s
-              AND comment_approved = '1'
-            GROUP BY comment_post_ID";
-
-		$prepared = $wpdb->prepare( $sql, array_merge( $post_ids, [ 'issuecomment' ] ) ); // phpcs:ignore WordPress.DB.PreparedSQL -- $sql contains placeholders validated above
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery
-		$comment_counts = $wpdb->get_results( $prepared, OBJECT_K );
-
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Placeholders verified
-		$typed_sql = "SELECT comment_post_ID as post_id, comment_agent as comment_agent, COUNT(*) as count
-            FROM {$wpdb->comments}
-            WHERE comment_post_ID IN ({$placeholders_list})
-              AND comment_type = %s
-              AND comment_approved = '1'
-							AND comment_agent != ''
-            GROUP BY comment_post_ID, comment_agent";
-
-		$typed_prepared = $wpdb->prepare( $typed_sql, array_merge( $post_ids, [ 'issuecomment' ] ) ); // phpcs:ignore WordPress.DB.PreparedSQL -- $typed_sql contains placeholders validated above
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.PreparedSQL.InterpolatedNotPrepared,WordPress.DB.DirectDatabaseQuery.DirectQuery
-		$typed_results = $wpdb->get_results( $typed_prepared );
-
-		foreach ( $typed_results as $typed_result ) {
-			$post_id = (int) $typed_result->post_id;
-			$agent = strtolower( (string) $typed_result->comment_agent );
-
-			if ( '' === $agent ) {
-				continue;
-			}
-
-			if ( ! isset( $comment_counts_by_agent[ $post_id ] ) || ! is_array( $comment_counts_by_agent[ $post_id ] ) ) {
-				$comment_counts_by_agent[ $post_id ] = [];
-			}
-
-			$comment_counts_by_agent[ $post_id ][ $agent ] = (int) $typed_result->count;
-		}
-	}
+	$comment_count_data     = alpaca_get_issue_comment_counts( $post_ids );
+	$comment_counts         = isset( $comment_count_data['totals'] ) ? $comment_count_data['totals'] : [];
+	$comment_counts_by_agent = isset( $comment_count_data['by_agent'] ) ? $comment_count_data['by_agent'] : [];
 
 	// Batch assignees.
 	$assignee_terms    = wp_get_object_terms( $post_ids, 'alpaca_assignee', [ 'fields' => 'all_with_object_id' ] );
@@ -281,7 +368,7 @@ function alpaca_get_board_data() {
 		foreach ( $posts as $post ) {
 			// Get comment count.
 			$comment_count = isset( $comment_counts[ $post->ID ] )
-				? intval( $comment_counts[ $post->ID ]->count )
+				? intval( $comment_counts[ $post->ID ] )
 				: 0;
 
 			// Get typed comment counts by comment_agent.

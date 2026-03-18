@@ -97,12 +97,25 @@ function buildBoardIssueIndex(boardData) {
       } else if (typeof issue.commentCount === 'number') {
         commentCount = issue.commentCount;
       }
+      let commentCountByAgent = null;
+      if (
+        issue.comment_count_by_agent &&
+        typeof issue.comment_count_by_agent === 'object'
+      ) {
+        commentCountByAgent = issue.comment_count_by_agent;
+      } else if (
+        issue.commentCountByAgent &&
+        typeof issue.commentCountByAgent === 'object'
+      ) {
+        commentCountByAgent = issue.commentCountByAgent;
+      }
 
       index.set(id, {
         title:
           typeof issue.title === 'string' ? decodeEntities(issue.title) : '',
         status,
         commentCount,
+        commentCountByAgent,
         labels,
         assignees: Array.isArray(issue.assignees) ? issue.assignees : [],
         meta,
@@ -133,6 +146,10 @@ function buildResultItem(post, boardIssueIndex) {
       fromBoard && typeof fromBoard.commentCount === 'number'
         ? fromBoard.commentCount
         : 0,
+    commentCountByAgent:
+      fromBoard && fromBoard.commentCountByAgent
+        ? fromBoard.commentCountByAgent
+        : null,
     labels:
       fromBoard && Array.isArray(fromBoard.labels) ? fromBoard.labels : [],
     assignees:
@@ -180,6 +197,47 @@ function SearchContainer() {
 
     return () => {
       wp.hooks.removeAction('alpaca.enableTestLogsChanged', 'alpaca/search');
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleCommentCountChanged = (data) => {
+      const { issueId, newCount, newCountByAgent } = data || {};
+      const normalizedIssueId =
+        typeof issueId !== 'undefined' && issueId !== null
+          ? String(issueId)
+          : '';
+
+      if (!normalizedIssueId) {
+        return;
+      }
+
+      setBoardIssueIndex((prevIndex) => {
+        const existing = prevIndex.get(normalizedIssueId) || {};
+        const nextIndex = new Map(prevIndex);
+        nextIndex.set(normalizedIssueId, {
+          ...existing,
+          commentCount: Number(newCount) || 0,
+          commentCountByAgent:
+            newCountByAgent &&
+            typeof newCountByAgent === 'object' &&
+            !Array.isArray(newCountByAgent)
+              ? newCountByAgent
+              : existing.commentCountByAgent || null,
+        });
+
+        return nextIndex;
+      });
+    };
+
+    wp.hooks.addAction(
+      'alpaca.commentCountChanged',
+      'alpaca/search',
+      handleCommentCountChanged,
+    );
+
+    return () => {
+      wp.hooks.removeAction('alpaca.commentCountChanged', 'alpaca/search');
     };
   }, []);
 
@@ -596,6 +654,7 @@ function SearchContainer() {
                       content={titleContent}
                       assignees={r.assignees}
                       commentCount={r.commentCount}
+                      commentCountByAgent={r.commentCountByAgent}
                       meta={r.meta}
                       postDate={r.postDate}
                       className="alpaca-item-inner"

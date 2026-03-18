@@ -420,6 +420,7 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
             wp.hooks.doAction('alpaca.commentCountChanged', {
               issueId: issueId.toString(),
               newCount: response.comment_count,
+              newCountByAgent: response.comment_count_by_agent || null,
             });
             wp.hooks.doAction('alpaca.lastActivityChanged', {
               issueId: issueId.toString(),
@@ -552,6 +553,7 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
                   wp.hooks.doAction('alpaca.commentCountChanged', {
                     issueId: postId.toString(),
                     newCount: response.comment_count,
+                    newCountByAgent: response.comment_count_by_agent || null,
                   });
                 }
               })
