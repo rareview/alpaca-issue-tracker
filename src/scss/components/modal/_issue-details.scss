@@ -1,37 +1,39 @@
+@use '../../abstracts' as *;
+
 .wp-admin {
-    /*
+  /*
      * 4.0 - Modal (Issue Details)
      */
-    &.post-type-issue {
-        .screenshot {
-            margin: 1rem 0 -1rem;
+  &.post-type-issue {
+    .screenshot {
+      margin: 1rem 0 -1rem;
 
-            img {
-                max-width: 100%;
-                height: auto;
-            }
-        }
+      img {
+        max-width: 100%;
+        height: auto;
+      }
+    }
+  }
+
+  .alpaca-modal {
+    background: $bgwhite;
+    color: inherit;
+
+    .small-wrapper {
+      padding: 0.8rem 0 1rem;
     }
 
-    .alpaca-modal {
-        background: $bgwhite;
-        color: inherit;
-
-        .small-wrapper {
-            padding: 0.8rem 0 1rem;
-        }
-
-        small {
-            font-size: 12px;
-        }
-
-        p {
-            margin-top: 0;
-            margin-bottom: 1rem;
-        }
-
-        button {
-            margin-right: 0.5rem;
-        }
+    small {
+      font-size: 12px;
     }
+
+    p {
+      margin-top: 0;
+      margin-bottom: 1rem;
+    }
+
+    button {
+      margin-right: 0.5rem;
+    }
+  }
 }

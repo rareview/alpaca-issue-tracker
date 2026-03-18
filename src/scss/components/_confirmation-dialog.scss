@@ -1,414 +1,416 @@
+@use '../abstracts' as *;
+
 /*
  * Confirmation Dialog
  */
 .alpaca-confirm-overlay {
-    position: fixed;
-    inset: 0;
-    background-color: rgb(0 0 0 / 50%);
-    z-index: 999000009;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  position: fixed;
+  inset: 0;
+  background-color: rgb(0 0 0 / 50%);
+  z-index: 999000009;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .alpaca-confirm-box {
-    padding: 20px;
-    background-color: $bgwhite;
-    border-radius: 4px;
-    box-shadow:
-            0 0 0 1px #ccc,
-            0 2px 3px #0000000d,
-            0 4px 5px #0000000a,
-            0 12px 12px #00000008,
-            0 16px 16px #00000005;
+  padding: 20px;
+  background-color: $bgwhite;
+  border-radius: 4px;
+  box-shadow:
+    0 0 0 1px #ccc,
+    0 2px 3px #0000000d,
+    0 4px 5px #0000000a,
+    0 12px 12px #00000008,
+    0 16px 16px #00000005;
 
-    .alpaca-snackbar-content {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px;
-        width: 100%;
+  .alpaca-snackbar-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
 
-        .components-button {
-            min-width: auto;
-            padding: 0;
-            color: inherit;
-            background: transparent;
+    .components-button {
+      min-width: auto;
+      padding: 0;
+      color: inherit;
+      background: transparent;
 
-            &:hover,
-            &:focus {
-                background: transparent;
-                color: inherit;
-                opacity: 0.8;
-                box-shadow: none;
-            }
-        }
+      &:hover,
+      &:focus {
+        background: transparent;
+        color: inherit;
+        opacity: 0.8;
+        box-shadow: none;
+      }
     }
+  }
 }
 
 .wp-admin.alpaca-search-active #project-board .alpaca-wrap {
-    opacity: 0.82;
-    filter: saturate(0.88);
-    transition:
-            opacity 160ms ease,
-            filter 160ms ease;
+  opacity: 0.82;
+  filter: saturate(0.88);
+  transition:
+    opacity 160ms ease,
+    filter 160ms ease;
 }
 
 .wp-admin #project-board-controls .alpaca-board-search {
-    border: 1px solid transparent;
-    border-radius: 6px;
-    background: transparent;
-    box-shadow: 0 0 0 rgb(0 0 0 / 0%);
-    transition:
-            box-shadow 160ms ease,
-            border-color 160ms ease,
-            background-color 160ms ease;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  box-shadow: 0 0 0 rgb(0 0 0 / 0%);
+  transition:
+    box-shadow 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease;
 
-    .components-base-control__field {
-        margin-bottom: 0;
-    }
+  .components-base-control__field {
+    margin-bottom: 0;
+  }
 }
 
 .wp-admin #project-board-controls .alpaca-board-search.is-search-open {
-    background: $bgwhite;
-    border-color: #c3c4c7;
-    box-shadow:
-            0 10px 26px rgb(0 0 0 / 16%),
-            0 2px 8px rgb(0 0 0 / 10%);
+  background: $bgwhite;
+  border-color: #c3c4c7;
+  box-shadow:
+    0 10px 26px rgb(0 0 0 / 16%),
+    0 2px 8px rgb(0 0 0 / 10%);
 }
 
 .alpaca-inbox-control {
-    position: relative;
+  position: relative;
 }
 
 .alpaca-inbox-trigger {
-    position: relative;
-    width: 44px;
-    height: 40px;
-    border: 1px solid #c3c4c7;
-    border-radius: 6px;
-    background: $bgwhite;
-    color: $greytext;
-    cursor: pointer;
-    transition:
-            border-color 160ms ease,
-            box-shadow 160ms ease,
-            color 160ms ease;
+  position: relative;
+  width: 44px;
+  height: 40px;
+  border: 1px solid #c3c4c7;
+  border-radius: 6px;
+  background: $bgwhite;
+  color: $greytext;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease,
+    color 160ms ease;
 
-    .dashicons {
-        font-size: 20px;
-        line-height: 1;
-    }
+  .dashicons {
+    font-size: 20px;
+    line-height: 1;
+  }
 
-    &:hover,
-    &:focus-visible,
-    &.is-open {
-        border-color: #2271b1;
-        color: #0a4b78;
-        box-shadow: 0 0 0 1px rgb(34 113 177 / 18%);
-    }
+  &:hover,
+  &:focus-visible,
+  &.is-open {
+    border-color: #2271b1;
+    color: #0a4b78;
+    box-shadow: 0 0 0 1px rgb(34 113 177 / 18%);
+  }
 }
 
 .alpaca-inbox-trigger-badge {
-    position: absolute;
-    top: -7px;
-    inset-inline-end: -7px;
-    min-width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    background: #d63638;
-    color: #fff;
-    font-size: 11px;
-    font-weight: 700;
-    line-height: 20px;
-    text-align: center;
+  position: absolute;
+  top: -7px;
+  inset-inline-end: -7px;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #d63638;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 20px;
+  text-align: center;
 }
 
 html[dir='rtl'] .alpaca-inbox-trigger-badge,
 .rtl .alpaca-inbox-trigger-badge {
-    left: -7px;
-    right: auto;
+  left: -7px;
+  right: auto;
 }
 
 .alpaca-admin-menu-badge-mount {
-    margin-left: 6px;
+  margin-left: 6px;
 }
 
 .alpaca-inbox-backdrop {
-    position: fixed;
-    inset: 32px 0 0 0;
-    background: rgb(17 24 39 / 18%);
-    z-index: 9998;
+  position: fixed;
+  inset: 32px 0 0 0;
+  background: rgb(17 24 39 / 18%);
+  z-index: 9998;
 }
 
 .alpaca-inbox-panel {
-    --alpaca-side-panel-top: 32px;
-    --alpaca-side-panel-right: 0;
-    --alpaca-side-panel-bottom: 0;
-    --alpaca-side-panel-width: 750px;
-    --alpaca-side-panel-max-width: calc(100vw - 24px);
+  --alpaca-side-panel-top: 32px;
+  --alpaca-side-panel-right: 0;
+  --alpaca-side-panel-bottom: 0;
+  --alpaca-side-panel-width: 750px;
+  --alpaca-side-panel-max-width: calc(100vw - 24px);
 
-    position: fixed;
-    top: var(--alpaca-side-panel-top);
-    right: var(--alpaca-side-panel-right);
-    bottom: var(--alpaca-side-panel-bottom);
-    width: var(--alpaca-side-panel-width);
-    max-width: var(--alpaca-side-panel-max-width);
-    display: flex;
-    flex-direction: column;
-    z-index: 9999;
-    opacity: 1;
-    transition: opacity 220ms ease-in-out;
+  position: fixed;
+  top: var(--alpaca-side-panel-top);
+  right: var(--alpaca-side-panel-right);
+  bottom: var(--alpaca-side-panel-bottom);
+  width: var(--alpaca-side-panel-width);
+  max-width: var(--alpaca-side-panel-max-width);
+  display: flex;
+  flex-direction: column;
+  z-index: 9999;
+  opacity: 1;
+  transition: opacity 220ms ease-in-out;
 
-    @extend %alpaca-slide-right-enter;
+  @include alpaca-slide-right-enter;
 
-    &.is-closing {
-        opacity: 0;
-        pointer-events: none;
-    }
+  &.is-closing {
+    opacity: 0;
+    pointer-events: none;
+  }
 }
 
 html[dir='rtl'] .alpaca-inbox-panel,
 .rtl .alpaca-inbox-panel {
-    right: auto;
-    left: var(--alpaca-side-panel-right);
+  right: auto;
+  left: var(--alpaca-side-panel-right);
 }
 
 .alpaca-inbox-panel-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 16px;
-    padding: 20px 20px 14px 20px;
-    border-bottom: 1px solid $greyborder;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px 20px 14px 20px;
+  border-bottom: 1px solid $greyborder;
 
-    h2 {
-        margin: 0 0 4px 0;
-        font-size: 20px;
-    }
+  h2 {
+    margin: 0 0 4px 0;
+    font-size: 20px;
+  }
 
-    p {
-        margin: 0;
-        color: $greytext;
-    }
+  p {
+    margin: 0;
+    color: $greytext;
+  }
 }
 
 .alpaca-inbox-close {
-    border: 0;
-    padding: 0;
-    background: transparent;
-    color: $greytext;
-    cursor: pointer;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: $greytext;
+  cursor: pointer;
 
-    .dashicons {
-        width: 20px;
-        height: 20px;
-        font-size: 20px;
-    }
+  .dashicons {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+  }
 }
 
 .alpaca-inbox-panel-toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    padding: 14px 20px;
-    border-bottom: 1px solid $greyborder;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid $greyborder;
 }
 
 .alpaca-inbox-filter-group {
-    display: inline-flex;
-    gap: 8px;
+  display: inline-flex;
+  gap: 8px;
 }
 
 .alpaca-inbox-panel-body {
-    flex: 1 1 auto;
-    overflow-y: auto;
-    padding: 20px;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 20px;
 }
 
 .alpaca-inbox-loading,
 .alpaca-inbox-empty-state {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 180px;
-    color: $greytext;
-    text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 180px;
+  color: $greytext;
+  text-align: center;
 }
 
 .alpaca-inbox-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 
-    &.alpaca-comments-timeline::before {
-        inset-inline-start: 20px;
-        bottom: 12px;
-    }
+  &.alpaca-comments-timeline::before {
+    inset-inline-start: 20px;
+    bottom: 12px;
+  }
 }
 
 .alpaca-inbox-entry-button {
-    display: block;
-    width: 100%;
-    border: 0;
-    padding: 0;
-    background: transparent;
-    text-align: start;
-    cursor: pointer;
-    border-radius: $common-radius;
+  display: block;
+  width: 100%;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  text-align: start;
+  cursor: pointer;
+  border-radius: $common-radius;
 }
 
 .alpaca-inbox-entry {
-    opacity: 1;
-    transition: opacity 200ms ease-in-out;
-    margin-bottom: 18px;
+  opacity: 1;
+  transition: opacity 200ms ease-in-out;
+  margin-bottom: 18px;
 
-    .alpaca-comment-issue-title {
-        margin: 4px 0;
-    }
+  .alpaca-comment-issue-title {
+    margin: 4px 0;
+  }
 
-    &.is-read {
-        opacity: 0.62;
-    }
+  &.is-read {
+    opacity: 0.62;
+  }
 }
 
 .alpaca-inbox-entry-button:focus-visible {
-    outline: 2px solid #2271b1;
-    outline-offset: 2px;
+  outline: 2px solid #2271b1;
+  outline-offset: 2px;
 }
 
 .alpaca-inbox-entry-item {
-    margin: 0;
+  margin: 0;
 }
 
 .alpaca-inbox-entry-item[data-source='human'] {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 .alpaca-inbox-entry-item[data-source='human'] .alpaca-timeline-content {
-    border-radius: $common-radius;
-    border: 1px solid $greyborder;
-    background: $container-bg;
-    transition:
-            background-color 180ms ease,
-            border-color 180ms ease,
-            box-shadow 180ms ease;
+  border-radius: $common-radius;
+  border: 1px solid $greyborder;
+  background: $container-bg;
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease;
 }
 
 .alpaca-inbox-entry-item[data-source='human'] .alpaca-timeline-footer-actions {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 6px;
-    padding-inline-end: $commenthead-hpad;
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 6px;
+  padding-inline-end: $commenthead-hpad;
 }
 
 .alpaca-inbox-entry.is-unread
-.alpaca-inbox-entry-item[data-source='human']
-.alpaca-timeline-content {
-    border-color: #85b3d9;
-    background: $bgwhite;
-    box-shadow: 0 0 0 1px rgb(34 113 177 / 10%);
+  .alpaca-inbox-entry-item[data-source='human']
+  .alpaca-timeline-content {
+  border-color: #85b3d9;
+  background: $bgwhite;
+  box-shadow: 0 0 0 1px rgb(34 113 177 / 10%);
 }
 
 .wp-admin .alpaca-inbox-entry-item[data-source='audit'] {
-    margin: 0;
+  margin: 0;
 
-    .alpaca-timeline-icon {
-        inset-inline-start: 0;
+  .alpaca-timeline-icon {
+    inset-inline-start: 0;
+  }
+
+  .alpaca-timeline-msg {
+    margin-inline-start: 36px;
+  }
+
+  .alpaca-audit-topline {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    width: 100%;
+    margin: 0 0 4px 0;
+
+    .alpaca-comment-issue-title {
+      flex: 1 1 auto;
+      min-width: 0;
+      margin-bottom: 0;
     }
 
-    .alpaca-timeline-msg {
-        margin-inline-start: 36px;
+    .alpaca-comment-date {
+      margin-inline-start: auto;
+      min-width: 9ch;
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: 0.02em;
+      line-height: 1.2;
+      text-align: end;
+      white-space: nowrap;
     }
+  }
 
-    .alpaca-audit-topline {
-        display: flex;
-        align-items: baseline;
-        gap: 8px;
-        width: 100%;
-        margin: 0 0 4px 0;
+  .alpaca-timeline-msg-meta .alpaca-comment-buttons {
+    margin-inline-start: auto;
+  }
 
-        .alpaca-comment-issue-title {
-            flex: 1 1 auto;
-            min-width: 0;
-            margin-bottom: 0;
-        }
-
-        .alpaca-comment-date {
-            margin-inline-start: auto;
-            min-width: 9ch;
-            font-size: 12px;
-            font-weight: 400;
-            letter-spacing: 0.02em;
-            line-height: 1.2;
-            text-align: end;
-            white-space: nowrap;
-        }
-    }
-
-    .alpaca-timeline-msg-meta .alpaca-comment-buttons {
-        margin-inline-start: auto;
-    }
-
-    .alpaca-comment-buttons {
-        opacity: 1;
-        position: static;
-    }
+  .alpaca-comment-buttons {
+    opacity: 1;
+    position: static;
+  }
 }
 
 .alpaca-inbox-entry.is-unread .alpaca-inbox-entry-item[data-source='audit'] {
-    .alpaca-timeline-icon {
-        border-color: #85b3d9;
-    }
+  .alpaca-timeline-icon {
+    border-color: #85b3d9;
+  }
 }
 
 .alpaca-inbox-entry-item .alpaca-comment-header {
-    align-items: center;
+  align-items: center;
 }
 
 .alpaca-inbox-entry-item .alpaca-comment-buttons {
-    opacity: 1;
-    position: static;
-    margin-inline-start: auto;
+  opacity: 1;
+  position: static;
+  margin-inline-start: auto;
 }
 
 .alpaca-inbox-entry-label {
-    margin: 0 0 8px;
-    color: #0a4b78;
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
+  margin: 0 0 8px;
+  color: #0a4b78;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
 }
 
 .alpaca-inbox-entry-preview {
-    margin: 0;
-    color: $greytext;
-    line-height: 1.5;
+  margin: 0;
+  color: $greytext;
+  line-height: 1.5;
 }
 
 .alpaca-inbox-entry-read-toggle.components-button {
-    color: #0a4b78;
-    min-height: auto;
-    padding: 0;
-    text-decoration: none;
+  color: #0a4b78;
+  min-height: auto;
+  padding: 0;
+  text-decoration: none;
 }
 
 .alpaca-inbox-panel-footer {
-    padding: 14px 20px 20px 20px;
-    border-top: 1px solid $greyborder;
+  padding: 14px 20px 20px 20px;
+  border-top: 1px solid $greyborder;
 }
 
 @media (max-width: 782px) {
-    .alpaca-inbox-backdrop {
-        inset: 46px 0 0 0;
-    }
+  .alpaca-inbox-backdrop {
+    inset: 46px 0 0 0;
+  }
 
-    .alpaca-inbox-panel {
-        --alpaca-side-panel-top: 46px;
-        --alpaca-side-panel-width: 100%;
-        --alpaca-side-panel-max-width: 100%;
-    }
+  .alpaca-inbox-panel {
+    --alpaca-side-panel-top: 46px;
+    --alpaca-side-panel-width: 100%;
+    --alpaca-side-panel-max-width: 100%;
+  }
 }

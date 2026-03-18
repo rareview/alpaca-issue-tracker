@@ -1,7 +1,7 @@
 /*
-* Board
-*/
-@import 'base';
-@import 'containers';
-@import 'controls';
-@import 'items';
+ * Board
+ */
+@forward 'base';
+@forward 'containers';
+@forward 'controls';
+@forward 'items';

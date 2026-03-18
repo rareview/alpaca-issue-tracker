@@ -1,10 +1,7 @@
 /**
  * Alpaca styles main entrypoint.
  */
-@import "./abstracts";
-@import "./components";
-@import "./global";
-@import "./widgets";
-
-
-
+@use './abstracts';
+@use './components';
+@use './global';
+@use './widgets';

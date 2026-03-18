@@ -4,23 +4,27 @@
  * Mixins
  */
 @mixin deadline-style($bg-color) {
-    background-color: $bg-color;
-    color: if(
-        color.channel($bg-color, 'lightness', $space: hsl) > 67%,
-        #000,
-        #fff
-    );
-    margin: 2px 0;
-    padding: 0 8px;
+  background-color: $bg-color;
+  color: if(
+    color.channel($bg-color, 'lightness', $space: hsl) > 67%,
+    #000,
+    #fff
+  );
+  margin: 2px 0;
+  padding: 0 8px;
+}
+
+@mixin alpaca-slide-right-enter {
+  animation: slide-in-right 300ms ease-out forwards;
+  transform-origin: 100% center;
+
+  html[dir='rtl'] &,
+  .rtl & {
+    animation: slide-in-left 300ms ease-out forwards;
+    transform-origin: 0 center;
+  }
 }
 
 %alpaca-slide-right-enter {
-    animation: slide-in-right 300ms ease-out forwards;
-    transform-origin: 100% center;
-
-    html[dir='rtl'] &,
-    .rtl & {
-        animation: slide-in-left 300ms ease-out forwards;
-        transform-origin: 0 center;
-    }
+  @include alpaca-slide-right-enter;
 }

@@ -1,174 +1,175 @@
+@use '../abstracts' as *;
 
 /* Snackbar fade for Alpaca (used by Board.jsx) */
 .alpaca-snackbar {
-    transition: opacity 300ms ease;
-    opacity: 1;
-    color: #fff;
-    background: #1e1e1e;
-    transform: translateY(0);
-    will-change: opacity;
+  transition: opacity 300ms ease;
+  opacity: 1;
+  color: #fff;
+  background: #1e1e1e;
+  transform: translateY(0);
+  will-change: opacity;
 }
 
 .alpaca-snackbar.alpaca-snackbar-error {
-    border-left: 4px solid #b32d2e;
-    background: #fff5f5;
-    color: #1e1e1e;
+  border-left: 4px solid #b32d2e;
+  background: #fff5f5;
+  color: #1e1e1e;
 }
 
 .alpaca-snackbar.alpaca-snackbar-warning {
-    border-left: 4px solid #dba617;
-    background: #fff9e6;
-    color: #1e1e1e;
+  border-left: 4px solid #dba617;
+  background: #fff9e6;
+  color: #1e1e1e;
 }
 
 .alpaca-snackbar.alpaca-snackbar-success {
-    border-left: 4px solid #00a32a;
-    background: #edfaef;
-    color: #1e1e1e;
+  border-left: 4px solid #00a32a;
+  background: #edfaef;
+  color: #1e1e1e;
 }
 
 .alpaca-snackbar.is-closing {
-    opacity: 0;
-    pointer-events: none;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .alpaca-details-modal {
-    position: relative;
+  position: relative;
 }
 
 .alpaca-side-panel {
-    --alpaca-side-panel-border: 1px solid #{$greyborder};
-    --alpaca-side-panel-radius: #{$common-radius};
-    --alpaca-side-panel-shadow: -12px 0 32px rgb(0 0 0 / 16%);
+  --alpaca-side-panel-border: 1px solid #{$greyborder};
+  --alpaca-side-panel-radius: #{$common-radius};
+  --alpaca-side-panel-shadow: -12px 0 32px rgb(0 0 0 / 16%);
 
-    background: $bgwhite;
-    border: var(--alpaca-side-panel-border);
-    border-top-left-radius: var(--alpaca-side-panel-radius);
-    border-bottom-left-radius: var(--alpaca-side-panel-radius);
-    box-shadow: var(--alpaca-side-panel-shadow);
-    overflow: hidden;
+  background: $bgwhite;
+  border: var(--alpaca-side-panel-border);
+  border-top-left-radius: var(--alpaca-side-panel-radius);
+  border-bottom-left-radius: var(--alpaca-side-panel-radius);
+  box-shadow: var(--alpaca-side-panel-shadow);
+  overflow: hidden;
 }
 
 .alpaca-snackbar-stack {
-    position: absolute;
-    left: 24px;
-    right: 24px;
-    top: 24px;
-    z-index: 10;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    pointer-events: none;
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  top: 24px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
 }
 
 .alpaca-snackbar-stack .alpaca-snackbar {
-    pointer-events: auto;
+  pointer-events: auto;
 }
 
 #alpaca-comments-wrapper {
-    position: relative;
+  position: relative;
 }
 
 .alpaca-comment-issue-title {
-    font-size: 12px;
-    font-weight: 600;
-    color: $greytext;
-    letter-spacing: 0.02em;
-    margin-bottom: 8px;
-    text-align: start;
+  font-size: 12px;
+  font-weight: 600;
+  color: $greytext;
+  letter-spacing: 0.02em;
+  margin-bottom: 8px;
+  text-align: start;
 }
 
 #alpaca-activity {
-    margin-top: 16px;
-    max-width: 720px;
+  margin-top: 16px;
+  max-width: 720px;
 
-    .alpaca-activity-loading {
-        display: flex;
-        justify-content: center;
-        padding: 24px 0;
+  .alpaca-activity-loading {
+    display: flex;
+    justify-content: center;
+    padding: 24px 0;
+  }
+
+  .alpaca-activity-loading-more {
+    display: flex;
+    justify-content: center;
+    padding: 8px 0 24px 0;
+  }
+
+  .alpaca-activity-sentinel {
+    height: 1px;
+  }
+
+  .alpaca-activity-date-group + .alpaca-activity-date-group {
+    margin-top: 24px;
+  }
+
+  .alpaca-activity-date-heading {
+    margin: 0 0 10px 0;
+    font-size: 13px;
+    color: $greytext;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .alpaca-timeline-msg {
+    padding-top: 4px;
+  }
+
+  .alpaca-comments-timeline {
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: $commenthead-hpad;
+      inset-inline-start: 36px;
+      width: $timeline-width;
+      background-color: $greyborder;
     }
+  }
 
-    .alpaca-activity-loading-more {
-        display: flex;
-        justify-content: center;
-        padding: 8px 0 24px 0;
-    }
+  .alpaca-activity-entry-button {
+    display: block;
+    width: 100%;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    text-align: start;
+    cursor: pointer;
+    border-radius: 8px;
+  }
 
-    .alpaca-activity-sentinel {
-        height: 1px;
-    }
-
-    .alpaca-activity-date-group + .alpaca-activity-date-group {
-        margin-top: 24px;
-    }
-
-    .alpaca-activity-date-heading {
-        margin: 0 0 10px 0;
-        font-size: 13px;
-        color: $greytext;
-        text-transform: uppercase;
-        letter-spacing: 0.03em;
-    }
-
-    .alpaca-timeline-msg {
-        padding-top: 4px;
-    }
-
-    .alpaca-comments-timeline {
-        position: relative;
-
-        &::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            bottom: $commenthead-hpad;
-            inset-inline-start: 36px;
-            width: $timeline-width;
-            background-color: $greyborder;
-        }
-    }
-
-    .alpaca-activity-entry-button {
-        display: block;
-        width: 100%;
-        border: 0;
-        margin: 0;
-        padding: 0;
-        background: transparent;
-        text-align: start;
-        cursor: pointer;
-        border-radius: 8px;
-    }
-
-    .alpaca-activity-entry-button:focus-visible {
-        outline: 2px solid #2271b1;
-        outline-offset: 2px;
-    }
+  .alpaca-activity-entry-button:focus-visible {
+    outline: 2px solid #2271b1;
+    outline-offset: 2px;
+  }
 }
 
 .alpaca-align-controls {
-    flex-direction: row;
-    gap: $spacegap;
+  flex-direction: row;
+  gap: $spacegap;
 }
 
 .alpaca-comment-content.with-avatar-meta,
 .alpaca-timeline-msg-content.with-avatar-meta {
-    .alpaca-status-assignee[data-avatar] {
-        display: inline-flex;
-        align-items: center;
+  .alpaca-status-assignee[data-avatar] {
+    display: inline-flex;
+    align-items: center;
 
-        &::after {
-            content: '';
-            display: inline-block;
-            width: 24px;
-            height: 24px;
-            background-image: var(--avatar-url);
-            background-position: center;
-            background-size: cover;
-            border-radius: 50%;
-            border: 1px solid $greyborder;
-            margin-left: 5px;
-            vertical-align: middle;
-        }
+    &::after {
+      content: '';
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      background-image: var(--avatar-url);
+      background-position: center;
+      background-size: cover;
+      border-radius: 50%;
+      border: 1px solid $greyborder;
+      margin-left: 5px;
+      vertical-align: middle;
     }
+  }
 }

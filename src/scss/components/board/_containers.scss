@@ -1,85 +1,87 @@
+@use '../../abstracts' as *;
+
 /*
 * 3.2 - Containers (Columns)
 */
 .wp-admin {
-    .alpaca-container {
-        margin-block: 0;
-        margin-inline: 1px 10px;
-        background: $container-bg;
-        border-radius: 4px;
-        display: flex;
+  .alpaca-container {
+    margin-block: 0;
+    margin-inline: 1px 10px;
+    background: $container-bg;
+    border-radius: 4px;
+    display: flex;
 
-        .alpaca-container-header,
-        .alpaca-container-body {
-            padding-top: 5px;
-            padding-bottom: 5px;
-        }
-
-        .alpaca-container-header {
-            display: grid;
-            grid-template-columns: 1fr 40px;
-            align-items: center;
-
-            h2,
-            .alpaca-container-title-input input {
-                margin: 0;
-                font-size: $container-header-fontsize;
-                font-weight: $container-header-fontweight;
-                padding: 0;
-                border: none;
-                background: transparent;
-
-                &:focus {
-                    outline: none;
-                    box-shadow: none;
-                }
-            }
-
-            .alpaca-container-title-input > div {
-                margin: -1px 0 0;
-                padding: 0;
-            }
-
-            .alpaca-item-count {
-                font-size: smaller;
-                font-weight: 200;
-                margin: 0.5rem;
-                opacity: 0.5;
-            }
-
-            .alpaca-container-controls {
-                padding: 2px 0;
-                flex-direction: row;
-
-                .components-button:focus:not(:disabled) {
-                    box-shadow: none;
-                }
-
-                button {
-                    margin-left: 2px;
-                    opacity: 0.2;
-                    transition: opacity 0.2s ease-in-out;
-
-                    &:hover {
-                        opacity: 1;
-                        cursor: pointer;
-                    }
-                }
-            }
-        }
-
-        &.is-collapsed {
-            opacity: 0.5;
-            flex: 0 !important;
-            min-width: auto !important;
-
-            .alpaca-items {
-                display: none;
-            }
-        }
+    .alpaca-container-header,
+    .alpaca-container-body {
+      padding-top: 5px;
+      padding-bottom: 5px;
     }
 
-    .alpaca-items {
-        padding: 0 2px;
+    .alpaca-container-header {
+      display: grid;
+      grid-template-columns: 1fr 40px;
+      align-items: center;
+
+      h2,
+      .alpaca-container-title-input input {
+        margin: 0;
+        font-size: $container-header-fontsize;
+        font-weight: $container-header-fontweight;
+        padding: 0;
+        border: none;
+        background: transparent;
+
+        &:focus {
+          outline: none;
+          box-shadow: none;
+        }
+      }
+
+      .alpaca-container-title-input > div {
+        margin: -1px 0 0;
+        padding: 0;
+      }
+
+      .alpaca-item-count {
+        font-size: smaller;
+        font-weight: 200;
+        margin: 0.5rem;
+        opacity: 0.5;
+      }
+
+      .alpaca-container-controls {
+        padding: 2px 0;
+        flex-direction: row;
+
+        .components-button:focus:not(:disabled) {
+          box-shadow: none;
+        }
+
+        button {
+          margin-left: 2px;
+          opacity: 0.2;
+          transition: opacity 0.2s ease-in-out;
+
+          &:hover {
+            opacity: 1;
+            cursor: pointer;
+          }
+        }
+      }
     }
+
+    &.is-collapsed {
+      opacity: 0.5;
+      flex: 0 !important;
+      min-width: auto !important;
+
+      .alpaca-items {
+        display: none;
+      }
+    }
+  }
+
+  .alpaca-items {
+    padding: 0 2px;
+  }
 }

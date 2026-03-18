@@ -1,16 +1,18 @@
+@use '../../abstracts' as *;
+
 /*
 * Header & Meta
 */
 .wp-admin {
-    .alpaca-issue-meta {
-        color: $greytext;
-        font-size: $smallfont;
-        line-height: 3em;
-        flex-direction: row;
-        gap: $spacegap;
+  .alpaca-issue-meta {
+    color: $greytext;
+    font-size: $smallfont;
+    line-height: 3em;
+    flex-direction: row;
+    gap: $spacegap;
 
-        .alpaca-user-name {
-            font-weight: 600;
-        }
+    .alpaca-user-name {
+      font-weight: 600;
     }
+  }
 }

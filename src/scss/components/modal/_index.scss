@@ -1,13 +1,13 @@
 /*
-* Modal
-*/
-@import 'attachments';
-@import "checklists";
-@import "comments";
-@import "details-table";
-@import "errors-tab";
-@import "frame";
-@import "header-meta";
-@import "issue-details";
-@import "syntax";
-@import "timeline-items";
+ * Modal
+ */
+@forward 'attachments';
+@forward 'checklists';
+@forward 'comments';
+@forward 'details-table';
+@forward 'errors-tab';
+@forward 'frame';
+@forward 'header-meta';
+@forward 'issue-details';
+@forward 'syntax';
+@forward 'timeline-items';

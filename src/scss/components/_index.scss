@@ -1,14 +1,15 @@
 /*
  * Other Components
  */
-@import "base";
-@import "board";
-@import "modal";
-@import "empty-state";
-@import "notifications";
-@import "popovers";
-@import "report";
-@import "settings";
-@import "status-manager";
-@import "toolbar";
-@import "user";
+@forward 'base';
+@forward 'board';
+@forward 'modal';
+@forward 'empty-state';
+@forward 'confirmation-dialog';
+@forward 'notifications';
+@forward 'popovers';
+@forward 'report';
+@forward 'settings';
+@forward 'status-manager';
+@forward 'toolbar';
+@forward 'user';

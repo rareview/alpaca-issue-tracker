@@ -1,99 +1,101 @@
+@use '../../abstracts' as *;
+
 /*
 * Syntax Highlighting
 */
 .wp-admin {
-    table.alpaca-data-table,
-    .alpaca-json-table table,
-    .alpaca-report-tab table,
-    .alpaca-errors-tab table,
-    .alpaca-data-table,
-    .alpaca-json-table,
-    .alpaca-report-tab,
-    .alpaca-errors-tab {
-        &,
-        table,
-        pre,
-        code,
-        code[class*='language-'],
-        pre[class*='language-'] {
-            font-family: $code-font !important;
-            font-size: 0.8125rem !important;
-        }
-
-        table.alpaca-data-table {
-            border: 1px solid $greyborder;
-            border-collapse: collapse;
-            width: 100%;
-        }
-
-        th,
-        td {
-            border: 1px solid $greyborder;
-            padding: 10px;
-            text-align: left;
-            vertical-align: top;
-            word-break: break-word;
-        }
-
-        th {
-            background-color: $greyshade;
-            width: 200px;
-        }
-
-        td {
-            max-width: 600px;
-            line-height: 1.5em;
-        }
-
-        pre,
-        code {
-            margin: 0 !important;
-            padding: 0 !important;
-            text-indent: 0 !important;
-            white-space: pre-wrap !important;
-            word-break: break-word !important;
-            font-family: inherit !important;
-            font-size: inherit !important;
-            width: 100% !important;
-            background: transparent !important;
-            background-color: transparent !important;
-            border: 0 !important;
-        }
-
-        pre code span {
-            display: inline !important;
-        }
-
-        pre[class*='language-'],
-        code[class*='language-'] {
-            padding: 0 !important;
-            margin: 0 !important;
-            border: 0 !important;
-            line-height: 1.5em !important;
-            background: transparent !important;
-            background-color: transparent !important;
-            color: inherit !important;
-        }
-
-        :not(pre) > code[class*='language-'] {
-            padding: 0 !important;
-            background: transparent !important;
-            background-color: transparent !important;
-            border: 0 !important;
-        }
-
-        code.language-uri {
-            cursor: pointer !important;
-            user-select: text !important;
-            pointer-events: auto !important;
-
-            &:hover {
-                text-decoration: underline;
-            }
-        }
-
-        .token.operator {
-            background: none !important;
-        }
+  table.alpaca-data-table,
+  .alpaca-json-table table,
+  .alpaca-report-tab table,
+  .alpaca-errors-tab table,
+  .alpaca-data-table,
+  .alpaca-json-table,
+  .alpaca-report-tab,
+  .alpaca-errors-tab {
+    &,
+    table,
+    pre,
+    code,
+    code[class*='language-'],
+    pre[class*='language-'] {
+      font-family: $code-font !important;
+      font-size: 0.8125rem !important;
     }
+
+    table.alpaca-data-table {
+      border: 1px solid $greyborder;
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    th,
+    td {
+      border: 1px solid $greyborder;
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+      word-break: break-word;
+    }
+
+    th {
+      background-color: $greyshade;
+      width: 200px;
+    }
+
+    td {
+      max-width: 600px;
+      line-height: 1.5em;
+    }
+
+    pre,
+    code {
+      margin: 0 !important;
+      padding: 0 !important;
+      text-indent: 0 !important;
+      white-space: pre-wrap !important;
+      word-break: break-word !important;
+      font-family: inherit !important;
+      font-size: inherit !important;
+      width: 100% !important;
+      background: transparent !important;
+      background-color: transparent !important;
+      border: 0 !important;
+    }
+
+    pre code span {
+      display: inline !important;
+    }
+
+    pre[class*='language-'],
+    code[class*='language-'] {
+      padding: 0 !important;
+      margin: 0 !important;
+      border: 0 !important;
+      line-height: 1.5em !important;
+      background: transparent !important;
+      background-color: transparent !important;
+      color: inherit !important;
+    }
+
+    :not(pre) > code[class*='language-'] {
+      padding: 0 !important;
+      background: transparent !important;
+      background-color: transparent !important;
+      border: 0 !important;
+    }
+
+    code.language-uri {
+      cursor: pointer !important;
+      user-select: text !important;
+      pointer-events: auto !important;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+    .token.operator {
+      background: none !important;
+    }
+  }
 }
