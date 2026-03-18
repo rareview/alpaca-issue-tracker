@@ -1,0 +1,55 @@
+@use '../../abstracts' as *;
+
+/*
+* Errors Tab
+*/
+.wp-admin {
+  .alpaca-errors-tab {
+    .alpaca-error-item {
+      margin-bottom: 2rem;
+      border-bottom: 1px solid $greyborder;
+      padding-bottom: 1rem;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      h4 {
+        margin-top: 0;
+      }
+    }
+
+    .alpaca-error-stack {
+      margin-top: 1rem;
+
+      h5 {
+        margin-bottom: 0.5rem;
+      }
+
+      pre,
+      pre[class*='language-'] {
+        background: $greyshade !important;
+        padding: 1rem !important;
+        margin: 0 !important;
+        border: 0 !important;
+        border-radius: 4px !important;
+        white-space: pre-wrap !important;
+        word-break: break-word !important;
+        overflow-x: auto !important;
+        box-shadow: none !important;
+      }
+
+      code,
+      code[class*='language-'] {
+        background: transparent !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: 0 !important;
+        font-family: $code-font !important;
+        font-size: 0.8125rem !important;
+        color: inherit !important;
+        text-shadow: none !important;
+      }
+    }
+  }
+}

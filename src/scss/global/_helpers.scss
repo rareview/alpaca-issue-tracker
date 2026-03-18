@@ -1,0 +1,47 @@
+@use '../abstracts' as *;
+
+/*
+ * 2.0 - General / Helper Classes
+ */
+
+.rtl .rtl-mirror,
+html[dir='rtl'] .rtl-mirror {
+  transform: scaleX(-1);
+}
+
+.rtl .alpaca-menu-item-progress-issue .dashicon,
+html[dir='rtl'] .alpaca-menu-item-progress-issue .dashicon,
+.rtl .alpaca-menu-item-move-next .dashicon,
+html[dir='rtl'] .alpaca-menu-item-move-next .dashicon {
+  transform: scaleX(-1);
+}
+
+.timestamp,
+.nowrap {
+  white-space: nowrap;
+}
+
+.rotate90 {
+  transform: rotate(90deg);
+}
+
+.flexalign {
+  display: flex;
+  align-items: center;
+  gap: $spacegap;
+}
+
+.has-sidecontrols {
+  display: grid;
+  grid-template-columns: 1fr 100px;
+  grid-template-rows: 1fr;
+  gap: $spacegap;
+}
+
+.sidecontrols {
+  text-align: right;
+}
+
+.alpaca-wrap {
+  flex-wrap: nowrap;
+}

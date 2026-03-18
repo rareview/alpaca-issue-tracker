@@ -1,4 +1,4 @@
-import './alpaca.scss';
+import './scss/main.scss';
 
 import './apiTest.js';
 import './utils/issueCommentHandler.js';

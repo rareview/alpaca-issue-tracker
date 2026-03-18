@@ -1,0 +1,132 @@
+@use '../../abstracts' as *;
+
+/*
+ * 4.1 - Modal Frame
+ */
+.wp-admin {
+  .components-modal__frame.alpaca-details-modal {
+    position: absolute;
+    top: 0;
+    right: calc(-1 * var(--alpaca-side-panel-frame-overhang, 8px));
+    max-width: var(--alpaca-side-panel-max-width, 750px);
+    height: calc(100% - var(--alpaca-side-panel-top-offset, 32px));
+    margin: var(--alpaca-side-panel-top-offset, 32px) 0 0 0;
+
+    @include alpaca-slide-right-enter;
+  }
+
+  html[dir='rtl'] .components-modal__frame.alpaca-details-modal,
+  &.rtl .components-modal__frame.alpaca-details-modal {
+    right: auto;
+    left: calc(-1 * var(--alpaca-side-panel-frame-overhang, 8px));
+  }
+
+  .alpaca-details-modal.alpaca-side-panel {
+    --alpaca-side-panel-top-offset: 32px;
+    --alpaca-side-panel-max-width: 750px;
+    --alpaca-side-panel-frame-overhang: 8px;
+  }
+
+  .alpaca-issue-details {
+    p,
+    input,
+    textarea {
+      font-size: $midfont;
+    }
+
+    .alpaca-issue-tabs .components-tab-panel__tabs {
+      border-bottom: 1px solid $greyborder;
+    }
+
+    .components-tab-panel__tab-content {
+      // any tab styling
+      padding: 1em 0;
+    }
+
+    .alpaca-timeline-item[data-source='audit'] .alpaca-comment-buttons {
+      top: -8px;
+    }
+  }
+
+  .alpaca-issue-main {
+    .alpaca-issue-title-row {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+
+      .alpaca-issue-title {
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+    }
+
+    .alpaca-issue-watch-indicator {
+      color: #ffb900;
+      display: inline-flex;
+      align-items: center;
+      background: transparent;
+      border: 0;
+      padding: 0;
+      cursor: pointer;
+
+      width: 20px;
+      height: 20px;
+      font-size: 20px;
+
+      &:disabled {
+        cursor: default;
+        opacity: 0.2;
+      }
+    }
+
+    .alpaca-issue-title {
+      font-size: 2rem; // match h3
+      font-weight: bold;
+      line-height: 1.3;
+      margin: 0;
+      padding: 0;
+      color: inherit;
+      background: none;
+      border: none;
+      outline: none;
+      width: 100%;
+      text-align: start;
+
+      &:hover {
+        background: $greyshade;
+        cursor: text;
+      }
+
+      &:focus {
+        outline: none;
+      }
+
+      &:empty[data-placeholder]::before {
+        content: attr(data-placeholder);
+        color: $greytext;
+        opacity: 0.6;
+      }
+
+      &:focus:empty[data-placeholder]::before {
+        opacity: 0.5;
+      }
+    }
+  }
+
+  .components-panel {
+    margin-bottom: 1rem;
+
+    .alpaca-modal-textarea {
+      width: 100%;
+    }
+
+    textarea {
+      width: 100%;
+      font-family: monospace;
+
+      /* Often good for preformatted text */
+      white-space: pre;
+      overflow: hidden scroll;
+    }
+  }
+}

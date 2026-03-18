@@ -1,0 +1,126 @@
+@use '../../abstracts' as *;
+
+/*
+* Details Table
+*/
+.wp-admin {
+  table.alpaca-issue-details {
+    border: 0;
+    border-spacing: 0;
+    margin: 1em 0;
+    width: 100%;
+
+    th,
+    td,
+    button {
+      font-size: $midfont;
+      line-height: 1.8;
+      text-align: start;
+      vertical-align: top;
+    }
+
+    th {
+      padding-block: 5px;
+      padding-inline-start: 0;
+      padding-inline-end: 1rem;
+      width: 150px;
+      font-weight: normal;
+    }
+
+    td {
+      padding-block: 5px;
+      padding-inline-start: 0.6rem;
+      padding-inline-end: 0;
+      word-break: break-all;
+    }
+
+    tr#assignees input {
+      margin-left: 0;
+    }
+
+    td.alpaca-issue-labels-cell {
+      align-items: flex-start;
+      display: flex;
+      width: 100%;
+    }
+
+    div {
+      margin: 0;
+      padding: 0;
+    }
+
+    input,
+    .alpaca-input,
+    .components-form-token-field__input-container,
+    .components-form-token-field__input-container .components-flex {
+      background: none;
+      border: none;
+      margin: 0;
+      padding: 0;
+      line-height: inherit;
+      min-height: auto;
+      font-size: $midfont;
+      text-align: start;
+    }
+
+    .components-toggle-control {
+      font-size: $midfont;
+      margin-top: 5px;
+    }
+
+    .components-form-token-field {
+      width: 100%;
+
+      &__token-text,
+      &__remove-token {
+        display: flex;
+      }
+    }
+
+    .alpaca-labels-selector {
+      width: 100%;
+
+      .alpaca-labels-selector-toggle.components-button.is-link {
+        align-items: center;
+        color: inherit;
+        display: inline-flex;
+        gap: 8px;
+        padding-left: 0;
+        text-decoration: none;
+
+        &:focus {
+          box-shadow: none;
+        }
+      }
+
+      .alpaca-labels-selector-pills {
+        display: inline-flex;
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+
+      .alpaca-labels-selector-toggle-text {
+        color: $greytext;
+      }
+    }
+
+    .components-form-token-field__help {
+      display: none;
+    }
+
+    .components-form-token-field input,
+    .components-form-token-field:focus,
+    .components-form-token-field:focus-visible,
+    .components-form-token-field:focus-within {
+      outline: none !important;
+      box-shadow: none !important;
+      border: none !important;
+      font-size: $midfont;
+    }
+
+    .placeholder,
+    ::placeholder {
+      color: $greytext;
+    }
+  }
+}
