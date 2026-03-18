@@ -52,6 +52,37 @@ class Register {
 	}
 
 	/**
+	 * Get the saved item datapoint visibility settings.
+	 *
+	 * @return array<string, bool> Visibility map keyed by datapoint slug.
+	 */
+	private function get_item_datapoint_visibility_setting() {
+		$raw_visibility = get_option( 'alpaca_item_datapoint_visibility', array() );
+
+		if ( ! is_array( $raw_visibility ) ) {
+			return array();
+		}
+
+		$visibility = array();
+
+		foreach ( $raw_visibility as $slug => $is_enabled ) {
+			if ( ! is_string( $slug ) ) {
+				continue;
+			}
+
+			$clean_slug = sanitize_key( $slug );
+
+			if ( '' === $clean_slug ) {
+				continue;
+			}
+
+			$visibility[ $clean_slug ] = (bool) $is_enabled;
+		}
+
+		return $visibility;
+	}
+
+	/**
 	 * Enqueue frontend assets.
 	 *
 	 * @return void
@@ -129,7 +160,8 @@ class Register {
 				// Provide the proxy endpoint with the query param prefix so SnapDOM can append the encoded target URL.
 				// Provide a signed proxy token that does not rely on browser cookies.
 				// This keeps proxy requests working when SnapDOM fetches across origins.
-				'snapdomProxy' => $this->get_snapdom_proxy_setting(),
+				'snapdomProxy'            => $this->get_snapdom_proxy_setting(),
+				'itemDatapointVisibility' => $this->get_item_datapoint_visibility_setting(),
 			)
 		);
 	}
@@ -147,8 +179,9 @@ class Register {
 			self::PREFIX . '-script',
 			'alpacaSettings',
 			array(
-				'adminUrl'     => admin_url( 'admin.php' ),
-				'snapdomProxy' => $this->get_snapdom_proxy_setting(),
+				'adminUrl'                => admin_url( 'admin.php' ),
+				'snapdomProxy'            => $this->get_snapdom_proxy_setting(),
+				'itemDatapointVisibility' => $this->get_item_datapoint_visibility_setting(),
 			)
 		);
 

@@ -1,299 +1,259 @@
-const { __ } = wp.i18n;
-import User from '../components/User';
-import HourglassIcon from '../components/icons/HourglassIcon';
-import CommentIcon from '../components/icons/CommentIcon';
-import CalendarIcon from '../components/icons/CalendarIcon';
-import PriorityIcon from '../components/icons/PriorityIcon';
-import Check2SquareIcon from '../components/icons/Check2SquareIcon';
-import Time from '../components/Time';
+import { datapointRegistrations } from '../datapoints';
+
+const DATAPOINT_VISIBILITY_OPTION_KEY = 'alpaca_item_datapoint_visibility';
+
+const registeredDatapoints = [];
+const registeredDatapointsBySlug = {};
+let visibilityRequest = null;
 
 /**
- * Filter to add priority badge to item datapoints.
+ * Normalize datapoint visibility values from settings payloads.
  *
- * @param {JSX.Element|null} originalContent The original content of the filter.
- * @param {Object}           itemProps       Props passed to the Item component.
- * @return {JSX.Element|null} The priority badge JSX or null.
+ * @param {Object|null|undefined} maybeVisibility Candidate visibility map.
+ * @return {Object} Normalized visibility map keyed by datapoint slug.
  */
-export const addPriorityDatapoint = (originalContent, itemProps) => {
-  const { meta } = itemProps;
+const normalizeVisibilityMap = (maybeVisibility) => {
+  const normalized = {};
 
+  if (!maybeVisibility || typeof maybeVisibility !== 'object') {
+    return normalized;
+  }
+
+  Object.entries(maybeVisibility).forEach(([slug, value]) => {
+    if (typeof slug !== 'string' || slug.trim() === '') {
+      return;
+    }
+
+    if (value === true || value === 1 || value === '1') {
+      normalized[slug] = true;
+      return;
+    }
+
+    normalized[slug] = false;
+  });
+
+  return normalized;
+};
+
+/**
+ * Read bootstrapped visibility from localized settings when available.
+ *
+ * @return {Object} Normalized visibility map keyed by datapoint slug.
+ */
+const getBootstrappedDatapointVisibility = () => {
   if (
-    meta &&
-    (meta.alpaca_high_priority === '1' ||
-      meta.alpaca_high_priority === 1 ||
-      meta.alpaca_high_priority === true)
+    typeof window === 'undefined' ||
+    !window.alpacaSettings ||
+    typeof window.alpacaSettings !== 'object'
   ) {
-    return (
-      <>
-        {originalContent}
-        <div className="alpaca-item-priority-badge">
-          <PriorityIcon /> {__('Priority', 'alpaca')}
-        </div>
-      </>
-    );
+    return {};
   }
-  return originalContent;
+
+  return normalizeVisibilityMap(window.alpacaSettings.itemDatapointVisibility);
+};
+
+let datapointVisibility = getBootstrappedDatapointVisibility();
+
+/**
+ * Check whether a datapoint should be rendered.
+ *
+ * @param {string}  slug           Datapoint slug.
+ * @param {boolean} defaultEnabled Whether the datapoint is enabled by default.
+ * @return {boolean} True when datapoint should be rendered.
+ */
+const isDatapointEnabled = (slug, defaultEnabled) => {
+  if (Object.prototype.hasOwnProperty.call(datapointVisibility, slug)) {
+    return Boolean(datapointVisibility[slug]);
+  }
+
+  return defaultEnabled;
 };
 
 /**
- * Filter to add assignees to item datapoints.
+ * Get a snapshot of datapoint visibility settings.
  *
- * @param {JSX.Element|null} originalContent The original content of the filter.
- * @param {Object}           itemProps       Props passed to the Item component.
- * @return {JSX.Element|null} The assignees JSX or null.
+ * @return {Object} Visibility map keyed by datapoint slug.
  */
-export const addAssigneesDatapoint = (originalContent, itemProps) => {
-  const { assignees } = itemProps;
-
-  if (assignees && assignees.length > 0) {
-    return (
-      <>
-        {originalContent}
-        <div
-          className="alpaca-item-assignees"
-          data-assignees={assignees.length}
-          title={
-            assignees.length === 1
-              ? assignees[0].displayName || assignees[0].name
-              : assignees.map((a) => a.displayName || a.name).join(', ')
-          }
-        >
-          {assignees.map((assignee) => (
-            <User key={assignee.id} user={assignee} />
-          ))}
-        </div>
-      </>
-    );
-  }
-  return originalContent;
+export const getItemDatapointVisibility = () => {
+  return { ...datapointVisibility };
 };
 
 /**
- * Filter to add labels to item datapoints.
+ * Notify listeners that visibility settings changed.
  *
- * @param {JSX.Element|null} originalContent The original content of the filter.
- * @param {Object}           itemProps       Props passed to the Item component.
- * @return {JSX.Element|null} The labels JSX or null.
+ * @return {void}
  */
-export const addLabelsDatapoint = (originalContent, itemProps) => {
-  const { labels } = itemProps;
-
-  if (!Array.isArray(labels) || labels.length < 1) {
-    return originalContent;
-  }
-
-  return (
-    <>
-      {originalContent}
-      <div className="alpaca-item-labels">
-        {labels.map((label) => (
-          <span
-            key={label.term_id || `${label.slug}-${label.name}`}
-            className="alpaca-item-label alpaca-label-pill"
-            style={{
-              backgroundColor: label.color || '#172b4d',
-              color: '#fff',
-            }}
-            title={label.name}
-          >
-            {label.name}
-          </span>
-        ))}
-      </div>
-    </>
+const notifyVisibilityChanged = () => {
+  wp.hooks.doAction(
+    'alpaca.item.datapoints.visibilityChanged',
+    getItemDatapointVisibility(),
   );
 };
 
 /**
- * Filter to add comment count to item datapoints.
+ * Fetch datapoint visibility settings from wp/v2/settings.
  *
- * @param {JSX.Element|null} originalContent The original content of the filter.
- * @param {Object}           itemProps       Props passed to the Item component.
- * @return {JSX.Element|null} The comment count JSX or null.
+ * @return {Promise<Object>} Resolved visibility map.
  */
-export const addCommentCountDatapoint = (originalContent, itemProps) => {
-  const { commentCount } = itemProps;
-
-  if (typeof commentCount !== 'undefined' && commentCount > 0) {
-    return (
-      <>
-        {originalContent}
-        <div className="alpaca-item-icon alpaca-item-comment-count">
-          <CommentIcon />
-          {commentCount}
-        </div>
-      </>
-    );
+export const fetchItemDatapointVisibility = () => {
+  if (visibilityRequest) {
+    return visibilityRequest;
   }
-  return originalContent;
+
+  visibilityRequest = wp
+    .apiFetch({ path: '/wp/v2/settings' })
+    .then((settings) => {
+      const rawVisibility = settings?.[DATAPOINT_VISIBILITY_OPTION_KEY] || {};
+      datapointVisibility = normalizeVisibilityMap(rawVisibility);
+      notifyVisibilityChanged();
+
+      return getItemDatapointVisibility();
+    })
+    .catch(() => {
+      return getItemDatapointVisibility();
+    })
+    .finally(() => {
+      visibilityRequest = null;
+    });
+
+  return visibilityRequest;
 };
 
 /**
- * Filter to add checklist progress to item datapoints.
+ * Save datapoint visibility settings.
  *
- * @param {JSX.Element|null} originalContent The original content of the filter.
- * @param {Object}           itemProps       Props passed to the Item component.
- * @return {JSX.Element|null} The checklist progress JSX or null.
+ * @param {Object} nextVisibility Next visibility map keyed by datapoint slug.
+ * @return {Promise<Object>} Resolved visibility map.
  */
-export const addChecklistProgressDatapoint = (originalContent, itemProps) => {
-  const subissueProgress = itemProps?.meta?.subissue_progress;
-  const subissueTotal = Number(subissueProgress?.total);
-  const subissueCompleted = Number(subissueProgress?.completed);
+export const saveItemDatapointVisibility = (nextVisibility) => {
+  const normalized = normalizeVisibilityMap(nextVisibility);
 
-  if (
-    Number.isFinite(subissueTotal) &&
-    Number.isFinite(subissueCompleted) &&
-    subissueTotal > 0
-  ) {
-    return (
-      <>
-        {originalContent}
-        <div className="alpaca-item-icon alpaca-item-checklist-progress">
-          <Check2SquareIcon />
-          {`${subissueCompleted}/${subissueTotal}`}
-        </div>
-      </>
-    );
-  }
-  return originalContent;
+  return wp
+    .apiFetch({
+      path: '/wp/v2/settings',
+      method: 'POST',
+      data: {
+        [DATAPOINT_VISIBILITY_OPTION_KEY]: normalized,
+      },
+    })
+    .then((settings) => {
+      const rawVisibility = settings?.[DATAPOINT_VISIBILITY_OPTION_KEY] || {};
+      datapointVisibility = normalizeVisibilityMap(rawVisibility);
+      notifyVisibilityChanged();
+
+      return getItemDatapointVisibility();
+    });
 };
 
 /**
- * Filter to add last comment activity time to item datapoints.
+ * Get all datapoints currently registered for item rendering.
  *
- * @param {JSX.Element|null} originalContent The original content of the filter.
- * @param {Object}           itemProps       Props passed to the Item component.
- * @return {JSX.Element|null} The last activity JSX or null.
+ * @return {Array<Object>} Datapoint registration entries.
  */
-export const addLastCommentActivityDatapoint = (originalContent, itemProps) => {
-  const { meta } = itemProps;
-  const { postDate } = itemProps;
-  const lastActivityDateString = meta?.lastActivity || postDate;
+export const getRegisteredItemDatapoints = () => {
+  return registeredDatapoints.map((entry) => ({ ...entry }));
+};
 
-  if (!lastActivityDateString) {
-    return originalContent;
-  }
-
-  return (
-    <>
-      {originalContent}
-      <div className="alpaca-item-icon alpaca-item-last-activity">
-        <HourglassIcon />
-        <Time value={lastActivityDateString} type="relative" />
-      </div>
-    </>
+/**
+ * Notify listeners that the datapoint registry changed.
+ *
+ * @return {void}
+ */
+const notifyRegistryChanged = () => {
+  wp.hooks.doAction(
+    'alpaca.item.datapoints.registryChanged',
+    getRegisteredItemDatapoints(),
   );
 };
 
 /**
- * Filter to add deadline to item datapoints.
+ * Register an item datapoint so it can render on cards and appear in settings.
  *
- * @param {JSX.Element|null} originalContent The original content of the filter.
- * @param {Object}           itemProps       Props passed to the Item component.
- * @return {JSX.Element|null} The deadline JSX or null.
+ * @param {Object}   registration                  Datapoint registration.
+ * @param {string}   registration.slug             Unique datapoint slug.
+ * @param {Function} registration.callback         Render callback for hook.
+ * @param {string}   registration.label            Human-readable label.
+ * @param {string}   [registration.description]    Optional description.
+ * @param {string}   [registration.namespace]      Optional hook namespace.
+ * @param {boolean}  [registration.defaultEnabled] Whether enabled by default.
+ * @return {Object|null} Registered datapoint metadata.
  */
-export const addDeadlineDatapoint = (originalContent, itemProps) => {
-  const { meta } = itemProps;
-  const deadline =
-    meta && meta.deadline && meta.deadline[0]
-      ? new Date(meta.deadline[0])
-      : null;
-  const isValidDeadline = deadline && !isNaN(deadline);
-
-  const deadlineFormatted = new Intl.DateTimeFormat(undefined, {
-    month: 'short',
-    day: 'numeric',
-  }).format(deadline);
-
-  let diffDays = null;
-  if (isValidDeadline) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    deadline.setHours(0, 0, 0, 0);
-    diffDays = Math.ceil((deadline - today) / (1000 * 60 * 60 * 24));
+export const registerItemDatapoint = (registration) => {
+  if (!registration || typeof registration !== 'object') {
+    return null;
   }
 
-  // Format deadline display text
-  let deadlineText = deadlineFormatted;
-  let deadlineState;
+  const slug =
+    typeof registration.slug === 'string' ? registration.slug.trim() : '';
 
-  if (isValidDeadline) {
-    if (diffDays < 0) {
-      deadlineState = 'late';
-    } else if (diffDays === 0) {
-      deadlineState = 'today';
-    } else if (diffDays < 8) {
-      deadlineState = 'soon';
-    } else {
-      deadlineState = 'future';
+  if (slug === '') {
+    return null;
+  }
+
+  if (registeredDatapointsBySlug[slug]) {
+    return registeredDatapointsBySlug[slug];
+  }
+
+  if (typeof registration.callback !== 'function') {
+    return null;
+  }
+
+  const namespace =
+    typeof registration.namespace === 'string' &&
+    registration.namespace.trim() !== ''
+      ? registration.namespace.trim()
+      : `alpaca/item/datapoint/${slug}`;
+  const defaultEnabled = registration.defaultEnabled !== false;
+  const label =
+    typeof registration.label === 'string' && registration.label.trim() !== ''
+      ? registration.label.trim()
+      : slug;
+  const description =
+    typeof registration.description === 'string'
+      ? registration.description
+      : '';
+
+  const wrappedCallback = (originalContent, itemProps) => {
+    if (!isDatapointEnabled(slug, defaultEnabled)) {
+      return originalContent;
     }
 
-    if (diffDays === 1) {
-      deadlineText = __('Tomorrow', 'alpaca');
-    } else if (diffDays === 0) {
-      deadlineText = __('Today', 'alpaca');
-    } else if (diffDays === -1) {
-      deadlineText = __('Yesterday', 'alpaca');
-    }
-  }
+    return registration.callback(originalContent, itemProps);
+  };
 
-  if (isValidDeadline) {
-    return (
-      <>
-        {originalContent}
-        <div
-          className="alpaca-item-icon alpaca-item-deadline"
-          data-days-left={diffDays}
-          data-deadline-state={deadlineState}
-        >
-          <CalendarIcon />
-          {deadlineText}
-        </div>
-      </>
-    );
-  }
-  return originalContent;
+  wp.hooks.addFilter('alpaca.item.datapoints', namespace, wrappedCallback);
+
+  const entry = {
+    slug,
+    label,
+    description,
+    namespace,
+    defaultEnabled,
+  };
+
+  registeredDatapoints.push(entry);
+  registeredDatapointsBySlug[slug] = entry;
+  notifyRegistryChanged();
+
+  return entry;
 };
 
-// Register the filters
-wp.hooks.addFilter(
-  'alpaca.item.datapoints',
-  'alpaca/item/addPriorityDatapoint',
-  addPriorityDatapoint,
-);
+datapointRegistrations.forEach((registration) => {
+  registerItemDatapoint(registration);
+});
 
-wp.hooks.addFilter(
-  'alpaca.item.datapoints',
-  'alpaca/item/addAssigneesDatapoint',
-  addAssigneesDatapoint,
-);
+if (!window.alpaca) {
+  window.alpaca = {};
+}
 
-wp.hooks.addFilter(
-  'alpaca.item.datapoints',
-  'alpaca/item/addLabelsDatapoint',
-  addLabelsDatapoint,
-);
+if (!window.alpaca.itemDatapoints) {
+  window.alpaca.itemDatapoints = {};
+}
 
-wp.hooks.addFilter(
-  'alpaca.item.datapoints',
-  'alpaca/item/addLastCommentActivityDatapoint',
-  addLastCommentActivityDatapoint,
-);
+window.alpaca.itemDatapoints.register = registerItemDatapoint;
+window.alpaca.itemDatapoints.getRegistered = getRegisteredItemDatapoints;
+window.alpaca.itemDatapoints.getVisibility = getItemDatapointVisibility;
+window.alpaca.itemDatapoints.fetchVisibility = fetchItemDatapointVisibility;
+window.alpaca.itemDatapoints.saveVisibility = saveItemDatapointVisibility;
 
-wp.hooks.addFilter(
-  'alpaca.item.datapoints',
-  'alpaca/item/addCommentCountDatapoint',
-  addCommentCountDatapoint,
-);
-
-wp.hooks.addFilter(
-  'alpaca.item.datapoints',
-  'alpaca/item/addChecklistProgressDatapoint',
-  addChecklistProgressDatapoint,
-);
-
-wp.hooks.addFilter(
-  'alpaca.item.datapoints',
-  'alpaca/item/addDeadlineDatapoint',
-  addDeadlineDatapoint,
-);
+fetchItemDatapointVisibility();

@@ -230,6 +230,55 @@ final class Alpaca {
 				'default'      => '0',
 			)
 		);
+
+		\register_setting(
+			'alpaca_options',
+			'alpaca_item_datapoint_visibility',
+			array(
+				'type'              => 'object',
+				'description'       => esc_html__( 'Visibility map for item datapoints on issue cards.', 'alpaca' ),
+				'sanitize_callback' => array( $this, 'sanitize_item_datapoint_visibility' ),
+				'show_in_rest'      => array(
+					'schema' => array(
+						'type'                 => 'object',
+						'additionalProperties' => array(
+							'type' => 'boolean',
+						),
+					),
+				),
+				'default'           => array(),
+			)
+		);
+	}
+
+	/**
+	 * Sanitize datapoint visibility option values.
+	 *
+	 * @param mixed $value Raw option value.
+	 * @return array<string, bool>
+	 */
+	public function sanitize_item_datapoint_visibility( $value ) {
+		if ( ! is_array( $value ) ) {
+			return array();
+		}
+
+		$sanitized = array();
+
+		foreach ( $value as $slug => $is_enabled ) {
+			if ( ! is_string( $slug ) ) {
+				continue;
+			}
+
+			$clean_slug = sanitize_key( $slug );
+
+			if ( '' === $clean_slug ) {
+				continue;
+			}
+
+			$sanitized[ $clean_slug ] = (bool) $is_enabled;
+		}
+
+		return $sanitized;
 	}
 
 	/**

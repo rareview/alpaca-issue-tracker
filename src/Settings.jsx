@@ -1,6 +1,7 @@
 import StatusManager from './components/StatusManager';
 import EnableTestLogsControl from './components/EnableTestLogsControl';
 import LabelsManager from './components/LabelsManager';
+import ItemDatapointsManager from './components/ItemDatapointsManager';
 const { useState, useEffect, useCallback } = wp.element;
 const { __ } = wp.i18n;
 
@@ -57,6 +58,10 @@ const AlpacaSettings = () => {
       <hr />
 
       <LabelsManager />
+
+      <hr />
+
+      <ItemDatapointsManager />
 
       <hr />
 

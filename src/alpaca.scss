@@ -2076,6 +2076,30 @@ $core-font-stack:
       margin-top: 1em;
     }
   }
+
+  .alpaca-item-datapoints-manager {
+    .alpaca-item-datapoints-list {
+      .alpaca-settings-list-row {
+        grid-template-columns: minmax(0, 1fr) auto;
+      }
+    }
+
+    .alpaca-item-datapoints-name {
+      display: inline-block;
+      font-weight: 500;
+    }
+
+    .alpaca-item-datapoints-toggle-cell {
+      align-items: center;
+      display: inline-flex;
+      gap: 8px;
+      justify-content: flex-end;
+
+      .components-base-control {
+        margin-bottom: 0;
+      }
+    }
+  }
 }
 
 .alpaca-label-pill {
