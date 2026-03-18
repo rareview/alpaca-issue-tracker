@@ -811,7 +811,12 @@ function alpaca_get_issue_comment_count_endpoint() {
  * @return WP_REST_Response REST response with comment count.
  */
 function alpaca_get_issue_comment_count_callback( WP_REST_Request $request ) {
-	$issue_id = (int) $request['id'];
+	$issue_id      = (int) $request['id'];
+	$last_activity = '';
+
+	if ( function_exists( 'alpaca_update_last_activity_from_issuecomments' ) ) {
+		$last_activity = (string) alpaca_update_last_activity_from_issuecomments( $issue_id );
+	}
 
 	global $wpdb;
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
@@ -830,6 +835,7 @@ function alpaca_get_issue_comment_count_callback( WP_REST_Request $request ) {
 			'success'       => true,
 			'post_id'       => $issue_id,
 			'comment_count' => (int) $issue_comment_count,
+			'last_activity' => $last_activity,
 		),
 		200
 	);

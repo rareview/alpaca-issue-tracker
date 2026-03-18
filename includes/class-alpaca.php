@@ -149,6 +149,9 @@ final class Alpaca {
 
 		// Update last activity on new comment.
 		\add_action( 'rest_insert_comment', array( $this, 'update_last_activity_on_rest_comment' ), 10, 3 );
+
+		// Update last activity on deleted issue comments.
+		\add_action( 'deleted_comment', array( $this, 'update_last_activity_on_deleted_comment' ), 20, 2 );
 	}
 
 	/**
@@ -170,6 +173,39 @@ final class Alpaca {
 		$post_id = $comment->comment_post_ID;
 
 		alpaca_update_last_activity( $post_id );
+	}
+
+	/**
+	 * Update the last activity timestamp when an issue comment is deleted.
+	 *
+	 * On deletion we recompute the lastActivity meta based on the most recent
+	 * remaining approved `issuecomment` on the issue.
+	 *
+	 * @param int         $comment_id Deleted comment ID.
+	 * @param \WP_Comment $comment    Deleted comment object.
+	 * @return void
+	 */
+	public function update_last_activity_on_deleted_comment( $comment_id, $comment ) {
+		if ( ! ( $comment instanceof \WP_Comment ) ) {
+			$comment = \get_comment( (int) $comment_id );
+		}
+
+		if ( ! ( $comment instanceof \WP_Comment ) ) {
+			return;
+		}
+
+		if ( 'issuecomment' !== (string) $comment->comment_type ) {
+			return;
+		}
+
+		$issue_id = (int) $comment->comment_post_ID;
+		if ( $issue_id <= 0 || 'alpaca_issue' !== \get_post_type( $issue_id ) ) {
+			return;
+		}
+
+		if ( function_exists( 'alpaca_update_last_activity_from_issuecomments' ) ) {
+			alpaca_update_last_activity_from_issuecomments( $issue_id );
+		}
 	}
 
 	/**

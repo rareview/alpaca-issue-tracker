@@ -140,6 +140,72 @@ function alpaca_update_last_activity( $post_id ) {
 }
 
 /**
+ * Get the most recent approved issue comment timestamp for an issue.
+ *
+ * Returned value is in MySQL datetime format (local time), matching the
+ * value stored by {@see alpaca_update_last_activity()}.
+ *
+ * @param int $issue_id The issue post ID.
+ * @return string Latest comment date (MySQL datetime) or empty string.
+ */
+function alpaca_get_latest_issuecomment_date_for_issue( $issue_id ) {
+	$issue_id = (int) $issue_id;
+	if ( $issue_id <= 0 ) {
+		return '';
+	}
+
+	if ( 'alpaca_issue' !== get_post_type( $issue_id ) ) {
+		return '';
+	}
+
+	global $wpdb;
+
+	// NOTE: `issuecomment` is a hidden comment type in Alpaca.
+	// Using `get_comments()` can be affected by filters that hide this type.
+	// Query the table directly so lastActivity reflects real comment activity.
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
+	$date = $wpdb->get_var(
+		$wpdb->prepare(
+			"SELECT comment_date FROM {$wpdb->comments}
+				WHERE comment_post_ID = %d
+				AND comment_type = %s
+				AND comment_approved = '1'
+				ORDER BY comment_date_gmt DESC
+				LIMIT 1",
+			$issue_id,
+			'issuecomment'
+		)
+	);
+
+	return is_string( $date ) ? $date : '';
+}
+
+/**
+ * Update an issue's lastActivity meta based on the most recent approved issue comment.
+ *
+ * If the issue has no remaining approved issue comments, the meta is deleted so
+ * clients can fall back to the issue's post date.
+ *
+ * @param int $issue_id The issue post ID.
+ * @return string Updated last activity value (MySQL datetime) or empty string.
+ */
+function alpaca_update_last_activity_from_issuecomments( $issue_id ) {
+	$issue_id = (int) $issue_id;
+	if ( $issue_id <= 0 ) {
+		return '';
+	}
+
+	$latest = alpaca_get_latest_issuecomment_date_for_issue( $issue_id );
+	if ( '' === $latest ) {
+		delete_post_meta( $issue_id, 'alpaca_lastActivity' );
+		return '';
+	}
+
+	update_post_meta( $issue_id, 'alpaca_lastActivity', $latest );
+	return $latest;
+}
+
+/**
  * Get or create a taxonomy term that mirrors a user identity.
  *
  * @param WP_User $user     User object.
