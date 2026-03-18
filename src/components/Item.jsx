@@ -87,6 +87,8 @@ const Item = forwardRef(
           <div className="alpaca-item-datapoints flexalign">
             {wp.hooks.applyFilters('alpaca.item.datapoints', null, {
               id,
+              title: content,
+              content,
               meta,
               postDate,
               assignees,
