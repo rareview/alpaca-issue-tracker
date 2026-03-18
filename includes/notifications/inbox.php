@@ -296,6 +296,7 @@ function alpaca_prepare_notification_inbox_item_payload_from_comment( $row, $com
 
 	$tags        = get_comment_meta( $comment->comment_ID, 'alpacaCommentTags', true );
 	$attachments = get_comment_meta( $comment->comment_ID, 'alpacaCommentAttachments', true );
+	$mentions    = get_comment_meta( $comment->comment_ID, 'alpacaMentionedUsers', true );
 	$context     = alpaca_get_comment_notification_context( $comment->comment_ID );
 	$actor_id    = (int) $comment->user_id;
 	$actor       = $actor_id > 0 ? get_user_by( 'id', $actor_id ) : null;
@@ -303,12 +304,14 @@ function alpaca_prepare_notification_inbox_item_payload_from_comment( $row, $com
 
 	$attachments = is_array( $attachments ) ? $attachments : array();
 	$attachments = array_values( array_filter( array_map( 'esc_url_raw', $attachments ) ) );
+	$mentions    = is_array( $mentions ) ? $mentions : array();
 
 	$event = array(
 		'comment'      => array(
-			'raw'     => (string) $comment->comment_content,
-			'tags'    => is_array( $tags ) ? $tags : array(),
-			'context' => $context,
+			'raw'      => (string) $comment->comment_content,
+			'tags'     => is_array( $tags ) ? $tags : array(),
+			'context'  => $context,
+			'mentions' => $mentions,
 		),
 		'event_family' => $event_family,
 		'event_label'  => alpaca_get_notification_event_label(
@@ -337,6 +340,8 @@ function alpaca_prepare_notification_inbox_item_payload_from_comment( $row, $com
 		'event_family'        => $event_family,
 		'event_label'         => (string) $event['event_label'],
 		'preview'             => alpaca_get_notification_inbox_preview_text( $event ),
+		'comment_raw'         => (string) $comment->comment_content,
+		'comment_mentions'    => $mentions,
 		'comment_attachments' => $attachments,
 		'created_gmt'         => isset( $row['created_gmt'] ) ? (string) $row['created_gmt'] : '',
 		'read_at_gmt'         => $read_at_gmt,

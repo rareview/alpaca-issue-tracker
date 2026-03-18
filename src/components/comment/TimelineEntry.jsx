@@ -62,18 +62,17 @@ export const getProcessedCommentContent = (comment) => {
       return content;
     }
 
-    return mentions.reduce((processed, mention) => {
+    const mentionReplacements = mentions.reduce((accumulator, mention) => {
       const slug = mention?.slug;
       const displayName = mention?.display_name;
       const avatar = mention?.avatar;
       const userId = mention?.id;
 
       if (!slug || !displayName) {
-        return processed;
+        return accumulator;
       }
 
-      const escapedSlug = slug.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const replacement = generateAssigneeSpan(
+      accumulator[String(slug).toLowerCase()] = generateAssigneeSpan(
         {
           id: userId,
           display_name: displayName,
@@ -82,20 +81,30 @@ export const getProcessedCommentContent = (comment) => {
         Boolean(avatar),
       );
 
-      return processed.replace(
-        new RegExp(`(^|\\\\s)@${escapedSlug}(?=$|[^a-zA-Z0-9._-])`, 'g'),
-        `$1${replacement}`,
-      );
-    }, content);
+      return accumulator;
+    }, {});
+
+    return content.replace(
+      /(^|[\s>([{])@([a-zA-Z0-9._-]+)(?=$|[^a-zA-Z0-9._-])/g,
+      (match, prefix, slug) => {
+        const replacement = mentionReplacements[String(slug).toLowerCase()];
+
+        if (!replacement) {
+          return match;
+        }
+
+        return `${prefix}${replacement}`;
+      },
+    );
   };
 
-  if (!comment.meta && comment.content.rendered) {
-    return comment.content.rendered;
-  }
+  let content = '';
 
-  const content = comment.content.raw
-    ? marked(mentionMarkup(comment.content.raw))
-    : comment.content.rendered;
+  if (comment.content.raw) {
+    content = marked(mentionMarkup(comment.content.raw));
+  } else if (comment.content.rendered) {
+    content = mentionMarkup(comment.content.rendered);
+  }
 
   return injectAvatarStyles(content);
 };

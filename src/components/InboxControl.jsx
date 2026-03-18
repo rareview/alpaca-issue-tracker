@@ -103,10 +103,11 @@ const buildTimelineCommentFromInboxItem = (item) => {
   const eventFamily = String(item?.event_family || '');
   const eventLabel = String(item?.event_label || '').trim();
   const showEventLabel = shouldShowInboxEventLabel(eventFamily, eventLabel);
+  const rawComment = String(item?.comment_raw || '').trim();
   const preview = String(item?.preview || '').trim();
   const markdownBody = [
     showEventLabel && eventLabel ? `**${eventLabel}**` : '',
-    preview,
+    rawComment || preview,
   ]
     .filter(Boolean)
     .join('\n\n');
@@ -136,6 +137,9 @@ const buildTimelineCommentFromInboxItem = (item) => {
     meta: {
       alpacaCommentTags: timelineTags,
       alpacaCommentAttachments: commentAttachments,
+      alpacaMentionedUsers: Array.isArray(item?.comment_mentions)
+        ? item.comment_mentions
+        : [],
     },
   };
 
