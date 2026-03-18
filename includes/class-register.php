@@ -81,7 +81,6 @@ class Register {
 	 * @return string Absolute path to the translation directory.
 	 */
 	private function get_script_translation_path() {
-
 		$locale = determine_locale();
 
 		/**
@@ -89,6 +88,7 @@ class Register {
 		 *
 		 * @param string $locale The locale to load.
 		 */
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- This uses the core WordPress plugin locale filter.
 		$locale = apply_filters( 'plugin_locale', $locale, 'alpaca' );
 
 		$locale_short = strtolower( substr( $locale, 0, 2 ) );
@@ -106,6 +106,7 @@ class Register {
 
 		return ALPACA_PLUGIN_DIR . 'languages';
 	}
+
 	/**
 	 * Get the SnapDOM proxy URL prefix for image capture requests.
 	 *

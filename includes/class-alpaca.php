@@ -169,6 +169,7 @@ final class Alpaca {
 		 *
 		 * @param string $locale The locale to load.
 		 */
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- This uses the core WordPress plugin locale filter.
 		$locale = \apply_filters( 'plugin_locale', $locale, 'alpaca' );
 
 		$locale_short = strtolower( substr( $locale, 0, 2 ) );
@@ -185,12 +186,6 @@ final class Alpaca {
 				return;
 			}
 		}
-
-		\load_plugin_textdomain(
-			'alpaca',
-			false,
-			dirname( ALPACA_PLUGIN_BASENAME ) . '/languages'
-		);
 	}
 
 	/**

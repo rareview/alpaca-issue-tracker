@@ -165,7 +165,7 @@ function alpaca_validate_proxy_target_url( $url ) {
 		);
 	}
 
-	$scheme = (string) parse_url( $url, PHP_URL_SCHEME );
+	$scheme = (string) wp_parse_url( $url, PHP_URL_SCHEME );
 	if ( ! in_array( strtolower( $scheme ), array( 'http', 'https' ), true ) ) {
 		return new WP_Error(
 			'alpaca_proxy_invalid_scheme',
@@ -174,7 +174,7 @@ function alpaca_validate_proxy_target_url( $url ) {
 		);
 	}
 
-	$host = (string) parse_url( $url, PHP_URL_HOST );
+	$host = (string) wp_parse_url( $url, PHP_URL_HOST );
 	if ( '' === $host ) {
 		return new WP_Error(
 			'alpaca_proxy_invalid_host',

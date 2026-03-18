@@ -376,8 +376,10 @@ function alpaca_get_notification_mail_from_details() {
 	}
 
 	$default_name = __( 'WordPress', 'alpaca' );
+	// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- This uses the core WordPress mail from filter.
 	$from_address = apply_filters( 'wp_mail_from', $default_address );
-	$from_name    = apply_filters( 'wp_mail_from_name', $default_name );
+	// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- This uses the core WordPress mail from name filter.
+	$from_name = apply_filters( 'wp_mail_from_name', $default_name );
 
 	$from_address = is_string( $from_address ) ? sanitize_email( $from_address ) : '';
 	$from_name    = is_string( $from_name ) ? trim( wp_strip_all_tags( $from_name ) ) : '';
