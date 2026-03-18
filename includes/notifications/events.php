@@ -105,6 +105,18 @@ function alpaca_get_issue_label_ids( $issue_id ) {
 }
 
 /**
+ * Determine whether an issue is currently marked high priority.
+ *
+ * @param int $issue_id Issue ID.
+ * @return bool True when the issue is currently high priority.
+ */
+function alpaca_is_issue_high_priority( $issue_id ) {
+	$raw_value = get_post_meta( (int) $issue_id, 'alpaca_high_priority', true );
+
+	return ! empty( $raw_value );
+}
+
+/**
  * Get the issue URL used in email notifications.
  *
  * @param WP_Post $issue Issue post object.
@@ -329,6 +341,7 @@ function alpaca_get_notification_event_from_comment( $comment ) {
 	$assignee_ids         = alpaca_get_issue_assignee_ids( $issue->ID );
 	$watcher_ids          = alpaca_get_issue_watcher_ids( $issue->ID );
 	$label_ids            = alpaca_get_issue_label_ids( $issue->ID );
+	$is_high_priority     = alpaca_is_issue_high_priority( $issue->ID );
 
 	return array(
 		'comment_id'   => (int) $comment->comment_ID,
@@ -355,14 +368,15 @@ function alpaca_get_notification_event_from_comment( $comment ) {
 			)
 		),
 		'issue'        => array(
-			'id'           => (int) $issue->ID,
-			'title'        => (string) $issue->post_title,
-			'slug'         => (string) $issue->post_name,
-			'url'          => alpaca_get_notification_issue_url( $issue ),
-			'creator_id'   => (int) $issue->post_author,
-			'assignee_ids' => $assignee_ids,
-			'watcher_ids'  => $watcher_ids,
-			'label_ids'    => $label_ids,
+			'id'               => (int) $issue->ID,
+			'title'            => (string) $issue->post_title,
+			'slug'             => (string) $issue->post_name,
+			'url'              => alpaca_get_notification_issue_url( $issue ),
+			'creator_id'       => (int) $issue->post_author,
+			'assignee_ids'     => $assignee_ids,
+			'watcher_ids'      => $watcher_ids,
+			'label_ids'        => $label_ids,
+			'is_high_priority' => $is_high_priority,
 		),
 		'site'         => array(
 			'title'   => wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ),
@@ -401,14 +415,15 @@ function alpaca_get_notification_sample_event() {
 		'event_family' => 'human_comments',
 		'event_label'  => esc_html__( 'Comment added', 'alpaca' ),
 		'issue'        => array(
-			'id'           => 0,
-			'title'        => esc_html__( 'Sample issue title', 'alpaca' ),
-			'slug'         => 'sample-issue-title',
-			'url'          => admin_url( 'admin.php?page=project-board&issue=sample-issue-title' ),
-			'creator_id'   => $current_user instanceof WP_User ? (int) $current_user->ID : 0,
-			'assignee_ids' => array(),
-			'watcher_ids'  => array(),
-			'label_ids'    => array(),
+			'id'               => 0,
+			'title'            => esc_html__( 'Sample issue title', 'alpaca' ),
+			'slug'             => 'sample-issue-title',
+			'url'              => admin_url( 'admin.php?page=project-board&issue=sample-issue-title' ),
+			'creator_id'       => $current_user instanceof WP_User ? (int) $current_user->ID : 0,
+			'assignee_ids'     => array(),
+			'watcher_ids'      => array(),
+			'label_ids'        => array(),
+			'is_high_priority' => false,
 		),
 		'site'         => array(
 			'title'   => wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ),

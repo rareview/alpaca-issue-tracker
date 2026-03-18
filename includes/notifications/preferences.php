@@ -112,6 +112,7 @@ function alpaca_get_notification_preference_defaults() {
 			'starred'       => true,
 			'mentioned'     => true,
 			'labeled'       => false,
+			'high_priority' => false,
 			'all_new_tasks' => false,
 		),
 		'events'    => array(

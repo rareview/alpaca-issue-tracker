@@ -61,6 +61,39 @@ function alpaca_get_notification_label_subscriber_ids( $event ) {
 }
 
 /**
+ * Get user IDs subscribed to activity on high priority issues.
+ *
+ * @param array<string, mixed> $event Notification event.
+ * @return int[] Matching user IDs.
+ */
+function alpaca_get_notification_high_priority_subscriber_ids( $event ) {
+	$is_high_priority = ! empty( $event['issue']['is_high_priority'] );
+	$context          = isset( $event['comment']['context'] ) && is_array( $event['comment']['context'] ) ? $event['comment']['context'] : array();
+	$action           = isset( $context['action'] ) ? sanitize_key( (string) $context['action'] ) : '';
+
+	if ( ! $is_high_priority && ! ( 'priority_changes' === (string) $event['event_family'] && 'disable' === $action ) ) {
+		return array();
+	}
+
+	$user_ids = alpaca_get_notification_preference_user_ids();
+	if ( empty( $user_ids ) ) {
+		return array();
+	}
+
+	$matched_user_ids = array();
+	foreach ( $user_ids as $user_id ) {
+		$preferences = alpaca_get_notification_preferences_for_user( $user_id );
+		if ( ! alpaca_notification_preferences_have_enabled_channels( $preferences ) || empty( $preferences['subjects']['high_priority'] ) ) {
+			continue;
+		}
+
+		$matched_user_ids[] = (int) $user_id;
+	}
+
+	return array_values( array_unique( array_filter( $matched_user_ids ) ) );
+}
+
+/**
  * Get user IDs subscribed to all new task notifications.
  *
  * @param array<string, mixed> $event Notification event.
@@ -115,6 +148,7 @@ function alpaca_get_notification_subject_candidates( $event ) {
 		'starred'       => isset( $event['issue']['watcher_ids'] ) && is_array( $event['issue']['watcher_ids'] ) ? array_values( array_unique( array_filter( array_map( 'absint', $event['issue']['watcher_ids'] ) ) ) ) : array(),
 		'mentioned'     => array_values( array_unique( array_filter( array_map( 'absint', $mentioned_ids ) ) ) ),
 		'labeled'       => alpaca_get_notification_label_subscriber_ids( $event ),
+		'high_priority' => alpaca_get_notification_high_priority_subscriber_ids( $event ),
 		'all_new_tasks' => alpaca_get_notification_all_new_task_subscriber_ids( $event ),
 	);
 }

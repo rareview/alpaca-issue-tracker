@@ -57,6 +57,14 @@ const subjectOptions = [
     ),
   },
   {
+    key: 'high_priority',
+    label: __('Issues currently marked high priority', 'alpaca'),
+    help: __(
+      'Receive updates about activity on issues that are currently marked High Priority.',
+      'alpaca',
+    ),
+  },
+  {
     key: 'all_new_tasks',
     label: __('Whenever a new issue is created', 'alpaca'),
     help: __(
