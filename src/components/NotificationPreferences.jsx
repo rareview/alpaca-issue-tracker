@@ -15,6 +15,8 @@ const AVAILABLE_CHANNELS_KEY = 'available_channels';
 const LABEL_IDS_KEY = 'label_ids';
 const ADDRESS_OVERRIDE_KEY = 'address_override';
 const TERM_ID_KEY = 'term_id';
+const INBOX_QUERY_KEY = 'inbox';
+const INBOX_QUERY_VALUE = 'open';
 
 const subjectOptions = [
   {
@@ -158,6 +160,58 @@ const getEmailDeliveryFieldValue = (nextPreferences, nextChannelStatus) => {
 };
 
 /**
+ * Get the Project Board admin URL.
+ *
+ * @return {string} Project Board admin URL.
+ */
+const getProjectBoardUrl = () => {
+  if (
+    window.alpacaSettings?.adminUrl &&
+    'string' === typeof window.alpacaSettings.adminUrl
+  ) {
+    return `${window.alpacaSettings.adminUrl}?page=project-board`;
+  }
+
+  const restRoot = window.alpacaSettings?.restRoot;
+  if ('string' === typeof restRoot && restRoot.includes('/wp-json/')) {
+    return `${restRoot.replace('/wp-json/', '/wp-admin/')}admin.php?page=project-board`;
+  }
+
+  return `${window.location.origin}/wp-admin/admin.php?page=project-board`;
+};
+
+/**
+ * Get the Project Board URL with the inbox drawer open.
+ *
+ * @return {string} Project Board inbox URL.
+ */
+const getProjectBoardInboxUrl = () =>
+  `${getProjectBoardUrl()}&${INBOX_QUERY_KEY}=${INBOX_QUERY_VALUE}`;
+
+/**
+ * Get the toggle label for a notification channel.
+ *
+ * @param {string} channelKey   Notification channel key.
+ * @param {string} channelLabel Notification channel label.
+ * @return {string} Toggle label text.
+ */
+const getChannelToggleLabel = (channelKey, channelLabel) => {
+  if ('inbox' === channelKey) {
+    return __('Show updates inside Project Board', 'alpaca');
+  }
+
+  if ('email' === channelKey) {
+    return __('Send updates by email', 'alpaca');
+  }
+
+  return sprintf(
+    /* translators: %s: notification channel label. */
+    __('Enable %s notifications', 'alpaca'),
+    channelLabel,
+  );
+};
+
+/**
  * Render the current user's notification preferences screen.
  *
  * @return {JSX.Element} Preference screen.
@@ -172,6 +226,7 @@ const NotificationPreferences = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const projectBoardInboxUrl = useMemo(() => getProjectBoardInboxUrl(), []);
 
   const loadPreferences = useCallback(() => {
     setIsLoading(true);
@@ -470,7 +525,13 @@ const NotificationPreferences = () => {
       )}
 
       <section className="alpaca-notifications-panel">
-        <h2>{__('Channels', 'alpaca')}</h2>
+        <h2>{__('How You Receive Updates', 'alpaca')}</h2>
+        <p className="alpaca-notifications-panel-intro">
+          {__(
+            'Choose where Alpaca should send updates. The same notification rules below apply to every enabled channel.',
+            'alpaca',
+          )}
+        </p>
         <div className="alpaca-notifications-channel-grid">
           {availableChannels.map((channel) => {
             const channelKey = channel?.key || '';
@@ -516,9 +577,8 @@ const NotificationPreferences = () => {
               updateChannelValue(channelKey, fieldKey, value);
             };
 
-            const enableChannelLabel = sprintf(
-              /* translators: %s: notification channel label. */
-              __('Enable %s notifications', 'alpaca'),
+            const enableChannelLabel = getChannelToggleLabel(
+              channelKey,
               channel.label,
             );
 
@@ -573,6 +633,14 @@ const NotificationPreferences = () => {
                       })}
                     </div>
                   )}
+
+                {'inbox' === channelKey && (
+                  <div className="alpaca-notifications-channel-actions">
+                    <Button href={projectBoardInboxUrl} variant="secondary">
+                      {__('Open Inbox', 'alpaca')}
+                    </Button>
+                  </div>
+                )}
 
                 {Array.isArray(channel.settings_fields) &&
                   channel.settings_fields.map((field) => {

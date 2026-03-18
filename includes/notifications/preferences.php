@@ -20,23 +20,18 @@ function alpaca_get_notification_channel_registry() {
 		'inbox' => array(
 			'key'                => 'inbox',
 			'transport'          => 'inbox',
-			'label'              => esc_html__( 'Inbox', 'alpaca' ),
-			'description'        => esc_html__( 'Keep relevant issue activity inside Project Board.', 'alpaca' ),
+			'label'              => esc_html__( 'In-App Notifications', 'alpaca' ),
+			'description'        => esc_html__( 'Shows updates inside Project Board.', 'alpaca' ),
 			'enabled_by_default' => true,
 			'is_available'       => true,
-			'summary_fields'     => array(
-				array(
-					'key'   => 'unread_count',
-					'label' => esc_html__( 'Unread updates', 'alpaca' ),
-				),
-			),
+			'summary_fields'     => array(),
 			'settings_fields'    => array(),
 		),
 		'email' => array(
 			'key'                => 'email',
 			'transport'          => 'email',
 			'label'              => esc_html__( 'Email', 'alpaca' ),
-			'description'        => esc_html__( 'Send issue activity updates to an email inbox.', 'alpaca' ),
+			'description'        => esc_html__( 'Sends updates to your email address.', 'alpaca' ),
 			'enabled_by_default' => false,
 			'is_available'       => true,
 			'summary_fields'     => array(),
@@ -44,8 +39,8 @@ function alpaca_get_notification_channel_registry() {
 				array(
 					'key'   => 'address_override',
 					'type'  => 'email',
-					'label' => esc_html__( 'Delivery email', 'alpaca' ),
-					'help'  => esc_html__( 'Defaults to your WordPress profile email unless you enter a different address here.', 'alpaca' ),
+					'label' => esc_html__( 'Email address', 'alpaca' ),
+					'help'  => esc_html__( 'Uses your WordPress profile email unless you enter a different address here.', 'alpaca' ),
 				),
 			),
 		),

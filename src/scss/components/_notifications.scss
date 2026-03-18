@@ -71,7 +71,7 @@
 
 .alpaca-notifications-channel-grid {
   display: grid;
-  align-items: start;
+  align-items: stretch;
   gap: 16px;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
 }
@@ -105,6 +105,12 @@
 
 .alpaca-notifications-channel-summary {
   display: grid;
+  gap: 12px;
+}
+
+.alpaca-notifications-channel-actions {
+  display: flex;
+  flex-wrap: wrap;
   gap: 12px;
 }
 

@@ -21,6 +21,8 @@ const PANEL_CLOSE_ANIMATION_MS = 220;
 const IS_UNREAD_KEY = 'is_unread';
 const CREATED_GMT_KEY = 'created_gmt';
 const EVENT_FAMILY_HUMAN_COMMENTS = 'human_comments';
+const INBOX_QUERY_KEY = 'inbox';
+const INBOX_QUERY_VALUE = 'open';
 
 /**
  * Map an inbox event family to an audit timeline tag.
@@ -153,6 +155,51 @@ const buildTimelineCommentFromInboxItem = (item) => {
 };
 
 /**
+ * Determine whether the current URL requests that the inbox opens by default.
+ *
+ * @return {boolean} True when the inbox should open automatically.
+ */
+const shouldOpenInboxFromUrl = () => {
+  if ('undefined' === typeof window || !window.location?.search) {
+    return false;
+  }
+
+  const params = new URLSearchParams(window.location.search);
+
+  return INBOX_QUERY_VALUE === params.get(INBOX_QUERY_KEY);
+};
+
+/**
+ * Remove the inbox-open query parameter from the current URL.
+ *
+ * @return {void}
+ */
+const clearInboxOpenQueryParam = () => {
+  if (
+    'undefined' === typeof window ||
+    !window.history?.replaceState ||
+    !window.location?.search
+  ) {
+    return;
+  }
+
+  const params = new URLSearchParams(window.location.search);
+
+  if (INBOX_QUERY_VALUE !== params.get(INBOX_QUERY_KEY)) {
+    return;
+  }
+
+  params.delete(INBOX_QUERY_KEY);
+
+  const nextSearch = params.toString();
+  const nextUrl = `${window.location.pathname}${
+    nextSearch ? `?${nextSearch}` : ''
+  }${window.location.hash}`;
+
+  window.history.replaceState({}, document.title, nextUrl);
+};
+
+/**
  * Board inbox control rendered beside the board search.
  *
  * @param {Object} props          Component props.
@@ -196,6 +243,15 @@ function InboxControl({ selector }) {
     setIsClosing(false);
     setIsPanelVisible(true);
   }, []);
+
+  useEffect(() => {
+    if (!shouldOpenInboxFromUrl()) {
+      return;
+    }
+
+    openPanel();
+    clearInboxOpenQueryParam();
+  }, [openPanel]);
 
   useEffect(() => {
     if (!isClosing) {
