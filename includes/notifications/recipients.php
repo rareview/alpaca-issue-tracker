@@ -43,7 +43,7 @@ function alpaca_get_notification_label_subscriber_ids( $event ) {
 	$matched_user_ids = array();
 	foreach ( $user_ids as $user_id ) {
 		$preferences = alpaca_get_notification_preferences_for_user( $user_id );
-		if ( ! alpaca_notification_preferences_have_enabled_channels( $preferences ) || empty( $preferences['subjects']['labeled'] ) ) {
+		if ( ! alpaca_notification_preferences_have_enabled_delivery_targets( $preferences ) || empty( $preferences['subjects']['labeled'] ) ) {
 			continue;
 		}
 
@@ -83,7 +83,7 @@ function alpaca_get_notification_high_priority_subscriber_ids( $event ) {
 	$matched_user_ids = array();
 	foreach ( $user_ids as $user_id ) {
 		$preferences = alpaca_get_notification_preferences_for_user( $user_id );
-		if ( ! alpaca_notification_preferences_have_enabled_channels( $preferences ) || empty( $preferences['subjects']['high_priority'] ) ) {
+		if ( ! alpaca_notification_preferences_have_enabled_delivery_targets( $preferences ) || empty( $preferences['subjects']['high_priority'] ) ) {
 			continue;
 		}
 
@@ -112,7 +112,7 @@ function alpaca_get_notification_all_new_task_subscriber_ids( $event ) {
 	$matched_user_ids = array();
 	foreach ( $user_ids as $user_id ) {
 		$preferences = alpaca_get_notification_preferences_for_user( $user_id );
-		if ( ! alpaca_notification_preferences_have_enabled_channels( $preferences ) || empty( $preferences['subjects']['all_new_tasks'] ) ) {
+		if ( ! alpaca_notification_preferences_have_enabled_delivery_targets( $preferences ) || empty( $preferences['subjects']['all_new_tasks'] ) ) {
 			continue;
 		}
 
@@ -162,7 +162,7 @@ function alpaca_get_notification_subject_candidates( $event ) {
  * @return bool True when the notification should be sent.
  */
 function alpaca_user_preferences_allow_notification( $preferences, $subject_key, $event_key ) {
-	if ( ! alpaca_notification_preferences_have_enabled_channels( $preferences ) ) {
+	if ( ! alpaca_notification_preferences_have_enabled_delivery_targets( $preferences ) ) {
 		return false;
 	}
 
@@ -185,7 +185,7 @@ function alpaca_user_preferences_allow_notification( $preferences, $subject_key,
  * @return bool True when the notification should be sent.
  */
 function alpaca_user_preferences_allow_new_task_notification( $preferences, $event ) {
-	if ( ! alpaca_notification_preferences_have_enabled_channels( $preferences ) ) {
+	if ( ! alpaca_notification_preferences_have_enabled_delivery_targets( $preferences ) ) {
 		return false;
 	}
 

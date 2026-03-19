@@ -160,6 +160,75 @@
   font-size: 13px;
 }
 
+.alpaca-notifications-digest-layout {
+  display: grid;
+  gap: 16px;
+}
+
+.alpaca-notifications-digest-settings {
+  display: grid;
+  gap: 16px;
+  inline-size: min(100%, 420px);
+  padding: 16px;
+  border: 1px solid $greyborder;
+  border-radius: $common-radius;
+  background: $container-bg;
+  transition:
+    opacity 0.2s ease-in-out,
+    filter 0.2s ease-in-out;
+
+  &.is-disabled {
+    opacity: 0.55;
+    filter: saturate(0.6);
+  }
+}
+
+.alpaca-notifications-digest-disabled-note {
+  margin: 0;
+  color: #50575e;
+  font-size: 13px;
+  font-style: italic;
+}
+
+.alpaca-notifications-digest-fieldset {
+  display: grid;
+  gap: 10px;
+
+  strong {
+    color: #1d2327;
+    font-size: 13px;
+    font-weight: 600;
+  }
+}
+
+.alpaca-notifications-digest-days,
+.alpaca-notifications-digest-channels {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1fr;
+}
+
+.alpaca-notifications-digest-time {
+  inline-size: min(100%, 220px);
+}
+
+.alpaca-digest-template-locked-summary {
+  border: 1px solid $greyborder;
+  border-radius: $common-radius;
+  background: $container-bg;
+  padding: 14px 16px;
+
+  strong {
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 18px;
+  }
+}
+
 .alpaca-notification-template-section-header {
   margin-bottom: 16px;
 
@@ -536,6 +605,218 @@
     ul {
       margin: 0;
       padding-left: 20px;
+    }
+  }
+
+  &.alpaca-notification-digest-email h2 {
+    margin: 20px 0 24px;
+    color: #111827;
+    font-size: 40px;
+    line-height: 1.08;
+    letter-spacing: -0.04em;
+  }
+
+  .alpaca-notification-digest-section {
+    margin-top: 34px;
+
+    h3 {
+      margin-bottom: 16px;
+      color: #111827;
+      font-size: 19px;
+      line-height: 1.2;
+    }
+  }
+
+  .alpaca-notification-digest-deadline-table-wrap {
+    border: 1px solid $greyborder;
+    border-radius: $common-radius;
+    overflow: hidden;
+  }
+
+  .alpaca-notification-digest-deadline-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+
+    th {
+      padding: 8px 12px;
+      border-bottom: 1px solid $greyborder;
+      color: #4b5563;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      text-align: left;
+
+      &:first-child {
+        text-align: left;
+      }
+    }
+  }
+
+  .alpaca-notification-digest-deadline-row {
+    &:nth-child(even) {
+      background: $container-bg;
+    }
+
+    td {
+      padding: 14px 16px;
+      border-top: 1px solid $greyborder;
+      font-size: 14px;
+      line-height: 1.4;
+      vertical-align: middle;
+    }
+
+    &:first-child td {
+      border-top: 0;
+    }
+  }
+
+  .alpaca-notification-digest-deadline-row__title {
+    width: 44%;
+    color: #111827;
+    font-weight: 600;
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+  }
+
+  .alpaca-notification-digest-deadline-row__title-stack {
+    display: grid;
+    gap: 8px;
+  }
+
+  .alpaca-notification-digest-deadline-row__title-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .alpaca-notification-digest-deadline-row__due,
+  .alpaca-notification-digest-deadline-row__assignees,
+  .alpaca-notification-digest-deadline-row__status {
+    width: 18.5%;
+    color: #374151;
+  }
+
+  .alpaca-notification-digest-card {
+    display: grid;
+    gap: 14px;
+    background: $bgwhite;
+    border: 1px solid $greyborder;
+    border-radius: $common-radius;
+    padding: 22px 24px;
+    margin-top: 18px;
+
+    &:first-of-type {
+      margin-top: 0;
+    }
+  }
+
+  .alpaca-notification-digest-card__title {
+    margin: 0;
+    color: #111827;
+    font-size: 20px;
+    line-height: 1.25;
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+  }
+
+  .alpaca-notification-digest-card__headline,
+  .alpaca-notification-digest-card__more {
+    margin: 0;
+    font-size: 14px;
+    color: #4b5563;
+  }
+
+  .alpaca-notification-digest-meta {
+    display: flex;
+    margin-top: 0;
+    @include alpaca-item-datapoints-content;
+  }
+
+  .alpaca-notification-digest-deadline-row__title-meta
+    .alpaca-item-priority-badge {
+    @include alpaca-item-priority-badge;
+  }
+
+  .alpaca-item-deadline {
+    border-radius: $common-radius;
+    margin: 0 !important;
+    @include alpaca-item-deadline-states;
+  }
+
+  .alpaca-item-assignees {
+    @include alpaca-assignee-stack;
+  }
+
+  .alpaca-notification-digest-events {
+    margin: 0;
+    padding-left: 0;
+    list-style: none;
+  }
+
+  .alpaca-notification-digest-event {
+    margin-top: 12px;
+    padding-left: 18px;
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 5px;
+      inset-inline-start: 0;
+      width: 8px;
+      height: 8px;
+      border: 1.5px solid #94a3b8;
+      border-radius: 50%;
+      background: #fff;
+    }
+
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+
+  .alpaca-notification-digest-event__row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .alpaca-notification-digest-event__headline {
+    color: #111827;
+    font-size: 15px;
+    line-height: 1.45;
+  }
+
+  .alpaca-notification-digest-event__time {
+    flex-shrink: 0;
+    color: #6b7280;
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  .alpaca-notification-digest-event__excerpt {
+    margin-top: 6px;
+    color: #374151;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .alpaca-notification-digest-empty {
+    margin: 0;
+    color: #6b7280;
+  }
+
+  .alpaca-notification-digest-deadline-row__assignees {
+    .alpaca-item-assignees {
+      @include alpaca-assignee-stack(18px, 0, 0, false, 0.8rem);
     }
   }
 }

@@ -30,6 +30,9 @@ class Activator {
 		// Setup inbox storage.
 		self::setup_notification_inbox();
 
+		// Setup digest storage.
+		self::setup_notification_digests();
+
 		// Flush rewrite rules.
 		\flush_rewrite_rules();
 
@@ -95,6 +98,17 @@ class Activator {
 		require_once ALPACA_PLUGIN_DIR . 'includes/notifications/inbox.php';
 
 		\alpaca_install_notification_inbox_table();
+	}
+
+	/**
+	 * Create the notification digest tables.
+	 *
+	 * @return void
+	 */
+	private static function setup_notification_digests() {
+		require_once ALPACA_PLUGIN_DIR . 'includes/notifications/digest/index.php';
+
+		\alpaca_install_notification_digest_tables();
 	}
 
 	/**

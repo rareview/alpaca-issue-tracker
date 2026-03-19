@@ -61,6 +61,15 @@ add_action(
 
 		add_submenu_page(
 			'project-board',
+			esc_html__( 'Daily Digest Template', 'alpaca' ),
+			esc_html__( 'Daily Digest Template', 'alpaca' ),
+			'manage_options',
+			'alpaca-daily-digest-template',
+			'alpaca_daily_digest_template_page'
+		);
+
+		add_submenu_page(
+			'project-board',
 			esc_html__( 'About', 'alpaca' ),
 			esc_html__( 'About', 'alpaca' ),
 			'manage_options',
@@ -134,6 +143,20 @@ function alpaca_notification_template_page() {
 	<div class="alpaca-settings wrap alpaca-notification-template-admin-page">
 		<h1><?php echo esc_html__( 'Email Template', 'alpaca' ); ?></h1>
 		<div id="alpaca-notification-template-page"></div>
+	</div>
+	<?php
+}
+
+/**
+ * Render the admin daily digest template page.
+ *
+ * @return void
+ */
+function alpaca_daily_digest_template_page() {
+	?>
+	<div class="alpaca-settings wrap alpaca-daily-digest-template-admin-page">
+		<h1><?php echo esc_html__( 'Daily Digest Template', 'alpaca' ); ?></h1>
+		<div id="alpaca-daily-digest-template-page"></div>
 	</div>
 	<?php
 }

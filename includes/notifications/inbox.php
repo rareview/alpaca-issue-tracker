@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return string Schema version.
  */
 function alpaca_get_notification_inbox_schema_version() {
-	return '1';
+	return '2';
 }
 
 /**
@@ -50,6 +50,7 @@ function alpaca_install_notification_inbox_table() {
 		issue_id bigint(20) unsigned NOT NULL,
 		event_family varchar(64) NOT NULL,
 		created_gmt datetime NOT NULL,
+		snapshot_payload longtext NULL,
 		read_at_gmt datetime NULL DEFAULT NULL,
 		PRIMARY KEY  (id),
 		UNIQUE KEY user_comment (user_id, comment_id),
@@ -77,13 +78,52 @@ function alpaca_maybe_install_notification_inbox_table() {
 add_action( 'init', 'alpaca_maybe_install_notification_inbox_table', 5 );
 
 /**
+ * Build a durable notification item snapshot.
+ *
+ * @param array<string, mixed> $event    Notification event payload.
+ * @param string[]             $subjects Matched recipient subjects.
+ * @return array<string, mixed> Snapshot payload.
+ */
+function alpaca_get_notification_item_snapshot_payload( $event, $subjects = array() ) {
+	$snapshot = is_array( $event ) ? $event : array();
+
+	$snapshot['recipient_subjects'] = array_values(
+		array_unique(
+			array_filter(
+				array_map(
+					'sanitize_key',
+					is_array( $subjects ) ? $subjects : array()
+				)
+			)
+		)
+	);
+
+	return $snapshot;
+}
+
+/**
+ * Encode a durable notification item snapshot as JSON.
+ *
+ * @param array<string, mixed> $event    Notification event payload.
+ * @param string[]             $subjects Matched recipient subjects.
+ * @return string Encoded snapshot JSON string.
+ */
+function alpaca_encode_notification_item_snapshot_payload( $event, $subjects = array() ) {
+	$snapshot = alpaca_get_notification_item_snapshot_payload( $event, $subjects );
+	$json     = wp_json_encode( $snapshot );
+
+	return is_string( $json ) ? $json : '';
+}
+
+/**
  * Insert or update an inbox row for a recipient and event.
  *
- * @param int                  $user_id User ID.
- * @param array<string, mixed> $event   Notification event payload.
+ * @param int                  $user_id  User ID.
+ * @param array<string, mixed> $event    Notification event payload.
+ * @param string[]             $subjects Matched recipient subjects.
  * @return bool True when the write succeeded.
  */
-function alpaca_create_notification_inbox_item( $user_id, $event ) {
+function alpaca_create_notification_inbox_item( $user_id, $event, $subjects = array() ) {
 	global $wpdb;
 
 	$user_id      = absint( $user_id );
@@ -103,18 +143,20 @@ function alpaca_create_notification_inbox_item( $user_id, $event ) {
 		return false;
 	}
 
-	$table_name = alpaca_get_notification_inbox_table_name();
+	$table_name       = alpaca_get_notification_inbox_table_name();
+	$snapshot_payload = alpaca_encode_notification_item_snapshot_payload( $event, $subjects );
 
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- This insert intentionally writes one inbox row per recipient event.
 	$result = $wpdb->query(
 		$wpdb->prepare(
-			'INSERT INTO %i ( user_id, comment_id, issue_id, event_family, created_gmt ) VALUES ( %d, %d, %d, %s, %s ) ON DUPLICATE KEY UPDATE issue_id = VALUES(issue_id), event_family = VALUES(event_family), created_gmt = VALUES(created_gmt)',
+			'INSERT INTO %i ( user_id, comment_id, issue_id, event_family, created_gmt, snapshot_payload ) VALUES ( %d, %d, %d, %s, %s, %s ) ON DUPLICATE KEY UPDATE issue_id = VALUES(issue_id), event_family = VALUES(event_family), created_gmt = VALUES(created_gmt), snapshot_payload = VALUES(snapshot_payload)',
 			$table_name,
 			$user_id,
 			$comment_id,
 			$issue_id,
 			$event_family,
-			$created_gmt
+			$created_gmt,
+			$snapshot_payload
 		)
 	);
 
@@ -132,12 +174,48 @@ function alpaca_create_notification_inbox_item( $user_id, $event ) {
 function alpaca_send_notification_inbox_route( $route, $recipient, $event ) {
 	unset( $route );
 
-	$user_id = isset( $recipient['user_id'] ) ? absint( $recipient['user_id'] ) : 0;
+	$user_id  = isset( $recipient['user_id'] ) ? absint( $recipient['user_id'] ) : 0;
+	$subjects = isset( $recipient['subjects'] ) && is_array( $recipient['subjects'] ) ? $recipient['subjects'] : array();
 	if ( $user_id <= 0 ) {
 		return false;
 	}
 
-	return alpaca_create_notification_inbox_item( $user_id, $event );
+	return alpaca_create_notification_inbox_item( $user_id, $event, $subjects );
+}
+
+/**
+ * Persist a notification item for a resolved recipient.
+ *
+ * @param array<string, mixed> $recipient Notification recipient.
+ * @param array<string, mixed> $event     Notification event payload.
+ * @return bool True when the item was written successfully.
+ */
+function alpaca_capture_notification_item_for_recipient( $recipient, $event ) {
+	$user_id  = isset( $recipient['user_id'] ) ? absint( $recipient['user_id'] ) : 0;
+	$subjects = isset( $recipient['subjects'] ) && is_array( $recipient['subjects'] ) ? $recipient['subjects'] : array();
+
+	if ( $user_id <= 0 ) {
+		return false;
+	}
+
+	return alpaca_create_notification_inbox_item( $user_id, $event, $subjects );
+}
+
+/**
+ * Decode a stored notification item snapshot.
+ *
+ * @param array<string, mixed> $row Inbox row.
+ * @return array<string, mixed> Snapshot payload.
+ */
+function alpaca_get_notification_item_snapshot_from_row( $row ) {
+	$snapshot_payload = isset( $row['snapshot_payload'] ) ? (string) $row['snapshot_payload'] : '';
+	if ( '' === $snapshot_payload ) {
+		return array();
+	}
+
+	$snapshot = json_decode( $snapshot_payload, true );
+
+	return is_array( $snapshot ) ? $snapshot : array();
 }
 
 /**
@@ -209,7 +287,7 @@ function alpaca_get_notification_inbox_rows_for_user( $user_id, $args = array() 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- This list query is intentionally uncached because inbox state is user-specific and mutable.
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
-				'SELECT id, user_id, comment_id, issue_id, event_family, created_gmt, read_at_gmt FROM %i WHERE user_id = %d AND read_at_gmt IS NULL ORDER BY created_gmt DESC, id DESC LIMIT %d OFFSET %d',
+				'SELECT id, user_id, comment_id, issue_id, event_family, created_gmt, snapshot_payload, read_at_gmt FROM %i WHERE user_id = %d AND read_at_gmt IS NULL ORDER BY created_gmt DESC, id DESC LIMIT %d OFFSET %d',
 				$table_name,
 				$user_id,
 				$per_page,
@@ -230,7 +308,7 @@ function alpaca_get_notification_inbox_rows_for_user( $user_id, $args = array() 
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- This list query is intentionally uncached because inbox state is user-specific and mutable.
 		$rows = $wpdb->get_results(
 			$wpdb->prepare(
-				'SELECT id, user_id, comment_id, issue_id, event_family, created_gmt, read_at_gmt FROM %i WHERE user_id = %d ORDER BY created_gmt DESC, id DESC LIMIT %d OFFSET %d',
+				'SELECT id, user_id, comment_id, issue_id, event_family, created_gmt, snapshot_payload, read_at_gmt FROM %i WHERE user_id = %d ORDER BY created_gmt DESC, id DESC LIMIT %d OFFSET %d',
 				$table_name,
 				$user_id,
 				$per_page,

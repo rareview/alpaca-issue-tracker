@@ -45,6 +45,7 @@
 
     .alpaca-item-deadline {
       border-radius: $common-radius;
+      @include alpaca-item-deadline-states;
     }
 
     &.is-high-priority {
@@ -101,20 +102,6 @@
   }
 
   .alpaca-item-inner {
-    .alpaca-item-deadline {
-      &[data-deadline-state='late'] {
-        @include deadline-style($deadline-late-bg);
-      }
-
-      &[data-deadline-state='today'] {
-        @include deadline-style($deadline-today-bg);
-      }
-
-      &[data-deadline-state='soon'] {
-        @include deadline-style($deadline-soon-bg);
-      }
-    }
-
     .alpaca-item-content {
       grid-column: 1;
       grid-row: 1;
@@ -129,73 +116,8 @@
     .alpaca-item-datapoints {
       grid-column: 1;
       grid-row: 2;
-      color: $greytext;
       margin: 4px 0;
-      flex-wrap: wrap;
-      align-items: center;
-
-      & > div {
-        display: flex;
-        align-items: center;
-        gap: 0.4ch;
-        margin-right: 10px;
-      }
-
-      .alpaca-item-priority-badge svg {
-        color: $priority-high-bg;
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        padding: 2px;
-        border: 1px solid $greyborder;
-      }
-
-      .alpaca-item-assignees {
-        .alpaca-user-name {
-          display: none;
-        }
-
-        &[data-assignees='1'] {
-          .alpaca-user .alpaca-user-name {
-            display: block;
-          }
-        }
-
-        img {
-          width: 24px;
-          height: 24px;
-          border: 1px solid $greyborder;
-          border-radius: 50%;
-          background: $bgwhite;
-          vertical-align: middle;
-          margin-right: -2px;
-        }
-      }
-
-      .alpaca-item-labels {
-        display: inline-flex;
-        flex-wrap: wrap;
-        gap: 4px;
-      }
-
-      .alpaca-item-icon {
-        text-wrap: nowrap;
-
-        svg {
-          margin-right: 3px;
-          vertical-align: middle;
-          margin-top: -2px;
-        }
-      }
-
-      .alpaca-user {
-        font-size: 0.8rem;
-        margin-left: -8px;
-
-        &:first-child {
-          margin-left: 0;
-        }
-      }
+      @include alpaca-item-datapoints-content;
     }
   }
 

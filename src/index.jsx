@@ -1,6 +1,5 @@
 import './scss/main.scss';
 
-import './apiTest.js';
 import './utils/issueCommentHandler.js';
 import './utils/dataDump.js';
 import './utils/boardHelpers.js';
@@ -27,6 +26,7 @@ import { AlpacaBoard } from './Board.jsx';
 import Presence from './components/Presence';
 import NotificationPreferences from './components/NotificationPreferences.jsx';
 import NotificationTemplateScreen from './components/NotificationTemplateScreen.jsx';
+import DailyDigestTemplateScreen from './components/DailyDigestTemplateScreen.jsx';
 import AdminSidebarInboxBadge from './components/notifications/AdminSidebarInboxBadge.jsx';
 import AlpacaDashboardWidget from './DashboardWidget.jsx';
 import About from './about/About.jsx';
@@ -157,5 +157,12 @@ if (document.querySelector('#alpaca-notification-template-page')) {
   render(
     <NotificationTemplateScreen />,
     document.querySelector('#alpaca-notification-template-page'),
+  );
+}
+
+if (document.querySelector('#alpaca-daily-digest-template-page')) {
+  render(
+    <DailyDigestTemplateScreen />,
+    document.querySelector('#alpaca-daily-digest-template-page'),
   );
 }
