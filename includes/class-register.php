@@ -85,8 +85,7 @@ class Register {
 		return in_array(
 			$hook_suffix,
 			array(
-				'project-board_page_alpaca-notification-template',
-				'project-board_page_alpaca-daily-digest-template',
+				'project-board_page_alpaca-email-templates',
 			),
 			true
 		);

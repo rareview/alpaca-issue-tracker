@@ -525,20 +525,20 @@ function alpaca_render_notification_daily_digest_placeholder_block( $block_name,
 			$html .= $before_html;
 		}
 
-		$html .= '<section class="alpaca-notification-digest-section"><h3>' . esc_html__( 'Issues falling due', 'alpaca' ) . '</h3>' . alpaca_render_notification_deadline_watch_html( isset( $payload['deadline_watch'] ) && is_array( $payload['deadline_watch'] ) ? $payload['deadline_watch'] : array() ) . '</section>';
+		$html .= '<section class="alpaca-notification-digest-section"><h3>' . esc_html__( 'Issues Falling Due', 'alpaca' ) . '</h3>' . alpaca_render_notification_deadline_watch_html( isset( $payload['deadline_watch'] ) && is_array( $payload['deadline_watch'] ) ? $payload['deadline_watch'] : array() ) . '</section>';
 
 		return $html;
 	}
 
 	if ( 'alpaca/digest-issue-activity' === $block_name ) {
-		return '<section class="alpaca-notification-digest-section"><h3>' . esc_html__( 'My issues', 'alpaca' ) . '</h3>' . alpaca_render_notification_digest_issue_activity_html( isset( $payload['issue_activity'] ) && is_array( $payload['issue_activity'] ) ? $payload['issue_activity'] : array() ) . '</section>';
+		return '<section class="alpaca-notification-digest-section"><h3>' . esc_html__( 'My Issues', 'alpaca' ) . '</h3>' . alpaca_render_notification_digest_issue_activity_html( isset( $payload['issue_activity'] ) && is_array( $payload['issue_activity'] ) ? $payload['issue_activity'] : array() ) . '</section>';
 	}
 
 	if ( 'alpaca/digest-new-items' === $block_name ) {
 		$html = '';
 
 		if ( ! empty( $payload['new_items'] ) && is_array( $payload['new_items'] ) ) {
-			$html .= '<section class="alpaca-notification-digest-section"><h3>' . esc_html__( 'New items', 'alpaca' ) . '</h3>' . alpaca_render_notification_digest_new_items_html( $payload['new_items'] ) . '</section>';
+			$html .= '<section class="alpaca-notification-digest-section"><h3>' . esc_html__( 'New Issues', 'alpaca' ) . '</h3>' . alpaca_render_notification_digest_new_items_html( $payload['new_items'] ) . '</section>';
 		}
 
 		$after_html = apply_filters( 'alpaca_daily_digest_post_sections_html', '', $payload, $template );

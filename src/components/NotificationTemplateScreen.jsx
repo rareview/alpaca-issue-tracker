@@ -90,19 +90,6 @@ const NotificationTemplateScreen = () => {
       previewTemplate={previewNotificationTemplate}
       sendTestEmail={sendNotificationTemplateTestEmail}
       registerBlocks={registerNotificationEmailBlocks}
-      introTitle={__('Shared Email Template', 'alpaca')}
-      introDescription={__(
-        'This template is used for instant issue activity emails. Keep the Full Comment Content block in the layout so the activity itself is always included.',
-        'alpaca',
-      )}
-      templateDescription={__(
-        'Use core blocks for layout and Alpaca blocks for issue-specific placeholders.',
-        'alpaca',
-      )}
-      previewDescription={__(
-        'Preview the shared email using sample issue activity before saving or sending a test.',
-        'alpaca',
-      )}
       subjectHelp={__(
         'Available placeholders include {{issue_title}}, {{performed_by}}, {{event_label}}, {{site_title}}, {{site_tagline}}, and {{event_time}}.',
         'alpaca',

@@ -65,19 +65,6 @@ const DailyDigestTemplateScreen = () => (
     previewTemplate={previewNotificationDigestTemplate}
     sendTestEmail={sendNotificationDigestTemplateTestEmail}
     registerBlocks={registerNotificationDigestBlocks}
-    introTitle={__('Daily Digest Template', 'alpaca')}
-    introDescription={__(
-      'Use core blocks for layout and keep the locked digest section blocks in place so the scheduled summary always includes the system-rendered content.',
-      'alpaca',
-    )}
-    templateDescription={__(
-      'Arrange the digest with blocks. The locked section blocks render due issues, grouped issue activity, and new items.',
-      'alpaca',
-    )}
-    previewDescription={__(
-      'Preview the scheduled digest using sample board activity before saving or sending a test.',
-      'alpaca',
-    )}
     subjectHelp={__(
       'Available placeholders include {{site_title}}, {{site_tagline}}, {{digest_day}}, {{issue_count}}, {{activity_count}}, and {{new_item_count}}.',
       'alpaca',
