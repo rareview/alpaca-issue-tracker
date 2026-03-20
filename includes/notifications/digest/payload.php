@@ -513,6 +513,44 @@ function alpaca_get_notification_digest_due_issue_ids( $user_id, $preferences ) 
 		return array();
 	}
 
+	/**
+	 * Allow site owners (or plugins) to disable preference-based filtering
+	 * for the "Issues Falling Due" section by hooking
+	 * `alpaca_filter_deadlines_by_user_preferences`. When the filter
+	 * returns false, the digest will consider all issues (date filtering
+	 * still applies when building the deadline rows).
+	 *
+	 * @param bool   $filter_by_preferences Whether to filter by user preferences (default true).
+	 * @param int    $user_id              User ID being evaluated.
+	 * @param array  $preferences          Notification preferences for the user.
+	 */
+	$filter_by_preferences = (bool) apply_filters(
+		'alpaca_filter_deadlines_by_user_preferences',
+		true,
+		$user_id,
+		$preferences
+	);
+
+	// If filtering by preferences is disabled, return all issue IDs so the
+	// deadline query can decide which ones fall due for the window.
+	if ( ! $filter_by_preferences ) {
+		// phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_get_posts -- Owner-controlled; expected for site-wide view.
+		$all_issue_ids = get_posts(
+			array(
+				'post_type'              => 'alpaca_issue',
+				'post_status'            => 'any',
+				'posts_per_page'         => -1,
+				'fields'                 => 'ids',
+				'no_found_rows'          => true,
+				'update_post_meta_cache' => false,
+				'update_post_term_cache' => false,
+			)
+		);
+		// phpcs:enable WordPress.DB.SlowDBQuery.slow_db_query_get_posts
+
+		return array_values( array_unique( array_filter( array_map( 'absint', $all_issue_ids ) ) ) );
+	}
+
 	$issue_ids = array();
 
 	if ( ! empty( $preferences['subjects']['created'] ) ) {
