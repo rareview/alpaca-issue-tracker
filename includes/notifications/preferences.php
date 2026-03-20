@@ -136,23 +136,6 @@ function alpaca_get_notification_preference_defaults() {
 }
 
 /**
- * Return the daily digest supported day keys.
- *
- * @return string[] Day keys.
- */
-function alpaca_get_notification_daily_digest_day_keys() {
-	return array(
-		'sun',
-		'mon',
-		'tue',
-		'wed',
-		'thu',
-		'fri',
-		'sat',
-	);
-}
-
-/**
  * Return the supported digest channel keys.
  *
  * @return string[] Digest-capable channel keys.
@@ -187,7 +170,6 @@ function alpaca_get_notification_daily_digest_defaults() {
 	return array(
 		'enabled'   => false,
 		'channels'  => $channels,
-		'days'      => alpaca_get_notification_daily_digest_day_keys(),
 		'send_time' => '17:00',
 	);
 }
@@ -215,20 +197,10 @@ function alpaca_normalize_notification_daily_digest_time( $send_time ) {
  */
 function alpaca_sanitize_notification_daily_digest_preferences( $daily_preferences ) {
 	$defaults           = alpaca_get_notification_daily_digest_defaults();
-	$valid_day_keys     = alpaca_get_notification_daily_digest_day_keys();
 	$supported_channels = alpaca_get_notification_digest_supported_channel_keys();
 
 	if ( ! is_array( $daily_preferences ) ) {
 		return $defaults;
-	}
-
-	$days = isset( $daily_preferences['days'] ) && is_array( $daily_preferences['days'] )
-		? array_values( array_unique( array_filter( array_map( 'sanitize_key', $daily_preferences['days'] ) ) ) )
-		: $defaults['days'];
-	$days = array_values( array_intersect( $days, $valid_day_keys ) );
-
-	if ( empty( $days ) ) {
-		$days = $defaults['days'];
 	}
 
 	$channels = $defaults['channels'];
@@ -241,7 +213,6 @@ function alpaca_sanitize_notification_daily_digest_preferences( $daily_preferenc
 	return array(
 		'enabled'   => ! empty( $daily_preferences['enabled'] ),
 		'channels'  => $channels,
-		'days'      => $days,
 		'send_time' => alpaca_normalize_notification_daily_digest_time( isset( $daily_preferences['send_time'] ) ? $daily_preferences['send_time'] : $defaults['send_time'] ),
 	);
 }

@@ -87,24 +87,8 @@ function alpaca_process_notification_daily_digest_schedule_row( $row ) {
 		}
 	}
 
-	alpaca_sync_notification_daily_digest_schedule(
-		$user_id,
-		array_merge(
-			$preferences,
-			array(
-				'digests' => array(
-					'daily' => array_merge(
-						$daily,
-						array(
-							'send_time' => isset( $daily['send_time'] ) ? $daily['send_time'] : '17:00',
-						)
-					),
-				),
-			)
-		)
-	);
+	alpaca_sync_notification_daily_digest_schedule( $user_id, $preferences );
 }
-
 /**
  * Process all due daily digests.
  *

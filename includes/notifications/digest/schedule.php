@@ -112,27 +112,6 @@ function alpaca_get_notification_daily_digest_key() {
 }
 
 /**
- * Return the day key for a local timestamp.
- *
- * @param DateTimeImmutable $datetime Datetime object.
- * @return string Day key.
- */
-function alpaca_get_notification_daily_digest_day_key_for_datetime( DateTimeImmutable $datetime ) {
-	$map = array(
-		'Sun' => 'sun',
-		'Mon' => 'mon',
-		'Tue' => 'tue',
-		'Wed' => 'wed',
-		'Thu' => 'thu',
-		'Fri' => 'fri',
-		'Sat' => 'sat',
-	);
-	$key = $datetime->format( 'D' );
-
-	return isset( $map[ $key ] ) ? $map[ $key ] : 'sun';
-}
-
-/**
  * Build a local datetime for a specific digest send time.
  *
  * @param DateTimeImmutable $datetime  Base datetime in the site timezone.
@@ -172,31 +151,17 @@ function alpaca_get_notification_daily_digest_next_run_gmt( $daily_preferences, 
 		$base_datetime = new DateTimeImmutable( 'now', $timezone );
 	}
 
-	$days      = isset( $daily_preferences['days'] ) && is_array( $daily_preferences['days'] ) ? $daily_preferences['days'] : alpaca_get_notification_daily_digest_day_keys();
-	$send_time = isset( $daily_preferences['send_time'] ) ? (string) $daily_preferences['send_time'] : '17:00';
+	$send_time          = isset( $daily_preferences['send_time'] ) ? (string) $daily_preferences['send_time'] : '17:00';
+	$candidate_datetime = alpaca_get_notification_daily_digest_datetime_with_time( $base_datetime, $send_time );
 
-	for ( $offset = 0; $offset < 8; $offset++ ) {
-		$candidate_date = $base_datetime->modify( '+' . $offset . ' day' );
-		if ( ! ( $candidate_date instanceof DateTimeImmutable ) ) {
-			continue;
+	if ( $candidate_datetime <= $base_datetime ) {
+		$next_day = $base_datetime->modify( '+1 day' );
+		if ( $next_day instanceof DateTimeImmutable ) {
+			$candidate_datetime = alpaca_get_notification_daily_digest_datetime_with_time( $next_day, $send_time );
 		}
-
-		$day_key = alpaca_get_notification_daily_digest_day_key_for_datetime( $candidate_date );
-		if ( ! in_array( $day_key, $days, true ) ) {
-			continue;
-		}
-
-		$candidate_datetime = alpaca_get_notification_daily_digest_datetime_with_time( $candidate_date, $send_time );
-		if ( 0 === $offset && $candidate_datetime <= $base_datetime ) {
-			continue;
-		}
-
-		return $candidate_datetime->setTimezone( new DateTimeZone( 'UTC' ) )->format( 'Y-m-d H:i:s' );
 	}
 
-	$fallback_datetime = alpaca_get_notification_daily_digest_datetime_with_time( $base_datetime->modify( '+1 day' ), $send_time );
-
-	return $fallback_datetime->setTimezone( new DateTimeZone( 'UTC' ) )->format( 'Y-m-d H:i:s' );
+	return $candidate_datetime->setTimezone( new DateTimeZone( 'UTC' ) )->format( 'Y-m-d H:i:s' );
 }
 
 /**

@@ -22,16 +22,6 @@ const TERM_ID_KEY = 'term_id';
 const INBOX_QUERY_KEY = 'inbox';
 const INBOX_QUERY_VALUE = 'open';
 
-const digestDayOptions = [
-  { key: 'sun', label: __('Sunday', 'alpaca') },
-  { key: 'mon', label: __('Monday', 'alpaca') },
-  { key: 'tue', label: __('Tuesday', 'alpaca') },
-  { key: 'wed', label: __('Wednesday', 'alpaca') },
-  { key: 'thu', label: __('Thursday', 'alpaca') },
-  { key: 'fri', label: __('Friday', 'alpaca') },
-  { key: 'sat', label: __('Saturday', 'alpaca') },
-];
-
 const subjectOptions = [
   {
     key: 'created',
@@ -353,7 +343,6 @@ const NotificationPreferences = () => {
       return {
         enabled: false,
         channels: {},
-        days: [],
         [SEND_TIME_KEY]: '17:00',
       };
     }
@@ -362,7 +351,6 @@ const NotificationPreferences = () => {
       preferences[DIGESTS_KEY][DAILY_DIGEST_KEY] || {
         enabled: false,
         channels: {},
-        days: [],
         [SEND_TIME_KEY]: '17:00',
       }
     );
@@ -481,41 +469,6 @@ const NotificationPreferences = () => {
               ...currentChannels,
               [channelKey]: value,
             },
-          },
-        },
-      };
-    });
-  }, []);
-
-  const handleDailyDigestDayToggle = useCallback((dayKey, value) => {
-    setPreferences((current) => {
-      if (!current) {
-        return current;
-      }
-
-      const currentDigests =
-        current[DIGESTS_KEY] && 'object' === typeof current[DIGESTS_KEY]
-          ? current[DIGESTS_KEY]
-          : {};
-      const currentDailyDigest =
-        currentDigests[DAILY_DIGEST_KEY] &&
-        'object' === typeof currentDigests[DAILY_DIGEST_KEY]
-          ? currentDigests[DAILY_DIGEST_KEY]
-          : {};
-      const currentDays = Array.isArray(currentDailyDigest.days)
-        ? currentDailyDigest.days
-        : [];
-      const nextDays = value
-        ? [...currentDays, dayKey]
-        : currentDays.filter((day) => day !== dayKey);
-
-      return {
-        ...current,
-        [DIGESTS_KEY]: {
-          ...currentDigests,
-          [DAILY_DIGEST_KEY]: {
-            ...currentDailyDigest,
-            days: Array.from(new Set(nextDays)),
           },
         },
       };
@@ -854,7 +807,7 @@ const NotificationPreferences = () => {
         <h2>{__('Daily Summary', 'alpaca')}</h2>
         <p className="alpaca-notifications-panel-intro">
           {__(
-            'Receive a scheduled digest that groups the last 24 hours of activity by issue.',
+            'Receive a scheduled digest every 24 hours at your chosen time, grouping the last 24 hours of activity by issue.',
             'alpaca',
           )}
         </p>
@@ -882,26 +835,6 @@ const NotificationPreferences = () => {
               </p>
             )}
 
-            <div className="alpaca-notifications-digest-fieldset">
-              <strong>{__('Send on', 'alpaca')}</strong>
-              <div className="alpaca-notifications-digest-days">
-                {digestDayOptions.map((day) => (
-                  <CheckboxControl
-                    key={day.key}
-                    label={day.label}
-                    checked={Boolean(
-                      Array.isArray(dailyDigestPreferences.days) &&
-                        dailyDigestPreferences.days.includes(day.key),
-                    )}
-                    disabled={isSaving || !dailyDigestPreferences.enabled}
-                    onChange={(value) =>
-                      handleDailyDigestDayToggle(day.key, value)
-                    }
-                  />
-                ))}
-              </div>
-            </div>
-
             <div className="alpaca-notifications-digest-time">
               <TextControl
                 label={__('Send time', 'alpaca')}
@@ -917,7 +850,10 @@ const NotificationPreferences = () => {
             <p className="alpaca-notifications-help">
               {sprintf(
                 /* translators: %s: site timezone label. */
-                __('Daily summaries use the site timezone: %s.', 'alpaca'),
+                __(
+                  'Daily summaries repeat every 24 hours using the site timezone: %s.',
+                  'alpaca',
+                ),
                 siteTimezoneLabel || __('Site timezone', 'alpaca'),
               )}
             </p>

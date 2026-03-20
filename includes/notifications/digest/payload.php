@@ -767,18 +767,17 @@ function alpaca_get_notification_daily_digest_day_label( $window_end_gmt ) {
  * @return array<string, mixed> Digest payload.
  */
 function alpaca_build_notification_daily_digest_payload( $user_id, $preferences, $window_start_gmt, $window_end_gmt ) {
-	$events            = alpaca_get_notification_item_events_for_user_window( $user_id, $window_start_gmt, $window_end_gmt );
-	$issue_activity    = alpaca_get_notification_digest_issue_activity_groups( $events );
-	$issue_ids         = array();
-	$daily_preferences = isset( $preferences['digests']['daily'] ) && is_array( $preferences['digests']['daily'] ) ? $preferences['digests']['daily'] : alpaca_get_notification_daily_digest_defaults();
 
+	$events         = alpaca_get_notification_item_events_for_user_window( $user_id, $window_start_gmt, $window_end_gmt );
+	$issue_activity = alpaca_get_notification_digest_issue_activity_groups( $events );
+	$issue_ids      = array();
 	foreach ( $issue_activity as $group ) {
 		if ( ! empty( $group['issue']['id'] ) ) {
 			$issue_ids[] = (int) $group['issue']['id'];
 		}
 	}
 
-	$payload = array(
+	$payload                        = array(
 		'user_id'          => absint( $user_id ),
 		'window_start_gmt' => $window_start_gmt,
 		'window_end_gmt'   => $window_end_gmt,
@@ -793,12 +792,7 @@ function alpaca_build_notification_daily_digest_payload( $user_id, $preferences,
 			'new_items' => 0,
 			'deadlines' => 0,
 		),
-		'preferences'      => array(
-			'days'      => isset( $daily_preferences['days'] ) && is_array( $daily_preferences['days'] ) ? $daily_preferences['days'] : array(),
-			'send_time' => isset( $daily_preferences['send_time'] ) ? (string) $daily_preferences['send_time'] : '17:00',
-		),
 	);
-
 	$payload['counts']['deadlines'] = count( $payload['deadline_watch'] );
 
 	if ( ! empty( $preferences['subjects']['all_new_tasks'] ) ) {
