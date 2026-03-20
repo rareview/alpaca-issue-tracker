@@ -48,8 +48,10 @@ But we soon realised Alpaca could be a full collaboration solution, on par with 
 <details open="">
 <summary><strong>Beta 3: mid March 2026</strong></summary>
 
+- UI configuration: choose which datapoints appear on Board cards
 - Notifications: configurable inbox of action on issues that matter to you
-- Notifications: delivery of action notifications via email
+- Notifications: option to receive instant notifications via email
+- Notifications: option to receive daily digest via email
 - Notifications: block-based email template designer
 - Project Activity screen: unfiltered timeline of all project activity
 - Full translation readiness, including support for RTL languages
@@ -61,8 +63,8 @@ But we soon realised Alpaca could be a full collaboration solution, on par with 
 <details>
 <summary><strong>In planning</strong></summary>
 
-- Add support for other outbound communication channels (eg Slack)
-- Add support for inbound communication from other platforms (eg GitHub)
+- Framework to support other outbound communication channels (eg Slack)
+- Framework to support inbound communication from other platforms (eg GitHub)
 - Data storage in a different WP instance
 - Real-time collaboration / syncing
 - Consolidated multi-project view
