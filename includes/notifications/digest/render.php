@@ -22,12 +22,13 @@ function alpaca_get_notification_daily_digest_template_tokens( $payload ) {
 	$counts       = isset( $payload['counts'] ) && is_array( $payload['counts'] ) ? $payload['counts'] : array();
 
 	return array(
-		'{{site_title}}'     => $site_title,
-		'{{site_tagline}}'   => $site_tagline,
-		'{{digest_day}}'     => isset( $payload['digest_day'] ) ? (string) $payload['digest_day'] : '',
-		'{{issue_count}}'    => isset( $counts['issues'] ) ? (string) absint( $counts['issues'] ) : '0',
-		'{{activity_count}}' => isset( $counts['activity'] ) ? (string) absint( $counts['activity'] ) : '0',
-		'{{new_item_count}}' => isset( $counts['new_items'] ) ? (string) absint( $counts['new_items'] ) : '0',
+		'{{site_title}}'        => $site_title,
+		'{{site_tagline}}'      => $site_tagline,
+		'{{notifications_url}}' => alpaca_get_notification_preferences_url(),
+		'{{digest_day}}'        => isset( $payload['digest_day'] ) ? (string) $payload['digest_day'] : '',
+		'{{issue_count}}'       => isset( $counts['issues'] ) ? (string) absint( $counts['issues'] ) : '0',
+		'{{activity_count}}'    => isset( $counts['activity'] ) ? (string) absint( $counts['activity'] ) : '0',
+		'{{new_item_count}}'    => isset( $counts['new_items'] ) ? (string) absint( $counts['new_items'] ) : '0',
 	);
 }
 
@@ -206,11 +207,13 @@ function alpaca_render_notification_digest_calendar_icon_html() {
 /**
  * Render the priority badge used in digest layouts.
  *
- * @param string $label Optional badge label text.
+ * @param string $label              Optional badge label text.
+ * @param bool   $is_label_visible Whether to render the label as visible text.
  * @return string HTML markup.
  */
-function alpaca_render_notification_digest_priority_badge_html( $label = '' ) {
-	$label = is_string( $label ) ? $label : '';
+function alpaca_render_notification_digest_priority_badge_html( $label = '', $is_label_visible = true ) {
+	$label            = is_string( $label ) ? $label : '';
+	$is_label_visible = (bool) $is_label_visible;
 
 	if ( '' === $label ) {
 		$label = esc_html__( 'Priority', 'alpaca' );
@@ -220,7 +223,13 @@ function alpaca_render_notification_digest_priority_badge_html( $label = '' ) {
 	$svg .= '<path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4m.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2" />';
 	$svg .= '</svg>';
 
-	return '<span class="alpaca-item-icon alpaca-item-priority-badge">' . $svg . '<span>' . esc_html( $label ) . '</span></span>';
+	$label_class = '';
+
+	if ( ! $is_label_visible ) {
+		$label_class = ' class="screen-reader-text"';
+	}
+
+	return '<span class="alpaca-item-icon alpaca-item-priority-badge">' . $svg . '<span' . $label_class . '>' . esc_html( $label ) . '</span></span>';
 }
 
 /**
@@ -384,7 +393,7 @@ function alpaca_render_notification_deadline_watch_html( $items ) {
 
 	$visible_items = array_slice( $items, 0, 3 );
 	$more_count    = max( 0, count( $items ) - count( $visible_items ) );
-	$html          = '<div class="alpaca-notification-digest-deadline-table-wrap"><table class="alpaca-notification-digest-deadline-table" role="presentation"><thead><tr><th scope="col">' . esc_html__( 'Issue', 'alpaca' ) . '</th><th scope="col">' . esc_html__( 'Due Date', 'alpaca' ) . '</th><th scope="col">' . esc_html__( 'Assignees', 'alpaca' ) . '</th><th scope="col">' . esc_html__( 'Status', 'alpaca' ) . '</th></tr></thead><tbody>';
+	$html          = '<div class="alpaca-notification-digest-deadline-table-wrap"><table class="alpaca-notification-digest-deadline-table" role="presentation"><thead><tr><th scope="col">' . esc_html__( 'Issue', 'alpaca' ) . '</th><th scope="col" class="alpaca-notification-digest-deadline-table__priority"><span class="screen-reader-text">' . esc_html__( 'Priority', 'alpaca' ) . '</span></th><th scope="col">' . esc_html__( 'Due Date', 'alpaca' ) . '</th><th scope="col">' . esc_html__( 'Assignees', 'alpaca' ) . '</th><th scope="col">' . esc_html__( 'Status', 'alpaca' ) . '</th></tr></thead><tbody>';
 
 	foreach ( $visible_items as $item ) {
 		$meta           = isset( $item['meta'] ) && is_array( $item['meta'] ) ? $item['meta'] : array();
@@ -392,19 +401,21 @@ function alpaca_render_notification_deadline_watch_html( $items ) {
 		$assignees      = isset( $meta['assignees'] ) && is_array( $meta['assignees'] ) ? $meta['assignees'] : array();
 		$deadline_state = isset( $meta['deadline_state'] ) ? (string) $meta['deadline_state'] : '';
 		$deadline_text  = isset( $meta['deadline_text'] ) ? (string) $meta['deadline_text'] : '';
+		$priority_html  = '';
 		$title_html     = '<div class="alpaca-notification-digest-deadline-row__title-stack"><a href="' . esc_url( isset( $item['url'] ) ? (string) $item['url'] : '' ) . '">' . esc_html( isset( $item['title'] ) ? (string) $item['title'] : '' ) . '</a>';
 
 		if ( ! empty( $meta['is_high_priority'] ) ) {
-			$title_html .= '<span class="alpaca-notification-digest-deadline-row__title-meta">' . alpaca_render_notification_digest_priority_badge_html() . '</span>';
+			$priority_html = alpaca_render_notification_digest_priority_badge_html( '', false );
 		}
 
 		$title_html .= '</div>';
 
 		$html .= '<tr class="alpaca-notification-digest-deadline-row">';
 		$html .= '<td class="alpaca-notification-digest-deadline-row__title">' . $title_html . '</td>';
+		$html .= '<td class="alpaca-notification-digest-deadline-row__priority"><span class="alpaca-item-datapoints">' . $priority_html . '</span></td>';
 		$html .= '<td class="alpaca-notification-digest-deadline-row__due">' . alpaca_render_notification_digest_deadline_badge_html( $deadline_text, $deadline_state ) . '</td>';
 		$html .= '<td class="alpaca-notification-digest-deadline-row__assignees">' . ( ! empty( $assignees ) ? alpaca_render_notification_digest_assignees_html( $assignees ) : '—' ) . '</td>';
-		$html .= '<td class="alpaca-notification-digest-deadline-row__status">' . esc_html( '' !== $status_label ? $status_label : '—' ) . '</td>';
+		$html .= '<td class="alpaca-notification-digest-deadline-row__status"><span class="alpaca-notification-digest-deadline-row__status-text">' . esc_html( '' !== $status_label ? $status_label : '—' ) . '</span></td>';
 		$html .= '</tr>';
 	}
 

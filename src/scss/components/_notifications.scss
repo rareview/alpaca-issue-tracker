@@ -470,6 +470,18 @@
   font-family: $core-font-stack;
   padding: 24px 16px;
 
+  .screen-reader-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    border: 0;
+    padding: 0;
+    clip: rect(1px, 1px, 1px, 1px);
+    overflow: hidden;
+    word-wrap: normal !important;
+  }
+
   .alpaca-notification-email__inner {
     max-width: 680px;
     margin: 0 auto;
@@ -611,7 +623,7 @@
   &.alpaca-notification-digest-email h2 {
     margin: 20px 0 24px;
     color: #111827;
-    font-size: 40px;
+    font-size: 30px;
     line-height: 1.08;
     letter-spacing: -0.04em;
   }
@@ -636,7 +648,7 @@
   .alpaca-notification-digest-deadline-table {
     width: 100%;
     border-collapse: collapse;
-    table-layout: fixed;
+    // table-layout: fixed;
 
     th {
       padding: 8px 12px;
@@ -654,6 +666,7 @@
   }
 
   .alpaca-notification-digest-deadline-row {
+    background: $bgwhite;
     &:nth-child(even) {
       background: $container-bg;
     }
@@ -672,9 +685,9 @@
   }
 
   .alpaca-notification-digest-deadline-row__title {
-    width: 44%;
     color: #111827;
     font-weight: 600;
+    width: 44%;
 
     a {
       color: inherit;
@@ -696,8 +709,13 @@
   .alpaca-notification-digest-deadline-row__due,
   .alpaca-notification-digest-deadline-row__assignees,
   .alpaca-notification-digest-deadline-row__status {
-    width: 18.5%;
     color: #374151;
+    width: auto;
+  }
+
+  .alpaca-notification-digest-deadline-row__status-text {
+    display: inline-block;
+    white-space: nowrap;
   }
 
   .alpaca-notification-digest-card {
@@ -733,15 +751,15 @@
     color: #4b5563;
   }
 
-  .alpaca-notification-digest-meta {
+  .alpaca-item-datapoints {
     display: flex;
-    margin-top: 0;
+    font-size: 14px;
+    line-height: 1.4;
     @include alpaca-item-datapoints-content;
   }
 
-  .alpaca-notification-digest-deadline-row__title-meta
-    .alpaca-item-priority-badge {
-    @include alpaca-item-priority-badge;
+  .alpaca-notification-digest-meta {
+    margin-top: 0;
   }
 
   .alpaca-item-deadline {

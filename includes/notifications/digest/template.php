@@ -115,6 +115,9 @@ function alpaca_get_notification_daily_digest_body_template_default( $preamble =
 			'<!-- wp:paragraph -->',
 			'<p>' . esc_html( $postscript ) . '</p>',
 			'<!-- /wp:paragraph -->',
+			'<!-- wp:paragraph {"fontSize":"small"} -->',
+			'<p class="has-small-font-size"><a href="{{notifications_url}}">' . esc_html__( 'Manage notifications', 'alpaca' ) . '</a></p>',
+			'<!-- /wp:paragraph -->',
 		)
 	);
 }

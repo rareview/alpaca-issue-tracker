@@ -25,17 +25,18 @@ function alpaca_get_notification_template_tokens( $event ) {
 	}
 
 	return array(
-		'{{issue_title}}'   => isset( $event['issue']['title'] ) ? (string) $event['issue']['title'] : '',
-		'{{actor_name}}'    => isset( $event['actor']['display_name'] ) ? (string) $event['actor']['display_name'] : '',
-		'{{performed_by}}'  => isset( $event['actor']['display_name'] ) ? (string) $event['actor']['display_name'] : '',
-		'{{event_label}}'   => isset( $event['event_label'] ) ? (string) $event['event_label'] : '',
-		'{{site_name}}'     => isset( $event['site']['title'] ) ? (string) $event['site']['title'] : '',
-		'{{site_title}}'    => isset( $event['site']['title'] ) ? (string) $event['site']['title'] : '',
-		'{{site_tagline}}'  => isset( $event['site']['tagline'] ) ? (string) $event['site']['tagline'] : '',
-		'{{site_logo_url}}' => alpaca_get_notification_site_icon_url(),
-		'{{site_icon_url}}' => alpaca_get_notification_site_icon_url(),
-		'{{event_time}}'    => $time_text,
-		'{{issue_url}}'     => isset( $event['issue']['url'] ) ? (string) $event['issue']['url'] : '',
+		'{{issue_title}}'       => isset( $event['issue']['title'] ) ? (string) $event['issue']['title'] : '',
+		'{{actor_name}}'        => isset( $event['actor']['display_name'] ) ? (string) $event['actor']['display_name'] : '',
+		'{{performed_by}}'      => isset( $event['actor']['display_name'] ) ? (string) $event['actor']['display_name'] : '',
+		'{{event_label}}'       => isset( $event['event_label'] ) ? (string) $event['event_label'] : '',
+		'{{site_name}}'         => isset( $event['site']['title'] ) ? (string) $event['site']['title'] : '',
+		'{{site_title}}'        => isset( $event['site']['title'] ) ? (string) $event['site']['title'] : '',
+		'{{site_tagline}}'      => isset( $event['site']['tagline'] ) ? (string) $event['site']['tagline'] : '',
+		'{{site_logo_url}}'     => alpaca_get_notification_site_icon_url(),
+		'{{site_icon_url}}'     => alpaca_get_notification_site_icon_url(),
+		'{{notifications_url}}' => alpaca_get_notification_preferences_url(),
+		'{{event_time}}'        => $time_text,
+		'{{issue_url}}'         => isset( $event['issue']['url'] ) ? (string) $event['issue']['url'] : '',
 	);
 }
 

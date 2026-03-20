@@ -71,6 +71,9 @@ function alpaca_get_notification_email_body_template_default() {
 			'<!-- wp:paragraph {"fontSize":"small"} -->',
 			'<p class="has-small-font-size">{{event_time}}</p>',
 			'<!-- /wp:paragraph -->',
+			'<!-- wp:paragraph {"fontSize":"small"} -->',
+			'<p class="has-small-font-size"><a href="{{notifications_url}}">' . esc_html__( 'Manage notifications', 'alpaca' ) . '</a></p>',
+			'<!-- /wp:paragraph -->',
 		)
 	);
 }
@@ -102,6 +105,9 @@ function alpaca_get_notification_email_body_template_legacy_default() {
 			'<!-- /wp:separator -->',
 			'<!-- wp:paragraph {"fontSize":"small"} -->',
 			'<p class="has-small-font-size">{{site_name}} · {{event_time}}</p>',
+			'<!-- /wp:paragraph -->',
+			'<!-- wp:paragraph {"fontSize":"small"} -->',
+			'<p class="has-small-font-size"><a href="{{notifications_url}}">' . esc_html__( 'Manage notifications', 'alpaca' ) . '</a></p>',
 			'<!-- /wp:paragraph -->',
 		)
 	);
@@ -438,6 +444,15 @@ function alpaca_get_notification_site_icon_url() {
 	$icon_url = get_site_icon_url( 512 );
 
 	return is_string( $icon_url ) ? $icon_url : '';
+}
+
+/**
+ * Get the current user's notifications page URL.
+ *
+ * @return string Notifications page URL.
+ */
+function alpaca_get_notification_preferences_url() {
+	return admin_url( 'admin.php?page=alpaca-notifications' );
 }
 
 /**
