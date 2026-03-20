@@ -88,11 +88,11 @@ function alpaca_get_notification_daily_digest_sample_payload() {
 					'status_label'     => __( 'In Progress', 'alpaca' ),
 					'assignees'        => array(
 						array(
-							'name'   => __( 'John', 'alpaca' ),
+							'name'   => __( 'Sam', 'alpaca' ),
 							'avatar' => alpaca_avatar( get_current_user_id(), 24 ),
 						),
 					),
-					'assignee_names'   => array( __( 'John', 'alpaca' ) ),
+					'assignee_names'   => array( __( 'Sam', 'alpaca' ) ),
 					'labels'           => array(
 						array(
 							'name'  => __( 'Design', 'alpaca' ),
@@ -118,11 +118,11 @@ function alpaca_get_notification_daily_digest_sample_payload() {
 						'status_label'     => __( 'In Progress', 'alpaca' ),
 						'assignees'        => array(
 							array(
-								'name'   => __( 'Adam', 'alpaca' ),
+								'name'   => __( 'Alex', 'alpaca' ),
 								'avatar' => alpaca_avatar( get_current_user_id(), 24 ),
 							),
 						),
-						'assignee_names'   => array( __( 'Adam', 'alpaca' ) ),
+						'assignee_names'   => array( __( 'Alex', 'alpaca' ) ),
 						'labels'           => array(
 							array(
 								'name'  => __( 'Design', 'alpaca' ),
@@ -141,7 +141,7 @@ function alpaca_get_notification_daily_digest_sample_payload() {
 					array(
 						'event_family' => 'status_changes',
 						'event_label'  => __( 'Status changed', 'alpaca' ),
-						'actor_name'   => __( 'John', 'alpaca' ),
+						'actor_name'   => __( 'Sam', 'alpaca' ),
 						'excerpt'      => '',
 						'timestamp'    => gmdate( 'Y-m-d H:i:s', strtotime( $window_end ) - HOUR_IN_SECONDS ),
 						'display_time' => wp_date( get_option( 'time_format' ), strtotime( '-1 hour' ) ),
