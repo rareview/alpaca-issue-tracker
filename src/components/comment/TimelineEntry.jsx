@@ -98,7 +98,13 @@ const TimelineEntry = ({
     comment._embedded?.author?.[0] ||
     currentUser || { name: __('Unknown', 'alpaca') };
 
-  const dataSource = comment.author_user_agent === 'audit' ? 'audit' : 'human';
+  let dataSource = 'human';
+
+  if ('audit' === comment.author_user_agent) {
+    dataSource = 'audit';
+  } else if ('create' === comment.author_user_agent) {
+    dataSource = 'create';
+  }
   const isAudit = dataSource === 'audit';
   const commentTags = comment.meta?.alpacaCommentTags || [];
   const commentAttachments = comment.meta?.alpacaCommentAttachments || [];
