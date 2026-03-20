@@ -733,12 +733,11 @@ function alpaca_get_notification_digest_new_items( $events, $issue_ids_in_groups
 		}
 
 		$new_items[ $issue_id ] = array(
-			'id'       => $issue_id,
-			'title'    => isset( $event['issue']['title'] ) ? (string) $event['issue']['title'] : '',
-			'slug'     => isset( $event['issue']['slug'] ) ? (string) $event['issue']['slug'] : '',
-			'url'      => isset( $event['issue']['url'] ) ? (string) $event['issue']['url'] : '',
-			'headline' => isset( $event['event_label'] ) ? (string) $event['event_label'] : '',
-			'meta'     => alpaca_get_notification_digest_issue_meta( $issue_id ),
+			'id'    => $issue_id,
+			'title' => isset( $event['issue']['title'] ) ? (string) $event['issue']['title'] : '',
+			'slug'  => isset( $event['issue']['slug'] ) ? (string) $event['issue']['slug'] : '',
+			'url'   => isset( $event['issue']['url'] ) ? (string) $event['issue']['url'] : '',
+			'meta'  => alpaca_get_notification_digest_issue_meta( $issue_id ),
 		);
 	}
 

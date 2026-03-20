@@ -155,12 +155,11 @@ function alpaca_get_notification_daily_digest_sample_payload() {
 		),
 		'new_items'        => array(
 			array(
-				'id'       => 202,
-				'title'    => __( 'Review new design request', 'alpaca' ),
-				'slug'     => 'review-new-design-request',
-				'url'      => admin_url( 'admin.php?page=project-board&issue=review-new-design-request' ),
-				'headline' => __( 'Issue added', 'alpaca' ),
-				'meta'     => array(
+				'id'    => 202,
+				'title' => __( 'Review new design request', 'alpaca' ),
+				'slug'  => 'review-new-design-request',
+				'url'   => admin_url( 'admin.php?page=project-board&issue=review-new-design-request' ),
+				'meta'  => array(
 					'status_label'     => __( 'Inbox', 'alpaca' ),
 					'assignees'        => array(),
 					'assignee_names'   => array(),
@@ -391,7 +390,37 @@ function alpaca_render_notification_deadline_watch_html( $items ) {
 		return '<p class="alpaca-notification-digest-empty">' . esc_html__( 'No followed issues are overdue or due in the next two days.', 'alpaca' ) . '</p>';
 	}
 
-	$visible_items = array_slice( $items, 0, 3 );
+	return alpaca_render_notification_digest_issue_table_html(
+		$items,
+		array(
+			'empty_message' => esc_html__( 'No followed issues are overdue or due in the next two days.', 'alpaca' ),
+			'visible_limit' => 3,
+		)
+	);
+}
+
+/**
+ * Render simplified issue rows in a shared digest table layout.
+ *
+ * @param array<int, array<string, mixed>> $items Table items.
+ * @param array<string, mixed>             $args  Table render options.
+ * @return string HTML markup.
+ */
+function alpaca_render_notification_digest_issue_table_html( $items, $args = array() ) {
+	$args = wp_parse_args(
+		$args,
+		array(
+			'empty_message' => '',
+			'visible_limit' => 0,
+		)
+	);
+
+	if ( empty( $items ) ) {
+		return '<p class="alpaca-notification-digest-empty">' . esc_html( (string) $args['empty_message'] ) . '</p>';
+	}
+
+	$visible_limit = absint( $args['visible_limit'] );
+	$visible_items = $visible_limit > 0 ? array_slice( $items, 0, $visible_limit ) : $items;
 	$more_count    = max( 0, count( $items ) - count( $visible_items ) );
 	$html          = '<div class="alpaca-notification-digest-deadline-table-wrap"><table class="alpaca-notification-digest-deadline-table" role="presentation"><thead><tr><th scope="col">' . esc_html__( 'Issue', 'alpaca' ) . '</th><th scope="col" class="alpaca-notification-digest-deadline-table__priority"><span class="screen-reader-text">' . esc_html__( 'Priority', 'alpaca' ) . '</span></th><th scope="col">' . esc_html__( 'Due Date', 'alpaca' ) . '</th><th scope="col">' . esc_html__( 'Assignees', 'alpaca' ) . '</th><th scope="col">' . esc_html__( 'Status', 'alpaca' ) . '</th></tr></thead><tbody>';
 
@@ -413,7 +442,7 @@ function alpaca_render_notification_deadline_watch_html( $items ) {
 		$html .= '<tr class="alpaca-notification-digest-deadline-row">';
 		$html .= '<td class="alpaca-notification-digest-deadline-row__title">' . $title_html . '</td>';
 		$html .= '<td class="alpaca-notification-digest-deadline-row__priority"><span class="alpaca-item-datapoints">' . $priority_html . '</span></td>';
-		$html .= '<td class="alpaca-notification-digest-deadline-row__due">' . alpaca_render_notification_digest_deadline_badge_html( $deadline_text, $deadline_state ) . '</td>';
+		$html .= '<td class="alpaca-notification-digest-deadline-row__due">' . ( '' !== $deadline_text ? alpaca_render_notification_digest_deadline_badge_html( $deadline_text, $deadline_state ) : '—' ) . '</td>';
 		$html .= '<td class="alpaca-notification-digest-deadline-row__assignees">' . ( ! empty( $assignees ) ? alpaca_render_notification_digest_assignees_html( $assignees ) : '—' ) . '</td>';
 		$html .= '<td class="alpaca-notification-digest-deadline-row__status"><span class="alpaca-notification-digest-deadline-row__status-text">' . esc_html( '' !== $status_label ? $status_label : '—' ) . '</span></td>';
 		$html .= '</tr>';
@@ -480,16 +509,13 @@ function alpaca_render_notification_digest_new_items_html( $items ) {
 		return '';
 	}
 
-	$html = '';
-	foreach ( $items as $item ) {
-		$html .= '<article class="alpaca-notification-digest-card alpaca-notification-digest-card--new-item">';
-		$html .= '<h4 class="alpaca-notification-digest-card__title"><a href="' . esc_url( isset( $item['url'] ) ? (string) $item['url'] : '' ) . '">' . esc_html( isset( $item['title'] ) ? (string) $item['title'] : '' ) . '</a></h4>';
-		$html .= '<p class="alpaca-notification-digest-card__headline">' . esc_html( isset( $item['headline'] ) ? (string) $item['headline'] : '' ) . '</p>';
-		$html .= alpaca_render_notification_digest_issue_meta_html( isset( $item['meta'] ) && is_array( $item['meta'] ) ? $item['meta'] : array() );
-		$html .= '</article>';
-	}
-
-	return $html;
+	return alpaca_render_notification_digest_issue_table_html(
+		$items,
+		array(
+			'empty_message' => '',
+			'visible_limit' => 0,
+		)
+	);
 }
 
 /**
