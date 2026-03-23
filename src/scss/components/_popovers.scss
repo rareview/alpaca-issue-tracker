@@ -61,19 +61,7 @@
       overflow-wrap: anywhere;
     }
 
-    .alpaca-search-status-pill {
-      display: inline-block;
-      padding: 1px 8px;
-      border-radius: 999px;
-      border: 1px solid #b3b8bf;
-      background: $bgwhite;
-      color: #50575e;
-      font-size: 11px;
-      line-height: 1.4;
-      font-weight: 600;
-      white-space: nowrap;
-      vertical-align: baseline;
-    }
+    /* status pill styles moved to modal/_issue-details.scss */
   }
 
   .alpaca-board-search.is-search-open {

@@ -36,4 +36,21 @@
       margin-right: 0.5rem;
     }
   }
+
+  /* Status pill (used in Issue meta and Search results)
+     Consolidated here so the component and related styles live together. */
+  .alpaca-search-status-pill {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 999px;
+    border: 1px solid #b3b8bf;
+    background: $bgwhite;
+    color: #50575e;
+    font-size: 11px;
+    line-height: 1.4;
+    font-weight: 600;
+    white-space: nowrap;
+    vertical-align: baseline;
+    margin-inline-end: 8px; /* default spacing when used in meta */
+  }
 }

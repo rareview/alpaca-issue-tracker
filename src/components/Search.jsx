@@ -5,6 +5,7 @@ const { __ } = wp.i18n;
 const { doAction } = wp.hooks;
 import PropTypes from 'prop-types';
 import Item from './Item';
+import StatusPill from './StatusPill';
 
 const MIN_QUERY_LENGTH = 3;
 const MAX_RESULTS = 10;
@@ -559,9 +560,7 @@ function SearchContainer() {
                     {r.status ? (
                       <>
                         {'\u00A0\u00A0'}
-                        <span className="alpaca-search-status-pill">
-                          {r.status}
-                        </span>
+                        <StatusPill>{r.status}</StatusPill>
                       </>
                     ) : null}
                   </span>
