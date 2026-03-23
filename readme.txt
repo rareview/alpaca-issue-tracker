@@ -8,7 +8,7 @@ Stable tag: 1.0.0-beta
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-A lightweight issue tracker built directly into WordPress, designed for developers and agencies managing client projects.
+A lightweight issue tracker built entirely inside WordPress, designed for developers and agencies managing client projects.
 
 == Description ==
 
@@ -16,15 +16,18 @@ Alpaca is a powerful yet simple issue tracking system that lives inside your Wor
 
 = Key Features =
 
-* **Kanban Board Interface** - Drag-and-drop issues between customizable status columns
-* **Automatic Context Capture** - Automatically captures browser info, page context, and technical details when issues are reported
-* **Built for WordPress** - Uses native WordPress components, post types, and taxonomies
-* **Developer Friendly** - Extensible via WordPress hooks and filters
+* **Kanban Board Interface** - Drag-and-drop issues within and between fully customizable status columns
+* **Automatic Context Capture** - Browser info, page context, and technical details are saved with each bug report
+* **Built for WordPress** - Uses native WordPress components, post types, taxonomies and database tables
+* **Developer Friendly** - Extensible via WordPress action hooks and filters
 * **User Permissions** - Integrates with WordPress user roles and capabilities
-* **Screenshot Support** - Visual issue reporting with automatic screenshot capture
-* **Comment System** - Built-in discussion threads for each issue
+* **Screenshot Capture** - See exactly what the user saw, captured and processed within the browser
+* **Comment and Activity Thread** - A unified view of each issue's progress, supporting attachment uploads and user mentions
 * **Priority Management** - Flag high-priority items and set deadlines
-* **Assignee System** - Assign issues to team members
+* **Assignee System** - Assign issues and checklist items to team members
+* **Email Notifications** - Instant or daily digest email notifications for the issues you care about
+* **Translation Ready** - Fully localized and ready for translation into any language (including RTL support)
+* **No Artificial Limitations** - Use on as many sites, with as many users, issues, attachments and interactions as you need
 
 = Perfect For =
 
@@ -37,22 +40,23 @@ Alpaca is a powerful yet simple issue tracking system that lives inside your Wor
 
 Clients don't have the time or knowledge to provide detailed technical reports when they spot a problem. But developers can't do their job without that detail. Alpaca solves this by automatically capturing all the technical context WordPress already knows about each page request.
 
-When a user reports an issue, Alpaca silently captures:
+When a user reports an issue via Alpaca's front-end toolbar, the plugin silently captures:
+- A screenshot of what the user can see
 - Browser and device information
 - Current page URL and template
-- Active plugins and theme
-- PHP and WordPress versions
-- User role and permissions
-- Screenshots (optional)
+- Queried object details and HTTP headers
+- Any JavaScript errors
 
 This gives developers everything they need to reproduce and fix issues quickly.
+
+Issues can also be created on the admin side, meaning Alpaca can also be used to plan new features or track internal tasks.
 
 == Installation ==
 
 1. Upload the `alpaca` folder to the `/wp-content/plugins/` directory
 2. Activate the plugin through the 'Plugins' menu in WordPress
-3. Navigate to 'Project Board' in your admin sidebar to start tracking issues
-4. Click 'Report An Issue' in the admin bar to create your first issue
+3. Find 'Project Board' in your admin sidebar: customize your Status columns and Labels
+4. Find the Alpaca toolbar on the front-end (when logged in): click to Report An Issue
 
 == Frequently Asked Questions ==
 
@@ -64,51 +68,42 @@ By default, only logged-in users can see the Alpaca toolbar and report issues. A
 
 Yes! Alpaca is built using WordPress Gutenberg components for a native WordPress experience.
 
-= Can I customize the status columns? =
+= Can I customize the Status columns and Labels? =
 
-Yes, you can create custom statuses and reorder them via the Configure page.
+Yes! You can change the names and order of Alpaca's status columns, and configure Labels to suit your workflow, on the Configure page.
+
+= Can I customize the card presentation? =
+
+Yes! You can choose which metadata points are shown on cards in the Board view, for just the right amount of information at a glance.
 
 = Is this compatible with multisite? =
 
-Alpaca works on multisite installations, with each site having its own independent project board.
+Alpaca works on multisite installations, with each site having its own independent project board. An aggregation view across sites is planned for a future release.
+
+= What kinds of notifications can Alpaca send? =
+
+Alpaca ships with a highly configurable email notification system. You can choose to receive instant notifications of activity relevant to you and your issues; or a daily digest of all activity.
+
+Alpaca's notification engine has been built with extensibility in mind: additional channels will be added in the future.
 
 = Where is the data stored? =
 
-All data is stored in your WordPress database using custom post types and taxonomies. No external services required.
+All data is stored in your WordPress database's core tables using custom post types and taxonomies. The base plugin uses no external services.
 
 == Screenshots ==
 
-1. Kanban board interface with drag-and-drop functionality
-2. Issue detail modal with tabs for comments, technical data, and errors
-3. Quick issue creation from the admin bar
-4. Customizable status columns
+1. to follow
+2. to follow
+3. to follow
 
 == Changelog ==
 
-= 1.0.0-beta - 2026-02-05 =
-* Initial MVP beta release for testing and feedback
-* Kanban board interface with drag-and-drop
-* Automatic context capture for issue reporting
-* Screenshot support
-* Comment system for issue discussions
-* Priority and deadline management
-* Assignee system
-* WordPress Gutenberg component integration
-* Automated build system via GitHub Actions
-* Security: Restricted interface to logged-in users only
-
-**Note:** This is a beta release intended for early adopters and testing. Features and functionality may change based on user feedback.
-
-== Upgrade Notice ==
-
-= 1.0.0-beta =
-Initial MVP beta release. This is a beta version intended for testing and feedback. Please report any issues on GitHub.
+= 1.0 RC1 ( ___ 2026) =
+* First public release for testing and feedback
 
 == Development ==
 
-Alpaca is open source and developed on GitHub. Contributions are welcome!
-
-GitHub Repository: https://github.com/rareview/alpaca
+Alpaca is currently in active development. A GitHub repository will be opened for public contributions in the near future.
 
 = Building from Source =
 
@@ -119,7 +114,7 @@ GitHub Repository: https://github.com/rareview/alpaca
 
 == Privacy Policy ==
 
-Alpaca does not collect or transmit any data outside of your WordPress installation. All issue data, screenshots, and technical information are stored locally in your WordPress database.
+Alpaca does not collect or transmit any data outside of your WordPress installation. All issue data, screenshots, and technical information are captured and stored locally in your WordPress database.
 
 == Credits ==
 

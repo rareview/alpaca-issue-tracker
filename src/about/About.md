@@ -46,7 +46,7 @@ But we soon realised Alpaca could be a full collaboration solution, on par with 
 ---
 
 <details open="">
-<summary><strong>Beta 3: mid March 2026</strong></summary>
+<summary><strong>Beta 3: late March 2026</strong></summary>
 
 - UI configuration: choose which datapoints appear on Board cards
 - Notifications: configurable inbox of action on issues that matter to you
