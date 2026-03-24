@@ -153,7 +153,8 @@
 }
 
 .alpaca-comment-content.with-avatar-meta,
-.alpaca-timeline-msg-content.with-avatar-meta {
+.alpaca-timeline-msg-content.with-avatar-meta,
+.alpaca-comment-edited-date.with-avatar-meta {
   .alpaca-status-assignee[data-avatar] {
     display: inline-flex;
     align-items: center;

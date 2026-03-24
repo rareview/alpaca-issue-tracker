@@ -93,6 +93,36 @@ function alpaca_register_comment_meta_fields() {
 
 	register_meta(
 		'comment',
+		'alpacaCommentLastEdit',
+		array(
+			'type'          => 'object',
+			'description'   => 'Latest edit metadata for Alpaca issue comments.',
+			'single'        => true,
+			'show_in_rest'  => array(
+				'schema' => array(
+					'type'       => 'object',
+					'properties' => array(
+						'date'     => array(
+							'type'   => 'string',
+							'format' => 'date-time',
+						),
+						'userId'   => array(
+							'type' => 'integer',
+						),
+						'userName' => array(
+							'type' => 'string',
+						),
+					),
+				),
+			),
+			'auth_callback' => function () {
+				return \Alpaca\Inc\Helpers::user_can( 'register_comment_meta' );
+			},
+		)
+	);
+
+	register_meta(
+		'comment',
 		'alpacaNotificationContext',
 		array(
 			'type'              => 'object',

@@ -156,6 +156,27 @@ const Comment = memo(
     onEditAttachRemove,
     isProcessingAttachments,
   }) => {
+    const commentAgentType = (
+      comment?.author_user_agent ||
+      comment?.comment_agent ||
+      ''
+    )
+      .toString()
+      .trim()
+      .toLowerCase();
+    const defaultIsEditable = ['human'];
+    const isDefaultEditable = defaultIsEditable.includes(commentAgentType);
+
+    // Allow extensions to override which issue comments are editable.
+    const isEditable = Boolean(
+      wp.hooks.applyFilters(
+        'alpaca.isIssueCommentEditable',
+        isDefaultEditable,
+        comment,
+        defaultIsEditable,
+      ),
+    );
+
     return (
       <TimelineEntry
         comment={comment}
@@ -178,15 +199,17 @@ const Comment = memo(
             )}
             renderContent={({ onClose }) => (
               <MenuGroup>
-                <MenuItem
-                  icon="edit"
-                  onClick={() => {
-                    startEditing(comment);
-                    onClose();
-                  }}
-                >
-                  {__('Edit', 'alpaca')}
-                </MenuItem>
+                {isEditable && (
+                  <MenuItem
+                    icon="edit"
+                    onClick={() => {
+                      startEditing(comment);
+                      onClose();
+                    }}
+                  >
+                    {__('Edit', 'alpaca')}
+                  </MenuItem>
+                )}
                 <MenuItem
                   icon="trash"
                   isDestructive
@@ -468,6 +491,15 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
 
       const comment = comments.find((c) => c.id === commentId);
       const agent = comment?.author_user_agent || 'human';
+      const currentTimestamp = new Date().toISOString();
+      const lastEditedMeta = {
+        date: currentTimestamp,
+        userId: Number(currentUser?.id) || 0,
+        userName:
+          currentUser?.display_name ||
+          currentUser?.name ||
+          __('Unknown', 'alpaca'),
+      };
       const attachmentUrls = editingAttachments.map(
         (attachment) => attachment.url,
       );
@@ -480,6 +512,7 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
           author_user_agent: agent,
           meta: {
             alpacaCommentAttachments: attachmentUrls,
+            alpacaCommentLastEdit: lastEditedMeta,
           },
         },
       })
@@ -492,6 +525,7 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
                   meta: {
                     ...(updated && updated.meta ? updated.meta : {}),
                     alpacaCommentAttachments: attachmentUrls,
+                    alpacaCommentLastEdit: lastEditedMeta,
                   },
                 };
 
@@ -511,7 +545,13 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
         })
         .finally(() => setIsSubmitting(false));
     },
-    [editingContent, comments, showNotification, editingAttachments],
+    [
+      editingContent,
+      comments,
+      showNotification,
+      editingAttachments,
+      currentUser,
+    ],
   );
 
   const confirmDeleteComment = useCallback(

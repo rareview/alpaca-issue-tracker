@@ -9,6 +9,71 @@ const { __, sprintf } = wp.i18n;
 const { useMemo, memo } = wp.element;
 
 /**
+ * Convert supported user identifier shapes to a positive integer.
+ *
+ * @param {unknown} candidate Potential user identifier.
+ * @return {number} Positive integer user ID or 0 when unavailable.
+ */
+const resolveUserId = (candidate) => {
+  if (typeof candidate === 'number' && Number.isFinite(candidate)) {
+    return candidate > 0 ? candidate : 0;
+  }
+
+  if (typeof candidate === 'string') {
+    const parsed = Number(candidate);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+  }
+
+  if (candidate && typeof candidate === 'object') {
+    return (
+      resolveUserId(candidate.id) ||
+      resolveUserId(candidate.ID) ||
+      resolveUserId(candidate.user_id)
+    );
+  }
+
+  return 0;
+};
+
+/**
+ * Normalize a display name for reliable equality checks.
+ *
+ * @param {string} name Raw name value.
+ * @return {string} Lowercased and trimmed name.
+ */
+const normalizeUserName = (name) =>
+  String(name || '')
+    .trim()
+    .toLowerCase();
+
+/**
+ * Determine whether the latest edit came from a different user.
+ *
+ * @param {Object} comment      Comment object.
+ * @param {Object} author       Resolved original author object.
+ * @param {Object} lastEditMeta Latest edit metadata.
+ * @return {boolean} True when edit user differs from comment author.
+ */
+const isEditedByDifferentUser = (comment, author, lastEditMeta) => {
+  const originalAuthorId =
+    resolveUserId(comment?.author) ||
+    resolveUserId(comment?.author_details) ||
+    resolveUserId(comment?._embedded?.author?.[0]);
+  const editedByUserId = resolveUserId(lastEditMeta?.userId);
+
+  if (editedByUserId > 0 && originalAuthorId > 0) {
+    return editedByUserId !== originalAuthorId;
+  }
+
+  const editedByUserName = normalizeUserName(lastEditMeta?.userName);
+  const authorName = normalizeUserName(author?.name);
+
+  return Boolean(
+    editedByUserId === 0 && editedByUserName && editedByUserName !== authorName,
+  );
+};
+
+/**
  * Add inline avatar CSS variable styles to rendered comment HTML.
  *
  * @param {string} htmlString HTML string to process.
@@ -155,6 +220,29 @@ const TimelineEntry = ({
   const isAudit = dataSource === 'audit';
   const commentTags = comment.meta?.alpacaCommentTags || [];
   const commentAttachments = comment.meta?.alpacaCommentAttachments || [];
+  const lastEditMeta = comment.meta?.alpacaCommentLastEdit || null;
+  const editedByUserId = resolveUserId(lastEditMeta?.userId);
+  const editedByUserName =
+    typeof lastEditMeta?.userName === 'string' ? lastEditMeta.userName : '';
+  const editedDate =
+    typeof lastEditMeta?.date === 'string' && lastEditMeta.date
+      ? lastEditMeta.date
+      : '';
+  const showEditedStamp = Boolean(editedDate);
+  const editedByDifferentUser = isEditedByDifferentUser(
+    comment,
+    author,
+    lastEditMeta,
+  );
+  const editedByUserLabel = editedByUserName || __('another user', 'alpaca');
+  let editedByUser = null;
+  if (editedByUserId > 0) {
+    editedByUser = editedByUserId;
+  } else if (editedByUserName) {
+    editedByUser = {
+      name: editedByUserLabel,
+    };
+  }
   const timelineItemClasses = [
     'alpaca-timeline-item',
     ...commentTags,
@@ -250,6 +338,30 @@ const TimelineEntry = ({
           {showTime && (
             <div className="alpaca-comment-date">
               <Time value={comment.date} type="relative" />
+              {showEditedStamp && (
+                <div className="alpaca-comment-edited-date">
+                  {' '}
+                  (
+                  {editedByDifferentUser ? (
+                    <>
+                      {__('edited by', 'alpaca')}{' '}
+                      {editedByUser ? (
+                        <User
+                          user={editedByUser}
+                          showName
+                          avatarAfterName
+                          avatarSize={24}
+                        />
+                      ) : (
+                        editedByUserLabel
+                      )}
+                    </>
+                  ) : (
+                    __('edited', 'alpaca')
+                  )}{' '}
+                  <Time value={editedDate} type="relative" />)
+                </div>
+              )}
             </div>
           )}
           {headerActions && (
