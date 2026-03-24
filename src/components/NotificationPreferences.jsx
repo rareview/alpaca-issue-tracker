@@ -6,8 +6,16 @@ import { fetchLabels } from '../services/issueApi';
 
 const { useCallback, useEffect, useMemo, useState } = wp.element;
 const { __, sprintf } = wp.i18n;
-const { Button, CheckboxControl, Notice, Spinner, TextControl, ToggleControl } =
-  wp.components;
+const { addFilter, applyFilters } = wp.hooks;
+const {
+  Button,
+  CheckboxControl,
+  Notice,
+  Spinner,
+  TabPanel,
+  TextControl,
+  ToggleControl,
+} = wp.components;
 
 const CHANNELS_KEY = 'channels';
 const CHANNEL_STATUS_KEY = 'channel_status';
@@ -19,8 +27,14 @@ const LABEL_IDS_KEY = 'label_ids';
 const ADDRESS_OVERRIDE_KEY = 'address_override';
 const SITE_TIMEZONE_LABEL_KEY = 'site_timezone_label';
 const TERM_ID_KEY = 'term_id';
-const INBOX_QUERY_KEY = 'inbox';
-const INBOX_QUERY_VALUE = 'open';
+const PREFERENCES_TAB_NAME = 'preferences';
+const EMAIL_CHANNEL_KEY = 'email';
+const EMAIL_TAB_NAME = `channel-${EMAIL_CHANNEL_KEY}`;
+const NOTIFICATION_TABS_FILTER = 'alpaca.notificationPreferences.tabs';
+const NOTIFICATION_TAB_CONTENT_FILTER =
+  'alpaca.notificationPreferences.tabContent';
+
+let hasRegisteredNotificationPreferenceFilters = false;
 
 const subjectOptions = [
   {
@@ -172,56 +186,273 @@ const getEmailDeliveryFieldValue = (nextPreferences, nextChannelStatus) => {
 };
 
 /**
- * Get the Project Board admin URL.
+ * Get the effective email destination from the current field value and profile status.
  *
- * @return {string} Project Board admin URL.
+ * @param {string} emailDeliveryValue Email field value.
+ * @param {Object} nextChannelStatus  Email channel status payload.
+ * @return {string} Effective email destination.
  */
-const getProjectBoardUrl = () => {
-  if (
-    window.alpacaSettings?.adminUrl &&
-    'string' === typeof window.alpacaSettings.adminUrl
-  ) {
-    return `${window.alpacaSettings.adminUrl}?page=project-board`;
+const getEmailEffectiveDestination = (
+  emailDeliveryValue,
+  nextChannelStatus,
+) => {
+  const trimmedValue =
+    'string' === typeof emailDeliveryValue ? emailDeliveryValue.trim() : '';
+  const profileAddress =
+    nextChannelStatus && 'string' === typeof nextChannelStatus.profile_address
+      ? nextChannelStatus.profile_address.trim()
+      : '';
+
+  if (trimmedValue) {
+    return trimmedValue;
   }
 
-  const restRoot = window.alpacaSettings?.restRoot;
-  if ('string' === typeof restRoot && restRoot.includes('/wp-json/')) {
-    return `${restRoot.replace('/wp-json/', '/wp-admin/')}admin.php?page=project-board`;
-  }
-
-  return `${window.location.origin}/wp-admin/admin.php?page=project-board`;
+  return profileAddress;
 };
 
 /**
- * Get the Project Board URL with the inbox drawer open.
+ * Build the tab list for notification settings.
  *
- * @return {string} Project Board inbox URL.
+ * @param {Array<Object>} channels Configurable delivery channels.
+ * @return {Array<Object>} Tab definitions.
  */
-const getProjectBoardInboxUrl = () =>
-  `${getProjectBoardUrl()}&${INBOX_QUERY_KEY}=${INBOX_QUERY_VALUE}`;
+const getNotificationSettingsTabs = (channels) => {
+  const tabs = [
+    {
+      name: PREFERENCES_TAB_NAME,
+      title: __('Preferences', 'alpaca'),
+      className: 'alpaca-notifications-tab--preferences',
+    },
+  ];
+
+  channels.forEach((channel) => {
+    if (EMAIL_CHANNEL_KEY === channel.key) {
+      return;
+    }
+
+    tabs.push({
+      name: `channel-${channel.key}`,
+      title: channel.label,
+      className: `alpaca-notifications-tab--${channel.key}`,
+    });
+  });
+
+  if (typeof applyFilters === 'function') {
+    return applyFilters(NOTIFICATION_TABS_FILTER, tabs, { channels });
+  }
+
+  return tabs;
+};
+
+/**
+ * Extract a channel key from a tab name.
+ *
+ * @param {string} tabName Tab name.
+ * @return {string} Channel key.
+ */
+const getChannelKeyFromTabName = (tabName) => {
+  if ('string' !== typeof tabName || !tabName.startsWith('channel-')) {
+    return '';
+  }
+
+  return tabName.replace('channel-', '');
+};
 
 /**
  * Get the toggle label for a notification channel.
  *
- * @param {string} channelKey   Notification channel key.
  * @param {string} channelLabel Notification channel label.
  * @return {string} Toggle label text.
  */
-const getChannelToggleLabel = (channelKey, channelLabel) => {
-  if ('inbox' === channelKey) {
-    return __('Show updates inside Project Board', 'alpaca');
-  }
-
-  if ('email' === channelKey) {
-    return __('Send updates by email', 'alpaca');
-  }
-
-  return sprintf(
+const getChannelToggleLabel = (channelLabel) =>
+  sprintf(
     /* translators: %s: notification channel label. */
     __('Enable %s notifications', 'alpaca'),
     channelLabel,
   );
+
+/**
+ * Get the contextual save button label for a notification settings tab.
+ *
+ * @param {Object}  tab    Active tab object.
+ * @param {boolean} isBusy Whether a save is in progress.
+ * @return {string} Save button label.
+ */
+const getNotificationTabSaveLabel = (tab, isBusy) => {
+  if (PREFERENCES_TAB_NAME === tab.name) {
+    return isBusy
+      ? __('Saving Preferences…', 'alpaca')
+      : __('Save Preferences', 'alpaca');
+  }
+
+  if (isBusy) {
+    return sprintf(
+      /* translators: %s: active notification tab title. */
+      __('Saving %s…', 'alpaca'),
+      tab.title,
+    );
+  }
+
+  return sprintf(
+    /* translators: %s: active notification tab title. */
+    __('Save %s', 'alpaca'),
+    tab.title,
+  );
 };
+
+/**
+ * Render the email notification tab content.
+ *
+ * @param {Object} context Screen render context.
+ * @param {Object} tab     Active tab object.
+ * @return {JSX.Element|null} Email tab content.
+ */
+const renderNotificationEmailTab = (context, tab) => {
+  if (!context.emailChannelDefinition) {
+    return null;
+  }
+
+  return (
+    <section className="alpaca-notifications-panel alpaca-notifications-panel--narrow alpaca-notifications-panel--email">
+      <p className="alpaca-notifications-panel-intro">
+        {__(
+          'Choose whether you want instant email updates, a daily summary, or both.',
+          'alpaca',
+        )}
+      </p>
+
+      <div className="alpaca-notifications-email-layout">
+        <TextControl
+          label={__('Email address', 'alpaca')}
+          type="email"
+          value={context.emailDeliveryValue}
+          onChange={context.setEmailDeliveryValue}
+          disabled={context.isSaving}
+          help={
+            context.hasInvalidEmailOverride
+              ? __(
+                  'Enter a valid email address or leave this blank to use your WordPress profile email.',
+                  'alpaca',
+                )
+              : __(
+                  'Uses your WordPress profile email unless you enter a different address here.',
+                  'alpaca',
+                )
+          }
+        />
+
+        <CheckboxControl
+          label={__('Send instant email updates', 'alpaca')}
+          checked={context.hasInstantEmailEnabled}
+          onChange={(value) =>
+            context.updateChannelValue(EMAIL_CHANNEL_KEY, 'enabled', value)
+          }
+          disabled={context.isSaving}
+        />
+
+        <CheckboxControl
+          label={__('Send a daily summary', 'alpaca')}
+          checked={context.hasEmailDigestEnabled}
+          onChange={(value) =>
+            context.updateDailyDigestChannelValue(EMAIL_CHANNEL_KEY, value)
+          }
+          disabled={context.isSaving}
+        />
+
+        <div
+          className={`alpaca-notifications-email-digest-settings${
+            context.hasEmailDigestEnabled ? ' is-visible' : ''
+          }`}
+          aria-hidden={!context.hasEmailDigestEnabled}
+        >
+          <div className="alpaca-notifications-email-time">
+            <TextControl
+              label={__('Send daily summary at', 'alpaca')}
+              type="time"
+              value={context.dailyDigestPreferences[SEND_TIME_KEY] || '17:00'}
+              onChange={(value) =>
+                context.updateDailyDigestValue(SEND_TIME_KEY, value)
+              }
+              disabled={context.isSaving || !context.hasEmailDigestEnabled}
+            />
+          </div>
+          <p className="alpaca-notifications-help">
+            {sprintf(
+              /* translators: %s: site timezone label. */
+              __(
+                'The daily summary covers the previous 24 hours and repeats every day using the site timezone: %s.',
+                'alpaca',
+              ),
+              context.siteTimezoneLabel || __('Site timezone', 'alpaca'),
+            )}
+          </p>
+        </div>
+
+        {context.hasInvalidEmailDeliveryConfiguration && (
+          <Notice status="warning" isDismissible={false}>
+            {__(
+              'Add a valid email address before enabling instant email updates or the daily summary.',
+              'alpaca',
+            )}
+          </Notice>
+        )}
+      </div>
+      {context.renderSaveActions(tab)}
+    </section>
+  );
+};
+
+/**
+ * Register default notification preference tab filters.
+ */
+const registerNotificationPreferenceFilters = () => {
+  if (
+    hasRegisteredNotificationPreferenceFilters ||
+    typeof addFilter !== 'function'
+  ) {
+    return;
+  }
+
+  hasRegisteredNotificationPreferenceFilters = true;
+
+  addFilter(
+    NOTIFICATION_TABS_FILTER,
+    'alpaca/notification-preferences/email-tab',
+    (tabs, context) => {
+      const emailChannel = context.channels.find(
+        (channel) => channel?.key === EMAIL_CHANNEL_KEY,
+      );
+
+      if (!emailChannel) {
+        return tabs;
+      }
+
+      return [
+        tabs[0],
+        {
+          name: EMAIL_TAB_NAME,
+          title: emailChannel.label,
+          className: 'alpaca-notifications-tab--email',
+        },
+        ...tabs.slice(1),
+      ];
+    },
+  );
+
+  addFilter(
+    NOTIFICATION_TAB_CONTENT_FILTER,
+    'alpaca/notification-preferences/email-tab',
+    (content, tab, context) => {
+      if (EMAIL_TAB_NAME !== tab.name) {
+        return content;
+      }
+
+      return renderNotificationEmailTab(context, tab);
+    },
+  );
+};
+
+registerNotificationPreferenceFilters();
 
 /**
  * Render the current user's notification preferences screen.
@@ -239,7 +470,6 @@ const NotificationPreferences = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
-  const projectBoardInboxUrl = useMemo(() => getProjectBoardInboxUrl(), []);
 
   const loadPreferences = useCallback(() => {
     setIsLoading(true);
@@ -255,31 +485,27 @@ const NotificationPreferences = () => {
         }
 
         const response = preferenceResult.value || {};
-        setPreferences(response.preferences || null);
+        const nextPreferences = response.preferences || null;
+        const nextChannelStatus =
+          response[CHANNEL_STATUS_KEY] &&
+          'object' === typeof response[CHANNEL_STATUS_KEY]
+            ? response[CHANNEL_STATUS_KEY]
+            : {};
+
+        setPreferences(nextPreferences);
         setAvailableChannels(
           Array.isArray(response[AVAILABLE_CHANNELS_KEY])
             ? response[AVAILABLE_CHANNELS_KEY]
             : [],
         );
-        setChannelStatus(
-          response[CHANNEL_STATUS_KEY] &&
-            'object' === typeof response[CHANNEL_STATUS_KEY]
-            ? response[CHANNEL_STATUS_KEY]
-            : {},
-        );
+        setChannelStatus(nextChannelStatus);
         setSiteTimezoneLabel(
           'string' === typeof response[SITE_TIMEZONE_LABEL_KEY]
             ? response[SITE_TIMEZONE_LABEL_KEY]
             : '',
         );
         setEmailDeliveryValue(
-          getEmailDeliveryFieldValue(
-            response.preferences || null,
-            response[CHANNEL_STATUS_KEY] &&
-              'object' === typeof response[CHANNEL_STATUS_KEY]
-              ? response[CHANNEL_STATUS_KEY]
-              : {},
-          ),
+          getEmailDeliveryFieldValue(nextPreferences, nextChannelStatus),
         );
 
         if (
@@ -312,13 +538,43 @@ const NotificationPreferences = () => {
     loadPreferences();
   }, [loadPreferences]);
 
+  const configurableChannels = useMemo(
+    () =>
+      availableChannels.filter(
+        (channel) =>
+          channel &&
+          channel.key &&
+          channel.key !== 'inbox' &&
+          channel.is_available,
+      ),
+    [availableChannels],
+  );
+
+  const notificationSettingsTabs = useMemo(
+    () => getNotificationSettingsTabs(configurableChannels),
+    [configurableChannels],
+  );
+
+  const emailChannelDefinition = useMemo(
+    () =>
+      configurableChannels.find(
+        (channel) => channel && channel.key === EMAIL_CHANNEL_KEY,
+      ) || null,
+    [configurableChannels],
+  );
+
   const emailChannelPreferences = useMemo(() => {
     if (!preferences || !preferences[CHANNELS_KEY]) {
       return {};
     }
 
-    return preferences[CHANNELS_KEY].email || {};
+    return preferences[CHANNELS_KEY][EMAIL_CHANNEL_KEY] || {};
   }, [preferences]);
+
+  const emailChannelStatus = useMemo(
+    () => channelStatus?.[EMAIL_CHANNEL_KEY] || {},
+    [channelStatus],
+  );
 
   const hasInvalidEmailOverride = useMemo(() => {
     const trimmedOverride =
@@ -330,13 +586,18 @@ const NotificationPreferences = () => {
     return !isValidEmail(trimmedOverride);
   }, [emailDeliveryValue]);
 
-  const selectedLabelIds = useMemo(() => {
-    if (!preferences || !Array.isArray(preferences[LABEL_IDS_KEY])) {
-      return [];
-    }
+  const hasValidEmailDestination = useMemo(
+    () =>
+      isValidEmail(
+        getEmailEffectiveDestination(emailDeliveryValue, emailChannelStatus),
+      ),
+    [emailChannelStatus, emailDeliveryValue],
+  );
 
-    return preferences[LABEL_IDS_KEY].map((value) => Number(value));
-  }, [preferences]);
+  const hasInstantEmailEnabled = useMemo(
+    () => Boolean(emailChannelPreferences.enabled),
+    [emailChannelPreferences],
+  );
 
   const dailyDigestPreferences = useMemo(() => {
     if (!preferences || !preferences[DIGESTS_KEY]) {
@@ -356,13 +617,30 @@ const NotificationPreferences = () => {
     );
   }, [preferences]);
 
-  const digestChannelOptions = useMemo(
-    () =>
-      availableChannels.filter(
-        (channel) => channel && channel.supports_digest && channel.is_available,
-      ),
-    [availableChannels],
+  const hasEmailDigestEnabled = useMemo(
+    () => Boolean(dailyDigestPreferences.channels?.[EMAIL_CHANNEL_KEY]),
+    [dailyDigestPreferences],
   );
+
+  const hasInvalidEmailDeliveryConfiguration = useMemo(
+    () =>
+      (hasInstantEmailEnabled || hasEmailDigestEnabled) &&
+      (!hasValidEmailDestination || hasInvalidEmailOverride),
+    [
+      hasEmailDigestEnabled,
+      hasInstantEmailEnabled,
+      hasInvalidEmailOverride,
+      hasValidEmailDestination,
+    ],
+  );
+
+  const selectedLabelIds = useMemo(() => {
+    if (!preferences || !Array.isArray(preferences[LABEL_IDS_KEY])) {
+      return [];
+    }
+
+    return preferences[LABEL_IDS_KEY].map((value) => Number(value));
+  }, [preferences]);
 
   const updateSectionValue = useCallback((section, key, value) => {
     setPreferences((current) => {
@@ -506,21 +784,31 @@ const NotificationPreferences = () => {
       return;
     }
 
+    const nextChannels = {
+      ...(preferences[CHANNELS_KEY] || {}),
+      [EMAIL_CHANNEL_KEY]: {
+        ...emailChannelPreferences,
+      },
+    };
+    const nextDailyDigest = {
+      ...dailyDigestPreferences,
+      channels: {
+        ...(dailyDigestPreferences.channels || {}),
+      },
+    };
     const nextPreferences = {
       ...preferences,
-      [CHANNELS_KEY]: {
-        ...preferences[CHANNELS_KEY],
-        email: {
-          ...emailChannelPreferences,
-        },
+      [CHANNELS_KEY]: nextChannels,
+      [DIGESTS_KEY]: {
+        ...(preferences[DIGESTS_KEY] || {}),
+        [DAILY_DIGEST_KEY]: nextDailyDigest,
       },
     };
     const trimmedEmailValue =
       'string' === typeof emailDeliveryValue ? emailDeliveryValue.trim() : '';
     const profileAddress =
-      channelStatus?.email &&
-      'string' === typeof channelStatus.email.profile_address
-        ? channelStatus.email.profile_address.trim()
+      'string' === typeof emailChannelStatus.profile_address
+        ? emailChannelStatus.profile_address.trim()
         : '';
 
     if (
@@ -528,11 +816,19 @@ const NotificationPreferences = () => {
       (profileAddress &&
         trimmedEmailValue.toLowerCase() === profileAddress.toLowerCase())
     ) {
-      nextPreferences[CHANNELS_KEY].email[ADDRESS_OVERRIDE_KEY] = '';
+      nextPreferences[CHANNELS_KEY][EMAIL_CHANNEL_KEY][ADDRESS_OVERRIDE_KEY] =
+        '';
     } else {
-      nextPreferences[CHANNELS_KEY].email[ADDRESS_OVERRIDE_KEY] =
+      nextPreferences[CHANNELS_KEY][EMAIL_CHANNEL_KEY][ADDRESS_OVERRIDE_KEY] =
         trimmedEmailValue;
     }
+
+    nextPreferences[CHANNELS_KEY][EMAIL_CHANNEL_KEY].enabled = Boolean(
+      nextPreferences[CHANNELS_KEY][EMAIL_CHANNEL_KEY].enabled,
+    );
+    nextPreferences[DIGESTS_KEY][DAILY_DIGEST_KEY].enabled = Object.values(
+      nextPreferences[DIGESTS_KEY][DAILY_DIGEST_KEY].channels,
+    ).some(Boolean);
 
     setIsSaving(true);
     setError('');
@@ -540,18 +836,20 @@ const NotificationPreferences = () => {
 
     updateNotificationPreferences(nextPreferences)
       .then((response) => {
-        setPreferences(response.preferences || null);
+        const nextPreferencesResponse = response.preferences || null;
+        const nextChannelStatus =
+          response[CHANNEL_STATUS_KEY] &&
+          'object' === typeof response[CHANNEL_STATUS_KEY]
+            ? response[CHANNEL_STATUS_KEY]
+            : {};
+
+        setPreferences(nextPreferencesResponse);
         setAvailableChannels(
           Array.isArray(response[AVAILABLE_CHANNELS_KEY])
             ? response[AVAILABLE_CHANNELS_KEY]
             : [],
         );
-        setChannelStatus(
-          response[CHANNEL_STATUS_KEY] &&
-            'object' === typeof response[CHANNEL_STATUS_KEY]
-            ? response[CHANNEL_STATUS_KEY]
-            : {},
-        );
+        setChannelStatus(nextChannelStatus);
         setSiteTimezoneLabel(
           'string' === typeof response[SITE_TIMEZONE_LABEL_KEY]
             ? response[SITE_TIMEZONE_LABEL_KEY]
@@ -559,11 +857,8 @@ const NotificationPreferences = () => {
         );
         setEmailDeliveryValue(
           getEmailDeliveryFieldValue(
-            response.preferences || null,
-            response[CHANNEL_STATUS_KEY] &&
-              'object' === typeof response[CHANNEL_STATUS_KEY]
-              ? response[CHANNEL_STATUS_KEY]
-              : {},
+            nextPreferencesResponse,
+            nextChannelStatus,
           ),
         );
         setNotice(__('Notification preferences saved.', 'alpaca'));
@@ -577,7 +872,13 @@ const NotificationPreferences = () => {
       .finally(() => {
         setIsSaving(false);
       });
-  }, [channelStatus, emailChannelPreferences, emailDeliveryValue, preferences]);
+  }, [
+    dailyDigestPreferences,
+    emailChannelPreferences,
+    emailChannelStatus,
+    emailDeliveryValue,
+    preferences,
+  ]);
 
   const labelPicker = Boolean(preferences?.subjects?.labeled) && (
     <div className="alpaca-notifications-label-picker">
@@ -607,6 +908,110 @@ const NotificationPreferences = () => {
       )}
     </div>
   );
+
+  const renderSaveActions = (tab) => (
+    <div className="alpaca-notifications-actions">
+      <Button
+        isPrimary
+        onClick={handleSave}
+        disabled={isSaving || hasInvalidEmailDeliveryConfiguration}
+      >
+        {getNotificationTabSaveLabel(tab, isSaving)}
+      </Button>
+    </div>
+  );
+
+  const renderGenericChannelSettings = (channel) => {
+    const channelKey = channel?.key || '';
+    const currentChannelPreferences =
+      preferences?.[CHANNELS_KEY]?.[channelKey] || {};
+    const currentChannelStatus = channelStatus?.[channelKey] || {};
+    const isChannelEnabled = Boolean(currentChannelPreferences.enabled);
+    const channelCanEnable = Boolean(currentChannelStatus.can_enable);
+
+    const handleChannelSettingChange = (fieldKey, value) => {
+      updateChannelValue(channelKey, fieldKey, value);
+    };
+
+    return (
+      <section className="alpaca-notifications-panel alpaca-notifications-panel--narrow">
+        <p className="alpaca-notifications-panel-intro">
+          {channel.description ||
+            __('Configure how this delivery channel should behave.', 'alpaca')}
+        </p>
+
+        <div className="alpaca-notifications-channel-stack">
+          <ToggleControl
+            label={getChannelToggleLabel(channel.label)}
+            checked={isChannelEnabled}
+            onChange={(value) =>
+              updateChannelValue(channelKey, 'enabled', value)
+            }
+            disabled={isSaving || (!isChannelEnabled && !channelCanEnable)}
+          />
+
+          {Array.isArray(channel.summary_fields) &&
+            channel.summary_fields.length > 0 && (
+              <div className="alpaca-notifications-channel-summary">
+                {channel.summary_fields.map((field) => {
+                  const value = currentChannelStatus?.[field.key];
+                  const hasValue =
+                    null !== value &&
+                    typeof value !== 'undefined' &&
+                    '' !== value;
+
+                  return (
+                    <div
+                      key={field.key}
+                      className="alpaca-notifications-channel-row"
+                    >
+                      <span className="alpaca-notifications-channel-label">
+                        {field.label}
+                      </span>
+                      <span className="alpaca-notifications-channel-value">
+                        {hasValue ? String(value) : getChannelSummaryFallback()}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+          {Array.isArray(channel.settings_fields) &&
+            channel.settings_fields.map((field) => {
+              if (!['email', 'text'].includes(field.type)) {
+                return null;
+              }
+
+              const value =
+                'string' === typeof currentChannelPreferences[field.key]
+                  ? currentChannelPreferences[field.key]
+                  : '';
+
+              return (
+                <TextControl
+                  key={field.key}
+                  label={field.label}
+                  type={'email' === field.type ? 'email' : 'text'}
+                  value={value}
+                  onChange={(nextValue) =>
+                    handleChannelSettingChange(field.key, nextValue)
+                  }
+                  disabled={isSaving}
+                  help={field.help}
+                />
+              );
+            })}
+
+          {!channelCanEnable && (
+            <p className="alpaca-notifications-help">
+              {__('This channel is not ready to be enabled yet.', 'alpaca')}
+            </p>
+          )}
+        </div>
+      </section>
+    );
+  };
 
   if (isLoading) {
     return (
@@ -639,320 +1044,138 @@ const NotificationPreferences = () => {
         </Notice>
       )}
 
-      <section className="alpaca-notifications-panel">
-        <h2>{__('How You Receive Updates', 'alpaca')}</h2>
-        <p className="alpaca-notifications-panel-intro">
+      <div className="alpaca-notifications-panel alpaca-notifications-intro">
+        <p>
           {__(
-            'Choose where Alpaca should send updates. The same notification rules below apply to every enabled channel.',
+            'Choose which issue activity matters to you and how email updates should work. In-app notifications stay available inside Project Board.',
             'alpaca',
           )}
         </p>
-        <div className="alpaca-notifications-channel-grid">
-          {availableChannels.map((channel) => {
-            const channelKey = channel?.key || '';
-            const currentChannelPreferences =
-              preferences[CHANNELS_KEY]?.[channelKey] || {};
-            const currentChannelStatus = channelStatus?.[channelKey] || {};
-            const isChannelEnabled = !!currentChannelPreferences.enabled;
-            const profileAddress =
-              'email' === channelKey &&
-              'string' === typeof currentChannelStatus.profile_address
-                ? currentChannelStatus.profile_address
-                : '';
-            const emailFieldValue =
-              'email' === channelKey ? emailDeliveryValue : '';
-            let channelCanEnable = Boolean(currentChannelStatus.can_enable);
+      </div>
 
-            if ('email' === channelKey) {
-              const trimmedEmailFieldValue = emailFieldValue.trim();
-              const effectiveEmailFieldValue =
-                trimmedEmailFieldValue || profileAddress;
+      <TabPanel
+        className="alpaca-notifications-tabs"
+        activeClass="is-active"
+        tabs={notificationSettingsTabs}
+      >
+        {(tab) => {
+          const tabContext = {
+            dailyDigestPreferences,
+            emailChannelDefinition,
+            emailDeliveryValue,
+            emailChannelStatus,
+            hasEmailDigestEnabled,
+            hasInstantEmailEnabled,
+            hasInvalidEmailDeliveryConfiguration,
+            hasInvalidEmailOverride,
+            isSaving,
+            renderSaveActions,
+            setEmailDeliveryValue,
+            siteTimezoneLabel,
+            updateChannelValue,
+            updateDailyDigestChannelValue,
+            updateDailyDigestValue,
+          };
+          const channelKey = getChannelKeyFromTabName(tab.name);
 
-              channelCanEnable = isValidEmail(effectiveEmailFieldValue);
-            }
-
-            const channelSettingValue = (fieldKey) => {
-              if ('email' === channelKey) {
-                return emailDeliveryValue;
-              }
-
-              if ('string' === typeof currentChannelPreferences[fieldKey]) {
-                return currentChannelPreferences[fieldKey];
-              }
-
-              return '';
-            };
-
-            const handleChannelSettingChange = (fieldKey, value) => {
-              if ('email' === channelKey) {
-                setEmailDeliveryValue(value);
-                return;
-              }
-
-              updateChannelValue(channelKey, fieldKey, value);
-            };
-
-            const enableChannelLabel = getChannelToggleLabel(
-              channelKey,
-              channel.label,
-            );
-
+          if (PREFERENCES_TAB_NAME === tab.name) {
             return (
-              <div
-                key={channelKey}
-                className="alpaca-notifications-channel-card"
-              >
-                <div className="alpaca-notifications-channel-header">
-                  <div>
-                    <h3>{channel.label}</h3>
-                    {channel.description && <p>{channel.description}</p>}
-                  </div>
-                  <ToggleControl
-                    label={enableChannelLabel}
-                    hideLabelFromVision
-                    checked={isChannelEnabled}
-                    onChange={(value) =>
-                      updateChannelValue(channelKey, 'enabled', value)
-                    }
-                    disabled={
-                      isSaving || (!isChannelEnabled && !channelCanEnable)
-                    }
-                  />
-                </div>
-
-                {Array.isArray(channel.summary_fields) &&
-                  channel.summary_fields.length > 0 && (
-                    <div className="alpaca-notifications-channel-summary">
-                      {channel.summary_fields.map((field) => {
-                        const value = currentChannelStatus?.[field.key];
-                        const hasValue =
-                          null !== value &&
-                          typeof value !== 'undefined' &&
-                          '' !== value;
-
-                        return (
-                          <div
-                            key={field.key}
-                            className="alpaca-notifications-channel-row"
-                          >
-                            <span className="alpaca-notifications-channel-label">
-                              {field.label}
-                            </span>
-                            <span className="alpaca-notifications-channel-value">
-                              {hasValue
-                                ? String(value)
-                                : getChannelSummaryFallback()}
-                            </span>
-                          </div>
-                        );
-                      })}
+              <div className="alpaca-notifications-tab-content">
+                <div className="alpaca-notifications-grid">
+                  <section className="alpaca-notifications-panel">
+                    <p className="alpaca-notifications-panel-intro">
+                      {__(
+                        'Choose which issues are relevant to you and which kinds of activity should trigger updates.',
+                        'alpaca',
+                      )}
+                    </p>
+                    <h2>{__('Notify me about', 'alpaca')}</h2>
+                    <div className="alpaca-notifications-options">
+                      {subjectOptions.map((option) => (
+                        <div
+                          key={option.key}
+                          className="alpaca-notifications-option-group"
+                        >
+                          <CheckboxControl
+                            label={option.label}
+                            help={option.help}
+                            checked={Boolean(
+                              preferences.subjects?.[option.key],
+                            )}
+                            disabled={isSaving}
+                            onChange={(value) =>
+                              updateSectionValue('subjects', option.key, value)
+                            }
+                          />
+                          {'labeled' === option.key && labelPicker}
+                        </div>
+                      ))}
                     </div>
-                  )}
+                  </section>
 
-                {'inbox' === channelKey && (
-                  <div className="alpaca-notifications-channel-actions">
-                    <Button href={projectBoardInboxUrl} variant="secondary">
-                      {__('Open Inbox', 'alpaca')}
-                    </Button>
-                  </div>
-                )}
-
-                {Array.isArray(channel.settings_fields) &&
-                  channel.settings_fields.map((field) => {
-                    if ('email' === field.type) {
-                      return (
-                        <TextControl
-                          key={field.key}
-                          label={field.label}
-                          value={channelSettingValue(field.key)}
-                          onChange={(value) =>
-                            handleChannelSettingChange(field.key, value)
-                          }
+                  <section className="alpaca-notifications-panel">
+                    <h2>{__('Activity types', 'alpaca')}</h2>
+                    <div className="alpaca-notifications-options">
+                      {eventOptions.map((option) => (
+                        <CheckboxControl
+                          key={option.key}
+                          label={option.label}
+                          checked={Boolean(preferences.events?.[option.key])}
                           disabled={isSaving}
-                          help={
-                            'email' === channelKey && hasInvalidEmailOverride
-                              ? __(
-                                  'Enter a valid email address or leave this blank.',
-                                  'alpaca',
-                                )
-                              : field.help
+                          onChange={(value) =>
+                            updateSectionValue('events', option.key, value)
                           }
                         />
-                      );
-                    }
-
-                    return null;
-                  })}
-
-                {!channelCanEnable && (
-                  <p className="alpaca-notifications-help">
-                    {'email' === channelKey
-                      ? __(
-                          'Add an email to your WordPress profile or enter an override email before enabling this channel.',
-                          'alpaca',
-                        )
-                      : __(
-                          'This channel is not ready to be enabled yet.',
-                          'alpaca',
-                        )}
-                  </p>
-                )}
+                      ))}
+                    </div>
+                  </section>
+                </div>
+                {renderSaveActions(tab)}
               </div>
             );
-          })}
-        </div>
-      </section>
+          }
 
-      <section className="alpaca-notifications-panel">
-        <h2>{__('Daily Summary', 'alpaca')}</h2>
-        <p className="alpaca-notifications-panel-intro">
-          {__(
-            'Receive a scheduled digest every 24 hours at your chosen time, grouping the last 24 hours of activity by issue.',
-            'alpaca',
-          )}
-        </p>
+          if ('function' === typeof applyFilters) {
+            const filteredContent = applyFilters(
+              NOTIFICATION_TAB_CONTENT_FILTER,
+              null,
+              tab,
+              tabContext,
+            );
 
-        <div className="alpaca-notifications-digest-layout">
-          <ToggleControl
-            label={__('Receive a daily summary', 'alpaca')}
-            checked={Boolean(dailyDigestPreferences.enabled)}
-            onChange={(value) => updateDailyDigestValue('enabled', value)}
-            disabled={isSaving}
-          />
+            if (filteredContent) {
+              return (
+                <div className="alpaca-notifications-tab-content">
+                  {filteredContent}
+                </div>
+              );
+            }
+          }
 
-          <div
-            className={`alpaca-notifications-digest-settings${
-              dailyDigestPreferences.enabled ? '' : ' is-disabled'
-            }`}
-            aria-disabled={!dailyDigestPreferences.enabled}
-          >
-            {!dailyDigestPreferences.enabled && (
-              <p className="alpaca-notifications-digest-disabled-note">
-                {__(
-                  'Turn on Daily Summary to configure the schedule and delivery channel.',
-                  'alpaca',
-                )}
-              </p>
-            )}
-
-            <div className="alpaca-notifications-digest-time">
-              <TextControl
-                label={__('Send time', 'alpaca')}
-                type="time"
-                value={dailyDigestPreferences[SEND_TIME_KEY] || '17:00'}
-                onChange={(value) =>
-                  updateDailyDigestValue(SEND_TIME_KEY, value)
-                }
-                disabled={isSaving || !dailyDigestPreferences.enabled}
-              />
-            </div>
-
-            <p className="alpaca-notifications-help">
-              {sprintf(
-                /* translators: %s: site timezone label. */
-                __(
-                  'Daily summaries repeat every 24 hours using the site timezone: %s.',
-                  'alpaca',
-                ),
-                siteTimezoneLabel || __('Site timezone', 'alpaca'),
-              )}
-            </p>
-
-            <div className="alpaca-notifications-digest-fieldset">
-              <strong>{__('Digest channels', 'alpaca')}</strong>
-              <div className="alpaca-notifications-digest-channels">
-                {digestChannelOptions.map((channel) => {
-                  const canEnable =
-                    channelStatus?.[channel.key] &&
-                    'boolean' === typeof channelStatus[channel.key].can_enable
-                      ? channelStatus[channel.key].can_enable
-                      : true;
-
-                  return (
-                    <CheckboxControl
-                      key={channel.key}
-                      label={channel.label}
-                      checked={Boolean(
-                        dailyDigestPreferences.channels?.[channel.key],
-                      )}
-                      disabled={
-                        isSaving ||
-                        !dailyDigestPreferences.enabled ||
-                        !canEnable
-                      }
-                      onChange={(value) =>
-                        updateDailyDigestChannelValue(channel.key, value)
-                      }
-                      help={
-                        canEnable
-                          ? ''
-                          : __(
-                              'Configure a valid delivery address before enabling this digest channel.',
-                              'alpaca',
-                            )
-                      }
-                    />
-                  );
-                })}
+          if (EMAIL_CHANNEL_KEY === channelKey && emailChannelDefinition) {
+            return (
+              <div className="alpaca-notifications-tab-content">
+                {renderNotificationEmailTab(tabContext, tab)}
               </div>
-            </div>
-          </div>
-        </div>
-      </section>
+            );
+          }
 
-      <div className="alpaca-notifications-grid">
-        <section className="alpaca-notifications-panel">
-          <h2>{__('Notify me about', 'alpaca')}</h2>
-          <div className="alpaca-notifications-options">
-            {subjectOptions.map((option) => (
-              <div
-                key={option.key}
-                className="alpaca-notifications-option-group"
-              >
-                <CheckboxControl
-                  label={option.label}
-                  help={option.help}
-                  checked={Boolean(preferences.subjects?.[option.key])}
-                  disabled={isSaving}
-                  onChange={(value) =>
-                    updateSectionValue('subjects', option.key, value)
-                  }
-                />
-                {'labeled' === option.key && labelPicker}
+          const genericChannel = configurableChannels.find(
+            (channel) => channel.key === channelKey,
+          );
+
+          if (genericChannel) {
+            return (
+              <div className="alpaca-notifications-tab-content">
+                {renderGenericChannelSettings(genericChannel)}
+                {renderSaveActions(tab)}
               </div>
-            ))}
-          </div>
-        </section>
+            );
+          }
 
-        <section className="alpaca-notifications-panel">
-          <h2>{__('Activity types', 'alpaca')}</h2>
-          <div className="alpaca-notifications-options">
-            {eventOptions.map((option) => (
-              <CheckboxControl
-                key={option.key}
-                label={option.label}
-                checked={Boolean(preferences.events?.[option.key])}
-                disabled={isSaving}
-                onChange={(value) =>
-                  updateSectionValue('events', option.key, value)
-                }
-              />
-            ))}
-          </div>
-        </section>
-      </div>
-
-      <div className="alpaca-notifications-actions">
-        <Button
-          isPrimary
-          onClick={handleSave}
-          disabled={isSaving || hasInvalidEmailOverride}
-        >
-          {isSaving
-            ? __('Saving…', 'alpaca')
-            : __('Save Preferences', 'alpaca')}
-        </Button>
-      </div>
+          return null;
+        }}
+      </TabPanel>
     </div>
   );
 };
