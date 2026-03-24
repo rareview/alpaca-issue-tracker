@@ -52,8 +52,8 @@ function alpaca_update_board() {
 		array(
 			'methods'             => 'POST',
 			'callback'            => 'alpaca_update_board_data_callback',
-			'permission_callback' => function () {
-				return \Alpaca\Inc\Helpers::user_can( 'update_status' );
+			'permission_callback' => function ( WP_REST_Request $request ) {
+				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'update_board' );
 			},
 		)
 	);

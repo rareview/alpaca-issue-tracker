@@ -1,0 +1,2693 @@
+/**
+ * Alpaca Styles
+ *
+ * 1.0 - Variables & Globals
+ * 2.0 - General / Helper Classes
+ * 3.0 - Board
+ *   3.1 - Board Controls
+ *   3.2 - Containers (Columns)
+ *   3.3 - Items (Cards)
+ * 4.0 - Modal (Issue Details)
+ *   4.1 - Modal Frame
+ *   4.2 - Modal Header & Meta
+ *   4.3 - Details Table
+ *   4.4 - Attachments
+ *   4.5 - Checklists
+ *   4.6 - Comments
+ *   4.7 - Timeline Items
+ *   4.8 - Syntax Highlighting
+ * 5.0 - Other Components
+ *   5.1 - Popovers
+ *   5.2 - Status Manager
+ *   5.3 - Settings
+ *   5.4 - Bottom Toolbar & Report Form
+ *   5.5 - Empty State
+ *   5.6 - Confirmation Dialog
+ * 6.0 - Dashboard Widget
+ * 7.0 - Media Queries
+ */
+
+@use 'sass:color';
+
+/*
+ * 1.0 - Variables & Globals
+ */
+
+$bgwhite: #fff;
+$greyborder: #ddd;
+$greyshade: #f0f0f0;
+$greytext: #999;
+$smallfont: 14px;
+$midfont: 15px;
+$spacegap: 0.8ch;
+$commenthead-vpad: 12px;
+$commenthead-hpad: 18px;
+$code-font: 'Atkinson Hyperlegible Mono', monospace;
+
+// New variables
+$container-bg: #f9f9f9;
+$container-header-fontsize: 18px;
+$container-header-fontweight: 600;
+$priority-high-bg: #dc3545;
+$deadline-late-bg: #dc3545;
+$deadline-today-bg: #3b82f6;
+$deadline-soon-bg: #f59e0b;
+$control-width-large: 300px;
+$z-index-attachment-delete: 10;
+$z-index-report-form: 99998;
+$z-index-bottom-toolbar: 99999;
+$timeline-width: 1px;
+$common-radius: 8px;
+
+$core-font-stack:
+  -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu,
+  Cantarell, 'Helvetica Neue', sans-serif;
+/*
+ * Mixins
+ */
+@mixin deadline-style($bg-color) {
+  background-color: $bg-color;
+  color: if(
+    color.channel($bg-color, 'lightness', $space: hsl) > 67%,
+    #000,
+    #fff
+  );
+  margin: 2px 0;
+  padding: 0 8px;
+}
+
+/*
+ * 2.0 - General / Helper Classes
+ */
+
+.timestamp,
+.nowrap {
+  white-space: nowrap;
+}
+
+.rotate90 {
+  transform: rotate(90deg);
+}
+
+.flexalign {
+  display: flex;
+  align-items: center;
+  gap: $spacegap;
+}
+
+.has-sidecontrols {
+  display: grid;
+  grid-template-columns: 1fr 100px;
+  grid-template-rows: 1fr;
+  gap: $spacegap;
+}
+
+.sidecontrols {
+  text-align: right;
+}
+
+.alpaca-wrap {
+  flex-wrap: nowrap;
+}
+
+/*
+ * Main container for all Alpaca styles in the WP admin
+ */
+.wp-admin {
+  #wp-admin-bar-alpaca-report a svg {
+    width: 1rem;
+    height: 1rem;
+    vertical-align: text-top;
+    margin-right: 4px;
+  }
+
+  .alpaca-user {
+    img {
+      aspect-ratio: 1;
+      border-radius: 50%;
+      border: 1px solid $greyborder;
+      vertical-align: middle;
+      background: $bgwhite;
+      width: 36px;
+    }
+  }
+
+  /*
+   * 3.0 - Board
+   */
+  #project-board {
+    & > * {
+      clear: both;
+    }
+
+    .alpaca-wrap {
+      display: flex;
+    }
+
+    .alpaca-item.is-filtered-out {
+      display: none; // because there is a really weird bug arising when I use opacity
+      pointer-events: none;
+    }
+  }
+
+  /*
+     * 3.1 - Board Controls
+     */
+
+  #alpaca-presence {
+    display: flex;
+    align-items: center;
+    margin: 10px 0;
+    line-height: 32px;
+
+    .alpaca-presence-msg {
+      margin-right: 8px;
+    }
+
+    .alpaca-presence-list {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: $spacegap;
+
+      .alpaca-presence-user-wrap {
+        display: inline-flex;
+      }
+
+      img {
+        width: 24px;
+        height: 24px;
+      }
+
+      .alpaca-user-name {
+        display: none;
+      }
+    }
+  }
+
+  #project-board-controls {
+    display: flex;
+    align-items: center;
+    gap: $spacegap;
+    width: 100%;
+
+    > :first-child {
+      margin-right: auto;
+    }
+  }
+
+  /*
+     * 3.2 - Containers (Columns)
+     */
+  .alpaca-container {
+    margin: 0 10px 0 1px;
+    background: $container-bg;
+    border-radius: 4px;
+    display: flex;
+
+    .alpaca-container-header,
+    .alpaca-container-body {
+      padding-top: 5px;
+      padding-bottom: 5px;
+    }
+
+    .alpaca-container-header {
+      display: grid;
+      grid-template-columns: 1fr 40px;
+      align-items: center;
+
+      h2,
+      .alpaca-container-title-input input {
+        margin: 0;
+        font-size: $container-header-fontsize;
+        font-weight: $container-header-fontweight;
+        padding: 0;
+        border: none;
+        background: transparent;
+
+        &:focus {
+          outline: none;
+          box-shadow: none;
+        }
+      }
+
+      .alpaca-container-title-input > div {
+        margin: -1px 0 0;
+        padding: 0;
+      }
+
+      .alpaca-item-count {
+        font-size: smaller;
+        font-weight: 200;
+        margin: 0.5rem;
+        opacity: 0.5;
+      }
+
+      .alpaca-container-controls {
+        padding: 2px 0;
+        flex-direction: row;
+
+        .components-button:focus:not(:disabled) {
+          box-shadow: none;
+        }
+
+        button {
+          margin-left: 2px;
+          opacity: 0.2;
+          transition: opacity 0.2s ease-in-out;
+
+          &:hover {
+            opacity: 1;
+            cursor: pointer;
+          }
+        }
+      }
+    }
+
+    &.is-collapsed {
+      opacity: 0.5;
+      flex: 0 !important;
+      min-width: auto !important;
+
+      .alpaca-items {
+        display: none;
+      }
+    }
+  }
+
+  .alpaca-items {
+    padding: 0 2px;
+  }
+
+  /*
+     * 3.3 - Items (Cards)
+     */
+  .alpaca-item {
+    display: flex;
+    flex-direction: column;
+    gap: $spacegap;
+    transition:
+      opacity 0.2s ease-in-out,
+      transform 0.2s ease-in-out;
+    margin: 1px 0 9px 0;
+    cursor: pointer;
+
+    &:active {
+      cursor: grabbing;
+    }
+
+    .components-card__body,
+    .components-card__footer {
+      padding-bottom: 4px;
+    }
+
+    span.components-text {
+      font-size: $midfont;
+    }
+
+    .components-card__media {
+      margin: 4px 0; // assuming image between body and footer
+    }
+
+    .components-card__footer {
+      padding-top: 0;
+      line-height: 2em;
+    }
+
+    .alpaca-item-upper {
+      display: grid;
+      grid-template-columns: 1fr 2em;
+      grid-template-rows: auto;
+      gap: 0;
+    }
+
+    .alpaca-item-deadline {
+      border-radius: $common-radius;
+    }
+
+    &.is-high-priority {
+      .alpaca-item-content::before {
+        content: '⚠️';
+        margin-right: 4px;
+        font-size: 14px;
+      }
+    }
+
+    .alpaca-item-content {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .alpaca-item-controls .dashicons {
+      opacity: 0;
+      transition: opacity 0.2s ease-in-out;
+    }
+
+    .alpaca-item-controls button.dashicons {
+      background: transparent;
+      border: 0;
+      padding: 0;
+      width: 20px;
+      height: 20px;
+      color: inherit;
+    }
+
+    .alpaca-item-controls button.dashicons:disabled {
+      cursor: default;
+      opacity: 0.2;
+    }
+
+    &:hover .alpaca-item-controls .dashicons {
+      opacity: 0.3;
+    }
+
+    .alpaca-item-controls .dashicons:hover {
+      cursor: pointer;
+    }
+
+    &.is-watched .alpaca-item-controls .dashicons {
+      opacity: 1;
+    }
+
+    .alpaca-item-inner.is-watched .alpaca-item-controls .dashicons {
+      opacity: 1;
+    }
+
+    .alpaca-item-controls button.dashicons.dashicons-star-filled {
+      color: #ffb900;
+    }
+  }
+
+  .alpaca-item-inner {
+    .alpaca-item-deadline {
+      &[data-deadline-state='late'] {
+        @include deadline-style($deadline-late-bg);
+      }
+
+      &[data-deadline-state='today'] {
+        @include deadline-style($deadline-today-bg);
+      }
+
+      &[data-deadline-state='soon'] {
+        @include deadline-style($deadline-soon-bg);
+      }
+    }
+
+    .alpaca-item-content {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .alpaca-item-controls {
+      grid-column: 2;
+      grid-row: 1;
+      text-align: right;
+    }
+
+    .alpaca-item-datapoints {
+      grid-column: 1;
+      grid-row: 2;
+      color: $greytext;
+      margin: 4px 0;
+      flex-wrap: wrap;
+      align-items: center;
+
+      & > div {
+        display: flex;
+        align-items: center;
+        gap: 0.4ch;
+        margin-right: 10px;
+      }
+
+      .alpaca-item-priority-badge svg {
+        color: $priority-high-bg;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        padding: 2px;
+        border: 1px solid $greyborder;
+      }
+
+      .alpaca-item-assignees {
+        .alpaca-user-name {
+          display: none;
+        }
+
+        &[data-assignees='1'] {
+          .alpaca-user .alpaca-user-name {
+            display: block;
+          }
+        }
+
+        img {
+          width: 24px;
+          height: 24px;
+          border: 1px solid $greyborder;
+          border-radius: 50%;
+          background: $bgwhite;
+          vertical-align: middle;
+          margin-right: -2px;
+        }
+      }
+
+      .alpaca-item-labels {
+        display: inline-flex;
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+
+      .alpaca-item-icon {
+        text-wrap: nowrap;
+
+        svg {
+          margin-right: 3px;
+          vertical-align: middle;
+          margin-top: -2px;
+        }
+      }
+
+      .alpaca-user {
+        font-size: 0.8rem;
+        margin-left: -8px;
+
+        &:first-child {
+          margin-left: 0;
+        }
+      }
+    }
+  }
+
+  .alpaca-item.empty {
+    font-style: italic;
+    background-color: transparent;
+    border: 1px dotted $greyborder;
+    padding: 6px 8px;
+    height: calc(100% - 12px);
+
+    .alpaca-item-controls {
+      display: none;
+    }
+  }
+
+  .alpaca-item-dragging {
+    opacity: 0.4;
+  }
+
+  .alpaca-item.is-source-hidden {
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    opacity: 0 !important;
+    border: none !important;
+    pointer-events: none !important;
+  }
+
+  /*
+   * 4.0 - Modal (Issue Details)
+   */
+  &.post-type-issue {
+    .screenshot {
+      margin: 1rem 0 -1rem;
+
+      img {
+        max-width: 100%;
+        height: auto;
+      }
+    }
+  }
+
+  .alpaca-modal {
+    background: $bgwhite;
+    color: inherit;
+
+    .small-wrapper {
+      padding: 0.8rem 0 1rem;
+    }
+
+    small {
+      font-size: 12px;
+    }
+
+    p {
+      margin-top: 0;
+      margin-bottom: 1rem;
+    }
+
+    button {
+      margin-right: 0.5rem;
+    }
+  }
+
+  /*
+   * 4.1 - Modal Frame
+   */
+  .components-modal__frame.alpaca-details-modal {
+    position: absolute;
+    top: 0;
+    right: -8px;
+    max-width: 750px;
+    height: calc(100% - 32px);
+    margin: 32px 0 0 0;
+    animation: slide-in-right 300ms ease-out forwards;
+    transform-origin: 100% center;
+  }
+
+  .alpaca-issue-details {
+    p,
+    input,
+    textarea {
+      font-size: $midfont;
+    }
+
+    .alpaca-issue-tabs .components-tab-panel__tabs {
+      border-bottom: 1px solid $greyborder;
+    }
+
+    .components-tab-panel__tab-content {
+      // any tab styling
+      padding: 1em 0;
+    }
+  }
+
+  .alpaca-issue-main {
+    .alpaca-issue-title-row {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+
+      .alpaca-issue-title {
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+    }
+
+    .alpaca-issue-watch-indicator {
+      color: #ffb900;
+      display: inline-flex;
+      align-items: center;
+      background: transparent;
+      border: 0;
+      padding: 0;
+      cursor: pointer;
+
+      width: 20px;
+      height: 20px;
+      font-size: 20px;
+
+      &:disabled {
+        cursor: default;
+        opacity: 0.2;
+      }
+    }
+
+    .alpaca-issue-title {
+      font-size: 2rem; // match h3
+      font-weight: bold;
+      line-height: 1.3;
+      margin: 0;
+      padding: 0;
+      color: inherit;
+      background: none;
+      border: none;
+      outline: none;
+      width: 100%;
+      text-align: left;
+
+      &:hover {
+        background: $greyshade;
+        cursor: text;
+      }
+
+      &:focus {
+        outline: none;
+      }
+
+      &:empty[data-placeholder]::before {
+        content: attr(data-placeholder);
+        color: $greytext;
+        opacity: 0.6;
+      }
+
+      &:focus:empty[data-placeholder]::before {
+        opacity: 0.5;
+      }
+    }
+  }
+
+  .components-panel {
+    margin-bottom: 1rem;
+
+    .alpaca-modal-textarea {
+      width: 100%;
+    }
+
+    textarea {
+      width: 100%;
+      font-family: monospace;
+
+      /* Often good for preformatted text */
+      white-space: pre;
+      overflow: hidden scroll;
+    }
+  }
+
+  /*
+     * 4.2 - Modal Header & Meta
+     */
+  .alpaca-issue-meta {
+    color: $greytext;
+    font-size: $smallfont;
+    line-height: 3em;
+    flex-direction: row;
+    gap: $spacegap;
+
+    .alpaca-user-name {
+      font-weight: 600;
+    }
+  }
+
+  /*
+     * 4.3 - Details Table
+     */
+  table.alpaca-issue-details {
+    border: 0;
+    margin: 1em 0;
+    width: 100%;
+
+    th,
+    td,
+    button {
+      font-size: $midfont;
+      line-height: 1.8;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      padding: 5px 1rem 5px 0;
+      width: 150px;
+      font-weight: normal;
+    }
+
+    td {
+      padding: 5px 0;
+      word-break: break-all;
+    }
+
+    tr#assignees input {
+      margin-left: 0;
+    }
+
+    td.alpaca-issue-labels-cell {
+      align-items: flex-start;
+      display: flex;
+      width: 100%;
+    }
+
+    div {
+      margin: 0;
+      padding: 0;
+    }
+
+    input,
+    .alpaca-input,
+    .components-form-token-field__input-container,
+    .components-form-token-field__input-container .components-flex {
+      background: none;
+      border: none;
+      margin: 0;
+      padding: 0;
+      line-height: inherit;
+      min-height: auto;
+      font-size: $midfont;
+    }
+
+    .components-toggle-control {
+      font-size: $midfont;
+      margin-top: 5px;
+    }
+
+    .components-form-token-field {
+      width: 100%;
+    }
+
+    .alpaca-labels-selector {
+      width: 100%;
+
+      .alpaca-labels-selector-toggle.components-button.is-link {
+        align-items: center;
+        color: inherit;
+        display: inline-flex;
+        gap: 8px;
+        padding-left: 0;
+        text-decoration: none;
+
+        &:focus {
+          box-shadow: none;
+        }
+      }
+
+      .alpaca-labels-selector-pills {
+        display: inline-flex;
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+
+      .alpaca-labels-selector-toggle-text {
+        color: $greytext;
+      }
+    }
+
+    .components-form-token-field__help {
+      display: none;
+    }
+
+    .components-form-token-field input,
+    .components-form-token-field:focus,
+    .components-form-token-field:focus-visible,
+    .components-form-token-field:focus-within {
+      outline: none !important;
+      box-shadow: none !important;
+      border: none !important;
+      font-size: $midfont;
+    }
+
+    .placeholder,
+    ::placeholder {
+      color: $greytext;
+    }
+  }
+
+  /*
+     * 4.4 - Attachments
+     */
+  .alpaca-attachments-wrapper {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+  }
+
+  .alpaca-comment-attachments--pending {
+    padding-bottom: 15px;
+  }
+
+  .alpaca-attachment {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    .alpaca-attachment-thumbnail {
+      padding: 0;
+      background: none;
+      cursor: zoom-in;
+      display: inline-block;
+
+      img {
+        display: block;
+        width: auto;
+        height: 60px;
+        border: 1px solid $greyborder;
+        border-radius: inherit;
+      }
+    }
+
+    .alpaca-attachment-file {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 12px;
+      border: 1px solid $greyborder;
+      border-radius: 6px;
+      background: $bgwhite;
+      color: $greytext;
+      text-decoration: none;
+      max-width: 260px;
+      min-height: 60px;
+    }
+
+    .alpaca-attachment-file-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1 1 auto;
+      min-width: 0;
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .alpaca-attachment-file-icon {
+      flex: 0 0 auto;
+      color: $greytext;
+    }
+
+    .alpaca-attachment-file-meta {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      gap: 4px;
+    }
+
+    .alpaca-attachment-file-name {
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-weight: 600;
+      color: #1d2327;
+    }
+
+    .alpaca-attachment-file-type {
+      flex: 0 0 auto;
+      padding: 2px 6px;
+      border-radius: 999px;
+      background: $greyshade;
+      color: $greytext;
+      font-size: 11px;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      align-self: flex-start;
+    }
+
+    .alpaca-attachment-delete {
+      position: absolute;
+      top: 0;
+      right: 0;
+      z-index: $z-index-attachment-delete;
+      opacity: 0;
+      transition: opacity 0.2s ease-in-out;
+    }
+
+    &:hover .alpaca-attachment-delete {
+      opacity: 1;
+    }
+  }
+
+  .alpaca-screenshot-wrapper {
+    position: relative;
+
+    .alpaca-screenshot {
+      width: 100%;
+      height: auto;
+    }
+
+    .alpaca-screenshot-delete {
+      position: absolute;
+      top: 0;
+      right: 0;
+      z-index: $z-index-attachment-delete;
+    }
+  }
+
+  /*
+     * 4.5 - Checklists
+   */
+
+  tr#subissues {
+    td {
+      padding-top: 0;
+    }
+  }
+
+  .alpaca-subissues {
+    padding: 2px 0;
+  }
+
+  .alpaca-subissues-list {
+    list-style: none;
+    margin: 0 0 5px 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  li.alpaca-subissues-item {
+    position: relative;
+    margin-bottom: 0;
+
+    &:last-child {
+      margin-bottom: 5px;
+    }
+
+    &.is-completed .alpaca-subissues-text-control textarea {
+      text-decoration: line-through;
+      color: $greytext;
+    }
+  }
+
+  .alpaca-subissues-main {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto auto auto;
+    column-gap: 8px;
+    align-items: anchor-center;
+    width: 100%;
+  }
+
+  .alpaca-subissues-text-control {
+    min-width: 0;
+    width: 100%;
+
+    .components-base-control__field {
+      margin: 0;
+      min-width: 0;
+    }
+
+    textarea {
+      width: 100%;
+      border: 1px solid transparent;
+      box-shadow: none;
+      min-height: 30px;
+      line-height: 1.3;
+      resize: none;
+      overflow: hidden;
+      word-break: normal;
+      overflow-wrap: break-word;
+      padding: 4px 0;
+
+      &:focus {
+        border-color: $greyborder;
+      }
+    }
+  }
+
+  .alpaca-subissues-main > .components-button {
+    width: 30px;
+    min-width: 30px;
+    padding: 0;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+  }
+
+  .alpaca-subissues-assignee {
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+    justify-content: flex-end;
+    white-space: nowrap;
+
+    .components-button {
+      width: 30px;
+      min-width: 30px;
+    }
+  }
+
+  .alpaca-subissues-assignee-preview {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-right: 6px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+
+    img {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: block;
+    }
+  }
+
+  .alpaca-subissues-assignee-fallback {
+    color: $greytext;
+    font-size: 16px;
+    width: 20px;
+    height: 20px;
+  }
+
+  .alpaca-subissues-promote,
+  .alpaca-subissues-delete {
+    justify-self: end;
+  }
+
+  .alpaca-subissues-assignee-popover {
+    z-index: 999000020;
+
+    .components-popover__content {
+      min-width: 260px;
+      max-width: 320px;
+      padding: 8px 8px 0 8px;
+      overflow: visible;
+    }
+  }
+
+  .alpaca-subissues-assignee-popover-content {
+    .components-form-token-field {
+      margin-bottom: 0;
+    }
+
+    .components-form-token-field__help {
+      display: none !important;
+    }
+  }
+
+  .alpaca-subissues-add-button.components-button {
+    height: 28px;
+    min-height: 28px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+
+  .alpaca-icon-promote {
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+    background-color: currentcolor;
+    mask-size: 16px;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-image: url('components/icons/svg/box-arrow-up-right.svg');
+  }
+
+  .alpaca-icon-assign {
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+    background-color: currentcolor;
+    mask-size: 16px;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-image: url('components/icons/svg/person-plus.svg');
+  }
+
+  #subissues .components-checkbox-control__input[type='checkbox'],
+  #subissues .components-checkbox-control__input-container {
+    border-radius: 3px;
+  }
+
+  #subissues .components-checkbox-control__input-container {
+    background: $greyshade;
+  }
+
+  /*
+   * 4.6 - Comments
+   */
+  #alpaca-comments-header {
+    text-align: right;
+  }
+
+  #alpaca-comments {
+    padding-top: 8px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+
+    .alpaca-comments-timeline {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+
+      .alpaca-timeline-item:last-child {
+        background: $bgwhite;
+      }
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: $commenthead-hpad;
+        left: 36px; // Position of the vertical line
+        width: $timeline-width;
+        background-color: $greyborder; // Color of the timeline line
+      }
+    }
+
+    &.oldestfirst {
+      flex-direction: column-reverse;
+
+      .alpaca-comments-timeline::before {
+        bottom: 0;
+      }
+
+      .alpaca-comments-timeline {
+        flex-direction: column-reverse;
+
+        .alpaca-timeline-item:first-child {
+          margin-bottom: 36px;
+        }
+
+        .alpaca-timeline-item:last-child {
+          background: none;
+          margin-top: 0;
+        }
+      }
+    }
+
+    .alpaca-comment-form {
+      border: 1px solid $greyborder;
+      border-radius: $common-radius;
+
+      .alpaca-user {
+        top: -1px; // Needed, not sure why
+      }
+
+      .alpaca-comment-dropzone {
+        position: relative;
+      }
+
+      .alpaca-comment-dropzone .components-drop-zone {
+        border: 2px dashed $greyborder;
+        border-radius: $common-radius;
+        position: absolute;
+        inset: 0;
+        background: rgba(255, 255, 255, 0.85);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s ease-in-out;
+
+        &::after {
+          content: 'Drop images to attach';
+          position: absolute;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: $greytext;
+          font-size: $smallfont;
+          letter-spacing: 0.02em;
+        }
+      }
+
+      .alpaca-comment-dropzone .components-drop-zone.is-active,
+      .alpaca-comment-dropzone .components-drop-zone.is-dragging {
+        opacity: 1;
+        pointer-events: auto;
+      }
+    }
+
+    .components-textarea-control__input {
+      line-height: 1.5em;
+      margin-top: 0;
+    }
+  }
+
+  .alpaca-timeline-item[data-source='human'] .alpaca-comment-content p,
+  .alpaca-timeline-item[data-source='human'] .alpaca-comment-content li,
+  .alpaca-timeline-item[data-source='create'] .alpaca-comment-content p,
+  .alpaca-timeline-item[data-source='create'] .alpaca-comment-content li {
+    font-size: $midfont;
+    line-height: 1.5em;
+    margin-top: 0;
+  }
+
+  .alpaca-timeline-item[data-source='human'] .alpaca-timeline-content,
+  .alpaca-timeline-item[data-source='create'] .alpaca-timeline-content,
+  .alpaca-comment-form textarea {
+    flex-grow: 1;
+    background: $bgwhite;
+
+    .alpaca-comment-header {
+      border-top-left-radius: 8px;
+      border-top-right-radius: 8px;
+      border-bottom: 1px solid $greyborder;
+      padding-top: $commenthead-vpad;
+      padding-bottom: $commenthead-vpad;
+    }
+  }
+
+  .alpaca-timeline-item[data-source='human'] .alpaca-timeline-content,
+  .alpaca-timeline-item[data-source='create'] .alpaca-timeline-content {
+    border-radius: $common-radius;
+    border: 1px solid $greyborder;
+  }
+
+  .alpaca-comment-form textarea {
+    border: none;
+  }
+
+  .alpaca-timeline-item {
+    margin: 18px 0 12px 0;
+
+    .alpaca-comment-header {
+      font-size: $midfont;
+      line-height: normal;
+
+      p {
+        font-size: $midfont;
+        line-height: normal;
+      }
+
+      strong {
+        color: #000;
+      }
+
+      &.has-issue-title {
+        .alpaca-comment-author {
+          display: flex;
+          align-items: baseline;
+          gap: 4px;
+          min-width: 0;
+          flex: 1 1 auto;
+        }
+
+        .alpaca-comment-on-title {
+          display: flex;
+          align-items: baseline;
+          gap: 4px;
+          min-width: 0;
+          flex: 1 1 auto;
+          color: $greytext;
+          font-weight: 400;
+        }
+
+        .alpaca-comment-on-title-text {
+          display: block;
+          min-width: 0;
+          flex: 1 1 auto;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+    }
+
+    &:hover .alpaca-comment-buttons {
+      opacity: 1;
+    }
+
+    &[data-source='human'],
+    &[data-source='create'] {
+      .alpaca-timeline-content {
+        flex-grow: 1;
+      }
+    }
+  }
+
+  .alpaca-comment-form-actions {
+    display: flex;
+
+    .components-form-file-upload {
+      margin-right: auto;
+    }
+  }
+
+  .alpaca-comment-form,
+  .alpaca-timeline-item {
+    position: relative;
+    display: flex;
+    font-size: $midfont;
+
+    .alpaca-timeline-content,
+    textarea {
+      width: 100%;
+    }
+
+    .alpaca-comment-buttons {
+      display: flex;
+      margin-left: auto;
+      opacity: 0;
+      transition: opacity 0.2s ease-in-out;
+      position: absolute;
+      top: $commenthead-vpad;
+      right: $commenthead-hpad;
+    }
+
+    img {
+      width: 36px;
+      height: 36px;
+    }
+
+    .alpaca-user-name {
+      display: none;
+    }
+  }
+
+  .alpaca-comment-header {
+    display: flex;
+    padding-left: $commenthead-hpad;
+    padding-right: $commenthead-hpad;
+    background: $bgwhite;
+    font-size: $smallfont;
+    line-height: 32px;
+    color: $greytext;
+    gap: $spacegap;
+  }
+
+  .alpaca-timeline-content {
+    flex-grow: 1;
+  }
+
+  .alpaca-comment-content {
+    padding: 0;
+
+    blockquote {
+      background: $greyshade;
+      padding: 1.5em 0.5em 0.5em 1.5em;
+      margin: 0 0 1.5em;
+      border-left: $timeline-width solid $greyborder;
+    }
+
+    ul {
+      margin-top: 0;
+      padding-left: 1rem;
+
+      li {
+        list-style-type: disc;
+      }
+    }
+  }
+
+  /*
+  * Form and comment display spacing
+  */
+
+  .alpaca-comment-form,
+  .alpaca-timeline-item .alpaca-comment-body {
+    padding: 15px;
+  }
+
+  .alpaca-comment-form textarea,
+  .alpaca-timeline-item textarea {
+    padding: 0;
+    border: none;
+    margin-bottom: 15px;
+  }
+
+  /*
+     * 4.7 - Timeline Items
+     */
+
+  .alpaca-timeline-item[data-source='audit'] {
+    position: relative;
+
+    .alpaca-timeline-msg {
+      margin-left: 64px;
+    }
+
+    p {
+      margin: 0 0 0.25em 0;
+    }
+
+    .alpaca-comment-date {
+      color: $greytext;
+    }
+
+    .alpaca-timeline-icon {
+      position: absolute;
+      width: 28px;
+      height: 28px;
+      background-color: $bgwhite;
+      border: 1px solid $greyborder;
+      border-radius: 50%;
+      left: 22px;
+      top: -3px;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        mask-size: 14px;
+        mask-repeat: no-repeat;
+        mask-position: center;
+      }
+    }
+
+    &.issue-created {
+      .alpaca-timeline-icon::before {
+        mask-image: url('components/icons/svg/plus-lg.svg');
+        background-color: $greytext;
+      }
+    }
+
+    &.assignee-changed {
+      .alpaca-timeline-icon::before {
+        mask-image: url('components/icons/svg/person.svg');
+        background-color: $greytext;
+      }
+    }
+
+    &.status-changed {
+      .alpaca-timeline-icon::before {
+        mask-image: url('components/icons/svg/columns.svg');
+        background-color: $greytext;
+      }
+    }
+
+    &.deadline-changed {
+      .alpaca-timeline-icon::before {
+        mask-image: url('components/icons/svg/calendar2-week.svg');
+        background-color: $greytext;
+      }
+    }
+
+    &.subissue-created {
+      .alpaca-timeline-icon::before {
+        mask-image: url('components/icons/svg/plus-lg.svg');
+        background-color: $greytext;
+      }
+    }
+
+    &.subissue-assignee-changed {
+      .alpaca-timeline-icon::before {
+        mask-image: url('components/icons/svg/person.svg');
+        background-color: $greytext;
+      }
+    }
+
+    &.subissue-completion-changed {
+      .alpaca-timeline-icon::before {
+        mask-image: url('components/icons/svg/check2-square.svg');
+        background-color: $greytext;
+      }
+    }
+
+    &.subissue-deleted {
+      .alpaca-timeline-icon::before {
+        mask-image: url('components/icons/svg/x-lg.svg');
+        background-color: $greytext;
+      }
+    }
+
+    &.subissue-promoted {
+      .alpaca-timeline-icon::before {
+        mask-image: url('components/icons/svg/box-arrow-up-right.svg');
+        background-color: $greytext;
+      }
+    }
+
+    &.priority-changed,
+    &.issue-created.high-priority {
+      .alpaca-timeline-icon::before {
+        mask-image: url('components/icons/svg/exclamation-circle.svg');
+        background-color: $greytext;
+        mask-size: 22px;
+      }
+    }
+
+    &.priority-changed.action-add,
+    &.issue-created.high-priority {
+      .alpaca-timeline-icon::before {
+        mask-image: url('components/icons/svg/exclamation-circle-fill.svg');
+        background-color: $priority-high-bg;
+      }
+    }
+
+    // &.action-add {
+    //   .alpaca-timeline-icon::before {
+    //     background-color: green;
+    //   }
+    // }
+
+    // &.action-remove {
+    //   .alpaca-timeline-icon::before {
+    //     background-color: red;
+    //   }
+    // }
+  }
+
+  /*
+   * 4.8 - Errors Tab
+   */
+  .alpaca-errors-tab {
+    .alpaca-error-item {
+      margin-bottom: 2rem;
+      border-bottom: 1px solid $greyborder;
+      padding-bottom: 1rem;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      h4 {
+        margin-top: 0;
+      }
+    }
+
+    .alpaca-error-stack {
+      margin-top: 1rem;
+
+      h5 {
+        margin-bottom: 0.5rem;
+      }
+
+      pre,
+      pre[class*='language-'] {
+        background: $greyshade !important;
+        padding: 1rem !important;
+        margin: 0 !important;
+        border: 0 !important;
+        border-radius: 4px !important;
+        white-space: pre-wrap !important;
+        word-break: break-word !important;
+        overflow-x: auto !important;
+        box-shadow: none !important;
+      }
+
+      code,
+      code[class*='language-'] {
+        background: transparent !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: 0 !important;
+        font-family: $code-font !important;
+        font-size: 0.8125rem !important;
+        color: inherit !important;
+        text-shadow: none !important;
+      }
+    }
+  }
+
+  /*
+   * 4.9 - Syntax Highlighting
+   */
+
+  table.alpaca-data-table,
+  .alpaca-json-table table,
+  .alpaca-report-tab table,
+  .alpaca-errors-tab table,
+  .alpaca-data-table,
+  .alpaca-json-table,
+  .alpaca-report-tab,
+  .alpaca-errors-tab {
+    &,
+    table,
+    pre,
+    code,
+    code[class*='language-'],
+    pre[class*='language-'] {
+      font-family: $code-font !important;
+      font-size: 0.8125rem !important;
+    }
+
+    table.alpaca-data-table {
+      border: 1px solid $greyborder;
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    th,
+    td {
+      border: 1px solid $greyborder;
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+      word-break: break-word;
+    }
+
+    th {
+      background-color: $greyshade;
+      width: 200px;
+    }
+
+    td {
+      max-width: 600px;
+      line-height: 1.5em;
+    }
+
+    pre,
+    code {
+      margin: 0 !important;
+      padding: 0 !important;
+      text-indent: 0 !important;
+      white-space: pre-wrap !important;
+      word-break: break-word !important;
+      font-family: inherit !important;
+      font-size: inherit !important;
+      width: 100% !important;
+      background: transparent !important;
+      background-color: transparent !important;
+      border: 0 !important;
+    }
+
+    pre code span {
+      display: inline !important;
+    }
+
+    pre[class*='language-'],
+    code[class*='language-'] {
+      padding: 0 !important;
+      margin: 0 !important;
+      border: 0 !important;
+      line-height: 1.5em !important;
+      background: transparent !important;
+      background-color: transparent !important;
+      color: inherit !important;
+    }
+
+    :not(pre) > code[class*='language-'] {
+      padding: 0 !important;
+      background: transparent !important;
+      background-color: transparent !important;
+      border: 0 !important;
+    }
+
+    code.language-uri {
+      cursor: pointer !important;
+      user-select: text !important;
+      pointer-events: auto !important;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+    .token.operator {
+      background: none !important;
+    }
+  }
+
+  /*
+   * 5.1 - Popovers
+   */
+  .alpaca-control-popover {
+    width: $control-width-large;
+    padding: 8px 16px 16px;
+
+    .alpaca-control {
+      padding: 8px 0;
+    }
+
+    .components-menu-group {
+      border: none;
+    }
+
+    .components-menu-group__label {
+      margin: 0;
+    }
+  }
+
+  .alpaca-deadline-popover {
+    .components-popover__content {
+      padding: 1em;
+    }
+  }
+
+  .alpaca-search-popover {
+    z-index: 100003;
+    transition: none;
+
+    .components-popover__content {
+      width: var(--alpaca-search-popover-width, 300px);
+      padding: 8px;
+      background: $container-bg;
+      border: 1px solid #c3c4c7;
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+      box-shadow:
+        0 12px 28px rgb(0 0 0 / 18%),
+        0 2px 8px rgb(0 0 0 / 10%);
+      margin-top: -14px;
+      transform-origin: top center;
+      transition: none;
+    }
+
+    .alpaca-search-results-wrap {
+      max-height: 420px;
+      overflow-y: auto;
+      transform-origin: top center;
+      animation: alpaca-search-popover-in 240ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .alpaca-search-title-wrap {
+      display: inline;
+    }
+
+    .alpaca-search-title-text {
+      overflow-wrap: anywhere;
+    }
+
+    .alpaca-search-status-pill {
+      display: inline-block;
+      padding: 1px 8px;
+      border-radius: 999px;
+      border: 1px solid #b3b8bf;
+      background: $bgwhite;
+      color: #50575e;
+      font-size: 11px;
+      line-height: 1.4;
+      font-weight: 600;
+      white-space: nowrap;
+      vertical-align: baseline;
+    }
+  }
+
+  .alpaca-board-search.is-search-open {
+    z-index: 100002;
+
+    .components-search-control__input,
+    .components-search-control input[type='search'] {
+      border-color: #2271b1;
+      box-shadow: 0 0 0 1px #2271b1;
+      background: $bgwhite;
+    }
+  }
+
+  @keyframes alpaca-search-popover-in {
+    0% {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/*
+ * 5.0 - Other Components
+ */
+
+/* Snackbar fade for Alpaca (used by Board.jsx) */
+.alpaca-snackbar {
+  transition: opacity 300ms ease;
+  opacity: 1;
+  color: #fff;
+  background: #1e1e1e;
+  transform: translateY(0);
+  will-change: opacity;
+}
+
+.alpaca-snackbar.alpaca-snackbar-error {
+  border-left: 4px solid #b32d2e;
+  background: #fff5f5;
+  color: #1e1e1e;
+}
+
+.alpaca-snackbar.alpaca-snackbar-warning {
+  border-left: 4px solid #dba617;
+  background: #fff9e6;
+  color: #1e1e1e;
+}
+
+.alpaca-snackbar.alpaca-snackbar-success {
+  border-left: 4px solid #00a32a;
+  background: #edfaef;
+  color: #1e1e1e;
+}
+
+.alpaca-snackbar.is-closing {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.alpaca-details-modal {
+  position: relative;
+}
+
+.alpaca-snackbar-stack {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  top: 24px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.alpaca-snackbar-stack .alpaca-snackbar {
+  pointer-events: auto;
+}
+
+#alpaca-comments-wrapper {
+  position: relative;
+}
+
+.alpaca-comment-issue-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: $greytext;
+  letter-spacing: 0.02em;
+  margin-bottom: 8px;
+}
+
+#alpaca-activity {
+  margin-top: 16px;
+  max-width: 720px;
+
+  .alpaca-activity-loading {
+    display: flex;
+    justify-content: center;
+    padding: 24px 0;
+  }
+
+  .alpaca-activity-loading-more {
+    display: flex;
+    justify-content: center;
+    padding: 8px 0 24px 0;
+  }
+
+  .alpaca-activity-sentinel {
+    height: 1px;
+  }
+
+  .alpaca-activity-date-group + .alpaca-activity-date-group {
+    margin-top: 24px;
+  }
+
+  .alpaca-activity-date-heading {
+    margin: 0 0 10px 0;
+    font-size: 13px;
+    color: $greytext;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .alpaca-comments-timeline {
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: $commenthead-hpad;
+      left: 36px;
+      width: $timeline-width;
+      background-color: $greyborder;
+    }
+  }
+
+  .alpaca-activity-entry-button {
+    display: block;
+    width: 100%;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 8px;
+  }
+
+  .alpaca-activity-entry-button:focus-visible {
+    outline: 2px solid #2271b1;
+    outline-offset: 2px;
+  }
+}
+
+.alpaca-align-controls {
+  flex-direction: row;
+  gap: $spacegap;
+}
+
+/*
+ * 5.2 - Status Manager
+ */
+
+.alpaca-status-manager {
+  .status-grid {
+    .status-row-content {
+      gap: $spacegap;
+
+      .drag-handle {
+        cursor: grab;
+        padding: 4px;
+        color: $greytext;
+        display: inline-flex;
+        flex: 0 0 24px;
+        justify-content: center;
+        width: 24px;
+      }
+    }
+
+    .status-grid-row.placeholder {
+      .drag-handle {
+        visibility: hidden;
+      }
+    }
+  }
+
+  .alpaca-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 16px;
+  }
+}
+
+/*
+ * 5.3 - Settings
+ */
+
+.alpaca-settings {
+  hr {
+    margin: 2em 0;
+  }
+
+  .alpaca-settings-table {
+    border: 1px solid $greyborder;
+    border-radius: $common-radius;
+    font-size: 14px;
+    max-width: 600px;
+    overflow: hidden;
+    width: 100%;
+
+    .alpaca-settings-table-delete.components-button {
+      color: #b32d2e;
+    }
+
+    .alpaca-settings-list-body {
+      display: flex;
+      flex-direction: column;
+      min-height: 1px;
+    }
+
+    .alpaca-settings-list-row {
+      align-items: center;
+      background: #fff;
+      display: grid;
+      gap: 10px;
+      grid-template-columns: minmax(0, 1fr) auto;
+      padding: 8px 12px;
+      transition: background 0.2s;
+
+      &:not(:last-child) {
+        border-bottom: 1px solid $greyborder;
+      }
+    }
+
+    .alpaca-settings-list-name {
+      min-width: 0;
+      width: 100%;
+    }
+
+    .alpaca-settings-list-actions,
+    .actions-cell {
+      justify-self: end;
+      white-space: nowrap;
+      width: auto;
+    }
+  }
+
+  #alpaca-settings-internal {
+    .components-input-control__container {
+      max-width: 25em;
+    }
+
+    input[type='number'].small-text {
+      width: 65px;
+      padding-right: 0;
+    }
+
+    .alpaca-small-number-control {
+      .components-input-control__container {
+        width: 65px;
+        max-width: 65px;
+      }
+
+      .alpaca-number-control-suffix {
+        &::before {
+          content: '\00a0';
+        }
+      }
+
+      input[type='number'] {
+        width: 65px;
+        padding-right: 0;
+      }
+    }
+
+    .alpaca-idle-indicator-control-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+
+      .components-base-control {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  .alpaca-labels-manager {
+    .alpaca-labels-list {
+      margin-top: 1em;
+
+      .alpaca-settings-list-row {
+        grid-template-columns: minmax(0, 1fr) 112px 32px;
+      }
+    }
+
+    .alpaca-label-name-input {
+      width: 100%;
+
+      .components-base-control__field {
+        margin-bottom: 0;
+      }
+
+      .components-input-control__container {
+        max-width: none;
+        width: 100%;
+      }
+    }
+
+    .alpaca-label-color-button {
+      align-items: center;
+      display: inline-flex;
+      gap: 6px;
+    }
+
+    .alpaca-label-color-cell {
+      justify-self: end;
+    }
+
+    .alpaca-label-delete-cell {
+      justify-self: end;
+      width: 32px;
+    }
+
+    .alpaca-label-delete-slot {
+      display: inline-block;
+      height: 32px;
+      width: 32px;
+    }
+
+    .alpaca-label-color-fallback {
+      border: 1px solid $greyborder;
+      border-radius: 50%;
+      display: inline-block;
+      height: 14px;
+      width: 14px;
+    }
+
+    .alpaca-label-color-popover {
+      padding: 10px;
+      width: 220px;
+    }
+
+    .alpaca-label-empty-slot {
+      color: $greytext;
+      font-size: $smallfont;
+      line-height: 32px;
+    }
+
+    .alpaca-labels-actions {
+      align-items: center;
+      display: flex;
+      gap: 10px;
+      margin-top: 1em;
+    }
+  }
+}
+
+.alpaca-label-pill {
+  border-radius: $common-radius;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 8px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.wp-admin .components-popover__content {
+  .alpaca-labels-selector-menu {
+    min-width: 240px;
+    max-height: 280px;
+    overflow-y: auto;
+    padding: 12px;
+  }
+
+  .alpaca-labels-selector-empty {
+    color: $greytext;
+    margin: 6px 0;
+  }
+
+  .alpaca-labels-selector-option {
+    align-items: center;
+    display: grid;
+    gap: 10px;
+    grid-template-columns: 16px 180px;
+    margin-bottom: 8px;
+    padding: 2px 0;
+  }
+
+  .alpaca-labels-selector-checkbox {
+    display: block;
+    height: 16px;
+    margin: 0;
+    width: 16px;
+  }
+
+  .alpaca-labels-selector-option-pill {
+    align-items: center;
+    box-sizing: border-box;
+    cursor: pointer;
+    display: inline-flex !important;
+    float: none;
+    height: 26px;
+    margin: 0 !important;
+    max-width: 180px;
+    min-width: 180px;
+    padding: 0 10px;
+    text-align: left;
+    width: 180px;
+  }
+}
+
+/*
+ * 5.4 - Bottom Toolbar & Report Form
+ */
+
+.alpaca-bottom-toolbar {
+  direction: ltr;
+  color: #c3c4c7;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 32px;
+  height: 32px;
+  position: fixed;
+  width: 100%;
+  min-width: 600px;
+  z-index: $z-index-bottom-toolbar;
+  background: #1d2327;
+  outline: 1px solid transparent;
+  bottom: 0;
+  display: flex;
+  flex-direction: row;
+  gap: 14px;
+  padding: 0;
+  transform: translateX(calc(-100% + 32px));
+  transition: transform 0.3s ease;
+  font-family: $core-font-stack !important;
+
+  &.expanded {
+    transform: translateX(0);
+
+    .toggle-pointer {
+      transform: rotate(180deg);
+    }
+  }
+
+  .alpaca-report-button,
+  .project-board-link {
+    background: none;
+    color: #f0f0f1;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 14px;
+    height: 32px;
+    line-height: 32px;
+    font-size: 13px;
+    cursor: pointer;
+    text-decoration: none;
+    font-family: $core-font-stack !important;
+
+    .dashicons {
+      color: #a7aaad;
+      font-size: 20px;
+    }
+
+    &:hover,
+    &.form-visible {
+      color: #72aee6;
+      background-color: #2c3338;
+
+      .dashicons {
+        color: #72aee6;
+      }
+    }
+  }
+
+  .toggle-button {
+    margin-left: auto;
+    background: none;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 32px;
+    height: 32px;
+    color: #a7aaad;
+    cursor: pointer;
+    padding: 0;
+
+    &:hover {
+      color: #72aee6;
+    }
+
+    .toggle-pointer {
+      transition: transform 0.3s ease;
+      display: inline-block;
+      transform-origin: center center;
+      font-size: 16px;
+    }
+  }
+}
+
+.alpaca-report-form {
+  position: fixed;
+  z-index: $z-index-report-form;
+  width: 400px;
+  max-width: calc(100vw - 40px);
+  padding: 16px;
+  background: $bgwhite;
+  border: 1px solid #c3c4c7;
+  border-radius: 4px 4px 0 0;
+  left: 0;
+  box-shadow: 0 -4px 16px rgb(0 0 0 / 15%);
+  bottom: -500px;
+  transition:
+    bottom 0.3s ease,
+    opacity 0.3s ease,
+    visibility 0s linear 0.3s;
+  font-size: 13px;
+  font-family: $core-font-stack;
+  visibility: hidden;
+  opacity: 0;
+  color: #000;
+
+  &.visible {
+    bottom: 31px;
+    visibility: visible;
+    opacity: 1;
+    transition:
+      bottom 0.3s ease,
+      opacity 0.3s ease,
+      visibility 0s;
+  }
+
+  .form-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #dcdcde;
+
+    h4 {
+      margin: 0;
+      font-size: $smallfont;
+      font-family: $core-font-stack;
+      font-weight: 600;
+      color: #1d2327;
+    }
+
+    .form-close {
+      background: transparent;
+      border: none;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border-radius: 2px;
+      font-size: 20px;
+      color: #50575e;
+      padding: 0;
+      line-height: 1;
+
+      &:hover {
+        background: $greyshade;
+        color: #1d2327;
+      }
+    }
+  }
+
+  .components-textarea-control {
+    margin-bottom: 16px;
+
+    .components-textarea-control__input {
+      width: 100%;
+      max-width: 100%;
+      min-height: 100px;
+      padding: 8px 12px;
+      border: 1px solid #8c8f94;
+      border-radius: 2px;
+      font-size: 13px;
+      background: $bgwhite;
+      color: #1d2327;
+      resize: vertical;
+      box-sizing: border-box;
+    }
+  }
+
+  .form-toggles {
+    margin-bottom: 16px;
+
+    .components-base-control {
+      margin-bottom: 12px;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .components-base-control__field {
+        margin-bottom: 0;
+      }
+
+      .components-checkbox-control__label {
+        color: #1d2327;
+      }
+
+      .components-base-control__help {
+        font-size: 12px;
+        font-style: normal;
+        color: $greytext;
+      }
+    }
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 16px;
+  }
+}
+
+/*
+ * 5.5 - Empty State
+ */
+
+.alpaca-empty-state {
+  margin: 2rem auto;
+  max-width: 600px;
+
+  .components-notice {
+    margin-bottom: 1rem;
+
+    p {
+      margin: 0.5rem 0;
+    }
+
+    strong {
+      font-size: 1.1em;
+    }
+
+    .components-button {
+      margin-top: 1rem;
+    }
+  }
+}
+
+/*
+ * 5.6 - Confirmation Dialog
+ */
+.alpaca-confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgb(0 0 0 / 50%);
+  z-index: 999000009;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.alpaca-confirm-box {
+  padding: 20px;
+  background-color: $bgwhite;
+  border-radius: 4px;
+  box-shadow:
+    0 0 0 1px #ccc,
+    0 2px 3px #0000000d,
+    0 4px 5px #0000000a,
+    0 12px 12px #00000008,
+    0 16px 16px #00000005;
+
+  .alpaca-snackbar-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+
+    .components-button {
+      min-width: auto;
+      padding: 0;
+      color: inherit;
+      background: transparent;
+
+      &:hover,
+      &:focus {
+        background: transparent;
+        color: inherit;
+        opacity: 0.8;
+        box-shadow: none;
+      }
+    }
+  }
+}
+
+.wp-admin.alpaca-search-active #project-board .alpaca-wrap {
+  opacity: 0.82;
+  filter: saturate(0.88);
+  transition:
+    opacity 160ms ease,
+    filter 160ms ease;
+}
+
+.wp-admin #project-board-controls .alpaca-board-search {
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 6px;
+  background: transparent;
+  box-shadow: 0 0 0 rgb(0 0 0 / 0%);
+  transition:
+    box-shadow 160ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease;
+}
+
+.wp-admin #project-board-controls .alpaca-board-search.is-search-open {
+  background: $bgwhite;
+  border-color: #c3c4c7;
+  box-shadow:
+    0 10px 26px rgb(0 0 0 / 16%),
+    0 2px 8px rgb(0 0 0 / 10%);
+}
+
+/*
+ * 6.0 - Dashboard Widget
+ */
+
+#alpaca-dashboard-widget {
+  margin-top: -6px;
+
+  a {
+    text-decoration: none;
+  }
+
+  table {
+    border-spacing: 0;
+    border-collapse: collapse;
+    width: 100%;
+
+    tr {
+      &:first-child {
+        th {
+          border-bottom: 1px solid $greyborder;
+        }
+      }
+
+      &:nth-child(even) {
+        background-color: $container-bg;
+      }
+    }
+
+    th,
+    td {
+      padding: 8px 5px;
+      vertical-align: top;
+      text-align: center;
+      white-space: nowrap;
+
+      &:first-child {
+        text-align: left;
+      }
+    }
+
+    th {
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    td {
+      width: 18%;
+
+      &.title {
+        white-space: unset;
+        width: auto;
+      }
+
+      &.high-priority {
+        width: 16px;
+        color: $priority-high-bg;
+      }
+    }
+  }
+
+  .alpaca-user {
+    display: inline-flex;
+
+    .alpaca-user-avatar {
+      margin: 0 2px;
+
+      img {
+        width: 18px;
+        height: 18px;
+      }
+    }
+  }
+}
+
+/*
+ * 7.0 - Media Queries
+ */
+
+@keyframes slide-in-right {
+  from {
+    transform: translateX(100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+@media (width >=861px) {
+  .wp-admin {
+    #project-board {
+      .alpaca-wrap {
+        flex-direction: row;
+        padding: 5px 0;
+        overflow-x: auto;
+        overflow-y: hidden;
+
+        .alpaca-container {
+          flex-shrink: 0;
+        }
+      }
+
+      .alpaca-container {
+        height: 75vh;
+        display: flex;
+        flex: 1;
+        min-width: 18vw;
+        flex-direction: column;
+
+        &.is-collapsed {
+          width: auto;
+
+          .alpaca-container-header {
+            height: 100%;
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+
+            h2,
+            input {
+              height: 100%;
+            }
+
+            h2 {
+              margin: 5px 0;
+            }
+
+            input {
+              margin: 5px -1px;
+            }
+          }
+        }
+
+        .alpaca-items {
+          overflow-y: auto;
+          padding: 10px 1px;
+          margin-top: -10px;
+          height: calc(75vh - 80px);
+        }
+      }
+    }
+  }
+}
+
+@media (width <=860px) {
+  .wp-admin {
+    #project-board {
+      .alpaca-wrap {
+        flex-direction: column;
+      }
+
+      .alpaca-container {
+        margin: 1em 0 0 0;
+        overflow-x: auto;
+        display: flex;
+        flex-direction: column;
+        height: auto;
+
+        .alpaca-items {
+          flex-direction: row;
+          display: flex;
+          gap: $spacegap;
+          overflow-x: auto;
+          align-items: stretch;
+
+          .alpaca-item {
+            width: 200px;
+            min-height: 100%;
+            flex-shrink: 0;
+            display: flex;
+
+            .alpaca-item-inner {
+              width: 100%;
+              height: 100%;
+              display: flex;
+              flex-direction: column;
+            }
+
+            .alpaca-item-assignees {
+              &[data-assignees='1'] {
+                .alpaca-user .alpaca-user-name {
+                  display: none;
+                  padding-left: 0;
+                }
+              }
+            }
+          }
+        }
+
+        &.is-collapsed {
+          flex: 0 0 auto !important;
+          min-height: auto !important;
+
+          .alpaca-container-body {
+            display: none;
+            padding: 0;
+          }
+        }
+      }
+    }
+  }
+}
+
+.alpaca-comment-content.with-avatar-meta,
+.alpaca-timeline-msg-content.with-avatar-meta {
+  .alpaca-status-assignee[data-avatar] {
+    display: inline-flex;
+    align-items: center;
+
+    &::after {
+      content: '';
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      background-image: var(--avatar-url);
+      background-position: center;
+      background-size: cover;
+      border-radius: 50%;
+      border: 1px solid $greyborder;
+      margin-left: 5px;
+      vertical-align: middle;
+    }
+  }
+}
+
+.wp-admin .components-tooltip {
+  z-index: 999000030 !important;
+}

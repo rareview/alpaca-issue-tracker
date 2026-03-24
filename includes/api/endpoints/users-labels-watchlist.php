@@ -81,8 +81,8 @@ function alpaca_labels_endpoint() {
 			array(
 				'methods'             => 'POST',
 				'callback'            => 'alpaca_create_label_callback',
-				'permission_callback' => function () {
-					return \Alpaca\Inc\Helpers::user_can( 'manage_options' );
+				'permission_callback' => function ( WP_REST_Request $request ) {
+					return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'manage_options' );
 				},
 			),
 		)
@@ -95,15 +95,15 @@ function alpaca_labels_endpoint() {
 			array(
 				'methods'             => 'POST',
 				'callback'            => 'alpaca_update_label_callback',
-				'permission_callback' => function () {
-					return \Alpaca\Inc\Helpers::user_can( 'manage_options' );
+				'permission_callback' => function ( WP_REST_Request $request ) {
+					return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'manage_options' );
 				},
 			),
 			array(
 				'methods'             => 'DELETE',
 				'callback'            => 'alpaca_delete_label_callback',
-				'permission_callback' => function () {
-					return \Alpaca\Inc\Helpers::user_can( 'manage_options' );
+				'permission_callback' => function ( WP_REST_Request $request ) {
+					return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'manage_options' );
 				},
 			),
 		)
@@ -394,8 +394,8 @@ function alpaca_watchlist_endpoint() {
 		array(
 			'methods'             => 'POST',
 			'callback'            => 'alpaca_update_watchlist_callback',
-			'permission_callback' => function () {
-				return \Alpaca\Inc\Helpers::user_can( 'watchlist' );
+			'permission_callback' => function ( WP_REST_Request $request ) {
+				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'watchlist_toggle' );
 			},
 		)
 	);

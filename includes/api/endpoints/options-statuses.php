@@ -24,8 +24,8 @@ function alpaca_restore_default_statuses_endpoint() {
 		array(
 			'methods'             => 'POST',
 			'callback'            => 'alpaca_restore_default_statuses_callback',
-			'permission_callback' => function () {
-				return \Alpaca\Inc\Helpers::user_can( 'restore_statuses' );
+			'permission_callback' => function ( WP_REST_Request $request ) {
+				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'restore_statuses' );
 			},
 		)
 	);
@@ -91,8 +91,8 @@ function alpaca_update_status_endpoint() {
 		array(
 			'methods'             => 'POST',
 			'callback'            => 'alpaca_update_status_callback',
-			'permission_callback' => function () {
-				return \Alpaca\Inc\Helpers::user_can( 'update_status' );
+			'permission_callback' => function ( WP_REST_Request $request ) {
+				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'update_status' );
 			},
 			'args'                => array(
 				'id' => array(
@@ -128,7 +128,7 @@ function alpaca_update_status_callback( WP_REST_Request $request ) {
 	}
 
 	if ( isset( $data['name'] ) ) {
-		$new_name = (string) $data['name'];
+		$new_name = sanitize_text_field( (string) $data['name'] );
 		$new_slug = sanitize_title( $new_name );
 
 		$update_result = wp_update_term(
@@ -153,7 +153,7 @@ function alpaca_update_status_callback( WP_REST_Request $request ) {
 	}
 
 	if ( array_key_exists( 'term_score', (array) $data ) ) {
-		update_term_meta( $term_id, 'term_score', $data['term_score'] );
+		update_term_meta( $term_id, 'term_score', (int) $data['term_score'] );
 	}
 
 	return alpaca_rest_response(

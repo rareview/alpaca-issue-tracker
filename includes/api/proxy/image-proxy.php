@@ -264,7 +264,7 @@ function alpaca_image_proxy_callback( WP_REST_Request $request ) {
 		),
 	);
 
-	$resp = wp_remote_get( $url, $args );
+	$resp = wp_safe_remote_get( $url, $args );
 	if ( is_wp_error( $resp ) ) {
 		return alpaca_rest_response(
 			'image_proxy',

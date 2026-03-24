@@ -255,8 +255,8 @@ function alpaca_register_comment_attachment_endpoint() {
 		array(
 			'methods'             => WP_REST_Server::CREATABLE,
 			'callback'            => 'alpaca_upload_comment_attachment',
-			'permission_callback' => function () {
-				return \Alpaca\Inc\Helpers::user_can( 'register_comment_meta' );
+			'permission_callback' => function ( WP_REST_Request $request ) {
+				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'register_comment_meta' );
 			},
 			'args'                => array(
 				'issue_id' => array(
@@ -274,8 +274,8 @@ function alpaca_register_comment_attachment_endpoint() {
 		array(
 			'methods'             => WP_REST_Server::CREATABLE,
 			'callback'            => 'alpaca_delete_comment_attachment',
-			'permission_callback' => function () {
-				return \Alpaca\Inc\Helpers::user_can( 'register_comment_meta' );
+			'permission_callback' => function ( WP_REST_Request $request ) {
+				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'register_comment_meta' );
 			},
 			'args'                => array(
 				'issue_id' => array(
@@ -425,7 +425,30 @@ function alpaca_delete_comment_attachment( WP_REST_Request $request ) {
 	}
 
 	$relative_path = ltrim( str_replace( $base_paths['base_url'], '', $url ), '/' );
-	$file_path     = $base_paths['base_dir'] . $relative_path;
+	$relative_path = wp_normalize_path( rawurldecode( $relative_path ) );
+	$file_path     = wp_normalize_path( $base_paths['base_dir'] . $relative_path );
+	$issue_dir     = wp_normalize_path( trailingslashit( $base_paths['base_dir'] . $subdir ) );
+	$issue_dir_raw = realpath( $issue_dir );
+	$file_dir_raw  = realpath( dirname( $file_path ) );
+
+	if ( false === $issue_dir_raw || false === $file_dir_raw ) {
+		return alpaca_comment_attachment_error_response(
+			'comment_attachment_delete',
+			__( 'Attachment path is not valid.', 'alpaca' ),
+			400
+		);
+	}
+
+	$issue_dir = trailingslashit( wp_normalize_path( $issue_dir_raw ) );
+	$file_dir  = trailingslashit( wp_normalize_path( $file_dir_raw ) );
+
+	if ( 0 !== strpos( $file_dir, $issue_dir ) ) {
+		return alpaca_comment_attachment_error_response(
+			'comment_attachment_delete',
+			__( 'Attachment path is not valid.', 'alpaca' ),
+			400
+		);
+	}
 
 	if ( ! file_exists( $file_path ) ) {
 		return alpaca_comment_attachment_error_response(

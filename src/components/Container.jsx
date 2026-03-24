@@ -445,6 +445,7 @@ function Container({
                     assignees={dragOverItem.assignees}
                     labels={dragOverItem.labels}
                     commentCount={dragOverItem.commentCount}
+                    commentCountByAgent={dragOverItem.commentCountByAgent}
                     postDate={dragOverItem.postDate}
                     meta={dragOverItem.meta}
                     className="alpaca-item-inner"
@@ -496,6 +497,7 @@ function Container({
                     assignees={item.assignees}
                     labels={item.labels}
                     commentCount={item.commentCount}
+                    commentCountByAgent={item.commentCountByAgent}
                     meta={item.meta}
                     onClick={onItemClick}
                   />
@@ -530,6 +532,7 @@ function Container({
                     assignees={item.assignees}
                     labels={item.labels}
                     commentCount={item.commentCount}
+                    commentCountByAgent={item.commentCountByAgent}
                     meta={item.meta}
                     onClick={onItemClick}
                   />,
@@ -556,6 +559,7 @@ Container.propTypes = {
       assignees: PropTypes.array,
       labels: PropTypes.array,
       commentCount: PropTypes.number,
+      commentCountByAgent: PropTypes.object,
       meta: PropTypes.object,
     }),
   ).isRequired,

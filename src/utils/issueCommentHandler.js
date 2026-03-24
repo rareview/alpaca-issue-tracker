@@ -205,6 +205,7 @@ const postComment = async (
       doAction('alpaca.commentCountChanged', {
         issueId: postId.toString(),
         newCount: response.comment_count,
+        newCountByAgent: response.comment_count_by_agent || null,
       });
       doAction('alpaca.lastActivityChanged', {
         issueId: postId.toString(),
@@ -254,7 +255,7 @@ addAction(
     }
 
     await postComment(issue.id, commentContent, commentTags, {
-      authorUserAgent: 'human',
+      authorUserAgent: 'create',
       meta: commentMeta,
     });
   },

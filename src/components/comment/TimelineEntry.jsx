@@ -4,6 +4,7 @@ import User from '../User';
 import Time from '../Time';
 import { Attachment } from '../issue/AttachmentRow';
 import { generateAssigneeSpan } from '../../hooks/useUser';
+import { sanitizeHtml, isValidHttpUrl } from '../../utils/sanitize';
 
 const { __, sprintf } = wp.i18n;
 const { useMemo, memo } = wp.element;
@@ -94,8 +95,9 @@ export const injectAvatarStyles = (htmlString) => {
     const spans = doc.querySelectorAll('[data-avatar]');
     spans.forEach((span) => {
       const avatarUrl = span.dataset.avatar;
-      if (avatarUrl) {
-        span.style.setProperty('--avatar-url', `url('${avatarUrl}')`);
+      if (avatarUrl && isValidHttpUrl(avatarUrl)) {
+        const safeUrl = avatarUrl.replace(/'/g, "\\'");
+        span.style.setProperty('--avatar-url', `url('${safeUrl}')`);
       }
     });
     return doc.body.innerHTML;
@@ -170,6 +172,9 @@ export const getProcessedCommentContent = (comment) => {
   } else if (comment.content.rendered) {
     content = mentionMarkup(comment.content.rendered);
   }
+  const content = comment.content.raw
+    ? sanitizeHtml(marked(comment.content.raw))
+    : comment.content.rendered;
 
   return injectAvatarStyles(content);
 };
@@ -216,7 +221,13 @@ const TimelineEntry = ({
     comment._embedded?.author?.[0] ||
     currentUser || { name: __('Unknown', 'alpaca') };
 
-  const dataSource = comment.author_user_agent === 'audit' ? 'audit' : 'human';
+  let dataSource = 'human';
+
+  if ('audit' === comment.author_user_agent) {
+    dataSource = 'audit';
+  } else if ('create' === comment.author_user_agent) {
+    dataSource = 'create';
+  }
   const isAudit = dataSource === 'audit';
   const commentTags = comment.meta?.alpacaCommentTags || [];
   const commentAttachments = comment.meta?.alpacaCommentAttachments || [];
