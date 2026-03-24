@@ -22,12 +22,51 @@ export const updateNotificationPreferences = (preferences) =>
   });
 
 /**
+ * Build template API helpers for a notification template endpoint.
+ *
+ * @param {string} basePath REST base path.
+ * @return {Object} Template API helpers.
+ */
+const createTemplateApi = (basePath) => ({
+  fetchTemplate: () => wp.apiFetch({ path: basePath }),
+  updateTemplate: (payload) =>
+    wp.apiFetch({
+      path: basePath,
+      method: 'POST',
+      data: payload,
+    }),
+  resetTemplate: () =>
+    wp.apiFetch({
+      path: `${basePath}/reset`,
+      method: 'POST',
+    }),
+  previewTemplate: (payload) =>
+    wp.apiFetch({
+      path: `${basePath}/preview`,
+      method: 'POST',
+      data: payload,
+    }),
+  sendTestEmail: (payload) =>
+    wp.apiFetch({
+      path: `${basePath}/test`,
+      method: 'POST',
+      data: payload,
+    }),
+});
+
+const notificationTemplateApi = createTemplateApi(
+  '/alpaca/v1/notification-template',
+);
+const notificationDigestTemplateApi = createTemplateApi(
+  '/alpaca/v1/notification-digest-template',
+);
+
+/**
  * Fetch the admin notification email template.
  *
  * @return {Promise<Object>} Template payload.
  */
-export const fetchNotificationTemplate = () =>
-  wp.apiFetch({ path: '/alpaca/v1/notification-template' });
+export const fetchNotificationTemplate = notificationTemplateApi.fetchTemplate;
 
 /**
  * Save the admin notification email template.
@@ -35,23 +74,15 @@ export const fetchNotificationTemplate = () =>
  * @param {Object} payload Template payload.
  * @return {Promise<Object>} Saved template payload.
  */
-export const updateNotificationTemplate = (payload) =>
-  wp.apiFetch({
-    path: '/alpaca/v1/notification-template',
-    method: 'POST',
-    data: payload,
-  });
+export const updateNotificationTemplate =
+  notificationTemplateApi.updateTemplate;
 
 /**
  * Reset the admin notification email template to defaults.
  *
  * @return {Promise<Object>} Reset template payload.
  */
-export const resetNotificationTemplate = () =>
-  wp.apiFetch({
-    path: '/alpaca/v1/notification-template/reset',
-    method: 'POST',
-  });
+export const resetNotificationTemplate = notificationTemplateApi.resetTemplate;
 
 /**
  * Preview the notification email template.
@@ -59,12 +90,8 @@ export const resetNotificationTemplate = () =>
  * @param {Object} payload Template payload.
  * @return {Promise<Object>} Preview payload.
  */
-export const previewNotificationTemplate = (payload) =>
-  wp.apiFetch({
-    path: '/alpaca/v1/notification-template/preview',
-    method: 'POST',
-    data: payload,
-  });
+export const previewNotificationTemplate =
+  notificationTemplateApi.previewTemplate;
 
 /**
  * Send a notification template test email.
@@ -72,12 +99,51 @@ export const previewNotificationTemplate = (payload) =>
  * @param {Object} payload Template payload.
  * @return {Promise<Object>} Test-send response.
  */
-export const sendNotificationTemplateTestEmail = (payload) =>
-  wp.apiFetch({
-    path: '/alpaca/v1/notification-template/test',
-    method: 'POST',
-    data: payload,
-  });
+export const sendNotificationTemplateTestEmail =
+  notificationTemplateApi.sendTestEmail;
+
+/**
+ * Fetch the admin daily digest template.
+ *
+ * @return {Promise<Object>} Template payload.
+ */
+export const fetchNotificationDigestTemplate =
+  notificationDigestTemplateApi.fetchTemplate;
+
+/**
+ * Save the admin daily digest template.
+ *
+ * @param {Object} payload Template payload.
+ * @return {Promise<Object>} Saved template payload.
+ */
+export const updateNotificationDigestTemplate =
+  notificationDigestTemplateApi.updateTemplate;
+
+/**
+ * Reset the admin daily digest template to defaults.
+ *
+ * @return {Promise<Object>} Reset template payload.
+ */
+export const resetNotificationDigestTemplate =
+  notificationDigestTemplateApi.resetTemplate;
+
+/**
+ * Preview the daily digest template.
+ *
+ * @param {Object} payload Template payload.
+ * @return {Promise<Object>} Preview payload.
+ */
+export const previewNotificationDigestTemplate =
+  notificationDigestTemplateApi.previewTemplate;
+
+/**
+ * Send a daily digest template test email.
+ *
+ * @param {Object} payload Template payload.
+ * @return {Promise<Object>} Test-send response.
+ */
+export const sendNotificationDigestTemplateTestEmail =
+  notificationDigestTemplateApi.sendTestEmail;
 
 /**
  * Fetch inbox items for the current user.

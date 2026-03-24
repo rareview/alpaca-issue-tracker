@@ -1,6 +1,5 @@
 import './scss/main.scss';
 
-import './apiTest.js';
 import './utils/issueCommentHandler.js';
 import './utils/dataDump.js';
 import './utils/boardHelpers.js';
@@ -26,7 +25,7 @@ import { WatchlistProvider } from './context/WatchlistContext.jsx';
 import { AlpacaBoard } from './Board.jsx';
 import Presence from './components/Presence';
 import NotificationPreferences from './components/NotificationPreferences.jsx';
-import NotificationTemplateScreen from './components/NotificationTemplateScreen.jsx';
+import EmailTemplatesScreen from './components/EmailTemplatesScreen.jsx';
 import AdminSidebarInboxBadge from './components/notifications/AdminSidebarInboxBadge.jsx';
 import AlpacaDashboardWidget from './DashboardWidget.jsx';
 import About from './about/About.jsx';
@@ -153,9 +152,9 @@ if (document.querySelector('#alpaca-notifications-page')) {
   );
 }
 
-if (document.querySelector('#alpaca-notification-template-page')) {
+if (document.querySelector('#alpaca-email-templates-page')) {
   render(
-    <NotificationTemplateScreen />,
-    document.querySelector('#alpaca-notification-template-page'),
+    <EmailTemplatesScreen />,
+    document.querySelector('#alpaca-email-templates-page'),
   );
 }

@@ -122,13 +122,8 @@ function alpaca_notification_transport_requires_message( $transport ) {
  */
 function alpaca_send_notification_email_route( $route, $message ) {
 	$address = isset( $route['address'] ) ? (string) $route['address'] : '';
-	if ( '' === $address || ! is_email( $address ) ) {
-		return false;
-	}
 
-	$headers = array( 'Content-Type: text/html; charset=UTF-8' );
-
-	return wp_mail( $address, $message['subject'], $message['html'], $headers );
+	return alpaca_send_notification_html_email( $address, $message );
 }
 
 /**
@@ -199,6 +194,8 @@ function alpaca_send_notifications_for_event( $event, $template = null ) {
 	}
 
 	foreach ( $recipients as $recipient ) {
+		alpaca_capture_notification_item_for_recipient( $recipient, $event );
+
 		$routes = alpaca_get_notification_recipient_routes( $recipient, $event );
 		if ( empty( $routes ) ) {
 			continue;

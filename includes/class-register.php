@@ -76,6 +76,22 @@ class Register {
 	}
 
 	/**
+	 * Determine whether the current admin page is a notification template screen.
+	 *
+	 * @param string $hook_suffix Current admin page hook suffix.
+	 * @return bool True when the page is a notification template screen.
+	 */
+	private function is_notification_template_admin_page( $hook_suffix ) {
+		return in_array(
+			$hook_suffix,
+			array(
+				'project-board_page_alpaca-email-templates',
+			),
+			true
+		);
+	}
+
+	/**
 	 * Get the translation path for JavaScript catalogs.
 	 *
 	 * @return string Absolute path to the translation directory.
@@ -235,7 +251,7 @@ class Register {
 	public function enqueue_admin_assets( $hook_suffix ) {
 
 		$script_dependencies = $this->get_base_script_dependencies();
-		if ( 'project-board_page_alpaca-notification-template' === $hook_suffix ) {
+		if ( $this->is_notification_template_admin_page( $hook_suffix ) ) {
 			$script_dependencies = array_merge(
 				$script_dependencies,
 				$this->get_notification_template_dependencies()
@@ -260,7 +276,7 @@ class Register {
 			)
 		);
 
-		if ( 'project-board_page_alpaca-notification-template' === $hook_suffix ) {
+		if ( $this->is_notification_template_admin_page( $hook_suffix ) ) {
 			wp_enqueue_media();
 			wp_enqueue_style( 'wp-editor' );
 			wp_enqueue_style( 'wp-edit-blocks' );

@@ -12,8 +12,12 @@ const { Button, CheckboxControl, Notice, Spinner, TextControl, ToggleControl } =
 const CHANNELS_KEY = 'channels';
 const CHANNEL_STATUS_KEY = 'channel_status';
 const AVAILABLE_CHANNELS_KEY = 'available_channels';
+const DIGESTS_KEY = 'digests';
+const DAILY_DIGEST_KEY = 'daily';
+const SEND_TIME_KEY = 'send_time';
 const LABEL_IDS_KEY = 'label_ids';
 const ADDRESS_OVERRIDE_KEY = 'address_override';
+const SITE_TIMEZONE_LABEL_KEY = 'site_timezone_label';
 const TERM_ID_KEY = 'term_id';
 const INBOX_QUERY_KEY = 'inbox';
 const INBOX_QUERY_VALUE = 'open';
@@ -230,6 +234,7 @@ const NotificationPreferences = () => {
   const [channelStatus, setChannelStatus] = useState({});
   const [labels, setLabels] = useState([]);
   const [emailDeliveryValue, setEmailDeliveryValue] = useState('');
+  const [siteTimezoneLabel, setSiteTimezoneLabel] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
@@ -261,6 +266,11 @@ const NotificationPreferences = () => {
             'object' === typeof response[CHANNEL_STATUS_KEY]
             ? response[CHANNEL_STATUS_KEY]
             : {},
+        );
+        setSiteTimezoneLabel(
+          'string' === typeof response[SITE_TIMEZONE_LABEL_KEY]
+            ? response[SITE_TIMEZONE_LABEL_KEY]
+            : '',
         );
         setEmailDeliveryValue(
           getEmailDeliveryFieldValue(
@@ -328,6 +338,32 @@ const NotificationPreferences = () => {
     return preferences[LABEL_IDS_KEY].map((value) => Number(value));
   }, [preferences]);
 
+  const dailyDigestPreferences = useMemo(() => {
+    if (!preferences || !preferences[DIGESTS_KEY]) {
+      return {
+        enabled: false,
+        channels: {},
+        [SEND_TIME_KEY]: '17:00',
+      };
+    }
+
+    return (
+      preferences[DIGESTS_KEY][DAILY_DIGEST_KEY] || {
+        enabled: false,
+        channels: {},
+        [SEND_TIME_KEY]: '17:00',
+      }
+    );
+  }, [preferences]);
+
+  const digestChannelOptions = useMemo(
+    () =>
+      availableChannels.filter(
+        (channel) => channel && channel.supports_digest && channel.is_available,
+      ),
+    [availableChannels],
+  );
+
   const updateSectionValue = useCallback((section, key, value) => {
     setPreferences((current) => {
       if (!current) {
@@ -367,6 +403,72 @@ const NotificationPreferences = () => {
           [channelKey]: {
             ...currentChannel,
             [fieldKey]: value,
+          },
+        },
+      };
+    });
+  }, []);
+
+  const updateDailyDigestValue = useCallback((fieldKey, value) => {
+    setPreferences((current) => {
+      if (!current) {
+        return current;
+      }
+
+      const currentDigests =
+        current[DIGESTS_KEY] && 'object' === typeof current[DIGESTS_KEY]
+          ? current[DIGESTS_KEY]
+          : {};
+      const currentDailyDigest =
+        currentDigests[DAILY_DIGEST_KEY] &&
+        'object' === typeof currentDigests[DAILY_DIGEST_KEY]
+          ? currentDigests[DAILY_DIGEST_KEY]
+          : {};
+
+      return {
+        ...current,
+        [DIGESTS_KEY]: {
+          ...currentDigests,
+          [DAILY_DIGEST_KEY]: {
+            ...currentDailyDigest,
+            [fieldKey]: value,
+          },
+        },
+      };
+    });
+  }, []);
+
+  const updateDailyDigestChannelValue = useCallback((channelKey, value) => {
+    setPreferences((current) => {
+      if (!current) {
+        return current;
+      }
+
+      const currentDigests =
+        current[DIGESTS_KEY] && 'object' === typeof current[DIGESTS_KEY]
+          ? current[DIGESTS_KEY]
+          : {};
+      const currentDailyDigest =
+        currentDigests[DAILY_DIGEST_KEY] &&
+        'object' === typeof currentDigests[DAILY_DIGEST_KEY]
+          ? currentDigests[DAILY_DIGEST_KEY]
+          : {};
+      const currentChannels =
+        currentDailyDigest.channels &&
+        'object' === typeof currentDailyDigest.channels
+          ? currentDailyDigest.channels
+          : {};
+
+      return {
+        ...current,
+        [DIGESTS_KEY]: {
+          ...currentDigests,
+          [DAILY_DIGEST_KEY]: {
+            ...currentDailyDigest,
+            channels: {
+              ...currentChannels,
+              [channelKey]: value,
+            },
           },
         },
       };
@@ -449,6 +551,11 @@ const NotificationPreferences = () => {
             'object' === typeof response[CHANNEL_STATUS_KEY]
             ? response[CHANNEL_STATUS_KEY]
             : {},
+        );
+        setSiteTimezoneLabel(
+          'string' === typeof response[SITE_TIMEZONE_LABEL_KEY]
+            ? response[SITE_TIMEZONE_LABEL_KEY]
+            : '',
         );
         setEmailDeliveryValue(
           getEmailDeliveryFieldValue(
@@ -693,6 +800,103 @@ const NotificationPreferences = () => {
               </div>
             );
           })}
+        </div>
+      </section>
+
+      <section className="alpaca-notifications-panel">
+        <h2>{__('Daily Summary', 'alpaca')}</h2>
+        <p className="alpaca-notifications-panel-intro">
+          {__(
+            'Receive a scheduled digest every 24 hours at your chosen time, grouping the last 24 hours of activity by issue.',
+            'alpaca',
+          )}
+        </p>
+
+        <div className="alpaca-notifications-digest-layout">
+          <ToggleControl
+            label={__('Receive a daily summary', 'alpaca')}
+            checked={Boolean(dailyDigestPreferences.enabled)}
+            onChange={(value) => updateDailyDigestValue('enabled', value)}
+            disabled={isSaving}
+          />
+
+          <div
+            className={`alpaca-notifications-digest-settings${
+              dailyDigestPreferences.enabled ? '' : ' is-disabled'
+            }`}
+            aria-disabled={!dailyDigestPreferences.enabled}
+          >
+            {!dailyDigestPreferences.enabled && (
+              <p className="alpaca-notifications-digest-disabled-note">
+                {__(
+                  'Turn on Daily Summary to configure the schedule and delivery channel.',
+                  'alpaca',
+                )}
+              </p>
+            )}
+
+            <div className="alpaca-notifications-digest-time">
+              <TextControl
+                label={__('Send time', 'alpaca')}
+                type="time"
+                value={dailyDigestPreferences[SEND_TIME_KEY] || '17:00'}
+                onChange={(value) =>
+                  updateDailyDigestValue(SEND_TIME_KEY, value)
+                }
+                disabled={isSaving || !dailyDigestPreferences.enabled}
+              />
+            </div>
+
+            <p className="alpaca-notifications-help">
+              {sprintf(
+                /* translators: %s: site timezone label. */
+                __(
+                  'Daily summaries repeat every 24 hours using the site timezone: %s.',
+                  'alpaca',
+                ),
+                siteTimezoneLabel || __('Site timezone', 'alpaca'),
+              )}
+            </p>
+
+            <div className="alpaca-notifications-digest-fieldset">
+              <strong>{__('Digest channels', 'alpaca')}</strong>
+              <div className="alpaca-notifications-digest-channels">
+                {digestChannelOptions.map((channel) => {
+                  const canEnable =
+                    channelStatus?.[channel.key] &&
+                    'boolean' === typeof channelStatus[channel.key].can_enable
+                      ? channelStatus[channel.key].can_enable
+                      : true;
+
+                  return (
+                    <CheckboxControl
+                      key={channel.key}
+                      label={channel.label}
+                      checked={Boolean(
+                        dailyDigestPreferences.channels?.[channel.key],
+                      )}
+                      disabled={
+                        isSaving ||
+                        !dailyDigestPreferences.enabled ||
+                        !canEnable
+                      }
+                      onChange={(value) =>
+                        updateDailyDigestChannelValue(channel.key, value)
+                      }
+                      help={
+                        canEnable
+                          ? ''
+                          : __(
+                              'Configure a valid delivery address before enabling this digest channel.',
+                              'alpaca',
+                            )
+                      }
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 

@@ -52,11 +52,11 @@ add_action(
 
 		add_submenu_page(
 			'project-board',
-			esc_html__( 'Email Template', 'alpaca' ),
-			esc_html__( 'Email Template', 'alpaca' ),
+			esc_html__( 'Email Templates', 'alpaca' ),
+			esc_html__( 'Email Templates', 'alpaca' ),
 			'manage_options',
-			'alpaca-notification-template',
-			'alpaca_notification_template_page'
+			'alpaca-email-templates',
+			'alpaca_email_templates_page'
 		);
 
 		add_submenu_page(
@@ -127,13 +127,13 @@ function alpaca_notifications_page() {
 }
 
 /**
- * Render the admin email template page.
+ * Render the admin email templates page.
  */
-function alpaca_notification_template_page() {
+function alpaca_email_templates_page() {
 	?>
-	<div class="alpaca-settings wrap alpaca-notification-template-admin-page">
-		<h1><?php echo esc_html__( 'Email Template', 'alpaca' ); ?></h1>
-		<div id="alpaca-notification-template-page"></div>
+	<div class="alpaca-settings wrap alpaca-email-templates-admin-page">
+		<h1><?php echo esc_html__( 'Email Templates', 'alpaca' ); ?></h1>
+		<div id="alpaca-email-templates-page"></div>
 	</div>
 	<?php
 }

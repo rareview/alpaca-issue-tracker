@@ -13,31 +13,30 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Build placeholder token replacements for an event.
  *
- * @param array<string, mixed> $event            Notification event.
- * @param array<string, int>   $template_context Template context values.
+ * @param array<string, mixed> $event Notification event.
  * @return array<string, string> Token map.
  */
-function alpaca_get_notification_template_tokens( $event, $template_context = array() ) {
-	$timestamp        = isset( $event['timestamp'] ) ? (string) $event['timestamp'] : '';
-	$time_text        = '';
-	$template_context = alpaca_sanitize_notification_email_template_context( $template_context );
+function alpaca_get_notification_template_tokens( $event ) {
+	$timestamp = isset( $event['timestamp'] ) ? (string) $event['timestamp'] : '';
+	$time_text = '';
 
 	if ( '' !== $timestamp ) {
 		$time_text = wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $timestamp ) );
 	}
 
 	return array(
-		'{{issue_title}}'   => isset( $event['issue']['title'] ) ? (string) $event['issue']['title'] : '',
-		'{{actor_name}}'    => isset( $event['actor']['display_name'] ) ? (string) $event['actor']['display_name'] : '',
-		'{{performed_by}}'  => isset( $event['actor']['display_name'] ) ? (string) $event['actor']['display_name'] : '',
-		'{{event_label}}'   => isset( $event['event_label'] ) ? (string) $event['event_label'] : '',
-		'{{site_name}}'     => isset( $event['site']['title'] ) ? (string) $event['site']['title'] : '',
-		'{{site_title}}'    => isset( $event['site']['title'] ) ? (string) $event['site']['title'] : '',
-		'{{site_tagline}}'  => isset( $event['site']['tagline'] ) ? (string) $event['site']['tagline'] : '',
-		'{{site_logo_url}}' => alpaca_get_notification_site_icon_url(),
-		'{{site_icon_url}}' => alpaca_get_notification_site_icon_url(),
-		'{{event_time}}'    => $time_text,
-		'{{issue_url}}'     => isset( $event['issue']['url'] ) ? (string) $event['issue']['url'] : '',
+		'{{issue_title}}'       => isset( $event['issue']['title'] ) ? (string) $event['issue']['title'] : '',
+		'{{actor_name}}'        => isset( $event['actor']['display_name'] ) ? (string) $event['actor']['display_name'] : '',
+		'{{performed_by}}'      => isset( $event['actor']['display_name'] ) ? (string) $event['actor']['display_name'] : '',
+		'{{event_label}}'       => isset( $event['event_label'] ) ? (string) $event['event_label'] : '',
+		'{{site_name}}'         => isset( $event['site']['title'] ) ? (string) $event['site']['title'] : '',
+		'{{site_title}}'        => isset( $event['site']['title'] ) ? (string) $event['site']['title'] : '',
+		'{{site_tagline}}'      => isset( $event['site']['tagline'] ) ? (string) $event['site']['tagline'] : '',
+		'{{site_logo_url}}'     => alpaca_get_notification_site_icon_url(),
+		'{{site_icon_url}}'     => alpaca_get_notification_site_icon_url(),
+		'{{notifications_url}}' => alpaca_get_notification_preferences_url(),
+		'{{event_time}}'        => $time_text,
+		'{{issue_url}}'         => isset( $event['issue']['url'] ) ? (string) $event['issue']['url'] : '',
 	);
 }
 
@@ -151,13 +150,12 @@ function alpaca_render_notification_attachments_html( $attachments ) {
 /**
  * Render a custom Alpaca email placeholder block.
  *
- * @param string               $block_name        Block name.
- * @param array<string, mixed> $event             Notification event.
- * @param array<string, int>   $template_context  Template context values.
+ * @param string               $block_name Block name.
+ * @param array<string, mixed> $event      Notification event.
  * @return string HTML output.
  */
-function alpaca_render_notification_placeholder_block( $block_name, $event, $template_context = array() ) {
-	$tokens = alpaca_get_notification_template_tokens( $event, $template_context );
+function alpaca_render_notification_placeholder_block( $block_name, $event ) {
+	$tokens = alpaca_get_notification_template_tokens( $event );
 
 	if ( 'alpaca/email-issue-title' === $block_name ) {
 		return '<p>' . esc_html( $tokens['{{issue_title}}'] ) . '</p>';
@@ -212,14 +210,13 @@ function alpaca_render_notification_placeholder_block( $block_name, $event, $tem
 /**
  * Render a site logo block for email output.
  *
- * @param array<string, mixed> $block            Parsed block.
- * @param array<string, mixed> $event            Notification event.
- * @param array<string, int>   $template_context Template context values.
+ * @param array<string, mixed> $block Parsed block.
+ * @param array<string, mixed> $event Notification event.
  * @return string HTML output.
  */
-function alpaca_render_notification_site_logo_block( $block, $event, $template_context = array() ) {
-	$tokens   = alpaca_get_notification_template_tokens( $event, $template_context );
-	$logo_url = alpaca_get_notification_site_logo_url( $template_context );
+function alpaca_render_notification_site_logo_block( $block, $event ) {
+	$tokens   = alpaca_get_notification_template_tokens( $event );
+	$logo_url = alpaca_get_notification_site_icon_url();
 
 	if ( '' === $logo_url ) {
 		return '';
@@ -265,28 +262,27 @@ function alpaca_create_notification_html_block( $html ) {
 /**
  * Prepare a parsed notification email block for server rendering.
  *
- * @param array<string, mixed> $block            Parsed block.
- * @param array<string, mixed> $event            Notification event.
- * @param array<string, int>   $template_context Template context values.
+ * @param array<string, mixed> $block Parsed block.
+ * @param array<string, mixed> $event Notification event.
  * @return array<string, mixed> Prepared parsed block.
  */
-function alpaca_prepare_notification_block_for_render( $block, $event, $template_context = array() ) {
+function alpaca_prepare_notification_block_for_render( $block, $event ) {
 	$block_name = isset( $block['blockName'] ) ? (string) $block['blockName'] : '';
 
 	if ( 0 === strpos( $block_name, 'alpaca/email-' ) ) {
-		$html = alpaca_render_notification_placeholder_block( $block_name, $event, $template_context );
+		$html = alpaca_render_notification_placeholder_block( $block_name, $event );
 
 		return alpaca_create_notification_html_block( $html );
 	}
 
 	if ( 'core/site-logo' === $block_name ) {
-		$html = alpaca_render_notification_site_logo_block( $block, $event, $template_context );
+		$html = alpaca_render_notification_site_logo_block( $block, $event );
 
 		return alpaca_create_notification_html_block( $html );
 	}
 
 	if ( isset( $block['innerBlocks'] ) && is_array( $block['innerBlocks'] ) && ! empty( $block['innerBlocks'] ) ) {
-		$block['innerBlocks'] = alpaca_prepare_notification_blocks_for_render( $block['innerBlocks'], $event, $template_context );
+		$block['innerBlocks'] = alpaca_prepare_notification_blocks_for_render( $block['innerBlocks'], $event );
 	}
 
 	return $block;
@@ -295,16 +291,15 @@ function alpaca_prepare_notification_block_for_render( $block, $event, $template
 /**
  * Prepare parsed email blocks for server rendering.
  *
- * @param array<int, array<string, mixed>> $blocks            Parsed blocks.
- * @param array<string, mixed>             $event             Notification event.
- * @param array<string, int>               $template_context  Template context values.
+ * @param array<int, array<string, mixed>> $blocks Parsed blocks.
+ * @param array<string, mixed>             $event  Notification event.
  * @return array<int, array<string, mixed>> Prepared parsed blocks.
  */
-function alpaca_prepare_notification_blocks_for_render( $blocks, $event, $template_context = array() ) {
+function alpaca_prepare_notification_blocks_for_render( $blocks, $event ) {
 	$prepared = array();
 
 	foreach ( $blocks as $block ) {
-		$prepared[] = alpaca_prepare_notification_block_for_render( $block, $event, $template_context );
+		$prepared[] = alpaca_prepare_notification_block_for_render( $block, $event );
 	}
 
 	return $prepared;
@@ -313,14 +308,13 @@ function alpaca_prepare_notification_blocks_for_render( $blocks, $event, $templa
 /**
  * Render parsed email blocks to HTML.
  *
- * @param array<int, array<string, mixed>> $blocks            Parsed blocks.
- * @param array<string, mixed>             $event             Notification event.
- * @param array<string, int>               $template_context  Template context values.
+ * @param array<int, array<string, mixed>> $blocks Parsed blocks.
+ * @param array<string, mixed>             $event  Notification event.
  * @return string HTML output.
  */
-function alpaca_render_notification_blocks( $blocks, $event, $template_context = array() ) {
+function alpaca_render_notification_blocks( $blocks, $event ) {
 	$output = '';
-	$blocks = alpaca_prepare_notification_blocks_for_render( $blocks, $event, $template_context );
+	$blocks = alpaca_prepare_notification_blocks_for_render( $blocks, $event );
 
 	foreach ( $blocks as $block ) {
 		$output .= render_block( $block );
@@ -335,6 +329,7 @@ function alpaca_render_notification_blocks( $blocks, $event, $template_context =
  * @return string CSS rules.
  */
 function alpaca_get_notification_email_css() {
+
 	$css_path = ALPACA_PLUGIN_DIR . 'dist/index.css';
 	if ( ! file_exists( $css_path ) ) {
 		return '';
@@ -345,12 +340,109 @@ function alpaca_get_notification_email_css() {
 		return '';
 	}
 
+	$rules = array();
+
 	preg_match_all( '/[^{}]*\.alpaca-notification-email[^{}]*\{[^}]*\}/', $css, $matches );
-	if ( empty( $matches[0] ) ) {
-		return '';
+	if ( ! empty( $matches[0] ) ) {
+		$rules = array_merge( $rules, $matches[0] );
 	}
 
-	return implode( "\n", $matches[0] );
+	/*
+	* Some base email primitives are shared global selectors rather than
+	* notification-email-prefixed selectors. Pull them in explicitly so the
+	* sent email matches the editor preview.
+	*/
+	$shared_selectors = array(
+		'.alpaca-label-pill',
+	);
+
+	foreach ( $shared_selectors as $selector ) {
+		$pattern = '/[^{}]*' . preg_quote( $selector, '/' ) . '[^{}]*\{[^}]*\}/';
+		preg_match_all( $pattern, $css, $shared_matches );
+		if ( ! empty( $shared_matches[0] ) ) {
+			$rules = array_merge( $rules, $shared_matches[0] );
+		}
+	}
+
+	if ( empty( $rules ) ) {
+			return '';
+	}
+
+	return implode( "\n", array_values( array_unique( $rules ) ) );
+}
+/**
+ * Wrap notification email HTML in the standard email document shell.
+ *
+ * @param string             $body_html      Rendered HTML body.
+ * @param array<int, string> $extra_classes Extra CSS classes for the outer wrapper.
+ * @return string Full HTML document.
+ */
+function alpaca_wrap_notification_email_html( $body_html, $extra_classes = array() ) {
+	$classes = array( 'alpaca-notification-email' );
+
+	if ( is_array( $extra_classes ) ) {
+		foreach ( $extra_classes as $class_name ) {
+			if ( ! is_string( $class_name ) ) {
+				continue;
+			}
+
+			$class_name = trim( $class_name );
+			if ( '' === $class_name ) {
+				continue;
+			}
+
+			$classes[] = $class_name;
+		}
+	}
+
+	$css = alpaca_get_notification_email_css();
+
+	return '<!DOCTYPE html><html><head><meta charset="utf-8" /><style>' . $css . '</style></head><body><div class="' . esc_attr( implode( ' ', array_unique( $classes ) ) ) . '"><div class="alpaca-notification-email__inner">' . $body_html . '</div></div></body></html>';
+}
+
+/**
+ * Build a normalized notification message payload.
+ *
+ * @param string $subject Message subject.
+ * @param string $html    Message HTML body.
+ * @return array<string, string> Message payload.
+ */
+function alpaca_build_notification_message_payload( $subject, $html ) {
+	$text         = wp_strip_all_tags( preg_replace( '/<\/?(p|div|br|li|h[1-6]|tr|section|article|ul|ol)>/i', "\n", $html ) );
+	$from_details = alpaca_get_notification_mail_from_details();
+
+	return array(
+		'subject'      => is_string( $subject ) ? $subject : '',
+		'html'         => is_string( $html ) ? $html : '',
+		'text'         => trim( $text ),
+		'from_address' => $from_details['from_address'],
+		'from_name'    => $from_details['from_name'],
+		'from_label'   => $from_details['from_label'],
+	);
+}
+
+/**
+ * Send an HTML email notification.
+ *
+ * @param string               $address Email address.
+ * @param array<string, mixed> $message Message payload.
+ * @return bool True on success.
+ */
+function alpaca_send_notification_html_email( $address, $message ) {
+	$address = is_string( $address ) ? sanitize_email( $address ) : '';
+	if ( '' === $address || ! is_email( $address ) ) {
+		return false;
+	}
+
+	$subject = isset( $message['subject'] ) ? (string) $message['subject'] : '';
+	$html    = isset( $message['html'] ) ? (string) $message['html'] : '';
+
+	return wp_mail(
+		$address,
+		$subject,
+		$html,
+		array( 'Content-Type: text/html; charset=UTF-8' )
+	);
 }
 
 /**
@@ -416,19 +508,17 @@ function alpaca_render_notification_subject( $subject_template, $event ) {
 /**
  * Render the notification email body.
  *
- * @param string               $body_template    Serialized body template.
- * @param array<string, mixed> $event            Notification event.
- * @param array<string, int>   $template_context Template context values.
+ * @param string               $body_template Serialized body template.
+ * @param array<string, mixed> $event         Notification event.
  * @return string Rendered HTML body.
  */
-function alpaca_render_notification_body( $body_template, $event, $template_context = array() ) {
-	$tokens        = alpaca_get_notification_template_tokens( $event, $template_context );
+function alpaca_render_notification_body( $body_template, $event ) {
+	$tokens        = alpaca_get_notification_template_tokens( $event );
 	$body_template = strtr( $body_template, $tokens );
 	$blocks        = parse_blocks( $body_template );
-	$body_html     = alpaca_render_notification_blocks( $blocks, $event, $template_context );
-	$css           = alpaca_get_notification_email_css();
+	$body_html     = alpaca_render_notification_blocks( $blocks, $event );
 
-	return '<!DOCTYPE html><html><head><meta charset="utf-8" /><style>' . $css . '</style></head><body><div class="alpaca-notification-email"><div class="alpaca-notification-email__inner">' . $body_html . '</div></div></body></html>';
+	return alpaca_wrap_notification_email_html( $body_html );
 }
 
 /**
@@ -443,18 +533,8 @@ function alpaca_render_notification_message( $event, $template = null ) {
 		$template = alpaca_get_notification_email_template();
 	}
 
-	$context      = isset( $template['context'] ) && is_array( $template['context'] ) ? $template['context'] : array();
-	$subject      = alpaca_render_notification_subject( $template['subject'], $event );
-	$html         = alpaca_render_notification_body( $template['body'], $event, $context );
-	$text         = wp_strip_all_tags( preg_replace( '/<\/?(p|div|br|li|h[1-6]|tr)>/i', "\n", $html ) );
-	$from_details = alpaca_get_notification_mail_from_details();
+	$subject = alpaca_render_notification_subject( $template['subject'], $event );
+	$html    = alpaca_render_notification_body( $template['body'], $event );
 
-	return array(
-		'subject'      => $subject,
-		'html'         => $html,
-		'text'         => trim( $text ),
-		'from_address' => $from_details['from_address'],
-		'from_name'    => $from_details['from_name'],
-		'from_label'   => $from_details['from_label'],
-	);
+	return alpaca_build_notification_message_payload( $subject, $html );
 }

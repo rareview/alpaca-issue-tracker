@@ -59,16 +59,9 @@
     }
   }
 
-  .alpaca-user {
-    display: inline-flex;
-
-    .alpaca-user-avatar {
-      margin: 0 2px;
-
-      img {
-        width: 18px;
-        height: 18px;
-      }
+  .assignees {
+    .alpaca-item-assignees {
+      @include alpaca-assignee-stack(18px, 0, 0, false, 0.8rem, 0.25rem);
     }
   }
 }

@@ -17,4 +17,5 @@ require_once __DIR__ . '/mentions.php';
 require_once __DIR__ . '/events.php';
 require_once __DIR__ . '/recipients.php';
 require_once __DIR__ . '/render.php';
+require_once __DIR__ . '/digest/index.php';
 require_once __DIR__ . '/dispatch.php';
