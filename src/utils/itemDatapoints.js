@@ -255,5 +255,3 @@ window.alpaca.itemDatapoints.getRegistered = getRegisteredItemDatapoints;
 window.alpaca.itemDatapoints.getVisibility = getItemDatapointVisibility;
 window.alpaca.itemDatapoints.fetchVisibility = fetchItemDatapointVisibility;
 window.alpaca.itemDatapoints.saveVisibility = saveItemDatapointVisibility;
-
-fetchItemDatapointVisibility();

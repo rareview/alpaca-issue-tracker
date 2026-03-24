@@ -11,8 +11,7 @@ import Time from '../components/Time';
  */
 export const addLastCommentActivityDatapoint = (originalContent, itemProps) => {
   const { meta } = itemProps;
-  const { postDate } = itemProps;
-  const lastActivityDateString = meta?.lastActivity || postDate;
+  const lastActivityDateString = meta?.lastActivity;
 
   if (!lastActivityDateString) {
     return originalContent;
