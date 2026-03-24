@@ -168,13 +168,10 @@ export const getProcessedCommentContent = (comment) => {
   let content = '';
 
   if (comment.content.raw) {
-    content = marked(mentionMarkup(comment.content.raw));
+    content = sanitizeHtml(marked(mentionMarkup(comment.content.raw)));
   } else if (comment.content.rendered) {
-    content = mentionMarkup(comment.content.rendered);
+    content = sanitizeHtml(mentionMarkup(comment.content.rendered));
   }
-  const content = comment.content.raw
-    ? sanitizeHtml(marked(comment.content.raw))
-    : comment.content.rendered;
 
   return injectAvatarStyles(content);
 };
