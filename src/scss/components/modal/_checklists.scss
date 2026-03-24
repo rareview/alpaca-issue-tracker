@@ -41,8 +41,28 @@
     display: grid;
     grid-template-columns: auto minmax(0, 1fr) auto auto auto;
     column-gap: 8px;
-    align-items: anchor-center;
+    align-items: center;
     width: 100%;
+
+    > .components-base-control {
+      margin-bottom: 0;
+      align-self: center;
+    }
+
+    > .components-checkbox-control {
+      display: inline-flex;
+      align-items: center;
+
+      .components-base-control__field {
+        margin: 0;
+      }
+
+      .components-h-stack,
+      .components-checkbox-control__input-container {
+        display: inline-flex;
+        align-items: center;
+      }
+    }
   }
 
   .alpaca-subissues-text-control {
