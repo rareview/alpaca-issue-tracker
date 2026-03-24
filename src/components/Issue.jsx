@@ -97,7 +97,7 @@ const LabelsRow = memo(
   ({ labels, selectedIds, onChange, isLoading }) => (
     <div id="labels" className="alpaca-details-grid__item">
       <div className="alpaca-details-grid__label">{__('Labels', 'alpaca')}</div>
-      <div className="alpaca-details-grid__value flexalign alpaca-issue-labels-cell components-form-token-field__input-container">
+      <div className="alpaca-details-grid__value flexalign alpaca-issue-labels-cell">
         <LabelsSelector
           labels={labels}
           selectedIds={selectedIds}
