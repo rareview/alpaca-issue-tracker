@@ -128,6 +128,33 @@
   }
 }
 
+.alpaca-assignee-suggestion-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 24px;
+}
+
+.alpaca-assignee-suggestion-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: block;
+  flex: 0 0 20px;
+}
+
+.alpaca-assignee-suggestion-avatar-fallback {
+  color: $greytext;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: center;
+}
+
+.alpaca-assignee-suggestion-name {
+  color: inherit;
+  line-height: 1.25;
+}
+
 /* Style selected FormTokenField tokens like alpaca label pills. */
 .alpaca-issue-labels-cell {
   .components-form-token-field__token {

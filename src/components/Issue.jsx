@@ -72,7 +72,7 @@ const PriorityRow = memo(
 );
 
 const AssigneeRow = memo(
-  ({ assignees, allUsers, onChange, isLoading }) => (
+  ({ assignees, allUsers, allUserObjects, onChange, isLoading }) => (
     <div id="assignees" className="alpaca-details-grid__item">
       <div className="alpaca-details-grid__label">
         {__('Assignees', 'alpaca')}
@@ -81,6 +81,7 @@ const AssigneeRow = memo(
         <AssigneeSelector
           assignees={assignees}
           allUsers={allUsers}
+          allUserObjects={allUserObjects}
           onChange={onChange}
           isLoading={isLoading}
         />
@@ -90,7 +91,8 @@ const AssigneeRow = memo(
   (prev, next) =>
     prev.isLoading === next.isLoading &&
     prev.assignees.join(',') === next.assignees.join(',') &&
-    prev.allUsers.join(',') === next.allUsers.join(','),
+    prev.allUsers.join(',') === next.allUsers.join(',') &&
+    prev.allUserObjects === next.allUserObjects,
 );
 
 const LabelsRow = memo(
@@ -319,6 +321,7 @@ const SubissueAssigneeControl = memo(
               <AssigneeSelector
                 assignees={assignees}
                 allUsers={allUsers}
+                allUserObjects={allUserObjects}
                 onChange={onChange}
                 isLoading={isLoading}
               />
@@ -1713,6 +1716,7 @@ const AlpacaIssue = ({
                 <AssigneeRow
                   assignees={stableAssignees}
                   allUsers={stableUsers}
+                  allUserObjects={allUserObjects}
                   onChange={handleAssigneeChange}
                   isLoading={stableIsLoading}
                 />
