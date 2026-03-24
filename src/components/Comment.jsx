@@ -7,7 +7,6 @@ import TimelineEntry, { injectAvatarStyles } from './comment/TimelineEntry';
 const { useState, useEffect, useRef, useCallback, memo } = wp.element;
 const { __, _n, sprintf } = wp.i18n;
 const {
-  TextareaControl,
   Button,
   Modal,
   Dropdown,
@@ -23,6 +22,7 @@ import { sanitizeHtml } from '../utils/sanitize';
 import Lightbox from './issue/Lightbox';
 import { Attachment } from './issue/AttachmentRow';
 import { uploadIssueAttachment } from '../utils/attachmentUpload';
+import MentionsTextarea from './notifications/MentionsTextarea';
 
 const deleteCommentAttachment = async (url, issueId) => {
   if (!url || !issueId) {
@@ -157,6 +157,27 @@ const Comment = memo(
     onEditAttachRemove,
     isProcessingAttachments,
   }) => {
+    const commentAgentType = (
+      comment?.author_user_agent ||
+      comment?.comment_agent ||
+      ''
+    )
+      .toString()
+      .trim()
+      .toLowerCase();
+    const defaultIsEditable = ['human'];
+    const isDefaultEditable = defaultIsEditable.includes(commentAgentType);
+
+    // Allow extensions to override which issue comments are editable.
+    const isEditable = Boolean(
+      wp.hooks.applyFilters(
+        'alpaca.isIssueCommentEditable',
+        isDefaultEditable,
+        comment,
+        defaultIsEditable,
+      ),
+    );
+
     return (
       <TimelineEntry
         comment={comment}
@@ -179,15 +200,17 @@ const Comment = memo(
             )}
             renderContent={({ onClose }) => (
               <MenuGroup>
-                <MenuItem
-                  icon="edit"
-                  onClick={() => {
-                    startEditing(comment);
-                    onClose();
-                  }}
-                >
-                  {__('Edit', 'alpaca')}
-                </MenuItem>
+                {isEditable && (
+                  <MenuItem
+                    icon="edit"
+                    onClick={() => {
+                      startEditing(comment);
+                      onClose();
+                    }}
+                  >
+                    {__('Edit', 'alpaca')}
+                  </MenuItem>
+                )}
                 <MenuItem
                   icon="trash"
                   isDestructive
@@ -224,10 +247,12 @@ const Comment = memo(
               </>
             }
           >
-            <TextareaControl
+            <MentionsTextarea
               value={editingContent}
               onChange={setEditingContent}
-              ref={editingRef}
+              textareaRef={editingRef}
+              placeholder={__('Edit comment…', 'alpaca')}
+              disabled={isSubmitting}
             />
           </AttachmentControls>
         }
@@ -372,6 +397,19 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
     const attachmentUrls = pendingAttachments.map(
       (attachment) => attachment.url,
     );
+    const hasAttachmentUrls = attachmentUrls.length > 0;
+
+    const optimisticMeta = hasAttachmentUrls
+      ? {
+          alpacaCommentAttachments: attachmentUrls,
+        }
+      : {};
+
+    const createMeta = hasAttachmentUrls
+      ? {
+          alpacaCommentAttachments: attachmentUrls,
+        }
+      : {};
 
     const optimisticComment = {
       id: Date.now(),
@@ -379,9 +417,7 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
       _embedded: { author: currentUser },
       date: new Date().toISOString(),
       author_user_agent: 'human',
-      meta: {
-        alpacaCommentAttachments: attachmentUrls,
-      },
+      meta: optimisticMeta,
     };
     setComments((prev) => [optimisticComment, ...prev]);
 
@@ -393,9 +429,7 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
         post: issueId,
         comment_type: 'issuecomment',
         author_user_agent: 'human',
-        meta: {
-          alpacaCommentAttachments: attachmentUrls,
-        },
+        meta: createMeta,
       },
     })
       .then((created) => {
@@ -406,7 +440,7 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
                 ...created,
                 meta: {
                   ...(created && created.meta ? created.meta : {}),
-                  alpacaCommentAttachments: attachmentUrls,
+                  ...createMeta,
                 },
               };
 
@@ -470,9 +504,24 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
 
       const comment = comments.find((c) => c.id === commentId);
       const agent = comment?.author_user_agent || 'human';
+      const currentTimestamp = new Date().toISOString();
+      const lastEditedMeta = {
+        date: currentTimestamp,
+        userId: Number(currentUser?.id) || 0,
+        userName:
+          currentUser?.display_name ||
+          currentUser?.name ||
+          __('Unknown', 'alpaca'),
+      };
       const attachmentUrls = editingAttachments.map(
         (attachment) => attachment.url,
       );
+      const hasAttachmentUrls = attachmentUrls.length > 0;
+      const attachmentMeta = hasAttachmentUrls
+        ? {
+            alpacaCommentAttachments: attachmentUrls,
+          }
+        : {};
 
       wp.apiFetch({
         path: `/wp/v2/comments/${commentId}`,
@@ -481,7 +530,8 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
           content: editingContent,
           author_user_agent: agent,
           meta: {
-            alpacaCommentAttachments: attachmentUrls,
+            ...attachmentMeta,
+            alpacaCommentLastEdit: lastEditedMeta,
           },
         },
       })
@@ -493,7 +543,8 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
                   ...updated,
                   meta: {
                     ...(updated && updated.meta ? updated.meta : {}),
-                    alpacaCommentAttachments: attachmentUrls,
+                    ...attachmentMeta,
+                    alpacaCommentLastEdit: lastEditedMeta,
                   },
                 };
 
@@ -513,7 +564,13 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
         })
         .finally(() => setIsSubmitting(false));
     },
-    [editingContent, comments, showNotification, editingAttachments],
+    [
+      editingContent,
+      comments,
+      showNotification,
+      editingAttachments,
+      currentUser,
+    ],
   );
 
   const confirmDeleteComment = useCallback(
@@ -741,11 +798,11 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
                 </Button>
               }
             >
-              <TextareaControl
+              <MentionsTextarea
                 placeholder={__('Add a comment…', 'alpaca')}
                 value={newComment}
                 onChange={setNewComment}
-                ref={newCommentRef}
+                textareaRef={newCommentRef}
                 disabled={isSubmitting}
               />
             </AttachmentControls>

@@ -5,6 +5,11 @@
  * @package Alpaca
  */
 
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Register comment meta fields for REST API.
  */
@@ -46,6 +51,108 @@ function alpaca_register_comment_meta_fields() {
 				),
 			),
 			'auth_callback' => function () {
+				return \Alpaca\Inc\Helpers::user_can( 'register_comment_meta' );
+			},
+		)
+	);
+
+	register_meta(
+		'comment',
+		'alpacaMentionedUsers',
+		array(
+			'type'          => 'array',
+			'description'   => 'Mentioned users for Alpaca issue comments.',
+			'single'        => true,
+			'show_in_rest'  => array(
+				'schema' => array(
+					'type'  => 'array',
+					'items' => array(
+						'type'       => 'object',
+						'properties' => array(
+							'id'           => array(
+								'type' => 'integer',
+							),
+							'slug'         => array(
+								'type' => 'string',
+							),
+							'display_name' => array(
+								'type' => 'string',
+							),
+							'avatar'       => array(
+								'type' => 'string',
+							),
+						),
+					),
+				),
+			),
+			'auth_callback' => function () {
+				return \Alpaca\Inc\Helpers::user_can( 'register_comment_meta' );
+			},
+		)
+	);
+
+	register_meta(
+		'comment',
+		'alpacaCommentLastEdit',
+		array(
+			'type'          => 'object',
+			'description'   => 'Latest edit metadata for Alpaca issue comments.',
+			'single'        => true,
+			'show_in_rest'  => array(
+				'schema' => array(
+					'type'       => 'object',
+					'properties' => array(
+						'date'     => array(
+							'type'   => 'string',
+							'format' => 'date-time',
+						),
+						'userId'   => array(
+							'type' => 'integer',
+						),
+						'userName' => array(
+							'type' => 'string',
+						),
+					),
+				),
+			),
+			'auth_callback' => function () {
+				return \Alpaca\Inc\Helpers::user_can( 'register_comment_meta' );
+			},
+		)
+	);
+
+	register_meta(
+		'comment',
+		'alpacaNotificationContext',
+		array(
+			'type'              => 'object',
+			'description'       => 'Structured notification context for Alpaca issue comments.',
+			'single'            => true,
+			'show_in_rest'      => array(
+				'schema' => array(
+					'type'                 => 'object',
+					'additionalProperties' => true,
+					'properties'           => array(
+						'action'            => array(
+							'type' => 'string',
+						),
+						'affected_user_ids' => array(
+							'type'  => 'array',
+							'items' => array(
+								'type' => 'integer',
+							),
+						),
+						'subissue_id'       => array(
+							'type' => 'integer',
+						),
+						'subissue_title'    => array(
+							'type' => 'string',
+						),
+					),
+				),
+			),
+			'sanitize_callback' => 'alpaca_sanitize_notification_context_meta',
+			'auth_callback'     => function () {
 				return \Alpaca\Inc\Helpers::user_can( 'register_comment_meta' );
 			},
 		)

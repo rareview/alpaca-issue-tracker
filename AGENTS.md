@@ -17,3 +17,24 @@ For JavaScript and UI development, always prefer WordPress core React components
 Code should prioritize maintainability, clarity, and compatibility with current and future WordPress core releases.
 
 All code must be compatible with typical WordPress environments ranging from cheap shared hosting to enterprise platforms like WordPress VIP. No build step should be required unless explicitly stated.
+
+## Translation workflow notes
+
+Wrap all user-facing strings in translation functions with the `alpaca` text domain.
+
+- For PHP, use context-appropriate translation and escaping functions for HTML content, attributes, and URLs.
+- For JavaScript and JSX, use functions from `wp.i18n` for all user-facing strings.
+
+Add translator comments immediately before strings with placeholders, and avoid concatenating partial translatable strings.
+
+When writing CSS, avoid hardcoded directional properties such as `left` and `right` for layout. Prefer logical properties such as `margin-inline-start`, `margin-inline-end`, `padding-inline-start`, `padding-inline-end`, `inset-inline-start`, and `inset-inline-end`.
+
+For directional graphics such as chevrons and arrows, ensure behavior is correct in RTL contexts.
+
+When generating JavaScript translation catalogs with `wp i18n make-json`, always include `--extensions=js,jsx` so strings in React `.jsx` files are exported.
+
+To keep the `languages` folder tidy, keep only the minimum required language runtime files.
+
+If hashed `.json` files are generated, merge required entries into a minimal set and remove unnecessary hashed files.
+
+Before release or merge, verify that new strings are extractable and that i18n-related linting or coding standard warnings are resolved.

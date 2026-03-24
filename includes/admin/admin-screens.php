@@ -43,6 +43,24 @@ add_action(
 
 		add_submenu_page(
 			'project-board',
+			esc_html__( 'My Notifications', 'alpaca' ),
+			esc_html__( 'My Notifications', 'alpaca' ),
+			'edit_posts',
+			'alpaca-notifications',
+			'alpaca_notifications_page'
+		);
+
+		add_submenu_page(
+			'project-board',
+			esc_html__( 'Email Templates', 'alpaca' ),
+			esc_html__( 'Email Templates', 'alpaca' ),
+			'manage_options',
+			'alpaca-email-templates',
+			'alpaca_email_templates_page'
+		);
+
+		add_submenu_page(
+			'project-board',
 			esc_html__( 'About', 'alpaca' ),
 			esc_html__( 'About', 'alpaca' ),
 			'manage_options',
@@ -92,6 +110,30 @@ function alpaca_activity_page() {
 	<div class="wrap">
 		<h1><?php echo esc_html__( 'Project Activity', 'alpaca' ); ?></h1>
 		<div id="alpaca-activity-page"></div>
+	</div>
+	<?php
+}
+
+/**
+ * Render the current user's notifications page.
+ */
+function alpaca_notifications_page() {
+	?>
+	<div class="alpaca-settings wrap alpaca-notifications-admin-page">
+		<h1><?php echo esc_html__( 'My Notifications', 'alpaca' ); ?></h1>
+		<div id="alpaca-notifications-page"></div>
+	</div>
+	<?php
+}
+
+/**
+ * Render the admin email templates page.
+ */
+function alpaca_email_templates_page() {
+	?>
+	<div class="alpaca-settings wrap alpaca-email-templates-admin-page">
+		<h1><?php echo esc_html__( 'Email Templates', 'alpaca' ); ?></h1>
+		<div id="alpaca-email-templates-page"></div>
 	</div>
 	<?php
 }

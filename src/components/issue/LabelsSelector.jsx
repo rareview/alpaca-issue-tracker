@@ -1,8 +1,33 @@
 import PropTypes from 'prop-types';
 
 const { __ } = wp.i18n;
-const { memo, useState, useRef, useEffect } = wp.element;
-const { Button, Popover } = wp.components;
+const { memo, useCallback, useEffect, useMemo, useRef } = wp.element;
+const { FormTokenField } = wp.components;
+
+/**
+ * Normalize a token string for case-insensitive comparisons.
+ *
+ * @param {string} token Raw token value.
+ * @return {string} Normalized token value.
+ */
+const normalizeToken = (token) =>
+  String(token || '')
+    .trim()
+    .toLowerCase();
+
+/**
+ * Get the string value for a token entry.
+ *
+ * @param {string|Object} token Token value from FormTokenField.
+ * @return {string} String token value.
+ */
+const getTokenValue = (token) => {
+  if (typeof token === 'string') {
+    return token;
+  }
+
+  return token && token.value ? token.value : '';
+};
 
 /**
  * Label selector for issue modal.
@@ -16,129 +41,133 @@ const { Button, Popover } = wp.components;
  */
 const LabelsSelector = memo(
   ({ labels, selectedIds, onChange, isLoading }) => {
-    const [isOpen, setIsOpen] = useState(false);
-    const controlRef = useRef(null);
-    const selectedLabels = labels.filter((label) =>
-      selectedIds.includes(Number(label.term_id)),
+    const selectorRef = useRef(null);
+
+    const labelsByName = useMemo(() => {
+      const map = new Map();
+
+      labels.forEach((label) => {
+        map.set(normalizeToken(label.name), label);
+      });
+
+      return map;
+    }, [labels]);
+
+    const labelNameById = useMemo(() => {
+      const map = new Map();
+
+      labels.forEach((label) => {
+        map.set(Number(label.term_id), label.name);
+      });
+
+      return map;
+    }, [labels]);
+
+    const selectedTokens = useMemo(
+      () =>
+        selectedIds
+          .map((id) => labelNameById.get(Number(id)))
+          .filter((name) => Boolean(name)),
+      [labelNameById, selectedIds],
     );
 
-    const toggleLabel = (termId, isChecked) => {
-      if (isChecked) {
-        onChange([...selectedIds, termId]);
+    const suggestions = useMemo(
+      () => labels.map((label) => label.name),
+      [labels],
+    );
+
+    const handleChange = useCallback(
+      (tokens) => {
+        const nextIds = [];
+
+        tokens
+          .map(getTokenValue)
+          .map((token) => String(token || '').trim())
+          .filter((token) => token.length > 0)
+          .forEach((token) => {
+            const label = labelsByName.get(normalizeToken(token));
+
+            if (!label) {
+              return;
+            }
+
+            const labelId = Number(label.term_id);
+
+            if (!nextIds.includes(labelId)) {
+              nextIds.push(labelId);
+            }
+          });
+
+        onChange(nextIds);
+      },
+      [labelsByName, onChange],
+    );
+
+    const renderSuggestionItem = useCallback(
+      ({ item }) => {
+        const label = labelsByName.get(normalizeToken(item));
+
+        return (
+          <span className="alpaca-labels-token-suggestion">
+            <span
+              className="alpaca-item-label alpaca-label-pill"
+              style={{
+                backgroundColor: (label && label.color) || '#172b4d',
+                color: '#fff',
+              }}
+            >
+              {(label && label.name) || item}
+            </span>
+          </span>
+        );
+      },
+      [labelsByName],
+    );
+
+    const validateToken = useCallback(
+      (token) => labelsByName.has(normalizeToken(token)),
+      [labelsByName],
+    );
+
+    useEffect(() => {
+      if (!selectorRef.current) {
         return;
       }
 
-      onChange(selectedIds.filter((id) => id !== termId));
-    };
+      const tokens = selectorRef.current.querySelectorAll(
+        '.components-form-token-field__token',
+      );
 
-    useEffect(() => {
-      if (!isOpen) {
-        return undefined;
-      }
-
-      const handleClickAway = (event) => {
-        const clickInsidePopover = event.target.closest(
-          '.alpaca-labels-selector-popover',
+      tokens.forEach((tokenElement) => {
+        const textElement = tokenElement.querySelector(
+          '.components-form-token-field__token-text [aria-hidden="true"]',
         );
 
-        if (clickInsidePopover) {
+        if (!textElement) {
           return;
         }
 
-        if (!controlRef.current) {
-          return;
-        }
+        const tokenName = normalizeToken(textElement.textContent);
+        const label = labelsByName.get(tokenName);
+        const color = (label && label.color) || '#172b4d';
 
-        if (!controlRef.current.contains(event.target)) {
-          setIsOpen(false);
-        }
-      };
-
-      document.addEventListener('mousedown', handleClickAway);
-
-      return () => {
-        document.removeEventListener('mousedown', handleClickAway);
-      };
-    }, [isOpen]);
+        tokenElement.style.setProperty('--alpaca-label-token-color', color);
+      });
+    }, [labelsByName, selectedTokens]);
 
     return (
-      <div className="alpaca-labels-selector" ref={controlRef}>
-        <Button
-          variant="link"
-          className="alpaca-labels-selector-toggle"
-          onClick={() => setIsOpen((previous) => !previous)}
+      <div className="alpaca-labels-selector" ref={selectorRef}>
+        <FormTokenField
+          label=""
+          placeholder={__('Edit labels', 'alpaca')}
+          value={selectedTokens}
+          suggestions={suggestions}
+          onChange={handleChange}
           disabled={isLoading}
-        >
-          {selectedLabels.length > 0 && (
-            <span className="alpaca-item-labels alpaca-labels-selector-pills">
-              {selectedLabels.map((label) => (
-                <span
-                  key={label.term_id}
-                  className="alpaca-item-label alpaca-label-pill"
-                  style={{
-                    backgroundColor: label.color || '#172b4d',
-                    color: '#fff',
-                  }}
-                >
-                  {label.name}
-                </span>
-              ))}
-            </span>
-          )}
-          {selectedLabels.length < 1 && (
-            <span className="alpaca-labels-selector-toggle-text">
-              {__('Edit labels', 'alpaca')}
-            </span>
-          )}
-        </Button>
-
-        {isOpen && (
-          <Popover
-            placement="bottom-start"
-            onClose={() => setIsOpen(false)}
-            focusOnMount={false}
-            anchor={controlRef.current}
-            className="alpaca-labels-selector-popover"
-          >
-            <div className="alpaca-labels-selector-menu">
-              {labels.length < 1 && (
-                <p className="alpaca-labels-selector-empty">
-                  {__('No labels are configured yet.', 'alpaca')}
-                </p>
-              )}
-
-              {labels.map((label) => {
-                const labelId = Number(label.term_id);
-                const checkboxId = `alpaca-label-option-${labelId}`;
-                const isChecked = selectedIds.includes(labelId);
-                return (
-                  <div key={labelId} className="alpaca-labels-selector-option">
-                    <input
-                      className="alpaca-labels-selector-checkbox"
-                      id={checkboxId}
-                      type="checkbox"
-                      checked={isChecked}
-                      disabled={isLoading}
-                      onChange={(event) =>
-                        toggleLabel(labelId, event.target.checked)
-                      }
-                    />
-                    <label
-                      htmlFor={checkboxId}
-                      className="alpaca-item-label alpaca-label-pill alpaca-labels-selector-option-pill"
-                      style={{
-                        backgroundColor: label.color || '#172b4d',
-                        color: '#fff',
-                      }}
-                    >
-                      {label.name}
-                    </label>
-                  </div>
-                );
-              })}
-            </div>
-          </Popover>
-        )}
+          __experimentalExpandOnFocus
+          __experimentalRenderItem={renderSuggestionItem}
+          __experimentalValidateInput={validateToken}
+        />
       </div>
     );
   },

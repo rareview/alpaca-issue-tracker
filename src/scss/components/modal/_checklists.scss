@@ -1,0 +1,208 @@
+@use '../../abstracts' as *;
+
+/*
+* Checklists
+*/
+.wp-admin {
+  tr#subissues {
+    td {
+      padding-top: 0;
+    }
+  }
+
+  .alpaca-subissues {
+    padding: 2px 0;
+  }
+
+  .alpaca-subissues-list {
+    list-style: none;
+    margin: 0 0 5px 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  li.alpaca-subissues-item {
+    position: relative;
+    margin-bottom: 0;
+
+    &:last-child {
+      margin-bottom: 5px;
+    }
+
+    &.is-completed .alpaca-subissues-text-control textarea {
+      text-decoration: line-through;
+      color: $greytext;
+    }
+  }
+
+  .alpaca-subissues-main {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto auto auto;
+    column-gap: 8px;
+    align-items: center;
+    width: 100%;
+
+    > .components-base-control {
+      margin-bottom: 0;
+      align-self: center;
+    }
+
+    > .components-checkbox-control {
+      display: inline-flex;
+      align-items: center;
+
+      .components-base-control__field {
+        margin: 0;
+      }
+
+      .components-h-stack,
+      .components-checkbox-control__input-container {
+        display: inline-flex;
+        align-items: center;
+      }
+    }
+  }
+
+  .alpaca-subissues-text-control {
+    min-width: 0;
+    width: 100%;
+
+    .components-base-control__field {
+      margin: 0;
+      min-width: 0;
+    }
+
+    textarea {
+      width: 100%;
+      border: 1px solid transparent;
+      box-shadow: none;
+      min-height: 30px;
+      line-height: 1.3;
+      text-align: start;
+      resize: none;
+      overflow: hidden;
+      word-break: normal;
+      overflow-wrap: break-word;
+      padding: 4px 0;
+
+      &:focus {
+        border-color: $greyborder;
+      }
+    }
+  }
+
+  .alpaca-subissues-main > .components-button {
+    width: 30px;
+    min-width: 30px;
+    padding: 0;
+    height: 30px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+  }
+
+  .alpaca-subissues-assignee {
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+    justify-content: flex-end;
+    white-space: nowrap;
+
+    .components-button {
+      width: 30px;
+      min-width: 30px;
+    }
+  }
+
+  .alpaca-subissues-assignee-preview {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-right: 6px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+
+    img {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      display: block;
+    }
+  }
+
+  .alpaca-subissues-assignee-fallback {
+    color: $greytext;
+    font-size: 16px;
+    width: 20px;
+    height: 20px;
+  }
+
+  .alpaca-subissues-promote,
+  .alpaca-subissues-delete {
+    justify-self: end;
+  }
+
+  .alpaca-subissues-assignee-popover {
+    z-index: 999000020;
+
+    .components-popover__content {
+      min-width: 260px;
+      max-width: 320px;
+      padding: 8px 8px 0 8px;
+      overflow: visible;
+    }
+  }
+
+  .alpaca-subissues-assignee-popover-content {
+    .components-form-token-field {
+      margin-bottom: 0;
+    }
+
+    .components-form-token-field__help {
+      display: none !important;
+    }
+  }
+
+  .alpaca-subissues-add-button.components-button {
+    height: 28px;
+    min-height: 28px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+
+  .alpaca-icon-promote {
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+    background-color: currentcolor;
+    mask-size: 16px;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-image: url('../components/icons/svg/box-arrow-up-right.svg');
+  }
+
+  .alpaca-icon-assign {
+    width: 16px;
+    height: 16px;
+    display: inline-block;
+    background-color: currentcolor;
+    mask-size: 16px;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-image: url('../components/icons/svg/person-plus.svg');
+  }
+
+  #subissues .components-checkbox-control__input[type='checkbox'],
+  #subissues .components-checkbox-control__input-container {
+    border-radius: 3px;
+  }
+
+  #subissues .components-checkbox-control__input-container {
+    background: $greyshade;
+  }
+}

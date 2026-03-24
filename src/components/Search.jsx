@@ -5,6 +5,7 @@ const { __ } = wp.i18n;
 const { doAction, applyFilters } = wp.hooks;
 import PropTypes from 'prop-types';
 import Item from './Item';
+import StatusPill from './StatusPill';
 import {
   getCommentAgentTypeFromComment,
   normalizeCommentAgentTypes,
@@ -639,9 +640,7 @@ function SearchContainer() {
                     {r.status ? (
                       <>
                         {'\u00A0\u00A0'}
-                        <span className="alpaca-search-status-pill">
-                          {r.status}
-                        </span>
+                        <StatusPill>{r.status}</StatusPill>
                       </>
                     ) : null}
                   </span>

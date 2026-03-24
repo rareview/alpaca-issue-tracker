@@ -5,6 +5,11 @@
  * @package Alpaca
  */
 
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Expose basic author details in REST comment responses for Alpaca issue comments.
  * This ensures that users with lower privileges can still see the author's name

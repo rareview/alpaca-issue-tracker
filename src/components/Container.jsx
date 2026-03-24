@@ -112,7 +112,9 @@ function Container({
     },
     {
       icon: isHidden ? 'visibility' : 'hidden',
-      title: isHidden ? 'Expand Column' : 'Collapse Column',
+      title: isHidden
+        ? __('Expand Column', 'alpaca')
+        : __('Collapse Column', 'alpaca'),
       onClick: toggleHidden,
     },
     {
@@ -176,7 +178,12 @@ function Container({
 
   if (!isLastContainer) {
     menuControls.push({
-      icon: 'arrow-right-alt',
+      icon: (
+        <span
+          className="dashicon dashicons dashicons-arrow-right-alt rtl-mirror"
+          aria-hidden="true"
+        ></span>
+      ),
       title: __('Move All To Next Column', 'alpaca'),
       onClick: () => onMoveAllToNext(id),
       disabled: !hasItems,

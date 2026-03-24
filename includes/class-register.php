@@ -32,8 +32,95 @@ class Register {
 	 * @return void
 	 */
 	public function register_assets() {
+
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
+	}
+
+	/**
+	 * Get the base script dependencies shared across Alpaca screens.
+	 *
+	 * @return string[] Script dependency handles.
+	 */
+	private function get_base_script_dependencies() {
+
+		return array(
+			'wp-element',
+			'wp-api-fetch',
+			'wp-i18n',
+			'wp-components',
+			'wp-dom-ready',
+			'wp-data',
+			'bowser',
+		);
+	}
+
+	/**
+	 * Get the additional block editor dependencies for the email template screen.
+	 *
+	 * @return string[] Script dependency handles.
+	 */
+	private function get_notification_template_dependencies() {
+
+		return array(
+			'wp-blocks',
+			'wp-block-library',
+			'wp-block-editor',
+			'wp-core-data',
+			'wp-editor',
+			'wp-media-utils',
+			'wp-rich-text',
+			'wp-compose',
+			'wp-format-library',
+		);
+	}
+
+	/**
+	 * Determine whether the current admin page is a notification template screen.
+	 *
+	 * @param string $hook_suffix Current admin page hook suffix.
+	 * @return bool True when the page is a notification template screen.
+	 */
+	private function is_notification_template_admin_page( $hook_suffix ) {
+		return in_array(
+			$hook_suffix,
+			array(
+				'project-board_page_alpaca-email-templates',
+			),
+			true
+		);
+	}
+
+	/**
+	 * Get the translation path for JavaScript catalogs.
+	 *
+	 * @return string Absolute path to the translation directory.
+	 */
+	private function get_script_translation_path() {
+		$locale = determine_locale();
+
+		/**
+		 * Filters the locale used to load Alpaca script translations.
+		 *
+		 * @param string $locale The locale to load.
+		 */
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- This uses the core WordPress plugin locale filter.
+		$locale = apply_filters( 'plugin_locale', $locale, 'alpaca' );
+
+		$locale_short = strtolower( substr( $locale, 0, 2 ) );
+		$paths        = array(
+			ALPACA_PLUGIN_DIR . 'languages/' . $locale,
+			ALPACA_PLUGIN_DIR . 'languages/' . $locale_short,
+			ALPACA_PLUGIN_DIR . 'languages',
+		);
+
+		foreach ( $paths as $path ) {
+			if ( is_dir( $path ) ) {
+				return $path;
+			}
+		}
+
+		return ALPACA_PLUGIN_DIR . 'languages';
 	}
 
 	/**
@@ -52,16 +139,17 @@ class Register {
 	}
 
 	/**
-	 * Enqueue frontend assets.
+	 * Enqueue shared Alpaca assets.
 	 *
+	 * @param string[] $script_dependencies Script dependencies for the main bundle.
 	 * @return void
 	 */
-	public function enqueue_assets() {
+	private function enqueue_shared_assets( $script_dependencies ) {
+
 		// Only load Alpaca for logged-in users.
 		if ( ! is_user_logged_in() ) {
 			return;
 		}
-
 		$script_version = Helpers::version();
 		$style_version  = Helpers::version();
 		$plugin_root    = dirname( __DIR__ );
@@ -104,9 +192,15 @@ class Register {
 		wp_enqueue_script(
 			self::PREFIX . '-script',
 			Helpers::asset_url( 'dist/index.js' ),
-			array( 'wp-element', 'wp-api-fetch', 'wp-i18n', 'wp-components', 'wp-dom-ready', 'wp-data', 'bowser' ),
+			$script_dependencies,
 			$script_version,
 			true
+		);
+
+		wp_set_script_translations(
+			self::PREFIX . '-script',
+			'alpaca',
+			$this->get_script_translation_path()
 		);
 
 		wp_enqueue_style(
@@ -135,18 +229,36 @@ class Register {
 				// Provide the proxy endpoint with the query param prefix so SnapDOM can append the encoded target URL.
 				// Provide a signed proxy token that does not rely on browser cookies.
 				// This keeps proxy requests working when SnapDOM fetches across origins.
-				'snapdomProxy'      => $this->get_snapdom_proxy_setting(),
+			'snapdomProxy'          => $this->get_snapdom_proxy_setting(),
 			)
 		);
 	}
 
+	/**
+	 * Enqueue frontend assets.
+	 *
+	 * @return void
+	 */
+	public function enqueue_assets() {
+
+		$this->enqueue_shared_assets( $this->get_base_script_dependencies() );
+	}
 	/**
 	 * Enqueue admin assets.
 	 *
 	 * @param string $hook_suffix Current admin page hook suffix.
 	 */
 	public function enqueue_admin_assets( $hook_suffix ) {
-		$this->enqueue_assets();
+
+		$script_dependencies = $this->get_base_script_dependencies();
+		if ( $this->is_notification_template_admin_page( $hook_suffix ) ) {
+			$script_dependencies = array_merge(
+				$script_dependencies,
+				$this->get_notification_template_dependencies()
+			);
+		}
+
+		$this->enqueue_shared_assets( array_values( array_unique( $script_dependencies ) ) );
 
 		$idle_indicator_days = absint( get_option( 'alpaca_idle_indicator_days', 1 ) );
 		if ( $idle_indicator_days < 1 ) {
@@ -164,9 +276,16 @@ class Register {
 			)
 		);
 
+		if ( $this->is_notification_template_admin_page( $hook_suffix ) ) {
+			wp_enqueue_media();
+			wp_enqueue_style( 'wp-editor' );
+			wp_enqueue_style( 'wp-edit-blocks' );
+			wp_enqueue_style( 'wp-block-library' );
+			wp_enqueue_style( 'wp-block-library-theme' );
+		}
+
 		// On the project board page.
 		if ( 'toplevel_page_project-board' === $hook_suffix ) {
-
 			// Ensure WP Heartbeat is available on the board page.
 			wp_enqueue_script( 'heartbeat' );
 
@@ -176,13 +295,13 @@ class Register {
 				'alpacaBoardData',
 				\alpaca_get_board_data()
 			);
-			wp_localize_script(
-				self::PREFIX . '-script',
-				'alpacaUserData',
-				array(
-					'currentUserId' => get_current_user_id(),
-				)
-			);
+				wp_localize_script(
+					self::PREFIX . '-script',
+					'alpacaUserData',
+					array(
+						'currentUserId' => get_current_user_id(),
+					)
+				);
 		}
 	}
 }

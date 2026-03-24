@@ -5,77 +5,9 @@
  * @package Alpaca
  */
 
-/*
- * Options: default status endpoints.
- */
-add_action( 'rest_api_init', 'alpaca_register_options_endpoints' );
-/**
- * Register options-related REST endpoints.
- */
-function alpaca_register_options_endpoints() {
-	register_rest_route(
-		'alpaca/v1',
-		'/options/default_status',
-		array(
-			array(
-				'methods'             => 'GET',
-				'callback'            => 'alpaca_get_default_status_option',
-				'permission_callback' => function () {
-					return \Alpaca\Inc\Helpers::user_can( 'manage_options' );
-				},
-			),
-			array(
-				'methods'             => 'POST',
-				'callback'            => 'alpaca_update_default_status_option',
-				'permission_callback' => function ( WP_REST_Request $request ) {
-					return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'options_update' );
-				},
-				'args'                => array(
-					'value' => array(
-						'required'          => true,
-						'validate_callback' => function ( $param ) {
-							return is_numeric( $param ) || '' === $param;
-						},
-					),
-				),
-			),
-		)
-	);
-}
-
-/**
- * Get default status option.
- *
- * @return WP_REST_Response REST response with default status ID.
- */
-function alpaca_get_default_status_option() {
-	$default_status_id = get_option( 'alpaca_default_status_id', '' );
-	return alpaca_rest_response( '', array( 'value' => $default_status_id ), 200 );
-}
-
-/**
- * Update default status option.
- *
- * @param WP_REST_Request $request REST request object.
- * @return WP_REST_Response REST response.
- */
-function alpaca_update_default_status_option( WP_REST_Request $request ) {
-	$value   = $request->get_param( 'value' );
-	$new_val = (int) $value;
-	$old_val = (int) get_option( 'alpaca_default_status_id', 0 );
-
-	if ( $new_val !== $old_val ) {
-		update_option( 'alpaca_default_status_id', $new_val );
-	}
-
-	return alpaca_rest_response(
-		'options_update',
-		array(
-			'success' => true,
-			'value'   => $new_val,
-		),
-		200
-	);
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
 }
 
 /*

@@ -1,6 +1,5 @@
-import './alpaca.scss';
+import './scss/main.scss';
 
-import './apiTest.js';
 import './utils/issueCommentHandler.js';
 import './utils/dataDump.js';
 import './utils/boardHelpers.js';
@@ -25,6 +24,9 @@ import AlpacaSettings from './Settings.jsx';
 import { WatchlistProvider } from './context/WatchlistContext.jsx';
 import { AlpacaBoard } from './Board.jsx';
 import Presence from './components/Presence';
+import NotificationPreferences from './components/NotificationPreferences.jsx';
+import EmailTemplatesScreen from './components/EmailTemplatesScreen.jsx';
+import AdminSidebarInboxBadge from './components/notifications/AdminSidebarInboxBadge.jsx';
 import AlpacaDashboardWidget from './DashboardWidget.jsx';
 import About from './about/About.jsx';
 import Activity from './Activity.jsx';
@@ -64,6 +66,26 @@ if (isAdmin && document.querySelector('#wp-admin-bar-alpaca-report')) {
   adminBarModalContainer.id = 'alpaca-admin-bar-modal-mount';
   document.body.appendChild(adminBarModalContainer);
   render(<AlpacaModal />, adminBarModalContainer);
+}
+
+if (isAdmin) {
+  const projectBoardSubmenuLink = document.querySelector(
+    '#toplevel_page_project-board .wp-submenu li.wp-first-item > a',
+  );
+
+  if (projectBoardSubmenuLink) {
+    let menuBadgeMount = projectBoardSubmenuLink.querySelector(
+      '.alpaca-admin-menu-badge-mount',
+    );
+
+    if (!menuBadgeMount) {
+      menuBadgeMount = document.createElement('span');
+      menuBadgeMount.className = 'alpaca-admin-menu-badge-mount';
+      projectBoardSubmenuLink.appendChild(menuBadgeMount);
+    }
+
+    render(<AdminSidebarInboxBadge />, menuBadgeMount);
+  }
 }
 
 if (!isAdmin) {
@@ -120,5 +142,19 @@ if (document.querySelector('#alpaca-activity-page')) {
       <Activity />
     </WatchlistProvider>,
     document.querySelector('#alpaca-activity-page'),
+  );
+}
+
+if (document.querySelector('#alpaca-notifications-page')) {
+  render(
+    <NotificationPreferences />,
+    document.querySelector('#alpaca-notifications-page'),
+  );
+}
+
+if (document.querySelector('#alpaca-email-templates-page')) {
+  render(
+    <EmailTemplatesScreen />,
+    document.querySelector('#alpaca-email-templates-page'),
   );
 }

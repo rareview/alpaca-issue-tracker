@@ -60,10 +60,12 @@ class Helpers {
 			case 'presence':
 			case 'watchlist':
 			case 'get_statuses':
+			case 'notification_preferences':
+			case 'notification_inbox':
 				// Allow any logged-in user with basic read/edit capability (Contributor+).
+
 				$allowed = \current_user_can( 'edit_posts' );
 				break;
-
 			case 'create_issue':
 			case 'update_issue':
 			case 'update_board':
@@ -81,10 +83,10 @@ class Helpers {
 
 			case 'manage_options':
 			case 'options_update':
+			case 'notification_template_manage':
 			case 'restore_statuses':
 				$allowed = \current_user_can( 'manage_options' );
 				break;
-
 			default:
 				// Conservative default: require edit_posts.
 				$allowed = \current_user_can( 'edit_posts' );

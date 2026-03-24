@@ -507,7 +507,7 @@ const Activity = () => {
                           `${__('Issue', 'alpaca')} #${String(issueId)}`
                         }
                         showIssueTitle
-                        showTime={false}
+                        showTime
                         stripInteractive
                       />
                     </div>
