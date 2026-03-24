@@ -1,8 +1,8 @@
 ## Thanks for testing Alpaca with us!
 
-_Let's face it, nobody loves their project management platform._ They all have their limitations, or force you into certain workflow patterns. They become bloated with features you don't want, and won't let you tweak the experience how you want it. They are rarely client-friendly. Hosted platforms may not meet your regulatory requirements. The cost soon mounts up.
+_Let's face it, nobody loves their project management platform._ They all have their limitations, or force you into certain workflow patterns. They become bloated with features you don't want, and won't let you tweak the experience how you want it. They are rarely client-friendly. Hosted platforms may not meet your regulatory or language requirements. The costs soon mount up.
 
-Content management systems were very much the same, not so long ago. So we've been thinking:
+Content management systems were very much the same, not so long ago. So we were thinking:
 
 - Is it possible to do for kanban boards, what WordPress did for publishing?
 - And can WordPress itself be part of that solution?
@@ -33,7 +33,7 @@ But we soon realised Alpaca could be a full collaboration solution, on par with 
 
 ---
 
-<details open="">
+<details>
 <summary><strong>Beta 2: late Feb 2026</strong></summary>
 
 - Attach files of multiple filetypes to comments
@@ -45,12 +45,26 @@ But we soon realised Alpaca could be a full collaboration solution, on par with 
 
 ---
 
+<details open="">
+<summary><strong>Beta 3: late March 2026</strong></summary>
+
+- UI configuration: choose which datapoints appear on Board cards
+- Notifications: configurable inbox of action on issues that matter to you
+- Notifications: option to receive instant notifications via email
+- Notifications: option to receive daily digest via email
+- Notifications: block-based email template designer
+- Project Activity screen: unfiltered timeline of all project activity
+- Full translation readiness, including support for RTL languages
+- New `alpaca-beta` release channel at GitHub
+</details>
+
+---
+
 <details>
 <summary><strong>In planning</strong></summary>
 
-- Comments pushed to external channels (eg Slack)
-- Activity pulled from external platforms (eg GitHub)
-- User notifications
+- Framework to support other outbound communication channels (eg Slack)
+- Framework to support inbound communication from other platforms (eg GitHub)
 - Data storage in a different WP instance
 - Real-time collaboration / syncing
 - Consolidated multi-project view

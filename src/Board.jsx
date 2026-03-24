@@ -8,6 +8,7 @@ const { doAction } = wp.hooks;
 
 import AlpacaIssue from './components/Issue';
 import Container from './components/Container';
+import InboxControl from './components/InboxControl';
 import SearchPortal from './components/Search';
 
 import { setCookie, getCookie } from './utils/cookies';
@@ -308,32 +309,41 @@ export function AlpacaBoard() {
     setIssueQueryParam(value);
   };
 
-  const handleCommentCountChange = useCallback((issueId, newCount) => {
-    setContainers((prevContainers) =>
-      prevContainers.map((container) => {
-        const itemIndex = container.items.findIndex(
-          (item) => item.id === issueId.toString(),
-        );
+  const handleCommentCountChange = useCallback(
+    (issueId, newCount, newCountByAgent = null) => {
+      setContainers((prevContainers) =>
+        prevContainers.map((container) => {
+          const itemIndex = container.items.findIndex(
+            (item) => item.id === issueId.toString(),
+          );
 
-        if (itemIndex === -1) {
-          return container;
-        }
+          if (itemIndex === -1) {
+            return container;
+          }
 
-        const newItems = [...container.items];
-        newItems[itemIndex] = {
-          ...newItems[itemIndex],
-          commentCount: newCount,
-        };
+          const newItems = [...container.items];
+          newItems[itemIndex] = {
+            ...newItems[itemIndex],
+            commentCount: newCount,
+            commentCountByAgent:
+              newCountByAgent &&
+              typeof newCountByAgent === 'object' &&
+              !Array.isArray(newCountByAgent)
+                ? newCountByAgent
+                : newItems[itemIndex].commentCountByAgent || null,
+          };
 
-        return { ...container, items: newItems };
-      }),
-    );
-  }, []);
+          return { ...container, items: newItems };
+        }),
+      );
+    },
+    [],
+  );
 
   useEffect(() => {
     const handleCommentCountChanged = (data) => {
-      const { issueId, newCount } = data;
-      handleCommentCountChange(issueId, newCount);
+      const { issueId, newCount, newCountByAgent } = data;
+      handleCommentCountChange(issueId, newCount, newCountByAgent);
     };
 
     wp.hooks.addAction(
@@ -818,6 +828,9 @@ export function AlpacaBoard() {
         assignees: createdIssue.assignees || [],
         labels: createdIssue.labels || [],
         commentCount: 1,
+        commentCountByAgent: {
+          create: 1,
+        },
         meta: {
           deadline: createdIssue.deadline ? [createdIssue.deadline] : undefined,
           // eslint-disable-next-line camelcase
@@ -883,6 +896,7 @@ export function AlpacaBoard() {
             assignees: [],
             labels: issue.labels || [],
             commentCount: issue.comment_count ?? 0,
+            commentCountByAgent: issue.comment_count_by_agent || null,
             meta: issue.meta || {},
           };
 
@@ -1083,6 +1097,7 @@ export function AlpacaBoard() {
 
   return (
     <>
+      <InboxControl selector="#project-board-controls-mount" />
       <SearchPortal selector="#project-board-controls-mount" />
       {hasNoStatuses ? (
         <div className="alpaca-empty-state">

@@ -1,0 +1,263 @@
+@use '../../abstracts' as *;
+
+/*
+ * Details (compact grid)
+ */
+.wp-admin {
+  /* Grid layout for compact details (2x2) */
+  .alpaca-details-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 24px;
+    margin: 1em 0;
+    align-items: start;
+
+    p.components-form-token-field__help {
+      font-size: 13px;
+      color: $greytext;
+    }
+  }
+
+  .alpaca-details-grid__item {
+    display: block;
+
+    .components-form-token-field__input-container {
+      border-color: $greyborder;
+    }
+
+    .components-form-token-field__input-container,
+    .alpaca-details-grid__value {
+      min-height: 36px;
+    }
+  }
+}
+
+.alpaca-details-grid__label {
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  color: var(--wp-components-color-foreground, #1e1e1e);
+}
+
+.alpaca-details-grid__value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.alpaca-subissues-block .alpaca-details-grid__label {
+  margin-bottom: 10px;
+}
+
+/* Labels cell styling (matches token field / assignee selector) */
+.alpaca-issue-labels-cell {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 0;
+  padding: 0;
+  background: transparent;
+
+  .alpaca-labels-selector,
+  .alpaca-labels-selector .components-form-token-field {
+    width: 100%;
+  }
+
+  .alpaca-label-pill {
+    margin-inline-end: 6px;
+  }
+}
+
+/* Ensure the default Assignee token field keeps the help paragraph below the input */
+.alpaca-details-grid p.components-form-token-field__help {
+  display: block;
+  margin-top: 6px;
+  color: $greytext;
+  font-size: 13px;
+}
+
+/* Make the token-field itself take full width inside the details grid */
+.alpaca-details-grid__value .components-form-token-field {
+  width: 100%;
+}
+
+/* Position suggestions relative to the input container so they appear
+   directly below the text input (avoids being pushed below the help text). */
+.alpaca-details-grid__value .components-form-token-field__input-container {
+  position: relative;
+}
+
+/* Ensure token-field suggestion lists overlay other content instead of pushing layout */
+.alpaca-details-grid__item {
+  /* establish containing block for absolute-positioned suggestions */
+  position: relative;
+}
+
+.components-form-token-field__suggestions,
+.components-form-token-field__suggestions-list {
+  position: absolute;
+  top: 100%;
+  left: -1px;
+  right: -1px;
+  z-index: 1000;
+  background: $bgwhite;
+  border: 1px solid $greyborder;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  max-height: 240px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 4px 0;
+}
+.components-form-token-field__suggestions li,
+.components-form-token-field__suggestions-list li,
+.components-form-token-field__suggestion {
+  list-style: none;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: inherit;
+}
+
+.alpaca-labels-token-suggestion {
+  display: flex;
+  align-items: center;
+
+  .alpaca-label-pill {
+    margin: 0;
+  }
+}
+
+.alpaca-assignee-suggestion-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 24px;
+}
+
+.alpaca-assignee-suggestion-avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: block;
+  flex: 0 0 20px;
+}
+
+.alpaca-assignee-suggestion-avatar-fallback {
+  color: $greytext;
+  font-size: 14px;
+  line-height: 20px;
+  text-align: center;
+}
+
+.alpaca-assignee-suggestion-name {
+  color: inherit;
+  line-height: 1.25;
+}
+
+/* Style selected FormTokenField tokens like alpaca label pills. */
+.alpaca-issue-labels-cell {
+  .components-form-token-field__token {
+    --alpaca-label-token-color: #172b4d;
+    align-items: center;
+    background: var(--alpaca-label-token-color);
+    border: none;
+    border-radius: $common-radius;
+    box-sizing: border-box;
+    color: #fff;
+    display: inline-flex;
+    gap: 4px;
+    height: 24px;
+    margin: 0;
+    max-width: 100%;
+    padding: 0 4px 0 6px;
+  }
+
+  .components-form-token-field__token-text {
+    background: transparent;
+    color: inherit;
+    line-height: 1;
+  }
+
+  .components-form-token-field__remove-token {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    color: inherit;
+    padding: 0;
+  }
+
+  .components-form-token-field__remove-token.components-button,
+  .components-form-token-field__token .components-form-token-field__token-text {
+    background: transparent;
+  }
+
+  .components-form-token-field__remove-token:hover,
+  .components-form-token-field__remove-token:focus {
+    background: rgb(255 255 255 / 14%);
+    box-shadow: none;
+    color: inherit;
+  }
+
+  .components-form-token-field__remove-token svg {
+    fill: currentColor;
+  }
+
+  .components-form-token-field__token + .components-form-token-field__token {
+    margin-inline-start: 4px;
+  }
+}
+
+.wp-admin {
+  /*
+   * 4.0 - Modal (Issue Details)
+   */
+  &.post-type-issue {
+    .screenshot {
+      margin: 1rem 0 -1rem;
+
+      img {
+        max-width: 100%;
+        height: auto;
+      }
+    }
+  }
+
+  .alpaca-modal {
+    background: $bgwhite;
+    color: inherit;
+
+    .small-wrapper {
+      padding: 0.8rem 0 1rem;
+    }
+
+    small {
+      font-size: 12px;
+    }
+
+    p {
+      margin-top: 0;
+      margin-bottom: 1rem;
+    }
+
+    button {
+      margin-right: 0.5rem;
+    }
+  }
+
+  /* Status pill (used in Issue meta and Search results). */
+  .alpaca-search-status-pill {
+    display: inline-block;
+    padding: 1px 8px;
+    border-radius: 999px;
+    border: 1px solid #b3b8bf;
+    background: $bgwhite;
+    color: #50575e;
+    font-size: 11px;
+    line-height: 1.4;
+    font-weight: 600;
+    white-space: nowrap;
+    vertical-align: baseline;
+    margin-inline-end: 8px;
+  }
+}

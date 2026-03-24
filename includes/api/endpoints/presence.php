@@ -5,6 +5,11 @@
  * @package Alpaca
  */
 
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /*
  * Presence endpoint (used by Heartbeat pings).
  */
@@ -19,8 +24,8 @@ function alpaca_register_presence_endpoint() {
 		array(
 			'methods'             => 'POST',
 			'callback'            => 'alpaca_update_presence_callback',
-			'permission_callback' => function () {
-				return \Alpaca\Inc\Helpers::user_can( 'presence' );
+			'permission_callback' => function ( WP_REST_Request $request ) {
+				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'presence' );
 			},
 		)
 	);

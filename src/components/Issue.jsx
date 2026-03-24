@@ -26,6 +26,7 @@ import User from './User';
 import Time from './Time';
 import StarControl from './StarControl';
 import { useWatchlist } from '../context/WatchlistContext';
+import StatusPill from './StatusPill';
 
 /* THEN access WordPress globals */
 const { useState, useEffect, useRef, useMemo, useCallback, memo } = wp.element;
@@ -50,9 +51,11 @@ const { decodeEntities } = wp.htmlEntities;
 // ----- Memoized rows -----
 const PriorityRow = memo(
   ({ isHighPriority, onChange, isLoading }) => (
-    <tr id="priority">
-      <th scope="row">{__('Priority', 'alpaca')}</th>
-      <td className="flexalign">
+    <div id="priority" className="alpaca-details-grid__item">
+      <div className="alpaca-details-grid__label">
+        {__('Priority', 'alpaca')}
+      </div>
+      <div className="alpaca-details-grid__value flexalign">
         <ToggleControl
           label={__('High Priority', 'alpaca')}
           checked={isHighPriority}
@@ -60,8 +63,8 @@ const PriorityRow = memo(
           disabled={isLoading}
           className="alpaca-priority-toggle"
         />
-      </td>
-    </tr>
+      </div>
+    </div>
   ),
   (prev, next) =>
     prev.isLoading === next.isLoading &&
@@ -69,38 +72,42 @@ const PriorityRow = memo(
 );
 
 const AssigneeRow = memo(
-  ({ assignees, allUsers, onChange, isLoading }) => (
-    <tr id="assignees">
-      <th scope="row">{__('Assignees', 'alpaca')}</th>
-      <td className="flexalign">
+  ({ assignees, allUsers, allUserObjects, onChange, isLoading }) => (
+    <div id="assignees" className="alpaca-details-grid__item">
+      <div className="alpaca-details-grid__label">
+        {__('Assignees', 'alpaca')}
+      </div>
+      <div className="alpaca-details-grid__value flexalign">
         <AssigneeSelector
           assignees={assignees}
           allUsers={allUsers}
+          allUserObjects={allUserObjects}
           onChange={onChange}
           isLoading={isLoading}
         />
-      </td>
-    </tr>
+      </div>
+    </div>
   ),
   (prev, next) =>
     prev.isLoading === next.isLoading &&
     prev.assignees.join(',') === next.assignees.join(',') &&
-    prev.allUsers.join(',') === next.allUsers.join(','),
+    prev.allUsers.join(',') === next.allUsers.join(',') &&
+    prev.allUserObjects === next.allUserObjects,
 );
 
 const LabelsRow = memo(
   ({ labels, selectedIds, onChange, isLoading }) => (
-    <tr id="labels">
-      <th scope="row">{__('Labels', 'alpaca')}</th>
-      <td className="flexalign alpaca-issue-labels-cell">
+    <div id="labels" className="alpaca-details-grid__item">
+      <div className="alpaca-details-grid__label">{__('Labels', 'alpaca')}</div>
+      <div className="alpaca-details-grid__value flexalign alpaca-issue-labels-cell">
         <LabelsSelector
           labels={labels}
           selectedIds={selectedIds}
           onChange={onChange}
           isLoading={isLoading}
         />
-      </td>
-    </tr>
+      </div>
+    </div>
   ),
   (prev, next) =>
     prev.isLoading === next.isLoading &&
@@ -110,17 +117,19 @@ const LabelsRow = memo(
 
 const DeadlineRow = memo(
   ({ deadline, onChange, onClear, isLoading }) => (
-    <tr id="deadline">
-      <th scope="row">{__('Due Date', 'alpaca')}</th>
-      <td className="flexalign">
+    <div id="deadline" className="alpaca-details-grid__item">
+      <div className="alpaca-details-grid__label">
+        {__('Due Date', 'alpaca')}
+      </div>
+      <div className="alpaca-details-grid__value flexalign">
         <DeadlineControl
           deadline={deadline}
           onChange={onChange}
           onClear={onClear}
           isLoading={isLoading}
         />
-      </td>
-    </tr>
+      </div>
+    </div>
   ),
   (prev, next) =>
     prev.isLoading === next.isLoading && prev.deadline === next.deadline,
@@ -312,6 +321,7 @@ const SubissueAssigneeControl = memo(
               <AssigneeSelector
                 assignees={assignees}
                 allUsers={allUsers}
+                allUserObjects={allUserObjects}
                 onChange={onChange}
                 isLoading={isLoading}
               />
@@ -1582,6 +1592,16 @@ const AlpacaIssue = ({
     );
   }, [currentStatus, allStatuses]);
 
+  const statusLabel = isCreating
+    ? (() => {
+        if (!allStatuses.length) return __('Unknown', 'alpaca');
+        const sorted = [...allStatuses].sort(
+          (a, b) => (a.term_score || 0) - (b.term_score || 0),
+        );
+        return sorted[0]?.name || __('Unknown', 'alpaca');
+      })()
+    : currentStatus?.name || __('Unknown', 'alpaca');
+
   if (!isOpen) return null;
 
   return (
@@ -1673,209 +1693,188 @@ const AlpacaIssue = ({
                     value={issueDetails.post_data.post_date}
                     type="relative"
                   />
+                  <StatusPill className="alpaca-issue-status-meta">
+                    {statusLabel}
+                  </StatusPill>
                 </div>
               )}
 
-              <table className="alpaca-issue-details">
-                <tbody>
-                  <tr id="status">
-                    <th scope="row">{__('Status', 'alpaca')}</th>
-                    <td>
-                      {isCreating
-                        ? (() => {
-                            if (!allStatuses.length)
-                              return __('Unknown', 'alpaca');
-                            const sorted = [...allStatuses].sort(
-                              (a, b) =>
-                                (a.term_score || 0) - (b.term_score || 0),
-                            );
-                            return sorted[0]?.name || __('Unknown', 'alpaca');
-                          })()
-                        : currentStatus?.name || __('Unknown', 'alpaca')}
-                    </td>
-                  </tr>
+              <div className="alpaca-details-grid">
+                <PriorityRow
+                  isHighPriority={isHighPriority}
+                  onChange={handlePriorityChange}
+                  isLoading={loadingStates.priority}
+                />
 
-                  <PriorityRow
-                    isHighPriority={isHighPriority}
-                    onChange={handlePriorityChange}
-                    isLoading={loadingStates.priority}
-                  />
+                <DeadlineRow
+                  deadline={deadline}
+                  onChange={handleDeadlineChange}
+                  onClear={handleDeadlineClear}
+                  isLoading={loadingStates.deadline}
+                />
 
-                  <DeadlineRow
-                    deadline={deadline}
-                    onChange={handleDeadlineChange}
-                    onClear={handleDeadlineClear}
-                    isLoading={loadingStates.deadline}
-                  />
+                <AssigneeRow
+                  assignees={stableAssignees}
+                  allUsers={stableUsers}
+                  allUserObjects={allUserObjects}
+                  onChange={handleAssigneeChange}
+                  isLoading={stableIsLoading}
+                />
 
-                  <AssigneeRow
-                    assignees={stableAssignees}
-                    allUsers={stableUsers}
-                    onChange={handleAssigneeChange}
-                    isLoading={stableIsLoading}
-                  />
+                <LabelsRow
+                  labels={stableLabels}
+                  selectedIds={stableSelectedLabelIds}
+                  onChange={handleLabelChange}
+                  isLoading={stableIsLabelLoading}
+                />
+              </div>
 
-                  <LabelsRow
-                    labels={stableLabels}
-                    selectedIds={stableSelectedLabelIds}
-                    onChange={handleLabelChange}
-                    isLoading={stableIsLabelLoading}
-                  />
+              {!isCreating && (
+                <div id="subissues" className="alpaca-subissues-block">
+                  <div className="alpaca-details-grid__label">
+                    {__('Checklist', 'alpaca')}
+                  </div>
+                  <div>
+                    <div className="alpaca-subissues">
+                      <ul className="alpaca-subissues-list">
+                        {subissues.map((subissue) => {
+                          const subissueAssignees = (
+                            Array.isArray(subissue.assignees)
+                              ? subissue.assignees
+                              : []
+                          ).map((assignee) => assignee.name);
+                          const isCompleteLoading =
+                            loadingStates[`subissue-complete-${subissue.id}`];
+                          const isDeleteLoading =
+                            loadingStates[`subissue-delete-${subissue.id}`];
+                          const isPromoteLoading =
+                            loadingStates[`subissue-promote-${subissue.id}`];
+                          const isSaveLoading =
+                            loadingStates[`subissue-${subissue.id}`];
+                          const isAssigneeLoading =
+                            loadingStates[`subissue-assignees-${subissue.id}`];
 
-                  {!isCreating && (
-                    <tr id="subissues">
-                      <th scope="row">{__('Checklist', 'alpaca')}</th>
-                      <td>
-                        <div className="alpaca-subissues">
-                          <ul className="alpaca-subissues-list">
-                            {subissues.map((subissue) => {
-                              const subissueAssignees = (
-                                Array.isArray(subissue.assignees)
-                                  ? subissue.assignees
-                                  : []
-                              ).map((assignee) => assignee.name);
-                              const isCompleteLoading =
-                                loadingStates[
-                                  `subissue-complete-${subissue.id}`
-                                ];
-                              const isDeleteLoading =
-                                loadingStates[`subissue-delete-${subissue.id}`];
-                              const isPromoteLoading =
-                                loadingStates[
-                                  `subissue-promote-${subissue.id}`
-                                ];
-                              const isSaveLoading =
-                                loadingStates[`subissue-${subissue.id}`];
-                              const isAssigneeLoading =
-                                loadingStates[
-                                  `subissue-assignees-${subissue.id}`
-                                ];
-
-                              return (
-                                <li
-                                  key={subissue.id}
-                                  className={`alpaca-subissues-item ${
-                                    subissue.isCompleted ? 'is-completed' : ''
-                                  }`}
-                                >
-                                  <div className="alpaca-subissues-main">
-                                    <CheckboxControl
-                                      label=""
-                                      hideLabelFromVision
-                                      checked={subissue.isCompleted}
-                                      onChange={(isChecked) =>
-                                        handleSubissueToggleCompleted(
-                                          subissue.id,
-                                          isChecked,
-                                        )
-                                      }
-                                      disabled={
-                                        subissue.isDraft || isCompleteLoading
-                                      }
-                                    />
-                                    <SubissueTitleField
-                                      value={subissue.title}
-                                      placeholder={__('Enter title…', 'alpaca')}
-                                      autoFocusOnMount={
-                                        subissue.isDraft && subissue.isEditing
-                                      }
-                                      onChange={(newValue) =>
-                                        handleSubissueDraftChange(
-                                          subissue.id,
-                                          newValue,
-                                        )
-                                      }
-                                      onFocus={() =>
-                                        setSubissues((prev) =>
-                                          prev.map((item) =>
-                                            item.id === subissue.id
-                                              ? { ...item, isEditing: true }
-                                              : item,
-                                          ),
-                                        )
-                                      }
-                                      onBlur={() =>
-                                        handleSubissueTitleSave(subissue.id)
-                                      }
-                                      onKeyDown={(event) => {
-                                        if (event.key === 'Enter') {
-                                          event.preventDefault();
-                                          handleSubissueTitleSave(subissue.id);
-                                        } else if (event.key === 'Escape') {
-                                          event.preventDefault();
-                                          handleSubissueTitleCancel(
-                                            subissue.id,
-                                          );
-                                        }
-                                      }}
-                                      disabled={isSaveLoading}
-                                    />
-                                    <SubissueAssigneeControl
-                                      assignees={subissueAssignees}
-                                      allUsers={stableUsers}
-                                      allUserObjects={allUserObjects}
-                                      onChange={(newAssignees) =>
-                                        handleSubissueAssigneeChange(
-                                          subissue.id,
-                                          newAssignees,
-                                        )
-                                      }
-                                      isDraft={subissue.isDraft}
-                                      isLoading={isAssigneeLoading}
-                                    />
-                                    <Button
-                                      className="alpaca-subissues-promote"
-                                      icon={
-                                        <span className="alpaca-icon-promote"></span>
-                                      }
-                                      label={__('Promote', 'alpaca')}
-                                      showTooltip
-                                      tooltipPosition="top"
-                                      onMouseDown={(event) =>
-                                        event.preventDefault()
-                                      }
-                                      onClick={() =>
-                                        handleSubissuePromote(subissue.id)
-                                      }
-                                      disabled={
-                                        subissue.isDraft || isPromoteLoading
-                                      }
-                                    />
-                                    <Button
-                                      className="alpaca-subissues-delete"
-                                      icon="trash"
-                                      label={__('Delete', 'alpaca')}
-                                      showTooltip
-                                      tooltipPosition="top"
-                                      isDestructive
-                                      onMouseDown={(event) =>
-                                        event.preventDefault()
-                                      }
-                                      onClick={() =>
-                                        handleSubissueDelete(subissue.id)
-                                      }
-                                      disabled={isDeleteLoading}
-                                    />
-                                  </div>
-                                </li>
-                              );
-                            })}
-                          </ul>
-                          <Button
-                            variant="secondary"
-                            className="alpaca-subissues-add-button"
-                            onMouseDown={(event) => event.preventDefault()}
-                            onClick={handleAddSubissueDraft}
-                            disabled={isSubissueAddDisabled}
-                          >
-                            {__('Add New', 'alpaca')}
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
+                          return (
+                            <li
+                              key={subissue.id}
+                              className={`alpaca-subissues-item ${
+                                subissue.isCompleted ? 'is-completed' : ''
+                              }`}
+                            >
+                              <div className="alpaca-subissues-main">
+                                <CheckboxControl
+                                  label=""
+                                  hideLabelFromVision
+                                  checked={subissue.isCompleted}
+                                  onChange={(isChecked) =>
+                                    handleSubissueToggleCompleted(
+                                      subissue.id,
+                                      isChecked,
+                                    )
+                                  }
+                                  disabled={
+                                    subissue.isDraft || isCompleteLoading
+                                  }
+                                />
+                                <SubissueTitleField
+                                  value={subissue.title}
+                                  placeholder={__('Enter title…', 'alpaca')}
+                                  autoFocusOnMount={
+                                    subissue.isDraft && subissue.isEditing
+                                  }
+                                  onChange={(newValue) =>
+                                    handleSubissueDraftChange(
+                                      subissue.id,
+                                      newValue,
+                                    )
+                                  }
+                                  onFocus={() =>
+                                    setSubissues((prev) =>
+                                      prev.map((item) =>
+                                        item.id === subissue.id
+                                          ? { ...item, isEditing: true }
+                                          : item,
+                                      ),
+                                    )
+                                  }
+                                  onBlur={() =>
+                                    handleSubissueTitleSave(subissue.id)
+                                  }
+                                  onKeyDown={(event) => {
+                                    if (event.key === 'Enter') {
+                                      event.preventDefault();
+                                      handleSubissueTitleSave(subissue.id);
+                                    } else if (event.key === 'Escape') {
+                                      event.preventDefault();
+                                      handleSubissueTitleCancel(subissue.id);
+                                    }
+                                  }}
+                                  disabled={isSaveLoading}
+                                />
+                                <SubissueAssigneeControl
+                                  assignees={subissueAssignees}
+                                  allUsers={stableUsers}
+                                  allUserObjects={allUserObjects}
+                                  onChange={(newAssignees) =>
+                                    handleSubissueAssigneeChange(
+                                      subissue.id,
+                                      newAssignees,
+                                    )
+                                  }
+                                  isDraft={subissue.isDraft}
+                                  isLoading={isAssigneeLoading}
+                                />
+                                <Button
+                                  className="alpaca-subissues-promote"
+                                  icon={
+                                    <span className="alpaca-icon-promote"></span>
+                                  }
+                                  label={__('Promote', 'alpaca')}
+                                  showTooltip
+                                  tooltipPosition="top"
+                                  onMouseDown={(event) =>
+                                    event.preventDefault()
+                                  }
+                                  onClick={() =>
+                                    handleSubissuePromote(subissue.id)
+                                  }
+                                  disabled={
+                                    subissue.isDraft || isPromoteLoading
+                                  }
+                                />
+                                <Button
+                                  className="alpaca-subissues-delete"
+                                  icon="trash"
+                                  label={__('Delete', 'alpaca')}
+                                  showTooltip
+                                  tooltipPosition="top"
+                                  isDestructive
+                                  onMouseDown={(event) =>
+                                    event.preventDefault()
+                                  }
+                                  onClick={() =>
+                                    handleSubissueDelete(subissue.id)
+                                  }
+                                  disabled={isDeleteLoading}
+                                />
+                              </div>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                      <Button
+                        variant="secondary"
+                        className="alpaca-subissues-add-button"
+                        onMouseDown={(event) => event.preventDefault()}
+                        onClick={handleAddSubissueDraft}
+                        disabled={isSubissueAddDisabled}
+                      >
+                        {__('Add New', 'alpaca')}
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {wp.hooks.applyFilters('alpaca.issue.abovetabs', null, {
                 issueId,

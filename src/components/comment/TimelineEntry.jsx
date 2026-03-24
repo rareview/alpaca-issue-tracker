@@ -3,9 +3,76 @@ import { marked } from 'marked';
 import User from '../User';
 import Time from '../Time';
 import { Attachment } from '../issue/AttachmentRow';
+import { generateAssigneeSpan } from '../../hooks/useUser';
+import { sanitizeHtml, isValidHttpUrl } from '../../utils/sanitize';
 
 const { __, sprintf } = wp.i18n;
 const { useMemo, memo } = wp.element;
+
+/**
+ * Convert supported user identifier shapes to a positive integer.
+ *
+ * @param {unknown} candidate Potential user identifier.
+ * @return {number} Positive integer user ID or 0 when unavailable.
+ */
+const resolveUserId = (candidate) => {
+  if (typeof candidate === 'number' && Number.isFinite(candidate)) {
+    return candidate > 0 ? candidate : 0;
+  }
+
+  if (typeof candidate === 'string') {
+    const parsed = Number(candidate);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+  }
+
+  if (candidate && typeof candidate === 'object') {
+    return (
+      resolveUserId(candidate.id) ||
+      resolveUserId(candidate.ID) ||
+      resolveUserId(candidate.user_id)
+    );
+  }
+
+  return 0;
+};
+
+/**
+ * Normalize a display name for reliable equality checks.
+ *
+ * @param {string} name Raw name value.
+ * @return {string} Lowercased and trimmed name.
+ */
+const normalizeUserName = (name) =>
+  String(name || '')
+    .trim()
+    .toLowerCase();
+
+/**
+ * Determine whether the latest edit came from a different user.
+ *
+ * @param {Object} comment      Comment object.
+ * @param {Object} author       Resolved original author object.
+ * @param {Object} lastEditMeta Latest edit metadata.
+ * @return {boolean} True when edit user differs from comment author.
+ */
+const isEditedByDifferentUser = (comment, author, lastEditMeta) => {
+  const originalAuthorId =
+    resolveUserId(comment?.author) ||
+    resolveUserId(comment?.author_details) ||
+    resolveUserId(comment?._embedded?.author?.[0]);
+  const editedByUserId = resolveUserId(lastEditMeta?.userId);
+
+  if (editedByUserId > 0 && originalAuthorId > 0) {
+    return editedByUserId !== originalAuthorId;
+  }
+
+  const editedByUserName = normalizeUserName(lastEditMeta?.userName);
+  const authorName = normalizeUserName(author?.name);
+
+  return Boolean(
+    editedByUserId === 0 && editedByUserName && editedByUserName !== authorName,
+  );
+};
 
 /**
  * Add inline avatar CSS variable styles to rendered comment HTML.
@@ -28,8 +95,9 @@ export const injectAvatarStyles = (htmlString) => {
     const spans = doc.querySelectorAll('[data-avatar]');
     spans.forEach((span) => {
       const avatarUrl = span.dataset.avatar;
-      if (avatarUrl) {
-        span.style.setProperty('--avatar-url', `url('${avatarUrl}')`);
+      if (avatarUrl && isValidHttpUrl(avatarUrl)) {
+        const safeUrl = avatarUrl.replace(/'/g, "\\'");
+        span.style.setProperty('--avatar-url', `url('${safeUrl}')`);
       }
     });
     return doc.body.innerHTML;
@@ -51,13 +119,59 @@ export const getProcessedCommentContent = (comment) => {
     return '';
   }
 
-  if (!comment.meta && comment.content.rendered) {
-    return comment.content.rendered;
-  }
+  const mentionMarkup = (rawContent) => {
+    const content = typeof rawContent === 'string' ? rawContent : '';
+    const mentions = Array.isArray(comment.meta?.alpacaMentionedUsers)
+      ? comment.meta.alpacaMentionedUsers
+      : [];
 
-  const content = comment.content.raw
-    ? marked(comment.content.raw)
-    : comment.content.rendered;
+    if (!content || !mentions.length) {
+      return content;
+    }
+
+    const mentionReplacements = mentions.reduce((accumulator, mention) => {
+      const slug = mention?.slug;
+      const displayName = mention?.display_name;
+      const avatar = mention?.avatar;
+      const userId = mention?.id;
+
+      if (!slug || !displayName) {
+        return accumulator;
+      }
+
+      accumulator[String(slug).toLowerCase()] = generateAssigneeSpan(
+        {
+          id: userId,
+          display_name: displayName,
+          avatar,
+        },
+        Boolean(avatar),
+      );
+
+      return accumulator;
+    }, {});
+
+    return content.replace(
+      /(^|[\s>([{])@([a-zA-Z0-9._-]+)(?=$|[^a-zA-Z0-9._-])/g,
+      (match, prefix, slug) => {
+        const replacement = mentionReplacements[String(slug).toLowerCase()];
+
+        if (!replacement) {
+          return match;
+        }
+
+        return `${prefix}${replacement}`;
+      },
+    );
+  };
+
+  let content = '';
+
+  if (comment.content.raw) {
+    content = sanitizeHtml(marked(mentionMarkup(comment.content.raw)));
+  } else if (comment.content.rendered) {
+    content = sanitizeHtml(mentionMarkup(comment.content.rendered));
+  }
 
   return injectAvatarStyles(content);
 };
@@ -65,18 +179,22 @@ export const getProcessedCommentContent = (comment) => {
 /**
  * Shared timeline entry renderer for issue comments.
  *
- * @param {Object}   props                   Component props.
- * @param {Object}   props.comment           Comment object.
- * @param {Object}   props.currentUser       Current user object.
- * @param {Function} props.onAttachmentClick Attachment click callback.
- * @param {Object}   props.headerActions     Header actions.
- * @param {string}   props.issueTitle        Issue title.
- * @param {boolean}  props.showIssueTitle    Whether to display issue title.
- * @param {boolean}  props.showTime          Whether to display time.
- * @param {boolean}  props.isEditing         Whether the entry is in edit mode.
- * @param {Object}   props.editBody          Edit form body.
- * @param {boolean}  props.isSubmitting      Whether submit is in progress.
- * @param {boolean}  props.stripInteractive  Remove interactive HTML elements from rendered body.
+ * @param {Object}   props                         Component props.
+ * @param {Object}   props.comment                 Comment object.
+ * @param {Object}   props.currentUser             Current user object.
+ * @param {Function} props.onAttachmentClick       Attachment click callback.
+ * @param {Object}   props.headerActions           Header actions.
+ * @param {Object}   props.footerActions           Footer actions.
+ * @param {string}   props.issueTitle              Issue title.
+ * @param {boolean}  props.showIssueTitle          Whether to display issue title.
+ * @param {boolean}  props.showTime                Whether to display time.
+ * @param {boolean}  props.isEditing               Whether the entry is in edit mode.
+ * @param {Object}   props.editBody                Edit form body.
+ * @param {boolean}  props.isSubmitting            Whether submit is in progress.
+ * @param {boolean}  props.stripInteractive        Remove interactive HTML elements from rendered body.
+ * @param {boolean}  props.enableAttachmentPreview Whether image attachment zoom preview is enabled.
+ * @param {boolean}  props.auditTimeInTopline      Whether audit timestamp renders in a title row.
+ * @param {string}   props.className               Optional extra class names for wrapper.
  * @return {JSX.Element} Rendered timeline entry.
  */
 const TimelineEntry = ({
@@ -84,6 +202,7 @@ const TimelineEntry = ({
   currentUser,
   onAttachmentClick,
   headerActions,
+  footerActions,
   issueTitle,
   showIssueTitle,
   showTime,
@@ -91,18 +210,54 @@ const TimelineEntry = ({
   editBody,
   isSubmitting,
   stripInteractive,
+  enableAttachmentPreview,
+  auditTimeInTopline,
+  className,
 }) => {
   const author = comment.author_details ||
     comment._embedded?.author?.[0] ||
     currentUser || { name: __('Unknown', 'alpaca') };
 
-  const dataSource = comment.author_user_agent === 'audit' ? 'audit' : 'human';
+  let dataSource = 'human';
+
+  if ('audit' === comment.author_user_agent) {
+    dataSource = 'audit';
+  } else if ('create' === comment.author_user_agent) {
+    dataSource = 'create';
+  }
   const isAudit = dataSource === 'audit';
   const commentTags = comment.meta?.alpacaCommentTags || [];
   const commentAttachments = comment.meta?.alpacaCommentAttachments || [];
-  const timelineItemClasses = ['alpaca-timeline-item', ...commentTags].join(
-    ' ',
+  const lastEditMeta = comment.meta?.alpacaCommentLastEdit || null;
+  const editedByUserId = resolveUserId(lastEditMeta?.userId);
+  const editedByUserName =
+    typeof lastEditMeta?.userName === 'string' ? lastEditMeta.userName : '';
+  const editedDate =
+    typeof lastEditMeta?.date === 'string' && lastEditMeta.date
+      ? lastEditMeta.date
+      : '';
+  const showEditedStamp = Boolean(editedDate);
+  const editedByDifferentUser = isEditedByDifferentUser(
+    comment,
+    author,
+    lastEditMeta,
   );
+  const editedByUserLabel = editedByUserName || __('another user', 'alpaca');
+  let editedByUser = null;
+  if (editedByUserId > 0) {
+    editedByUser = editedByUserId;
+  } else if (editedByUserName) {
+    editedByUser = {
+      name: editedByUserLabel,
+    };
+  }
+  const timelineItemClasses = [
+    'alpaca-timeline-item',
+    ...commentTags,
+    className,
+  ]
+    .filter(Boolean)
+    .join(' ');
   const issuePrefix = sprintf(
     /* translators: Prefix before issue title in activity headers. */
     __('on %s', 'alpaca'),
@@ -126,20 +281,42 @@ const TimelineEntry = ({
       <div className={timelineItemClasses} data-source={dataSource}>
         <div className="alpaca-timeline-icon" />
         <div className="alpaca-timeline-msg">
-          {showIssueTitle && issueTitle && (
+          {auditTimeInTopline &&
+            ((showIssueTitle && issueTitle) || showTime) && (
+              <div className="alpaca-audit-topline">
+                {showIssueTitle && issueTitle && (
+                  <div className="alpaca-comment-issue-title">{issueTitle}</div>
+                )}
+                {showTime && (
+                  <Time
+                    value={comment.date}
+                    type="relative"
+                    className="alpaca-comment-date"
+                  />
+                )}
+              </div>
+            )}
+          {!auditTimeInTopline && showIssueTitle && issueTitle && (
             <div className="alpaca-comment-issue-title">{issueTitle}</div>
           )}
-          <div
-            className="alpaca-timeline-msg-content with-avatar-meta"
-            dangerouslySetInnerHTML={{ __html: processedContent }}
-          />
-          {showTime && (
-            <Time
-              value={comment.date}
-              type="relative"
-              className="alpaca-comment-date"
+          <div className="alpaca-audit-inline-row">
+            <div
+              className="alpaca-timeline-msg-content with-avatar-meta"
+              dangerouslySetInnerHTML={{ __html: processedContent }}
             />
-          )}
+            {showTime && !auditTimeInTopline && (
+              <Time
+                value={comment.date}
+                type="relative"
+                className="alpaca-comment-date alpaca-audit-inline-time"
+              />
+            )}
+          </div>
+          <div className="alpaca-timeline-msg-meta flexalign">
+            {headerActions && (
+              <div className="alpaca-comment-buttons">{headerActions}</div>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -169,6 +346,30 @@ const TimelineEntry = ({
           {showTime && (
             <div className="alpaca-comment-date">
               <Time value={comment.date} type="relative" />
+              {showEditedStamp && (
+                <div className="alpaca-comment-edited-date">
+                  {' '}
+                  (
+                  {editedByDifferentUser ? (
+                    <>
+                      {__('edited by', 'alpaca')}{' '}
+                      {editedByUser ? (
+                        <User
+                          user={editedByUser}
+                          showName
+                          avatarAfterName
+                          avatarSize={24}
+                        />
+                      ) : (
+                        editedByUserLabel
+                      )}
+                    </>
+                  ) : (
+                    __('edited', 'alpaca')
+                  )}{' '}
+                  <Time value={editedDate} type="relative" />)
+                </div>
+              )}
             </div>
           )}
           {headerActions && (
@@ -190,7 +391,9 @@ const TimelineEntry = ({
                 <Attachment
                   key={`${comment.id}-${index}`}
                   attachment={{ url: attachmentUrl }}
-                  onAttachmentClick={onAttachmentClick}
+                  onAttachmentClick={
+                    enableAttachmentPreview ? onAttachmentClick : null
+                  }
                   showDelete={false}
                   altText={__('Comment attachment', 'alpaca')}
                 />
@@ -199,6 +402,9 @@ const TimelineEntry = ({
           )}
         </div>
       </div>
+      {footerActions && (
+        <div className="alpaca-timeline-footer-actions">{footerActions}</div>
+      )}
     </div>
   );
 };
@@ -206,8 +412,9 @@ const TimelineEntry = ({
 TimelineEntry.propTypes = {
   comment: PropTypes.object.isRequired,
   currentUser: PropTypes.object,
-  onAttachmentClick: PropTypes.func.isRequired,
+  onAttachmentClick: PropTypes.func,
   headerActions: PropTypes.node,
+  footerActions: PropTypes.node,
   issueTitle: PropTypes.string,
   showIssueTitle: PropTypes.bool,
   showTime: PropTypes.bool,
@@ -215,11 +422,16 @@ TimelineEntry.propTypes = {
   editBody: PropTypes.node,
   isSubmitting: PropTypes.bool,
   stripInteractive: PropTypes.bool,
+  enableAttachmentPreview: PropTypes.bool,
+  auditTimeInTopline: PropTypes.bool,
+  className: PropTypes.string,
 };
 
 TimelineEntry.defaultProps = {
   currentUser: null,
+  onAttachmentClick: null,
   headerActions: null,
+  footerActions: null,
   issueTitle: '',
   showIssueTitle: false,
   showTime: true,
@@ -227,6 +439,9 @@ TimelineEntry.defaultProps = {
   editBody: null,
   isSubmitting: false,
   stripInteractive: false,
+  enableAttachmentPreview: true,
+  auditTimeInTopline: false,
+  className: '',
 };
 
 export default memo(TimelineEntry);

@@ -1,0 +1,144 @@
+@use 'sass:color';
+@use 'variables' as *;
+
+/*
+ * Mixins
+ */
+@mixin deadline-style($bg-color) {
+  background-color: $bg-color;
+  color: if(
+    color.channel($bg-color, 'lightness', $space: hsl) > 67%,
+    #000,
+    #fff
+  );
+  margin: 2px 0;
+  padding: 0 8px;
+}
+
+@mixin alpaca-item-deadline-states {
+  &[data-deadline-state='late'] {
+    @include deadline-style($deadline-late-bg);
+  }
+
+  &[data-deadline-state='today'] {
+    @include deadline-style($deadline-today-bg);
+  }
+
+  &[data-deadline-state='soon'] {
+    @include deadline-style($deadline-soon-bg);
+  }
+}
+
+@mixin alpaca-item-priority-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4ch;
+
+  svg {
+    color: $priority-high-bg;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    padding: 2px;
+    border: 1px solid $greyborder;
+    flex-shrink: 0;
+  }
+}
+
+@mixin alpaca-assignee-stack(
+  $avatar-size: 24px,
+  $user-offset: -8px,
+  $avatar-overlap: -2px,
+  $show-single-name: true,
+  $user-font-size: 0.8rem,
+  $user-gap: 0.5rem
+) {
+  .alpaca-user-name {
+    display: none;
+  }
+
+  @if $show-single-name {
+    &[data-assignees='1'] {
+      .alpaca-user .alpaca-user-name {
+        display: block;
+      }
+    }
+  }
+
+  .alpaca-user {
+    display: inline-flex;
+    align-items: center;
+    gap: $user-gap;
+    font-size: $user-font-size;
+    margin-inline-start: $user-offset;
+
+    &:first-child {
+      margin-inline-start: 0;
+    }
+  }
+
+  img {
+    width: $avatar-size;
+    height: $avatar-size;
+    border: 1px solid $greyborder;
+    border-radius: 50%;
+    background: $bgwhite;
+    vertical-align: middle;
+    margin-inline-end: $avatar-overlap;
+  }
+}
+
+@mixin alpaca-item-datapoints-content(
+  $item-spacing: 10px,
+  $text-color: $greytext
+) {
+  color: $text-color;
+  flex-wrap: wrap;
+  align-items: center;
+
+  > * {
+    display: flex;
+    align-items: center;
+    gap: 0.4ch;
+    margin-inline-end: $item-spacing;
+  }
+
+  .alpaca-item-priority-badge {
+    @include alpaca-item-priority-badge;
+  }
+
+  .alpaca-item-assignees {
+    @include alpaca-assignee-stack;
+  }
+
+  .alpaca-item-labels {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .alpaca-item-icon {
+    text-wrap: nowrap;
+
+    svg {
+      margin-inline-end: 3px;
+      vertical-align: middle;
+      margin-top: -2px;
+    }
+  }
+}
+
+@mixin alpaca-slide-right-enter {
+  animation: slide-in-right 300ms ease-out forwards;
+  transform-origin: 100% center;
+
+  html[dir='rtl'] &,
+  .rtl & {
+    animation: slide-in-left 300ms ease-out forwards;
+    transform-origin: 0 center;
+  }
+}
+
+%alpaca-slide-right-enter {
+  @include alpaca-slide-right-enter;
+}

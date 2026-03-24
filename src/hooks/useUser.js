@@ -1,3 +1,5 @@
+import { escapeHtml, escapeAttr } from '../utils/sanitize';
+
 const { useState, useEffect } = wp.element;
 const { __ } = wp.i18n;
 
@@ -62,9 +64,11 @@ export const generateAssigneeSpan = (user, withAvatar = false) => {
 
   const el = user.avatar && withAvatar === true ? 'strong' : 'span';
   const avatarAttr =
-    user.avatar && withAvatar === true ? ` data-avatar="${user.avatar}"` : '';
+    user.avatar && withAvatar === true
+      ? ` data-avatar="${escapeAttr(user.avatar)}"`
+      : '';
   const displayName =
     user.name || user.display_name || user.username || __('Unknown', 'alpaca');
 
-  return `<${el} class="alpaca-status-assignee" data-userid="${user.id}"${avatarAttr}>${displayName}</${el}>`;
+  return `<${el} class="alpaca-status-assignee" data-userid="${escapeAttr(String(user.id))}"${avatarAttr}>${escapeHtml(displayName)}</${el}>`;
 };

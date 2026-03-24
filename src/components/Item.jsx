@@ -9,19 +9,20 @@ import '../utils/itemDatapoints';
 /**
  * Item component displayed in board containers.
  *
- * @param {Object}   root0              - Props object
- * @param {number}   root0.id           - Item ID
- * @param {string|*} root0.content      - Item content text or inline markup
- * @param {Array}    root0.assignees    - Array of assignees
- * @param {Array}    root0.labels       - Array of labels
- * @param {number}   root0.commentCount - Number of comments
- * @param {Object}   root0.meta         - Metadata object
- * @param {string}   root0.postDate     - Post creation date
- * @param {string}   root0.className    - CSS class name
- * @param {Object}   root0.style        - Inline styles
- * @param {Function} root0.onClick      - Click handler
- * @param {Object}   root0.props        - Additional props
- * @param {Object}   ref                - Forwarded ref
+ * @param {Object}   root0                     - Props object
+ * @param {number}   root0.id                  - Item ID
+ * @param {string|*} root0.content             - Item content text or inline markup
+ * @param {Array}    root0.assignees           - Array of assignees
+ * @param {Array}    root0.labels              - Array of labels
+ * @param {number}   root0.commentCount        - Number of comments
+ * @param {Object}   root0.commentCountByAgent - Comment counts by agent type
+ * @param {Object}   root0.meta                - Metadata object
+ * @param {string}   root0.postDate            - Post creation date
+ * @param {string}   root0.className           - CSS class name
+ * @param {Object}   root0.style               - Inline styles
+ * @param {Function} root0.onClick             - Click handler
+ * @param {Object}   root0.props               - Additional props
+ * @param {Object}   ref                       - Forwarded ref
  * @return {JSX.Element} Item component
  */
 const Item = forwardRef(
@@ -32,6 +33,7 @@ const Item = forwardRef(
       assignees = [],
       labels = [],
       commentCount,
+      commentCountByAgent,
       meta,
       postDate,
       className,
@@ -94,6 +96,7 @@ const Item = forwardRef(
               assignees,
               labels,
               commentCount,
+              commentCountByAgent,
             })}
           </div>
         </CardFooter>
@@ -108,6 +111,7 @@ Item.propTypes = {
   assignees: PropTypes.arrayOf(PropTypes.object),
   labels: PropTypes.arrayOf(PropTypes.object),
   commentCount: PropTypes.number,
+  commentCountByAgent: PropTypes.object,
   meta: PropTypes.object,
   postDate: PropTypes.string,
   className: PropTypes.string,

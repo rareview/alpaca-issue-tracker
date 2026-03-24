@@ -17,10 +17,12 @@ $alpaca_rest_api_modules = array(
 	'endpoints/board.php',
 	'endpoints/options-statuses.php',
 	'endpoints/users-labels-watchlist.php',
+	'endpoints/notifications.php',
 	'endpoints/attachments.php',
 	'proxy/image-proxy.php',
 	'filters/comment-filters.php',
 	'endpoints/presence.php',
+	'endpoints/github-feeds.php',
 	'filters/comment-response.php',
 );
 

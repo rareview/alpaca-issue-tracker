@@ -2,9 +2,14 @@ const { useState, useEffect, useRef, createPortal } = wp.element;
 const { SearchControl, Popover } = wp.components;
 const { decodeEntities } = wp.htmlEntities;
 const { __ } = wp.i18n;
-const { doAction } = wp.hooks;
+const { doAction, applyFilters } = wp.hooks;
 import PropTypes from 'prop-types';
 import Item from './Item';
+import StatusPill from './StatusPill';
+import {
+  getCommentAgentTypeFromComment,
+  normalizeCommentAgentTypes,
+} from '../utils/commentAgentFilters';
 
 const MIN_QUERY_LENGTH = 3;
 const MAX_RESULTS = 10;
@@ -93,12 +98,25 @@ function buildBoardIssueIndex(boardData) {
       } else if (typeof issue.commentCount === 'number') {
         commentCount = issue.commentCount;
       }
+      let commentCountByAgent = null;
+      if (
+        issue.comment_count_by_agent &&
+        typeof issue.comment_count_by_agent === 'object'
+      ) {
+        commentCountByAgent = issue.comment_count_by_agent;
+      } else if (
+        issue.commentCountByAgent &&
+        typeof issue.commentCountByAgent === 'object'
+      ) {
+        commentCountByAgent = issue.commentCountByAgent;
+      }
 
       index.set(id, {
         title:
           typeof issue.title === 'string' ? decodeEntities(issue.title) : '',
         status,
         commentCount,
+        commentCountByAgent,
         labels,
         assignees: Array.isArray(issue.assignees) ? issue.assignees : [],
         meta,
@@ -129,6 +147,10 @@ function buildResultItem(post, boardIssueIndex) {
       fromBoard && typeof fromBoard.commentCount === 'number'
         ? fromBoard.commentCount
         : 0,
+    commentCountByAgent:
+      fromBoard && fromBoard.commentCountByAgent
+        ? fromBoard.commentCountByAgent
+        : null,
     labels:
       fromBoard && Array.isArray(fromBoard.labels) ? fromBoard.labels : [],
     assignees:
@@ -176,6 +198,47 @@ function SearchContainer() {
 
     return () => {
       wp.hooks.removeAction('alpaca.enableTestLogsChanged', 'alpaca/search');
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleCommentCountChanged = (data) => {
+      const { issueId, newCount, newCountByAgent } = data || {};
+      const normalizedIssueId =
+        typeof issueId !== 'undefined' && issueId !== null
+          ? String(issueId)
+          : '';
+
+      if (!normalizedIssueId) {
+        return;
+      }
+
+      setBoardIssueIndex((prevIndex) => {
+        const existing = prevIndex.get(normalizedIssueId) || {};
+        const nextIndex = new Map(prevIndex);
+        nextIndex.set(normalizedIssueId, {
+          ...existing,
+          commentCount: Number(newCount) || 0,
+          commentCountByAgent:
+            newCountByAgent &&
+            typeof newCountByAgent === 'object' &&
+            !Array.isArray(newCountByAgent)
+              ? newCountByAgent
+              : existing.commentCountByAgent || null,
+        });
+
+        return nextIndex;
+      });
+    };
+
+    wp.hooks.addAction(
+      'alpaca.commentCountChanged',
+      'alpaca/search',
+      handleCommentCountChanged,
+    );
+
+    return () => {
+      wp.hooks.removeAction('alpaca.commentCountChanged', 'alpaca/search');
     };
   }, []);
 
@@ -246,7 +309,7 @@ function SearchContainer() {
         try {
           const comments = await wp
             .apiFetch({
-              path: `/wp/v2/comments?search=${encodeURIComponent(q)}&per_page=100&comment_type=issuecomment&type=issuecomment&context=edit&show_hidden_comments=1&_fields=post,comment_post_ID`,
+              path: `/wp/v2/comments?search=${encodeURIComponent(q)}&per_page=100&comment_type=issuecomment&type=issuecomment&context=edit&show_hidden_comments=1&_fields=post,comment_post_ID,author_user_agent`,
             })
             .catch(() => []);
 
@@ -262,9 +325,27 @@ function SearchContainer() {
             });
           }
 
+          const requestedAgentTypes = normalizeCommentAgentTypes(
+            applyFilters('alpaca.search.commentAgentTypes', null, {
+              query: q,
+              comments,
+            }),
+          );
+
+          const filteredComments =
+            requestedAgentTypes.length < 1
+              ? comments || []
+              : (comments || []).filter((comment) => {
+                  const commentAgent = getCommentAgentTypeFromComment(comment);
+
+                  return (
+                    commentAgent && requestedAgentTypes.includes(commentAgent)
+                  );
+                });
+
           const commentPostIds = Array.from(
             new Set(
-              (comments || [])
+              filteredComments
                 .map((c) => {
                   if (!c) {
                     return null;
@@ -559,9 +640,7 @@ function SearchContainer() {
                     {r.status ? (
                       <>
                         {'\u00A0\u00A0'}
-                        <span className="alpaca-search-status-pill">
-                          {r.status}
-                        </span>
+                        <StatusPill>{r.status}</StatusPill>
                       </>
                     ) : null}
                   </span>
@@ -574,6 +653,7 @@ function SearchContainer() {
                       content={titleContent}
                       assignees={r.assignees}
                       commentCount={r.commentCount}
+                      commentCountByAgent={r.commentCountByAgent}
                       meta={r.meta}
                       postDate={r.postDate}
                       className="alpaca-item-inner"
@@ -610,5 +690,11 @@ SearchPortal.propTypes = {
 SearchPortal.defaultProps = {
   selector: '#project-board-controls-mount',
 };
+
+wp.hooks.addFilter(
+  'alpaca.search.commentAgentTypes',
+  'alpaca/search/comment-agent-types',
+  () => ['human', 'create'],
+);
 
 export default SearchPortal;

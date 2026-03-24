@@ -73,16 +73,25 @@ const Attachment = ({
   isLoading,
   showDelete,
   altText,
-}) => (
-  <div className="alpaca-attachment">
-    {isImageAttachment(attachment) ? (
-      <>
+}) => {
+  const canPreviewAttachment = 'function' === typeof onAttachmentClick;
+
+  return (
+    <div className="alpaca-attachment">
+      {isImageAttachment(attachment) ? (
         <button
           type="button"
           className="alpaca-attachment-thumbnail"
-          onClick={() => onAttachmentClick(attachment.url)}
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+
+            if (canPreviewAttachment) {
+              onAttachmentClick(attachment.url);
+            }
+          }}
           style={{
-            cursor: 'zoom-in',
+            cursor: canPreviewAttachment ? 'zoom-in' : 'inherit',
             padding: 0,
             border: 'none',
             background: 'none',
@@ -90,49 +99,49 @@ const Attachment = ({
         >
           <img src={attachment.url} alt={altText} />
         </button>
-      </>
-    ) : (
-      <div
-        className="alpaca-attachment-file"
-        data-filetype={getAttachmentTypeLabel(attachment)}
-      >
-        <a
-          className="alpaca-attachment-file-link"
-          href={attachment.url}
-          download
-          aria-label={__('Download attachment', 'alpaca')}
+      ) : (
+        <div
+          className="alpaca-attachment-file"
+          data-filetype={getAttachmentTypeLabel(attachment)}
         >
-          <span className="alpaca-attachment-file-meta">
-            <span className="alpaca-attachment-file-name">
-              {getAttachmentName(attachment)}
+          <a
+            className="alpaca-attachment-file-link"
+            href={attachment.url}
+            download
+            aria-label={__('Download attachment', 'alpaca')}
+          >
+            <span className="alpaca-attachment-file-meta">
+              <span className="alpaca-attachment-file-name">
+                {getAttachmentName(attachment)}
+              </span>
+              <span className="alpaca-attachment-file-type">
+                {getAttachmentTypeLabel(attachment)}
+              </span>
             </span>
-            <span className="alpaca-attachment-file-type">
-              {getAttachmentTypeLabel(attachment)}
-            </span>
-          </span>
-        </a>
-      </div>
-    )}
+          </a>
+        </div>
+      )}
 
-    {showDelete && (
-      <Button
-        disabled={isLoading}
-        onClick={(event) => {
-          event.preventDefault();
-          event.stopPropagation();
-          onAttachmentDelete();
-        }}
-        label={__('Delete', 'alpaca')}
-        showTooltip
-        tooltipPosition="top"
-        icon="trash"
-        isDestructive
-        className="alpaca-attachment-delete"
-        variant="primary"
-      />
-    )}
-  </div>
-);
+      {showDelete && (
+        <Button
+          disabled={isLoading}
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            onAttachmentDelete();
+          }}
+          label={__('Delete', 'alpaca')}
+          showTooltip
+          tooltipPosition="top"
+          icon="trash"
+          isDestructive
+          className="alpaca-attachment-delete"
+          variant="primary"
+        />
+      )}
+    </div>
+  );
+};
 
 Attachment.propTypes = {
   attachment: PropTypes.shape({
@@ -140,7 +149,7 @@ Attachment.propTypes = {
     name: PropTypes.string,
     mime: PropTypes.string,
   }).isRequired,
-  onAttachmentClick: PropTypes.func.isRequired,
+  onAttachmentClick: PropTypes.func,
   onAttachmentDelete: PropTypes.func,
   isLoading: PropTypes.bool,
   showDelete: PropTypes.bool,
@@ -149,6 +158,7 @@ Attachment.propTypes = {
 
 Attachment.defaultProps = {
   onAttachmentDelete: () => {},
+  onAttachmentClick: null,
   isLoading: false,
   showDelete: true,
   altText: 'Screenshot',

@@ -5,6 +5,11 @@
  * @package Alpaca
  */
 
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * Build a time-based auth token for the image proxy endpoint.
  *
@@ -160,7 +165,7 @@ function alpaca_validate_proxy_target_url( $url ) {
 		);
 	}
 
-	$scheme = (string) parse_url( $url, PHP_URL_SCHEME );
+	$scheme = (string) wp_parse_url( $url, PHP_URL_SCHEME );
 	if ( ! in_array( strtolower( $scheme ), array( 'http', 'https' ), true ) ) {
 		return new WP_Error(
 			'alpaca_proxy_invalid_scheme',
@@ -169,7 +174,7 @@ function alpaca_validate_proxy_target_url( $url ) {
 		);
 	}
 
-	$host = (string) parse_url( $url, PHP_URL_HOST );
+	$host = (string) wp_parse_url( $url, PHP_URL_HOST );
 	if ( '' === $host ) {
 		return new WP_Error(
 			'alpaca_proxy_invalid_host',
@@ -259,7 +264,7 @@ function alpaca_image_proxy_callback( WP_REST_Request $request ) {
 		),
 	);
 
-	$resp = wp_remote_get( $url, $args );
+	$resp = wp_safe_remote_get( $url, $args );
 	if ( is_wp_error( $resp ) ) {
 		return alpaca_rest_response(
 			'image_proxy',

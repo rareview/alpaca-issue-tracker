@@ -112,7 +112,9 @@ function Container({
     },
     {
       icon: isHidden ? 'visibility' : 'hidden',
-      title: isHidden ? 'Expand Column' : 'Collapse Column',
+      title: isHidden
+        ? __('Expand Column', 'alpaca')
+        : __('Collapse Column', 'alpaca'),
       onClick: toggleHidden,
     },
     {
@@ -176,7 +178,12 @@ function Container({
 
   if (!isLastContainer) {
     menuControls.push({
-      icon: 'arrow-right-alt',
+      icon: (
+        <span
+          className="dashicon dashicons dashicons-arrow-right-alt rtl-mirror"
+          aria-hidden="true"
+        ></span>
+      ),
       title: __('Move All To Next Column', 'alpaca'),
       onClick: () => onMoveAllToNext(id),
       disabled: !hasItems,
@@ -438,6 +445,7 @@ function Container({
                     assignees={dragOverItem.assignees}
                     labels={dragOverItem.labels}
                     commentCount={dragOverItem.commentCount}
+                    commentCountByAgent={dragOverItem.commentCountByAgent}
                     postDate={dragOverItem.postDate}
                     meta={dragOverItem.meta}
                     className="alpaca-item-inner"
@@ -489,6 +497,7 @@ function Container({
                     assignees={item.assignees}
                     labels={item.labels}
                     commentCount={item.commentCount}
+                    commentCountByAgent={item.commentCountByAgent}
                     meta={item.meta}
                     onClick={onItemClick}
                   />
@@ -523,6 +532,7 @@ function Container({
                     assignees={item.assignees}
                     labels={item.labels}
                     commentCount={item.commentCount}
+                    commentCountByAgent={item.commentCountByAgent}
                     meta={item.meta}
                     onClick={onItemClick}
                   />,
@@ -549,6 +559,7 @@ Container.propTypes = {
       assignees: PropTypes.array,
       labels: PropTypes.array,
       commentCount: PropTypes.number,
+      commentCountByAgent: PropTypes.object,
       meta: PropTypes.object,
     }),
   ).isRequired,

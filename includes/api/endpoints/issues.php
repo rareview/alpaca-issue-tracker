@@ -5,6 +5,11 @@
  * @package Alpaca
  */
 
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /*
  * Issue submit endpoint.
  */
@@ -19,8 +24,8 @@ function alpaca_issue_submit() {
 		array(
 			'methods'             => 'POST',
 			'callback'            => 'alpaca_issue_callback',
-			'permission_callback' => function () {
-				return \Alpaca\Inc\Helpers::user_can( 'create_issue' );
+			'permission_callback' => function ( WP_REST_Request $request ) {
+				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'create_issue' );
 			},
 		)
 	);
@@ -47,7 +52,7 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 	}
 
 	// Extract user + input safely.
-	$user_id          = (int) alpaca_arr_get( $payload, array( 'user', 'id' ), get_current_user_id() );
+	$user_id          = get_current_user_id();
 	$feedback_raw     = (string) alpaca_arr_get( $payload, array( 'userinput', 'feedback' ), '' );
 	$include_ctx      = (bool) alpaca_arr_get( $payload, array( 'userinput', 'includeContext' ), false );
 	$is_high_priority = (bool) alpaca_arr_get( $payload, array( 'userinput', 'isHighPriority' ), false );
@@ -163,7 +168,7 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 
 		update_post_meta( $post_id, 'alpaca_screenwidth', (int) alpaca_arr_get( $payload, array( 'client', 'browser', 'width' ), 0 ) );
 		update_post_meta( $post_id, 'alpaca_screenheight', (int) alpaca_arr_get( $payload, array( 'client', 'browser', 'height' ), 0 ) );
-		update_post_meta( $post_id, 'alpaca_url', (string) alpaca_arr_get( $payload, array( 'server', 'REQUEST_URI' ), '' ) );
+		update_post_meta( $post_id, 'alpaca_url', esc_url_raw( (string) alpaca_arr_get( $payload, array( 'server', 'REQUEST_URI' ), '' ) ) );
 
 		$qo = alpaca_arr_get( $payload, array( 'wp', 'queriedObject' ), null );
 		if ( is_array( $qo ) ) {
@@ -172,11 +177,27 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 				unset( $qo['post_content'] );
 			}
 
+			array_walk_recursive(
+				$qo,
+				function ( &$value ) {
+					if ( is_string( $value ) ) {
+						$value = sanitize_text_field( $value );
+					}
+				}
+			);
 			update_post_meta( $post_id, 'alpaca_queried_object', $qo );
 		}
 
 		$headers = alpaca_arr_get( $payload, array( 'headers' ), null );
 		if ( is_array( $headers ) ) {
+			array_walk_recursive(
+				$headers,
+				function ( &$value ) {
+					if ( is_string( $value ) ) {
+						$value = sanitize_text_field( $value );
+					}
+				}
+			);
 			update_post_meta( $post_id, 'alpaca_headers', $headers );
 		}
 	}
@@ -242,8 +263,8 @@ function alpaca_update_issue() {
 		array(
 			'methods'             => 'POST',
 			'callback'            => 'alpaca_update_issue_callback',
-			'permission_callback' => function () {
-				return \Alpaca\Inc\Helpers::user_can( 'get_issue' );
+			'permission_callback' => function ( WP_REST_Request $request ) {
+				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'update_issue' );
 			},
 			'args'                => array(
 				'id' => array(
@@ -811,31 +832,33 @@ function alpaca_get_issue_comment_count_endpoint() {
  * @return WP_REST_Response REST response with comment count.
  */
 function alpaca_get_issue_comment_count_callback( WP_REST_Request $request ) {
-	$issue_id      = (int) $request['id'];
-	$last_activity = '';
+	$issue_id                     = (int) $request['id'];
+	$last_activity                = '';
+	$comment_count_data           = function_exists( 'alpaca_get_issue_comment_counts' )
+	? alpaca_get_issue_comment_counts( array( $issue_id ) )
+		: array(
+			'totals'   => array(),
+			'by_agent' => array(),
+		);
+	$comment_counts               = isset( $comment_count_data['totals'] ) ? $comment_count_data['totals'] : array();
+	$comment_counts_by_agent      = isset( $comment_count_data['by_agent'] ) ? $comment_count_data['by_agent'] : array();
+	$issue_comment_count          = isset( $comment_counts[ $issue_id ] ) ? (int) $comment_counts[ $issue_id ] : 0;
+	$issue_comment_count_by_agent = isset( $comment_counts_by_agent[ $issue_id ] ) && is_array( $comment_counts_by_agent[ $issue_id ] )
+		? $comment_counts_by_agent[ $issue_id ]
+		: array();
 
 	if ( function_exists( 'alpaca_update_last_activity_from_issuecomments' ) ) {
 		$last_activity = (string) alpaca_update_last_activity_from_issuecomments( $issue_id );
 	}
 
-	global $wpdb;
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
-	$issue_comment_count = $wpdb->get_var(
-		$wpdb->prepare(
-			"SELECT COUNT(*) FROM {$wpdb->comments} 
-		WHERE comment_post_ID = %d AND comment_type = %s AND comment_approved = 1",
-			$issue_id,
-			'issuecomment'
-		)
-	);
-
 	return alpaca_rest_response(
 		'',
 		array(
-			'success'       => true,
-			'post_id'       => $issue_id,
-			'comment_count' => (int) $issue_comment_count,
-			'last_activity' => $last_activity,
+			'success'                => true,
+			'post_id'                => $issue_id,
+			'comment_count'          => $issue_comment_count,
+			'comment_count_by_agent' => $issue_comment_count_by_agent,
+			'last_activity'          => $last_activity,
 		),
 		200
 	);
@@ -857,7 +880,13 @@ function alpaca_delete_issue() {
 			'callback'            => 'alpaca_delete_issue_callback',
 			'permission_callback' => function ( WP_REST_Request $request ) {
 				$post_id = (int) $request['id'];
-				return \Alpaca\Inc\Helpers::user_can( 'delete_post', array( 'post_id' => $post_id ) );
+				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission(
+					$request,
+					'delete_post',
+					array(
+						'post_id' => $post_id,
+					)
+				);
 			},
 			'args'                => array(
 				'id' => array(

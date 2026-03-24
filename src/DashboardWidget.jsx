@@ -110,19 +110,25 @@ const AlpacaDashboardWidget = memo(function AlpacaDashboardWidget({ data }) {
                           {formatDate(issue.deadline)}
                         </td>
                         <td className="assignees">
-                          {issue.assignees &&
-                            issue.assignees.map((assignee) => {
-                              const userObject = allUserObjects.find(
-                                (u) => u.slug === assignee.slug,
-                              );
-                              return userObject ? (
-                                <User
-                                  key={assignee.term_id}
-                                  user={userObject}
-                                  showName={false}
-                                />
-                              ) : null;
-                            })}
+                          {issue.assignees && issue.assignees.length > 0 ? (
+                            <div
+                              className="alpaca-item-assignees"
+                              data-assignees={issue.assignees.length}
+                            >
+                              {issue.assignees.map((assignee) => {
+                                const userObject = allUserObjects.find(
+                                  (u) => u.slug === assignee.slug,
+                                );
+                                return userObject ? (
+                                  <User
+                                    key={assignee.term_id}
+                                    user={userObject}
+                                    showName={false}
+                                  />
+                                ) : null;
+                              })}
+                            </div>
+                          ) : null}
                         </td>
                         <td className="status">
                           <span className="nowrap">
