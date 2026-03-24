@@ -395,12 +395,16 @@ function SearchContainer() {
           const commentSearchPath = `/wp/v2/comments?search=${encodeURIComponent(q)}&per_page=100&comment_type=issuecomment&type=issuecomment&context=edit&show_hidden_comments=1&_fields=post,comment_post_ID,author_user_agent`;
           const directIssueSearchPath = `/wp/v2/alpaca_issue?search=${encodeURIComponent(q)}&per_page=${MAX_RESULTS}&_fields=${issueFields}`;
           const [comments, directIssues] = await Promise.all([
-            wp.apiFetch({
-              path: commentSearchPath,
-            }).catch(() => []),
-            wp.apiFetch({
-              path: directIssueSearchPath,
-            }).catch(() => []),
+            wp
+              .apiFetch({
+                path: commentSearchPath,
+              })
+              .catch(() => []),
+            wp
+              .apiFetch({
+                path: directIssueSearchPath,
+              })
+              .catch(() => []),
           ]);
 
           if (requestId !== requestIdRef.current) {
@@ -478,7 +482,9 @@ function SearchContainer() {
               commentIssueIdsToLoad.join(','),
             )}&per_page=${commentIssueIdsToLoad.length}&_fields=${issueFields}`;
 
-            const issues = await wp.apiFetch({ path: issuesPath }).catch(() => []);
+            const issues = await wp
+              .apiFetch({ path: issuesPath })
+              .catch(() => []);
             if (requestId !== requestIdRef.current) {
               return;
             }

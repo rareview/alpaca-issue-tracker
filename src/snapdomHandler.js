@@ -102,16 +102,32 @@ const prepareResponsiveSourcesForCapture = () => {
 };
 
 const handleSnapdomCapture = async () => {
+  const excludedElements = [];
+
+  /**
+   * Exclude matching elements from SnapDOM capture and restore their prior state.
+   *
+   * @param {string} selector CSS selector for the element to exclude.
+   * @return {void}
+   */
   function hide_from_snapdom(selector) {
     const el = document.querySelector(selector);
-    if (el) {
-      el.dataset.capture = 'exclude';
+    if (!el) {
+      return;
     }
+
+    excludedElements.push({
+      element: el,
+      previousCapture: el.getAttribute('data-capture'),
+    });
+    el.dataset.capture = 'exclude';
   }
 
   hide_from_snapdom('#wpadminbar');
   hide_from_snapdom('.components-modal__screen-overlay');
   hide_from_snapdom('#alpaca-toolbar-mount');
+  hide_from_snapdom('#query-monitor-main');
+  hide_from_snapdom('#query-monitor-ceased');
 
   let restoreResponsiveSources = () => {};
 
@@ -156,6 +172,13 @@ const handleSnapdomCapture = async () => {
     return '';
   } finally {
     restoreResponsiveSources();
+    excludedElements.forEach(({ element, previousCapture }) => {
+      if (previousCapture === null) {
+        element.removeAttribute('data-capture');
+      } else {
+        element.setAttribute('data-capture', previousCapture);
+      }
+    });
   }
 };
 
