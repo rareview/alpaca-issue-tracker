@@ -164,26 +164,6 @@ function alpaca_create_notification_inbox_item( $user_id, $event, $subjects = ar
 }
 
 /**
- * Send an inbox route for a notification recipient.
- *
- * @param array<string, mixed> $route     Delivery route.
- * @param array<string, mixed> $recipient Notification recipient.
- * @param array<string, mixed> $event     Notification event.
- * @return bool True when the inbox row was created.
- */
-function alpaca_send_notification_inbox_route( $route, $recipient, $event ) {
-	unset( $route );
-
-	$user_id  = isset( $recipient['user_id'] ) ? absint( $recipient['user_id'] ) : 0;
-	$subjects = isset( $recipient['subjects'] ) && is_array( $recipient['subjects'] ) ? $recipient['subjects'] : array();
-	if ( $user_id <= 0 ) {
-		return false;
-	}
-
-	return alpaca_create_notification_inbox_item( $user_id, $event, $subjects );
-}
-
-/**
  * Persist a notification item for a resolved recipient.
  *
  * @param array<string, mixed> $recipient Notification recipient.

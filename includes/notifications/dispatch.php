@@ -33,14 +33,6 @@ function alpaca_get_notification_recipient_routes( $recipient, $event ) {
 			continue;
 		}
 
-		if ( 'inbox' === $channel_key ) {
-			$routes[] = array(
-				'channel'   => $channel_key,
-				'transport' => isset( $channel['transport'] ) ? (string) $channel['transport'] : $channel_key,
-			);
-			continue;
-		}
-
 		if ( 'email' === $channel_key ) {
 			$email = isset( $channel_status[ $channel_key ]['effective_address'] ) ? (string) $channel_status[ $channel_key ]['effective_address'] : '';
 			if ( '' === $email || ! is_email( $email ) ) {
@@ -133,10 +125,6 @@ function alpaca_dispatch_notification_route( $route, $recipient, $event, $messag
 		return alpaca_send_notification_email_route( $route, $message );
 	}
 
-	if ( 'inbox' === $transport ) {
-		return alpaca_send_notification_inbox_route( $route, $recipient, $event );
-	}
-
 	return false;
 }
 
@@ -160,13 +148,15 @@ function alpaca_send_notifications_for_event( $event, $template = null ) {
 	}
 
 	$message    = null;
-	$transports = apply_filters( 'alpaca_notifications_transports', array( 'email', 'inbox' ), $event, $recipients, array() );
+	$transports = apply_filters( 'alpaca_notifications_transports', array( 'email' ), $event, $recipients, array() );
 	if ( ! is_array( $transports ) ) {
 		return;
 	}
 
 	foreach ( $recipients as $recipient ) {
-		alpaca_capture_notification_item_for_recipient( $recipient, $event );
+		if ( alpaca_notification_builtin_inbox_is_enabled() ) {
+			alpaca_capture_notification_item_for_recipient( $recipient, $event );
+		}
 
 		$routes = alpaca_get_notification_recipient_routes( $recipient, $event );
 		if ( empty( $routes ) ) {

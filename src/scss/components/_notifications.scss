@@ -12,6 +12,7 @@
   margin-top: 20px;
 }
 
+.alpaca-notifications-intro,
 .alpaca-notification-template-intro {
   margin-bottom: 20px;
   margin-top: 20px;
@@ -22,7 +23,19 @@
   p {
     margin: 0;
     color: #50575e;
-    max-width: 72ch;
+  }
+}
+
+.alpaca-notifications-tabs {
+  margin-top: 20px;
+
+  .components-tab-panel__tabs {
+    border-bottom: 1px solid $greyborder;
+    margin-bottom: 0;
+  }
+
+  .components-tab-panel__tab-content {
+    padding-top: 20px;
   }
 }
 
@@ -33,7 +46,7 @@
 }
 
 .alpaca-notifications-grid {
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   margin-top: 20px;
 }
 
@@ -59,6 +72,18 @@
   }
 }
 
+.alpaca-notifications-panel-intro {
+  margin: 0 0 16px;
+}
+
+.alpaca-notifications-panel--narrow {
+  max-width: 560px;
+}
+
+.alpaca-notifications-panel--email {
+  max-width: 520px;
+}
+
 .alpaca-notifications-options {
   display: grid;
   gap: 10px;
@@ -69,48 +94,14 @@
   gap: 8px;
 }
 
-.alpaca-notifications-channel-grid {
+.alpaca-notifications-channel-stack,
+.alpaca-notifications-email-layout {
   display: grid;
-  align-items: stretch;
-  gap: 16px;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-}
-
-.alpaca-notifications-channel-card {
-  display: grid;
-  align-content: start;
-  gap: 16px;
-  padding: 18px;
-  border: 1px solid $greyborder;
-  border-radius: $common-radius;
-  background: $container-bg;
-}
-
-.alpaca-notifications-channel-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
   gap: 12px;
-
-  h3 {
-    margin: 0 0 4px;
-    font-size: 16px;
-    line-height: 1.35;
-  }
-
-  p {
-    margin: 0;
-  }
 }
 
 .alpaca-notifications-channel-summary {
   display: grid;
-  gap: 12px;
-}
-
-.alpaca-notifications-channel-actions {
-  display: flex;
-  flex-wrap: wrap;
   gap: 12px;
 }
 
@@ -160,54 +151,31 @@
   font-size: 13px;
 }
 
-.alpaca-notifications-digest-layout {
+.alpaca-notifications-email-digest-settings {
   display: grid;
-  gap: 16px;
-}
-
-.alpaca-notifications-digest-settings {
-  display: grid;
-  gap: 16px;
-  inline-size: min(100%, 420px);
-  padding: 16px;
-  border: 1px solid $greyborder;
-  border-radius: $common-radius;
-  background: $container-bg;
+  gap: 10px;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+  transform: translateY(-4px);
   transition:
-    opacity 0.2s ease-in-out,
-    filter 0.2s ease-in-out;
+    max-height 220ms ease,
+    opacity 180ms ease,
+    transform 180ms ease,
+    margin-block-start 180ms ease;
+  margin-block-start: -4px;
 
-  &.is-disabled {
-    opacity: 0.55;
-    filter: saturate(0.6);
+  &.is-visible {
+    max-height: 160px;
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+    margin-block-start: 0;
   }
 }
 
-.alpaca-notifications-digest-disabled-note {
-  margin: 0;
-  color: #50575e;
-  font-size: 13px;
-  font-style: italic;
-}
-
-.alpaca-notifications-digest-fieldset {
-  display: grid;
-  gap: 10px;
-
-  strong {
-    color: #1d2327;
-    font-size: 13px;
-    font-weight: 600;
-  }
-}
-
-.alpaca-notifications-digest-channels {
-  display: grid;
-  gap: 10px;
-  grid-template-columns: 1fr;
-}
-
-.alpaca-notifications-digest-time {
+.alpaca-notifications-email-time {
   inline-size: min(100%, 220px);
 }
 
@@ -844,5 +812,11 @@
 
   .alpaca-notification-template-preview-panel {
     position: static;
+  }
+}
+
+@media (max-width: 960px) {
+  .alpaca-notifications-grid {
+    grid-template-columns: 1fr;
   }
 }

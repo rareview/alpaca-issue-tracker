@@ -17,17 +17,6 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 function alpaca_get_notification_channel_registry() {
 	$channels = array(
-		'inbox' => array(
-			'key'                => 'inbox',
-			'transport'          => 'inbox',
-			'label'              => esc_html__( 'In-App Notifications', 'alpaca' ),
-			'description'        => esc_html__( 'Shows updates inside Project Board.', 'alpaca' ),
-			'enabled_by_default' => true,
-			'is_available'       => true,
-			'supports_digest'    => false,
-			'summary_fields'     => array(),
-			'settings_fields'    => array(),
-		),
 		'email' => array(
 			'key'                => 'email',
 			'transport'          => 'email',
@@ -351,6 +340,20 @@ function alpaca_get_notification_effective_email( $user_id, $preferences = null 
 }
 
 /**
+ * Determine whether the built-in inbox should capture notifications.
+ *
+ * @return bool True when the built-in inbox is enabled.
+ */
+function alpaca_notification_builtin_inbox_is_enabled() {
+	/**
+	 * Filter whether the built-in inbox should capture Alpaca notifications.
+	 *
+	 * @param bool $enabled Whether the built-in inbox is enabled.
+	 */
+	return (bool) apply_filters( 'alpaca_notification_builtin_inbox_is_enabled', true );
+}
+
+/**
  * Determine whether a notification channel is enabled.
  *
  * @param array<string, mixed> $preferences Notification preferences.
@@ -445,6 +448,10 @@ function alpaca_notification_preferences_have_enabled_digest_channels( $preferen
  * @return bool True when any instant or digest delivery target is enabled.
  */
 function alpaca_notification_preferences_have_enabled_delivery_targets( $preferences ) {
+	if ( alpaca_notification_builtin_inbox_is_enabled() ) {
+		return true;
+	}
+
 	if ( alpaca_notification_preferences_have_enabled_channels( $preferences ) ) {
 		return true;
 	}
@@ -475,14 +482,6 @@ function alpaca_get_notification_channel_status_for_user( $user_id, $preferences
 	}
 
 	foreach ( $channels as $channel_key => $channel ) {
-		if ( 'inbox' === $channel_key ) {
-			$statuses[ $channel_key ] = array(
-				'unread_count' => alpaca_get_notification_inbox_unread_count( $user_id ),
-				'can_enable'   => ! empty( $channel['is_available'] ),
-			);
-			continue;
-		}
-
 		if ( 'email' === $channel_key ) {
 			$statuses[ $channel_key ] = array(
 				'profile_address'   => $profile_address,
@@ -665,6 +664,20 @@ function alpaca_update_notification_preferences_for_user( $user_id, $preferences
 		if ( '' !== $override && '' !== $profile_email && 0 === strcasecmp( $override, $profile_email ) ) {
 			$sanitized['channels']['email']['address_override'] = '';
 		}
+	}
+
+	$effective_email = alpaca_get_notification_effective_email( $user_id, $sanitized );
+	if (
+		(
+			alpaca_notification_channel_is_enabled( $sanitized, 'email' ) ||
+			alpaca_notification_digest_channel_is_enabled( $sanitized, 'email' )
+		) &&
+		( '' === $effective_email || ! is_email( $effective_email ) )
+	) {
+		return new WP_Error(
+			'alpaca_invalid_notification_delivery_email',
+			esc_html__( 'Add a valid email address before enabling email notifications or the daily digest.', 'alpaca' )
+		);
 	}
 
 	update_user_meta( (int) $user_id, 'alpaca_notification_preferences', $sanitized );
