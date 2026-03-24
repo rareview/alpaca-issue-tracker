@@ -94,6 +94,12 @@ function alpaca_sync_comment_mentions( $comment_id ) {
 
 	$slugs    = alpaca_extract_mention_slugs_from_content( $comment->comment_content );
 	$mentions = alpaca_resolve_mention_users( $slugs );
+
+	if ( empty( $mentions ) ) {
+		delete_comment_meta( $comment->comment_ID, 'alpacaMentionedUsers' );
+		return array();
+	}
+
 	update_comment_meta( $comment->comment_ID, 'alpacaMentionedUsers', $mentions );
 
 	return $mentions;

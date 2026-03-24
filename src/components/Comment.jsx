@@ -394,6 +394,19 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
     const attachmentUrls = pendingAttachments.map(
       (attachment) => attachment.url,
     );
+    const hasAttachmentUrls = attachmentUrls.length > 0;
+
+    const optimisticMeta = hasAttachmentUrls
+      ? {
+          alpacaCommentAttachments: attachmentUrls,
+        }
+      : {};
+
+    const createMeta = hasAttachmentUrls
+      ? {
+          alpacaCommentAttachments: attachmentUrls,
+        }
+      : {};
 
     const optimisticComment = {
       id: Date.now(),
@@ -401,9 +414,7 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
       _embedded: { author: currentUser },
       date: new Date().toISOString(),
       author_user_agent: 'human',
-      meta: {
-        alpacaCommentAttachments: attachmentUrls,
-      },
+      meta: optimisticMeta,
     };
     setComments((prev) => [optimisticComment, ...prev]);
 
@@ -415,9 +426,7 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
         post: issueId,
         comment_type: 'issuecomment',
         author_user_agent: 'human',
-        meta: {
-          alpacaCommentAttachments: attachmentUrls,
-        },
+        meta: createMeta,
       },
     })
       .then((created) => {
@@ -428,7 +437,7 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
                 ...created,
                 meta: {
                   ...(created && created.meta ? created.meta : {}),
-                  alpacaCommentAttachments: attachmentUrls,
+                  ...createMeta,
                 },
               };
 
@@ -503,6 +512,12 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
       const attachmentUrls = editingAttachments.map(
         (attachment) => attachment.url,
       );
+      const hasAttachmentUrls = attachmentUrls.length > 0;
+      const attachmentMeta = hasAttachmentUrls
+        ? {
+            alpacaCommentAttachments: attachmentUrls,
+          }
+        : {};
 
       wp.apiFetch({
         path: `/wp/v2/comments/${commentId}`,
@@ -511,7 +526,7 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
           content: editingContent,
           author_user_agent: agent,
           meta: {
-            alpacaCommentAttachments: attachmentUrls,
+            ...attachmentMeta,
             alpacaCommentLastEdit: lastEditedMeta,
           },
         },
@@ -524,7 +539,7 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
                   ...updated,
                   meta: {
                     ...(updated && updated.meta ? updated.meta : {}),
-                    alpacaCommentAttachments: attachmentUrls,
+                    ...attachmentMeta,
                     alpacaCommentLastEdit: lastEditedMeta,
                   },
                 };

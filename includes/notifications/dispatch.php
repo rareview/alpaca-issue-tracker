@@ -11,6 +11,34 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * Synchronize comment attachment metadata by removing empty values.
+ *
+ * @param int $comment_id Comment ID.
+ * @return string[] Attachment URLs.
+ */
+function alpaca_sync_comment_attachments_meta( $comment_id ) {
+	$comment_id  = (int) $comment_id;
+	$attachments = get_comment_meta( $comment_id, 'alpacaCommentAttachments', true );
+
+	if ( ! is_array( $attachments ) ) {
+		delete_comment_meta( $comment_id, 'alpacaCommentAttachments' );
+		return array();
+	}
+
+	$attachments = array_map( 'esc_url_raw', $attachments );
+	$attachments = array_values( array_filter( $attachments ) );
+
+	if ( empty( $attachments ) ) {
+		delete_comment_meta( $comment_id, 'alpacaCommentAttachments' );
+		return array();
+	}
+
+	update_comment_meta( $comment_id, 'alpacaCommentAttachments', $attachments );
+
+	return $attachments;
+}
+
+/**
  * Resolve enabled delivery routes for a recipient.
  *
  * @param array<string, mixed> $recipient Notification recipient.
@@ -219,12 +247,14 @@ function alpaca_send_notifications_for_event( $event, $template = null ) {
  * @return void
  */
 function alpaca_handle_rest_insert_comment_notifications( $comment, $request, $creating ) {
-	if ( ! $creating ) {
-		alpaca_sync_comment_mentions( $comment->comment_ID );
+	if ( ! ( $comment instanceof WP_Comment ) ) {
 		return;
 	}
 
-	if ( ! ( $comment instanceof WP_Comment ) ) {
+	alpaca_sync_comment_attachments_meta( $comment->comment_ID );
+
+	if ( ! $creating ) {
+		alpaca_sync_comment_mentions( $comment->comment_ID );
 		return;
 	}
 
