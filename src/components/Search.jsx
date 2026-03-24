@@ -128,9 +128,46 @@ function buildBoardIssueIndex(boardData) {
   return index;
 }
 
+/**
+ * Resolve the top-level issue ID for a post when the post is a child issue.
+ *
+ * @param {Object} post Issue object from REST.
+ * @return {string} Normalized issue ID.
+ */
+function getNormalizedIssueResultId(post) {
+  if (!post || typeof post.id === 'undefined' || post.id === null) {
+    return '';
+  }
+
+  const rawParent =
+    typeof post.post_parent !== 'undefined' && post.post_parent !== null
+      ? post.post_parent
+      : post.parent;
+  const parentId = parseInt(rawParent, 10);
+
+  if (!Number.isNaN(parentId) && parentId > 0) {
+    return String(parentId);
+  }
+
+  return String(post.id);
+}
+
+/**
+ * Build a unique ordered list while preserving first-seen order.
+ *
+ * @param {Array<string>} values Candidate values.
+ * @return {Array<string>} Unique ordered values.
+ */
+function getOrderedUniqueIds(values) {
+  return Array.from(new Set(values.filter(Boolean)));
+}
+
 function buildResultItem(post, boardIssueIndex) {
   const id = String(post.id);
   const fromBoard = boardIssueIndex.get(id);
+  const restMeta =
+    post && post.meta && typeof post.meta === 'object' ? post.meta : {};
+  const restPostDate = post && typeof post.date === 'string' ? post.date : '';
   let title = '';
   if (fromBoard && fromBoard.title) {
     title = fromBoard.title;
@@ -157,8 +194,9 @@ function buildResultItem(post, boardIssueIndex) {
       fromBoard && Array.isArray(fromBoard.assignees)
         ? fromBoard.assignees
         : [],
-    meta: fromBoard && fromBoard.meta ? fromBoard.meta : {},
-    postDate: fromBoard && fromBoard.postDate ? fromBoard.postDate : '',
+    meta: fromBoard && fromBoard.meta ? fromBoard.meta : restMeta,
+    postDate:
+      fromBoard && fromBoard.postDate ? fromBoard.postDate : restPostDate,
   };
 }
 
@@ -244,6 +282,53 @@ function SearchContainer() {
 
   useEffect(() => {
     /**
+     * Update search last-activity metadata when issue comments change.
+     *
+     * @param {Object} data Event payload.
+     * @return {void}
+     */
+    const handleLastActivityChanged = (data) => {
+      const { issueId, lastActivity } = data || {};
+      const normalizedIssueId =
+        typeof issueId !== 'undefined' && issueId !== null
+          ? String(issueId)
+          : '';
+
+      if (!normalizedIssueId) {
+        return;
+      }
+
+      setBoardIssueIndex((prevIndex) => {
+        const existing = prevIndex.get(normalizedIssueId) || {};
+        const nextIndex = new Map(prevIndex);
+
+        nextIndex.set(normalizedIssueId, {
+          ...existing,
+          meta: {
+            ...(existing.meta && typeof existing.meta === 'object'
+              ? existing.meta
+              : {}),
+            lastActivity: typeof lastActivity === 'string' ? lastActivity : '',
+          },
+        });
+
+        return nextIndex;
+      });
+    };
+
+    wp.hooks.addAction(
+      'alpaca.lastActivityChanged',
+      'alpaca/search',
+      handleLastActivityChanged,
+    );
+
+    return () => {
+      wp.hooks.removeAction('alpaca.lastActivityChanged', 'alpaca/search');
+    };
+  }, []);
+
+  useEffect(() => {
+    /**
      * Update search status metadata when an issue moves between statuses.
      *
      * @param {Object} issue      Issue payload from status change action.
@@ -303,15 +388,20 @@ function SearchContainer() {
       setIsSearching(true);
       const q = query;
       const issueFields =
-        'id,title,content,slug,post_name,post_title,post_content,post_parent,parent';
+        'id,title,content,slug,post_name,post_title,post_content,post_parent,parent,date,meta';
 
       const runSearch = async () => {
         try {
-          const comments = await wp
-            .apiFetch({
-              path: `/wp/v2/comments?search=${encodeURIComponent(q)}&per_page=100&comment_type=issuecomment&type=issuecomment&context=edit&show_hidden_comments=1&_fields=post,comment_post_ID,author_user_agent`,
-            })
-            .catch(() => []);
+          const commentSearchPath = `/wp/v2/comments?search=${encodeURIComponent(q)}&per_page=100&comment_type=issuecomment&type=issuecomment&context=edit&show_hidden_comments=1&_fields=post,comment_post_ID,author_user_agent`;
+          const directIssueSearchPath = `/wp/v2/alpaca_issue?search=${encodeURIComponent(q)}&per_page=${MAX_RESULTS}&_fields=${issueFields}`;
+          const [comments, directIssues] = await Promise.all([
+            wp.apiFetch({
+              path: commentSearchPath,
+            }).catch(() => []),
+            wp.apiFetch({
+              path: directIssueSearchPath,
+            }).catch(() => []),
+          ]);
 
           if (requestId !== requestIdRef.current) {
             return;
@@ -322,6 +412,7 @@ function SearchContainer() {
             console.log('Alpaca search raw responses', {
               query: q,
               comments,
+              directIssues,
             });
           }
 
@@ -365,33 +456,44 @@ function SearchContainer() {
             ),
           ).slice(0, MAX_RESULTS);
 
-          if (commentPostIds.length === 0) {
-            setResults([]);
-            return;
-          }
-
-          const issuesPath = `/wp/v2/alpaca_issue?include=${encodeURIComponent(
-            commentPostIds.join(','),
-          )}&per_page=${commentPostIds.length}&_fields=${issueFields}`;
-
-          const issues = await wp
-            .apiFetch({ path: issuesPath })
-            .catch(() => []);
-          if (requestId !== requestIdRef.current) {
-            return;
-          }
-
           const issuesById = new Map();
-          (issues || []).forEach((post) => {
+          (directIssues || []).forEach((post) => {
             if (!post || typeof post.id === 'undefined' || post.id === null) {
               return;
             }
             issuesById.set(String(post.id), post);
           });
 
+          if (commentPostIds.length === 0 && issuesById.size === 0) {
+            setResults([]);
+            return;
+          }
+
+          const commentIssueIdsToLoad = commentPostIds.filter(
+            (issueId) => !issuesById.has(String(issueId)),
+          );
+
+          if (commentIssueIdsToLoad.length > 0) {
+            const issuesPath = `/wp/v2/alpaca_issue?include=${encodeURIComponent(
+              commentIssueIdsToLoad.join(','),
+            )}&per_page=${commentIssueIdsToLoad.length}&_fields=${issueFields}`;
+
+            const issues = await wp.apiFetch({ path: issuesPath }).catch(() => []);
+            if (requestId !== requestIdRef.current) {
+              return;
+            }
+
+            (issues || []).forEach((post) => {
+              if (!post || typeof post.id === 'undefined' || post.id === null) {
+                return;
+              }
+              issuesById.set(String(post.id), post);
+            });
+          }
+
           const parentIdsToLoad = Array.from(
             new Set(
-              (issues || [])
+              Array.from(issuesById.values())
                 .map((post) => {
                   if (!post) {
                     return 0;
@@ -438,23 +540,17 @@ function SearchContainer() {
 
           const seen = new Set();
           const normalized = [];
+          const orderedSourceIds = getOrderedUniqueIds([
+            ...(directIssues || []).map((post) => String(post.id)),
+            ...commentPostIds,
+          ]);
 
-          commentPostIds.forEach((issueId) => {
+          orderedSourceIds.forEach((issueId) => {
             const sourcePost = issuesById.get(String(issueId));
             if (!sourcePost) {
               return;
             }
-
-            const rawParent =
-              typeof sourcePost.post_parent !== 'undefined' &&
-              sourcePost.post_parent !== null
-                ? sourcePost.post_parent
-                : sourcePost.parent;
-            const parentId = parseInt(rawParent, 10);
-            const resultId =
-              !Number.isNaN(parentId) && parentId > 0
-                ? String(parentId)
-                : String(sourcePost.id);
+            const resultId = getNormalizedIssueResultId(sourcePost);
 
             if (seen.has(resultId)) {
               return;

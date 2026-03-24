@@ -1,453 +1,257 @@
-const { __, sprintf } = wp.i18n;
-import HourglassIcon from '../components/icons/HourglassIcon';
-import User from '../components/User';
-import CommentIcon from '../components/icons/CommentIcon';
-import CalendarIcon from '../components/icons/CalendarIcon';
-import PriorityIcon from '../components/icons/PriorityIcon';
-import Check2SquareIcon from '../components/icons/Check2SquareIcon';
-import {
-  normalizeCommentAgentType,
-  normalizeCommentAgentTypes,
-} from './commentAgentFilters';
+import { datapointRegistrations } from '../datapoints';
+
+const DATAPOINT_VISIBILITY_OPTION_KEY = 'alpaca_item_datapoint_visibility';
+
+const registeredDatapoints = [];
+const registeredDatapointsBySlug = {};
+let visibilityRequest = null;
 
 /**
- * Get the idle indicator threshold in days.
+ * Normalize datapoint visibility values from settings payloads.
  *
- * Falls back to 1 day when no valid setting exists.
- *
- * @return {number} Number of days before idle is shown.
+ * @param {Object|null|undefined} maybeVisibility Candidate visibility map.
+ * @return {Object} Normalized visibility map keyed by datapoint slug.
  */
-const getIdleIndicatorDaysThreshold = () => {
-  const configuredDays = window?.alpacaSettings?.idleIndicatorDays;
-  const parsedDays = Number.parseInt(configuredDays, 10);
+const normalizeVisibilityMap = (maybeVisibility) => {
+  const normalized = {};
 
-  if (Number.isNaN(parsedDays) || parsedDays < 1) {
-    return 1;
+  if (!maybeVisibility || typeof maybeVisibility !== 'object') {
+    return normalized;
   }
 
-  return parsedDays;
+  Object.entries(maybeVisibility).forEach(([slug, value]) => {
+    if (typeof slug !== 'string' || slug.trim() === '') {
+      return;
+    }
+
+    if (value === true || value === 1 || value === '1') {
+      normalized[slug] = true;
+      return;
+    }
+
+    normalized[slug] = false;
+  });
+
+  return normalized;
 };
 
 /**
- * Try to resolve a comment count for a specific agent type.
+ * Read bootstrapped visibility from localized settings when available.
  *
- * Supports either a keyed count map (for example `comment_count_by_agent`)
- * or a list of comments that include a `comment_agent` field.
- *
- * @param {Object} itemProps           Item props passed to datapoint filters.
- * @param {Array}  requestedAgentTypes The normalized comment agent types.
- * @return {number|null} Count for the requested type when resolvable, else null.
+ * @return {Object} Normalized visibility map keyed by datapoint slug.
  */
-const getTypedCommentCount = (itemProps, requestedAgentTypes) => {
-  if (!Array.isArray(requestedAgentTypes) || requestedAgentTypes.length < 1) {
+const getBootstrappedDatapointVisibility = () => {
+  if (
+    typeof window === 'undefined' ||
+    !window.alpacaSettings ||
+    typeof window.alpacaSettings !== 'object'
+  ) {
+    return {};
+  }
+
+  return normalizeVisibilityMap(window.alpacaSettings.itemDatapointVisibility);
+};
+
+let datapointVisibility = getBootstrappedDatapointVisibility();
+
+/**
+ * Check whether a datapoint should be rendered.
+ *
+ * @param {string}  slug           Datapoint slug.
+ * @param {boolean} defaultEnabled Whether the datapoint is enabled by default.
+ * @return {boolean} True when datapoint should be rendered.
+ */
+const isDatapointEnabled = (slug, defaultEnabled) => {
+  if (Object.prototype.hasOwnProperty.call(datapointVisibility, slug)) {
+    return Boolean(datapointVisibility[slug]);
+  }
+
+  return defaultEnabled;
+};
+
+/**
+ * Get a snapshot of datapoint visibility settings.
+ *
+ * @return {Object} Visibility map keyed by datapoint slug.
+ */
+export const getItemDatapointVisibility = () => {
+  return { ...datapointVisibility };
+};
+
+/**
+ * Notify listeners that visibility settings changed.
+ *
+ * @return {void}
+ */
+const notifyVisibilityChanged = () => {
+  wp.hooks.doAction(
+    'alpaca.item.datapoints.visibilityChanged',
+    getItemDatapointVisibility(),
+  );
+};
+
+/**
+ * Fetch datapoint visibility settings from wp/v2/settings.
+ *
+ * @return {Promise<Object>} Resolved visibility map.
+ */
+export const fetchItemDatapointVisibility = () => {
+  if (visibilityRequest) {
+    return visibilityRequest;
+  }
+
+  visibilityRequest = wp
+    .apiFetch({ path: '/wp/v2/settings' })
+    .then((settings) => {
+      const rawVisibility = settings?.[DATAPOINT_VISIBILITY_OPTION_KEY] || {};
+      datapointVisibility = normalizeVisibilityMap(rawVisibility);
+      notifyVisibilityChanged();
+
+      return getItemDatapointVisibility();
+    })
+    .catch(() => {
+      return getItemDatapointVisibility();
+    })
+    .finally(() => {
+      visibilityRequest = null;
+    });
+
+  return visibilityRequest;
+};
+
+/**
+ * Save datapoint visibility settings.
+ *
+ * @param {Object} nextVisibility Next visibility map keyed by datapoint slug.
+ * @return {Promise<Object>} Resolved visibility map.
+ */
+export const saveItemDatapointVisibility = (nextVisibility) => {
+  const normalized = normalizeVisibilityMap(nextVisibility);
+
+  return wp
+    .apiFetch({
+      path: '/wp/v2/settings',
+      method: 'POST',
+      data: {
+        [DATAPOINT_VISIBILITY_OPTION_KEY]: normalized,
+      },
+    })
+    .then((settings) => {
+      const rawVisibility = settings?.[DATAPOINT_VISIBILITY_OPTION_KEY] || {};
+      datapointVisibility = normalizeVisibilityMap(rawVisibility);
+      notifyVisibilityChanged();
+
+      return getItemDatapointVisibility();
+    });
+};
+
+/**
+ * Get all datapoints currently registered for item rendering.
+ *
+ * @return {Array<Object>} Datapoint registration entries.
+ */
+export const getRegisteredItemDatapoints = () => {
+  return registeredDatapoints.map((entry) => ({ ...entry }));
+};
+
+/**
+ * Notify listeners that the datapoint registry changed.
+ *
+ * @return {void}
+ */
+const notifyRegistryChanged = () => {
+  wp.hooks.doAction(
+    'alpaca.item.datapoints.registryChanged',
+    getRegisteredItemDatapoints(),
+  );
+};
+
+/**
+ * Register an item datapoint so it can render on cards and appear in settings.
+ *
+ * @param {Object}   registration                  Datapoint registration.
+ * @param {string}   registration.slug             Unique datapoint slug.
+ * @param {Function} registration.callback         Render callback for hook.
+ * @param {string}   registration.label            Human-readable label.
+ * @param {string}   [registration.description]    Optional description.
+ * @param {string}   [registration.namespace]      Optional hook namespace.
+ * @param {boolean}  [registration.defaultEnabled] Whether enabled by default.
+ * @return {Object|null} Registered datapoint metadata.
+ */
+export const registerItemDatapoint = (registration) => {
+  if (!registration || typeof registration !== 'object') {
     return null;
   }
 
-  const countMaps = [
-    itemProps?.commentCountByAgent,
-    itemProps?.commentCountsByAgent,
-    itemProps?.comment_count_by_agent,
-    itemProps?.meta?.commentCountByAgent,
-    itemProps?.meta?.commentCountsByAgent,
-    itemProps?.meta?.comment_count_by_agent,
-  ];
+  const slug =
+    typeof registration.slug === 'string' ? registration.slug.trim() : '';
 
-  for (const countMap of countMaps) {
-    if (countMap && 'object' === typeof countMap && !Array.isArray(countMap)) {
-      let typedCount = 0;
-      let hasCountMap = false;
-
-      requestedAgentTypes.forEach((requestedAgentType) => {
-        const agentCount = Number(countMap[requestedAgentType]);
-        if (Number.isFinite(agentCount)) {
-          typedCount += agentCount;
-        }
-
-        hasCountMap = true;
-      });
-
-      if (hasCountMap) {
-        return typedCount;
-      }
-    }
+  if (slug === '') {
+    return null;
   }
 
-  const commentCollections = [
-    itemProps?.comments,
-    itemProps?.issuecomments,
-    itemProps?.meta?.comments,
-    itemProps?.meta?.issuecomments,
-  ];
-
-  for (const comments of commentCollections) {
-    if (Array.isArray(comments)) {
-      return comments.filter((comment) =>
-        requestedAgentTypes.includes(
-          normalizeCommentAgentType(comment?.comment_agent),
-        ),
-      ).length;
-    }
+  if (registeredDatapointsBySlug[slug]) {
+    return registeredDatapointsBySlug[slug];
   }
 
-  return null;
-};
-
-/**
- * Resolve the final comment count to display for an item.
- *
- * Consumers can choose the comment agent type with
- * `alpaca.item.commentCount.agentType` and can override the resulting count
- * with `alpaca.item.commentCount`.
- *
- * @param {Object} itemProps Item props passed to datapoint filters.
- * @return {number} Comment count value to display.
- */
-const getCommentCountForDatapoint = (itemProps) => {
-  const baseCommentCount = Number(itemProps?.commentCount) || 0;
-  const requestedAgentTypes = normalizeCommentAgentTypes(
-    wp.hooks.applyFilters(
-      'alpaca.item.commentCount.agentType',
-      null,
-      itemProps,
-    ),
-  );
-
-  let resolvedCommentCount = baseCommentCount;
-
-  if (requestedAgentTypes.length > 0) {
-    const typedCommentCount = getTypedCommentCount(
-      itemProps,
-      requestedAgentTypes,
-    );
-    if (null !== typedCommentCount) {
-      resolvedCommentCount = typedCommentCount;
-    }
+  if (typeof registration.callback !== 'function') {
+    return null;
   }
 
-  const filteredCommentCount = Number(
-    wp.hooks.applyFilters('alpaca.item.commentCount', resolvedCommentCount, {
-      ...itemProps,
-      requestedCommentAgentType:
-        1 === requestedAgentTypes.length ? requestedAgentTypes[0] : null,
-      requestedCommentAgentTypes: requestedAgentTypes,
-    }),
-  );
+  const namespace =
+    typeof registration.namespace === 'string' &&
+    registration.namespace.trim() !== ''
+      ? registration.namespace.trim()
+      : `alpaca/item/datapoint/${slug}`;
+  const defaultEnabled = registration.defaultEnabled !== false;
+  const label =
+    typeof registration.label === 'string' && registration.label.trim() !== ''
+      ? registration.label.trim()
+      : slug;
+  const description =
+    typeof registration.description === 'string'
+      ? registration.description
+      : '';
 
-  if (Number.isFinite(filteredCommentCount) && filteredCommentCount >= 0) {
-    return filteredCommentCount;
-  }
-
-  return resolvedCommentCount;
-};
-
-/**
- * Filter to add priority badge to item datapoints.
- *
- * @param {JSX.Element|null} originalContent The original content of the filter.
- * @param {Object}           itemProps       Props passed to the Item component.
- * @return {JSX.Element|null} The priority badge JSX or null.
- */
-export const addPriorityDatapoint = (originalContent, itemProps) => {
-  const { meta } = itemProps;
-
-  if (
-    meta &&
-    (meta.alpaca_high_priority === '1' ||
-      meta.alpaca_high_priority === 1 ||
-      meta.alpaca_high_priority === true)
-  ) {
-    return (
-      <>
-        {originalContent}
-        <div className="alpaca-item-priority-badge">
-          <PriorityIcon /> {__('Priority', 'alpaca')}
-        </div>
-      </>
-    );
-  }
-  return originalContent;
-};
-
-/**
- * Filter to add assignees to item datapoints.
- *
- * @param {JSX.Element|null} originalContent The original content of the filter.
- * @param {Object}           itemProps       Props passed to the Item component.
- * @return {JSX.Element|null} The assignees JSX or null.
- */
-export const addAssigneesDatapoint = (originalContent, itemProps) => {
-  const { assignees } = itemProps;
-
-  if (assignees && assignees.length > 0) {
-    return (
-      <>
-        {originalContent}
-        <div
-          className="alpaca-item-assignees"
-          data-assignees={assignees.length}
-          title={
-            assignees.length === 1
-              ? assignees[0].displayName || assignees[0].name
-              : assignees.map((a) => a.displayName || a.name).join(', ')
-          }
-        >
-          {assignees.map((assignee) => (
-            <User key={assignee.id} user={assignee} />
-          ))}
-        </div>
-      </>
-    );
-  }
-  return originalContent;
-};
-
-/**
- * Filter to add labels to item datapoints.
- *
- * @param {JSX.Element|null} originalContent The original content of the filter.
- * @param {Object}           itemProps       Props passed to the Item component.
- * @return {JSX.Element|null} The labels JSX or null.
- */
-export const addLabelsDatapoint = (originalContent, itemProps) => {
-  const { labels } = itemProps;
-
-  if (!Array.isArray(labels) || labels.length < 1) {
-    return originalContent;
-  }
-
-  return (
-    <>
-      {originalContent}
-      <div className="alpaca-item-labels">
-        {labels.map((label) => (
-          <span
-            key={label.term_id || `${label.slug}-${label.name}`}
-            className="alpaca-item-label alpaca-label-pill"
-            style={{
-              backgroundColor: label.color || '#172b4d',
-              color: '#fff',
-            }}
-            title={label.name}
-          >
-            {label.name}
-          </span>
-        ))}
-      </div>
-    </>
-  );
-};
-
-/**
- * Filter to add comment count to item datapoints.
- *
- * @param {JSX.Element|null} originalContent The original content of the filter.
- * @param {Object}           itemProps       Props passed to the Item component.
- * @return {JSX.Element|null} The comment count JSX or null.
- */
-export const addCommentCountDatapoint = (originalContent, itemProps) => {
-  const commentCount = getCommentCountForDatapoint(itemProps);
-
-  if (typeof commentCount !== 'undefined' && commentCount > 0) {
-    return (
-      <>
-        {originalContent}
-        <div className="alpaca-item-icon alpaca-item-comment-count">
-          <CommentIcon />
-          {commentCount}
-        </div>
-      </>
-    );
-  }
-  return originalContent;
-};
-
-/**
- * Filter to add checklist progress to item datapoints.
- *
- * @param {JSX.Element|null} originalContent The original content of the filter.
- * @param {Object}           itemProps       Props passed to the Item component.
- * @return {JSX.Element|null} The checklist progress JSX or null.
- */
-export const addChecklistProgressDatapoint = (originalContent, itemProps) => {
-  const subissueProgress = itemProps?.meta?.subissue_progress;
-  const subissueTotal = Number(subissueProgress?.total);
-  const subissueCompleted = Number(subissueProgress?.completed);
-
-  if (
-    Number.isFinite(subissueTotal) &&
-    Number.isFinite(subissueCompleted) &&
-    subissueTotal > 0
-  ) {
-    return (
-      <>
-        {originalContent}
-        <div className="alpaca-item-icon alpaca-item-checklist-progress">
-          <Check2SquareIcon />
-          {`${subissueCompleted}/${subissueTotal}`}
-        </div>
-      </>
-    );
-  }
-  return originalContent;
-};
-
-/**
- * Filter to add days-idle count to item datapoints.
- *
- * @param {JSX.Element|null} originalContent The original content of the filter.
- * @param {Object}           itemProps       Props passed to the Item component.
- * @return {JSX.Element|null} The comment count JSX or null.
- */
-export const addDaysIdleDatapoint = (originalContent, itemProps) => {
-  const { meta } = itemProps;
-  const { postDate } = itemProps;
-  const idleThresholdDays = getIdleIndicatorDaysThreshold();
-
-  const lastActivityDateString = meta?.lastActivity || postDate;
-  let idleText = null;
-
-  if (lastActivityDateString) {
-    const lastActivityDate = new Date(lastActivityDateString);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    lastActivityDate.setHours(0, 0, 0, 0);
-    const daysIdle = Math.floor(
-      (today - lastActivityDate) / (1000 * 60 * 60 * 24),
-    );
-
-    if (daysIdle >= idleThresholdDays) {
-      // translators: %d: Number of days
-      idleText = sprintf(__('%dd idle', 'alpaca'), daysIdle);
-      return (
-        <>
-          {originalContent}
-          <div className="alpaca-item-icon alpaca-item-idle-time">
-            <HourglassIcon />
-            {idleText}
-          </div>
-        </>
-      );
-    }
-  }
-
-  return originalContent;
-};
-
-/**
- * Filter to add deadline to item datapoints.
- *
- * @param {JSX.Element|null} originalContent The original content of the filter.
- * @param {Object}           itemProps       Props passed to the Item component.
- * @return {JSX.Element|null} The deadline JSX or null.
- */
-export const addDeadlineDatapoint = (originalContent, itemProps) => {
-  const { meta } = itemProps;
-  const deadline =
-    meta && meta.deadline && meta.deadline[0]
-      ? new Date(meta.deadline[0])
-      : null;
-  const isValidDeadline = deadline && !isNaN(deadline);
-
-  const deadlineFormatted = new Intl.DateTimeFormat(undefined, {
-    month: 'short',
-    day: 'numeric',
-  }).format(deadline);
-
-  let diffDays = null;
-  if (isValidDeadline) {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    deadline.setHours(0, 0, 0, 0);
-    diffDays = Math.ceil((deadline - today) / (1000 * 60 * 60 * 24));
-  }
-
-  // Format deadline display text
-  let deadlineText = deadlineFormatted;
-  let deadlineState;
-
-  if (isValidDeadline) {
-    if (diffDays < 0) {
-      deadlineState = 'late';
-    } else if (diffDays === 0) {
-      deadlineState = 'today';
-    } else if (diffDays < 8) {
-      deadlineState = 'soon';
-    } else {
-      deadlineState = 'future';
+  const wrappedCallback = (originalContent, itemProps) => {
+    if (!isDatapointEnabled(slug, defaultEnabled)) {
+      return originalContent;
     }
 
-    if (diffDays === 1) {
-      deadlineText = __('Tomorrow', 'alpaca');
-    } else if (diffDays === 0) {
-      deadlineText = __('Today', 'alpaca');
-    } else if (diffDays === -1) {
-      deadlineText = __('Yesterday', 'alpaca');
-    }
-  }
+    return registration.callback(originalContent, itemProps);
+  };
 
-  if (isValidDeadline) {
-    return (
-      <>
-        {originalContent}
-        <div
-          className="alpaca-item-icon alpaca-item-deadline"
-          data-days-left={diffDays}
-          data-deadline-state={deadlineState}
-        >
-          <CalendarIcon />
-          {deadlineText}
-        </div>
-      </>
-    );
-  }
-  return originalContent;
+  wp.hooks.addFilter('alpaca.item.datapoints', namespace, wrappedCallback);
+
+  const entry = {
+    slug,
+    label,
+    description,
+    namespace,
+    defaultEnabled,
+  };
+
+  registeredDatapoints.push(entry);
+  registeredDatapointsBySlug[slug] = entry;
+  notifyRegistryChanged();
+
+  return entry;
 };
 
-// Register the filters
-wp.hooks.addFilter(
-  'alpaca.item.datapoints',
-  'alpaca/item/addPriorityDatapoint',
-  addPriorityDatapoint,
-);
+datapointRegistrations.forEach((registration) => {
+  registerItemDatapoint(registration);
+});
 
-wp.hooks.addFilter(
-  'alpaca.item.datapoints',
-  'alpaca/item/addAssigneesDatapoint',
-  addAssigneesDatapoint,
-);
+if (!window.alpaca) {
+  window.alpaca = {};
+}
 
-wp.hooks.addFilter(
-  'alpaca.item.datapoints',
-  'alpaca/item/addLabelsDatapoint',
-  addLabelsDatapoint,
-);
+if (!window.alpaca.itemDatapoints) {
+  window.alpaca.itemDatapoints = {};
+}
 
-wp.hooks.addFilter(
-  'alpaca.item.datapoints',
-  'alpaca/item/addDaysIdleDatapoint',
-  addDaysIdleDatapoint,
-);
-
-wp.hooks.addFilter(
-  'alpaca.item.commentCount.agentType',
-  'alpaca/item/comment-agent-type',
-  () => ['human'],
-);
-
-wp.hooks.addFilter(
-  'alpaca.item.datapoints',
-  'alpaca/item/addCommentCountDatapoint',
-  addCommentCountDatapoint,
-);
-
-wp.hooks.addFilter(
-  'alpaca.item.datapoints',
-  'alpaca/item/addChecklistProgressDatapoint',
-  addChecklistProgressDatapoint,
-);
-
-wp.hooks.addFilter(
-  'alpaca.item.datapoints',
-  'alpaca/item/addDeadlineDatapoint',
-  addDeadlineDatapoint,
-);
+window.alpaca.itemDatapoints.register = registerItemDatapoint;
+window.alpaca.itemDatapoints.getRegistered = getRegisteredItemDatapoints;
+window.alpaca.itemDatapoints.getVisibility = getItemDatapointVisibility;
+window.alpaca.itemDatapoints.fetchVisibility = fetchItemDatapointVisibility;
+window.alpaca.itemDatapoints.saveVisibility = saveItemDatapointVisibility;

@@ -209,7 +209,10 @@ const postComment = async (
       });
       doAction('alpaca.lastActivityChanged', {
         issueId: postId.toString(),
-        lastActivity: new Date().toISOString(),
+        lastActivity:
+          typeof response.last_activity !== 'undefined'
+            ? response.last_activity
+            : new Date().toISOString(),
       });
     }
 

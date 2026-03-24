@@ -461,7 +461,10 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
             });
             wp.hooks.doAction('alpaca.lastActivityChanged', {
               issueId: issueId.toString(),
-              lastActivity: new Date().toISOString(),
+              lastActivity:
+                typeof response.last_activity !== 'undefined'
+                  ? response.last_activity
+                  : new Date().toISOString(),
             });
           }
         });
@@ -615,6 +618,13 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
                     newCount: response.comment_count,
                     newCountByAgent: response.comment_count_by_agent || null,
                   });
+
+                  if (typeof response.last_activity !== 'undefined') {
+                    wp.hooks.doAction('alpaca.lastActivityChanged', {
+                      issueId: postId.toString(),
+                      lastActivity: response.last_activity,
+                    });
+                  }
                 }
               })
               .catch((err) => {

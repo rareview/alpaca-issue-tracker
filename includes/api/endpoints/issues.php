@@ -832,8 +832,8 @@ function alpaca_get_issue_comment_count_endpoint() {
  * @return WP_REST_Response REST response with comment count.
  */
 function alpaca_get_issue_comment_count_callback( WP_REST_Request $request ) {
-
 	$issue_id                     = (int) $request['id'];
+	$last_activity                = '';
 	$comment_count_data           = function_exists( 'alpaca_get_issue_comment_counts' )
 	? alpaca_get_issue_comment_counts( array( $issue_id ) )
 		: array(
@@ -847,6 +847,10 @@ function alpaca_get_issue_comment_count_callback( WP_REST_Request $request ) {
 		? $comment_counts_by_agent[ $issue_id ]
 		: array();
 
+	if ( function_exists( 'alpaca_update_last_activity_from_issuecomments' ) ) {
+		$last_activity = (string) alpaca_update_last_activity_from_issuecomments( $issue_id );
+	}
+
 	return alpaca_rest_response(
 		'',
 		array(
@@ -854,6 +858,7 @@ function alpaca_get_issue_comment_count_callback( WP_REST_Request $request ) {
 			'post_id'                => $issue_id,
 			'comment_count'          => $issue_comment_count,
 			'comment_count_by_agent' => $issue_comment_count_by_agent,
+			'last_activity'          => $last_activity,
 		),
 		200
 	);

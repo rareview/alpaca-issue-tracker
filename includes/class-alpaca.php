@@ -151,6 +151,9 @@ final class Alpaca {
 
 		// Update last activity on new comment.
 		\add_action( 'rest_insert_comment', array( $this, 'update_last_activity_on_rest_comment' ), 10, 3 );
+
+		// Update last activity on deleted issue comments.
+		\add_action( 'deleted_comment', array( $this, 'update_last_activity_on_deleted_comment' ), 20, 2 );
 	}
 
 	/**
@@ -200,10 +203,46 @@ final class Alpaca {
 			return;
 		}
 
-		$post_id   = $comment->comment_post_ID;
-		$post_type = \get_post_type( $post_id );
+		if ( ! isset( $comment->comment_type ) || 'issuecomment' !== $comment->comment_type ) {
+			return;
+		}
+
+		$post_id = $comment->comment_post_ID;
 
 		alpaca_update_last_activity( $post_id );
+	}
+
+	/**
+	 * Update the last activity timestamp when an issue comment is deleted.
+	 *
+	 * On deletion we recompute the lastActivity meta based on the most recent
+	 * remaining approved `issuecomment` on the issue.
+	 *
+	 * @param int         $comment_id Deleted comment ID.
+	 * @param \WP_Comment $comment    Deleted comment object.
+	 * @return void
+	 */
+	public function update_last_activity_on_deleted_comment( $comment_id, $comment ) {
+		if ( ! ( $comment instanceof \WP_Comment ) ) {
+			$comment = \get_comment( (int) $comment_id );
+		}
+
+		if ( ! ( $comment instanceof \WP_Comment ) ) {
+			return;
+		}
+
+		if ( 'issuecomment' !== (string) $comment->comment_type ) {
+			return;
+		}
+
+		$issue_id = (int) $comment->comment_post_ID;
+		if ( $issue_id <= 0 || 'alpaca_issue' !== \get_post_type( $issue_id ) ) {
+			return;
+		}
+
+		if ( function_exists( 'alpaca_update_last_activity_from_issuecomments' ) ) {
+			alpaca_update_last_activity_from_issuecomments( $issue_id );
+		}
 	}
 
 	/**
@@ -231,23 +270,52 @@ final class Alpaca {
 
 		\register_setting(
 			'alpaca_options',
-			'alpaca_idle_indicator_days',
+			'alpaca_item_datapoint_visibility',
 			array(
-				'type'              => 'integer',
-				'description'       => esc_html__( 'Number of idle days before the board shows the idle indicator.', 'alpaca' ),
-				'show_in_rest'      => true,
-				'default'           => 1,
-				'sanitize_callback' => function ( $value ) {
-					$days = absint( $value );
-
-					if ( $days < 1 ) {
-						return 1;
-					}
-
-					return $days;
-				},
+				'type'              => 'object',
+				'description'       => esc_html__( 'Visibility map for item datapoints on issue cards.', 'alpaca' ),
+				'sanitize_callback' => array( $this, 'sanitize_item_datapoint_visibility' ),
+				'show_in_rest'      => array(
+					'schema' => array(
+						'type'                 => 'object',
+						'additionalProperties' => array(
+							'type' => 'boolean',
+						),
+					),
+				),
+				'default'           => array(),
 			)
 		);
+	}
+
+	/**
+	 * Sanitize datapoint visibility option values.
+	 *
+	 * @param mixed $value Raw option value.
+	 * @return array<string, bool>
+	 */
+	public function sanitize_item_datapoint_visibility( $value ) {
+		if ( ! is_array( $value ) ) {
+			return array();
+		}
+
+		$sanitized = array();
+
+		foreach ( $value as $slug => $is_enabled ) {
+			if ( ! is_string( $slug ) ) {
+				continue;
+			}
+
+			$clean_slug = sanitize_key( $slug );
+
+			if ( '' === $clean_slug ) {
+				continue;
+			}
+
+			$sanitized[ $clean_slug ] = (bool) $is_enabled;
+		}
+
+		return $sanitized;
 	}
 
 	/**

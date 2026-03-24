@@ -139,6 +139,37 @@ class Register {
 	}
 
 	/**
+	 * Get the saved item datapoint visibility settings.
+	 *
+	 * @return array<string, bool> Visibility map keyed by datapoint slug.
+	 */
+	private function get_item_datapoint_visibility_setting() {
+		$raw_visibility = get_option( 'alpaca_item_datapoint_visibility', array() );
+
+		if ( ! is_array( $raw_visibility ) ) {
+			return array();
+		}
+
+		$visibility = array();
+
+		foreach ( $raw_visibility as $slug => $is_enabled ) {
+			if ( ! is_string( $slug ) ) {
+				continue;
+			}
+
+			$clean_slug = sanitize_key( $slug );
+
+			if ( '' === $clean_slug ) {
+				continue;
+			}
+
+			$visibility[ $clean_slug ] = (bool) $is_enabled;
+		}
+
+		return $visibility;
+	}
+
+	/**
 	 * Enqueue shared Alpaca assets.
 	 *
 	 * @param string[] $script_dependencies Script dependencies for the main bundle.
@@ -215,21 +246,16 @@ class Register {
 			wp_localize_script( self::PREFIX . '-script', 'alpacaDataDump', \alpaca_prepare_datadump() );
 		}
 
-		$idle_indicator_days = absint( get_option( 'alpaca_idle_indicator_days', 1 ) );
-		if ( $idle_indicator_days < 1 ) {
-			$idle_indicator_days = 1;
-		}
-
 		wp_localize_script(
 			self::PREFIX . '-script',
 			'alpacaSettings',
 			array(
-				'idleIndicatorDays' => $idle_indicator_days,
 				// SnapDOM expects the proxy string to be a prefix the library will append the target URL to.
 				// Provide the proxy endpoint with the query param prefix so SnapDOM can append the encoded target URL.
 				// Provide a signed proxy token that does not rely on browser cookies.
 				// This keeps proxy requests working when SnapDOM fetches across origins.
-			'snapdomProxy'          => $this->get_snapdom_proxy_setting(),
+				'snapdomProxy'            => $this->get_snapdom_proxy_setting(),
+				'itemDatapointVisibility' => $this->get_item_datapoint_visibility_setting(),
 			)
 		);
 	}
@@ -243,6 +269,7 @@ class Register {
 
 		$this->enqueue_shared_assets( $this->get_base_script_dependencies() );
 	}
+
 	/**
 	 * Enqueue admin assets.
 	 *
@@ -260,19 +287,14 @@ class Register {
 
 		$this->enqueue_shared_assets( array_values( array_unique( $script_dependencies ) ) );
 
-		$idle_indicator_days = absint( get_option( 'alpaca_idle_indicator_days', 1 ) );
-		if ( $idle_indicator_days < 1 ) {
-			$idle_indicator_days = 1;
-		}
-
 		// Expose admin URL for use in JS (e.g., linking to admin pages).
 		wp_localize_script(
 			self::PREFIX . '-script',
 			'alpacaSettings',
 			array(
-				'adminUrl'          => admin_url( 'admin.php' ),
-				'idleIndicatorDays' => $idle_indicator_days,
-				'snapdomProxy'      => $this->get_snapdom_proxy_setting(),
+				'adminUrl'                => admin_url( 'admin.php' ),
+				'snapdomProxy'            => $this->get_snapdom_proxy_setting(),
+				'itemDatapointVisibility' => $this->get_item_datapoint_visibility_setting(),
 			)
 		);
 
