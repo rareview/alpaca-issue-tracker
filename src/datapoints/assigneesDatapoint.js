@@ -1,4 +1,5 @@
 const { __ } = wp.i18n;
+const { Tooltip } = wp.components;
 import User from '../components/User';
 
 /**
@@ -15,21 +16,23 @@ export const addAssigneesDatapoint = (originalContent, itemProps) => {
     return (
       <>
         {originalContent}
-        <div
-          className="alpaca-item-assignees"
-          data-assignees={assignees.length}
-          title={
-            assignees.length === 1
-              ? assignees[0].displayName || assignees[0].name
-              : assignees
-                  .map((assignee) => assignee.displayName || assignee.name)
-                  .join(', ')
-          }
-        >
-          {assignees.map((assignee) => (
-            <User key={assignee.id} user={assignee} />
-          ))}
-        </div>
+        <Tooltip text={__('Assignees', 'alpaca')}>
+          <div
+            className="alpaca-item-assignees"
+            data-assignees={assignees.length}
+            title={
+              assignees.length === 1
+                ? assignees[0].displayName || assignees[0].name
+                : assignees
+                    .map((assignee) => assignee.displayName || assignee.name)
+                    .join(', ')
+            }
+          >
+            {assignees.map((assignee) => (
+              <User key={assignee.id} user={assignee} />
+            ))}
+          </div>
+        </Tooltip>
       </>
     );
   }
