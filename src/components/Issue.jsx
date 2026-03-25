@@ -1690,7 +1690,11 @@ const AlpacaIssue = ({
                 <div className="alpaca-issue-meta flexalign">
                   Created by <User user={issueDetails.post_data.post_author} />{' '}
                   <Time
-                    value={issueDetails.post_data.post_date}
+                    value={
+                      issueDetails.post_data.post_date_gmt ||
+                      issueDetails.post_data.post_date
+                    }
+                    isGmt={Boolean(issueDetails.post_data.post_date_gmt)}
                     type="relative"
                   />
                   <StatusPill className="alpaca-issue-status-meta">

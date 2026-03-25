@@ -6,7 +6,14 @@ const { __, sprintf } = wp.i18n;
 const { Tooltip } = wp.components;
 
 const Time = memo(
-  ({ value, type = 'absolute', format, autoUpdate = true, className }) => {
+  ({
+    value,
+    type = 'absolute',
+    format,
+    autoUpdate = true,
+    className,
+    isGmt = false,
+  }) => {
     // useReducer to force re-render for relative time updates
     const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
@@ -17,7 +24,10 @@ const Time = memo(
       return () => clearInterval(interval);
     }, [type, autoUpdate]);
 
-    const dateObj = useMemo(() => parseWpDateValue(value), [value]);
+    const dateObj = useMemo(
+      () => parseWpDateValue(value, { treatMysqlAsUtc: isGmt }),
+      [value, isGmt],
+    );
     if (!dateObj) return null;
 
     const wpFormat = format || wp.date.getSettings().formats.datetime;
@@ -85,11 +95,16 @@ const Time = memo(
 );
 
 Time.propTypes = {
-  value: PropTypes.string,
+  value: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+    PropTypes.instanceOf(Date),
+  ]),
   type: PropTypes.oneOf(['absolute', 'relative']),
   format: PropTypes.string,
   autoUpdate: PropTypes.bool,
   className: PropTypes.string,
+  isGmt: PropTypes.bool,
 };
 
 Time.displayName = 'Time';

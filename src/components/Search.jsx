@@ -120,7 +120,12 @@ function buildBoardIssueIndex(boardData) {
         labels,
         assignees: Array.isArray(issue.assignees) ? issue.assignees : [],
         meta,
-        postDate: issue.post_date || issue.postDate || '',
+        postDate:
+          issue.post_date_gmt ||
+          issue.postDateGmt ||
+          issue.post_date ||
+          issue.postDate ||
+          '',
       });
     });
   });
@@ -167,7 +172,12 @@ function buildResultItem(post, boardIssueIndex) {
   const fromBoard = boardIssueIndex.get(id);
   const restMeta =
     post && post.meta && typeof post.meta === 'object' ? post.meta : {};
-  const restPostDate = post && typeof post.date === 'string' ? post.date : '';
+  const restPostDate =
+    post && typeof post.date_gmt === 'string' && post.date_gmt
+      ? post.date_gmt
+      : post && typeof post.date === 'string'
+        ? post.date
+        : '';
   let title = '';
   if (fromBoard && fromBoard.title) {
     title = fromBoard.title;
@@ -395,12 +405,16 @@ function SearchContainer() {
           const commentSearchPath = `/wp/v2/comments?search=${encodeURIComponent(q)}&per_page=100&comment_type=issuecomment&type=issuecomment&context=edit&show_hidden_comments=1&_fields=post,comment_post_ID,author_user_agent`;
           const directIssueSearchPath = `/wp/v2/alpaca_issue?search=${encodeURIComponent(q)}&per_page=${MAX_RESULTS}&_fields=${issueFields}`;
           const [comments, directIssues] = await Promise.all([
-            wp.apiFetch({
-              path: commentSearchPath,
-            }).catch(() => []),
-            wp.apiFetch({
-              path: directIssueSearchPath,
-            }).catch(() => []),
+            wp
+              .apiFetch({
+                path: commentSearchPath,
+              })
+              .catch(() => []),
+            wp
+              .apiFetch({
+                path: directIssueSearchPath,
+              })
+              .catch(() => []),
           ]);
 
           if (requestId !== requestIdRef.current) {
@@ -478,7 +492,9 @@ function SearchContainer() {
               commentIssueIdsToLoad.join(','),
             )}&per_page=${commentIssueIdsToLoad.length}&_fields=${issueFields}`;
 
-            const issues = await wp.apiFetch({ path: issuesPath }).catch(() => []);
+            const issues = await wp
+              .apiFetch({ path: issuesPath })
+              .catch(() => []);
             if (requestId !== requestIdRef.current) {
               return;
             }

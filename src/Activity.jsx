@@ -5,6 +5,7 @@ import {
   dispatchStatusChangedAction,
   getStatusName,
 } from './utils/statusChange';
+import { parseWpDateValue } from './utils/date';
 
 const { __ } = wp.i18n;
 const { decodeEntities } = wp.htmlEntities;
@@ -35,9 +36,9 @@ const stripHtml = (maybeHtml) => {
  * @param {string} value ISO date string.
  * @return {string} Group heading label.
  */
-const formatGroupDateLabel = (value) => {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
+const formatGroupDateLabel = (value, isGmt = false) => {
+  const date = parseWpDateValue(value, { treatMysqlAsUtc: isGmt });
+  if (!date) {
     return __('Unknown date', 'alpaca');
   }
 
@@ -355,13 +356,20 @@ const Activity = () => {
     const groupIndexByKey = {};
 
     comments.forEach((comment) => {
-      const groupKey = (comment.date || '').slice(0, 10) || 'unknown-date';
+      const dateValue = comment?.date_gmt || comment?.date || '';
+      const isGmt = Boolean(comment?.date_gmt);
+      const parsedDate = parseWpDateValue(dateValue, {
+        treatMysqlAsUtc: isGmt,
+      });
+      const groupKey = parsedDate
+        ? `${parsedDate.getFullYear()}-${String(parsedDate.getMonth() + 1).padStart(2, '0')}-${String(parsedDate.getDate()).padStart(2, '0')}`
+        : 'unknown-date';
 
       if (!Object.prototype.hasOwnProperty.call(groupIndexByKey, groupKey)) {
         groupIndexByKey[groupKey] = grouped.length;
         grouped.push({
           key: groupKey,
-          label: formatGroupDateLabel(comment.date),
+          label: formatGroupDateLabel(dateValue, isGmt),
           comments: [],
         });
       }

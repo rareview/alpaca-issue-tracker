@@ -890,7 +890,7 @@ export function AlpacaBoard() {
             id: issue.id.toString(),
             slug: issue.slug || issue.post_name || '',
             content: decodeEntities(issue.title),
-            postDate: issue.post_date,
+            postDate: issue.post_date_gmt || issue.post_date || '',
             authorName: issue.author_name,
             authorImg: issue.author_img,
             assignees: [],

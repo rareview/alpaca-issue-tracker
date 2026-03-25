@@ -236,6 +236,12 @@ const TimelineEntry = ({
     typeof lastEditMeta?.date === 'string' && lastEditMeta.date
       ? lastEditMeta.date
       : '';
+  const createdAtValue =
+    typeof comment?.date_gmt === 'string' && comment.date_gmt
+      ? comment.date_gmt
+      : comment?.date || '';
+  const createdAtIsGmt =
+    typeof comment?.date_gmt === 'string' && Boolean(comment.date_gmt);
   const showEditedStamp = Boolean(editedDate);
   const editedByDifferentUser = isEditedByDifferentUser(
     comment,
@@ -289,7 +295,8 @@ const TimelineEntry = ({
                 )}
                 {showTime && (
                   <Time
-                    value={comment.date}
+                    value={createdAtValue}
+                    isGmt={createdAtIsGmt}
                     type="relative"
                     className="alpaca-comment-date"
                   />
@@ -306,7 +313,8 @@ const TimelineEntry = ({
             />
             {showTime && !auditTimeInTopline && (
               <Time
-                value={comment.date}
+                value={createdAtValue}
+                isGmt={createdAtIsGmt}
                 type="relative"
                 className="alpaca-comment-date alpaca-audit-inline-time"
               />
@@ -345,7 +353,11 @@ const TimelineEntry = ({
           </div>
           {showTime && (
             <div className="alpaca-comment-date">
-              <Time value={comment.date} type="relative" />
+              <Time
+                value={createdAtValue}
+                isGmt={createdAtIsGmt}
+                type="relative"
+              />
               {showEditedStamp && (
                 <div className="alpaca-comment-edited-date">
                   {' '}

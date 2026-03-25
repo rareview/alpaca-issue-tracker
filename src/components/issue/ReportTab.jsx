@@ -55,10 +55,18 @@ function getTaxonomyFallbackLabel(taxonomy) {
 const ReportTab = memo(({ issueDetails }) => {
   const tableRef = useRef(null);
   const urlCellRef = useRef(null);
-  const reportedDate = parseWpDateValue(issueDetails?.post_data?.post_date);
-  const lastEditedDate = parseWpDateValue(
-    issueDetails?.post_data?.post_modified,
-  );
+  const reportedDateRawValue =
+    issueDetails?.post_data?.post_date_gmt ||
+    issueDetails?.post_data?.post_date;
+  const lastEditedDateRawValue =
+    issueDetails?.post_data?.post_modified_gmt ||
+    issueDetails?.post_data?.post_modified;
+  const reportedDate = parseWpDateValue(reportedDateRawValue, {
+    treatMysqlAsUtc: Boolean(issueDetails?.post_data?.post_date_gmt),
+  });
+  const lastEditedDate = parseWpDateValue(lastEditedDateRawValue, {
+    treatMysqlAsUtc: Boolean(issueDetails?.post_data?.post_modified_gmt),
+  });
 
   const urlValue = issueDetails.meta.alpaca_url || issueDetails.meta.URL;
   const taxonomyLabels = issueDetails.taxonomy_labels || {};
