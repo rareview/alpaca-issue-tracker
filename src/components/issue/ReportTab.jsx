@@ -3,6 +3,7 @@ const { __ } = wp.i18n;
 import PropTypes from 'prop-types';
 import { highlightTableCells } from '../../utils/syntaxHighlight';
 import { isValidHttpUrl } from '../../utils/sanitize';
+import { parseWpDateValue } from '../../utils/date';
 
 const { date } = wp;
 const datesettings = wp.date.getSettings();
@@ -30,6 +31,10 @@ function getTaxonomyFallbackLabel(taxonomy) {
 const ReportTab = memo(({ issueDetails }) => {
   const tableRef = useRef(null);
   const urlCellRef = useRef(null);
+  const reportedDate = parseWpDateValue(issueDetails?.post_data?.post_date);
+  const lastEditedDate = parseWpDateValue(
+    issueDetails?.post_data?.post_modified,
+  );
 
   const urlValue = issueDetails.meta.alpaca_url || issueDetails.meta.URL;
   const taxonomyLabels = issueDetails.taxonomy_labels || {};
@@ -63,19 +68,23 @@ const ReportTab = memo(({ issueDetails }) => {
           <tr>
             <th scope="row">{__('Reported', 'alpaca')}</th>
             <td>
-              {date.format(
-                datesettings.formats.datetimeAbbreviated,
-                new Date(issueDetails.post_data.post_date),
-              )}
+              {reportedDate
+                ? date.format(
+                    datesettings.formats.datetimeAbbreviated,
+                    reportedDate,
+                  )
+                : __('N/A', 'alpaca')}
             </td>
           </tr>
           <tr>
             <th scope="row">{__('Last edit', 'alpaca')}</th>
             <td>
-              {date.format(
-                datesettings.formats.datetimeAbbreviated,
-                new Date(issueDetails.post_data.post_modified),
-              )}
+              {lastEditedDate
+                ? date.format(
+                    datesettings.formats.datetimeAbbreviated,
+                    lastEditedDate,
+                  )
+                : __('N/A', 'alpaca')}
             </td>
           </tr>
           <tr>

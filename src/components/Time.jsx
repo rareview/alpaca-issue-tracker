@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types';
+import { parseWpDateValue } from '../utils/date';
 
 const { useReducer, useEffect, useMemo, memo } = wp.element;
 const { __ } = wp.i18n;
@@ -16,9 +17,8 @@ const Time = memo(
       return () => clearInterval(interval);
     }, [type, autoUpdate]);
 
-    // Convert string to JS Date
-    const dateObj = useMemo(() => (value ? new Date(value) : null), [value]);
-    if (!dateObj || isNaN(dateObj.getTime())) return null;
+    const dateObj = useMemo(() => parseWpDateValue(value), [value]);
+    if (!dateObj) return null;
 
     const wpFormat = format || wp.date.getSettings().formats.datetime;
     const formattedAbsolute = wp.date.dateI18n(wpFormat, dateObj);

@@ -1,5 +1,6 @@
 const { __ } = wp.i18n;
 import CalendarIcon from '../components/icons/CalendarIcon';
+import { parseWpDateValue } from '../utils/date';
 
 /**
  * Filter to add deadline to item datapoints.
@@ -13,7 +14,9 @@ export const addDeadlineDatapoint = (originalContent, itemProps) => {
   let deadline = null;
 
   if (meta && meta.deadline && meta.deadline[0]) {
-    deadline = new Date(meta.deadline[0]);
+    deadline = parseWpDateValue(meta.deadline[0], {
+      treatDateOnlyAsLocalNoon: true,
+    });
   }
 
   const isValidDeadline = deadline && !isNaN(deadline);
