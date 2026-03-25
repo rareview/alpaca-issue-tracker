@@ -1051,15 +1051,6 @@ const NotificationPreferences = () => {
         </Notice>
       )}
 
-      <div className="alpaca-notifications-panel alpaca-notifications-intro">
-        <p>
-          {__(
-            'Choose which issue activity matters to you and how email updates should work. In-app notifications stay available inside Project Board.',
-            'alpaca',
-          )}
-        </p>
-      </div>
-
       <TabPanel
         className="alpaca-notifications-tabs"
         activeClass="is-active"
