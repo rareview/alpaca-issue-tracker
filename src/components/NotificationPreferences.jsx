@@ -350,37 +350,40 @@ const renderNotificationEmailTab = (context, tab) => {
           disabled={context.isSaving}
         />
 
-        <CheckboxControl
-          label={__('Send a daily summary', 'alpaca')}
-          checked={context.hasEmailDigestEnabled}
-          onChange={(value) =>
-            context.updateDailyDigestChannelValue(EMAIL_CHANNEL_KEY, value)
-          }
-          disabled={context.isSaving}
-        />
-
-        <div
-          className={`alpaca-notifications-email-digest-settings${
-            context.hasEmailDigestEnabled ? ' is-visible' : ''
-          }`}
-          aria-hidden={!context.hasEmailDigestEnabled}
-        >
-          <div className="alpaca-notifications-email-time">
-            <TextControl
-              label={__('Send daily summary at', 'alpaca')}
-              type="time"
-              value={context.dailyDigestPreferences[SEND_TIME_KEY] || '17:00'}
+        <div className="alpaca-notifications-email-digest-row">
+          <div className="alpaca-notifications-email-digest-checkbox">
+            <CheckboxControl
+              label={__('Send a daily summary at', 'alpaca')}
+              checked={context.hasEmailDigestEnabled}
               onChange={(value) =>
-                context.updateDailyDigestValue(SEND_TIME_KEY, value)
+                context.updateDailyDigestChannelValue(EMAIL_CHANNEL_KEY, value)
               }
-              disabled={context.isSaving || !context.hasEmailDigestEnabled}
+              disabled={context.isSaving}
             />
           </div>
+
+          <div className="alpaca-notifications-email-time-wrap">
+            <div className="alpaca-notifications-email-time">
+              <TextControl
+                label={__('Daily summary time', 'alpaca')}
+                hideLabelFromVision
+                type="time"
+                value={context.dailyDigestPreferences[SEND_TIME_KEY] || '17:00'}
+                onChange={(value) =>
+                  context.updateDailyDigestValue(SEND_TIME_KEY, value)
+                }
+                disabled={context.isSaving}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="alpaca-notifications-email-digest-settings">
           <p className="alpaca-notifications-help">
             {sprintf(
               /* translators: %s: site timezone label. */
               __(
-                'The daily summary covers the previous 24 hours and repeats every day using the site timezone: %s.',
+                "Summaries of activity matching your preferences will be generated for you at this time every day, based on the site's timezone (%s).",
                 'alpaca',
               ),
               context.siteTimezoneLabel || __('Site timezone', 'alpaca'),
@@ -880,11 +883,15 @@ const NotificationPreferences = () => {
     preferences,
   ]);
 
-  const labelPicker = Boolean(preferences?.subjects?.labeled) && (
-    <div className="alpaca-notifications-label-picker">
-      <p className="alpaca-notifications-help">
-        {__('Select the labels you want to subscribe to.', 'alpaca')}
-      </p>
+  const isLabelPickerVisible = Boolean(preferences?.subjects?.labeled);
+
+  const labelPicker = (
+    <div
+      className={`alpaca-notifications-label-picker${
+        isLabelPickerVisible ? ' is-visible' : ''
+      }`}
+      aria-hidden={!isLabelPickerVisible}
+    >
       {labels.length > 0 ? (
         <div className="alpaca-notifications-label-grid">
           {labels.map((label) => {
@@ -1083,12 +1090,6 @@ const NotificationPreferences = () => {
               <div className="alpaca-notifications-tab-content">
                 <div className="alpaca-notifications-grid">
                   <section className="alpaca-notifications-panel">
-                    <p className="alpaca-notifications-panel-intro">
-                      {__(
-                        'Choose which issues are relevant to you and which kinds of activity should trigger updates.',
-                        'alpaca',
-                      )}
-                    </p>
                     <h2>{__('Notify me about', 'alpaca')}</h2>
                     <div className="alpaca-notifications-options">
                       {subjectOptions.map((option) => (

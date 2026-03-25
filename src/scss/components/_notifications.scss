@@ -10,12 +10,13 @@
 
 .alpaca-notifications-screen > .alpaca-notifications-panel {
   margin-top: 20px;
-}
-
-.alpaca-notifications-intro,
-.alpaca-notification-template-intro {
-  margin-bottom: 20px;
-  margin-top: 20px;
+  transform: translateY(-6px);
+  will-change: transform, opacity, max-height;
+  transition:
+    max-height 320ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    opacity 240ms ease,
+    transform 240ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    margin-block-start 240ms ease;
   background: none !important;
   border: 0 !important;
   padding: 0 !important;
@@ -27,8 +28,6 @@
 }
 
 .alpaca-notifications-tabs {
-  margin-top: 20px;
-
   .components-tab-panel__tabs {
     border-bottom: 1px solid $greyborder;
     margin-bottom: 0;
@@ -47,7 +46,6 @@
 
 .alpaca-notifications-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  margin-top: 20px;
 }
 
 .alpaca-notification-template-layout {
@@ -69,7 +67,18 @@
 
   p {
     color: #50575e;
+    font-size: 12px;
+    margin: 0 0 1em;
   }
+}
+
+/* Email Templates intro should sit on the grey admin background
+   not inside a white panel. Override the panel styles for this
+   specific intro so it has no background, border, or padding. */
+.alpaca-notification-template-intro.alpaca-notifications-panel {
+  background: none;
+  border: 0;
+  padding: 0;
 }
 
 .alpaca-notifications-panel-intro {
@@ -124,16 +133,22 @@
 }
 
 .alpaca-notifications-label-picker {
-  margin-top: 6px;
   margin-left: 24px;
-  padding-top: 12px;
-  border-top: 1px solid $greyborder;
+  display: none;
+}
+
+.alpaca-notifications-label-picker.is-visible {
+  display: block;
 }
 
 .alpaca-notifications-label-grid {
   display: grid;
   gap: 10px;
-  margin-top: 8px;
+}
+
+.alpaca-notifications-label-grid {
+  display: grid;
+  gap: 10px;
 }
 
 .alpaca-notifications-actions {
@@ -142,41 +157,43 @@
   gap: 12px;
   margin-top: 20px;
   padding-top: 16px;
-  border-top: 1px solid $greyborder;
 }
 
-.alpaca-notifications-help {
-  margin: -8px 0 0;
-  color: #50575e;
-  font-size: 13px;
+.alpaca-notifications-email-digest-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.alpaca-notifications-email-digest-checkbox .components-base-control,
+.alpaca-notifications-email-time-wrap .components-base-control {
+  margin-bottom: 0;
+}
+
+.alpaca-notifications-email-time-wrap {
+  flex: 0 0 auto;
+  margin-block-start: 2px;
 }
 
 .alpaca-notifications-email-digest-settings {
   display: grid;
-  gap: 10px;
-  max-height: 0;
-  opacity: 0;
-  overflow: hidden;
-  pointer-events: none;
-  transform: translateY(-4px);
-  transition:
-    max-height 220ms ease,
-    opacity 180ms ease,
-    transform 180ms ease,
-    margin-block-start 180ms ease;
-  margin-block-start: -4px;
-
-  &.is-visible {
-    max-height: 160px;
-    opacity: 1;
-    pointer-events: auto;
-    transform: translateY(0);
-    margin-block-start: 0;
-  }
+  gap: 0;
+  margin-block-start: 0;
 }
 
 .alpaca-notifications-email-time {
   inline-size: min(100%, 220px);
+}
+
+@media (max-width: 600px) {
+  .alpaca-notifications-email-digest-row {
+    align-items: center;
+  }
+
+  .alpaca-notifications-email-time-wrap {
+    margin-block-start: 0;
+  }
 }
 
 .alpaca-digest-template-locked-summary {
