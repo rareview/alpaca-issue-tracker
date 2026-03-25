@@ -30,6 +30,8 @@ export const addLastCommentActivityDatapoint = (originalContent, itemProps) => {
           value={lastActivityDateString}
           isGmt={lastActivityIsGmt}
           type="relative"
+          relativeWithDirection={false}
+          relativeUnitDisplay="narrow"
         />
       </div>
     </>

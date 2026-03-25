@@ -13,6 +13,9 @@ const Time = memo(
     autoUpdate = true,
     className,
     isGmt = false,
+    relativeWithDirection = true,
+    relativeStyle = 'long',
+    relativeUnitDisplay = 'short',
   }) => {
     // useReducer to force re-render for relative time updates
     const [, forceUpdate] = useReducer((x) => x + 1, 0);
@@ -78,9 +81,33 @@ const Time = memo(
           valueForUnit = Math.round(deltaSeconds / (60 * 60));
         }
 
-        relative = new Intl.RelativeTimeFormat(locale, {
-          numeric: 'always',
-        }).format(valueForUnit, unit);
+        if (relativeWithDirection) {
+          relative = new Intl.RelativeTimeFormat(locale, {
+            numeric: 'always',
+            style: relativeStyle,
+          }).format(valueForUnit, unit);
+        } else {
+          const absoluteValueForUnit = Math.abs(valueForUnit);
+
+          try {
+            relative = new Intl.NumberFormat(locale, {
+              style: 'unit',
+              unit,
+              unitDisplay: relativeUnitDisplay,
+              maximumFractionDigits: 0,
+            }).format(absoluteValueForUnit);
+          } catch (error) {
+            const fallbackUnitLabels = {
+              year: 'y',
+              month: 'mo',
+              week: 'w',
+              day: 'd',
+              hour: 'h',
+              minute: 'm',
+            };
+            relative = `${absoluteValueForUnit}${fallbackUnitLabels[unit] || unit}`;
+          }
+        }
       }
 
       return (
@@ -105,6 +132,9 @@ Time.propTypes = {
   autoUpdate: PropTypes.bool,
   className: PropTypes.string,
   isGmt: PropTypes.bool,
+  relativeWithDirection: PropTypes.bool,
+  relativeStyle: PropTypes.oneOf(['long', 'short', 'narrow']),
+  relativeUnitDisplay: PropTypes.oneOf(['long', 'short', 'narrow']),
 };
 
 Time.displayName = 'Time';
