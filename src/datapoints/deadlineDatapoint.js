@@ -23,10 +23,7 @@ export const addDeadlineDatapoint = (originalContent, itemProps) => {
   let deadlineFormatted = '';
 
   if (isValidDeadline) {
-    deadlineFormatted = new Intl.DateTimeFormat(undefined, {
-      month: 'short',
-      day: 'numeric',
-    }).format(deadline);
+    deadlineFormatted = wp.date.dateI18n('M j', deadline);
   }
 
   let diffDays = null;

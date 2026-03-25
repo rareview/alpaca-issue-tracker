@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import { parseWpDateValue } from '../utils/date';
 
 const { useReducer, useEffect, useMemo, memo } = wp.element;
-const { __ } = wp.i18n;
+const { __, sprintf } = wp.i18n;
 const { Tooltip } = wp.components;
 
 const Time = memo(
@@ -22,6 +22,15 @@ const Time = memo(
 
     const wpFormat = format || wp.date.getSettings().formats.datetime;
     const formattedAbsolute = wp.date.dateI18n(wpFormat, dateObj);
+    let formattedOffset = wp.date.dateI18n('P', dateObj);
+    if ('Z' === formattedOffset) {
+      formattedOffset = '+00:00';
+    }
+    /* translators: 1: formatted date/time. 2: UTC offset, e.g. +02:00. */
+    const offsetFormatLabel = __('%1$s (UTC%2$s)', 'alpaca');
+    const tooltipText = formattedOffset
+      ? sprintf(offsetFormatLabel, formattedAbsolute, formattedOffset)
+      : formattedAbsolute;
     const spanClassName = ['timestamp', className].filter(Boolean).join(' ');
 
     if (type === 'relative') {
@@ -65,7 +74,7 @@ const Time = memo(
       }
 
       return (
-        <Tooltip text={formattedAbsolute}>
+        <Tooltip text={tooltipText}>
           <span className={spanClassName}>{relative}</span>
         </Tooltip>
       );

@@ -1,12 +1,36 @@
 const { memo, useEffect, useRef } = wp.element;
-const { __ } = wp.i18n;
+const { __, sprintf } = wp.i18n;
 import PropTypes from 'prop-types';
 import { highlightTableCells } from '../../utils/syntaxHighlight';
 import { isValidHttpUrl } from '../../utils/sanitize';
 import { parseWpDateValue } from '../../utils/date';
 
-const { date } = wp;
 const datesettings = wp.date.getSettings();
+
+/**
+ * Format a date with an explicit UTC offset suffix.
+ *
+ * @param {Date} value Date value.
+ * @return {string} Formatted date and offset label.
+ */
+const formatDateTimeWithUtcOffset = (value) => {
+  const formattedDate = wp.date.dateI18n(
+    datesettings.formats.datetimeAbbreviated,
+    value,
+  );
+  let offset = wp.date.dateI18n('P', value);
+
+  if (!offset) {
+    return formattedDate;
+  }
+
+  if ('Z' === offset) {
+    offset = '+00:00';
+  }
+
+  /* translators: 1: formatted date/time. 2: UTC offset, e.g. +02:00. */
+  return sprintf(__('%1$s (UTC%2$s)', 'alpaca'), formattedDate, offset);
+};
 
 /**
  * Convert a taxonomy slug into a readable fallback label.
@@ -69,10 +93,7 @@ const ReportTab = memo(({ issueDetails }) => {
             <th scope="row">{__('Reported', 'alpaca')}</th>
             <td>
               {reportedDate
-                ? date.format(
-                    datesettings.formats.datetimeAbbreviated,
-                    reportedDate,
-                  )
+                ? formatDateTimeWithUtcOffset(reportedDate)
                 : __('N/A', 'alpaca')}
             </td>
           </tr>
@@ -80,10 +101,7 @@ const ReportTab = memo(({ issueDetails }) => {
             <th scope="row">{__('Last edit', 'alpaca')}</th>
             <td>
               {lastEditedDate
-                ? date.format(
-                    datesettings.formats.datetimeAbbreviated,
-                    lastEditedDate,
-                  )
+                ? formatDateTimeWithUtcOffset(lastEditedDate)
                 : __('N/A', 'alpaca')}
             </td>
           </tr>
