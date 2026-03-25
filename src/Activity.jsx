@@ -34,6 +34,7 @@ const stripHtml = (maybeHtml) => {
  * Format a date heading label for grouped timeline sections.
  *
  * @param {string} value ISO date string.
+ * @param {boolean} isGmt Whether the input value is a UTC/GMT timestamp.
  * @return {string} Group heading label.
  */
 const formatGroupDateLabel = (value, isGmt = false) => {

@@ -172,12 +172,12 @@ function buildResultItem(post, boardIssueIndex) {
   const fromBoard = boardIssueIndex.get(id);
   const restMeta =
     post && post.meta && typeof post.meta === 'object' ? post.meta : {};
-  const restPostDate =
-    post && typeof post.date_gmt === 'string' && post.date_gmt
-      ? post.date_gmt
-      : post && typeof post.date === 'string'
-        ? post.date
-        : '';
+  let restPostDate = '';
+  if (post && typeof post.date_gmt === 'string' && post.date_gmt) {
+    restPostDate = post.date_gmt;
+  } else if (post && typeof post.date === 'string') {
+    restPostDate = post.date;
+  }
   let title = '';
   if (fromBoard && fromBoard.title) {
     title = fromBoard.title;
