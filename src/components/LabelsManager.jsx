@@ -391,7 +391,13 @@ const LabelsManager = () => {
 
   return (
     <div className="alpaca-labels-manager">
-      <h3>{__('Labels', 'alpaca')}</h3>
+      <h2 className="screen-reader-text">{__('Labels', 'alpaca')}</h2>
+      <p className="alpaca-settings-manager-intro">
+        {__(
+          'Create and maintain labels to categorize and filter your issues.',
+          'alpaca',
+        )}
+      </p>
 
       {saveError && (
         <Notice status="error" isDismissible={false}>

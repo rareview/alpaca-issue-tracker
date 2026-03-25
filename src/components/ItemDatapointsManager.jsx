@@ -128,9 +128,11 @@ const ItemDatapointsManager = () => {
 
   return (
     <div className="alpaca-item-datapoints-manager">
-      <h3>{__('Item Datapoints', 'alpaca')}</h3>
+      <h2 className="screen-reader-text">{__('Item Datapoints', 'alpaca')}</h2>
 
-      <p>{__('Choose which datapoints appear on issue cards.', 'alpaca')}</p>
+      <p className="alpaca-settings-manager-intro">
+        {__('Choose which datapoints appear on issue cards.', 'alpaca')}
+      </p>
 
       {errorMessage && (
         <Notice
