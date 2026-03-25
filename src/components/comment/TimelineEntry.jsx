@@ -236,6 +236,7 @@ const TimelineEntry = ({
     typeof lastEditMeta?.date === 'string' && lastEditMeta.date
       ? lastEditMeta.date
       : '';
+  const editedDateIsGmt = /(?:Z|[+-]\d{2}:\d{2})$/i.test(editedDate);
   const createdAtValue =
     typeof comment?.date_gmt === 'string' && comment.date_gmt
       ? comment.date_gmt
@@ -379,7 +380,12 @@ const TimelineEntry = ({
                   ) : (
                     __('edited', 'alpaca')
                   )}{' '}
-                  <Time value={editedDate} type="relative" />)
+                  <Time
+                    value={editedDate}
+                    isGmt={editedDateIsGmt}
+                    type="relative"
+                  />
+                  )
                 </div>
               )}
             </div>

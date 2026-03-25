@@ -17,12 +17,20 @@ export const addLastCommentActivityDatapoint = (originalContent, itemProps) => {
     return originalContent;
   }
 
+  const lastActivityIsGmt = /(?:Z|[+-]\d{2}:\d{2})$/i.test(
+    lastActivityDateString,
+  );
+
   return (
     <>
       {originalContent}
       <div className="alpaca-item-icon alpaca-item-last-activity">
         <HourglassIcon />
-        <Time value={lastActivityDateString} type="relative" />
+        <Time
+          value={lastActivityDateString}
+          isGmt={lastActivityIsGmt}
+          type="relative"
+        />
       </div>
     </>
   );
