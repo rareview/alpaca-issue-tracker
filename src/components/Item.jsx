@@ -46,12 +46,25 @@ const Item = forwardRef(
     const { isWatched, toggleWatch, loading } = useWatchlist();
     const watched = isWatched(id);
 
-    const assigneeDataAttributes = assignees.reduce((acc, assignee) => {
-      if (assignee && assignee.id) {
-        acc[`data-assignee-${assignee.id}`] = '';
-      }
-      return acc;
-    }, {});
+    // Allow third-party code to inject additional `data-` attributes
+    // via the `alpaca.item.card.dataAttributes` filter. The default
+    // value is an empty object; a filter registered elsewhere (for
+    // example to add `data-assignee-*`) will supply defaults.
+    const extraDataAttributes = wp.hooks.applyFilters(
+      'alpaca.item.card.dataAttributes',
+      {},
+      {
+        id,
+        content,
+        meta,
+        postDate,
+        assignees,
+        labels,
+        commentCount,
+        commentCountByAgent,
+        watched,
+      },
+    );
 
     const watchedClass = watched ? 'is-watched item-highlight' : '';
 
@@ -66,8 +79,7 @@ const Item = forwardRef(
         ref={ref}
         className={`${className} ${watchedClass} `.trim()}
         style={style}
-        data-id={id}
-        {...assigneeDataAttributes}
+        {...extraDataAttributes}
         {...props}
         onClick={onClick}
       >

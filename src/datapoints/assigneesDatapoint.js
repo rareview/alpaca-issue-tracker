@@ -47,3 +47,25 @@ export const assigneesDatapointRegistration = {
   callback: addAssigneesDatapoint,
   defaultEnabled: true,
 };
+
+// Register default `data-assignee-*` attributes for item cards.
+// Third-party code can override or extend via the
+// `alpaca.item.card.dataAttributes` filter. This keeps assignee-
+// related logic colocated with the assignees datapoint.
+if (wp && wp.hooks && typeof wp.hooks.addFilter === 'function') {
+  wp.hooks.addFilter(
+    'alpaca.item.card.dataAttributes',
+    'alpaca/assignee-data-attributes',
+    (attributes = {}, item = {}) => {
+      const assignees = item.assignees || [];
+      const assigneeAttrs = assignees.reduce((acc, assignee) => {
+        if (assignee && assignee.id) {
+          acc[`data-assignee-${assignee.id}`] = '';
+        }
+        return acc;
+      }, {});
+
+      return Object.assign({}, assigneeAttrs, attributes);
+    },
+  );
+}
