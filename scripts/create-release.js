@@ -267,7 +267,7 @@ function commitAndPush(version, changedFiles) {
   run('git', ['add', ...changedFiles], { stdio: 'inherit' });
   run(
     'git',
-    ['commit', '-m', `chore(release): bump version to ${version}`],
+    ['commit', '-m', `chore(release): release ${version}`],
     { stdio: 'inherit' },
   );
   run('git', ['push', 'origin', 'HEAD'], { stdio: 'inherit' });
