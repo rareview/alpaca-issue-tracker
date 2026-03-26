@@ -5,6 +5,7 @@ import {
   dispatchStatusChangedAction,
   getStatusName,
 } from './utils/statusChange';
+import { formatWpDateDayLabel, getWpDateDayKey } from './utils/date';
 
 const { __ } = wp.i18n;
 const { decodeEntities } = wp.htmlEntities;
@@ -32,22 +33,13 @@ const stripHtml = (maybeHtml) => {
 /**
  * Format a date heading label for grouped timeline sections.
  *
- * @param {string} value ISO date string.
+ * @param {string}  value ISO date string.
+ * @param {boolean} isGmt Whether the input value is a UTC/GMT timestamp.
  * @return {string} Group heading label.
  */
-const formatGroupDateLabel = (value) => {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return __('Unknown date', 'alpaca');
-  }
-
-  return new Intl.DateTimeFormat(undefined, {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  }).format(date);
-};
+const formatGroupDateLabel = (value, isGmt = false) =>
+  formatWpDateDayLabel(value, { treatMysqlAsUtc: isGmt }) ||
+  __('Unknown date', 'alpaca');
 
 /**
  * Extract a post title from a REST post object.
@@ -355,13 +347,17 @@ const Activity = () => {
     const groupIndexByKey = {};
 
     comments.forEach((comment) => {
-      const groupKey = (comment.date || '').slice(0, 10) || 'unknown-date';
+      const dateValue = comment?.date_gmt || comment?.date || '';
+      const isGmt = Boolean(comment?.date_gmt);
+      const groupKey =
+        getWpDateDayKey(dateValue, { treatMysqlAsUtc: isGmt }) ||
+        'unknown-date';
 
       if (!Object.prototype.hasOwnProperty.call(groupIndexByKey, groupKey)) {
         groupIndexByKey[groupKey] = grouped.length;
         grouped.push({
           key: groupKey,
-          label: formatGroupDateLabel(comment.date),
+          label: formatGroupDateLabel(dateValue, isGmt),
           comments: [],
         });
       }

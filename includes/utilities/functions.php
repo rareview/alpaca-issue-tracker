@@ -135,18 +135,17 @@ function alpaca_setup_default_statuses( $force = false ) {
  */
 function alpaca_update_last_activity( $post_id ) {
 	if ( 'alpaca_issue' === get_post_type( $post_id ) ) {
-		update_post_meta( $post_id, 'alpaca_lastActivity', current_time( 'mysql' ) );
+		update_post_meta( $post_id, 'alpaca_lastActivity', gmdate( 'c' ) );
 	}
 }
 
 /**
  * Get the most recent approved issue comment timestamp for an issue.
  *
- * Returned value is in MySQL datetime format (local time), matching the
- * value stored by {@see alpaca_update_last_activity()}.
+ * Returned value is in MySQL datetime format in UTC.
  *
  * @param int $issue_id The issue post ID.
- * @return string Latest comment date (MySQL datetime) or empty string.
+ * @return string Latest comment date in UTC (MySQL datetime) or empty string.
  */
 function alpaca_get_latest_issuecomment_date_for_issue( $issue_id ) {
 	$issue_id = (int) $issue_id;
@@ -166,7 +165,7 @@ function alpaca_get_latest_issuecomment_date_for_issue( $issue_id ) {
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching
 	$date = $wpdb->get_var(
 		$wpdb->prepare(
-			"SELECT comment_date FROM {$wpdb->comments}
+			"SELECT comment_date_gmt FROM {$wpdb->comments}
 				WHERE comment_post_ID = %d
 				AND comment_type = %s
 				AND comment_approved = '1'
@@ -187,7 +186,7 @@ function alpaca_get_latest_issuecomment_date_for_issue( $issue_id ) {
  * clients can fall back to the issue's post date.
  *
  * @param int $issue_id The issue post ID.
- * @return string Updated last activity value (MySQL datetime) or empty string.
+ * @return string Updated last activity value (ISO-8601 UTC) or empty string.
  */
 function alpaca_update_last_activity_from_issuecomments( $issue_id ) {
 	$issue_id = (int) $issue_id;
@@ -201,8 +200,15 @@ function alpaca_update_last_activity_from_issuecomments( $issue_id ) {
 		return '';
 	}
 
-	update_post_meta( $issue_id, 'alpaca_lastActivity', $latest );
-	return $latest;
+	$latest_unix_utc = strtotime( $latest . ' UTC' );
+	if ( false === $latest_unix_utc ) {
+		delete_post_meta( $issue_id, 'alpaca_lastActivity' );
+		return '';
+	}
+
+	$latest_iso_utc = gmdate( 'c', $latest_unix_utc );
+	update_post_meta( $issue_id, 'alpaca_lastActivity', $latest_iso_utc );
+	return $latest_iso_utc;
 }
 
 /**

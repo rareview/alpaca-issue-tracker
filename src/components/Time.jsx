@@ -1,11 +1,22 @@
 import PropTypes from 'prop-types';
+import { formatWpDateValue, parseWpDateValue } from '../utils/date';
 
 const { useReducer, useEffect, useMemo, memo } = wp.element;
-const { __ } = wp.i18n;
+const { __, sprintf } = wp.i18n;
 const { Tooltip } = wp.components;
 
 const Time = memo(
-  ({ value, type = 'absolute', format, autoUpdate = true, className }) => {
+  ({
+    value,
+    type = 'absolute',
+    format,
+    autoUpdate = true,
+    className,
+    isGmt = false,
+    relativeWithDirection = true,
+    relativeStyle = 'long',
+    relativeUnitDisplay = 'short',
+  }) => {
     // useReducer to force re-render for relative time updates
     const [, forceUpdate] = useReducer((x) => x + 1, 0);
 
@@ -16,12 +27,23 @@ const Time = memo(
       return () => clearInterval(interval);
     }, [type, autoUpdate]);
 
-    // Convert string to JS Date
-    const dateObj = useMemo(() => (value ? new Date(value) : null), [value]);
-    if (!dateObj || isNaN(dateObj.getTime())) return null;
+    const dateObj = useMemo(
+      () => parseWpDateValue(value, { treatMysqlAsUtc: isGmt }),
+      [value, isGmt],
+    );
+    if (!dateObj) return null;
 
     const wpFormat = format || wp.date.getSettings().formats.datetime;
-    const formattedAbsolute = wp.date.dateI18n(wpFormat, dateObj);
+    const formattedAbsolute = formatWpDateValue(dateObj, wpFormat);
+    let formattedOffset = formatWpDateValue(dateObj, 'P');
+    if ('Z' === formattedOffset) {
+      formattedOffset = '+00:00';
+    }
+    /* translators: 1: formatted date/time. 2: UTC offset, e.g. +02:00. */
+    const offsetFormatLabel = __('%1$s (UTC%2$s)', 'alpaca');
+    const tooltipText = formattedOffset
+      ? sprintf(offsetFormatLabel, formattedAbsolute, formattedOffset)
+      : formattedAbsolute;
     const spanClassName = ['timestamp', className].filter(Boolean).join(' ');
 
     if (type === 'relative') {
@@ -59,13 +81,37 @@ const Time = memo(
           valueForUnit = Math.round(deltaSeconds / (60 * 60));
         }
 
-        relative = new Intl.RelativeTimeFormat(locale, {
-          numeric: 'always',
-        }).format(valueForUnit, unit);
+        if (relativeWithDirection) {
+          relative = new Intl.RelativeTimeFormat(locale, {
+            numeric: 'always',
+            style: relativeStyle,
+          }).format(valueForUnit, unit);
+        } else {
+          const absoluteValueForUnit = Math.abs(valueForUnit);
+
+          try {
+            relative = new Intl.NumberFormat(locale, {
+              style: 'unit',
+              unit,
+              unitDisplay: relativeUnitDisplay,
+              maximumFractionDigits: 0,
+            }).format(absoluteValueForUnit);
+          } catch (error) {
+            const fallbackUnitLabels = {
+              year: 'y',
+              month: 'mo',
+              week: 'w',
+              day: 'd',
+              hour: 'h',
+              minute: 'm',
+            };
+            relative = `${absoluteValueForUnit}${fallbackUnitLabels[unit] || unit}`;
+          }
+        }
       }
 
       return (
-        <Tooltip text={formattedAbsolute}>
+        <Tooltip text={tooltipText}>
           <span className={spanClassName}>{relative}</span>
         </Tooltip>
       );
@@ -76,11 +122,19 @@ const Time = memo(
 );
 
 Time.propTypes = {
-  value: PropTypes.string,
+  value: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+    PropTypes.instanceOf(Date),
+  ]),
   type: PropTypes.oneOf(['absolute', 'relative']),
   format: PropTypes.string,
   autoUpdate: PropTypes.bool,
   className: PropTypes.string,
+  isGmt: PropTypes.bool,
+  relativeWithDirection: PropTypes.bool,
+  relativeStyle: PropTypes.oneOf(['long', 'short', 'narrow']),
+  relativeUnitDisplay: PropTypes.oneOf(['long', 'short', 'narrow']),
 };
 
 Time.displayName = 'Time';

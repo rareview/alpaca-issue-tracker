@@ -13,7 +13,7 @@ const transformDataForBoard = (data) => {
       id: issue.id.toString(),
       content: decodeEntities(issue.title),
       slug: issue.slug || issue.post_name || '',
-      postDate: issue.post_date,
+      postDate: issue.post_date_gmt || issue.post_date,
       authorName: issue.author_name,
       authorImg: issue.author_img,
       assignees: issue.assignees || [],

@@ -145,13 +145,15 @@ function alpaca_get_issue_response_data( $issue, $override_data = array() ) {
 	return array(
 		'post_id'  => $post_id,
 		'issue'    => array(
-			'id'          => $post_id,
-			'slug'        => (string) $post->post_name,
-			'title'       => $title,
-			'author_id'   => $author_id,
-			'author_name' => get_the_author_meta( 'display_name', $author_id ),
-			'author_img'  => alpaca_avatar( $author_id, 24 ),
-			'meta'        => array(
+			'id'            => $post_id,
+			'slug'          => (string) $post->post_name,
+			'title'         => $title,
+			'post_date'     => (string) $post->post_date,
+			'post_date_gmt' => (string) $post->post_date_gmt,
+			'author_id'     => $author_id,
+			'author_name'   => get_the_author_meta( 'display_name', $author_id ),
+			'author_img'    => alpaca_avatar( $author_id, 24 ),
+			'meta'          => array(
 				'alpaca_high_priority' => $is_high_priority,
 			),
 		),
