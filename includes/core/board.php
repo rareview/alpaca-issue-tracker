@@ -414,6 +414,7 @@ function alpaca_get_board_data() {
 				'id'            => $post->ID,
 				'title'         => $post->post_title,
 				'slug'          => $post->post_name,
+				'post_date_gmt' => $post->post_date_gmt,
 				'post_date'     => $post->post_date,
 				'comment_count' => $comment_count,
 				'comment_count_by_agent' => $comment_count_by_agent,

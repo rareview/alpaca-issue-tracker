@@ -101,17 +101,94 @@ const prepareResponsiveSourcesForCapture = () => {
   };
 };
 
-const handleSnapdomCapture = async () => {
-  function hide_from_snapdom(selector) {
-    const el = document.querySelector(selector);
-    if (el) {
-      el.dataset.capture = 'exclude';
-    }
+/**
+ * Determine whether a top-level element is safely skippable for capture.
+ *
+ * This is intentionally conservative. We only exclude elements that are
+ * clearly not contributing to the visible viewport or look like hidden
+ * overlay/debug containers.
+ *
+ * @param {Element} element Candidate top-level element.
+ * @return {boolean} True when the element should be excluded from capture.
+ */
+const shouldExcludeTopLevelElementFromCapture = (element) => {
+  if (!(element instanceof HTMLElement)) {
+    return false;
   }
 
-  hide_from_snapdom('#wpadminbar');
-  hide_from_snapdom('.components-modal__screen-overlay');
-  hide_from_snapdom('#alpaca-toolbar-mount');
+  const computedStyle = window.getComputedStyle(element);
+  const rect = element.getBoundingClientRect();
+  const position = computedStyle.position;
+  const isOutOfFlow =
+    'fixed' === position || 'absolute' === position || 'sticky' === position;
+  const isDisplayNone = 'none' === computedStyle.display;
+  const isZeroSized = 0 === rect.width && 0 === rect.height;
+  const isFullyOutsideViewport =
+    rect.bottom < 0 ||
+    rect.right < 0 ||
+    rect.top > window.innerHeight ||
+    rect.left > window.innerWidth;
+  const isHiddenOverlayLike =
+    ('hidden' === computedStyle.visibility ||
+      parseFloat(computedStyle.opacity || '1') === 0) &&
+    isOutOfFlow;
+
+  if (isDisplayNone || isZeroSized) {
+    return true;
+  }
+
+  if (isOutOfFlow && isFullyOutsideViewport) {
+    return true;
+  }
+
+  return isHiddenOverlayLike;
+};
+
+const handleSnapdomCapture = async () => {
+  const excludedElements = new Map();
+
+  /**
+   * Exclude an element from SnapDOM capture and restore its prior state later.
+   *
+   * @param {Element|null} element Element to exclude.
+   * @return {void}
+   */
+  const excludeFromSnapdom = (element) => {
+    if (!(element instanceof Element) || excludedElements.has(element)) {
+      return;
+    }
+
+    excludedElements.set(element, element.getAttribute('data-capture'));
+    element.dataset.capture = 'exclude';
+  };
+
+  /**
+   * Exclude the first matching selector from SnapDOM capture.
+   *
+   * @param {string} selector CSS selector for the element to exclude.
+   * @return {void}
+   */
+  const excludeSelectorFromSnapdom = (selector) => {
+    excludeFromSnapdom(document.querySelector(selector));
+  };
+
+  /**
+   * Exclude obviously invisible top-level DOM elements from capture.
+   *
+   * @return {void}
+   */
+  const excludeInvisibleTopLevelElements = () => {
+    Array.from(document.body.children).forEach((element) => {
+      if (shouldExcludeTopLevelElementFromCapture(element)) {
+        excludeFromSnapdom(element);
+      }
+    });
+  };
+
+  excludeSelectorFromSnapdom('#wpadminbar');
+  excludeSelectorFromSnapdom('.components-modal__screen-overlay');
+  excludeSelectorFromSnapdom('#alpaca-toolbar-mount');
+  excludeInvisibleTopLevelElements();
 
   let restoreResponsiveSources = () => {};
 
@@ -156,6 +233,13 @@ const handleSnapdomCapture = async () => {
     return '';
   } finally {
     restoreResponsiveSources();
+    excludedElements.forEach((previousCapture, element) => {
+      if (previousCapture === null) {
+        element.removeAttribute('data-capture');
+      } else {
+        element.setAttribute('data-capture', previousCapture);
+      }
+    });
   }
 };
 

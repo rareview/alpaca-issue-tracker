@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 import User from './components/User';
 import useUserManagement from './hooks/useUserManagement';
 import PriorityIcon from './components/icons/PriorityIcon';
+import { formatWpDateValue } from './utils/date';
 
 /**
  * Format a date string for display in the dashboard widget.
@@ -15,10 +16,9 @@ import PriorityIcon from './components/icons/PriorityIcon';
 const formatDate = (dateString) => {
   if (!dateString) return null;
 
-  return new Intl.DateTimeFormat(undefined, {
-    day: '2-digit',
-    month: 'short',
-  }).format(new Date(dateString));
+  return formatWpDateValue(dateString, 'M j', {
+    treatDateOnlyAsLocalNoon: true,
+  });
 };
 
 /**

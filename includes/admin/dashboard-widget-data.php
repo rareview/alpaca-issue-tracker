@@ -171,6 +171,7 @@ function alpaca_prepare_issue_data( $post ) {
 		'slug'             => $post->post_name,
 		'post_parent'      => $post_parent_id,
 		'post_parent_slug' => $post_parent_slug,
+		'postDateGmt'      => $post->post_date_gmt,
 		'postDate'         => $post->post_date,
 		'deadline'         => $deadline,
 		'assignees'        => $assignees,
