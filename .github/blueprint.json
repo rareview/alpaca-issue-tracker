@@ -1,0 +1,34 @@
+{
+	"$schema": "https://playground.wordpress.net/blueprint-schema.json",
+	"meta": {
+		"title": "Alpaca Playground",
+		"author": "rareview",
+		"description": "Install and activate Alpaca in WordPress Playground, seed a starter issue, and open the Project Board."
+	},
+	"landingPage": "/wp-admin/admin.php?page=project-board",
+	"preferredVersions": {
+		"php": "8.2",
+		"wp": "latest"
+	},
+	"login": true,
+	"steps": [
+		{
+			"step": "installPlugin",
+			"pluginData": {
+				"resource": "git:directory",
+				"url": "https://github.com/rareview/alpaca",
+				"ref": "main",
+				"refType": "branch",
+				"path": "/"
+			},
+			"options": {
+				"activate": true,
+				"targetFolderName": "alpaca"
+			}
+		},
+		{
+			"step": "runPHP",
+			"code": "<?php require '/wordpress/wp-load.php'; require_once WP_PLUGIN_DIR . '/alpaca/.github/playground-setup.php';"
+		}
+	]
+}
