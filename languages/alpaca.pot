@@ -2,7 +2,7 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Alpaca 1.0.0-beta\n"
+"Project-Id-Version: Alpaca 1.0.0-beta.3\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/alpaca\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
