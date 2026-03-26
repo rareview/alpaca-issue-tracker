@@ -53,6 +53,11 @@
     }
   }
 
+  .alpaca-settings-manager-intro {
+    margin: 0 0 16px;
+    color: #50575e;
+  }
+
   #alpaca-settings-internal {
     .components-input-control__container {
       max-width: 25em;
@@ -84,8 +89,6 @@
 
   .alpaca-labels-manager {
     .alpaca-labels-list {
-      margin-top: 1em;
-
       .alpaca-settings-list-row {
         grid-template-columns: minmax(0, 1fr) 112px 32px;
       }

@@ -1,4 +1,5 @@
 const { __ } = wp.i18n;
+const { Tooltip } = wp.components;
 
 /**
  * Filter to add labels to item datapoints.
@@ -17,21 +18,23 @@ export const addLabelsDatapoint = (originalContent, itemProps) => {
   return (
     <>
       {originalContent}
-      <div className="alpaca-item-labels">
-        {labels.map((label) => (
-          <span
-            key={label.term_id || `${label.slug}-${label.name}`}
-            className="alpaca-item-label alpaca-label-pill"
-            style={{
-              backgroundColor: label.color || '#172b4d',
-              color: '#fff',
-            }}
-            title={label.name}
-          >
-            {label.name}
-          </span>
-        ))}
-      </div>
+      <Tooltip text={__('Labels', 'alpaca')}>
+        <div className="alpaca-item-labels">
+          {labels.map((label) => (
+            <span
+              key={label.term_id || `${label.slug}-${label.name}`}
+              className="alpaca-item-label alpaca-label-pill"
+              style={{
+                backgroundColor: label.color || '#172b4d',
+                color: '#fff',
+              }}
+              title={label.name}
+            >
+              {label.name}
+            </span>
+          ))}
+        </div>
+      </Tooltip>
     </>
   );
 };

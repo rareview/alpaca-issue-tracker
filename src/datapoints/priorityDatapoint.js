@@ -1,4 +1,5 @@
 const { __ } = wp.i18n;
+const { Tooltip } = wp.components;
 import PriorityIcon from '../components/icons/PriorityIcon';
 
 /**
@@ -20,9 +21,11 @@ export const addPriorityDatapoint = (originalContent, itemProps) => {
     return (
       <>
         {originalContent}
-        <div className="alpaca-item-priority-badge">
-          <PriorityIcon /> {__('Priority', 'alpaca')}
-        </div>
+        <Tooltip text={__('Priority', 'alpaca')}>
+          <div className="alpaca-item-priority-badge">
+            <PriorityIcon /> {__('Priority', 'alpaca')}
+          </div>
+        </Tooltip>
       </>
     );
   }

@@ -399,7 +399,13 @@ const StatusManager = ({
 
   return (
     <>
-      <h2>{__('Status Manager', 'alpaca')}</h2>
+      <h2 className="screen-reader-text">{__('Status Manager', 'alpaca')}</h2>
+      <p className="alpaca-settings-manager-intro">
+        {__(
+          'Create and organize statuses. Drag rows to control their order across the board.',
+          'alpaca',
+        )}
+      </p>
       <div className="alpaca-status-manager">
         <SettingsList className="status-grid">
           {/* Draggable grid body (native HTML5 drag/drop) */}
@@ -561,6 +567,12 @@ StatusManager.propTypes = {
   isLoading: PropTypes.bool,
   error: PropTypes.string,
   onStatusesChange: PropTypes.func,
+};
+
+StatusManager.defaultProps = {
+  isLoading: false,
+  error: '',
+  onStatusesChange: null,
 };
 
 // StatusRow using grid cell display

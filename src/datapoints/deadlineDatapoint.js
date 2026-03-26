@@ -1,4 +1,5 @@
 const { __ } = wp.i18n;
+const { Tooltip } = wp.components;
 import CalendarIcon from '../components/icons/CalendarIcon';
 import { formatWpDateValue, parseWpDateValue } from '../utils/date';
 
@@ -61,14 +62,16 @@ export const addDeadlineDatapoint = (originalContent, itemProps) => {
     return (
       <>
         {originalContent}
-        <div
-          className="alpaca-item-icon alpaca-item-deadline"
-          data-days-left={diffDays}
-          data-deadline-state={deadlineState}
-        >
-          <CalendarIcon />
-          {deadlineText}
-        </div>
+        <Tooltip text={__('Deadline', 'alpaca')}>
+          <div
+            className="alpaca-item-icon alpaca-item-deadline"
+            data-days-left={diffDays}
+            data-deadline-state={deadlineState}
+          >
+            <CalendarIcon />
+            {deadlineText}
+          </div>
+        </Tooltip>
       </>
     );
   }

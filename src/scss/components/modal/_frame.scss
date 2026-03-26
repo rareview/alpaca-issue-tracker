@@ -113,6 +113,14 @@
     }
   }
 
+  /* Inline code used in modal menus */
+  .alpaca-menu-code {
+    font-family: $code-font !important;
+    font-size: $smallfont;
+    color: $greytext;
+    margin-inline-start: 0.5ch;
+  }
+
   .components-panel {
     margin-bottom: 1rem;
 
