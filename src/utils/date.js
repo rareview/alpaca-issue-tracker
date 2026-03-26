@@ -78,3 +78,40 @@ export const parseWpDateValue = (
 
   return Number.isNaN(fallbackDate.getTime()) ? null : fallbackDate;
 };
+
+/**
+ * Format a date value using the WordPress site timezone.
+ *
+ * @param {string|Date|number|null|undefined} rawValue Raw date value.
+ * @param {string}                            format   WordPress/PHP date format.
+ * @param {Object}                            options  Parse options.
+ * @return {string} Formatted date string or an empty string when invalid.
+ */
+export const formatWpDateValue = (rawValue, format, options = {}) => {
+  const date = parseWpDateValue(rawValue, options);
+  if (!date) {
+    return '';
+  }
+
+  return wp.date.dateI18n(format, date);
+};
+
+/**
+ * Format a date value as a site-timezone day label.
+ *
+ * @param {string|Date|number|null|undefined} rawValue Raw date value.
+ * @param {Object}                            options  Parse options.
+ * @return {string} Day label or an empty string when invalid.
+ */
+export const formatWpDateDayLabel = (rawValue, options = {}) =>
+  formatWpDateValue(rawValue, 'l, F j, Y', options);
+
+/**
+ * Build a site-timezone day key for grouping.
+ *
+ * @param {string|Date|number|null|undefined} rawValue Raw date value.
+ * @param {Object}                            options  Parse options.
+ * @return {string} Day key or an empty string when invalid.
+ */
+export const getWpDateDayKey = (rawValue, options = {}) =>
+  formatWpDateValue(rawValue, 'Y-m-d', options);

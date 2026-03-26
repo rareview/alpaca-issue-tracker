@@ -3,7 +3,7 @@ const { __, sprintf } = wp.i18n;
 import PropTypes from 'prop-types';
 import { highlightTableCells } from '../../utils/syntaxHighlight';
 import { isValidHttpUrl } from '../../utils/sanitize';
-import { parseWpDateValue } from '../../utils/date';
+import { formatWpDateValue, parseWpDateValue } from '../../utils/date';
 
 const datesettings = wp.date.getSettings();
 
@@ -14,11 +14,11 @@ const datesettings = wp.date.getSettings();
  * @return {string} Formatted date and offset label.
  */
 const formatDateTimeWithUtcOffset = (value) => {
-  const formattedDate = wp.date.dateI18n(
-    datesettings.formats.datetimeAbbreviated,
+  const formattedDate = formatWpDateValue(
     value,
+    datesettings.formats.datetimeAbbreviated,
   );
-  let offset = wp.date.dateI18n('P', value);
+  let offset = formatWpDateValue(value, 'P');
 
   if (!offset) {
     return formattedDate;

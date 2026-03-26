@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import { parseWpDateValue } from '../utils/date';
+import { formatWpDateValue, parseWpDateValue } from '../utils/date';
 
 const { useReducer, useEffect, useMemo, memo } = wp.element;
 const { __, sprintf } = wp.i18n;
@@ -34,8 +34,8 @@ const Time = memo(
     if (!dateObj) return null;
 
     const wpFormat = format || wp.date.getSettings().formats.datetime;
-    const formattedAbsolute = wp.date.dateI18n(wpFormat, dateObj);
-    let formattedOffset = wp.date.dateI18n('P', dateObj);
+    const formattedAbsolute = formatWpDateValue(dateObj, wpFormat);
+    let formattedOffset = formatWpDateValue(dateObj, 'P');
     if ('Z' === formattedOffset) {
       formattedOffset = '+00:00';
     }

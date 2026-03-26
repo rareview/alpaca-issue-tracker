@@ -1,5 +1,6 @@
 import { getUser, generateAssigneeSpan } from '../hooks/useUser.js';
 import { fetchIssueCommentCount } from '../services/issueApi.js';
+import { formatWpDateValue } from './date';
 
 /**
  * Handles automatic commenting on issues, such as when an issue is created.
@@ -324,10 +325,10 @@ addAction(
 
     const formatDate = (dateString) => {
       if (!dateString) return '';
-      // The 'Z' is important to ensure the date is treated as UTC.
-      const dateObj = new Date(`${dateString}Z`);
       const format = wp.date.getSettings().formats.date;
-      return wp.date.dateI18n(format, dateObj);
+      return formatWpDateValue(dateString, format, {
+        treatMysqlAsUtc: true,
+      });
     };
 
     switch (changeType) {

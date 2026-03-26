@@ -1,6 +1,6 @@
 const { __ } = wp.i18n;
 import CalendarIcon from '../components/icons/CalendarIcon';
-import { parseWpDateValue } from '../utils/date';
+import { formatWpDateValue, parseWpDateValue } from '../utils/date';
 
 /**
  * Filter to add deadline to item datapoints.
@@ -23,7 +23,7 @@ export const addDeadlineDatapoint = (originalContent, itemProps) => {
   let deadlineFormatted = '';
 
   if (isValidDeadline) {
-    deadlineFormatted = wp.date.dateI18n('M j', deadline);
+    deadlineFormatted = formatWpDateValue(deadline, 'M j');
   }
 
   let diffDays = null;
