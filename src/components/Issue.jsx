@@ -1592,6 +1592,23 @@ const AlpacaIssue = ({
     );
   }, [currentStatus, allStatuses]);
 
+  const nextStatusName = useMemo(() => {
+    if (!allStatuses.length) return '';
+    const current = issueDetails?.taxonomies?.status?.[0];
+    if (!current) return allStatuses[0]?.name || '';
+    const currentIndex = allStatuses.findIndex(
+      (s) => s.term_id === current.term_id,
+    );
+    if (currentIndex === -1) return allStatuses[0]?.name || '';
+    const next = allStatuses[currentIndex + 1];
+    return next?.name || '';
+  }, [issueDetails, allStatuses]);
+
+  const isRTL =
+    typeof document !== 'undefined' &&
+    ((document.documentElement && document.documentElement.dir === 'rtl') ||
+      document.dir === 'rtl');
+
   const statusLabel = isCreating
     ? (() => {
         if (!allStatuses.length) return __('Unknown', 'alpaca');
@@ -1626,14 +1643,48 @@ const AlpacaIssue = ({
               )}
               renderContent={() => (
                 <MenuGroup>
+                  <MenuItem
+                    icon="admin-page"
+                    iconPosition="left"
+                    onClick={() => {
+                      const slug =
+                        issueDetails?.slug ||
+                        issueDetails?.post_data?.post_name ||
+                        '';
+                      if (slug) {
+                        if (
+                          navigator.clipboard &&
+                          navigator.clipboard.writeText
+                        ) {
+                          navigator.clipboard.writeText(slug);
+                        } else {
+                          const ta = document.createElement('textarea');
+                          ta.value = slug;
+                          document.body.appendChild(ta);
+                          ta.select();
+                          document.execCommand('copy');
+                          ta.remove();
+                        }
+                      }
+                    }}
+                  >
+                    {__('Copy Issue ID', 'alpaca')}{' '}
+                    <code className="alpaca-menu-code">
+                      {issueDetails?.slug || issueDetails?.post_data?.post_name}
+                    </code>
+                  </MenuItem>
                   {!isLastStatus && (
                     <MenuItem
-                      icon="arrow-right-alt"
+                      icon={isRTL ? 'arrow-left-alt' : 'arrow-right-alt'}
                       iconPosition="left"
                       onClick={handleProgressIssue}
                       disabled={loadingStates.status}
                     >
-                      {__('Progress Issue', 'alpaca')}
+                      <>
+                        {__('Progress Issue to', 'alpaca')}
+                        {'\u00A0'}
+                        <strong>{nextStatusName}</strong>
+                      </>
                     </MenuItem>
                   )}
                   <MenuItem
