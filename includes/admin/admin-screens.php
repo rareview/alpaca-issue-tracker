@@ -37,7 +37,7 @@ add_action(
 			esc_html__( 'Configure', 'alpaca' ),
 			esc_html__( 'Configure', 'alpaca' ),
 			'manage_options',
-			'settings',
+			'alpaca-settings',
 			'alpaca_settings_page'
 		);
 
@@ -80,6 +80,10 @@ function alpaca_settings_page() {
 	<div class="alpaca-settings wrap">
 	<h1><?php echo esc_html__( 'Configure', 'alpaca' ); ?></h1>
 
+	<div class="notice notice-warning inline">
+		<p><?php echo esc_html__( 'Changes made on this screen will affect all users.', 'alpaca' ); ?></p>
+	</div>
+
 	<div id="alpaca-settings-internal"></div>
 
 	<div id="alpaca-settings-plugin">
@@ -121,6 +125,11 @@ function alpaca_notifications_page() {
 	?>
 	<div class="alpaca-settings wrap alpaca-notifications-admin-page">
 		<h1><?php echo esc_html__( 'My Notifications', 'alpaca' ); ?></h1>
+
+		<div class="notice notice-info inline">
+			<p><?php echo esc_html__( 'Changes made on this screen will only affect the current user.', 'alpaca' ); ?></p>
+		</div>
+
 		<div id="alpaca-notifications-page"></div>
 	</div>
 	<?php
