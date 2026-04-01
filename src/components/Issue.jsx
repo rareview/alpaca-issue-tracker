@@ -175,8 +175,14 @@ const EditableTitle = memo(
         inputRef.current.focus();
 
         window.requestAnimationFrame(() => {
-          const selection = window.getSelection();
-          if (!selection || !inputRef.current) {
+          if (!inputRef.current) {
+            return;
+          }
+
+          const selection =
+            inputRef.current.ownerDocument.defaultView?.getSelection?.();
+
+          if (!selection) {
             return;
           }
 
