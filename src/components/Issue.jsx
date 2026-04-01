@@ -146,6 +146,25 @@ const EditableTitle = memo(
     placeholder,
   }) => {
     const inputRef = useRef(null);
+    const clickPointRef = useRef(null);
+
+    const getCaretRangeFromPoint = useCallback((x, y) => {
+      if (typeof document.caretPositionFromPoint === 'function') {
+        const position = document.caretPositionFromPoint(x, y);
+        if (position) {
+          const range = document.createRange();
+          range.setStart(position.offsetNode, position.offset);
+          range.collapse(true);
+          return range;
+        }
+      }
+
+      if (typeof document.caretRangeFromPoint === 'function') {
+        return document.caretRangeFromPoint(x, y);
+      }
+
+      return null;
+    }, []);
 
     useEffect(() => {
       if (isEditing && inputRef.current) {
@@ -154,9 +173,44 @@ const EditableTitle = memo(
         }
         // Auto-focus the input when entering edit mode
         inputRef.current.focus();
+
+        window.requestAnimationFrame(() => {
+          const selection = window.getSelection();
+          if (!selection || !inputRef.current) {
+            return;
+          }
+
+          let range = null;
+          const clickPoint = clickPointRef.current;
+
+          if (clickPoint) {
+            range = getCaretRangeFromPoint(clickPoint.x, clickPoint.y);
+          }
+
+          if (!range || !inputRef.current.contains(range.startContainer)) {
+            range = document.createRange();
+            range.selectNodeContents(inputRef.current);
+            range.collapse(false);
+          }
+
+          selection.removeAllRanges();
+          selection.addRange(range);
+          clickPointRef.current = null;
+        });
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isEditing]);
+    }, [getCaretRangeFromPoint, isEditing]);
+
+    const handleEditMouseDown = (event) => {
+      if (isEditing || event.button !== 0) {
+        return;
+      }
+
+      clickPointRef.current = {
+        x: event.clientX,
+        y: event.clientY,
+      };
+    };
 
     const handleKeyDown = (e) => {
       if (e.key === 'Enter') {
@@ -178,6 +232,7 @@ const EditableTitle = memo(
         ref={isEditing ? inputRef : undefined}
         role={isEditing ? 'textbox' : 'button'}
         tabIndex={0}
+        onMouseDown={!isEditing ? handleEditMouseDown : undefined}
         onClick={!isEditing ? onEditStart : undefined}
         onKeyDown={
           !isEditing ? (e) => e.key === 'Enter' && onEditStart() : handleKeyDown

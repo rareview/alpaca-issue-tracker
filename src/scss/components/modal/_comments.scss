@@ -59,6 +59,12 @@
       border: 1px solid $greyborder;
       border-radius: $common-radius;
 
+      textarea {
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+      }
+
       .alpaca-user {
         top: -1px; // Needed, not sure why
       }
