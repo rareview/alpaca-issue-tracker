@@ -16,6 +16,8 @@ import PropTypes from 'prop-types';
  * @param {number}   root0.id                - Container ID
  * @param {string}   root0.title             - Container title
  * @param {Array}    root0.items             - Array of items in the container
+ * @param {Object}   root0.activeFilter      - Current board filter payload
+ * @param {Function} root0.itemMatchesFilter - Callback to determine item visibility under filter
  * @param {Function} root0.onItemClick       - Callback when item is clicked
  * @param {Function} root0.onMoveAllToNext   - Callback to move all items to next container
  * @param {Function} root0.onDeleteAll       - Callback to delete all items
@@ -31,6 +33,8 @@ function Container({
   id,
   title,
   items,
+  activeFilter,
+  itemMatchesFilter,
   onItemClick,
   onMoveAllToNext,
   onDeleteAll,
@@ -50,6 +54,14 @@ function Container({
   const [dragOverItem, setDragOverItem] = useState(null);
   const [, forceUpdate] = useState(0);
   const hasItems = items.length > 0;
+  const isFiltering = !!activeFilter && typeof itemMatchesFilter === 'function';
+
+  const visibleItemEntries = items.reduce((accumulator, item, actualIndex) => {
+    if (!isFiltering || itemMatchesFilter(item, activeFilter)) {
+      accumulator.push({ item, actualIndex });
+    }
+    return accumulator;
+  }, []);
 
   const {
     itemRefs,
@@ -312,6 +324,33 @@ function Container({
     return children.length;
   };
 
+  /**
+   * Convert a drop index in filtered visible rows to an absolute index
+   * in the full container list so hidden rows keep their relative order.
+   *
+   * @param {number} visibleDropIndex Drop index among visible rows.
+   * @return {number} Absolute insertion index in the full list.
+   */
+  const getAbsoluteDropIndex = (visibleDropIndex) => {
+    if (!isFiltering) {
+      return visibleDropIndex;
+    }
+
+    if (visibleItemEntries.length < 1) {
+      return items.length;
+    }
+
+    if (visibleDropIndex <= 0) {
+      return visibleItemEntries[0].actualIndex;
+    }
+
+    if (visibleDropIndex >= visibleItemEntries.length) {
+      return visibleItemEntries[visibleItemEntries.length - 1].actualIndex + 1;
+    }
+
+    return visibleItemEntries[visibleDropIndex].actualIndex;
+  };
+
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragOver(false);
@@ -331,7 +370,7 @@ function Container({
     }
 
     const { itemId, sourceContainerId, sourceIndex } = parsed || {};
-    const destIndex = getDropIndex(e);
+    const destIndex = getAbsoluteDropIndex(getDropIndex(e));
 
     // Clear preview state immediately to avoid temporary hiding of the dropped element
     setDragOverIndex(null);
@@ -376,18 +415,32 @@ function Container({
         isBorderless
       >
         {isRenaming ? (
-          <TextControl
-            className="alpaca-container-title-input"
-            value={newTitle}
-            onChange={setNewTitle}
-            onBlur={handleRename}
-            onKeyDown={handleKeyDown}
-            ref={inputRef}
-          />
+          <>
+            <TextControl
+              className="alpaca-container-title-input"
+              value={newTitle}
+              onChange={setNewTitle}
+              onBlur={handleRename}
+              onKeyDown={handleKeyDown}
+              ref={inputRef}
+            />
+            <span className="alpaca-item-count">
+              {isFiltering
+                ? `${visibleItemEntries.length}/${items.length}`
+                : items.length}
+            </span>
+          </>
         ) : (
-          <Heading level={2}>
-            {title} <span className="alpaca-item-count">{items.length}</span>
-          </Heading>
+          <>
+            <Heading level={2}>
+              <span className="alpaca-container-title">{title}</span>
+            </Heading>
+            <span className="alpaca-item-count">
+              {isFiltering
+                ? `${visibleItemEntries.length}/${items.length}`
+                : items.length}
+            </span>
+          </>
         )}
 
         <div className="alpaca-container-controls">
@@ -418,6 +471,7 @@ function Container({
               dragOverItem.sourceContainerId.toString() === id.toString();
 
             let insertAt = items.length;
+            let filteredInsertAt = visibleItemEntries.length;
             if (dragOverItem) {
               let idx = dragOverIndex === null ? items.length : dragOverIndex;
               if (isSourceContainer) {
@@ -429,6 +483,31 @@ function Container({
                 }
               }
               insertAt = Math.max(0, Math.min(items.length, idx));
+
+              if (isFiltering) {
+                let visibleIdx =
+                  dragOverIndex === null
+                    ? visibleItemEntries.length
+                    : dragOverIndex;
+
+                if (isSourceContainer) {
+                  const sourceVisibleIndex = visibleItemEntries.findIndex(
+                    ({ item }) => item.id.toString() === draggingId?.toString(),
+                  );
+
+                  if (
+                    sourceVisibleIndex !== -1 &&
+                    visibleIdx >= sourceVisibleIndex
+                  ) {
+                    visibleIdx += 1;
+                  }
+                }
+
+                filteredInsertAt = Math.max(
+                  0,
+                  Math.min(visibleItemEntries.length, visibleIdx),
+                );
+              }
             }
 
             const renderPreview = () => (
@@ -460,9 +539,15 @@ function Container({
             );
 
             if (!dragOverItem) {
-              const listHasItems = items && items.length > 0;
+              const listHasItems = visibleItemEntries.length > 0;
               if (!listHasItems) {
-                // Check if we are the source container (via global fallback), to ensure we don't assume empty if hidden source exists
+                if (isFiltering) {
+                  return (
+                    <div className="alpaca-item empty">
+                      {__('No cards match the active filter.', 'alpaca')}
+                    </div>
+                  );
+                }
 
                 return (
                   <div className="alpaca-item empty">
@@ -474,7 +559,7 @@ function Container({
               const globalDrag =
                 typeof window !== 'undefined' ? window.__alpacaDragState : null;
 
-              return items.map((item, index) => {
+              return visibleItemEntries.map(({ item, actualIndex }) => {
                 const isGlobalSourceHidden =
                   globalDrag &&
                   globalDrag.itemId &&
@@ -490,7 +575,7 @@ function Container({
                     }`}
                     key={item.id}
                     id={item.id}
-                    index={index}
+                    index={actualIndex}
                     containerId={id}
                     content={item.content}
                     postDate={item.postDate}
@@ -503,6 +588,44 @@ function Container({
                   />
                 );
               });
+            }
+
+            if (isFiltering) {
+              for (let i = 0; i <= visibleItemEntries.length; i++) {
+                if (i === filteredInsertAt) {
+                  renderList.push(renderPreview());
+                }
+
+                if (i < visibleItemEntries.length) {
+                  const { item, actualIndex } = visibleItemEntries[i];
+                  const isSource =
+                    isSourceContainer &&
+                    item.id.toString() === draggingId?.toString();
+
+                  renderList.push(
+                    <DraggableItem
+                      ref={itemRefs.current[item.id]}
+                      className={`alpaca-item ${
+                        isSource ? 'is-source-hidden' : ''
+                      }`}
+                      key={item.id}
+                      id={item.id}
+                      index={actualIndex}
+                      containerId={id}
+                      content={item.content}
+                      postDate={item.postDate}
+                      assignees={item.assignees}
+                      labels={item.labels}
+                      commentCount={item.commentCount}
+                      commentCountByAgent={item.commentCountByAgent}
+                      meta={item.meta}
+                      onClick={onItemClick}
+                    />,
+                  );
+                }
+              }
+
+              return renderList;
             }
 
             // Dragging IS Active Over This Container (Loop and insert)
@@ -563,6 +686,8 @@ Container.propTypes = {
       meta: PropTypes.object,
     }),
   ).isRequired,
+  activeFilter: PropTypes.object,
+  itemMatchesFilter: PropTypes.func,
   onItemClick: PropTypes.func.isRequired,
   onMoveAllToNext: PropTypes.func.isRequired,
   onDeleteAll: PropTypes.func.isRequired,

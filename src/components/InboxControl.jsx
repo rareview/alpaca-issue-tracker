@@ -12,7 +12,7 @@ import TimelineEntry from './comment/TimelineEntry';
 const { useCallback, useEffect, useMemo, useRef, useState, createPortal } =
   wp.element;
 const { __ } = wp.i18n;
-const { Button, Notice, Spinner } = wp.components;
+const { Button, Notice, Spinner, Tooltip } = wp.components;
 const { doAction } = wp.hooks;
 
 const PAGE_SIZE = 20;
@@ -607,26 +607,30 @@ function InboxControl({ selector }) {
     <>
       {createPortal(
         <div className="alpaca-inbox-control">
-          <button
-            type="button"
-            className={`alpaca-inbox-trigger ${isPanelVisible ? 'is-open' : ''}`}
-            onClick={() => {
-              if (isPanelVisible) {
-                closePanel();
-                return;
-              }
+          <Tooltip text={__('Inbox', 'alpaca')}>
+            <button
+              type="button"
+              className={`alpaca-inbox-trigger alpaca-board-control ${isPanelVisible ? 'is-open' : ''}`}
+              onClick={() => {
+                if (isPanelVisible) {
+                  closePanel();
+                  return;
+                }
 
-              openPanel();
-            }}
-            ref={buttonRef}
-            aria-haspopup="dialog"
-            aria-expanded={isPanelVisible}
-            aria-controls="alpaca-inbox-panel"
-          >
-            <span className="dashicons dashicons-bell" aria-hidden="true" />
-            <span className="screen-reader-text">{__('Inbox', 'alpaca')}</span>
-            <UnreadCountBadge count={unreadCount} variant="inbox-trigger" />
-          </button>
+                openPanel();
+              }}
+              ref={buttonRef}
+              aria-haspopup="dialog"
+              aria-expanded={isPanelVisible}
+              aria-controls="alpaca-inbox-panel"
+            >
+              <span className="dashicons dashicons-bell" aria-hidden="true" />
+              <span className="screen-reader-text">
+                {__('Inbox', 'alpaca')}
+              </span>
+              <UnreadCountBadge count={unreadCount} variant="inbox-trigger" />
+            </button>
+          </Tooltip>
         </div>,
         mountNode,
       )}

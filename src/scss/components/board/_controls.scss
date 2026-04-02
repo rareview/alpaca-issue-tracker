@@ -53,4 +53,246 @@
     align-items: center;
     gap: 12px;
   }
+
+  .alpaca-board-filter-control {
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+  }
+
+  /* Idle (before selection) filter trigger should match the inbox square button. */
+  .alpaca-board-filter-control:not(.is-active-filter)
+    .alpaca-filter-control-trigger {
+    width: 44px;
+    height: 40px;
+    border: 1px solid #c3c4c7;
+    border-radius: 6px;
+    background: $bgwhite;
+    color: $greytext;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    gap: 0;
+    transition:
+      border-color 0.16s,
+      box-shadow 0.16s,
+      color 0.16s;
+  }
+
+  .alpaca-board-filter-control:not(.is-active-filter)
+    .alpaca-filter-control-trigger
+    .dashicons {
+    font-size: 20px;
+    line-height: 1;
+  }
+
+  .alpaca-board-filter-control:not(.is-active-filter)
+    .alpaca-filter-control-trigger:hover,
+  .alpaca-board-filter-control:not(.is-active-filter)
+    .alpaca-filter-control-trigger:focus-visible {
+    border-color: #2271b1;
+    color: #0a4b78;
+    box-shadow: 0 0 0 1px #2271b12e;
+  }
+
+  /* Shared board control styling (boxy controls like the inbox trigger). */
+  .alpaca-board-control {
+    background: $bgwhite;
+    border: 1px solid $greyborder;
+    border-radius: 6px;
+    color: $greytext;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    line-height: 1;
+    padding: 4px 8px;
+    min-height: 40px;
+    transition:
+      border-color 0.16s,
+      box-shadow 0.16s,
+      color 0.16s;
+  }
+
+  /* Hover / active visual state shared across board controls (matches inbox). */
+  .alpaca-board-control:hover,
+  .alpaca-board-control:focus-visible,
+  .alpaca-board-control.is-open {
+    border-color: #2271b1;
+    color: #0a4b78;
+    box-shadow: 0 0 0 1px #2271b12e;
+  }
+
+  .alpaca-filter-control-current {
+    align-items: center;
+    display: inline-flex;
+    gap: 6px;
+    max-width: 240px;
+  }
+
+  .alpaca-filter-control-current-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .alpaca-filter-control-current-assignee .alpaca-filter-control-avatar {
+    border: 1px solid $greyborder;
+    border-radius: 50%;
+    height: 18px;
+    width: 18px;
+  }
+
+  .alpaca-filter-control-clear {
+    align-items: center;
+    background: transparent;
+    border: 0;
+    border-radius: 999px;
+    cursor: pointer;
+    display: inline-flex;
+    min-height: 28px;
+    min-width: 28px;
+    padding: 4px;
+    inset-inline-end: 10px;
+    justify-content: center;
+    position: absolute;
+    height: auto;
+    width: auto;
+  }
+
+  .alpaca-filter-control-clear:hover {
+    background: #f0f0f1;
+  }
+
+  /* Place the clear button inline inside the parent's box when the filter is active. */
+  .alpaca-board-filter-control.is-active-filter {
+    background: $bgwhite;
+    border: 1px solid $greyborder;
+    border-radius: 6px;
+    padding: 2px 6px;
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .alpaca-board-filter-control.is-active-filter .alpaca-filter-control-clear {
+    position: relative;
+    inset-inline-end: auto;
+    margin-left: 6px;
+    top: auto;
+    right: auto;
+    z-index: 2;
+  }
+
+  /* Remove inner trigger padding so the parent box is the single bordered container. */
+  .alpaca-board-filter-control.is-active-filter .alpaca-filter-control-trigger {
+    padding: 0;
+    margin: 0;
+    min-width: auto;
+    display: inline-flex;
+    align-items: center;
+    background: transparent;
+    border: 0;
+    gap: 6px;
+  }
+
+  .alpaca-board-filter-control.is-active-filter .alpaca-filter-control-current {
+    margin-inline-start: 4px;
+  }
+
+  .alpaca-board-filter-control.is-active-filter .alpaca-label-pill {
+    margin: 0;
+  }
+
+  .alpaca-filter-control-popover .components-popover__content {
+    padding: 0;
+    width: min(460px, calc(100vw - 32px));
+  }
+
+  /* Small top offset so the search popover aligns with the input. */
+  .alpaca-search-popover {
+    top: 10px !important;
+  }
+
+  .alpaca-filter-control-popover-content {
+    display: grid;
+    gap: 12px;
+    max-height: 360px;
+    overflow-y: auto;
+    padding: 12px;
+  }
+
+  .alpaca-filter-control-section {
+    display: grid;
+    gap: 8px;
+  }
+
+  .alpaca-filter-control-section-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    margin: 0;
+    text-transform: uppercase;
+  }
+
+  /* When active, the parent `.alpaca-board-filter-control.is-active-filter`
+     handles expansion and layout; trigger-level `.is-active-filter` rules
+     were removed as redundant. */
+
+  .alpaca-filter-control-inline-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .alpaca-filter-control-option {
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .alpaca-filter-control-assignee-option .alpaca-user {
+    align-items: center;
+    background: #f6f7f7;
+    border: 1px solid $greyborder;
+    border-radius: 999px;
+    display: inline-flex;
+    gap: 6px;
+    padding-block: 2px;
+    padding-inline: 7px 9px;
+  }
+
+  .alpaca-filter-control-assignee-option .alpaca-user-avatar img {
+    border: 1px solid $greyborder;
+    border-radius: 50%;
+    display: block;
+    height: 18px;
+    width: 18px;
+  }
+
+  .alpaca-filter-control-assignee-option .alpaca-user-name {
+    display: block;
+    font-size: 12px;
+    line-height: 1.2;
+    white-space: nowrap;
+  }
+
+  .alpaca-filter-control-option .alpaca-label-pill {
+    align-items: center;
+    border-radius: 999px;
+    display: inline-flex;
+    font-size: 12px;
+    min-height: 24px;
+    padding-block: 3px;
+    padding-inline: 9px;
+  }
+
+  .alpaca-filter-control-empty {
+    color: $greytext;
+    margin: 0;
+  }
 }

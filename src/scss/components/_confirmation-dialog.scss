@@ -97,6 +97,10 @@
     box-shadow 160ms ease,
     color 160ms ease;
 
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
   .dashicons {
     font-size: 20px;
     line-height: 1;
