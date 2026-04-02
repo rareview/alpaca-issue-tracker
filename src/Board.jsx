@@ -794,6 +794,7 @@ export function AlpacaBoard() {
       method: 'DELETE',
     })
       .then(() => {
+        wp.hooks.doAction('alpaca.issueDeletedAudit', issueId);
         wp.hooks.doAction('alpaca.issueDeleted', issueId);
       })
       .catch((err) => {

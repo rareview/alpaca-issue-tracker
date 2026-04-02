@@ -570,3 +570,51 @@ addAction(
     });
   },
 );
+
+addAction(
+  'alpaca.issueDeletedAudit',
+  'alpaca/addIssueDeletedAuditComment',
+  async (issueId) => {
+    if (!issueId) {
+      return;
+    }
+
+    const currentUser = await getUser();
+    const actionClass = ['issue-deleted'];
+    const commentContent = `${__('Issue **deleted** by', 'alpaca')} ${generateAssigneeSpan(
+      currentUser,
+    )}`;
+
+    await postComment(issueId, commentContent, actionClass, {
+      meta: {
+        alpacaNotificationContext: buildNotificationContext({
+          action: 'delete',
+        }),
+      },
+    });
+  },
+);
+
+addAction(
+  'alpaca.issueRestoredAudit',
+  'alpaca/addIssueRestoredAuditComment',
+  async (issueId) => {
+    if (!issueId) {
+      return;
+    }
+
+    const currentUser = await getUser();
+    const actionClass = ['issue-restored'];
+    const commentContent = `${__('Issue **restored** by', 'alpaca')} ${generateAssigneeSpan(
+      currentUser,
+    )}`;
+
+    await postComment(issueId, commentContent, actionClass, {
+      meta: {
+        alpacaNotificationContext: buildNotificationContext({
+          action: 'restore',
+        }),
+      },
+    });
+  },
+);
