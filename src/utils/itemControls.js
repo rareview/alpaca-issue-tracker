@@ -3,9 +3,9 @@ import StarControl from '../components/StarControl';
 /**
  * Add the default watchlist star control to item controls.
  *
- * @param {Array<JSX.Element>} controls  Existing controls from the hook chain.
- * @param {Object}             itemProps Item props and control state.
- * @return {Array<JSX.Element>} Updated controls list.
+ * @param {Array}  controls  Existing controls from the hook chain.
+ * @param {Object} itemProps Item props and control state.
+ * @return {Array} Updated controls list.
  */
 export const addWatchlistStarControl = (controls, itemProps) => {
   if (typeof itemProps?.onWatchToggle !== 'function') {
@@ -15,15 +15,20 @@ export const addWatchlistStarControl = (controls, itemProps) => {
   const nextControls = Array.isArray(controls) ? [...controls] : [];
   const isWatched = itemProps?.watched === true;
 
-  nextControls.push(
-    <StarControl
-      key="watchlist-star-control"
-      watched={isWatched}
-      data-active={isWatched ? '1' : undefined}
-      onToggle={itemProps.onWatchToggle}
-      disabled={Boolean(itemProps?.loading)}
-    />,
-  );
+  nextControls.push({
+    key: 'watchlist-star-control',
+    isActive: isWatched,
+    isReady: itemProps?.loading !== true,
+    element: (
+      <StarControl
+        key="watchlist-star-control"
+        watched={isWatched}
+        data-active={isWatched ? '1' : undefined}
+        onToggle={itemProps.onWatchToggle}
+        disabled={Boolean(itemProps?.loading)}
+      />
+    ),
+  });
 
   return nextControls;
 };
