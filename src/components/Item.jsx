@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 const { Card, CardBody, CardFooter } = wp.components;
 const { Text = wp.components.__experimentalText } = wp.components;
 import { useWatchlist } from '../context/WatchlistContext';
-import StarControl from './StarControl';
+import '../utils/itemControls';
 import '../utils/itemDatapoints';
 
 /**
@@ -73,6 +73,30 @@ const Item = forwardRef(
       toggleWatch(id);
     };
 
+    // Allow third-party code to add controls via `alpaca.item.controls`.
+    // Filters should return an array of renderable elements.
+    const filteredItemControls = wp.hooks.applyFilters(
+      'alpaca.item.controls',
+      [],
+      {
+        id,
+        content,
+        meta,
+        postDate,
+        assignees,
+        labels,
+        commentCount,
+        commentCountByAgent,
+        watched,
+        loading,
+        onWatchToggle: handleWatchToggle,
+      },
+    );
+
+    const itemControls = Array.isArray(filteredItemControls)
+      ? filteredItemControls
+      : [];
+
     return (
       // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
       <Card
@@ -88,13 +112,7 @@ const Item = forwardRef(
             <div className="alpaca-item-content">
               <Text>{content}</Text>
             </div>
-            <div className="alpaca-item-controls">
-              <StarControl
-                watched={watched}
-                onToggle={handleWatchToggle}
-                disabled={loading}
-              />
-            </div>
+            <div className="alpaca-item-controls">{itemControls}</div>
           </div>
         </CardBody>
         <CardFooter size="xSmall" isBorderless>
