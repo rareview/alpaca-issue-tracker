@@ -62,25 +62,7 @@
 
   /* Idle (before selection) filter trigger should match the inbox square button. */
   .alpaca-board-filter-control:not(.is-active-filter)
-    .alpaca-filter-control-trigger {
-    width: 44px;
-    height: 40px;
-    border: 1px solid #c3c4c7;
-    border-radius: 6px;
-    background: $bgwhite;
-    color: $greytext;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    gap: 0;
-    transition:
-      border-color 0.16s,
-      box-shadow 0.16s,
-      color 0.16s;
-  }
-
-  .alpaca-board-filter-control:not(.is-active-filter)
+    .alpaca-board-filter-control:not(.is-active-filter)
     .alpaca-filter-control-trigger
     .dashicons {
     font-size: 20px;

@@ -188,7 +188,7 @@ function BoardFilterControl({
       <Tooltip text={__('Filter', 'alpaca')}>
         <button
           type="button"
-          className={`alpaca-filter-control-trigger ${isOpen ? 'is-open' : ''}`}
+          className={`alpaca-filter-control-trigger alpaca-board-control ${isOpen ? 'is-open' : ''}`}
           onClick={() => setIsOpen((previous) => !previous)}
           ref={triggerRef}
           aria-expanded={isOpen}
@@ -199,9 +199,7 @@ function BoardFilterControl({
           ) : (
             <>
               <span className="dashicons dashicons-filter" aria-hidden="true" />
-              <span className="screen-reader-text">
-                {__('Filter', 'alpaca')}
-              </span>
+              {__('Filter', 'alpaca')}
             </>
           )}
         </button>

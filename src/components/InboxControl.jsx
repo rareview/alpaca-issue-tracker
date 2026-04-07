@@ -625,9 +625,7 @@ function InboxControl({ selector }) {
               aria-controls="alpaca-inbox-panel"
             >
               <span className="dashicons dashicons-bell" aria-hidden="true" />
-              <span className="screen-reader-text">
-                {__('Inbox', 'alpaca')}
-              </span>
+              {__('Inbox', 'alpaca')}
               <UnreadCountBadge count={unreadCount} variant="inbox-trigger" />
             </button>
           </Tooltip>
