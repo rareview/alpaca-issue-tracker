@@ -198,6 +198,33 @@ function Container({
     });
   }
 
+  // Allow third-party code to customize container menu controls.
+  const filteredMenuControls = wp.hooks.applyFilters(
+    'alpaca.container.menuControls',
+    menuControls,
+    {
+      id,
+      title,
+      items,
+      hasItems,
+      isLastContainer,
+      isHidden,
+      onMoveAllToNext,
+      onDeleteAll,
+      onToggleHidden,
+      onRename,
+      onBulkItemReorder,
+      startAnimation,
+      stopAnimation,
+      waitForTransitions,
+      isAnimatingRef,
+    },
+  );
+
+  const containerMenuControls = Array.isArray(filteredMenuControls)
+    ? filteredMenuControls
+    : menuControls;
+
   const handleDragOver = (e) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
@@ -394,7 +421,7 @@ function Container({
           <DropdownMenu
             icon="menu"
             label={__('Options', 'alpaca')}
-            controls={menuControls}
+            controls={containerMenuControls}
           />
         </div>
       </CardHeader>

@@ -1,6 +1,6 @@
 const { forwardRef } = wp.element;
 import PropTypes from 'prop-types';
-const { Card, CardBody, CardFooter } = wp.components;
+const { Card, CardBody } = wp.components;
 const { Text = wp.components.__experimentalText } = wp.components;
 import { useWatchlist } from '../context/WatchlistContext';
 import '../utils/itemControls';
@@ -97,6 +97,16 @@ const Item = forwardRef(
       ? filteredItemControls
       : [];
 
+    // Sort controls so active ones (marked with data-active="1") appear first.
+    const sortedItemControls = itemControls.slice().sort((a, b) => {
+      const aActive = Boolean(a && a.props && a.props['data-active'] === '1');
+      const bActive = Boolean(b && b.props && b.props['data-active'] === '1');
+
+      // Active controls should come before inactive.
+      if (aActive === bActive) return 0;
+      return aActive ? -1 : 1;
+    });
+
     return (
       // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
       <Card
@@ -108,28 +118,28 @@ const Item = forwardRef(
         onClick={onClick}
       >
         <CardBody size="xSmall">
-          <div className="alpaca-item-upper">
-            <div className="alpaca-item-content">
-              <Text>{content}</Text>
+          <div className="alpaca-item-layout">
+            <div className="alpaca-item-main">
+              <div className="alpaca-item-content">
+                <Text>{content}</Text>
+              </div>
+              <div className="alpaca-item-datapoints flexalign">
+                {wp.hooks.applyFilters('alpaca.item.datapoints', null, {
+                  id,
+                  title: content,
+                  content,
+                  meta,
+                  postDate,
+                  assignees,
+                  labels,
+                  commentCount,
+                  commentCountByAgent,
+                })}
+              </div>
             </div>
-            <div className="alpaca-item-controls">{itemControls}</div>
+            <div className="alpaca-item-controls">{sortedItemControls}</div>
           </div>
         </CardBody>
-        <CardFooter size="xSmall" isBorderless>
-          <div className="alpaca-item-datapoints flexalign">
-            {wp.hooks.applyFilters('alpaca.item.datapoints', null, {
-              id,
-              title: content,
-              content,
-              meta,
-              postDate,
-              assignees,
-              labels,
-              commentCount,
-              commentCountByAgent,
-            })}
-          </div>
-        </CardFooter>
       </Card>
     );
   },

@@ -13,11 +13,13 @@ export const addWatchlistStarControl = (controls, itemProps) => {
   }
 
   const nextControls = Array.isArray(controls) ? [...controls] : [];
+  const isWatched = itemProps?.watched === true;
 
   nextControls.push(
     <StarControl
       key="watchlist-star-control"
-      watched={Boolean(itemProps?.watched)}
+      watched={isWatched}
+      data-active={isWatched ? '1' : undefined}
       onToggle={itemProps.onWatchToggle}
       disabled={Boolean(itemProps?.loading)}
     />,
