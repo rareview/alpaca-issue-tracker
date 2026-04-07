@@ -126,19 +126,23 @@ const Item = forwardRef(
 
     // Allow third-party code to add controls via `alpaca.item.controls`.
     // Filters may return either renderable elements or descriptor objects.
-    const filteredItemControls = wp.hooks.applyFilters('alpaca.item.controls', [], {
-      id,
-      content,
-      meta,
-      postDate,
-      assignees,
-      labels,
-      commentCount,
-      commentCountByAgent,
-      watched,
-      loading,
-      onWatchToggle: handleWatchToggle,
-    });
+    const filteredItemControls = wp.hooks.applyFilters(
+      'alpaca.item.controls',
+      [],
+      {
+        id,
+        content,
+        meta,
+        postDate,
+        assignees,
+        labels,
+        commentCount,
+        commentCountByAgent,
+        watched,
+        loading,
+        onWatchToggle: handleWatchToggle,
+      },
+    );
 
     const normalizedItemControls = (
       Array.isArray(filteredItemControls) ? filteredItemControls : []
