@@ -1,4 +1,5 @@
 const { decodeEntities } = wp.htmlEntities;
+import { buildBoardOrderPayload } from './boardFiltering';
 
 /**
  * Transform server data into array format for board state.
@@ -26,25 +27,13 @@ const transformDataForBoard = (data) => {
 };
 
 /**
- * Save board order in DOM order, including container IDs & titles.
+ * Save board order using the full container state.
+ *
+ * @param {Array} containers Current board container state.
+ * @return {void}
  */
-const saveBoardOrder = () => {
-  const containersInDomOrder = document.querySelectorAll('.alpaca-container');
-
-  const data = Array.from(containersInDomOrder).map((containerEl) => {
-    const id = parseInt(containerEl.dataset.id, 10);
-    const title = containerEl.querySelector('h2').textContent.trim();
-    // Select all items except for the empty placeholder.
-    const items = containerEl.querySelectorAll('.alpaca-item:not(.empty)');
-
-    return {
-      id,
-      title,
-      issues: Array.from(items).map((itemEl) =>
-        parseInt(itemEl.dataset.id, 10),
-      ),
-    };
-  });
+const saveBoardOrder = (containers) => {
+  const data = buildBoardOrderPayload(containers);
 
   // Use wp.apiFetch to send data to the REST API endpoint.
   // It automatically handles nonces for authenticated requests.

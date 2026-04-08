@@ -11,6 +11,7 @@ import BoardControls from './components/BoardControls';
 
 import { setCookie, getCookie } from './utils/cookies';
 import { transformDataForBoard, saveBoardOrder } from './utils/data';
+import { reorderItemsWithinFilteredSlots } from './utils/boardFiltering';
 import { getUser } from './hooks/useUser';
 import { dispatchStatusChangedAction } from './utils/statusChange';
 
@@ -964,7 +965,7 @@ export function AlpacaBoard() {
 
   useEffect(() => {
     if (needsSave) {
-      saveBoardOrder();
+      saveBoardOrder(containers);
       setNeedsSave(false);
     }
   }, [needsSave, containers]);
@@ -1136,6 +1137,7 @@ export function AlpacaBoard() {
       sourceIndex,
       destinationContainerId,
       destinationIndex,
+      destinationVisibleIndex,
     } = data;
 
     if (!destinationContainerId) return;
@@ -1157,11 +1159,24 @@ export function AlpacaBoard() {
           return prev;
         }
 
-        const [reorderedItem] = items.splice(sourceIndex, 1);
-        items.splice(destinationIndex, 0, reorderedItem);
+        const reorderedItems =
+          activeBoardFilter && typeof destinationVisibleIndex === 'number'
+            ? reorderItemsWithinFilteredSlots({
+                items,
+                sourceIndex,
+                destinationVisibleIndex,
+                activeFilter: activeBoardFilter,
+                itemMatchesFilter: itemMatchesBoardFilter,
+              })
+            : (() => {
+                const itemsCopy = Array.from(items);
+                const [reorderedItem] = itemsCopy.splice(sourceIndex, 1);
+                itemsCopy.splice(destinationIndex, 0, reorderedItem);
+                return itemsCopy;
+              })();
 
         return prev.map((c) =>
-          c.id === sourceContainerId ? { ...c, items } : c,
+          c.id === sourceContainerId ? { ...c, items: reorderedItems } : c,
         );
       });
     } else {

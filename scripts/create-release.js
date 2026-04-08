@@ -10,34 +10,22 @@ const versionFiles = [
   {
     path: 'alpaca.php',
     replace: (content, version) =>
-      content.replace(
-        /^(\s*\*\s+Version:\s+).+$/m,
-        `$1${version}`,
-      ),
+      content.replace(/^(\s*\*\s+Version:\s+).+$/m, `$1${version}`),
   },
   {
     path: 'includes/class-helpers.php',
     replace: (content, version) =>
-      content.replace(
-        /(return\s+')([^']+)(';)/,
-        `$1${version}$3`,
-      ),
+      content.replace(/(return\s+')([^']+)(';)/, `$1${version}$3`),
   },
   {
     path: 'includes/class-alpaca.php',
     replace: (content, version) =>
-      content.replace(
-        /(const VERSION = ')([^']+)(';)/,
-        `$1${version}$3`,
-      ),
+      content.replace(/(const VERSION = ')([^']+)(';)/, `$1${version}$3`),
   },
   {
     path: 'readme.txt',
     replace: (content, version) =>
-      content.replace(
-        /^(Stable tag:\s+).+$/m,
-        `$1${version}`,
-      ),
+      content.replace(/^(Stable tag:\s+).+$/m, `$1${version}`),
   },
   {
     path: 'languages/alpaca.pot',
@@ -142,7 +130,9 @@ function run(command, args, options = {}) {
   if (result.status !== 0) {
     const stderr = result.stderr ? result.stderr.trim() : '';
     const stdout = result.stdout ? result.stdout.trim() : '';
-    throw new Error(stderr || stdout || `${command} exited with ${result.status}`);
+    throw new Error(
+      stderr || stdout || `${command} exited with ${result.status}`,
+    );
   }
 
   return result.stdout ? result.stdout.trim() : '';
@@ -265,11 +255,9 @@ function createRelease(version, notesFile) {
  */
 function commitAndPush(version, changedFiles) {
   run('git', ['add', ...changedFiles], { stdio: 'inherit' });
-  run(
-    'git',
-    ['commit', '-m', `chore(release): release ${version}`],
-    { stdio: 'inherit' },
-  );
+  run('git', ['commit', '-m', `chore(release): release ${version}`], {
+    stdio: 'inherit',
+  });
   run('git', ['push', 'origin', 'HEAD'], { stdio: 'inherit' });
 }
 

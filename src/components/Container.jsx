@@ -6,6 +6,10 @@ const { useState, useEffect, useRef } = wp.element;
 
 import DraggableItem from './DraggableItem';
 import useFlipListAnimation from '../hooks/useFlipListAnimation';
+import {
+  getAbsoluteDropIndexForFilteredContainer,
+  shouldDisableBulkContainerActions,
+} from '../utils/boardFiltering';
 
 import PropTypes from 'prop-types';
 
@@ -55,6 +59,10 @@ function Container({
   const [, forceUpdate] = useState(0);
   const hasItems = items.length > 0;
   const isFiltering = !!activeFilter && typeof itemMatchesFilter === 'function';
+  const areBulkActionsDisabled = shouldDisableBulkContainerActions({
+    hasItems,
+    isFiltering,
+  });
 
   const visibleItemEntries = items.reduce((accumulator, item, actualIndex) => {
     if (!isFiltering || itemMatchesFilter(item, activeFilter)) {
@@ -132,6 +140,7 @@ function Container({
     {
       icon: 'arrow-up-alt',
       title: __('Lift Priority Items', 'alpaca'),
+      isDisabled: areBulkActionsDisabled,
       onClick: () => {
         if (!onBulkItemReorder) {
           return;
@@ -198,7 +207,7 @@ function Container({
       ),
       title: __('Move All To Next Column', 'alpaca'),
       onClick: () => onMoveAllToNext(id),
-      disabled: !hasItems,
+      isDisabled: areBulkActionsDisabled,
     });
   }
 
@@ -206,6 +215,7 @@ function Container({
     menuControls.push({
       icon: 'trash',
       title: __('Delete All', 'alpaca'),
+      isDisabled: areBulkActionsDisabled,
       onClick: () => onDeleteAll(id),
     });
   }
@@ -332,23 +342,12 @@ function Container({
    * @return {number} Absolute insertion index in the full list.
    */
   const getAbsoluteDropIndex = (visibleDropIndex) => {
-    if (!isFiltering) {
-      return visibleDropIndex;
-    }
-
-    if (visibleItemEntries.length < 1) {
-      return items.length;
-    }
-
-    if (visibleDropIndex <= 0) {
-      return visibleItemEntries[0].actualIndex;
-    }
-
-    if (visibleDropIndex >= visibleItemEntries.length) {
-      return visibleItemEntries[visibleItemEntries.length - 1].actualIndex + 1;
-    }
-
-    return visibleItemEntries[visibleDropIndex].actualIndex;
+    return getAbsoluteDropIndexForFilteredContainer({
+      visibleDropIndex,
+      visibleItemEntries,
+      itemsLength: items.length,
+      isFiltering,
+    });
   };
 
   const handleDrop = (e) => {
@@ -383,6 +382,7 @@ function Container({
         sourceIndex,
         destinationContainerId: id,
         destinationIndex: destIndex,
+        destinationVisibleIndex: getDropIndex(e),
       });
     }
     // Now that we've consumed the payload, clear the global drag state so
