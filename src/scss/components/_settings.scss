@@ -60,6 +60,7 @@
 
   #alpaca-settings-internal {
     .components-input-control__container {
+      width: 25em;
       max-width: 25em;
     }
 
@@ -176,6 +177,88 @@
       .components-base-control {
         margin-bottom: 0;
       }
+    }
+  }
+
+  .alpaca-restore-manager {
+    .alpaca-restore-search {
+      margin: 0 0 16px;
+    }
+
+    .alpaca-restore-search-controls {
+      align-items: stretch;
+      display: inline-flex;
+      flex-wrap: nowrap;
+      gap: 8px;
+      justify-content: flex-start !important;
+      max-width: 100%;
+      width: fit-content;
+
+      .components-base-control {
+        margin-bottom: 0;
+      }
+
+      .components-input-control__container {
+        inline-size: min(640px, 100%);
+      }
+
+      .components-button {
+        flex: 0 0 auto;
+        margin: 0;
+        margin-inline-start: 0 !important;
+      }
+    }
+
+    .alpaca-restore-table-wrap {
+      max-width: 100%;
+      overflow-x: auto;
+    }
+
+    .alpaca-restore-table {
+      min-width: 860px;
+
+      td,
+      th {
+        vertical-align: middle;
+      }
+    }
+
+    .alpaca-restore-labels {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .alpaca-restore-muted {
+      color: $greytext;
+    }
+
+    .alpaca-restore-empty-cell {
+      color: $greytext;
+      text-align: center;
+    }
+
+    .alpaca-restore-summary {
+      margin-block-start: 0;
+    }
+
+    .alpaca-restore-pagination {
+      align-items: center;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: space-between;
+      margin-block-start: 16px;
+    }
+
+    .alpaca-restore-pagination-summary {
+      color: $greytext;
+    }
+
+    .alpaca-restore-pagination-actions {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 8px;
     }
   }
 }

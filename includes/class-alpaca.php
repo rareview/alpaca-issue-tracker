@@ -154,6 +154,9 @@ final class Alpaca {
 
 		// Update last activity on deleted issue comments.
 		\add_action( 'deleted_comment', array( $this, 'update_last_activity_on_deleted_comment' ), 20, 2 );
+
+		// Restore issue comment approval statuses when an issue leaves trash.
+		\add_action( 'transition_post_status', array( $this, 'restore_issue_comments_on_untrash' ), 20, 3 );
 	}
 
 	/**
@@ -242,6 +245,32 @@ final class Alpaca {
 
 		if ( function_exists( 'alpaca_update_last_activity_from_issuecomments' ) ) {
 			alpaca_update_last_activity_from_issuecomments( $issue_id );
+		}
+	}
+
+	/**
+	 * Restore issue comment approval statuses when an issue is restored.
+	 *
+	 * @param string   $new_status New post status.
+	 * @param string   $old_status Previous post status.
+	 * @param \WP_Post $post      Post object.
+	 * @return void
+	 */
+	public function restore_issue_comments_on_untrash( $new_status, $old_status, $post ) {
+		if ( ! ( $post instanceof \WP_Post ) ) {
+			return;
+		}
+
+		if ( 'alpaca_issue' !== (string) $post->post_type ) {
+			return;
+		}
+
+		if ( 'trash' !== (string) $old_status || 'trash' === (string) $new_status ) {
+			return;
+		}
+
+		if ( function_exists( 'alpaca_restore_issuecomment_approval_statuses' ) ) {
+			alpaca_restore_issuecomment_approval_statuses( (int) $post->ID );
 		}
 	}
 
