@@ -1,6 +1,7 @@
 import StatusManager from './components/StatusManager';
 import EnableTestLogsControl from './components/EnableTestLogsControl';
 import LabelsManager from './components/LabelsManager';
+import RestoreManager from './components/RestoreManager';
 import ItemDatapointsManager from './components/ItemDatapointsManager';
 const { useState, useEffect, useCallback, useMemo } = wp.element;
 const { __ } = wp.i18n;
@@ -54,6 +55,11 @@ const SETTINGS_BASE_TABS = [
     name: 'labels',
     title: __('Labels', 'alpaca'),
     className: 'alpaca-settings-tab--labels',
+  },
+  {
+    name: 'deleted-items',
+    title: __('Deleted Items', 'alpaca'),
+    className: 'alpaca-settings-tab--deleted-items',
   },
 ];
 
@@ -225,6 +231,14 @@ const AlpacaSettings = () => {
 
           if ('labels' === tab.name) {
             return renderLabelsTab();
+          }
+
+          if ('deleted-items' === tab.name) {
+            return (
+              <div className="alpaca-settings-tab-content">
+                <RestoreManager />
+              </div>
+            );
           }
 
           if ('item-datapoints' === tab.name) {

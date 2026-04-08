@@ -119,6 +119,22 @@
       }
     }
 
+    &.issue-deleted,
+    &.issue-restored {
+      .alpaca-timeline-icon::before {
+        align-items: center;
+        background-color: transparent;
+        color: $greytext;
+        content: '\f182';
+        display: flex;
+        font-family: dashicons;
+        font-size: 14px;
+        justify-content: center;
+        line-height: 1;
+        mask-image: none;
+      }
+    }
+
     &.subissue-promoted {
       .alpaca-timeline-icon::before {
         mask-image: url('../components/icons/svg/box-arrow-up-right.svg');
