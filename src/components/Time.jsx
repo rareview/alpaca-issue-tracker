@@ -89,24 +89,12 @@ const Time = memo(
         } else {
           const absoluteValueForUnit = Math.abs(valueForUnit);
 
-          try {
-            relative = new Intl.NumberFormat(locale, {
-              style: 'unit',
-              unit,
-              unitDisplay: relativeUnitDisplay,
-              maximumFractionDigits: 0,
-            }).format(absoluteValueForUnit);
-          } catch (error) {
-            const fallbackUnitLabels = {
-              year: 'y',
-              month: 'mo',
-              week: 'w',
-              day: 'd',
-              hour: 'h',
-              minute: 'm',
-            };
-            relative = `${absoluteValueForUnit}${fallbackUnitLabels[unit] || unit}`;
-          }
+          relative = new Intl.NumberFormat(locale, {
+            style: 'unit',
+            unit,
+            unitDisplay: relativeUnitDisplay,
+            maximumFractionDigits: 0,
+          }).format(absoluteValueForUnit);
         }
       }
 
