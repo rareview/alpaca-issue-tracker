@@ -19,8 +19,10 @@
 
     .alpaca-container-header {
       display: grid;
-      grid-template-columns: 1fr 40px;
+      /* Reserve columns: title, item-count, controls */
+      grid-template-columns: auto 1fr 40px;
       align-items: center;
+      gap: 0;
 
       h2,
       .alpaca-container-title-input input {
@@ -30,6 +32,12 @@
         padding: 0;
         border: none;
         background: transparent;
+
+        /* Prevent the column title from wrapping; allow truncation with ellipsis. */
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
 
         &:focus {
           outline: none;
@@ -43,10 +51,16 @@
       }
 
       .alpaca-item-count {
-        font-size: smaller;
-        font-weight: 200;
-        margin: 0.5rem;
-        opacity: 0.5;
+        /* Place count in its own column and avoid wrapping. */
+        grid-column: 2;
+        display: inline-flex;
+        align-items: center;
+        margin: 0 6px 0 4px;
+        padding: 2px 4px 0 4px;
+        font-size: 0.95em;
+        font-weight: 400;
+        opacity: 0.6;
+        white-space: nowrap;
       }
 
       .alpaca-container-controls {
