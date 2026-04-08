@@ -1,5 +1,12 @@
+import { formatWpDateValue } from '../utils/date';
+import {
+  DEFAULT_RESTORE_PAGE_SIZE,
+  buildRestoreIssuesPath,
+  getRestorePaginationInfo,
+} from '../utils/restorePagination';
+
 const { useState, useCallback, useEffect, useMemo } = wp.element;
-const { __ } = wp.i18n;
+const { __, _n, sprintf } = wp.i18n;
 const { decodeEntities } = wp.htmlEntities;
 const { SearchControl, Button, Notice, Spinner } = wp.components;
 const { doAction } = wp.hooks;
@@ -88,19 +95,28 @@ const getIssueTitle = (issue) => {
 /**
  * Format a date value for display.
  *
- * @param {string} dateValue Date string.
+ * @param {string}  dateValue Date string.
+ * @param {boolean} isGmt     Whether the value should be treated as GMT.
  * @return {string} Formatted value.
  */
-const formatDate = (dateValue) => {
+const formatDate = (dateValue, isGmt = false) => {
   if (!dateValue) {
     return __('-', 'alpaca');
   }
 
-  try {
-    return new Date(dateValue).toLocaleString();
-  } catch (error) {
-    return String(dateValue);
+  const formattedValue = formatWpDateValue(
+    dateValue,
+    wp.date.getSettings().formats.datetime,
+    {
+      treatMysqlAsUtc: isGmt,
+    },
+  );
+
+  if (formattedValue) {
+    return formattedValue;
   }
+
+  return String(dateValue);
 };
 
 /**
@@ -112,10 +128,12 @@ const RestoreManager = () => {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [hasSearched, setHasSearched] = useState(false);
   const [error, setError] = useState('');
   const [restoringIds, setRestoringIds] = useState([]);
   const [availableLabels, setAvailableLabels] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
 
   useEffect(() => {
     wp.apiFetch({ path: '/alpaca/v1/labels' })
@@ -239,40 +257,39 @@ const RestoreManager = () => {
   );
 
   /**
-   * Handle submitted trash search.
+   * Fetch trashed issues for the current query.
    *
-   * @param {Event} event Submit event.
+   * @param {string} submittedQuery Search term to apply.
+   * @param {number} page           Page number.
    * @return {Promise<void>} Promise.
    */
-  const handleSearch = useCallback(
-    async (event) => {
-      if (event && event.preventDefault) {
-        event.preventDefault();
-      }
-
-      const submittedQuery = (query || '').trim();
-      setHasSearched(true);
+  const loadIssues = useCallback(
+    async (submittedQuery = '', page = 1) => {
+      const trimmedQuery = (submittedQuery || '').trim();
+      const normalizedPage = Math.max(1, parseInt(page, 10) || 1);
       setError('');
       setIsSearching(true);
 
       try {
-        if (!submittedQuery) {
-          setResults([]);
-          return;
-        }
-
-        const fields =
-          'id,title,content,post_title,post_content,date,date_gmt,meta,alpaca_label';
-        const issuesPath = `/wp/v2/alpaca_issue?status=trash&context=edit&search=${encodeURIComponent(
-          submittedQuery,
-        )}&per_page=20&_fields=${fields}`;
-
-        const issues = await wp.apiFetch({ path: issuesPath });
+        const response = await wp.apiFetch({
+          path: buildRestoreIssuesPath({
+            query: trimmedQuery,
+            page: normalizedPage,
+            perPage: DEFAULT_RESTORE_PAGE_SIZE,
+          }),
+          parse: false,
+        });
+        const issues = await response.json();
         const normalizedIssues = Array.isArray(issues) ? issues : [];
+        const paginationInfo = getRestorePaginationInfo(
+          response,
+          DEFAULT_RESTORE_PAGE_SIZE,
+        );
 
         const nextResults = await Promise.all(
           normalizedIssues.map(async (issue) => {
             let lastActionDate = '';
+            let lastActionDateIsGmt = false;
             let detailTitle = '';
             let detailLastActivity = '';
 
@@ -307,6 +324,7 @@ const RestoreManager = () => {
 
             if (detailLastActivity) {
               lastActionDate = detailLastActivity;
+              lastActionDateIsGmt = true;
             }
 
             if (!lastActionDate) {
@@ -324,9 +342,11 @@ const RestoreManager = () => {
                   countResponse.last_activity.trim() !== ''
                 ) {
                   lastActionDate = countResponse.last_activity;
+                  lastActionDateIsGmt = true;
                 }
               } catch (countError) {
                 lastActionDate = '';
+                lastActionDateIsGmt = false;
               }
             }
 
@@ -341,11 +361,20 @@ const RestoreManager = () => {
                   : null;
 
                 if (latestComment) {
-                  lastActionDate =
-                    latestComment.date_gmt || latestComment.date || '';
+                  if (
+                    typeof latestComment.date_gmt === 'string' &&
+                    latestComment.date_gmt
+                  ) {
+                    lastActionDate = latestComment.date_gmt;
+                    lastActionDateIsGmt = true;
+                  } else {
+                    lastActionDate = latestComment.date || '';
+                    lastActionDateIsGmt = false;
+                  }
                 }
               } catch (commentError) {
                 lastActionDate = '';
+                lastActionDateIsGmt = false;
               }
             }
 
@@ -357,20 +386,66 @@ const RestoreManager = () => {
                 __('(Untitled issue)', 'alpaca'),
               labels: getIssueLabels(issue),
               createdAt: issue.date_gmt || issue.date || '',
+              createdAtIsGmt: Boolean(issue.date_gmt),
               lastActionAt: lastActionDate,
+              lastActionAtIsGmt: lastActionDateIsGmt,
             };
           }),
         );
 
         setResults(nextResults);
+        setCurrentPage(normalizedPage);
+        setTotalPages(paginationInfo.totalPages);
+        setTotalItems(paginationInfo.totalItems);
       } catch (searchError) {
         setResults([]);
+        setCurrentPage(1);
+        setTotalPages(1);
+        setTotalItems(0);
         setError(__('Search failed. Please try again.', 'alpaca'));
       } finally {
         setIsSearching(false);
       }
     },
-    [query, getIssueLabels],
+    [getIssueLabels],
+  );
+
+  useEffect(() => {
+    if ((query || '').trim() !== '') {
+      return;
+    }
+
+    loadIssues('');
+  }, [loadIssues, query]);
+
+  /**
+   * Handle submitted trash search.
+   *
+   * @param {Event} event Submit event.
+   * @return {Promise<void>} Promise.
+   */
+  const handleSearch = useCallback(
+    async (event) => {
+      if (event && event.preventDefault) {
+        event.preventDefault();
+      }
+
+      await loadIssues(query, 1);
+    },
+    [loadIssues, query],
+  );
+
+  /**
+   * Load a specific deleted-items page.
+   *
+   * @param {number} page Page number.
+   * @return {Promise<void>} Promise.
+   */
+  const handlePageChange = useCallback(
+    async (page) => {
+      await loadIssues(query, page);
+    },
+    [loadIssues, query],
   );
 
   /**
@@ -379,36 +454,58 @@ const RestoreManager = () => {
    * @param {string} issueId Issue ID.
    * @return {Promise<void>} Promise.
    */
-  const handleRestore = useCallback(async (issueId) => {
-    if (!issueId) {
-      return;
-    }
+  const handleRestore = useCallback(
+    async (issueId) => {
+      if (!issueId) {
+        return;
+      }
 
-    setError('');
-    setRestoringIds((previousIds) => [...previousIds, String(issueId)]);
+      setError('');
+      setRestoringIds((previousIds) => [...previousIds, String(issueId)]);
 
-    try {
-      await wp.apiFetch({
-        path: `/wp/v2/alpaca_issue/${encodeURIComponent(issueId)}`,
-        method: 'POST',
-        data: {
-          status: 'publish',
-        },
-      });
+      try {
+        await wp.apiFetch({
+          path: `/wp/v2/alpaca_issue/${encodeURIComponent(issueId)}`,
+          method: 'POST',
+          data: {
+            status: 'publish',
+          },
+        });
 
-      doAction('alpaca.issueRestoredAudit', String(issueId));
+        doAction('alpaca.issueRestoredAudit', String(issueId));
+        await loadIssues(
+          query,
+          results.length <= 1 && currentPage > 1
+            ? currentPage - 1
+            : currentPage,
+        );
+      } catch (restoreError) {
+        setError(__('Failed to restore issue.', 'alpaca'));
+      } finally {
+        setRestoringIds((previousIds) =>
+          previousIds.filter((id) => id !== String(issueId)),
+        );
+      }
+    },
+    [currentPage, loadIssues, query, results.length],
+  );
 
-      setResults((previousResults) =>
-        previousResults.filter((result) => result.id !== String(issueId)),
-      );
-    } catch (restoreError) {
-      setError(__('Failed to restore issue.', 'alpaca'));
-    } finally {
-      setRestoringIds((previousIds) =>
-        previousIds.filter((id) => id !== String(issueId)),
-      );
-    }
-  }, []);
+  /* translators: %d: Number of deleted issues. */
+  const deletedIssueSummaryLabel = _n(
+    '%d deleted issue',
+    '%d deleted issues',
+    totalItems,
+    'alpaca',
+  );
+  const deletedIssueSummary = sprintf(deletedIssueSummaryLabel, totalItems);
+
+  /* translators: 1: Current page number. 2: Total page count. */
+  const paginationSummaryLabel = __('Page %1$d of %2$d', 'alpaca');
+  const paginationSummary = sprintf(
+    paginationSummaryLabel,
+    currentPage,
+    totalPages,
+  );
 
   return (
     <div className="alpaca-restore-manager">
@@ -434,91 +531,116 @@ const RestoreManager = () => {
         </div>
       </form>
 
+      <p className="alpaca-settings-manager-intro alpaca-restore-summary">
+        {deletedIssueSummary}
+      </p>
+
       {error && (
         <Notice status="error" isDismissible={false}>
           {error}
         </Notice>
       )}
 
-      {!hasSearched ? (
-        <div className="alpaca-restore-placeholder" />
-      ) : (
-        <div className="alpaca-restore-table-wrap">
-          <table className="widefat striped alpaca-restore-table">
-            <thead>
+      <div className="alpaca-restore-table-wrap">
+        <table className="widefat striped alpaca-restore-table">
+          <thead>
+            <tr>
+              <th scope="col">{__('Title', 'alpaca')}</th>
+              <th scope="col">{__('Labels', 'alpaca')}</th>
+              <th scope="col">{__('Created', 'alpaca')}</th>
+              <th scope="col">{__('Last action', 'alpaca')}</th>
+              <th scope="col">{__('Actions', 'alpaca')}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {results.length < 1 ? (
               <tr>
-                <th scope="col">{__('Title', 'alpaca')}</th>
-                <th scope="col">{__('Labels', 'alpaca')}</th>
-                <th scope="col">{__('Created', 'alpaca')}</th>
-                <th scope="col">{__('Last action', 'alpaca')}</th>
-                <th scope="col">{__('Actions', 'alpaca')}</th>
+                <td colSpan={5} className="alpaca-restore-empty-cell">
+                  {isSearching ? (
+                    <Spinner />
+                  ) : (
+                    __('No deleted issues found.', 'alpaca')
+                  )}
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {results.length < 1 ? (
-                <tr>
-                  <td colSpan={5} className="alpaca-restore-empty-cell">
-                    {isSearching ? (
-                      <Spinner />
-                    ) : (
-                      __('No deleted issues found.', 'alpaca')
-                    )}
-                  </td>
-                </tr>
-              ) : (
-                results.map((result) => {
-                  const isRestoring = restoringIds.includes(result.id);
+            ) : (
+              results.map((result) => {
+                const isRestoring = restoringIds.includes(result.id);
 
-                  return (
-                    <tr key={result.id}>
-                      <td>{result.title}</td>
-                      <td>
-                        <div className="alpaca-restore-labels">
-                          {result.labels.length > 0 ? (
-                            result.labels.map((label, index) => (
-                              <span
-                                key={`${result.id}-label-${index}`}
-                                className="alpaca-item-label alpaca-label-pill"
-                                style={{
-                                  backgroundColor: label.color,
-                                  color: '#fff',
-                                }}
-                              >
-                                {label.name}
-                              </span>
-                            ))
-                          ) : (
-                            <span className="alpaca-restore-muted">
-                              {__('-', 'alpaca')}
+                return (
+                  <tr key={result.id}>
+                    <td>{result.title}</td>
+                    <td>
+                      <div className="alpaca-restore-labels">
+                        {result.labels.length > 0 ? (
+                          result.labels.map((label, index) => (
+                            <span
+                              key={`${result.id}-label-${index}`}
+                              className="alpaca-item-label alpaca-label-pill"
+                              style={{
+                                backgroundColor: label.color,
+                                color: '#fff',
+                              }}
+                            >
+                              {label.name}
                             </span>
-                          )}
-                        </div>
-                      </td>
-                      <td className="alpaca-restore-muted">
-                        {formatDate(result.createdAt)}
-                      </td>
-                      <td className="alpaca-restore-muted">
-                        {formatDate(result.lastActionAt)}
-                      </td>
-                      <td>
-                        <Button
-                          variant="secondary"
-                          onClick={() => handleRestore(result.id)}
-                          disabled={isRestoring}
-                        >
-                          {isRestoring
-                            ? __('Restoring…', 'alpaca')
-                            : __('Restore', 'alpaca')}
-                        </Button>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+                          ))
+                        ) : (
+                          <span className="alpaca-restore-muted">
+                            {__('-', 'alpaca')}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td className="alpaca-restore-muted">
+                      {formatDate(result.createdAt, result.createdAtIsGmt)}
+                    </td>
+                    <td className="alpaca-restore-muted">
+                      {formatDate(
+                        result.lastActionAt,
+                        result.lastActionAtIsGmt,
+                      )}
+                    </td>
+                    <td>
+                      <Button
+                        variant="secondary"
+                        onClick={() => handleRestore(result.id)}
+                        disabled={isRestoring}
+                      >
+                        {isRestoring
+                          ? __('Restoring…', 'alpaca')
+                          : __('Restore', 'alpaca')}
+                      </Button>
+                    </td>
+                  </tr>
+                );
+              })
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="alpaca-restore-pagination">
+        <span className="alpaca-restore-pagination-summary">
+          {paginationSummary}
+        </span>
+        <div className="alpaca-restore-pagination-actions">
+          <Button
+            variant="secondary"
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={isSearching || currentPage <= 1}
+          >
+            {__('Previous', 'alpaca')}
+          </Button>
+          <Button
+            variant="secondary"
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={isSearching || currentPage >= totalPages}
+          >
+            {__('Next', 'alpaca')}
+          </Button>
         </div>
-      )}
+      </div>
     </div>
   );
 };

@@ -209,10 +209,6 @@
       }
     }
 
-    .alpaca-restore-placeholder {
-      min-height: 120px;
-    }
-
     .alpaca-restore-table-wrap {
       max-width: 100%;
       overflow-x: auto;
@@ -240,6 +236,29 @@
     .alpaca-restore-empty-cell {
       color: $greytext;
       text-align: center;
+    }
+
+    .alpaca-restore-summary {
+      margin-block-start: 0;
+    }
+
+    .alpaca-restore-pagination {
+      align-items: center;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: space-between;
+      margin-block-start: 16px;
+    }
+
+    .alpaca-restore-pagination-summary {
+      color: $greytext;
+    }
+
+    .alpaca-restore-pagination-actions {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 8px;
     }
   }
 }
