@@ -10,6 +10,7 @@ import {
   getAbsoluteDropIndexForFilteredContainer,
   shouldDisableBulkContainerActions,
 } from '../utils/boardFiltering';
+import { buildContainerMenuControlContext } from '../utils/containerMenuControls';
 
 import PropTypes from 'prop-types';
 
@@ -224,13 +225,18 @@ function Container({
   const filteredMenuControls = wp.hooks.applyFilters(
     'alpaca.container.menuControls',
     menuControls,
-    {
+    buildContainerMenuControlContext({
       id,
       title,
       items,
+      activeFilter,
       hasItems,
       isLastContainer,
       isHidden,
+      isFiltering,
+      visibleItemEntries,
+      itemMatchesFilter,
+      areBulkActionsDisabled,
       onMoveAllToNext,
       onDeleteAll,
       onToggleHidden,
@@ -240,7 +246,7 @@ function Container({
       stopAnimation,
       waitForTransitions,
       isAnimatingRef,
-    },
+    }),
   );
 
   const containerMenuControls = Array.isArray(filteredMenuControls)

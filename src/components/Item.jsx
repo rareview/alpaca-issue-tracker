@@ -3,57 +3,13 @@ import PropTypes from 'prop-types';
 const { Card, CardBody } = wp.components;
 const { Text = wp.components.__experimentalText } = wp.components;
 import { useWatchlist } from '../context/WatchlistContext';
+import {
+  getControlSubscriptionSignature,
+  getNormalizedItemControls,
+  getRenderableItemControls,
+} from '../utils/itemControlDescriptors';
 import '../utils/itemControls';
 import '../utils/itemDatapoints';
-
-/**
- * Normalize an item control into a descriptor object.
- *
- * The `alpaca.item.controls` filter supports either a renderable element or an
- * object descriptor with these properties:
- *
- * - `element`: Renderable control element.
- * - `isActive`: Whether the control should be treated as active before hover.
- * - `isReady`: Whether the control is ready to render at all.
- * - `key`: Stable key used for subscription tracking.
- * - `subscribe`: Optional function that accepts a notify callback and returns
- *   an unsubscribe function.
- *
- * @param {*}      control Raw control value from the filter.
- * @param {number} index   Fallback index for key generation.
- * @return {?Object} Normalized control descriptor.
- */
-const normalizeItemControl = (control, index) => {
-  if (!control) {
-    return null;
-  }
-
-  const isDescriptor =
-    typeof control === 'object' && control !== null && 'element' in control;
-  const element = isDescriptor ? control.element : control;
-
-  if (!element) {
-    return null;
-  }
-
-  const elementIsActive = Boolean(
-    element && element.props && element.props['data-active'] === '1',
-  );
-
-  return {
-    element,
-    isActive: isDescriptor ? Boolean(control.isActive) : elementIsActive,
-    isReady: isDescriptor ? control.isReady !== false : true,
-    key:
-      (isDescriptor && control.key) ||
-      (element && element.key) ||
-      `alpaca-item-control-${index}`,
-    subscribe:
-      isDescriptor && typeof control.subscribe === 'function'
-        ? control.subscribe
-        : null,
-  };
-};
 
 /**
  * Item component displayed in board containers.
@@ -144,24 +100,14 @@ const Item = forwardRef(
       },
     );
 
-    const normalizedItemControls = (
-      Array.isArray(filteredItemControls) ? filteredItemControls : []
-    )
-      .map((control, index) => normalizeItemControl(control, index))
-      .filter(Boolean);
+    const normalizedItemControls =
+      getNormalizedItemControls(filteredItemControls);
 
     normalizedItemControlsRef.current = normalizedItemControls;
 
-    const controlSubscriptionSignature = normalizedItemControls
-      .map((control) => {
-        return [
-          control.key,
-          control.isActive ? '1' : '0',
-          control.isReady ? '1' : '0',
-          control.subscribe ? '1' : '0',
-        ].join(':');
-      })
-      .join('|');
+    const controlSubscriptionSignature = getControlSubscriptionSignature(
+      normalizedItemControls,
+    );
 
     useEffect(() => {
       const unsubscribeCallbacks = normalizedItemControlsRef.current
@@ -184,17 +130,13 @@ const Item = forwardRef(
     }, [controlSubscriptionSignature]);
 
     // Sort ready controls so active ones appear first.
-    const sortedItemControls = normalizedItemControls
-      .filter((control) => control.isReady)
-      .slice()
-      .sort((a, b) => {
-        if (a.isActive === b.isActive) {
-          return 0;
-        }
-
-        return a.isActive ? -1 : 1;
-      })
-      .map((control) => control.element);
+    const sortedItemControls = getRenderableItemControls(
+      normalizedItemControls,
+      (element, key) =>
+        wp.element.cloneElement(element, {
+          key,
+        }),
+    );
 
     return (
       // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
