@@ -73,11 +73,12 @@ For mask-based decorative icons in stylesheets, continue referencing SVG files d
 
 ### Which SVGs end up in `dist`
 
-Parcel only emits hashed files into `dist/` for SVGs that the bundler actually sees as build inputs — for example SVGs referenced from your JS (import/require) or CSS (`url(...)` / `mask-image`). The generator (`scripts/generate-icons.js`) builds the React registry (`Icon.jsx`) but does not by itself cause separate hashed SVG files to be emitted. If you need a particular SVG present in `dist/`, make sure it is referenced from JS or CSS (or add an explicit import) so Parcel includes it during `npm run build`.
+Parcel only emits hashed files into `dist/` for SVGs that the bundler actually sees as build inputs — for example SVGs referenced from CSS (`url(...)` / `mask-image`).
 
 ## PHP Usage
 
 For PHP-rendered icons, use `alpaca_get_icon( $icon_slug )` in `includes/utilities/functions.php`.
 
-- This resolves Parcel-hashed files in `dist/` from stable icon slugs.
-- When a requested dist icon cannot be found, this helper returns `missing.svg` as a visual developer fallback.
+- The generator also writes `includes/utilities/icon-registry.php` from the same SVG source folder.
+- `alpaca_get_icon()` reads that generated registry, so PHP icons do not depend on Parcel emitting a separate hashed SVG file.
+- When a requested icon cannot be found, this helper returns the generated `missing` icon as a visual developer fallback.

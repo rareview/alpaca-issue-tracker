@@ -11,10 +11,51 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Load an SVG icon from the built dist directory by logical icon slug.
+ * Get the generated PHP icon registry.
  *
- * Parcel emits hashed filenames such as `calendar2-week.16215837.svg`. This
- * helper resolves those runtime filenames from a stable icon slug.
+ * @return array<string, array<string, string>> Icon registry data.
+ */
+function alpaca_get_icon_registry() {
+	static $icon_registry = null;
+
+	if ( null !== $icon_registry ) {
+		return $icon_registry;
+	}
+
+	$icon_registry = array(
+		'icons'   => array(),
+		'aliases' => array(),
+	);
+
+	$icon_registry_file = ALPACA_PLUGIN_DIR . 'includes/utilities/icon-registry.php';
+
+	if ( ! file_exists( $icon_registry_file ) ) {
+		return $icon_registry;
+	}
+
+	$loaded_registry = require $icon_registry_file;
+
+	if ( ! is_array( $loaded_registry ) ) {
+		return $icon_registry;
+	}
+
+	if ( isset( $loaded_registry['icons'] ) && is_array( $loaded_registry['icons'] ) ) {
+		$icon_registry['icons'] = $loaded_registry['icons'];
+	}
+
+	if ( isset( $loaded_registry['aliases'] ) && is_array( $loaded_registry['aliases'] ) ) {
+		$icon_registry['aliases'] = $loaded_registry['aliases'];
+	}
+
+	return $icon_registry;
+}
+
+/**
+ * Load an SVG icon by logical icon slug.
+ *
+ * Icons are generated into a PHP registry from the same source SVG folder that
+ * builds the React icon component, so PHP and React stay in sync without
+ * depending on Parcel to emit standalone SVG assets for every icon.
  *
  * @param string $icon_slug Logical icon slug, for example `calendar2-week`.
  * @return string SVG markup when found, otherwise an empty string.
@@ -22,34 +63,25 @@ if ( ! defined( 'ABSPATH' ) ) {
 function alpaca_get_icon( $icon_slug ) {
 	$icon_slug     = sanitize_title( (string) $icon_slug );
 	$fallback_slug = 'missing';
+	$icon_registry = alpaca_get_icon_registry();
 
 	if ( '' === $icon_slug ) {
 		$icon_slug = $fallback_slug;
 	}
 
-	$icon_files = glob( ALPACA_PLUGIN_DIR . 'dist/' . $icon_slug . '.*.svg' );
-
-	if ( empty( $icon_files ) || ! file_exists( $icon_files[0] ) ) {
-		$icon_files = glob( ALPACA_PLUGIN_DIR . 'dist/' . $fallback_slug . '.*.svg' );
-
-		if ( empty( $icon_files ) || ! file_exists( $icon_files[0] ) ) {
-			$fallback_source_file = ALPACA_PLUGIN_DIR . 'src/components/icons/svg/' . $fallback_slug . '.svg';
-
-			if ( ! file_exists( $fallback_source_file ) ) {
-				return '';
-			}
-
-			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading a local SVG asset from the plugin source directory as a developer fallback.
-			$svg_markup = file_get_contents( $fallback_source_file );
-
-			return is_string( $svg_markup ) ? $svg_markup : '';
-		}
+	if ( isset( $icon_registry['aliases'][ $icon_slug ] ) && is_string( $icon_registry['aliases'][ $icon_slug ] ) ) {
+		$icon_slug = sanitize_title( $icon_registry['aliases'][ $icon_slug ] );
 	}
 
-	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading a local SVG asset from the plugin dist directory.
-	$svg_markup = file_get_contents( $icon_files[0] );
+	if ( isset( $icon_registry['icons'][ $icon_slug ] ) && is_string( $icon_registry['icons'][ $icon_slug ] ) ) {
+		return $icon_registry['icons'][ $icon_slug ];
+	}
 
-	return is_string( $svg_markup ) ? $svg_markup : '';
+	if ( isset( $icon_registry['icons'][ $fallback_slug ] ) && is_string( $icon_registry['icons'][ $fallback_slug ] ) ) {
+		return $icon_registry['icons'][ $fallback_slug ];
+	}
+
+	return '';
 }
 
 /**
