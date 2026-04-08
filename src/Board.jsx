@@ -2,17 +2,16 @@ const { useState, useRef, useEffect, useCallback } = wp.element;
 const { decodeEntities } = wp.htmlEntities;
 const { __ } = wp.i18n;
 const { Button, Notice, Snackbar } = wp.components;
-const { doAction } = wp.hooks;
 
 // Replaced Atlaskit DragDropContext with native HTML5 drag/drop handlers
 
 import AlpacaIssue from './components/Issue';
 import Container from './components/Container';
-import InboxControl from './components/InboxControl';
-import SearchPortal from './components/Search';
+import BoardControls from './components/BoardControls';
 
 import { setCookie, getCookie } from './utils/cookies';
 import { transformDataForBoard, saveBoardOrder } from './utils/data';
+import { reorderItemsWithinFilteredSlots } from './utils/boardFiltering';
 import { getUser } from './hooks/useUser';
 import { dispatchStatusChangedAction } from './utils/statusChange';
 
@@ -42,6 +41,73 @@ export function AlpacaBoard() {
   });
   const [isRestoring, setIsRestoring] = useState(false);
   const [restoreError, setRestoreError] = useState(null);
+  const [activeBoardFilter, setActiveBoardFilter] = useState(null);
+
+  /**
+   * Check whether an item matches the active board filter.
+   *
+   * @param {Object}      item   Item payload.
+   * @param {Object|null} filter Filter to evaluate.
+   * @return {boolean} True when the item matches or no filter is active.
+   */
+  const itemMatchesBoardFilter = useCallback(
+    (item, filter = activeBoardFilter) => {
+      if (!filter) {
+        return true;
+      }
+
+      if (!item || typeof item !== 'object') {
+        return false;
+      }
+
+      if (filter.type === 'assignee') {
+        const assignees = Array.isArray(item.assignees) ? item.assignees : [];
+        return assignees.some(
+          (assignee) =>
+            assignee &&
+            typeof assignee.id !== 'undefined' &&
+            String(assignee.id) === String(filter.id),
+        );
+      }
+
+      const labels = Array.isArray(item.labels) ? item.labels : [];
+      const filterSlug = filter.slug ? String(filter.slug).toLowerCase() : '';
+      const filterName = filter.name ? String(filter.name).toLowerCase() : '';
+
+      return labels.some((label) => {
+        if (!label || typeof label !== 'object') {
+          return false;
+        }
+
+        if (
+          filter.termId &&
+          typeof label.term_id !== 'undefined' &&
+          String(label.term_id) === String(filter.termId)
+        ) {
+          return true;
+        }
+
+        if (
+          filterSlug &&
+          label.slug &&
+          String(label.slug).toLowerCase() === filterSlug
+        ) {
+          return true;
+        }
+
+        if (
+          filterName &&
+          label.name &&
+          String(label.name).toLowerCase() === filterName
+        ) {
+          return true;
+        }
+
+        return false;
+      });
+    },
+    [activeBoardFilter],
+  );
 
   /**
    * Update the `issue` query parameter in the URL.
@@ -137,9 +203,6 @@ export function AlpacaBoard() {
 
   // From BoardFrame.jsx
   useEffect(() => {
-    // Fire an action to allow other components to render into the controls area.
-    doAction('alpaca_board_controls', '#project-board-controls-mount');
-
     const handleCreateBoardIssue = () => {
       setSelectedItem({ isCreating: true });
     };
@@ -159,6 +222,52 @@ export function AlpacaBoard() {
   useEffect(() => {
     setCookie('alpaca_hidden_containers', hiddenContainerIds.join(','), 365);
   }, [hiddenContainerIds]);
+
+  /**
+   * Set active board filter from control.
+   *
+   * @param {Object|null} filter Filter payload.
+   * @return {void}
+   */
+  const handleSetBoardFilter = useCallback((filter) => {
+    if (!filter || typeof filter !== 'object') {
+      setActiveBoardFilter(null);
+      return;
+    }
+
+    if (filter.type === 'assignee') {
+      if (!filter.id) {
+        setActiveBoardFilter(null);
+        return;
+      }
+
+      setActiveBoardFilter({
+        type: 'assignee',
+        id: String(filter.id),
+        displayName:
+          filter.displayName || filter.display_name || filter.name
+            ? String(filter.displayName || filter.display_name || filter.name)
+            : '',
+        avatar: filter.avatar || null,
+      });
+      return;
+    }
+
+    setActiveBoardFilter({
+      type: 'label',
+      termId:
+        typeof filter.termId !== 'undefined' && filter.termId !== null
+          ? String(filter.termId)
+          : '',
+      slug: filter.slug ? String(filter.slug).toLowerCase() : '',
+      name: filter.name ? String(filter.name) : '',
+      color: filter.color || null,
+    });
+  }, []);
+
+  const handleClearBoardFilter = useCallback(() => {
+    setActiveBoardFilter(null);
+  }, []);
 
   // Sync selected issue with the URL `issue` query param and listen for Back/Forward.
   // Debounced to avoid rapid state churn when popstate events fire quickly.
@@ -794,6 +903,7 @@ export function AlpacaBoard() {
       method: 'DELETE',
     })
       .then(() => {
+        wp.hooks.doAction('alpaca.issueDeletedAudit', issueId);
         wp.hooks.doAction('alpaca.issueDeleted', issueId);
       })
       .catch((err) => {
@@ -856,7 +966,7 @@ export function AlpacaBoard() {
 
   useEffect(() => {
     if (needsSave) {
-      saveBoardOrder();
+      saveBoardOrder(containers);
       setNeedsSave(false);
     }
   }, [needsSave, containers]);
@@ -1028,6 +1138,7 @@ export function AlpacaBoard() {
       sourceIndex,
       destinationContainerId,
       destinationIndex,
+      destinationVisibleIndex,
     } = data;
 
     if (!destinationContainerId) return;
@@ -1049,11 +1160,24 @@ export function AlpacaBoard() {
           return prev;
         }
 
-        const [reorderedItem] = items.splice(sourceIndex, 1);
-        items.splice(destinationIndex, 0, reorderedItem);
+        const reorderedItems =
+          activeBoardFilter && typeof destinationVisibleIndex === 'number'
+            ? reorderItemsWithinFilteredSlots({
+                items,
+                sourceIndex,
+                destinationVisibleIndex,
+                activeFilter: activeBoardFilter,
+                itemMatchesFilter: itemMatchesBoardFilter,
+              })
+            : (() => {
+                const itemsCopy = Array.from(items);
+                const [reorderedItem] = itemsCopy.splice(sourceIndex, 1);
+                itemsCopy.splice(destinationIndex, 0, reorderedItem);
+                return itemsCopy;
+              })();
 
         return prev.map((c) =>
-          c.id === sourceContainerId ? { ...c, items } : c,
+          c.id === sourceContainerId ? { ...c, items: reorderedItems } : c,
         );
       });
     } else {
@@ -1097,8 +1221,13 @@ export function AlpacaBoard() {
 
   return (
     <>
-      <InboxControl selector="#project-board-controls-mount" />
-      <SearchPortal selector="#project-board-controls-mount" />
+      <BoardControls
+        selector="#project-board-controls-mount"
+        containers={containers}
+        activeFilter={activeBoardFilter}
+        onSetFilter={handleSetBoardFilter}
+        onClearFilter={handleClearBoardFilter}
+      />
       {hasNoStatuses ? (
         <div className="alpaca-empty-state">
           <Notice status="warning" isDismissible={false}>
@@ -1141,6 +1270,8 @@ export function AlpacaBoard() {
               id={container.id}
               title={container.title}
               items={container.items}
+              activeFilter={activeBoardFilter}
+              itemMatchesFilter={itemMatchesBoardFilter}
               onItemClick={handleItemClick}
               onMoveAllToNext={moveAllItemsToNextContainer}
               isLastContainer={index === containers.length - 1}

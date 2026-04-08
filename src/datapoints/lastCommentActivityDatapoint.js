@@ -1,4 +1,5 @@
 const { __ } = wp.i18n;
+const { Tooltip } = wp.components;
 import Icon from '../components/icons/Icon';
 import Time from '../components/Time';
 
@@ -20,20 +21,23 @@ export const addLastCommentActivityDatapoint = (originalContent, itemProps) => {
   const lastActivityIsGmt = /(?:Z|[+-]\d{2}:\d{2})$/i.test(
     lastActivityDateString,
   );
+  const lastActivityTooltipText = __('Last Activity', 'alpaca');
 
   return (
     <>
       {originalContent}
-      <div className="alpaca-item-icon alpaca-item-last-activity">
-        <Icon name="hourglass" />
-        <Time
-          value={lastActivityDateString}
-          isGmt={lastActivityIsGmt}
-          type="relative"
-          relativeWithDirection={false}
-          relativeUnitDisplay="narrow"
-        />
-      </div>
+      <Tooltip text={lastActivityTooltipText}>
+        <div className="alpaca-item-icon alpaca-item-last-activity">
+          <Icon name="hourglass" />
+          <Time
+            value={lastActivityDateString}
+            isGmt={lastActivityIsGmt}
+            type="relative"
+            relativeWithDirection={false}
+            relativeUnitDisplay="short"
+          />
+        </div>
+      </Tooltip>
     </>
   );
 };

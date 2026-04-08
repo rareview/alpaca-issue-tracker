@@ -182,11 +182,14 @@ function alpaca_update_last_activity( $post_id ) {
 }
 
 /**
- * Get the most recent approved issue comment timestamp for an issue.
+ * Get the most recent visible issue comment timestamp for an issue.
  *
  * Returned value is in MySQL datetime format in UTC.
  *
  * @param int $issue_id The issue post ID.
+ * Includes comments with approval state `1` and `post-trashed`, because
+ * WordPress marks comments this way when their parent post is in trash.
+ *
  * @return string Latest comment date in UTC (MySQL datetime) or empty string.
  */
 function alpaca_get_latest_issuecomment_date_for_issue( $issue_id ) {
@@ -210,7 +213,7 @@ function alpaca_get_latest_issuecomment_date_for_issue( $issue_id ) {
 			"SELECT comment_date_gmt FROM {$wpdb->comments}
 				WHERE comment_post_ID = %d
 				AND comment_type = %s
-				AND comment_approved = '1'
+				AND comment_approved IN ('1', 'post-trashed')
 				ORDER BY comment_date_gmt DESC
 				LIMIT 1",
 			$issue_id,
@@ -251,6 +254,53 @@ function alpaca_update_last_activity_from_issuecomments( $issue_id ) {
 	$latest_iso_utc = gmdate( 'c', $latest_unix_utc );
 	update_post_meta( $issue_id, 'alpaca_lastActivity', $latest_iso_utc );
 	return $latest_iso_utc;
+}
+
+/**
+ * Restore trashed issue comments to approved when an issue is untrashed.
+ *
+ * WordPress marks comments for trashed posts with comment_approved =
+ * `post-trashed`. When an `alpaca_issue` is restored, these comments should
+ * become approved (`1`) again so activity, counts, and timeline displays work.
+ *
+ * @param int $issue_id Issue post ID.
+ * @return int Number of comments updated.
+ */
+function alpaca_restore_issuecomment_approval_statuses( $issue_id ) {
+	$issue_id = (int) $issue_id;
+	if ( $issue_id <= 0 ) {
+		return 0;
+	}
+
+	if ( 'alpaca_issue' !== get_post_type( $issue_id ) ) {
+		return 0;
+	}
+
+	global $wpdb;
+
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Updating related comment statuses for a single restored issue.
+	$updated_rows = $wpdb->query(
+		$wpdb->prepare(
+			"UPDATE {$wpdb->comments}
+				SET comment_approved = '1'
+				WHERE comment_post_ID = %d
+				AND comment_type = %s
+				AND comment_approved = %s",
+			$issue_id,
+			'issuecomment',
+			'post-trashed'
+		)
+	); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+
+	if ( false === $updated_rows ) {
+		return 0;
+	}
+
+	if ( function_exists( 'alpaca_update_last_activity_from_issuecomments' ) ) {
+		alpaca_update_last_activity_from_issuecomments( $issue_id );
+	}
+
+	return (int) $updated_rows;
 }
 
 /**
