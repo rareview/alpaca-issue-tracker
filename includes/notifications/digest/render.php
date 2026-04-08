@@ -190,15 +190,6 @@ function alpaca_get_notification_daily_digest_sample_payload() {
 }
 
 /**
- * Render the calendar icon used in digest deadline badges.
- *
- * @return string HTML markup.
- */
-function alpaca_render_notification_digest_calendar_icon_html() {
-	return alpaca_get_icon( 'calendar2-week' );
-}
-
-/**
  * Render the priority badge used in digest layouts.
  *
  * @param string $label              Optional badge label text.
@@ -239,7 +230,7 @@ function alpaca_render_notification_digest_deadline_badge_html( $label, $state )
 		return '';
 	}
 
-	return '<span class="alpaca-item-icon alpaca-item-deadline alpaca-label-pill" data-deadline-state="' . esc_attr( $state ) . '">' . alpaca_render_notification_digest_calendar_icon_html() . esc_html( $label ) . '</span>';
+	return '<span class="alpaca-item-icon alpaca-item-deadline alpaca-label-pill" data-deadline-state="' . esc_attr( $state ) . '">' . alpaca_get_icon( 'calendar2-week' ) . esc_html( $label ) . '</span>';
 }
 
 /**
