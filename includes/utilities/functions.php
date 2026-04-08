@@ -11,6 +11,48 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * Load an SVG icon from the built dist directory by logical icon slug.
+ *
+ * Parcel emits hashed filenames such as `calendar2-week.16215837.svg`. This
+ * helper resolves those runtime filenames from a stable icon slug.
+ *
+ * @param string $icon_slug Logical icon slug, for example `calendar2-week`.
+ * @return string SVG markup when found, otherwise an empty string.
+ */
+function alpaca_get_icon( $icon_slug ) {
+	$icon_slug     = sanitize_title( (string) $icon_slug );
+	$fallback_slug = 'missing';
+
+	if ( '' === $icon_slug ) {
+		$icon_slug = $fallback_slug;
+	}
+
+	$icon_files = glob( ALPACA_PLUGIN_DIR . 'dist/' . $icon_slug . '.*.svg' );
+
+	if ( empty( $icon_files ) || ! file_exists( $icon_files[0] ) ) {
+		$icon_files = glob( ALPACA_PLUGIN_DIR . 'dist/' . $fallback_slug . '.*.svg' );
+
+		if ( empty( $icon_files ) || ! file_exists( $icon_files[0] ) ) {
+			$fallback_source_file = ALPACA_PLUGIN_DIR . 'src/components/icons/svg/' . $fallback_slug . '.svg';
+
+			if ( ! file_exists( $fallback_source_file ) ) {
+				return '';
+			}
+
+			// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading a local SVG asset from the plugin source directory as a developer fallback.
+			$svg_markup = file_get_contents( $fallback_source_file );
+
+			return is_string( $svg_markup ) ? $svg_markup : '';
+		}
+	}
+
+	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading a local SVG asset from the plugin dist directory.
+	$svg_markup = file_get_contents( $icon_files[0] );
+
+	return is_string( $svg_markup ) ? $svg_markup : '';
+}
+
+/**
  * Get the maximum term score for board visibility.
  *
  * @return int Maximum term score.

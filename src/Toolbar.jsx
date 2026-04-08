@@ -1,8 +1,7 @@
 import handleSnapdomCapture from './snapdomHandler.js';
 import { dataUrlToFile, uploadIssueAttachment } from './utils/attachmentUpload';
 import { useTestLogger } from './utils/testLogger.js';
-import ReportIcon from './components/icons/ReportIcon';
-import BoardIcon from './components/icons/BoardIcon';
+import Icon from './components/icons/Icon';
 import { buildAlpacaRestUrl, getAlpacaRestRoot } from './utils/restApiRoot.js';
 
 const { __ } = wp.i18n;
@@ -219,11 +218,11 @@ const AlpacaToolbar = () => {
           className={`alpaca-report-button ${isFormVisible ? 'form-visible' : ''}`}
           onClick={toggleFormVisibility}
         >
-          <ReportIcon />
+          <Icon name="report" />
           {__('Report An Issue', 'alpaca')}
         </button>
         <a href={projectBoardUrl} className="project-board-link">
-          <BoardIcon />
+          <Icon name="board" />
           {__('Project Board', 'alpaca')}
         </a>
         <button className="toggle-button" onClick={toggleExpand}>

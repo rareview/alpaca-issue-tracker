@@ -1,5 +1,5 @@
 const { __ } = wp.i18n;
-import HourglassIcon from '../components/icons/HourglassIcon';
+import Icon from '../components/icons/Icon';
 import Time from '../components/Time';
 
 /**
@@ -25,7 +25,7 @@ export const addLastCommentActivityDatapoint = (originalContent, itemProps) => {
     <>
       {originalContent}
       <div className="alpaca-item-icon alpaca-item-last-activity">
-        <HourglassIcon />
+        <Icon name="hourglass" />
         <Time
           value={lastActivityDateString}
           isGmt={lastActivityIsGmt}
