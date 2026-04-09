@@ -82,3 +82,13 @@ For PHP-rendered icons, use `alpaca_get_icon( $icon_slug )` in `includes/utiliti
 - The generator also writes `includes/utilities/icon-registry.php` from the same SVG source folder.
 - `alpaca_get_icon()` reads that generated registry, so PHP icons do not depend on Parcel emitting a separate hashed SVG file.
 - When a requested icon cannot be found, this helper returns the generated `missing` icon as a visual developer fallback.
+
+## Sanitization
+
+SVG files are sanitized before being returned for output. The repository uses a small, project-maintained allowlist to ensure only safe SVG tags and attributes are permitted.
+
+- The allowlist JSON lives at `includes/utilities/icon-sanitizer-allowlist.json`.
+- At build time the icon generator validates SVG source files against this allowlist and skips malformed or disallowed files.
+- At runtime PHP uses `wp_kses()` with the same allowlist to sanitize the SVG markup returned by `alpaca_get_icon()`.
+
+If you need to allow additional tags or attributes, update `includes/utilities/icon-sanitizer-allowlist.json` and re-run `npm run icons:generate`.

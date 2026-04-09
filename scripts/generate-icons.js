@@ -10,11 +10,21 @@ const PHP_OUTPUT_FILE = path.join(
   ROOT_DIR,
   'includes/utilities/icon-registry.php',
 );
+const SVG_ALLOWLIST_FILE = path.join(
+  ROOT_DIR,
+  'includes/utilities/icon-sanitizer-allowlist.json',
+);
 
 const ICON_ALIASES = {
   calendar: 'calendar2-week',
   priority: 'exclamation-circle-fill',
   report: 'exclamation-circle-fill',
+};
+
+const TERMINAL_STYLE = {
+  reset: '\x1b[0m',
+  bold: '\x1b[1m',
+  yellow: '\x1b[33m',
 };
 
 const ATTRIBUTE_NAME_MAP = {
@@ -76,11 +86,139 @@ function normalizeSvgMarkupForJsx(markup) {
  * @return {string} SVG text without XML or doctype preamble.
  */
 function sanitizeSvgText(svgText) {
-  return svgText
+  const sanitizedSvgText = svgText
     .replace(/\r\n?/g, '\n')
     .replace(/<\?xml[^>]*\?>/gi, '')
     .replace(/<!doctype[^>]*>/gi, '')
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<foreignObject\b[^>]*>[\s\S]*?<\/foreignObject>/gi, '')
+    .replace(/\son[a-z0-9_:-]+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+    .replace(/\s(?:href|xlink:href)\s*=\s*(["'])\s*javascript:[\s\S]*?\1/gi, '')
     .trim();
+
+  return sanitizedSvgText;
+}
+
+/**
+ * Read and normalize the shared SVG sanitizer allowlist.
+ *
+ * @return {{allowedTags: Set<string>, allowedAttributesByTag: Map<string, Set<string>>}} Sanitizer allowlist policy.
+ */
+function getSvgAllowlistPolicy() {
+  const allowlistJson = fs.readFileSync(SVG_ALLOWLIST_FILE, 'utf8');
+  const allowlist = JSON.parse(allowlistJson);
+  const globalAttributes = Array.isArray(allowlist.globalAttributes)
+    ? allowlist.globalAttributes
+    : [];
+  const allowedTagsObject = allowlist.allowedTags || {};
+  const allowedTagNames = Object.keys(allowedTagsObject).map((tagName) =>
+    String(tagName).toLowerCase(),
+  );
+  const allowedAttributesByTag = new Map();
+
+  for (const tagName of allowedTagNames) {
+    const tagAttributes = Array.isArray(allowedTagsObject[tagName])
+      ? allowedTagsObject[tagName]
+      : [];
+    const mergedAttributes = [...globalAttributes, ...tagAttributes].map(
+      (attributeName) => String(attributeName).toLowerCase(),
+    );
+
+    allowedAttributesByTag.set(tagName, new Set(mergedAttributes));
+  }
+
+  if (0 === allowedTagNames.length) {
+    throw new Error('SVG sanitizer allowlist is empty.');
+  }
+
+  return {
+    allowedTags: new Set(allowedTagNames),
+    allowedAttributesByTag,
+  };
+}
+
+/**
+ * Validate SVG markup against the shared allowlist policy.
+ *
+ * @param {string} svgMarkup SVG markup after pre-sanitization.
+ * @param {Object} policy    Shared allowlist policy.
+ */
+function validateSvgAgainstAllowlist(svgMarkup, policy) {
+  if (!/<svg\b/i.test(svgMarkup) || !/<\/svg>/i.test(svgMarkup)) {
+    throw new Error('Invalid SVG: missing <svg> root element.');
+  }
+
+  const tagPattern = /<\s*\/?\s*([A-Za-z][A-Za-z0-9:-]*)\b([^>]*)>/g;
+  const attributePattern =
+    /([:@A-Za-z_][:@A-Za-z0-9_.-]*)\s*=\s*("[^"]*"|'[^']*'|[^\s"'=<>`]+)/g;
+
+  for (const tagMatch of svgMarkup.matchAll(tagPattern)) {
+    const rawTag = tagMatch[0];
+    const rawTagName = tagMatch[1] || '';
+    const tagName = rawTagName.toLowerCase();
+
+    if (!policy.allowedTags.has(tagName)) {
+      throw new Error(`Disallowed SVG tag <${rawTagName}>.`);
+    }
+
+    if (/^<\s*\//.test(rawTag)) {
+      continue;
+    }
+
+    const tagAttributes = policy.allowedAttributesByTag.get(tagName);
+
+    if (!tagAttributes) {
+      throw new Error(`Missing attribute policy for SVG tag <${rawTagName}>.`);
+    }
+
+    const attributeSource = tagMatch[2] || '';
+
+    for (const attributeMatch of attributeSource.matchAll(attributePattern)) {
+      const rawAttributeName = attributeMatch[1] || '';
+      const attributeName = rawAttributeName.toLowerCase();
+      const rawAttributeValue = (attributeMatch[2] || '').trim();
+      const normalizedValue = rawAttributeValue.replace(/^['"]|['"]$/g, '');
+
+      if (attributeName.startsWith('on')) {
+        throw new Error(
+          `Disallowed event attribute "${rawAttributeName}" on <${rawTagName}>.`,
+        );
+      }
+
+      if (!tagAttributes.has(attributeName)) {
+        throw new Error(
+          `Disallowed attribute "${rawAttributeName}" on <${rawTagName}>.`,
+        );
+      }
+
+      if (
+        (attributeName === 'href' || attributeName === 'xlink:href') &&
+        /^\s*javascript:/i.test(normalizedValue)
+      ) {
+        throw new Error(
+          `Disallowed JavaScript URL in attribute "${rawAttributeName}".`,
+        );
+      }
+    }
+  }
+}
+
+/**
+ * Build a prominent malformed SVG warning message for terminal output.
+ *
+ * @param {string} fileName     SVG file name.
+ * @param {string} errorMessage Parse error message.
+ * @return {string} Styled warning message ending with a newline.
+ */
+function formatMalformedSvgWarning(fileName, errorMessage) {
+  const warningPrefix = '[icons:generate] WARNING';
+  const warningMessage = `${warningPrefix} Skipping malformed SVG "${fileName}": ${errorMessage}`;
+
+  if (!process.stderr.isTTY) {
+    return `${warningMessage}\n`;
+  }
+
+  return `${TERMINAL_STYLE.bold}${TERMINAL_STYLE.yellow}${warningMessage}${TERMINAL_STYLE.reset}\n`;
 }
 
 /**
@@ -314,23 +452,40 @@ function collectSvgIconDefinitions() {
     throw new Error('No SVG icons found in src/components/icons/svg.');
   }
 
-  return svgFiles.map((fileName) => {
+  const svgAllowlistPolicy = getSvgAllowlistPolicy();
+  const iconDefinitions = [];
+
+  for (const fileName of svgFiles) {
     const iconSlug = path.basename(fileName, '.svg');
     const filePath = path.join(SVG_DIR, fileName);
-    const svgText = fs.readFileSync(filePath, 'utf8');
-    const svgMarkup = sanitizeSvgText(svgText);
-    const innerMarkup = extractInnerSvgMarkup(svgMarkup);
-    const jsxMarkup = normalizeSvgMarkupForJsx(innerMarkup);
-    const viewBox =
-      extractSvgRootAttribute(svgMarkup, 'viewBox') || '0 0 16 16';
 
-    return {
-      slug: iconSlug,
-      jsxMarkup,
-      svgMarkup,
-      viewBox,
-    };
-  });
+    try {
+      const svgText = fs.readFileSync(filePath, 'utf8');
+      const svgMarkup = sanitizeSvgText(svgText);
+      validateSvgAgainstAllowlist(svgMarkup, svgAllowlistPolicy);
+      const innerMarkup = extractInnerSvgMarkup(svgMarkup);
+      const jsxMarkup = normalizeSvgMarkupForJsx(innerMarkup);
+      const viewBox =
+        extractSvgRootAttribute(svgMarkup, 'viewBox') || '0 0 16 16';
+
+      iconDefinitions.push({
+        slug: iconSlug,
+        jsxMarkup,
+        svgMarkup,
+        viewBox,
+      });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      process.stderr.write(formatMalformedSvgWarning(fileName, errorMessage));
+    }
+  }
+
+  if (0 === iconDefinitions.length) {
+    throw new Error('No valid SVG icons found in src/components/icons/svg.');
+  }
+
+  return iconDefinitions;
 }
 
 /**
@@ -349,7 +504,13 @@ function main() {
 }
 
 if (require.main === module) {
-  main();
+  try {
+    main();
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    process.stderr.write(`[icons:generate] ERROR ${errorMessage}\n`);
+    process.exitCode = 1;
+  }
 }
 
 module.exports = {
@@ -358,6 +519,8 @@ module.exports = {
   collectSvgIconDefinitions,
   extractInnerSvgMarkup,
   extractSvgRootAttribute,
+  getSvgAllowlistPolicy,
   normalizeSvgMarkupForJsx,
   sanitizeSvgText,
+  validateSvgAgainstAllowlist,
 };

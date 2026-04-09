@@ -1,0 +1,60 @@
+{
+  "globalAttributes": [
+    "id",
+    "class",
+    "fill",
+    "stroke",
+    "stroke-width",
+    "stroke-linecap",
+    "stroke-linejoin",
+    "stroke-miterlimit",
+    "stroke-dasharray",
+    "stroke-dashoffset",
+    "transform",
+    "fill-rule",
+    "fill-opacity",
+    "stroke-opacity",
+    "opacity"
+  ],
+  "allowedTags": {
+    "svg": [
+      "xmlns",
+      "version",
+      "width",
+      "height",
+      "viewbox",
+      "preserveaspectratio",
+      "role",
+      "focusable",
+      "aria-hidden",
+      "aria-label",
+      "aria-labelledby"
+    ],
+    "g": ["clip-path", "mask"],
+    "path": ["d", "clip-path"],
+    "circle": ["cx", "cy", "r"],
+    "ellipse": ["cx", "cy", "rx", "ry"],
+    "rect": ["x", "y", "width", "height", "rx", "ry", "clip-path"],
+    "line": ["x1", "y1", "x2", "y2"],
+    "polyline": ["points"],
+    "polygon": ["points"],
+    "clippath": ["id"],
+    "mask": [
+      "id",
+      "x",
+      "y",
+      "width",
+      "height",
+      "maskunits",
+      "maskcontentunits"
+    ],
+    "use": ["x", "y", "width", "height", "href", "xlink:href"],
+    "defs": [],
+    "symbol": ["id", "viewbox", "preserveaspectratio"],
+    "lineargradient": ["id", "x1", "x2", "y1", "y2", "gradientunits"],
+    "radialgradient": ["id", "cx", "cy", "r", "fx", "fy", "gradientunits"],
+    "stop": ["offset", "stop-color", "stop-opacity"],
+    "title": [],
+    "desc": []
+  }
+}
