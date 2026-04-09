@@ -603,6 +603,7 @@ const RestoreManager = () => {
                     </td>
                     <td>
                       <Button
+                        className="alpaca-restore-action"
                         variant="secondary"
                         onClick={() => handleRestore(result.id)}
                         disabled={isRestoring}

@@ -221,6 +221,17 @@
       th {
         vertical-align: middle;
       }
+
+      .alpaca-restore-action {
+        /* Keep the restore button from resizing when text changes,
+           but use a tighter width and center the label. */
+        min-inline-size: 6.25rem;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
     }
 
     .alpaca-restore-labels {
