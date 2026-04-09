@@ -42,6 +42,7 @@ export function AlpacaBoard() {
   const [isRestoring, setIsRestoring] = useState(false);
   const [restoreError, setRestoreError] = useState(null);
   const [activeBoardFilter, setActiveBoardFilter] = useState(null);
+  const [activeSearchFilter, setActiveSearchFilter] = useState(null);
 
   /**
    * Check whether an item matches the active board filter.
@@ -51,28 +52,60 @@ export function AlpacaBoard() {
    * @return {boolean} True when the item matches or no filter is active.
    */
   const itemMatchesBoardFilter = useCallback(
-    (item, filter = activeBoardFilter) => {
-      if (!filter) {
-        return true;
-      }
-
+    (item, filter = null) => {
       if (!item || typeof item !== 'object') {
         return false;
       }
 
-      if (filter.type === 'assignee') {
+      const hasCompositeFilter =
+        !!filter &&
+        typeof filter === 'object' &&
+        (Object.prototype.hasOwnProperty.call(filter, 'boardFilter') ||
+          Object.prototype.hasOwnProperty.call(filter, 'searchFilter'));
+
+      const boardFilter = hasCompositeFilter
+        ? filter.boardFilter || null
+        : filter || activeBoardFilter;
+      const searchFilter = hasCompositeFilter
+        ? filter.searchFilter || null
+        : activeSearchFilter;
+
+      if (
+        searchFilter &&
+        Array.isArray(searchFilter.issueIds) &&
+        searchFilter.issueIds.length > 0
+      ) {
+        const itemId =
+          typeof item.id !== 'undefined' && item.id !== null
+            ? String(item.id)
+            : '';
+
+        if (!itemId || !searchFilter.issueIds.includes(itemId)) {
+          return false;
+        }
+      }
+
+      if (!boardFilter) {
+        return true;
+      }
+
+      if (boardFilter.type === 'assignee') {
         const assignees = Array.isArray(item.assignees) ? item.assignees : [];
         return assignees.some(
           (assignee) =>
             assignee &&
             typeof assignee.id !== 'undefined' &&
-            String(assignee.id) === String(filter.id),
+            String(assignee.id) === String(boardFilter.id),
         );
       }
 
       const labels = Array.isArray(item.labels) ? item.labels : [];
-      const filterSlug = filter.slug ? String(filter.slug).toLowerCase() : '';
-      const filterName = filter.name ? String(filter.name).toLowerCase() : '';
+      const filterSlug = boardFilter.slug
+        ? String(boardFilter.slug).toLowerCase()
+        : '';
+      const filterName = boardFilter.name
+        ? String(boardFilter.name).toLowerCase()
+        : '';
 
       return labels.some((label) => {
         if (!label || typeof label !== 'object') {
@@ -80,9 +113,9 @@ export function AlpacaBoard() {
         }
 
         if (
-          filter.termId &&
+          boardFilter.termId &&
           typeof label.term_id !== 'undefined' &&
-          String(label.term_id) === String(filter.termId)
+          String(label.term_id) === String(boardFilter.termId)
         ) {
           return true;
         }
@@ -106,7 +139,7 @@ export function AlpacaBoard() {
         return false;
       });
     },
-    [activeBoardFilter],
+    [activeBoardFilter, activeSearchFilter],
   );
 
   /**
@@ -267,6 +300,49 @@ export function AlpacaBoard() {
 
   const handleClearBoardFilter = useCallback(() => {
     setActiveBoardFilter(null);
+  }, []);
+
+  /**
+   * Set active search filter from the search control.
+   *
+   * @param {Object|null} searchFilter Search filter payload.
+   * @return {void}
+   */
+  const handleSetSearchFilter = useCallback((searchFilter) => {
+    if (!searchFilter || typeof searchFilter !== 'object') {
+      setActiveSearchFilter(null);
+      return;
+    }
+
+    const normalizedQuery =
+      typeof searchFilter.query === 'string' ? searchFilter.query.trim() : '';
+
+    if (!normalizedQuery) {
+      setActiveSearchFilter(null);
+      return;
+    }
+
+    const normalizedIssueIds = Array.from(
+      new Set(
+        (Array.isArray(searchFilter.issueIds) ? searchFilter.issueIds : [])
+          .map((issueId) =>
+            typeof issueId !== 'undefined' && issueId !== null
+              ? String(issueId)
+              : '',
+          )
+          .filter(Boolean),
+      ),
+    );
+
+    setActiveSearchFilter({
+      type: 'search',
+      query: normalizedQuery,
+      issueIds: normalizedIssueIds,
+    });
+  }, []);
+
+  const handleClearSearchFilter = useCallback(() => {
+    setActiveSearchFilter(null);
   }, []);
 
   // Sync selected issue with the URL `issue` query param and listen for Back/Forward.
@@ -1130,6 +1206,14 @@ export function AlpacaBoard() {
   }, []);
 
   // Handler invoked by Containers when an item is dropped
+  const combinedBoardFilter =
+    activeBoardFilter || activeSearchFilter
+      ? {
+          boardFilter: activeBoardFilter,
+          searchFilter: activeSearchFilter,
+        }
+      : null;
+
   const handleItemDrop = (data) => {
     // data: { itemId, sourceContainerId, sourceIndex, destinationContainerId, destinationIndex }
     const {
@@ -1161,12 +1245,12 @@ export function AlpacaBoard() {
         }
 
         const reorderedItems =
-          activeBoardFilter && typeof destinationVisibleIndex === 'number'
+          combinedBoardFilter && typeof destinationVisibleIndex === 'number'
             ? reorderItemsWithinFilteredSlots({
                 items,
                 sourceIndex,
                 destinationVisibleIndex,
-                activeFilter: activeBoardFilter,
+                activeFilter: combinedBoardFilter,
                 itemMatchesFilter: itemMatchesBoardFilter,
               })
             : (() => {
@@ -1225,8 +1309,11 @@ export function AlpacaBoard() {
         selector="#project-board-controls-mount"
         containers={containers}
         activeFilter={activeBoardFilter}
+        activeSearchFilter={activeSearchFilter}
         onSetFilter={handleSetBoardFilter}
         onClearFilter={handleClearBoardFilter}
+        onSetSearchFilter={handleSetSearchFilter}
+        onClearSearchFilter={handleClearSearchFilter}
       />
       {hasNoStatuses ? (
         <div className="alpaca-empty-state">
@@ -1270,7 +1357,7 @@ export function AlpacaBoard() {
               id={container.id}
               title={container.title}
               items={container.items}
-              activeFilter={activeBoardFilter}
+              activeFilter={combinedBoardFilter}
               itemMatchesFilter={itemMatchesBoardFilter}
               onItemClick={handleItemClick}
               onMoveAllToNext={moveAllItemsToNextContainer}

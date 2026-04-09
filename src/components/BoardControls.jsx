@@ -13,20 +13,26 @@ import SearchPortal from './Search';
  * Provides default controls and exposes a filter hook for extending
  * or replacing the control list without editing the board component.
  *
- * @param {Object}   root0               Component props.
- * @param {string}   root0.selector      Controls mount selector.
- * @param {Array}    root0.containers    Board container data.
- * @param {Object}   root0.activeFilter  Current active board filter.
- * @param {Function} root0.onSetFilter   Set filter callback.
- * @param {Function} root0.onClearFilter Clear filter callback.
+ * @param {Object}   props                     Component props.
+ * @param {string}   props.selector            Controls mount selector.
+ * @param {Array}    props.containers          Board container data.
+ * @param {Object}   props.activeFilter        Current active board filter.
+ * @param {Object}   props.activeSearchFilter  Current active search filter.
+ * @param {Function} props.onSetFilter         Set filter callback.
+ * @param {Function} props.onClearFilter       Clear filter callback.
+ * @param {Function} props.onSetSearchFilter   Set search filter callback.
+ * @param {Function} props.onClearSearchFilter Clear search filter callback.
  * @return {JSX.Element} Rendered board controls.
  */
 function BoardControls({
   selector,
   containers,
   activeFilter,
+  activeSearchFilter,
   onSetFilter,
   onClearFilter,
+  onSetSearchFilter,
+  onClearSearchFilter,
 }) {
   const defaultControls = useMemo(
     () => [
@@ -49,18 +55,36 @@ function BoardControls({
       {
         key: 'search',
         component: SearchPortal,
-        props: { selector },
+        props: {
+          selector,
+          containers,
+          activeSearchFilter,
+          onSetSearchFilter,
+          onClearSearchFilter,
+        },
       },
     ],
-    [selector, containers, activeFilter, onSetFilter, onClearFilter],
+    [
+      selector,
+      containers,
+      activeFilter,
+      activeSearchFilter,
+      onSetFilter,
+      onClearFilter,
+      onSetSearchFilter,
+      onClearSearchFilter,
+    ],
   );
 
   const controls = applyFilters('alpaca.board.controls', defaultControls, {
     selector,
     containers,
     activeFilter,
+    activeSearchFilter,
     onSetFilter,
     onClearFilter,
+    onSetSearchFilter,
+    onClearSearchFilter,
   });
 
   useEffect(() => {
@@ -101,16 +125,26 @@ BoardControls.propTypes = {
     name: PropTypes.string,
     color: PropTypes.string,
   }),
+  activeSearchFilter: PropTypes.shape({
+    type: PropTypes.string,
+    query: PropTypes.string,
+    issueIds: PropTypes.arrayOf(PropTypes.string),
+  }),
   onSetFilter: PropTypes.func,
   onClearFilter: PropTypes.func,
+  onSetSearchFilter: PropTypes.func,
+  onClearSearchFilter: PropTypes.func,
 };
 
 BoardControls.defaultProps = {
   selector: '#project-board-controls-mount',
   containers: [],
   activeFilter: null,
+  activeSearchFilter: null,
   onSetFilter: () => {},
   onClearFilter: () => {},
+  onSetSearchFilter: () => {},
+  onClearSearchFilter: () => {},
 };
 
 export default BoardControls;
