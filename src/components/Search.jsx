@@ -90,6 +90,14 @@ function SearchContainer({
     [visibleIssueIds],
   );
 
+  // Refs keep the latest values available inside the search effect without
+  // making them deps (which would restart the debounce on every container
+  // update such as a comment count change).
+  const visibleIssueIdsRef = useRef(visibleIssueIds);
+  const visibleIssueIdsSetRef = useRef(visibleIssueIdsSet);
+  visibleIssueIdsRef.current = visibleIssueIds;
+  visibleIssueIdsSetRef.current = visibleIssueIdsSet;
+
   useEffect(() => {
     wp.apiFetch({ path: '/wp/v2/settings' })
       .then((settings) => {
@@ -142,29 +150,31 @@ function SearchContainer({
       const q = query;
       const issueFields =
         'id,slug,post_parent,parent,post_name,title,content,meta,date,date_gmt';
+      const currentVisibleIds = visibleIssueIdsRef.current;
+      const currentVisibleIdsSet = visibleIssueIdsSetRef.current;
       const includeThreshold = parseInt(
         applyFilters(
           'alpaca.search.includeThreshold',
           SEARCH_INCLUDE_THRESHOLD,
           {
             query: q,
-            visibleIssueIds,
+            visibleIssueIds: currentVisibleIds,
           },
         ),
         10,
       );
       const shouldUseVisibleIssueInclude =
-        Array.isArray(visibleIssueIds) &&
-        visibleIssueIds.length > 0 &&
+        Array.isArray(currentVisibleIds) &&
+        currentVisibleIds.length > 0 &&
         !Number.isNaN(includeThreshold) &&
         includeThreshold > 0 &&
-        visibleIssueIds.length <= includeThreshold;
+        currentVisibleIds.length <= includeThreshold;
       const limitedIssuePageSize = shouldUseVisibleIssueInclude
-        ? Math.min(SEARCH_API_PAGE_SIZE, visibleIssueIds.length)
+        ? Math.min(SEARCH_API_PAGE_SIZE, currentVisibleIds.length)
         : SEARCH_API_PAGE_SIZE;
       const directIssueSearchPath = shouldUseVisibleIssueInclude
         ? `/wp/v2/alpaca_issue?search=${encodeURIComponent(q)}&include=${encodeURIComponent(
-            visibleIssueIds.join(','),
+            currentVisibleIds.join(','),
           )}&per_page=${limitedIssuePageSize}&_fields=${issueFields}`
         : `/wp/v2/alpaca_issue?search=${encodeURIComponent(q)}&per_page=${limitedIssuePageSize}&_fields=${issueFields}`;
 
@@ -237,7 +247,7 @@ function SearchContainer({
                   return false;
                 }
 
-                return visibleIssueIdsSet.has(commentIssueId);
+                return currentVisibleIdsSet.has(commentIssueId);
               })
             : filteredComments;
 
@@ -442,14 +452,7 @@ function SearchContainer({
         clearTimeout(debounceRef.current);
       }
     };
-  }, [
-    value,
-    enableTestLogs,
-    visibleIssueIds,
-    visibleIssueIdsSet,
-    onSetSearchFilter,
-    onClearSearchFilter,
-  ]);
+  }, [value, enableTestLogs, onSetSearchFilter, onClearSearchFilter]);
 
   return (
     <div className="alpaca-board-search" style={{ width: 300 }}>

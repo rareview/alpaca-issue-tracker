@@ -1,4 +1,4 @@
-const { useState, useRef, useEffect, useCallback } = wp.element;
+const { useState, useRef, useEffect, useCallback, useMemo } = wp.element;
 const { decodeEntities } = wp.htmlEntities;
 const { __ } = wp.i18n;
 const { Button, Notice, Snackbar } = wp.components;
@@ -43,6 +43,17 @@ export function AlpacaBoard() {
   const [restoreError, setRestoreError] = useState(null);
   const [activeBoardFilter, setActiveBoardFilter] = useState(null);
   const [activeSearchFilter, setActiveSearchFilter] = useState(null);
+
+  // Pre-built Set for O(1) lookups inside itemMatchesBoardFilter.
+  const searchIdsSet = useMemo(
+    () =>
+      new Set(
+        activeSearchFilter && Array.isArray(activeSearchFilter.issueIds)
+          ? activeSearchFilter.issueIds
+          : [],
+      ),
+    [activeSearchFilter],
+  );
 
   /**
    * Resolve a normalized board filter object supporting legacy and combined shapes.
@@ -120,12 +131,8 @@ export function AlpacaBoard() {
         searchFilter.query.trim().length > 0;
 
       if (hasActiveSearchQuery) {
-        const searchIssueIds = Array.isArray(searchFilter.issueIds)
-          ? searchFilter.issueIds
-          : [];
-
         // An active query with zero matches should hide all cards.
-        if (searchIssueIds.length < 1) {
+        if (searchIdsSet.size < 1) {
           return false;
         }
 
@@ -134,7 +141,7 @@ export function AlpacaBoard() {
             ? String(item.id)
             : '';
 
-        if (!itemId || !searchIssueIds.includes(itemId)) {
+        if (!itemId || !searchIdsSet.has(itemId)) {
           return false;
         }
       }
@@ -201,7 +208,7 @@ export function AlpacaBoard() {
         return false;
       });
     },
-    [activeBoardFilter, activeSearchFilter, normalizeBoardFilter],
+    [activeBoardFilter, activeSearchFilter, normalizeBoardFilter, searchIdsSet],
   );
 
   /**
