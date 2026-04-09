@@ -116,14 +116,19 @@ BoardControls.propTypes = {
   selector: PropTypes.string,
   containers: PropTypes.array,
   activeFilter: PropTypes.shape({
-    type: PropTypes.string,
-    id: PropTypes.string,
-    displayName: PropTypes.string,
-    avatar: PropTypes.string,
-    termId: PropTypes.string,
-    slug: PropTypes.string,
-    name: PropTypes.string,
-    color: PropTypes.string,
+    label: PropTypes.shape({
+      type: PropTypes.string,
+      termId: PropTypes.string,
+      slug: PropTypes.string,
+      name: PropTypes.string,
+      color: PropTypes.string,
+    }),
+    assignee: PropTypes.shape({
+      type: PropTypes.string,
+      id: PropTypes.string,
+      displayName: PropTypes.string,
+      avatar: PropTypes.string,
+    }),
   }),
   activeSearchFilter: PropTypes.shape({
     type: PropTypes.string,

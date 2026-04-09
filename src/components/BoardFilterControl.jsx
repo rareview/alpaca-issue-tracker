@@ -25,43 +25,97 @@ function getAssigneeDisplayName(assignee) {
 }
 
 /**
- * Render active filter label for the trigger button.
+ * Resolve currently selected label filter.
  *
- * @param {Object|null} activeFilter Current filter object.
- * @return {JSX.Element} Trigger label content.
+ * @param {Object|null} activeFilter Active filter payload.
+ * @return {Object|null} Active label filter.
  */
-function renderTriggerLabel(activeFilter) {
-  if (!activeFilter) {
-    return <span>{__('Filter', 'alpaca')}</span>;
+function getActiveLabelFilter(activeFilter) {
+  if (!activeFilter || typeof activeFilter !== 'object') {
+    return null;
+  }
+
+  if (activeFilter.label && typeof activeFilter.label === 'object') {
+    return activeFilter.label;
+  }
+
+  if ('label' === activeFilter.type) {
+    return activeFilter;
+  }
+
+  return null;
+}
+
+/**
+ * Resolve currently selected assignee filter.
+ *
+ * @param {Object|null} activeFilter Active filter payload.
+ * @return {Object|null} Active assignee filter.
+ */
+function getActiveAssigneeFilter(activeFilter) {
+  if (!activeFilter || typeof activeFilter !== 'object') {
+    return null;
+  }
+
+  if (activeFilter.assignee && typeof activeFilter.assignee === 'object') {
+    return activeFilter.assignee;
   }
 
   if ('assignee' === activeFilter.type) {
-    return (
-      <span className="alpaca-filter-control-current alpaca-filter-control-current-assignee">
-        {activeFilter.avatar ? (
-          <img
-            className="alpaca-filter-control-avatar"
-            src={activeFilter.avatar}
-            alt=""
-            aria-hidden="true"
-          />
-        ) : null}
-        <span className="alpaca-filter-control-current-text">
-          {activeFilter.displayName || __('Assignee', 'alpaca')}
-        </span>
-      </span>
-    );
+    return activeFilter;
+  }
+
+  return null;
+}
+
+/**
+ * Render active label trigger content.
+ *
+ * @param {Object|null} activeLabelFilter Active label filter.
+ * @return {JSX.Element} Trigger label content.
+ */
+function renderLabelTriggerLabel(activeLabelFilter) {
+  if (!activeLabelFilter) {
+    return <span>{__('Label', 'alpaca')}</span>;
   }
 
   return (
     <span
       className="alpaca-filter-control-current alpaca-label-pill"
       style={{
-        backgroundColor: activeFilter.color || '#172b4d',
+        backgroundColor: activeLabelFilter.color || '#172b4d',
         color: '#fff',
       }}
     >
-      {activeFilter.name || __('Label', 'alpaca')}
+      {activeLabelFilter.name || __('Label', 'alpaca')}
+    </span>
+  );
+}
+
+/**
+ * Render active assignee trigger content.
+ *
+ * @param {Object|null} activeAssigneeFilter Active assignee filter.
+ * @return {JSX.Element} Trigger label content.
+ */
+function renderAssigneeTriggerLabel(activeAssigneeFilter) {
+  if (!activeAssigneeFilter) {
+    return <span>{__('Assignee', 'alpaca')}</span>;
+  }
+
+  return (
+    <span className="alpaca-filter-control-current alpaca-filter-control-current-assignee">
+      {activeAssigneeFilter.avatar ? (
+        <img
+          className="alpaca-filter-control-avatar"
+          src={activeAssigneeFilter.avatar}
+          alt=""
+          aria-hidden="true"
+        />
+      ) : null}
+      <span className="alpaca-filter-control-current-text">
+        {activeAssigneeFilter.displayName || __('Assignee', 'alpaca')}
+      </span>
     </span>
   );
 }
@@ -84,8 +138,9 @@ function BoardFilterControl({
   onSetFilter,
   onClearFilter,
 }) {
-  const [isOpen, setIsOpen] = useState(false);
-  const triggerRef = useRef(null);
+  const [openPopoverType, setOpenPopoverType] = useState('');
+  const labelTriggerRef = useRef(null);
+  const assigneeTriggerRef = useRef(null);
 
   const { labels, assignees } = useMemo(() => {
     const labelsMap = new Map();
@@ -179,151 +234,193 @@ function BoardFilterControl({
     return null;
   }
 
-  const hasOptions = labels.length > 0 || assignees.length > 0;
+  const hasLabelOptions = labels.length > 0;
+  const hasAssigneeOptions = assignees.length > 0;
+  const activeLabelFilter = getActiveLabelFilter(activeFilter);
+  const activeAssigneeFilter = getActiveAssigneeFilter(activeFilter);
+
+  /**
+   * Render a filter control with trigger, clear, and popover content.
+   *
+   * @param {Object}   config                Control config.
+   * @param {string}   config.filterType     Filter type.
+   * @param {string}   config.tooltipLabel   Tooltip label.
+   * @param {Object}   config.activeValue    Active filter value.
+   * @param {boolean}  config.hasOptionItems Whether popover has options.
+   * @param {Object}   config.triggerRef     Trigger ref.
+   * @param {Function} config.renderTrigger  Trigger content renderer.
+   * @param {Function} config.renderPopover  Popover content renderer.
+   * @return {JSX.Element}                    Control markup.
+   */
+  const renderFilterControl = ({
+    filterType,
+    tooltipLabel,
+    activeValue,
+    hasOptionItems,
+    triggerRef,
+    renderTrigger,
+    renderPopover,
+  }) => {
+    const isOpen = openPopoverType === filterType;
+
+    return (
+      <div
+        className={`alpaca-board-filter-control ${activeValue ? 'is-active-filter alpaca-board-control' : ''}`}
+      >
+        <Tooltip text={tooltipLabel}>
+          <button
+            type="button"
+            className={`alpaca-filter-control-trigger alpaca-board-control ${isOpen ? 'is-open' : ''}`}
+            onClick={() =>
+              setOpenPopoverType((previousType) =>
+                previousType === filterType ? '' : filterType,
+              )
+            }
+            ref={triggerRef}
+            aria-expanded={isOpen}
+            aria-haspopup="dialog"
+          >
+            {renderTrigger(activeValue)}
+          </button>
+        </Tooltip>
+
+        {activeValue ? (
+          <button
+            type="button"
+            className="alpaca-filter-control-clear"
+            onClick={(event) => {
+              event.stopPropagation();
+              onClearFilter(filterType);
+              setOpenPopoverType('');
+            }}
+            aria-label={__('Clear filter', 'alpaca')}
+          >
+            <span className="dashicons dashicons-no-alt" aria-hidden="true" />
+          </button>
+        ) : null}
+
+        {isOpen && triggerRef.current ? (
+          <Popover
+            anchor={triggerRef.current}
+            position="bottom left"
+            className="alpaca-filter-control-popover"
+            onClose={() => setOpenPopoverType('')}
+            onFocusOutside={() => setOpenPopoverType('')}
+            onEscape={() => setOpenPopoverType('')}
+            focusOnMount={false}
+            animate={false}
+          >
+            <div className="alpaca-filter-control-popover-content">
+              {!hasOptionItems ? (
+                <p className="alpaca-filter-control-empty">
+                  {__('No options found on board cards.', 'alpaca')}
+                </p>
+              ) : null}
+              {hasOptionItems ? renderPopover() : null}
+            </div>
+          </Popover>
+        ) : null}
+      </div>
+    );
+  };
 
   return createPortal(
-    <div
-      className={`alpaca-board-filter-control ${activeFilter ? 'is-active-filter alpaca-board-control' : ''}`}
-    >
-      <Tooltip text={__('Filter', 'alpaca')}>
-        <button
-          type="button"
-          className={`alpaca-filter-control-trigger alpaca-board-control ${isOpen ? 'is-open' : ''}`}
-          onClick={() => setIsOpen((previous) => !previous)}
-          ref={triggerRef}
-          aria-expanded={isOpen}
-          aria-haspopup="dialog"
-        >
-          {activeFilter ? (
-            renderTriggerLabel(activeFilter)
-          ) : (
-            <>
-              <span className="dashicons dashicons-filter" aria-hidden="true" />
-              {__('Filter', 'alpaca')}
-            </>
-          )}
-        </button>
-      </Tooltip>
+    <>
+      {renderFilterControl({
+        filterType: 'label',
+        tooltipLabel: __('Label', 'alpaca'),
+        activeValue: activeLabelFilter,
+        hasOptionItems: hasLabelOptions,
+        triggerRef: labelTriggerRef,
+        renderTrigger: renderLabelTriggerLabel,
+        renderPopover: () => (
+          <section className="alpaca-filter-control-section">
+            <h3 className="alpaca-filter-control-section-title">
+              {__('Labels', 'alpaca')}
+            </h3>
+            <div className="alpaca-filter-control-inline-list">
+              {labels.map((label) => (
+                <button
+                  type="button"
+                  key={
+                    [label.termId, label.slug, label.name]
+                      .filter(Boolean)
+                      .join('-') || label.name
+                  }
+                  className="alpaca-filter-control-option"
+                  onClick={() => {
+                    onSetFilter({
+                      filterType: 'label',
+                      termId: label.termId,
+                      slug: label.slug,
+                      name: label.name,
+                      color: label.color,
+                    });
+                    setOpenPopoverType('');
+                  }}
+                >
+                  <span
+                    className="alpaca-label-pill"
+                    style={{
+                      backgroundColor: label.color || '#172b4d',
+                      color: '#fff',
+                    }}
+                  >
+                    {label.name || label.slug || label.termId}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </section>
+        ),
+      })}
 
-      {activeFilter ? (
-        <button
-          type="button"
-          className="alpaca-filter-control-clear"
-          onClick={(event) => {
-            event.stopPropagation();
-            onClearFilter();
-            setIsOpen(false);
-          }}
-          aria-label={__('Clear filter', 'alpaca')}
-        >
-          <span className="dashicons dashicons-no-alt" aria-hidden="true" />
-        </button>
-      ) : null}
-
-      {isOpen && triggerRef.current ? (
-        <Popover
-          anchor={triggerRef.current}
-          position="bottom left"
-          className="alpaca-filter-control-popover"
-          onClose={() => setIsOpen(false)}
-          onFocusOutside={() => setIsOpen(false)}
-          onEscape={() => setIsOpen(false)}
-          focusOnMount={false}
-          animate={false}
-        >
-          <div className="alpaca-filter-control-popover-content">
-            {!hasOptions ? (
-              <p className="alpaca-filter-control-empty">
-                {__('No labels or assignees found on board cards.', 'alpaca')}
-              </p>
-            ) : null}
-
-            {labels.length > 0 ? (
-              <section className="alpaca-filter-control-section">
-                <h3 className="alpaca-filter-control-section-title">
-                  {__('Labels', 'alpaca')}
-                </h3>
-                <div className="alpaca-filter-control-inline-list">
-                  {labels.map((label) => (
-                    <button
-                      type="button"
-                      key={
-                        [label.termId, label.slug, label.name]
-                          .filter(Boolean)
-                          .join('-') || label.name
-                      }
-                      className="alpaca-filter-control-option"
-                      onClick={() => {
-                        onSetFilter({
-                          type: 'label',
-                          termId: label.termId,
-                          slug: label.slug,
-                          name: label.name,
-                          color: label.color,
-                        });
-                        setIsOpen(false);
-                      }}
-                    >
-                      <span
-                        className="alpaca-label-pill"
-                        style={{
-                          backgroundColor: label.color || '#172b4d',
-                          color: '#fff',
-                        }}
-                      >
-                        {label.name || label.slug || label.termId}
+      {renderFilterControl({
+        filterType: 'assignee',
+        tooltipLabel: __('Assignee', 'alpaca'),
+        activeValue: activeAssigneeFilter,
+        hasOptionItems: hasAssigneeOptions,
+        triggerRef: assigneeTriggerRef,
+        renderTrigger: renderAssigneeTriggerLabel,
+        renderPopover: () => (
+          <section className="alpaca-filter-control-section">
+            <h3 className="alpaca-filter-control-section-title">
+              {__('Assignees', 'alpaca')}
+            </h3>
+            <div className="alpaca-filter-control-inline-list">
+              {assignees.map((assignee) => (
+                <button
+                  type="button"
+                  key={assignee.id}
+                  className="alpaca-filter-control-option alpaca-filter-control-assignee-option"
+                  onClick={() => {
+                    onSetFilter({
+                      filterType: 'assignee',
+                      id: assignee.id,
+                      displayName: getAssigneeDisplayName(assignee),
+                      avatar: assignee.avatar,
+                    });
+                    setOpenPopoverType('');
+                  }}
+                >
+                  <span className="alpaca-user flexalign">
+                    {assignee.avatar ? (
+                      <span className="alpaca-user-avatar">
+                        <img src={assignee.avatar} alt="" aria-hidden="true" />
                       </span>
-                    </button>
-                  ))}
-                </div>
-              </section>
-            ) : null}
-
-            {assignees.length > 0 ? (
-              <section className="alpaca-filter-control-section">
-                <h3 className="alpaca-filter-control-section-title">
-                  {__('Assignees', 'alpaca')}
-                </h3>
-                <div className="alpaca-filter-control-inline-list">
-                  {assignees.map((assignee) => (
-                    <button
-                      type="button"
-                      key={assignee.id}
-                      className="alpaca-filter-control-option alpaca-filter-control-assignee-option"
-                      onClick={() => {
-                        onSetFilter({
-                          type: 'assignee',
-                          id: assignee.id,
-                          displayName: getAssigneeDisplayName(assignee),
-                          avatar: assignee.avatar,
-                        });
-                        setIsOpen(false);
-                      }}
-                    >
-                      <span className="alpaca-user flexalign">
-                        {assignee.avatar ? (
-                          <span className="alpaca-user-avatar">
-                            <img
-                              src={assignee.avatar}
-                              alt=""
-                              aria-hidden="true"
-                            />
-                          </span>
-                        ) : null}
-                        <span className="alpaca-user-name">
-                          {getAssigneeDisplayName(assignee) ||
-                            __('Assignee', 'alpaca')}
-                        </span>
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </section>
-            ) : null}
-          </div>
-        </Popover>
-      ) : null}
-    </div>,
+                    ) : null}
+                    <span className="alpaca-user-name">
+                      {getAssigneeDisplayName(assignee) ||
+                        __('Assignee', 'alpaca')}
+                    </span>
+                  </span>
+                </button>
+              ))}
+            </div>
+          </section>
+        ),
+      })}
+    </>,
     mountNode,
   );
 }
@@ -332,14 +429,19 @@ BoardFilterControl.propTypes = {
   selector: PropTypes.string,
   containers: PropTypes.array,
   activeFilter: PropTypes.shape({
-    type: PropTypes.string,
-    id: PropTypes.string,
-    displayName: PropTypes.string,
-    avatar: PropTypes.string,
-    termId: PropTypes.string,
-    slug: PropTypes.string,
-    name: PropTypes.string,
-    color: PropTypes.string,
+    label: PropTypes.shape({
+      type: PropTypes.string,
+      termId: PropTypes.string,
+      slug: PropTypes.string,
+      name: PropTypes.string,
+      color: PropTypes.string,
+    }),
+    assignee: PropTypes.shape({
+      type: PropTypes.string,
+      id: PropTypes.string,
+      displayName: PropTypes.string,
+      avatar: PropTypes.string,
+    }),
   }),
   onSetFilter: PropTypes.func,
   onClearFilter: PropTypes.func,
