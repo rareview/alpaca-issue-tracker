@@ -5,6 +5,8 @@
 */
 .wp-admin {
   .alpaca-item {
+    --alpaca-item-controls-width: 2.25rem;
+
     display: flex;
     flex-direction: column;
     gap: $spacegap;
@@ -18,8 +20,7 @@
       cursor: grabbing;
     }
 
-    .components-card__body,
-    .components-card__footer {
+    .components-card__body {
       padding-bottom: 4px;
     }
 
@@ -31,20 +32,20 @@
       margin: 4px 0; // assuming image between body and footer
     }
 
-    .components-card__footer {
-      padding-top: 0;
-      line-height: 2em;
+    .alpaca-item-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) var(--alpaca-item-controls-width);
+      column-gap: 0.25rem;
+      align-items: start;
     }
 
-    .alpaca-item-upper {
-      display: grid;
-      grid-template-columns: 1fr 2em;
-      grid-template-rows: auto;
-      gap: 0;
+    .alpaca-item-main {
+      min-inline-size: 0;
     }
 
     .alpaca-item-deadline {
       border-radius: $common-radius;
+      margin: 0;
       @include alpaca-item-deadline-states;
     }
 
@@ -59,6 +60,18 @@
     .alpaca-item-content {
       grid-column: 1;
       grid-row: 1;
+      min-inline-size: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .alpaca-item-controls {
+      inline-size: var(--alpaca-item-controls-width);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 4px;
+      padding-bottom: 4px;
     }
 
     .alpaca-item-controls .dashicons {
@@ -88,11 +101,11 @@
       cursor: pointer;
     }
 
-    &.is-watched .alpaca-item-controls .dashicons {
+    &.is-watched .alpaca-item-controls .dashicons-star-filled {
       opacity: 1;
     }
 
-    .alpaca-item-inner.is-watched .alpaca-item-controls .dashicons {
+    .alpaca-item-inner.is-watched .alpaca-item-controls .dashicons-star-filled {
       opacity: 1;
     }
 
@@ -101,24 +114,11 @@
     }
   }
 
-  .alpaca-item-inner {
-    .alpaca-item-content {
-      grid-column: 1;
-      grid-row: 1;
-    }
-
-    .alpaca-item-controls {
-      grid-column: 2;
-      grid-row: 1;
-      text-align: right;
-    }
-
-    .alpaca-item-datapoints {
-      grid-column: 1;
-      grid-row: 2;
-      margin: 4px 0;
-      @include alpaca-item-datapoints-content;
-    }
+  .alpaca-item-datapoints {
+    margin: 8px 0 4px 0;
+    gap: 4px;
+    line-height: 2em;
+    @include alpaca-item-datapoints-content;
   }
 
   .alpaca-item.empty {

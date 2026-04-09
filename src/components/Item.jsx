@@ -1,9 +1,14 @@
-const { forwardRef } = wp.element;
+const { forwardRef, useEffect, useRef, useState } = wp.element;
 import PropTypes from 'prop-types';
-const { Card, CardBody, CardFooter } = wp.components;
+const { Card, CardBody } = wp.components;
 const { Text = wp.components.__experimentalText } = wp.components;
 import { useWatchlist } from '../context/WatchlistContext';
-import StarControl from './StarControl';
+import {
+  getControlSubscriptionSignature,
+  getNormalizedItemControls,
+  getRenderableItemControls,
+} from '../utils/itemControlDescriptors';
+import '../utils/itemControls';
 import '../utils/itemDatapoints';
 
 /**
@@ -44,6 +49,8 @@ const Item = forwardRef(
     ref,
   ) => {
     const { isWatched, toggleWatch, loading } = useWatchlist();
+    const [, setControlStateVersion] = useState(0);
+    const normalizedItemControlsRef = useRef([]);
     const watched = isWatched(id);
 
     // Allow third-party code to inject additional `data-` attributes
@@ -73,6 +80,64 @@ const Item = forwardRef(
       toggleWatch(id);
     };
 
+    // Allow third-party code to add controls via `alpaca.item.controls`.
+    // Filters may return either renderable elements or descriptor objects.
+    const filteredItemControls = wp.hooks.applyFilters(
+      'alpaca.item.controls',
+      [],
+      {
+        id,
+        content,
+        meta,
+        postDate,
+        assignees,
+        labels,
+        commentCount,
+        commentCountByAgent,
+        watched,
+        loading,
+        onWatchToggle: handleWatchToggle,
+      },
+    );
+
+    const normalizedItemControls =
+      getNormalizedItemControls(filteredItemControls);
+
+    normalizedItemControlsRef.current = normalizedItemControls;
+
+    const controlSubscriptionSignature = getControlSubscriptionSignature(
+      normalizedItemControls,
+    );
+
+    useEffect(() => {
+      const unsubscribeCallbacks = normalizedItemControlsRef.current
+        .map((control) => {
+          if (!control.subscribe) {
+            return null;
+          }
+
+          return control.subscribe(() => {
+            setControlStateVersion((version) => version + 1);
+          });
+        })
+        .filter(Boolean);
+
+      return () => {
+        unsubscribeCallbacks.forEach((unsubscribe) => {
+          unsubscribe();
+        });
+      };
+    }, [controlSubscriptionSignature]);
+
+    // Sort ready controls so active ones appear first.
+    const sortedItemControls = getRenderableItemControls(
+      normalizedItemControls,
+      (element, key) =>
+        wp.element.cloneElement(element, {
+          key,
+        }),
+    );
+
     return (
       // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
       <Card
@@ -84,34 +149,28 @@ const Item = forwardRef(
         onClick={onClick}
       >
         <CardBody size="xSmall">
-          <div className="alpaca-item-upper">
-            <div className="alpaca-item-content">
-              <Text>{content}</Text>
+          <div className="alpaca-item-layout">
+            <div className="alpaca-item-main">
+              <div className="alpaca-item-content">
+                <Text>{content}</Text>
+              </div>
+              <div className="alpaca-item-datapoints flexalign">
+                {wp.hooks.applyFilters('alpaca.item.datapoints', null, {
+                  id,
+                  title: content,
+                  content,
+                  meta,
+                  postDate,
+                  assignees,
+                  labels,
+                  commentCount,
+                  commentCountByAgent,
+                })}
+              </div>
             </div>
-            <div className="alpaca-item-controls">
-              <StarControl
-                watched={watched}
-                onToggle={handleWatchToggle}
-                disabled={loading}
-              />
-            </div>
+            <div className="alpaca-item-controls">{sortedItemControls}</div>
           </div>
         </CardBody>
-        <CardFooter size="xSmall" isBorderless>
-          <div className="alpaca-item-datapoints flexalign">
-            {wp.hooks.applyFilters('alpaca.item.datapoints', null, {
-              id,
-              title: content,
-              content,
-              meta,
-              postDate,
-              assignees,
-              labels,
-              commentCount,
-              commentCountByAgent,
-            })}
-          </div>
-        </CardFooter>
       </Card>
     );
   },

@@ -64,7 +64,7 @@ export const addDeadlineDatapoint = (originalContent, itemProps) => {
         {originalContent}
         <Tooltip text={__('Deadline', 'alpaca')}>
           <div
-            className="alpaca-item-icon alpaca-item-deadline"
+            className="alpaca-item-icon alpaca-item-deadline alpaca-label-pill"
             data-days-left={diffDays}
             data-deadline-state={deadlineState}
           >
