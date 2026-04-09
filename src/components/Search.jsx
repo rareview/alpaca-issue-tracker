@@ -494,6 +494,27 @@ function SearchPortal({
   onSetSearchFilter,
   onClearSearchFilter,
 }) {
+  const visibleIssueIds = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          (Array.isArray(containers) ? containers : [])
+            .flatMap((container) =>
+              container && Array.isArray(container.items)
+                ? container.items
+                : [],
+            )
+            .map((item) =>
+              item && typeof item.id !== 'undefined' && item.id !== null
+                ? String(item.id)
+                : '',
+            )
+            .filter(Boolean),
+        ),
+      ),
+    [containers],
+  );
+
   if (typeof document === 'undefined' || typeof createPortal !== 'function') {
     return null;
   }
@@ -502,21 +523,6 @@ function SearchPortal({
   if (!mountNode) {
     return null;
   }
-
-  const visibleIssueIds = Array.from(
-    new Set(
-      (Array.isArray(containers) ? containers : [])
-        .flatMap((container) =>
-          container && Array.isArray(container.items) ? container.items : [],
-        )
-        .map((item) =>
-          item && typeof item.id !== 'undefined' && item.id !== null
-            ? String(item.id)
-            : '',
-        )
-        .filter(Boolean),
-    ),
-  );
 
   return createPortal(
     <SearchContainer

@@ -70,17 +70,27 @@ export function AlpacaBoard() {
         ? filter.searchFilter || null
         : activeSearchFilter;
 
-      if (
-        searchFilter &&
-        Array.isArray(searchFilter.issueIds) &&
-        searchFilter.issueIds.length > 0
-      ) {
+      const hasActiveSearchQuery =
+        !!searchFilter &&
+        typeof searchFilter.query === 'string' &&
+        searchFilter.query.trim().length > 0;
+
+      if (hasActiveSearchQuery) {
+        const searchIssueIds = Array.isArray(searchFilter.issueIds)
+          ? searchFilter.issueIds
+          : [];
+
+        // An active query with zero matches should hide all cards.
+        if (searchIssueIds.length < 1) {
+          return false;
+        }
+
         const itemId =
           typeof item.id !== 'undefined' && item.id !== null
             ? String(item.id)
             : '';
 
-        if (!itemId || !searchFilter.issueIds.includes(itemId)) {
+        if (!itemId || !searchIssueIds.includes(itemId)) {
           return false;
         }
       }
