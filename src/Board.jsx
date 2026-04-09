@@ -1516,6 +1516,11 @@ export function AlpacaBoard() {
         issueId={selectedItem?.id}
         isCreating={selectedItem?.isCreating}
         isOpen={!!selectedItem}
+        activeSearchQuery={
+          activeSearchFilter && typeof activeSearchFilter.query === 'string'
+            ? activeSearchFilter.query
+            : ''
+        }
         onClose={closeModal}
         onDelete={handleDeleteIssue}
         triggerRef={triggerRef}

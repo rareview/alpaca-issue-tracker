@@ -5,12 +5,20 @@ import ReportTab from './ReportTab';
 import ErrorsTab from './ErrorsTab';
 
 const TabContent = memo(
-  ({ tab, issueDetails, issueId, commentRefreshKey, showNotification }) => {
+  ({
+    tab,
+    issueDetails,
+    issueId,
+    activeSearchQuery,
+    commentRefreshKey,
+    showNotification,
+  }) => {
     switch (tab.name) {
       case 'comments':
         return (
           <Commenting
             issueId={issueId}
+            activeSearchQuery={activeSearchQuery}
             commentRefreshKey={commentRefreshKey}
             showNotification={showNotification}
           />

@@ -4,6 +4,7 @@ import User from '../User';
 import Time from '../Time';
 import { Attachment } from '../issue/AttachmentRow';
 import { generateAssigneeSpan } from '../../hooks/useUser';
+import { highlightHtmlContent } from '../../utils/searchHighlight';
 import { sanitizeHtml, isValidHttpUrl } from '../../utils/sanitize';
 
 const { __, sprintf } = wp.i18n;
@@ -195,6 +196,7 @@ export const getProcessedCommentContent = (comment) => {
  * @param {boolean}  props.enableAttachmentPreview Whether image attachment zoom preview is enabled.
  * @param {boolean}  props.auditTimeInTopline      Whether audit timestamp renders in a title row.
  * @param {string}   props.className               Optional extra class names for wrapper.
+ * @param {string}   props.highlightQuery          Active search query for inline highlighting.
  * @return {JSX.Element} Rendered timeline entry.
  */
 const TimelineEntry = ({
@@ -213,6 +215,7 @@ const TimelineEntry = ({
   enableAttachmentPreview,
   auditTimeInTopline,
   className,
+  highlightQuery,
 }) => {
   const author = comment.author_details ||
     comment._embedded?.author?.[0] ||
@@ -280,8 +283,12 @@ const TimelineEntry = ({
       );
       html = html.replace(/<input\b[^>]*\/?>/gi, '');
     }
+    if (dataSource === 'human') {
+      html = highlightHtmlContent(html, highlightQuery);
+    }
+
     return html;
-  }, [comment, stripInteractive]);
+  }, [comment, stripInteractive, dataSource, highlightQuery]);
 
   if (isAudit) {
     return (
@@ -443,6 +450,7 @@ TimelineEntry.propTypes = {
   enableAttachmentPreview: PropTypes.bool,
   auditTimeInTopline: PropTypes.bool,
   className: PropTypes.string,
+  highlightQuery: PropTypes.string,
 };
 
 TimelineEntry.defaultProps = {
@@ -460,6 +468,7 @@ TimelineEntry.defaultProps = {
   enableAttachmentPreview: true,
   auditTimeInTopline: false,
   className: '',
+  highlightQuery: '',
 };
 
 export default memo(TimelineEntry);
