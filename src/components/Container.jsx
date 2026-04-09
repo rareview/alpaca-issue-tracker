@@ -10,6 +10,7 @@ import {
   getAbsoluteDropIndexForFilteredContainer,
   shouldDisableBulkContainerActions,
 } from '../utils/boardFiltering';
+import { buildContainerMenuControlContext } from '../utils/containerMenuControls';
 
 import PropTypes from 'prop-types';
 
@@ -219,6 +220,38 @@ function Container({
       onClick: () => onDeleteAll(id),
     });
   }
+
+  // Allow third-party code to customize container menu controls.
+  const filteredMenuControls = wp.hooks.applyFilters(
+    'alpaca.container.menuControls',
+    menuControls,
+    buildContainerMenuControlContext({
+      id,
+      title,
+      items,
+      activeFilter,
+      hasItems,
+      isLastContainer,
+      isHidden,
+      isFiltering,
+      visibleItemEntries,
+      itemMatchesFilter,
+      areBulkActionsDisabled,
+      onMoveAllToNext,
+      onDeleteAll,
+      onToggleHidden,
+      onRename,
+      onBulkItemReorder,
+      startAnimation,
+      stopAnimation,
+      waitForTransitions,
+      isAnimatingRef,
+    }),
+  );
+
+  const containerMenuControls = Array.isArray(filteredMenuControls)
+    ? filteredMenuControls
+    : menuControls;
 
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -447,7 +480,7 @@ function Container({
           <DropdownMenu
             icon="menu"
             label={__('Options', 'alpaca')}
-            controls={menuControls}
+            controls={containerMenuControls}
           />
         </div>
       </CardHeader>

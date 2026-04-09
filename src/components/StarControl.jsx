@@ -24,6 +24,7 @@ const StarControl = ({ watched, onToggle, disabled, className }) => {
   return (
     <button
       type="button"
+      data-active={watched ? '1' : undefined}
       className={classes}
       onClick={onToggle}
       aria-label={
