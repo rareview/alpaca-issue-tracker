@@ -36,17 +36,16 @@ const deleteCommentAttachment = async (url, issueId, commentId = null) => {
     return;
   }
 
-  const requestData =
-    Number(commentId) > 0
-      ? {
-          issue_id: issueId,
-          comment_id: Number(commentId),
-          url,
-        }
-      : {
-          issue_id: issueId,
-          url,
-        };
+  const requestDataEntries = [
+    ['issue_id', issueId],
+    ['url', url],
+  ];
+
+  if (Number(commentId) > 0) {
+    requestDataEntries.push(['comment_id', Number(commentId)]);
+  }
+
+  const requestData = Object.fromEntries(requestDataEntries);
 
   const response = await wp.apiFetch({
     path: '/alpaca/v1/comment-attachments/delete',
