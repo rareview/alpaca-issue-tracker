@@ -31,18 +31,27 @@ import { Attachment } from './issue/AttachmentRow';
 import { uploadIssueAttachment } from '../utils/attachmentUpload';
 import MentionsTextarea from './notifications/MentionsTextarea';
 
-const deleteCommentAttachment = async (url, issueId) => {
+const deleteCommentAttachment = async (url, issueId, commentId = null) => {
   if (!url || !issueId) {
     return;
   }
 
+  const requestData =
+    Number(commentId) > 0
+      ? {
+          issue_id: issueId,
+          comment_id: Number(commentId),
+          url,
+        }
+      : {
+          issue_id: issueId,
+          url,
+        };
+
   const response = await wp.apiFetch({
     path: '/alpaca/v1/comment-attachments/delete',
     method: 'POST',
-    data: {
-      issue_id: issueId,
-      url,
-    },
+    data: requestData,
   });
 
   if (!response || response.success === false) {
@@ -228,6 +237,7 @@ const Comment = memo(
     cancelEditing,
     isSubmitting,
     currentUser,
+    userCanManageOptions,
     onAttachmentClick,
     editingAttachments,
     onEditAttachFiles,
@@ -256,6 +266,26 @@ const Comment = memo(
       ),
     );
 
+    const currentUserId = Number(currentUser?.id || 0);
+    const commentAuthorId = Number(comment?.author || 0);
+    const isCommentAuthor =
+      currentUserId > 0 &&
+      commentAuthorId > 0 &&
+      currentUserId === commentAuthorId;
+    const lastEditedByUserId = Number(
+      comment?.meta?.alpacaCommentLastEdit?.userId || 0,
+    );
+    const isLockedByDifferentEditor =
+      isCommentAuthor &&
+      lastEditedByUserId > 0 &&
+      currentUserId > 0 &&
+      lastEditedByUserId !== currentUserId;
+    const canEditComment =
+      isEditable &&
+      (userCanManageOptions || (isCommentAuthor && !isLockedByDifferentEditor));
+    const canDeleteComment = userCanManageOptions;
+    const canManageComment = canEditComment || canDeleteComment;
+
     return (
       <TimelineEntry
         comment={comment}
@@ -264,41 +294,45 @@ const Comment = memo(
         isEditing={editingCommentId === comment.id}
         isSubmitting={isSubmitting}
         headerActions={
-          <Dropdown
-            popoverProps={{ placement: 'bottom-end' }}
-            renderToggle={({ isOpen, onToggle }) => (
-              <Tooltip text={__('Options', 'alpaca')}>
-                <Button
-                  icon="ellipsis"
-                  onClick={onToggle}
-                  aria-expanded={isOpen}
-                  className="rotate90"
-                />
-              </Tooltip>
-            )}
-            renderContent={({ onClose }) => (
-              <MenuGroup>
-                {isEditable && (
-                  <MenuItem
-                    icon="edit"
-                    onClick={() => {
-                      startEditing(comment);
-                      onClose();
-                    }}
-                  >
-                    {__('Edit', 'alpaca')}
-                  </MenuItem>
-                )}
-                <MenuItem
-                  icon="trash"
-                  isDestructive
-                  onClick={() => confirmDeleteComment(comment.id)}
-                >
-                  {__('Delete', 'alpaca')}
-                </MenuItem>
-              </MenuGroup>
-            )}
-          />
+          canManageComment ? (
+            <Dropdown
+              popoverProps={{ placement: 'bottom-end' }}
+              renderToggle={({ isOpen, onToggle }) => (
+                <Tooltip text={__('Options', 'alpaca')}>
+                  <Button
+                    icon="ellipsis"
+                    onClick={onToggle}
+                    aria-expanded={isOpen}
+                    className="rotate90"
+                  />
+                </Tooltip>
+              )}
+              renderContent={({ onClose }) => (
+                <MenuGroup>
+                  {canEditComment && (
+                    <MenuItem
+                      icon="edit"
+                      onClick={() => {
+                        startEditing(comment);
+                        onClose();
+                      }}
+                    >
+                      {__('Edit', 'alpaca')}
+                    </MenuItem>
+                  )}
+                  {canDeleteComment && (
+                    <MenuItem
+                      icon="trash"
+                      isDestructive
+                      onClick={() => confirmDeleteComment(comment.id)}
+                    >
+                      {__('Delete', 'alpaca')}
+                    </MenuItem>
+                  )}
+                </MenuGroup>
+              )}
+            />
+          ) : null
         }
         editBody={
           <AttachmentControls
@@ -338,12 +372,14 @@ const Comment = memo(
     );
   },
   (prev, next) =>
-    prev.comment.id === next.comment.id &&
+    prev.comment === next.comment &&
     prev.editingCommentId === next.editingCommentId &&
     prev.editingContent === next.editingContent &&
     prev.isSubmitting === next.isSubmitting &&
     prev.isProcessingAttachments === next.isProcessingAttachments &&
-    prev.editingAttachments === next.editingAttachments,
+    prev.editingAttachments === next.editingAttachments &&
+    prev.currentUser?.id === next.currentUser?.id &&
+    prev.userCanManageOptions === next.userCanManageOptions,
 );
 
 Comment.propTypes = {
@@ -358,6 +394,7 @@ Comment.propTypes = {
   cancelEditing: PropTypes.func.isRequired,
   isSubmitting: PropTypes.bool,
   currentUser: PropTypes.object,
+  userCanManageOptions: PropTypes.bool.isRequired,
   onAttachmentClick: PropTypes.func.isRequired,
   editingAttachments: PropTypes.arrayOf(
     PropTypes.shape({
@@ -382,6 +419,10 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
   const [isProcessingAttachments, setIsProcessingAttachments] = useState(false);
   const [pendingAttachments, setPendingAttachments] = useState([]);
   const [editingAttachments, setEditingAttachments] = useState([]);
+  const [editingOriginalAttachmentIds, setEditingOriginalAttachmentIds] =
+    useState([]);
+  const [editingRemovedAttachmentUrls, setEditingRemovedAttachmentUrls] =
+    useState([]);
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editingContent, setEditingContent] = useState('');
   const [deleteCommentId, setDeleteCommentId] = useState(null);
@@ -389,6 +430,16 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
   const [lightboxSrc, setLightboxSrc] = useState(null);
   const editingRef = useRef(null);
   const newCommentRef = useRef(null);
+  const localizedCanManageOptions =
+    typeof window !== 'undefined'
+      ? window.alpacaSettings?.canManageOptions
+      : false;
+  const userCanManageOptions = Boolean(
+    localizedCanManageOptions === true ||
+      localizedCanManageOptions === 1 ||
+      localizedCanManageOptions === '1' ||
+      currentUser?.capabilities?.manage_options === true,
+  );
   const [sortOrder, setSortOrder] = useState(
     getCookie('comment_sort_order') || 'desc',
   );
@@ -565,10 +616,14 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
     setEditingCommentId(comment.id);
     setEditingContent(comment.content.raw || comment.content.rendered || '');
     const existingAttachments = comment.meta?.alpacaCommentAttachments || [];
+    setEditingRemovedAttachmentUrls([]);
     const formattedAttachments = existingAttachments.map((url, index) => ({
       id: `${comment.id}-${index}`,
       url,
     }));
+    setEditingOriginalAttachmentIds(
+      formattedAttachments.map((attachment) => attachment.id),
+    );
     setEditingAttachments(formattedAttachments);
   }, []);
 
@@ -576,6 +631,8 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
     setEditingCommentId(null);
     setEditingContent('');
     setEditingAttachments([]);
+    setEditingOriginalAttachmentIds([]);
+    setEditingRemovedAttachmentUrls([]);
   }, []);
 
   const saveEdit = useCallback(
@@ -594,40 +651,62 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
           currentUser?.name ||
           __('Unknown', 'alpaca'),
       };
-      const attachmentUrls = editingAttachments.map(
-        (attachment) => attachment.url,
-      );
-      const hasAttachmentUrls = attachmentUrls.length > 0;
-      const attachmentMeta = hasAttachmentUrls
-        ? {
-            alpacaCommentAttachments: attachmentUrls,
-          }
-        : {};
+      const attachmentUrls = editingAttachments
+        .map((attachment) => attachment.url)
+        .filter((url) => !editingRemovedAttachmentUrls.includes(url));
+      const attachmentMeta = {
+        alpacaCommentAttachments: attachmentUrls,
+      };
+      const removedUrls = [...editingRemovedAttachmentUrls];
 
-      wp.apiFetch({
-        path: `/wp/v2/comments/${commentId}`,
-        method: 'POST',
-        data: {
-          content: editingContent,
-          author_user_agent: agent,
-          meta: {
-            ...attachmentMeta,
-            alpacaCommentLastEdit: lastEditedMeta,
+      const performSave = () =>
+        wp.apiFetch({
+          path: `/wp/v2/comments/${commentId}`,
+          method: 'POST',
+          data: {
+            content: editingContent,
+            author_user_agent: agent,
+            meta: {
+              ...attachmentMeta,
+              alpacaCommentLastEdit: lastEditedMeta,
+            },
           },
-        },
-      })
+        });
+
+      const deleteRemovedAttachments =
+        removedUrls.length > 0
+          ? Promise.allSettled(
+              removedUrls.map((url) =>
+                deleteCommentAttachment(url, issueId, commentId),
+              ),
+            )
+          : Promise.resolve([]);
+
+      deleteRemovedAttachments
+        .then((results) => {
+          const failedCount = results.filter(
+            (result) => result.status === 'rejected',
+          ).length;
+
+          if (failedCount > 0) {
+            showNotification(
+              __('Failed to delete one or more attachments.', 'alpaca'),
+              'error',
+            );
+            throw new Error('attachment_delete_failed');
+          }
+
+          return performSave();
+        })
         .then((updated) => {
-          const updatedComment =
-            updated && updated.meta
-              ? updated
-              : {
-                  ...updated,
-                  meta: {
-                    ...(updated && updated.meta ? updated.meta : {}),
-                    ...attachmentMeta,
-                    alpacaCommentLastEdit: lastEditedMeta,
-                  },
-                };
+          const updatedComment = {
+            ...(updated || {}),
+            meta: {
+              ...(updated && updated.meta ? updated.meta : {}),
+              ...attachmentMeta,
+              alpacaCommentLastEdit: lastEditedMeta,
+            },
+          };
 
           setComments((prev) =>
             prev.map((c) => (c.id === commentId ? updatedComment : c)),
@@ -635,9 +714,16 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
           setEditingCommentId(null);
           setEditingContent('');
           setEditingAttachments([]);
+          setEditingOriginalAttachmentIds([]);
+          setEditingRemovedAttachmentUrls([]);
+
           wp.hooks.doAction('alpaca.commentUpdated', updatedComment);
         })
         .catch((err) => {
+          if ('attachment_delete_failed' === err?.message) {
+            return;
+          }
+
           console.error(err);
           showNotification(
             `${__('Failed to update comment:', 'alpaca')} ${err.message || __('Unknown error', 'alpaca')}`,
@@ -650,7 +736,9 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
       comments,
       showNotification,
       editingAttachments,
+      editingRemovedAttachmentUrls,
       currentUser,
+      issueId,
     ],
   );
 
@@ -666,7 +754,9 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
 
     const deleteAttachments = attachmentUrls.length
       ? Promise.allSettled(
-          attachmentUrls.map((url) => deleteCommentAttachment(url, issueId)),
+          attachmentUrls.map((url) =>
+            deleteCommentAttachment(url, issueId, deleteCommentId),
+          ),
         )
       : Promise.resolve([]);
 
@@ -831,15 +921,33 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
       );
 
       if (attachment?.url) {
-        try {
-          await deleteCommentAttachment(attachment.url, issueId);
-        } catch (error) {
-          console.error('Failed to delete attachment', error);
-          showNotification(
-            __('Failed to delete attachment.', 'alpaca'),
-            'error',
-          );
-          return;
+        const isOriginalAttachment = editingOriginalAttachmentIds.includes(
+          attachment.id,
+        );
+
+        if (isOriginalAttachment) {
+          setEditingRemovedAttachmentUrls((prev) => {
+            if (prev.includes(attachment.url)) {
+              return prev;
+            }
+
+            return [...prev, attachment.url];
+          });
+        } else {
+          try {
+            await deleteCommentAttachment(
+              attachment.url,
+              issueId,
+              editingCommentId,
+            );
+          } catch (error) {
+            console.error('Failed to delete attachment', error);
+            showNotification(
+              __('Failed to delete attachment.', 'alpaca'),
+              'error',
+            );
+            return;
+          }
         }
       }
 
@@ -847,7 +955,13 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
         prev.filter((item) => item.id !== attachmentId),
       );
     },
-    [editingAttachments, issueId, showNotification],
+    [
+      editingAttachments,
+      editingCommentId,
+      editingOriginalAttachmentIds,
+      issueId,
+      showNotification,
+    ],
   );
 
   const handleLightboxClose = useCallback(() => setLightboxSrc(null), []);
@@ -916,6 +1030,7 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
               cancelEditing={cancelEditing}
               isSubmitting={isSubmitting}
               currentUser={currentUser}
+              userCanManageOptions={userCanManageOptions}
               onAttachmentClick={setLightboxSrc}
               editingAttachments={
                 editingCommentId === comment.id ? editingAttachments : []
