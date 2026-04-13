@@ -1,6 +1,6 @@
 const { __ } = wp.i18n;
 const { Tooltip } = wp.components;
-import CommentIcon from '../components/icons/CommentIcon';
+import Icon from '../components/icons/Icon';
 import {
   normalizeCommentAgentType,
   normalizeCommentAgentTypes,
@@ -134,7 +134,7 @@ export const addCommentCountDatapoint = (originalContent, itemProps) => {
         {originalContent}
         <Tooltip text={__('Comments', 'alpaca')}>
           <div className="alpaca-item-icon alpaca-item-comment-count">
-            <CommentIcon />
+            <Icon name="comment" />
             {commentCount}
           </div>
         </Tooltip>
