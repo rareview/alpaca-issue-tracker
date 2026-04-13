@@ -121,6 +121,7 @@ const Activity = () => {
   const [issueLookup, setIssueLookup] = useState({});
   const [selectedIssue, setSelectedIssue] = useState(null);
   const issueLookupRef = useRef({});
+  const pendingIssueTitleIdsRef = useRef(new Set());
   const loadingRef = useRef(false);
   const sentinelRef = useRef(null);
 
@@ -150,13 +151,25 @@ const Activity = () => {
       return;
     }
 
+    const issueIdsToFetch = unknownIssueIds.filter(
+      (issueId) => !pendingIssueTitleIdsRef.current.has(issueId),
+    );
+
+    if (issueIdsToFetch.length === 0) {
+      return;
+    }
+
+    issueIdsToFetch.forEach((issueId) => {
+      pendingIssueTitleIdsRef.current.add(issueId);
+    });
+
     try {
       const posts = await wp.apiFetch({
         path:
           '/wp/v2/alpaca_issue?context=view&_fields=id,title,content,slug,status&per_page=' +
-          unknownIssueIds.length +
+          issueIdsToFetch.length +
           '&include=' +
-          unknownIssueIds.join(','),
+          issueIdsToFetch.join(','),
       });
       const nextLookup = buildIssueLookupFromPosts(posts);
       setIssueLookup((previousLookup) => {
@@ -170,6 +183,10 @@ const Activity = () => {
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Failed to load issue titles for activity timeline', error);
+    } finally {
+      issueIdsToFetch.forEach((issueId) => {
+        pendingIssueTitleIdsRef.current.delete(issueId);
+      });
     }
   }, []);
 
@@ -441,6 +458,101 @@ const Activity = () => {
       return mergedLookup;
     });
   }, []);
+
+  const handleCommentPosted = useCallback(
+    (comment) => {
+      const commentType = String(comment?.comment_type || comment?.type || '');
+      if (commentType && 'issuecomment' !== commentType) {
+        return;
+      }
+
+      const commentId = Number(comment?.id);
+      if (commentId <= 0) {
+        return;
+      }
+
+      setComments((previousComments) => {
+        const existingCommentIndex = previousComments.findIndex(
+          (previousComment) => Number(previousComment?.id) === commentId,
+        );
+
+        if (existingCommentIndex >= 0) {
+          const nextComments = [...previousComments];
+          nextComments[existingCommentIndex] = {
+            ...nextComments[existingCommentIndex],
+            ...comment,
+          };
+          return nextComments;
+        }
+
+        return [comment, ...previousComments];
+      });
+
+      const issueId = Number(comment?.post);
+      if (issueId > 0) {
+        loadIssueTitles([issueId]);
+      }
+    },
+    [loadIssueTitles],
+  );
+
+  const handleCommentUpdated = useCallback((comment) => {
+    const commentId = Number(comment?.id);
+    if (commentId <= 0) {
+      return;
+    }
+
+    setComments((previousComments) =>
+      previousComments.map((previousComment) =>
+        Number(previousComment?.id) === commentId
+          ? {
+              ...previousComment,
+              ...comment,
+            }
+          : previousComment,
+      ),
+    );
+  }, []);
+
+  const handleCommentDeleted = useCallback((deletedComment) => {
+    const deletedCommentId = Number(
+      deletedComment?.id || deletedComment?.previous?.id,
+    );
+
+    if (deletedCommentId <= 0) {
+      return;
+    }
+
+    setComments((previousComments) =>
+      previousComments.filter(
+        (previousComment) => Number(previousComment?.id) !== deletedCommentId,
+      ),
+    );
+  }, []);
+
+  useEffect(() => {
+    wp.hooks.addAction(
+      'alpaca.commentPosted',
+      'alpaca/activity',
+      handleCommentPosted,
+    );
+    wp.hooks.addAction(
+      'alpaca.commentUpdated',
+      'alpaca/activity',
+      handleCommentUpdated,
+    );
+    wp.hooks.addAction(
+      'alpaca.commentDeleted',
+      'alpaca/activity',
+      handleCommentDeleted,
+    );
+
+    return () => {
+      wp.hooks.removeAction('alpaca.commentPosted', 'alpaca/activity');
+      wp.hooks.removeAction('alpaca.commentUpdated', 'alpaca/activity');
+      wp.hooks.removeAction('alpaca.commentDeleted', 'alpaca/activity');
+    };
+  }, [handleCommentDeleted, handleCommentPosted, handleCommentUpdated]);
 
   const noop = useCallback(() => {}, []);
 

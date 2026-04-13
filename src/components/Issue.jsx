@@ -1872,8 +1872,22 @@ const AlpacaIssue = ({
 
               {!isCreating && (
                 <div id="subissues" className="alpaca-subissues-block">
-                  <div className="alpaca-details-grid__label">
-                    {__('Checklist', 'alpaca')}
+                  <div className="alpaca-details-grid__label alpaca-subissues-header">
+                    <span className="alpaca-subissues-title">
+                      {__('Checklist', 'alpaca')}
+                    </span>
+                    <Button
+                      size="small"
+                      variant="secondary"
+                      icon="plus-alt2"
+                      iconSize="14"
+                      className="alpaca-subissues-add-button alpaca-subissues-add-inline"
+                      onMouseDown={(event) => event.preventDefault()}
+                      onClick={handleAddSubissueDraft}
+                      disabled={isSubissueAddDisabled}
+                    >
+                      {__('Add', 'alpaca')}
+                    </Button>
                   </div>
                   <div>
                     <div className="alpaca-subissues">
@@ -2003,15 +2017,6 @@ const AlpacaIssue = ({
                           );
                         })}
                       </ul>
-                      <Button
-                        variant="secondary"
-                        className="alpaca-subissues-add-button"
-                        onMouseDown={(event) => event.preventDefault()}
-                        onClick={handleAddSubissueDraft}
-                        disabled={isSubissueAddDisabled}
-                      >
-                        {__('Add New', 'alpaca')}
-                      </Button>
                     </div>
                   </div>
                 </div>

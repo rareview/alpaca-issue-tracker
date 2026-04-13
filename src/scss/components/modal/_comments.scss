@@ -59,6 +59,10 @@
       border: 1px solid $greyborder;
       border-radius: $common-radius;
 
+      button {
+        margin-bottom: 8px;
+      }
+
       textarea {
         border: none !important;
         outline: none !important;
@@ -209,6 +213,7 @@
 
   .alpaca-comment-form-actions {
     display: flex;
+    gap: 8px;
 
     .components-form-file-upload {
       margin-inline-end: auto;

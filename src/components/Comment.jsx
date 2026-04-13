@@ -4,7 +4,14 @@ import { fetchIssueCommentCount } from '../services/issueApi';
 import useAutoExpandTextarea from '../hooks/useAutoExpandTextarea';
 import TimelineEntry, { injectAvatarStyles } from './comment/TimelineEntry';
 
-const { useState, useEffect, useRef, useCallback, memo } = wp.element;
+const {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  memo,
+  createInterpolateElement,
+} = wp.element;
 const { __, _n, sprintf } = wp.i18n;
 const {
   Button,
@@ -56,42 +63,113 @@ const AttachmentControls = ({
   isProcessing,
   actions,
   pendingAltText,
-}) => (
-  <>
-    <div className="alpaca-comment-dropzone">
-      {children}
-      <DropZone onFilesDrop={onDrop} />
-    </div>
-    {attachments.length > 0 && (
-      <div className="alpaca-attachments-wrapper alpaca-comment-attachments alpaca-comment-attachments--pending">
-        {attachments.map((attachment) => (
-          <Attachment
-            key={attachment.id}
-            attachment={attachment}
-            onAttachmentClick={onClick}
-            onAttachmentDelete={() => onRemove(attachment.id)}
-            isLoading={isSubmitting || isProcessing}
-            showDelete
-            altText={pendingAltText}
-          />
-        ))}
+}) => {
+  const [showHelp, setShowHelp] = useState(false);
+
+  return (
+    <>
+      <div className="alpaca-comment-dropzone">
+        {children}
+        <DropZone onFilesDrop={onDrop} />
       </div>
-    )}
-    <div className="alpaca-comment-form-actions">
-      <FormFileUpload
-        icon="paperclip"
-        multiple
-        onChange={onUpload}
-        disabled={isSubmitting || isProcessing}
-      >
-        {isProcessing
-          ? __('Uploading…', 'alpaca')
-          : __('Attach Files', 'alpaca')}
-      </FormFileUpload>
-      {actions}
-    </div>
-  </>
-);
+      {attachments.length > 0 && (
+        <div className="alpaca-attachments-wrapper alpaca-comment-attachments alpaca-comment-attachments--pending">
+          {attachments.map((attachment) => (
+            <Attachment
+              key={attachment.id}
+              attachment={attachment}
+              onAttachmentClick={onClick}
+              onAttachmentDelete={() => onRemove(attachment.id)}
+              isLoading={isSubmitting || isProcessing}
+              showDelete
+              altText={pendingAltText}
+            />
+          ))}
+        </div>
+      )}
+      <div className="alpaca-comment-form-actions">
+        <FormFileUpload
+          icon="paperclip"
+          multiple
+          onChange={onUpload}
+          disabled={isSubmitting || isProcessing}
+        >
+          {isProcessing
+            ? __('Uploading…', 'alpaca')
+            : __('Attach Files', 'alpaca')}
+        </FormFileUpload>
+
+        <Tooltip text={__('Commenting Tips', 'alpaca')}>
+          <Button
+            variant="tertiary"
+            icon="info-outline"
+            onClick={() => setShowHelp(true)}
+            disabled={isSubmitting}
+          />
+        </Tooltip>
+
+        {actions}
+      </div>
+
+      {showHelp && (
+        <Modal
+          title={__('Commenting Tips', 'alpaca')}
+          onRequestClose={() => setShowHelp(false)}
+          className="alpaca-modal"
+        >
+          <div className="alpaca-help-content">
+            <ul>
+              <li>
+                {createInterpolateElement(
+                  __(
+                    'Type <kbd>@</kbd> and select a user to notify.',
+                    'alpaca',
+                  ),
+                  {
+                    kbd: <kbd />,
+                  },
+                )}
+              </li>
+              <li>
+                {createInterpolateElement(
+                  __(
+                    'Type <kbd>#</kbd> and search to link to another issue.',
+                    'alpaca',
+                  ),
+                  {
+                    kbd: <kbd />,
+                  },
+                )}
+              </li>
+              <li>
+                {createInterpolateElement(
+                  __(
+                    'Basic Markdown is supported: <code>**bold**</code>, <code>*italic*</code>, <code>`code`</code>, <code>- lists</code>, etc.',
+                    'alpaca',
+                  ),
+                  {
+                    code: <code />,
+                  },
+                )}
+              </li>
+              <li>
+                {createInterpolateElement(
+                  __(
+                    'You can click <strong>Attach Files</strong> to upload an attachment, or simply drag and drop files into the comment area.',
+                    'alpaca',
+                  ),
+                  {
+                    strong: <strong />,
+                  },
+                )}
+              </li>
+            </ul>
+          </div>
+        </Modal>
+      )}
+    </>
+  );
+};
 
 AttachmentControls.propTypes = {
   children: PropTypes.node.isRequired,
