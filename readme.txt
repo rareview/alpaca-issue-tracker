@@ -4,7 +4,7 @@ Tags: issue tracker, bug tracker, project management, kanban, development
 Requires at least: 6.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.0.0-beta.3
+Stable tag: 1.0.0-beta.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
