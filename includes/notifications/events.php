@@ -11,6 +11,24 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * Normalize a mixed get_users() row to a user ID.
+ *
+ * @param mixed $user User row from get_users().
+ * @return int Normalized user ID, or 0 when unavailable.
+ */
+function alpaca_get_normalized_user_id( $user ) {
+	if ( is_object( $user ) && isset( $user->ID ) ) {
+		return absint( $user->ID );
+	}
+
+	if ( is_scalar( $user ) ) {
+		return absint( $user );
+	}
+
+	return 0;
+}
+
+/**
  * Return issue assignee IDs for an issue.
  *
  * @param int $issue_id Issue ID.
@@ -40,7 +58,7 @@ function alpaca_get_issue_assignee_ids( $issue_id ) {
 
 	$ids = array();
 	foreach ( $users as $user ) {
-		$ids[] = (int) $user->ID;
+		$ids[] = alpaca_get_normalized_user_id( $user );
 	}
 
 	return array_values( array_unique( array_filter( $ids ) ) );
@@ -76,7 +94,7 @@ function alpaca_get_issue_watcher_ids( $issue_id ) {
 
 	$ids = array();
 	foreach ( $users as $user ) {
-		$ids[] = (int) $user->ID;
+		$ids[] = alpaca_get_normalized_user_id( $user );
 	}
 
 	return array_values( array_unique( array_filter( $ids ) ) );
