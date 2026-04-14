@@ -225,6 +225,7 @@ const EditableTitle = memo(
       if (e.key === 'Enter') {
         e.preventDefault();
         onSave();
+        e.currentTarget.blur();
       } else if (e.key === 'Escape') {
         e.preventDefault();
         e.stopPropagation();
@@ -235,6 +236,7 @@ const EditableTitle = memo(
     return (
       // eslint-disable-next-line jsx-a11y/no-noninteractive-element-to-interactive-role, jsx-a11y/no-noninteractive-element-interactions, jsx-a11y/heading-has-content
       <h3
+        key={isEditing ? 'issue-title-edit' : 'issue-title-view'}
         className="alpaca-issue-title"
         contentEditable={isEditing}
         suppressContentEditableWarning={isEditing}
