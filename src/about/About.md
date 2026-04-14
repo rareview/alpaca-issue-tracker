@@ -45,7 +45,7 @@ But we soon realised Alpaca could be a full collaboration solution, on par with 
 
 ---
 
-<details open="">
+<details>
 <summary><strong>Beta 3: late March 2026</strong></summary>
 
 - UI configuration: choose which datapoints appear on Board cards
@@ -56,6 +56,17 @@ But we soon realised Alpaca could be a full collaboration solution, on par with 
 - Project Activity screen: unfiltered timeline of all project activity
 - Full translation readiness, including support for RTL languages
 - New `alpaca-beta` release channel at GitHub
+</details>
+
+---
+
+<details open="">
+<summary><strong>Beta 4: mid April 2026</strong></summary>
+
+- Board filtering: show only issue cards with a given Label and/or Issue
+- Reworked Search function, applying filtering directly to the Board
+- Configure: Deleted Items restoration function
+- Bug fixes, performance tweaks, & edge-case resolutions
 </details>
 
 ---
