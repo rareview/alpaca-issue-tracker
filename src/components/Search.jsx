@@ -533,6 +533,7 @@ function SearchContainer({
         onChange={(val) => setValue(val)}
         placeholder={__('Search', 'alpaca')}
         isBusy={isSearching}
+        __nextHasNoMarginBottom
       />
     </div>
   );

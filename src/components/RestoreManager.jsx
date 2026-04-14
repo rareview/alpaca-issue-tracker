@@ -524,6 +524,7 @@ const RestoreManager = () => {
             onChange={setQuery}
             placeholder={__('Search deleted issues', 'alpaca')}
             isBusy={isSearching}
+            __nextHasNoMarginBottom
           />
           <Button type="submit" variant="primary" disabled={isSearching}>
             {__('Search', 'alpaca')}

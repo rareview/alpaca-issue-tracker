@@ -696,6 +696,8 @@ function InboxControl({ selector }) {
                   <ToggleGroupControl
                     value={filter}
                     isBlock={false}
+                    __nextHasNoMarginBottom
+                    __next40pxDefaultSize
                     onChange={(nextFilter) => {
                       if ('unread' !== nextFilter && 'all' !== nextFilter) {
                         return;
