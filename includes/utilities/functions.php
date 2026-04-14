@@ -11,6 +11,177 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * Get the generated PHP icon registry.
+ *
+ * @return array<string, array<string, string>> Icon registry data.
+ */
+function alpaca_get_icon_registry() {
+	static $icon_registry = null;
+
+	if ( null !== $icon_registry ) {
+		return $icon_registry;
+	}
+
+	$icon_registry = array(
+		'icons'   => array(),
+		'aliases' => array(),
+	);
+
+	$icon_registry_file = trailingslashit( ALPACA_PLUGIN_DIR ) . 'includes/utilities/icon-registry.php';
+
+	if ( ! file_exists( $icon_registry_file ) ) {
+		return $icon_registry;
+	}
+
+	$loaded_registry = require $icon_registry_file;
+
+	if ( ! is_array( $loaded_registry ) ) {
+		return $icon_registry;
+	}
+
+	if ( isset( $loaded_registry['icons'] ) && is_array( $loaded_registry['icons'] ) ) {
+		$icon_registry['icons'] = $loaded_registry['icons'];
+	}
+
+	if ( isset( $loaded_registry['aliases'] ) && is_array( $loaded_registry['aliases'] ) ) {
+		$icon_registry['aliases'] = $loaded_registry['aliases'];
+	}
+
+	return $icon_registry;
+}
+
+/**
+ * Get shared SVG sanitizer allowlist data.
+ *
+ * This reads a JSON file at `includes/utilities/icon-sanitizer-allowlist.json`
+ * that defines `globalAttributes` and `allowedTags`. If the file is missing
+ * or invalid the function returns an empty allowlist structure.
+ *
+ * @return array<string, mixed> Sanitizer allowlist configuration.
+ */
+function alpaca_get_icon_sanitizer_allowlist_data() {
+	static $allowlist_data = null;
+
+	if ( null !== $allowlist_data ) {
+		return $allowlist_data;
+	}
+
+	$allowlist_file = trailingslashit( ALPACA_PLUGIN_DIR ) . 'includes/utilities/icon-sanitizer-allowlist.json';
+
+	$allowlist_data = array(
+		'globalAttributes' => array(),
+		'allowedTags'      => array(),
+	);
+
+	if ( ! file_exists( $allowlist_file ) ) {
+		return $allowlist_data;
+	}
+
+	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading local plugin configuration JSON.
+	$allowlist_json = file_get_contents( $allowlist_file );
+
+	if ( ! is_string( $allowlist_json ) || '' === $allowlist_json ) {
+		return $allowlist_data;
+	}
+
+	$decoded = json_decode( $allowlist_json, true );
+	if ( ! is_array( $decoded ) ) {
+		return $allowlist_data;
+	}
+
+	if ( isset( $decoded['globalAttributes'] ) && is_array( $decoded['globalAttributes'] ) ) {
+		$allowlist_data['globalAttributes'] = $decoded['globalAttributes'];
+	}
+
+	if ( isset( $decoded['allowedTags'] ) && is_array( $decoded['allowedTags'] ) ) {
+		$allowlist_data['allowedTags'] = $decoded['allowedTags'];
+	}
+
+	return $allowlist_data;
+}
+
+/**
+ * Build allowed SVG tags map for wp_kses from shared allowlist data.
+ *
+ * @return array<string, array<string, bool>> Allowed SVG tags for wp_kses.
+ */
+function alpaca_get_icon_svg_allowed_tags() {
+	$allowlist_data    = alpaca_get_icon_sanitizer_allowlist_data();
+	$global_attributes = array_map( 'strtolower', $allowlist_data['globalAttributes'] );
+	$allowed_svg_tags  = array();
+
+	foreach ( $allowlist_data['allowedTags'] as $tag_name => $tag_attributes ) {
+		if ( ! is_array( $tag_attributes ) ) {
+			continue;
+		}
+
+		$sanitized_tag_name = strtolower( (string) $tag_name );
+		$merged_attributes  = array_merge( $global_attributes, array_map( 'strtolower', $tag_attributes ) );
+		$merged_attributes  = array_values( array_unique( $merged_attributes ) );
+
+		$allowed_svg_tags[ $sanitized_tag_name ] = array_fill_keys( $merged_attributes, true );
+	}
+
+	return $allowed_svg_tags;
+}
+
+/**
+ * Sanitize SVG icon markup before returning it for output.
+ *
+ * @param string $svg_markup Raw SVG markup.
+ * @return string Sanitized SVG markup.
+ */
+function alpaca_sanitize_icon_svg_markup( $svg_markup ) {
+	if ( ! is_string( $svg_markup ) || '' === $svg_markup ) {
+		return '';
+	}
+
+	$allowed_svg_tags = alpaca_get_icon_svg_allowed_tags();
+	$svg_markup       = preg_replace( '/<\?(xml|php)[^>]*\?>/i', '', $svg_markup );
+	$svg_markup       = preg_replace( '/<!doctype[^>]*>/i', '', $svg_markup );
+
+	if ( ! is_string( $svg_markup ) ) {
+		return '';
+	}
+
+	return wp_kses( $svg_markup, $allowed_svg_tags );
+}
+
+/**
+ * Load an SVG icon by logical icon slug.
+ *
+ * Icons are generated into a PHP registry from the same source SVG folder that
+ * builds the React icon component, so PHP and React stay in sync without
+ * depending on Parcel to emit standalone SVG assets for every icon.
+ *
+ * @param string $icon_slug Logical icon slug, for example `calendar2-week`.
+ * @return string SVG markup when found, otherwise an empty string.
+ */
+function alpaca_get_icon( $icon_slug ) {
+	$icon_slug     = sanitize_title( (string) $icon_slug );
+	$fallback_slug = 'missing';
+	$icon_registry = alpaca_get_icon_registry();
+
+	if ( '' === $icon_slug ) {
+		$icon_slug = $fallback_slug;
+	}
+
+	if ( isset( $icon_registry['aliases'][ $icon_slug ] ) && is_string( $icon_registry['aliases'][ $icon_slug ] ) ) {
+		$icon_slug = sanitize_title( $icon_registry['aliases'][ $icon_slug ] );
+	}
+
+	if ( isset( $icon_registry['icons'][ $icon_slug ] ) && is_string( $icon_registry['icons'][ $icon_slug ] ) ) {
+		return alpaca_sanitize_icon_svg_markup( $icon_registry['icons'][ $icon_slug ] );
+	}
+
+	if ( isset( $icon_registry['icons'][ $fallback_slug ] ) && is_string( $icon_registry['icons'][ $fallback_slug ] ) ) {
+		return alpaca_sanitize_icon_svg_markup( $icon_registry['icons'][ $fallback_slug ] );
+	}
+
+	return '';
+}
+
+/**
  * Get the maximum term score for board visibility.
  *
  * @return int Maximum term score.
