@@ -278,12 +278,17 @@ function alpaca_register_comment_attachment_endpoint() {
 				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'register_comment_meta' );
 			},
 			'args'                => array(
-				'issue_id' => array(
+				'issue_id'   => array(
 					'type'              => 'integer',
 					'required'          => true,
 					'sanitize_callback' => 'absint',
 				),
-				'url'      => array(
+				'comment_id' => array(
+					'type'              => 'integer',
+					'required'          => false,
+					'sanitize_callback' => 'absint',
+				),
+				'url'        => array(
 					'type'              => 'string',
 					'required'          => true,
 					'sanitize_callback' => 'esc_url_raw',
@@ -390,15 +395,67 @@ function alpaca_upload_comment_attachment( WP_REST_Request $request ) {
 }
 
 /**
+ * Resolve the issue comment that currently references an attachment URL.
+ *
+ * @param int    $issue_id Issue ID.
+ * @param string $url      Attachment URL.
+ * @return WP_Comment|null Matching issue comment, or null when not found.
+ */
+function alpaca_get_comment_for_attachment_url( $issue_id, $url ) {
+	$comments = get_comments(
+		array(
+			'post_id' => (int) $issue_id,
+			'type'    => 'issuecomment',
+			'status'  => 'all',
+		)
+	);
+
+	foreach ( $comments as $comment ) {
+		$attachments = get_comment_meta( $comment->comment_ID, 'alpacaCommentAttachments', true );
+
+		if ( ! is_array( $attachments ) ) {
+			continue;
+		}
+
+		$normalized_attachments = array_map( 'esc_url_raw', $attachments );
+		if ( in_array( esc_url_raw( $url ), $normalized_attachments, true ) ) {
+			return $comment;
+		}
+	}
+
+	return null;
+}
+
+/**
+ * Determine whether a specific issue comment references the attachment URL.
+ *
+ * @param int    $comment_id Comment ID.
+ * @param string $url        Attachment URL.
+ * @return bool True when URL is present in comment attachment meta, false otherwise.
+ */
+function alpaca_comment_contains_attachment_url( $comment_id, $url ) {
+	$attachments = get_comment_meta( (int) $comment_id, 'alpacaCommentAttachments', true );
+
+	if ( ! is_array( $attachments ) ) {
+		return false;
+	}
+
+	$normalized_attachments = array_map( 'esc_url_raw', $attachments );
+
+	return in_array( esc_url_raw( $url ), $normalized_attachments, true );
+}
+
+/**
  * Delete an attachment for an issue comment.
  *
  * @param WP_REST_Request $request REST request.
  * @return WP_REST_Response REST response object.
  */
 function alpaca_delete_comment_attachment( WP_REST_Request $request ) {
-	$issue_id = (int) $request->get_param( 'issue_id' );
-	$url      = (string) $request->get_param( 'url' );
-	$issue    = alpaca_get_issue_for_attachment( $issue_id, 'comment_attachment_delete' );
+	$issue_id   = (int) $request->get_param( 'issue_id' );
+	$comment_id = (int) $request->get_param( 'comment_id' );
+	$url        = (string) $request->get_param( 'url' );
+	$issue      = alpaca_get_issue_for_attachment( $issue_id, 'comment_attachment_delete' );
 
 	if ( $issue['response'] ) {
 		return $issue['response'];
@@ -410,6 +467,61 @@ function alpaca_delete_comment_attachment( WP_REST_Request $request ) {
 			__( 'Missing attachment URL.', 'alpaca' ),
 			400
 		);
+	}
+
+	$attachment_comment = null;
+
+	if ( $comment_id > 0 ) {
+		$attachment_comment = get_comment( $comment_id );
+
+		if ( ! ( $attachment_comment instanceof WP_Comment ) ) {
+			return alpaca_comment_attachment_error_response(
+				'comment_attachment_delete',
+				__( 'Comment was not found.', 'alpaca' ),
+				404
+			);
+		}
+
+		if ( (int) $attachment_comment->comment_post_ID !== $issue_id || 'issuecomment' !== (string) $attachment_comment->comment_type ) {
+			return alpaca_comment_attachment_error_response(
+				'comment_attachment_delete',
+				__( 'Comment does not match this issue.', 'alpaca' ),
+				400
+			);
+		}
+
+		if ( ! alpaca_comment_contains_attachment_url( $comment_id, $url ) ) {
+			return alpaca_comment_attachment_error_response(
+				'comment_attachment_delete',
+				__( 'Attachment does not belong to this comment.', 'alpaca' ),
+				400
+			);
+		}
+	} else {
+		$attachment_comment = alpaca_get_comment_for_attachment_url( $issue_id, $url );
+
+		if ( $attachment_comment instanceof WP_Comment ) {
+			return alpaca_comment_attachment_error_response(
+				'comment_attachment_delete',
+				__( 'Comment ID is required to delete this attachment.', 'alpaca' ),
+				400
+			);
+		}
+	}
+
+	if ( $attachment_comment instanceof WP_Comment ) {
+		$current_user_id       = (int) get_current_user_id();
+		$is_comment_author     = $current_user_id > 0 && (int) $attachment_comment->user_id === $current_user_id;
+		$user_can_manage       = current_user_can( 'manage_options' );
+		$can_delete_attachment = $is_comment_author || $user_can_manage;
+
+		if ( ! $can_delete_attachment ) {
+			return alpaca_comment_attachment_error_response(
+				'comment_attachment_delete',
+				__( 'You are not allowed to delete this attachment.', 'alpaca' ),
+				403
+			);
+		}
 	}
 
 	$base_paths = alpaca_get_attachment_base_paths();
