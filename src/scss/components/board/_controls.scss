@@ -98,6 +98,87 @@
       color 0.16s;
   }
 
+  /* Ensure the SearchControl input visually matches other board controls */
+  .alpaca-board-search.alpaca-board-control {
+    padding: 0;
+    min-height: 40px;
+    border-radius: 6px;
+    border-color: $greyborder;
+    inline-size: 220px;
+    flex: 0 0 220px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    &:hover,
+    &:focus-within,
+    &.is-search-open {
+      border-color: #2271b1;
+      color: #0a4b78;
+      box-shadow: 0 0 0 1px #2271b12e;
+    }
+
+    /* let the inner components take full width */
+    .components-base-control__field,
+    .components-input-control__container {
+      width: 100%;
+      display: flex;
+      align-items: center;
+    }
+
+    .components-base-control__field {
+      margin-bottom: 0;
+    }
+
+    .components-input-control__container,
+    .components-input-base,
+    .components-input-control__backdrop,
+    .components-search-control,
+    .components-search-control__input,
+    .components-search-control input[type='search'] {
+      border: 0;
+      box-shadow: none;
+      border-radius: 0;
+      background: transparent;
+    }
+
+    .components-input-control__backdrop {
+      display: none;
+    }
+
+    .components-search-control input[type='search']:focus,
+    .components-search-control input[type='search']:focus-visible,
+    .components-input-control__input:focus,
+    .components-input-control__input:focus-visible {
+      outline: 0;
+      border: 0;
+      box-shadow: none;
+    }
+
+    /* Make input grow but reserve space for suffix (clear 'x') so width doesn't change. */
+    .components-input-control__input {
+      border: 0;
+      padding: 0 0 0 4px;
+      height: 24px;
+      flex: 1 1 auto;
+      min-width: 0;
+      background: transparent;
+    }
+
+    .components-input-control__suffix {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-inline-end: 8px;
+      min-width: 32px;
+      flex: 0 0 32px;
+
+      .components-input-control-suffix-wrapper {
+        padding-inline-end: 0;
+      }
+    }
+  }
+
   /* Hover / active visual state shared across board controls (matches inbox). */
   .alpaca-board-control:hover,
   .alpaca-board-control:focus-visible,

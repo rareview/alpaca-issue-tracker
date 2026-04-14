@@ -37,7 +37,22 @@ function UnreadCountBadge({ count, variant }) {
     );
   }
 
-  return <span className="alpaca-inbox-trigger-badge">{normalizedCount}</span>;
+  const srLabel = sprintf(
+    /* translators: %d is the number of unread inbox notifications. */
+    __('%d unread notifications', 'alpaca'),
+    normalizedCount,
+  );
+
+  return (
+    <span
+      className="alpaca-inbox-trigger-badge"
+      aria-live="polite"
+      aria-atomic="true"
+    >
+      <span aria-hidden="true">{normalizedCount}</span>
+      <span className="screen-reader-text">{srLabel}</span>
+    </span>
+  );
 }
 
 UnreadCountBadge.propTypes = {

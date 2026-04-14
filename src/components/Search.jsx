@@ -107,7 +107,8 @@ function SearchContainer({
   const debounceRef = useRef(null);
   const requestIdRef = useRef(0);
   const searchScopeIssueIdsSet = useMemo(
-    () => new Set(Array.isArray(searchScopeIssueIds) ? searchScopeIssueIds : []),
+    () =>
+      new Set(Array.isArray(searchScopeIssueIds) ? searchScopeIssueIds : []),
     [searchScopeIssueIds],
   );
   const searchScopeIssueIdsKey = useMemo(
@@ -327,11 +328,11 @@ function SearchContainer({
               );
             })
             .forEach((post) => {
-            if (!post || typeof post.id === 'undefined' || post.id === null) {
-              return;
-            }
+              if (!post || typeof post.id === 'undefined' || post.id === null) {
+                return;
+              }
 
-            issuesById.set(String(post.id), post);
+              issuesById.set(String(post.id), post);
             });
 
           const commentIssueIdsToLoad = commentPostIds.filter(
@@ -347,7 +348,10 @@ function SearchContainer({
               index += SEARCH_API_PAGE_SIZE
             ) {
               issueIdChunks.push(
-                commentIssueIdsToLoad.slice(index, index + SEARCH_API_PAGE_SIZE),
+                commentIssueIdsToLoad.slice(
+                  index,
+                  index + SEARCH_API_PAGE_SIZE,
+                ),
               );
             }
 
@@ -522,7 +526,7 @@ function SearchContainer({
   ]);
 
   return (
-    <div className="alpaca-board-search" style={{ width: 300 }}>
+    <div className="alpaca-board-search alpaca-board-control">
       <SearchControl
         label={__('Search', 'alpaca')}
         value={value}

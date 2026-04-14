@@ -3,6 +3,7 @@ const { __ } = wp.i18n;
 const { Popover, Tooltip } = wp.components;
 
 import PropTypes from 'prop-types';
+import Icon from './icons/Icon';
 
 /**
  * Resolve a readable assignee name from mixed API payload shapes.
@@ -76,7 +77,16 @@ function getActiveAssigneeFilter(activeFilter) {
  */
 function renderLabelTriggerLabel(activeLabelFilter) {
   if (!activeLabelFilter) {
-    return <span>{__('Label', 'alpaca')}</span>;
+    return (
+      <>
+        <Icon
+          name="tag"
+          className="alpaca-filter-control-icon"
+          aria-hidden="true"
+        />
+        <span>{__('Label', 'alpaca')}</span>
+      </>
+    );
   }
 
   return (
@@ -100,7 +110,16 @@ function renderLabelTriggerLabel(activeLabelFilter) {
  */
 function renderAssigneeTriggerLabel(activeAssigneeFilter) {
   if (!activeAssigneeFilter) {
-    return <span>{__('Assignee', 'alpaca')}</span>;
+    return (
+      <>
+        <Icon
+          name="person"
+          className="alpaca-filter-control-icon"
+          aria-hidden="true"
+        />
+        <span>{__('Assignee', 'alpaca')}</span>
+      </>
+    );
   }
 
   return (
@@ -112,7 +131,13 @@ function renderAssigneeTriggerLabel(activeAssigneeFilter) {
           alt=""
           aria-hidden="true"
         />
-      ) : null}
+      ) : (
+        <Icon
+          name="person"
+          className="alpaca-filter-control-icon"
+          aria-hidden="true"
+        />
+      )}
       <span className="alpaca-filter-control-current-text">
         {activeAssigneeFilter.displayName || __('Assignee', 'alpaca')}
       </span>

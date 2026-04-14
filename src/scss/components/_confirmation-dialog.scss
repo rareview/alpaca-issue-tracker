@@ -56,7 +56,9 @@
     filter 160ms ease;
 }
 
-.wp-admin #project-board-controls .alpaca-board-search {
+.wp-admin
+  #project-board-controls
+  .alpaca-board-search:not(.alpaca-board-control) {
   border: 1px solid transparent;
   border-radius: 6px;
   background: transparent;
@@ -71,7 +73,9 @@
   }
 }
 
-.wp-admin #project-board-controls .alpaca-board-search.is-search-open {
+.wp-admin
+  #project-board-controls
+  .alpaca-board-search:not(.alpaca-board-control).is-search-open {
   background: $bgwhite;
   border-color: #c3c4c7;
   box-shadow:

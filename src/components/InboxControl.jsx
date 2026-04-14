@@ -8,6 +8,7 @@ import {
 } from '../services/notificationApi';
 import UnreadCountBadge from './notifications/UnreadCountBadge';
 import TimelineEntry from './comment/TimelineEntry';
+import Icon from './icons/Icon';
 
 const { useCallback, useEffect, useMemo, useRef, useState, createPortal } =
   wp.element;
@@ -624,7 +625,11 @@ function InboxControl({ selector }) {
               aria-expanded={isPanelVisible}
               aria-controls="alpaca-inbox-panel"
             >
-              <span className="dashicons dashicons-bell" aria-hidden="true" />
+              <Icon
+                name="bell"
+                className="alpaca-inbox-icon"
+                aria-hidden="true"
+              />
               {__('Inbox', 'alpaca')}
               <UnreadCountBadge count={unreadCount} variant="inbox-trigger" />
             </button>

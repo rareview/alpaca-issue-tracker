@@ -66,13 +66,6 @@
 
   .alpaca-board-search.is-search-open {
     z-index: 100002;
-
-    .components-search-control__input,
-    .components-search-control input[type='search'] {
-      border-color: #2271b1;
-      box-shadow: 0 0 0 1px #2271b1;
-      background: $bgwhite;
-    }
   }
 
   @keyframes alpaca-search-popover-in {
