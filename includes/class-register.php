@@ -250,6 +250,7 @@ class Register {
 			self::PREFIX . '-script',
 			'alpacaSettings',
 			array(
+				'canManageOptions'        => current_user_can( 'manage_options' ),
 				// SnapDOM expects the proxy string to be a prefix the library will append the target URL to.
 				// Provide the proxy endpoint with the query param prefix so SnapDOM can append the encoded target URL.
 				// Provide a signed proxy token that does not rely on browser cookies.
@@ -292,6 +293,7 @@ class Register {
 			self::PREFIX . '-script',
 			'alpacaSettings',
 			array(
+				'canManageOptions'        => current_user_can( 'manage_options' ),
 				'adminUrl'                => admin_url( 'admin.php' ),
 				'snapdomProxy'            => $this->get_snapdom_proxy_setting(),
 				'itemDatapointVisibility' => $this->get_item_datapoint_visibility_setting(),

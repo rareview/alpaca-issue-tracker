@@ -1,6 +1,6 @@
 const { __ } = wp.i18n;
 const { Tooltip } = wp.components;
-import PriorityIcon from '../components/icons/PriorityIcon';
+import Icon from '../components/icons/Icon';
 
 /**
  * Filter to add a priority badge to item datapoints.
@@ -23,7 +23,7 @@ export const addPriorityDatapoint = (originalContent, itemProps) => {
         {originalContent}
         <Tooltip text={__('Priority', 'alpaca')}>
           <div className="alpaca-item-priority-badge">
-            <PriorityIcon /> {__('Priority', 'alpaca')}
+            <Icon name="priority" /> {__('Priority', 'alpaca')}
           </div>
         </Tooltip>
       </>

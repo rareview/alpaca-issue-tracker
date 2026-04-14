@@ -190,20 +190,6 @@ function alpaca_get_notification_daily_digest_sample_payload() {
 }
 
 /**
- * Render the calendar icon used in digest deadline badges.
- *
- * @return string HTML markup.
- */
-function alpaca_render_notification_digest_calendar_icon_html() {
-	$svg  = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true" focusable="false">';
-	$svg .= '<path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5M2 2a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V3a1 1 0 0 0-1-1z" />';
-	$svg .= '<path d="M2.5 4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5H3a.5.5 0 0 1-.5-.5zM11 7.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm-3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm-5 3a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5z" />';
-	$svg .= '</svg>';
-
-	return $svg;
-}
-
-/**
  * Render the priority badge used in digest layouts.
  *
  * @param string $label              Optional badge label text.
@@ -218,9 +204,7 @@ function alpaca_render_notification_digest_priority_badge_html( $label = '', $is
 		$label = esc_html__( 'Priority', 'alpaca' );
 	}
 
-	$svg  = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true" focusable="false">';
-	$svg .= '<path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8 4a.905.905 0 0 0-.9.995l.35 3.507a.552.552 0 0 0 1.1 0l.35-3.507A.905.905 0 0 0 8 4m.002 6a1 1 0 1 0 0 2 1 1 0 0 0 0-2" />';
-	$svg .= '</svg>';
+	$svg = alpaca_get_icon( 'exclamation-circle' );
 
 	$label_class = '';
 
@@ -246,7 +230,7 @@ function alpaca_render_notification_digest_deadline_badge_html( $label, $state )
 		return '';
 	}
 
-	return '<span class="alpaca-item-icon alpaca-item-deadline alpaca-label-pill" data-deadline-state="' . esc_attr( $state ) . '">' . alpaca_render_notification_digest_calendar_icon_html() . esc_html( $label ) . '</span>';
+	return '<span class="alpaca-item-icon alpaca-item-deadline alpaca-label-pill" data-deadline-state="' . esc_attr( $state ) . '">' . alpaca_get_icon( 'calendar2-week' ) . esc_html( $label ) . '</span>';
 }
 
 /**
