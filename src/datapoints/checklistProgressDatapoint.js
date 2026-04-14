@@ -1,6 +1,6 @@
 const { __ } = wp.i18n;
 const { Tooltip } = wp.components;
-import Check2SquareIcon from '../components/icons/Check2SquareIcon';
+import Icon from '../components/icons/Icon';
 
 /**
  * Filter to add checklist progress to item datapoints.
@@ -24,7 +24,7 @@ export const addChecklistProgressDatapoint = (originalContent, itemProps) => {
         {originalContent}
         <Tooltip text={__('Checklist Progress', 'alpaca')}>
           <div className="alpaca-item-icon alpaca-item-checklist-progress">
-            <Check2SquareIcon />
+            <Icon name="check2-square" />
             {`${subissueCompleted}/${subissueTotal}`}
           </div>
         </Tooltip>

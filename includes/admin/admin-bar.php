@@ -30,14 +30,7 @@ function alpaca_add_admin_bar_menu( $admin_bar ) {
 	/**
 	 * Report an Issue - top-level admin bar item with SVG icon.
 	 */
-	$plugin_dir = plugin_dir_path( dirname( __DIR__ ) );
-	$icon_files = glob( $plugin_dir . 'dist/exclamation-circle-fill.*.svg' );
-	$icon_svg   = '';
-
-	if ( ! empty( $icon_files ) && file_exists( $icon_files[0] ) ) {
-		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Reading a local SVG from the plugin directory.
-		$icon_svg = file_get_contents( $icon_files[0] );
-	}
+	$icon_svg = alpaca_get_icon( 'exclamation-circle-fill' );
 
 	$admin_bar->add_menu(
 		array(

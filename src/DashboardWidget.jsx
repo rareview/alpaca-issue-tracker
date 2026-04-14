@@ -4,7 +4,7 @@ const { __ } = wp.i18n;
 import PropTypes from 'prop-types';
 import User from './components/User';
 import useUserManagement from './hooks/useUserManagement';
-import PriorityIcon from './components/icons/PriorityIcon';
+import Icon from './components/icons/Icon';
 import { formatWpDateValue } from './utils/date';
 
 /**
@@ -104,7 +104,9 @@ const AlpacaDashboardWidget = memo(function AlpacaDashboardWidget({ data }) {
                           </a>
                         </td>
                         <td className="high-priority">
-                          {issue.high_priority ? <PriorityIcon /> : null}
+                          {issue.high_priority ? (
+                            <Icon name="priority" />
+                          ) : null}
                         </td>
                         <td className="deadline">
                           {formatDate(issue.deadline)}

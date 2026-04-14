@@ -4,7 +4,7 @@ const { Button, Spinner, Modal, TextControl } = wp.components;
 import PropTypes from 'prop-types';
 
 // Using native HTML5 drag/drop instead of Atlaskit
-import DragHandleIcon from './icons/DragHandleIcon';
+import Icon from './icons/Icon';
 import { updateIssue } from '../services/issueApi';
 import {
   SettingsList,
@@ -634,7 +634,7 @@ const StatusRow = wp.element.forwardRef(
               className="drag-handle flexalign"
               title={__('Drag to reorder', 'alpaca')}
             >
-              <DragHandleIcon />
+              <Icon name="drag-handle" style={{ verticalAlign: 'middle' }} />
             </div>
             {isRenaming ? (
               <TextControl
