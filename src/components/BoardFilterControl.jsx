@@ -1,4 +1,4 @@
-const { useState, useRef, useMemo, createPortal } = wp.element;
+const { useState, useRef, useMemo, useEffect, createPortal } = wp.element;
 const { __ } = wp.i18n;
 const { Popover, Tooltip } = wp.components;
 
@@ -224,6 +224,49 @@ function BoardFilterControl({
       ),
     };
   }, [containers]);
+
+  useEffect(() => {
+    if (!openPopoverType || typeof document === 'undefined') {
+      return undefined;
+    }
+
+    const handlePointerDown = (event) => {
+      const target = event.target;
+
+      if (!target) {
+        return;
+      }
+
+      if (
+        (labelTriggerRef.current && labelTriggerRef.current.contains(target)) ||
+        (assigneeTriggerRef.current &&
+          assigneeTriggerRef.current.contains(target))
+      ) {
+        return;
+      }
+
+      const popoverNodes = Array.from(
+        document.querySelectorAll('.alpaca-filter-control-popover'),
+      );
+      const clickedInsidePopover = popoverNodes.some(
+        (popoverNode) => popoverNode && popoverNode.contains(target),
+      );
+
+      if (clickedInsidePopover) {
+        return;
+      }
+
+      setOpenPopoverType('');
+    };
+
+    document.addEventListener('mousedown', handlePointerDown, true);
+    document.addEventListener('touchstart', handlePointerDown, true);
+
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown, true);
+      document.removeEventListener('touchstart', handlePointerDown, true);
+    };
+  }, [openPopoverType]);
 
   if (typeof document === 'undefined' || typeof createPortal !== 'function') {
     return null;

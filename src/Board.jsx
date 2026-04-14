@@ -483,6 +483,31 @@ export function AlpacaBoard() {
     setActiveSearchFilter(null);
   }, []);
 
+  const searchScopeIssueIds = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          containers
+            .flatMap((container) =>
+              Array.isArray(container?.items) ? container.items : [],
+            )
+            .filter((item) =>
+              itemMatchesBoardFilter(item, {
+                boardFilter: activeBoardFilter,
+                searchFilter: null,
+              }),
+            )
+            .map((item) =>
+              typeof item?.id !== 'undefined' && item.id !== null
+                ? String(item.id)
+                : '',
+            )
+            .filter(Boolean),
+        ),
+      ),
+    [containers, activeBoardFilter, itemMatchesBoardFilter],
+  );
+
   // Sync selected issue with the URL `issue` query param and listen for Back/Forward.
   // Debounced to avoid rapid state churn when popstate events fire quickly.
   useEffect(() => {
@@ -1448,6 +1473,7 @@ export function AlpacaBoard() {
         containers={containers}
         activeFilter={activeBoardFilter}
         activeSearchFilter={activeSearchFilter}
+        searchScopeIssueIds={searchScopeIssueIds}
         onSetFilter={handleSetBoardFilter}
         onClearFilter={handleClearBoardFilter}
         onSetSearchFilter={handleSetSearchFilter}

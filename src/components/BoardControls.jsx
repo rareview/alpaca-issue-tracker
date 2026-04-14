@@ -18,6 +18,7 @@ import SearchPortal from './Search';
  * @param {Array}    props.containers          Board container data.
  * @param {Object}   props.activeFilter        Current active board filter.
  * @param {Object}   props.activeSearchFilter  Current active search filter.
+ * @param {Array}    props.searchScopeIssueIds Search-scoped issue IDs.
  * @param {Function} props.onSetFilter         Set filter callback.
  * @param {Function} props.onClearFilter       Clear filter callback.
  * @param {Function} props.onSetSearchFilter   Set search filter callback.
@@ -29,6 +30,7 @@ function BoardControls({
   containers,
   activeFilter,
   activeSearchFilter,
+  searchScopeIssueIds,
   onSetFilter,
   onClearFilter,
   onSetSearchFilter,
@@ -57,8 +59,8 @@ function BoardControls({
         component: SearchPortal,
         props: {
           selector,
-          containers,
           activeSearchFilter,
+          searchScopeIssueIds,
           onSetSearchFilter,
           onClearSearchFilter,
         },
@@ -69,6 +71,7 @@ function BoardControls({
       containers,
       activeFilter,
       activeSearchFilter,
+      searchScopeIssueIds,
       onSetFilter,
       onClearFilter,
       onSetSearchFilter,
@@ -81,6 +84,7 @@ function BoardControls({
     containers,
     activeFilter,
     activeSearchFilter,
+    searchScopeIssueIds,
     onSetFilter,
     onClearFilter,
     onSetSearchFilter,
@@ -135,6 +139,7 @@ BoardControls.propTypes = {
     query: PropTypes.string,
     issueIds: PropTypes.arrayOf(PropTypes.string),
   }),
+  searchScopeIssueIds: PropTypes.arrayOf(PropTypes.string),
   onSetFilter: PropTypes.func,
   onClearFilter: PropTypes.func,
   onSetSearchFilter: PropTypes.func,
@@ -146,6 +151,7 @@ BoardControls.defaultProps = {
   containers: [],
   activeFilter: null,
   activeSearchFilter: null,
+  searchScopeIssueIds: [],
   onSetFilter: () => {},
   onClearFilter: () => {},
   onSetSearchFilter: () => {},

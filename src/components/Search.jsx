@@ -8,29 +8,25 @@ import {
   getCommentAgentTypeFromComment,
   normalizeCommentAgentTypes,
 } from '../utils/commentAgentFilters';
+import {
+  buildPaginatedSearchPath,
+  getIssueIdsKey,
+} from '../utils/searchRequests';
 
 const MIN_QUERY_LENGTH = 3;
 const SEARCH_API_PAGE_SIZE = 100;
-const SEARCH_INCLUDE_THRESHOLD = 100;
-
-/**
- * Split an array into fixed-size chunks.
- *
- * @param {Array}  values Values to chunk.
- * @param {number} size   Chunk size.
- * @return {Array<Array>}        Chunked arrays.
- */
-function chunkArray(values, size) {
-  const source = Array.isArray(values) ? values : [];
-  const chunkSize = Number.isInteger(size) && size > 0 ? size : 1;
-  const chunks = [];
-
-  for (let index = 0; index < source.length; index += chunkSize) {
-    chunks.push(source.slice(index, index + chunkSize));
-  }
-
-  return chunks;
-}
+const SEARCH_REFRESH_ACTIONS = [
+  'alpaca.issueUpdated',
+  'alpaca.issueInserted',
+  'alpaca.issueDeleted',
+  'alpaca.commentPosted',
+  'alpaca.commentUpdated',
+  'alpaca.commentDeleted',
+  'alpaca.subissueCreated',
+  'alpaca.subissueDeleted',
+  'alpaca.subissuePromoted',
+  'alpaca.subissueTitleChanged',
+];
 
 /**
  * Resolve the top-level issue ID for a post when the post is a child issue.
@@ -67,36 +63,62 @@ function getOrderedUniqueIds(values) {
 }
 
 /**
+ * Resolve the issue ID referenced by a comment payload.
+ *
+ * @param {Object} comment Comment object from REST.
+ * @return {string} Normalized issue ID.
+ */
+function getCommentIssueId(comment) {
+  if (!comment || typeof comment !== 'object') {
+    return '';
+  }
+
+  if (
+    typeof comment.comment_post_ID !== 'undefined' &&
+    comment.comment_post_ID !== null
+  ) {
+    return String(comment.comment_post_ID);
+  }
+
+  if (typeof comment.post !== 'undefined' && comment.post !== null) {
+    return String(comment.post);
+  }
+
+  return '';
+}
+/**
  * Search control container mounted via portal.
  *
  * @param {Object}   root0                     Component props.
- * @param {Array}    root0.visibleIssueIds     Visible issue IDs on the board.
+ * @param {Array}    root0.searchScopeIssueIds Search-scoped issue IDs.
  * @param {Function} root0.onSetSearchFilter   Set search filter callback.
  * @param {Function} root0.onClearSearchFilter Clear search filter callback.
  * @return {JSX.Element} Search control element.
  */
 function SearchContainer({
-  visibleIssueIds,
+  searchScopeIssueIds,
   onSetSearchFilter,
   onClearSearchFilter,
 }) {
   const [value, setValue] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [enableTestLogs, setEnableTestLogs] = useState(false);
+  const [searchRefreshToken, setSearchRefreshToken] = useState(0);
   const debounceRef = useRef(null);
   const requestIdRef = useRef(0);
-  const visibleIssueIdsSet = useMemo(
-    () => new Set(Array.isArray(visibleIssueIds) ? visibleIssueIds : []),
-    [visibleIssueIds],
+  const searchScopeIssueIdsSet = useMemo(
+    () => new Set(Array.isArray(searchScopeIssueIds) ? searchScopeIssueIds : []),
+    [searchScopeIssueIds],
+  );
+  const searchScopeIssueIdsKey = useMemo(
+    () => getIssueIdsKey(searchScopeIssueIds),
+    [searchScopeIssueIds],
   );
 
-  // Refs keep the latest values available inside the search effect without
-  // making them deps (which would restart the debounce on every container
-  // update such as a comment count change).
-  const visibleIssueIdsRef = useRef(visibleIssueIds);
-  const visibleIssueIdsSetRef = useRef(visibleIssueIdsSet);
-  visibleIssueIdsRef.current = visibleIssueIds;
-  visibleIssueIdsSetRef.current = visibleIssueIdsSet;
+  const searchScopeIssueIdsRef = useRef(searchScopeIssueIds);
+  const searchScopeIssueIdsSetRef = useRef(searchScopeIssueIdsSet);
+  searchScopeIssueIdsRef.current = searchScopeIssueIds;
+  searchScopeIssueIdsSetRef.current = searchScopeIssueIdsSet;
 
   useEffect(() => {
     wp.apiFetch({ path: '/wp/v2/settings' })
@@ -130,6 +152,30 @@ function SearchContainer({
   );
 
   useEffect(() => {
+    const handleSearchDataChanged = () => {
+      setSearchRefreshToken((previous) => previous + 1);
+    };
+
+    SEARCH_REFRESH_ACTIONS.forEach((actionName) => {
+      wp.hooks.addAction(
+        actionName,
+        'alpaca/search-refresh',
+        handleSearchDataChanged,
+      );
+    });
+
+    return () => {
+      SEARCH_REFRESH_ACTIONS.forEach((actionName) => {
+        wp.hooks.removeAction(
+          actionName,
+          'alpaca/search-refresh',
+          handleSearchDataChanged,
+        );
+      });
+    };
+  }, []);
+
+  useEffect(() => {
     if (debounceRef.current) {
       clearTimeout(debounceRef.current);
     }
@@ -150,48 +196,76 @@ function SearchContainer({
       const q = query;
       const issueFields =
         'id,slug,post_parent,parent,post_name,title,content,meta,date,date_gmt';
-      const currentVisibleIds = visibleIssueIdsRef.current;
-      const currentVisibleIdsSet = visibleIssueIdsSetRef.current;
-      const includeThreshold = parseInt(
-        applyFilters(
-          'alpaca.search.includeThreshold',
-          SEARCH_INCLUDE_THRESHOLD,
-          {
-            query: q,
-            visibleIssueIds: currentVisibleIds,
-          },
-        ),
-        10,
-      );
-      const shouldUseVisibleIssueInclude =
-        Array.isArray(currentVisibleIds) &&
-        currentVisibleIds.length > 0 &&
-        !Number.isNaN(includeThreshold) &&
-        includeThreshold > 0 &&
-        currentVisibleIds.length <= includeThreshold;
-      const limitedIssuePageSize = shouldUseVisibleIssueInclude
-        ? Math.min(SEARCH_API_PAGE_SIZE, currentVisibleIds.length)
-        : SEARCH_API_PAGE_SIZE;
-      const directIssueSearchPath = shouldUseVisibleIssueInclude
-        ? `/wp/v2/alpaca_issue?search=${encodeURIComponent(q)}&include=${encodeURIComponent(
-            currentVisibleIds.join(','),
-          )}&per_page=${limitedIssuePageSize}&_fields=${issueFields}`
-        : `/wp/v2/alpaca_issue?search=${encodeURIComponent(q)}&per_page=${limitedIssuePageSize}&_fields=${issueFields}`;
+      const currentSearchScopeIds = searchScopeIssueIdsRef.current;
+      const currentSearchScopeIdsSet = searchScopeIssueIdsSetRef.current;
+
+      if (
+        !Array.isArray(currentSearchScopeIds) ||
+        currentSearchScopeIds.length < 1
+      ) {
+        onSetSearchFilter({
+          type: 'search',
+          query: q,
+          issueIds: [],
+        });
+        setIsSearching(false);
+        return;
+      }
 
       const runSearch = async () => {
+        const fetchPaginatedResults = async (basePath) => {
+          const results = [];
+          let currentPage = 1;
+          let totalPages = 1;
+
+          while (currentPage <= totalPages) {
+            const response = await wp
+              .apiFetch({
+                path: buildPaginatedSearchPath(basePath, currentPage),
+                parse: false,
+              })
+              .catch(() => null);
+
+            if (requestId !== requestIdRef.current) {
+              return null;
+            }
+
+            if (!response) {
+              return results;
+            }
+
+            const pageResults = await response.json().catch(() => []);
+
+            if (requestId !== requestIdRef.current) {
+              return null;
+            }
+
+            const nextTotalPages = parseInt(
+              response.headers?.get('X-WP-TotalPages') || '1',
+              10,
+            );
+
+            totalPages = Number.isNaN(nextTotalPages)
+              ? currentPage
+              : Math.max(1, nextTotalPages);
+
+            if (!Array.isArray(pageResults) || pageResults.length < 1) {
+              return results;
+            }
+
+            results.push(...pageResults);
+            currentPage += 1;
+          }
+
+          return results;
+        };
+
         try {
-          const commentSearchPath = `/wp/v2/comments?search=${encodeURIComponent(q)}&per_page=100&comment_type=issuecomment&type=issuecomment&context=edit&show_hidden_comments=1&_fields=post,comment_post_ID,author_user_agent`;
+          const commentSearchPath = `/wp/v2/comments?search=${encodeURIComponent(q)}&per_page=${SEARCH_API_PAGE_SIZE}&comment_type=issuecomment&type=issuecomment&context=edit&show_hidden_comments=1&_fields=post,comment_post_ID,author_user_agent`;
+          const directIssueSearchPath = `/wp/v2/alpaca_issue?search=${encodeURIComponent(q)}&per_page=${SEARCH_API_PAGE_SIZE}&_fields=${issueFields}`;
           const [comments, directIssues] = await Promise.all([
-            wp
-              .apiFetch({
-                path: commentSearchPath,
-              })
-              .catch(() => []),
-            wp
-              .apiFetch({
-                path: directIssueSearchPath,
-              })
-              .catch(() => []),
+            fetchPaginatedResults(commentSearchPath),
+            fetchPaginatedResults(directIssueSearchPath),
           ]);
 
           if (requestId !== requestIdRef.current) {
@@ -225,87 +299,69 @@ function SearchContainer({
                   );
                 });
 
-          const scopedComments = shouldUseVisibleIssueInclude
-            ? filteredComments.filter((comment) => {
-                let commentIssueId = '';
+          const scopedComments = filteredComments.filter((comment) => {
+            const commentIssueId = getCommentIssueId(comment);
 
-                if (
-                  comment &&
-                  typeof comment.comment_post_ID !== 'undefined' &&
-                  comment.comment_post_ID !== null
-                ) {
-                  commentIssueId = String(comment.comment_post_ID);
-                } else if (
-                  comment &&
-                  typeof comment.post !== 'undefined' &&
-                  comment.post !== null
-                ) {
-                  commentIssueId = String(comment.post);
-                }
+            if (!commentIssueId) {
+              return false;
+            }
 
-                if (!commentIssueId) {
-                  return false;
-                }
-
-                return currentVisibleIdsSet.has(commentIssueId);
-              })
-            : filteredComments;
+            return currentSearchScopeIdsSet.has(commentIssueId);
+          });
 
           const commentPostIds = Array.from(
             new Set(
               scopedComments
-                .map((comment) => {
-                  if (!comment) {
-                    return null;
-                  }
-
-                  if (comment.comment_post_ID) {
-                    return String(comment.comment_post_ID);
-                  }
-
-                  if (comment.post) {
-                    return String(comment.post);
-                  }
-
-                  return null;
-                })
+                .map((comment) => getCommentIssueId(comment))
                 .filter(Boolean),
             ),
           );
 
           const issuesById = new Map();
-          (directIssues || []).forEach((post) => {
+          (directIssues || [])
+            .filter((post) => {
+              const normalizedIssueId = getNormalizedIssueResultId(post);
+              return (
+                normalizedIssueId &&
+                currentSearchScopeIdsSet.has(normalizedIssueId)
+              );
+            })
+            .forEach((post) => {
             if (!post || typeof post.id === 'undefined' || post.id === null) {
               return;
             }
 
             issuesById.set(String(post.id), post);
-          });
+            });
 
           const commentIssueIdsToLoad = commentPostIds.filter(
             (issueId) => !issuesById.has(String(issueId)),
           );
 
           if (commentIssueIdsToLoad.length > 0) {
-            const issueIdChunks = chunkArray(
-              commentIssueIdsToLoad,
-              SEARCH_API_PAGE_SIZE,
-            );
+            const issueIdChunks = [];
+
+            for (
+              let index = 0;
+              index < commentIssueIdsToLoad.length;
+              index += SEARCH_API_PAGE_SIZE
+            ) {
+              issueIdChunks.push(
+                commentIssueIdsToLoad.slice(index, index + SEARCH_API_PAGE_SIZE),
+              );
+            }
 
             // Load included issue IDs in batches to stay within REST per_page limits.
             for (const issueIdChunk of issueIdChunks) {
-              if (!Array.isArray(issueIdChunk) || issueIdChunk.length < 1) {
-                continue;
-              }
-
-              const issuesPath = `/wp/v2/alpaca_issue?include=${encodeURIComponent(
-                issueIdChunk.join(','),
-              )}&per_page=${issueIdChunk.length}&_fields=${issueFields}`;
-
               // eslint-disable-next-line no-await-in-loop
               const issues = await wp
-                .apiFetch({ path: issuesPath })
+                .apiFetch({
+                  path: `/wp/v2/alpaca_issue?include=${encodeURIComponent(
+                    issueIdChunk.join(','),
+                  )}&per_page=${issueIdChunk.length}&_fields=${issueFields}`,
+                })
                 .catch(() => []);
+
               if (requestId !== requestIdRef.current) {
                 return;
               }
@@ -353,25 +409,29 @@ function SearchContainer({
           );
 
           if (parentIdsToLoad.length > 0) {
-            const parentIdChunks = chunkArray(
-              parentIdsToLoad,
-              SEARCH_API_PAGE_SIZE,
-            );
+            const parentIdChunks = [];
+
+            for (
+              let index = 0;
+              index < parentIdsToLoad.length;
+              index += SEARCH_API_PAGE_SIZE
+            ) {
+              parentIdChunks.push(
+                parentIdsToLoad.slice(index, index + SEARCH_API_PAGE_SIZE),
+              );
+            }
 
             // Load parent IDs in batches to avoid truncation when many matches exist.
             for (const parentIdChunk of parentIdChunks) {
-              if (!Array.isArray(parentIdChunk) || parentIdChunk.length < 1) {
-                continue;
-              }
-
-              const parentPath = `/wp/v2/alpaca_issue?include=${encodeURIComponent(
-                parentIdChunk.join(','),
-              )}&per_page=${parentIdChunk.length}&_fields=${issueFields}`;
-
               // eslint-disable-next-line no-await-in-loop
               const parentIssues = await wp
-                .apiFetch({ path: parentPath })
+                .apiFetch({
+                  path: `/wp/v2/alpaca_issue?include=${encodeURIComponent(
+                    parentIdChunk.join(','),
+                  )}&per_page=${parentIdChunk.length}&_fields=${issueFields}`,
+                })
                 .catch(() => []);
+
               if (requestId !== requestIdRef.current) {
                 return;
               }
@@ -452,7 +512,14 @@ function SearchContainer({
         clearTimeout(debounceRef.current);
       }
     };
-  }, [value, enableTestLogs, onSetSearchFilter, onClearSearchFilter]);
+  }, [
+    value,
+    enableTestLogs,
+    searchRefreshToken,
+    searchScopeIssueIdsKey,
+    onSetSearchFilter,
+    onClearSearchFilter,
+  ]);
 
   return (
     <div className="alpaca-board-search" style={{ width: 300 }}>
@@ -468,13 +535,13 @@ function SearchContainer({
 }
 
 SearchContainer.propTypes = {
-  visibleIssueIds: PropTypes.arrayOf(PropTypes.string),
+  searchScopeIssueIds: PropTypes.arrayOf(PropTypes.string),
   onSetSearchFilter: PropTypes.func,
   onClearSearchFilter: PropTypes.func,
 };
 
 SearchContainer.defaultProps = {
-  visibleIssueIds: [],
+  searchScopeIssueIds: [],
   onSetSearchFilter: () => {},
   onClearSearchFilter: () => {},
 };
@@ -484,7 +551,7 @@ SearchContainer.defaultProps = {
  *
  * @param {Object}   root0                     Component props.
  * @param {string}   root0.selector            Mount selector.
- * @param {Array}    root0.containers          Board containers with loaded issues.
+ * @param {Array}    root0.searchScopeIssueIds Search-scoped issue IDs.
  * @param {Object}   root0.activeSearchFilter  Current search filter payload.
  * @param {Function} root0.onSetSearchFilter   Set search filter callback.
  * @param {Function} root0.onClearSearchFilter Clear search filter callback.
@@ -492,32 +559,11 @@ SearchContainer.defaultProps = {
  */
 function SearchPortal({
   selector,
-  containers,
+  searchScopeIssueIds,
   activeSearchFilter: _activeSearchFilter,
   onSetSearchFilter,
   onClearSearchFilter,
 }) {
-  const visibleIssueIds = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          (Array.isArray(containers) ? containers : [])
-            .flatMap((container) =>
-              container && Array.isArray(container.items)
-                ? container.items
-                : [],
-            )
-            .map((item) =>
-              item && typeof item.id !== 'undefined' && item.id !== null
-                ? String(item.id)
-                : '',
-            )
-            .filter(Boolean),
-        ),
-      ),
-    [containers],
-  );
-
   if (typeof document === 'undefined' || typeof createPortal !== 'function') {
     return null;
   }
@@ -529,7 +575,7 @@ function SearchPortal({
 
   return createPortal(
     <SearchContainer
-      visibleIssueIds={visibleIssueIds}
+      searchScopeIssueIds={searchScopeIssueIds}
       onSetSearchFilter={onSetSearchFilter}
       onClearSearchFilter={onClearSearchFilter}
     />,
@@ -539,7 +585,7 @@ function SearchPortal({
 
 SearchPortal.propTypes = {
   selector: PropTypes.string,
-  containers: PropTypes.array,
+  searchScopeIssueIds: PropTypes.arrayOf(PropTypes.string),
   activeSearchFilter: PropTypes.shape({
     type: PropTypes.string,
     query: PropTypes.string,
@@ -551,7 +597,7 @@ SearchPortal.propTypes = {
 
 SearchPortal.defaultProps = {
   selector: '#project-board-controls-mount',
-  containers: [],
+  searchScopeIssueIds: [],
   activeSearchFilter: null,
   onSetSearchFilter: () => {},
   onClearSearchFilter: () => {},
