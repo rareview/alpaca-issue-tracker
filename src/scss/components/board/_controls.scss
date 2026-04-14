@@ -234,17 +234,17 @@
     background: $bgwhite;
     border: 1px solid $greyborder;
     border-radius: 6px;
-    padding: 2px 6px;
-    min-height: 36px;
+    padding: 4px 8px;
+    min-height: 40px;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
+    box-sizing: border-box;
   }
 
   .alpaca-board-filter-control.is-active-filter .alpaca-filter-control-clear {
     position: relative;
     inset-inline-end: auto;
-    margin-left: 6px;
     top: auto;
     right: auto;
     z-index: 2;
@@ -255,6 +255,7 @@
     padding: 0;
     margin: 0;
     min-width: auto;
+    min-height: 0;
     display: inline-flex;
     align-items: center;
     background: transparent;
