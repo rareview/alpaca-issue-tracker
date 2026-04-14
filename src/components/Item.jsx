@@ -154,7 +154,7 @@ const Item = forwardRef(
               <div className="alpaca-item-content">
                 <Text>{content}</Text>
               </div>
-              <div className="alpaca-item-datapoints flexalign">
+              <div className="alpaca-item-datapoints">
                 {wp.hooks.applyFilters('alpaca.item.datapoints', null, {
                   id,
                   title: content,

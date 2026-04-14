@@ -12,6 +12,7 @@
     #fff
   );
   margin: 2px 0;
+  margin-inline-end: 10px;
   padding: 0 8px;
 }
 
@@ -26,6 +27,10 @@
 
   &[data-deadline-state='soon'] {
     @include deadline-style($deadline-soon-bg);
+  }
+
+  &[data-deadline-state='future'] {
+    padding-inline: 0;
   }
 }
 
@@ -93,14 +98,17 @@
   $text-color: $greytext
 ) {
   color: $text-color;
-  flex-wrap: wrap;
-  align-items: center;
 
   > * {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 0.4ch;
+    vertical-align: middle;
     margin-inline-end: $item-spacing;
+  }
+
+  > *:last-child {
+    margin-inline-end: 0;
   }
 
   .alpaca-item-priority-badge {
@@ -111,10 +119,24 @@
     @include alpaca-assignee-stack;
   }
 
+  .alpaca-item-deadline {
+    margin-inline-end: $item-spacing;
+  }
+
+  > *:last-child .alpaca-item-deadline {
+    margin-inline-end: 0;
+  }
+
   .alpaca-item-labels {
-    display: inline-flex;
-    flex-wrap: wrap;
-    gap: 4px;
+    display: inline;
+  }
+
+  .alpaca-item-labels > * {
+    margin-inline-end: 4px;
+  }
+
+  .alpaca-item-labels > *:last-child {
+    margin-inline-end: 0;
   }
 
   .alpaca-item-icon {
