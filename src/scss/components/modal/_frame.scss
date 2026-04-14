@@ -109,6 +109,15 @@
       &:focus:empty[data-placeholder]::before {
         opacity: 0.5;
       }
+
+      .alpaca-inline-search-highlight {
+        border-radius: 2px;
+        padding: 0 1px;
+        background-color: var(
+          --alpaca-search-highlight,
+          rgba(255, 221, 87, 0.35)
+        );
+      }
     }
   }
 

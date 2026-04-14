@@ -122,6 +122,12 @@
     margin-top: 0;
   }
 
+  .alpaca-comment-content .alpaca-inline-search-highlight {
+    border-radius: 2px;
+    padding: 0 1px;
+    background-color: var(--alpaca-search-highlight, rgba(255, 221, 87, 0.35));
+  }
+
   .alpaca-timeline-item[data-source='human'] .alpaca-timeline-content,
   .alpaca-timeline-item[data-source='create'] .alpaca-timeline-content,
   .alpaca-comment-form textarea {

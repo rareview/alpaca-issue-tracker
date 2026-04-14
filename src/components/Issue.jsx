@@ -8,6 +8,7 @@ import useLoadingStates from '../hooks/useLoadingStates';
 import useAutoExpandTextarea from '../hooks/useAutoExpandTextarea';
 
 import { processAssigneeChanges } from '../utils/assigneeUtils';
+import { splitTextForHighlight } from '../utils/searchHighlight';
 import {
   fetchStatuses,
   fetchLabels,
@@ -139,6 +140,7 @@ const EditableTitle = memo(
   ({
     isEditing,
     title,
+    highlightQuery,
     onEditStart,
     onChange,
     onSave,
@@ -147,6 +149,7 @@ const EditableTitle = memo(
   }) => {
     const inputRef = useRef(null);
     const clickPointRef = useRef(null);
+    // color is provided via CSS variable `--alpaca-search-highlight`
 
     const getCaretRangeFromPoint = useCallback((x, y) => {
       if (typeof document.caretPositionFromPoint === 'function') {
@@ -250,12 +253,32 @@ const EditableTitle = memo(
         aria-label="Issue title"
         data-placeholder={placeholder}
       >
-        {!isEditing && title}
+        {!isEditing &&
+          splitTextForHighlight(title, highlightQuery).map((part, index) => {
+            if (!part || !part.text) {
+              return null;
+            }
+
+            if (!part.isMatch) {
+              return part.text;
+            }
+
+            return (
+              <mark
+                key={`${part.text}-${index}`}
+                className="alpaca-inline-search-highlight"
+              >
+                {part.text}
+              </mark>
+            );
+          })}
       </h3>
     );
   },
   (prev, next) =>
-    prev.isEditing === next.isEditing && prev.title === next.title,
+    prev.isEditing === next.isEditing &&
+    prev.title === next.title &&
+    prev.highlightQuery === next.highlightQuery,
 );
 
 const SubissueAssigneeControl = memo(
@@ -514,6 +537,7 @@ const AlpacaIssue = ({
   issueId,
   isCreating,
   isOpen,
+  activeSearchQuery = '',
   onClose,
   onDelete,
   onAssigneesChange,
@@ -1778,6 +1802,7 @@ const AlpacaIssue = ({
                 <EditableTitle
                   isEditing={isEditingTitle}
                   title={editedTitle}
+                  highlightQuery={activeSearchQuery}
                   onEditStart={() => setIsEditingTitle(true)}
                   onChange={setEditedTitle}
                   onSave={handleTitleSave}
@@ -2024,6 +2049,7 @@ const AlpacaIssue = ({
                         tab={tab}
                         issueDetails={issueDetails}
                         issueId={issueId}
+                        activeSearchQuery={activeSearchQuery}
                         commentRefreshKey={commentRefreshKey}
                         showNotification={showNotification}
                       />
@@ -2138,6 +2164,7 @@ AlpacaIssue.propTypes = {
   onLabelsChange: PropTypes.func,
   isCreating: PropTypes.bool,
   onIssueCreated: PropTypes.func,
+  activeSearchQuery: PropTypes.string,
 };
 
 export default AlpacaIssue;

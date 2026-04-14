@@ -1,4 +1,4 @@
-const { useState, useRef, useEffect, useCallback } = wp.element;
+const { useState, useRef, useEffect, useCallback, useMemo } = wp.element;
 const { decodeEntities } = wp.htmlEntities;
 const { __ } = wp.i18n;
 const { Button, Notice, Snackbar } = wp.components;
@@ -42,6 +42,59 @@ export function AlpacaBoard() {
   const [isRestoring, setIsRestoring] = useState(false);
   const [restoreError, setRestoreError] = useState(null);
   const [activeBoardFilter, setActiveBoardFilter] = useState(null);
+  const [activeSearchFilter, setActiveSearchFilter] = useState(null);
+
+  // Pre-built Set for O(1) lookups inside itemMatchesBoardFilter.
+  const searchIdsSet = useMemo(
+    () =>
+      new Set(
+        activeSearchFilter && Array.isArray(activeSearchFilter.issueIds)
+          ? activeSearchFilter.issueIds
+          : [],
+      ),
+    [activeSearchFilter],
+  );
+
+  /**
+   * Resolve a normalized board filter object supporting legacy and combined shapes.
+   *
+   * @param {Object|null} filterValue Raw board filter payload.
+   * @return {Object} Normalized board filter shape.
+   */
+  const normalizeBoardFilter = useCallback((filterValue) => {
+    if (!filterValue || typeof filterValue !== 'object') {
+      return {
+        label: null,
+        assignee: null,
+      };
+    }
+
+    // Backward compatibility with older single-filter payloads.
+    if (filterValue.type === 'label') {
+      return {
+        label: filterValue,
+        assignee: null,
+      };
+    }
+
+    if (filterValue.type === 'assignee') {
+      return {
+        label: null,
+        assignee: filterValue,
+      };
+    }
+
+    return {
+      label:
+        filterValue.label && typeof filterValue.label === 'object'
+          ? filterValue.label
+          : null,
+      assignee:
+        filterValue.assignee && typeof filterValue.assignee === 'object'
+          ? filterValue.assignee
+          : null,
+    };
+  }, []);
 
   /**
    * Check whether an item matches the active board filter.
@@ -51,28 +104,77 @@ export function AlpacaBoard() {
    * @return {boolean} True when the item matches or no filter is active.
    */
   const itemMatchesBoardFilter = useCallback(
-    (item, filter = activeBoardFilter) => {
-      if (!filter) {
-        return true;
-      }
-
+    (item, filter = null) => {
       if (!item || typeof item !== 'object') {
         return false;
       }
 
-      if (filter.type === 'assignee') {
+      const hasCompositeFilter =
+        !!filter &&
+        typeof filter === 'object' &&
+        (Object.prototype.hasOwnProperty.call(filter, 'boardFilter') ||
+          Object.prototype.hasOwnProperty.call(filter, 'searchFilter'));
+
+      const boardFilter = hasCompositeFilter
+        ? filter.boardFilter || null
+        : filter || activeBoardFilter;
+      const searchFilter = hasCompositeFilter
+        ? filter.searchFilter || null
+        : activeSearchFilter;
+      const normalizedBoardFilter = normalizeBoardFilter(boardFilter);
+      const labelFilter = normalizedBoardFilter.label;
+      const assigneeFilter = normalizedBoardFilter.assignee;
+
+      const hasActiveSearchQuery =
+        !!searchFilter &&
+        typeof searchFilter.query === 'string' &&
+        searchFilter.query.trim().length > 0;
+
+      if (hasActiveSearchQuery) {
+        // An active query with zero matches should hide all cards.
+        if (searchIdsSet.size < 1) {
+          return false;
+        }
+
+        const itemId =
+          typeof item.id !== 'undefined' && item.id !== null
+            ? String(item.id)
+            : '';
+
+        if (!itemId || !searchIdsSet.has(itemId)) {
+          return false;
+        }
+      }
+
+      if (!labelFilter && !assigneeFilter) {
+        return true;
+      }
+
+      if (assigneeFilter) {
         const assignees = Array.isArray(item.assignees) ? item.assignees : [];
-        return assignees.some(
+        const hasAssigneeMatch = assignees.some(
           (assignee) =>
             assignee &&
             typeof assignee.id !== 'undefined' &&
-            String(assignee.id) === String(filter.id),
+            String(assignee.id) === String(assigneeFilter.id),
         );
+
+        if (!hasAssigneeMatch) {
+          return false;
+        }
+      }
+
+      if (!labelFilter) {
+        return true;
       }
 
       const labels = Array.isArray(item.labels) ? item.labels : [];
-      const filterSlug = filter.slug ? String(filter.slug).toLowerCase() : '';
-      const filterName = filter.name ? String(filter.name).toLowerCase() : '';
+      const filterSlug = labelFilter.slug
+        ? String(labelFilter.slug).toLowerCase()
+        : '';
+      const filterName = labelFilter.name
+        ? String(labelFilter.name).toLowerCase()
+        : '';
 
       return labels.some((label) => {
         if (!label || typeof label !== 'object') {
@@ -80,9 +182,9 @@ export function AlpacaBoard() {
         }
 
         if (
-          filter.termId &&
+          labelFilter.termId &&
           typeof label.term_id !== 'undefined' &&
-          String(label.term_id) === String(filter.termId)
+          String(label.term_id) === String(labelFilter.termId)
         ) {
           return true;
         }
@@ -106,7 +208,7 @@ export function AlpacaBoard() {
         return false;
       });
     },
-    [activeBoardFilter],
+    [activeBoardFilter, activeSearchFilter, normalizeBoardFilter, searchIdsSet],
   );
 
   /**
@@ -229,45 +331,182 @@ export function AlpacaBoard() {
    * @param {Object|null} filter Filter payload.
    * @return {void}
    */
-  const handleSetBoardFilter = useCallback((filter) => {
-    if (!filter || typeof filter !== 'object') {
-      setActiveBoardFilter(null);
-      return;
-    }
-
-    if (filter.type === 'assignee') {
-      if (!filter.id) {
+  const handleSetBoardFilter = useCallback(
+    (filter) => {
+      if (!filter || typeof filter !== 'object') {
         setActiveBoardFilter(null);
         return;
       }
 
-      setActiveBoardFilter({
-        type: 'assignee',
-        id: String(filter.id),
-        displayName:
-          filter.displayName || filter.display_name || filter.name
-            ? String(filter.displayName || filter.display_name || filter.name)
-            : '',
-        avatar: filter.avatar || null,
+      const filterType = filter.filterType || filter.type;
+
+      if (filterType === 'assignee') {
+        if (!filter.id) {
+          setActiveBoardFilter((previous) => {
+            const normalized = normalizeBoardFilter(previous);
+            if (!normalized.label) {
+              return null;
+            }
+
+            return {
+              ...normalized,
+              assignee: null,
+            };
+          });
+          return;
+        }
+
+        setActiveBoardFilter((previous) => {
+          const normalized = normalizeBoardFilter(previous);
+
+          return {
+            ...normalized,
+            assignee: {
+              type: 'assignee',
+              id: String(filter.id),
+              displayName:
+                filter.displayName || filter.display_name || filter.name
+                  ? String(
+                      filter.displayName || filter.display_name || filter.name,
+                    )
+                  : '',
+              avatar: filter.avatar || null,
+            },
+          };
+        });
+        return;
+      }
+
+      if (filterType !== 'label') {
+        return;
+      }
+
+      setActiveBoardFilter((previous) => {
+        const normalized = normalizeBoardFilter(previous);
+
+        return {
+          ...normalized,
+          label: {
+            type: 'label',
+            termId:
+              typeof filter.termId !== 'undefined' && filter.termId !== null
+                ? String(filter.termId)
+                : '',
+            slug: filter.slug ? String(filter.slug).toLowerCase() : '',
+            name: filter.name ? String(filter.name) : '',
+            color: filter.color || null,
+          },
+        };
       });
+    },
+    [normalizeBoardFilter],
+  );
+
+  const handleClearBoardFilter = useCallback(
+    (filterType = null) => {
+      if (!filterType) {
+        setActiveBoardFilter(null);
+        return;
+      }
+
+      setActiveBoardFilter((previous) => {
+        const normalized = normalizeBoardFilter(previous);
+
+        if (filterType === 'assignee') {
+          if (!normalized.label) {
+            return null;
+          }
+
+          return {
+            ...normalized,
+            assignee: null,
+          };
+        }
+
+        if (filterType === 'label') {
+          if (!normalized.assignee) {
+            return null;
+          }
+
+          return {
+            ...normalized,
+            label: null,
+          };
+        }
+
+        return previous;
+      });
+    },
+    [normalizeBoardFilter],
+  );
+
+  /**
+   * Set active search filter from the search control.
+   *
+   * @param {Object|null} searchFilter Search filter payload.
+   * @return {void}
+   */
+  const handleSetSearchFilter = useCallback((searchFilter) => {
+    if (!searchFilter || typeof searchFilter !== 'object') {
+      setActiveSearchFilter(null);
       return;
     }
 
-    setActiveBoardFilter({
-      type: 'label',
-      termId:
-        typeof filter.termId !== 'undefined' && filter.termId !== null
-          ? String(filter.termId)
-          : '',
-      slug: filter.slug ? String(filter.slug).toLowerCase() : '',
-      name: filter.name ? String(filter.name) : '',
-      color: filter.color || null,
+    const normalizedQuery =
+      typeof searchFilter.query === 'string' ? searchFilter.query.trim() : '';
+
+    if (!normalizedQuery) {
+      setActiveSearchFilter(null);
+      return;
+    }
+
+    const normalizedIssueIds = Array.from(
+      new Set(
+        (Array.isArray(searchFilter.issueIds) ? searchFilter.issueIds : [])
+          .map((issueId) =>
+            typeof issueId !== 'undefined' && issueId !== null
+              ? String(issueId)
+              : '',
+          )
+          .filter(Boolean),
+      ),
+    );
+
+    setActiveSearchFilter({
+      type: 'search',
+      query: normalizedQuery,
+      issueIds: normalizedIssueIds,
     });
   }, []);
 
-  const handleClearBoardFilter = useCallback(() => {
-    setActiveBoardFilter(null);
+  const handleClearSearchFilter = useCallback(() => {
+    setActiveSearchFilter(null);
   }, []);
+
+  const searchScopeIssueIds = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          containers
+            .flatMap((container) =>
+              Array.isArray(container?.items) ? container.items : [],
+            )
+            .filter((item) =>
+              itemMatchesBoardFilter(item, {
+                boardFilter: activeBoardFilter,
+                searchFilter: null,
+              }),
+            )
+            .map((item) =>
+              typeof item?.id !== 'undefined' && item.id !== null
+                ? String(item.id)
+                : '',
+            )
+            .filter(Boolean),
+        ),
+      ),
+    [containers, activeBoardFilter, itemMatchesBoardFilter],
+  );
 
   // Sync selected issue with the URL `issue` query param and listen for Back/Forward.
   // Debounced to avoid rapid state churn when popstate events fire quickly.
@@ -1130,6 +1369,14 @@ export function AlpacaBoard() {
   }, []);
 
   // Handler invoked by Containers when an item is dropped
+  const combinedBoardFilter =
+    activeBoardFilter || activeSearchFilter
+      ? {
+          boardFilter: activeBoardFilter,
+          searchFilter: activeSearchFilter,
+        }
+      : null;
+
   const handleItemDrop = (data) => {
     // data: { itemId, sourceContainerId, sourceIndex, destinationContainerId, destinationIndex }
     const {
@@ -1161,12 +1408,12 @@ export function AlpacaBoard() {
         }
 
         const reorderedItems =
-          activeBoardFilter && typeof destinationVisibleIndex === 'number'
+          combinedBoardFilter && typeof destinationVisibleIndex === 'number'
             ? reorderItemsWithinFilteredSlots({
                 items,
                 sourceIndex,
                 destinationVisibleIndex,
-                activeFilter: activeBoardFilter,
+                activeFilter: combinedBoardFilter,
                 itemMatchesFilter: itemMatchesBoardFilter,
               })
             : (() => {
@@ -1225,8 +1472,12 @@ export function AlpacaBoard() {
         selector="#project-board-controls-mount"
         containers={containers}
         activeFilter={activeBoardFilter}
+        activeSearchFilter={activeSearchFilter}
+        searchScopeIssueIds={searchScopeIssueIds}
         onSetFilter={handleSetBoardFilter}
         onClearFilter={handleClearBoardFilter}
+        onSetSearchFilter={handleSetSearchFilter}
+        onClearSearchFilter={handleClearSearchFilter}
       />
       {hasNoStatuses ? (
         <div className="alpaca-empty-state">
@@ -1270,7 +1521,7 @@ export function AlpacaBoard() {
               id={container.id}
               title={container.title}
               items={container.items}
-              activeFilter={activeBoardFilter}
+              activeFilter={combinedBoardFilter}
               itemMatchesFilter={itemMatchesBoardFilter}
               onItemClick={handleItemClick}
               onMoveAllToNext={moveAllItemsToNextContainer}
@@ -1291,6 +1542,11 @@ export function AlpacaBoard() {
         issueId={selectedItem?.id}
         isCreating={selectedItem?.isCreating}
         isOpen={!!selectedItem}
+        activeSearchQuery={
+          activeSearchFilter && typeof activeSearchFilter.query === 'string'
+            ? activeSearchFilter.query
+            : ''
+        }
         onClose={closeModal}
         onDelete={handleDeleteIssue}
         triggerRef={triggerRef}

@@ -226,6 +226,7 @@ AttachmentControls.propTypes = {
 const Comment = memo(
   ({
     comment,
+    activeSearchQuery,
     startEditing,
     confirmDeleteComment,
     editingCommentId,
@@ -288,6 +289,7 @@ const Comment = memo(
     return (
       <TimelineEntry
         comment={comment}
+        highlightQuery={activeSearchQuery}
         currentUser={currentUser}
         onAttachmentClick={onAttachmentClick}
         isEditing={editingCommentId === comment.id}
@@ -372,6 +374,7 @@ const Comment = memo(
   },
   (prev, next) =>
     prev.comment === next.comment &&
+    prev.activeSearchQuery === next.activeSearchQuery &&
     prev.editingCommentId === next.editingCommentId &&
     prev.editingContent === next.editingContent &&
     prev.isSubmitting === next.isSubmitting &&
@@ -383,6 +386,7 @@ const Comment = memo(
 
 Comment.propTypes = {
   comment: PropTypes.object.isRequired,
+  activeSearchQuery: PropTypes.string,
   startEditing: PropTypes.func.isRequired,
   confirmDeleteComment: PropTypes.func.isRequired,
   editingCommentId: PropTypes.number,
@@ -410,7 +414,12 @@ Comment.propTypes = {
 };
 
 // --- Commenting Component ---
-const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
+const Commenting = ({
+  issueId,
+  activeSearchQuery,
+  commentRefreshKey,
+  showNotification,
+}) => {
   const [comments, setComments] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [newComment, setNewComment] = useState('');
@@ -1019,6 +1028,7 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
             <Comment
               key={comment.id}
               comment={comment}
+              activeSearchQuery={activeSearchQuery}
               startEditing={startEditing}
               confirmDeleteComment={confirmDeleteComment}
               editingCommentId={editingCommentId}
@@ -1106,8 +1116,13 @@ const Commenting = ({ issueId, commentRefreshKey, showNotification }) => {
 
 Commenting.propTypes = {
   issueId: PropTypes.number.isRequired,
+  activeSearchQuery: PropTypes.string,
   commentRefreshKey: PropTypes.number.isRequired,
   showNotification: PropTypes.func.isRequired,
+};
+
+Commenting.defaultProps = {
+  activeSearchQuery: '',
 };
 
 export default memo(Commenting);
