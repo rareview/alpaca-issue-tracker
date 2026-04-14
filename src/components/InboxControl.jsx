@@ -13,8 +13,22 @@ import Icon from './icons/Icon';
 const { useCallback, useEffect, useMemo, useRef, useState, createPortal } =
   wp.element;
 const { __ } = wp.i18n;
-const { Button, Notice, Spinner, Tooltip } = wp.components;
+const {
+  Button,
+  Notice,
+  Spinner,
+  Tooltip,
+  ToggleGroupControl: ComponentsToggleGroupControl,
+  ToggleGroupControlOption: ComponentsToggleGroupControlOption,
+  __experimentalToggleGroupControl,
+  __experimentalToggleGroupControlOption,
+} = wp.components;
 const { doAction } = wp.hooks;
+
+const ToggleGroupControl =
+  ComponentsToggleGroupControl || __experimentalToggleGroupControl;
+const ToggleGroupControlOption =
+  ComponentsToggleGroupControlOption || __experimentalToggleGroupControlOption;
 
 const PAGE_SIZE = 20;
 const POLL_INTERVAL_MS = 30000;
@@ -537,22 +551,32 @@ function InboxControl({ selector }) {
           const timelineComment = buildTimelineCommentFromInboxItem(item);
           const issueTitle =
             item?.issue?.title || __('Untitled issue', 'alpaca');
-          const isAuditEntry = timelineComment.author_user_agent === 'audit';
+          const isUnread = Boolean(item[IS_UNREAD_KEY]);
+          const readToggleLabel = isUnread
+            ? __('Mark Read', 'alpaca')
+            : __('Mark Unread', 'alpaca');
           const readToggleAction = (
-            <Button
-              variant="link"
-              className="alpaca-inbox-entry-read-toggle"
-              onClick={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                handleMarkReadState(item.id, !item[IS_UNREAD_KEY]);
-              }}
-              disabled={isMutating}
-            >
-              {item[IS_UNREAD_KEY]
-                ? __('Mark Read', 'alpaca')
-                : __('Mark Unread', 'alpaca')}
-            </Button>
+            <Tooltip text={readToggleLabel}>
+              <button
+                type="button"
+                className={`alpaca-inbox-entry-state-toggle ${
+                  isUnread ? 'is-unread' : 'is-read'
+                }`}
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  handleMarkReadState(item.id, !isUnread);
+                }}
+                disabled={isMutating}
+                aria-label={readToggleLabel}
+              >
+                <Icon
+                  name="check-circle-fill"
+                  className="alpaca-inbox-entry-state-toggle-icon"
+                  aria-hidden="true"
+                />
+              </button>
+            </Tooltip>
           );
 
           return (
@@ -582,11 +606,12 @@ function InboxControl({ selector }) {
                   showTime
                   stripInteractive
                   enableAttachmentPreview={false}
-                  auditTimeInTopline={isAuditEntry}
+                  auditTimeInTopline={false}
                   className="alpaca-inbox-entry-item"
-                  headerActions={isAuditEntry ? readToggleAction : null}
-                  footerActions={isAuditEntry ? null : readToggleAction}
+                  headerActions={null}
+                  footerActions={null}
                 />
+                {readToggleAction}
               </div>
             </article>
           );
@@ -668,24 +693,33 @@ function InboxControl({ selector }) {
 
               <div className="alpaca-inbox-panel-toolbar">
                 <div className="alpaca-inbox-filter-group">
-                  <Button
-                    variant={'unread' === filter ? 'primary' : 'secondary'}
-                    onClick={() => setFilter('unread')}
+                  <ToggleGroupControl
+                    value={filter}
+                    isBlock={false}
+                    onChange={(nextFilter) => {
+                      if ('unread' !== nextFilter && 'all' !== nextFilter) {
+                        return;
+                      }
+
+                      setFilter(nextFilter);
+                    }}
                     disabled={isLoading || isMutating}
+                    label={__('Inbox filter', 'alpaca')}
+                    hideLabelFromVision
                   >
-                    {__('Unread', 'alpaca')}
-                  </Button>
-                  <Button
-                    variant={'all' === filter ? 'primary' : 'secondary'}
-                    onClick={() => setFilter('all')}
-                    disabled={isLoading || isMutating}
-                  >
-                    {__('All', 'alpaca')}
-                  </Button>
+                    <ToggleGroupControlOption
+                      value="unread"
+                      label={__('Unread', 'alpaca')}
+                    />
+                    <ToggleGroupControlOption
+                      value="all"
+                      label={__('All', 'alpaca')}
+                    />
+                  </ToggleGroupControl>
                 </div>
 
                 <Button
-                  variant="secondary"
+                  variant="tertiary"
                   onClick={handleMarkAllRead}
                   disabled={isMutating || unreadCount <= 0}
                 >
