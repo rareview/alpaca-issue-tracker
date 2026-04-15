@@ -20,6 +20,10 @@
       cursor: grabbing;
     }
 
+    .alpaca-item-inner {
+      margin: 0;
+    }
+
     .components-card__body {
       padding-bottom: 4px;
     }
@@ -57,6 +61,9 @@
       }
       .alpaca-item-datapoints {
         color: rgba(0, 0, 0, 0.6);
+      }
+      .alpaca-item-priority-badge svg {
+        border-color: rgba($priority-high-bg, 0.5);
       }
     }
 

@@ -60,6 +60,15 @@
     position: relative;
   }
 
+  #project-board-controls
+    .alpaca-board-filter-control
+    .alpaca-filter-control-trigger-content {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+  }
+
   /* Idle (before selection) filter trigger should match the inbox square button. */
   .alpaca-board-filter-control:not(.is-active-filter)
     .alpaca-board-filter-control:not(.is-active-filter)
@@ -163,6 +172,8 @@
       flex: 1 1 auto;
       min-width: 0;
       background: transparent;
+      font-size: inherit;
+      line-height: inherit;
     }
 
     .components-input-control__suffix {
