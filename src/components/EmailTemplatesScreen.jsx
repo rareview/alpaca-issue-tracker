@@ -25,7 +25,7 @@ const EMAIL_TEMPLATE_TABS = [
 const EmailTemplatesScreen = () => {
   return (
     <div className="alpaca-email-templates-screen">
-      <div className="alpaca-notification-template-intro alpaca-notifications-panel">
+      <div className="alpaca-notification-template-intro">
         <p>
           {__(
             'Manage the templates used for outbound emails in the block editor areas below. Locked blocks are essential for the correct functioning of the templates. They can be moved, but should not be removed.',
