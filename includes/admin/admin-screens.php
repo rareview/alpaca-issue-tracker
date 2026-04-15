@@ -20,7 +20,7 @@ add_action(
 			'project-board',
 			'alpaca_project_board_page',
 			'dashicons-schedule',
-			101
+			3
 		);
 
 		add_submenu_page(
