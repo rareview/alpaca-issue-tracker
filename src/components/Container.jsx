@@ -253,6 +253,22 @@ function Container({
     ? filteredMenuControls
     : menuControls;
 
+  /**
+   * Check whether an item is marked as high priority.
+   *
+   * @param {Object} item Item payload.
+   * @return {boolean} True when high priority is enabled.
+   */
+  const isHighPriorityItem = (item) => {
+    return Boolean(
+      item &&
+        item.meta &&
+        (item.meta.alpaca_high_priority === '1' ||
+          item.meta.alpaca_high_priority === 1 ||
+          item.meta.alpaca_high_priority === true),
+    );
+  };
+
   const handleDragOver = (e) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
@@ -606,8 +622,8 @@ function Container({
                   <DraggableItem
                     ref={itemRefs.current[item.id]}
                     className={`alpaca-item ${
-                      isGlobalSourceHidden ? 'is-source-hidden' : ''
-                    }`}
+                      isHighPriorityItem(item) ? 'is-high-priority' : ''
+                    } ${isGlobalSourceHidden ? 'is-source-hidden' : ''}`}
                     key={item.id}
                     id={item.id}
                     index={actualIndex}
@@ -641,8 +657,8 @@ function Container({
                     <DraggableItem
                       ref={itemRefs.current[item.id]}
                       className={`alpaca-item ${
-                        isSource ? 'is-source-hidden' : ''
-                      }`}
+                        isHighPriorityItem(item) ? 'is-high-priority' : ''
+                      } ${isSource ? 'is-source-hidden' : ''}`}
                       key={item.id}
                       id={item.id}
                       index={actualIndex}
@@ -679,8 +695,8 @@ function Container({
                   <DraggableItem
                     ref={itemRefs.current[item.id]}
                     className={`alpaca-item ${
-                      isSource ? 'is-source-hidden' : ''
-                    }`}
+                      isHighPriorityItem(item) ? 'is-high-priority' : ''
+                    } ${isSource ? 'is-source-hidden' : ''}`}
                     key={item.id}
                     id={item.id}
                     index={i}

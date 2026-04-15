@@ -50,10 +50,13 @@
     }
 
     &.is-high-priority {
-      .alpaca-item-content::before {
-        content: '⚠️';
-        margin-right: 4px;
-        font-size: 14px;
+      .alpaca-item-inner {
+        box-shadow:
+          inset 0 0 100px rgba($priority-high-bg, 0.15),
+          rgba($priority-high-bg, 0.25) 0px 0px 0px 1px;
+      }
+      .alpaca-item-datapoints {
+        color: rgba(0, 0, 0, 0.6);
       }
     }
 
