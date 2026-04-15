@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import Item from './Item';
+import { serializeElementAttributes } from '../utils/dragAttributes';
 
 const { forwardRef, useState, useEffect } = wp.element;
 
@@ -45,6 +46,18 @@ const DraggableItem = forwardRef(
         commentCountByAgent,
         meta,
       };
+
+      try {
+        // Capture classes/data-*/aria-* attributes from the source element so
+        // previews and placeholders can inherit the same markup/styling.
+        if (e.currentTarget) {
+          payload.elementDescriptor = serializeElementAttributes(
+            e.currentTarget,
+          );
+        }
+      } catch (err) {
+        // ignore serialization failures
+      }
 
       try {
         e.dataTransfer.setData('application/json', JSON.stringify(payload));

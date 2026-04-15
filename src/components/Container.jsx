@@ -5,6 +5,10 @@ const { __ } = wp.i18n;
 const { useState, useEffect, useRef } = wp.element;
 
 import DraggableItem from './DraggableItem';
+import {
+  classesFromDescriptor,
+  attrsFromDescriptor,
+} from '../utils/dragAttributes';
 import useFlipListAnimation from '../hooks/useFlipListAnimation';
 import {
   getAbsoluteDropIndexForFilteredContainer,
@@ -561,33 +565,49 @@ function Container({
               }
             }
 
-            const renderPreview = () => (
-              <div
-                className="alpaca-item placeholder"
-                key={`preview-${dragOverItem.itemId}`}
-              >
-                {dragOverItem.content ? (
-                  <DraggableItem
-                    id={-1}
-                    index={-1}
-                    containerId={id}
-                    content={dragOverItem.content}
-                    assignees={dragOverItem.assignees}
-                    labels={dragOverItem.labels}
-                    commentCount={dragOverItem.commentCount}
-                    commentCountByAgent={dragOverItem.commentCountByAgent}
-                    postDate={dragOverItem.postDate}
-                    meta={dragOverItem.meta}
-                    className="alpaca-item-inner"
-                    isDragDisabled={true}
-                  />
-                ) : (
-                  <div className="alpaca-item-inner">
-                    {__('Moving…', 'alpaca')}
-                  </div>
-                )}
-              </div>
-            );
+            const renderPreview = () => {
+              const previewIsHighPriority = isHighPriorityItem(dragOverItem);
+              const descriptor = dragOverItem && dragOverItem.elementDescriptor;
+              const previewClasses = classesFromDescriptor(descriptor, [
+                'alpaca-item',
+                'placeholder',
+                previewIsHighPriority ? 'is-high-priority' : '',
+              ]);
+              const innerClasses = classesFromDescriptor(descriptor, [
+                'alpaca-item-inner',
+                previewIsHighPriority ? 'is-high-priority' : '',
+              ]);
+              const extraAttrs = attrsFromDescriptor(descriptor);
+
+              return (
+                <div
+                  className={previewClasses}
+                  key={`preview-${dragOverItem.itemId}`}
+                  {...extraAttrs}
+                >
+                  {dragOverItem.content ? (
+                    <DraggableItem
+                      id={-1}
+                      index={-1}
+                      containerId={id}
+                      content={dragOverItem.content}
+                      assignees={dragOverItem.assignees}
+                      labels={dragOverItem.labels}
+                      commentCount={dragOverItem.commentCount}
+                      commentCountByAgent={dragOverItem.commentCountByAgent}
+                      postDate={dragOverItem.postDate}
+                      meta={dragOverItem.meta}
+                      className={innerClasses}
+                      isDragDisabled={true}
+                    />
+                  ) : (
+                    <div className={innerClasses} {...extraAttrs}>
+                      {__('Moving…', 'alpaca')}
+                    </div>
+                  )}
+                </div>
+              );
+            };
 
             if (!dragOverItem) {
               const listHasItems = visibleItemEntries.length > 0;
