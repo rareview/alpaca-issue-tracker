@@ -705,6 +705,60 @@ export function AlpacaBoard() {
     };
   }, [handleCommentCountChange]);
 
+  // Update labels on board when labels are changed elsewhere.
+  useEffect(() => {
+    const handleLabelsChanged = (data) => {
+      const incoming = data && Array.isArray(data.labels) ? data.labels : [];
+      if (!incoming || incoming.length < 1) return;
+
+      const labelMap = new Map();
+      incoming.forEach((l) => {
+        if (l && typeof l.term_id !== 'undefined') {
+          labelMap.set(String(l.term_id), {
+            name: l.name || null,
+            color: l.color || null,
+            term_id: l.term_id,
+          });
+        }
+      });
+
+      if (labelMap.size < 1) return;
+
+      setContainers((prev) =>
+        prev.map((container) => ({
+          ...container,
+          items: container.items.map((item) => ({
+            ...item,
+            labels: Array.isArray(item.labels)
+              ? item.labels.map((lab) => {
+                  const id = lab && lab.term_id ? String(lab.term_id) : null;
+                  if (id && labelMap.has(id)) {
+                    const updated = labelMap.get(id);
+                    return {
+                      ...lab,
+                      name: updated.name || lab.name,
+                      color: updated.color || lab.color,
+                    };
+                  }
+                  return lab;
+                })
+              : item.labels,
+          })),
+        })),
+      );
+    };
+
+    wp.hooks.addAction(
+      'alpaca.labelsChanged',
+      'alpaca/board',
+      handleLabelsChanged,
+    );
+
+    return () => {
+      wp.hooks.removeAction('alpaca.labelsChanged', 'alpaca/board');
+    };
+  }, []);
+
   const handleLastActivityChange = useCallback((issueId, newLastActivity) => {
     setContainers((prevContainers) =>
       prevContainers.map((container) => {

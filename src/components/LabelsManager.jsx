@@ -13,17 +13,15 @@ import {
 
 const DEFAULT_LABEL_COLOR = '#172b4d';
 const INITIAL_LABEL_SLOT_COUNT = 6;
-const LABEL_COLOR_OPTIONS = [
-  '#940d0d',
-  '#94550d',
-  '#947d0d',
-  '#879a0d',
-  '#649a0d',
-  '#0d9a5f',
-  '#0d909a',
-  '#134f94',
-  '#3a0d9a',
-  '#740d9a',
+const DEFAULT_LABEL_COLOR_OPTIONS = [
+  '#7B0F0F',
+  '#BF360C',
+  '#D48806',
+  '#2E7D32',
+  '#879A0D',
+  '#1E88E5',
+  '#283593',
+  '#6A1B9A',
 ];
 
 /**
@@ -83,6 +81,19 @@ const LabelsManager = () => {
               key: `term-${label.term_id}`,
             })),
           );
+          try {
+            if (wp && wp.hooks && typeof wp.hooks.doAction === 'function') {
+              const payload = {
+                labels: response.map((label) => ({
+                  ...label,
+                  color: normalizeLabelColor(label.color),
+                })),
+              };
+              wp.hooks.doAction('alpaca.labelsChanged', payload);
+            }
+          } catch (e) {
+            // swallow hook errors
+          }
         } else {
           setLabels([]);
         }
@@ -239,6 +250,11 @@ const LabelsManager = () => {
 
             return nextLabels;
           });
+          try {
+            await fetchLabels();
+          } catch (e) {
+            // ignore errors from fetch; UI already updated optimistically
+          }
           return;
         }
 
@@ -251,6 +267,27 @@ const LabelsManager = () => {
               color: normalizeLabelColor(labelDraft.color),
             },
           });
+          try {
+            if (wp && wp.hooks && typeof wp.hooks.doAction === 'function') {
+              const payload = {
+                labels: [
+                  {
+                    term_id: labelDraft.term_id,
+                    name: trimmedName,
+                    color: normalizeLabelColor(labelDraft.color),
+                  },
+                ],
+              };
+              wp.hooks.doAction('alpaca.labelsChanged', payload);
+            }
+          } catch (e) {
+            // swallow hook errors
+          }
+          try {
+            await fetchLabels();
+          } catch (e) {
+            // ignore fetch errors
+          }
           return;
         }
 
@@ -279,6 +316,29 @@ const LabelsManager = () => {
               };
             }),
           );
+          try {
+            if (wp && wp.hooks && typeof wp.hooks.doAction === 'function') {
+              const payload = {
+                labels: [
+                  {
+                    term_id: response.label.term_id,
+                    name: response.label.name || trimmedName,
+                    color:
+                      response.label.color ||
+                      normalizeLabelColor(labelDraft.color),
+                  },
+                ],
+              };
+              wp.hooks.doAction('alpaca.labelsChanged', payload);
+            }
+          } catch (e) {
+            // swallow hook errors
+          }
+          try {
+            await fetchLabels();
+          } catch (e) {
+            // ignore fetch errors
+          }
         }
       } catch (error) {
         // eslint-disable-next-line no-console
@@ -290,7 +350,7 @@ const LabelsManager = () => {
         );
       }
     },
-    [deleteLabelTerm, savingKeys],
+    [deleteLabelTerm, savingKeys, fetchLabels],
   );
 
   const removeLabelRow = useCallback(
@@ -324,6 +384,11 @@ const LabelsManager = () => {
 
           return nextLabels.filter((label) => label.key !== key);
         });
+        try {
+          await fetchLabels();
+        } catch (e) {
+          // ignore fetch errors
+        }
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Failed to delete label.', error);
@@ -334,11 +399,19 @@ const LabelsManager = () => {
         );
       }
     },
-    [deleteLabelTerm, savingKeys],
+    [deleteLabelTerm, savingKeys, fetchLabels],
   );
 
   const palette = useMemo(() => {
-    return LABEL_COLOR_OPTIONS.map((color) => ({
+    const labelColorOptions =
+      wp && wp.hooks && typeof wp.hooks.applyFilters === 'function'
+        ? wp.hooks.applyFilters(
+            'alpaca.label_color_options',
+            DEFAULT_LABEL_COLOR_OPTIONS,
+          )
+        : DEFAULT_LABEL_COLOR_OPTIONS;
+
+    return labelColorOptions.map((color) => ({
       color,
       name: color,
     }));
@@ -412,6 +485,7 @@ const LabelsManager = () => {
               <SettingsListNameCell>
                 <TextControl
                   className="alpaca-label-name-input"
+                  __next40pxDefaultSize
                   label={
                     index < INITIAL_LABEL_SLOT_COUNT ? '' : __('Name', 'alpaca')
                   }
@@ -458,6 +532,7 @@ const LabelsManager = () => {
               <SettingsListNameCell>
                 <TextControl
                   className="alpaca-label-name-input"
+                  __next40pxDefaultSize
                   label=""
                   value={label.name}
                   placeholder={__('Label name', 'alpaca')}

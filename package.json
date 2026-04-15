@@ -22,7 +22,8 @@
     "fix:js": "eslint src scripts --ext .jsx,.js --fix",
     "fix:styles": "stylelint src/**/*.scss --fix",
     "fix:php": "vendor/bin/phpcbf --ignore=src/*",
-    "clear": "rm -rf ./.parcel-cache/ ./dist/"
+    "clear": "rm -rf ./.parcel-cache/ ./dist/",
+    "clb": "npm run clear && npm run lint && npm run build"
   },
   "devDependencies": {
     "@parcel/transformer-inline-string": "^2.15.4",

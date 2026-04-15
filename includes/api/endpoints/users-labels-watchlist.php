@@ -251,6 +251,9 @@ function alpaca_create_label_callback( WP_REST_Request $request ) {
 
 	$term_id = (int) $created['term_id'];
 	update_term_meta( $term_id, 'alpaca_label_color', $color );
+	if ( function_exists( 'alpaca_clear_board_cache' ) ) {
+		alpaca_clear_board_cache();
+	}
 
 	$term = get_term( $term_id, 'alpaca_label' );
 	if ( ! $term || is_wp_error( $term ) ) {
@@ -322,6 +325,10 @@ function alpaca_update_label_callback( WP_REST_Request $request ) {
 		update_term_meta( $term_id, 'alpaca_label_color', $color );
 	}
 
+	if ( function_exists( 'alpaca_clear_board_cache' ) ) {
+		alpaca_clear_board_cache();
+	}
+
 	$updated_term = get_term( $term_id, 'alpaca_label' );
 	if ( ! $updated_term || is_wp_error( $updated_term ) ) {
 		return alpaca_rest_response(
@@ -368,6 +375,10 @@ function alpaca_delete_label_callback( WP_REST_Request $request ) {
 			),
 			500
 		);
+	}
+
+	if ( function_exists( 'alpaca_clear_board_cache' ) ) {
+		alpaca_clear_board_cache();
 	}
 
 	return alpaca_rest_response(

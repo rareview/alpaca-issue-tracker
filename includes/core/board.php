@@ -33,9 +33,36 @@ function alpaca_project_board_page() {
 }
 
 /**
+ * Get the current board cache version.
+ *
+ * @return int Cache version.
+ */
+function alpaca_get_board_cache_version() {
+	$version = (int) get_option( 'alpaca_board_cache_version', 1 );
+
+	if ( $version < 1 ) {
+		$version = 1;
+	}
+
+	return $version;
+}
+
+/**
+ * Bump the board cache version to invalidate cached board payloads.
+ *
+ * @return void
+ */
+function alpaca_bump_board_cache_version() {
+	$next_version = alpaca_get_board_cache_version() + 1;
+	update_option( 'alpaca_board_cache_version', $next_version, false );
+}
+
+/**
  * Clear board cache when relevant posts or terms change.
  */
 function alpaca_clear_board_cache() {
+	alpaca_bump_board_cache_version();
+
 	global $wp_object_cache;
 	if ( isset( $wp_object_cache->cache['alpaca'] ) ) {
 		foreach ( array_keys( $wp_object_cache->cache['alpaca'] ) as $key ) {
@@ -45,6 +72,29 @@ function alpaca_clear_board_cache() {
 		}
 	}
 }
+
+/**
+ * Clear board cache when relevant term meta changes.
+ *
+ * @param int|array $meta_ids  Meta ID or IDs.
+ * @param int       $object_id Term ID.
+ * @param string    $meta_key  Updated meta key.
+ * @param mixed     $meta_value Meta value.
+ * @return void
+ */
+function alpaca_clear_board_cache_on_term_meta_change( $meta_ids, $object_id, $meta_key, $meta_value ) {
+	unset( $meta_ids, $object_id, $meta_value );
+
+	$meta_keys_that_affect_board = array(
+		'alpaca_label_color',
+		'issue_order',
+	);
+
+	if ( in_array( $meta_key, $meta_keys_that_affect_board, true ) ) {
+		alpaca_clear_board_cache();
+	}
+}
+
 add_action( 'save_post_alpaca_issue', 'alpaca_clear_board_cache' );
 add_action( 'deleted_post', 'alpaca_clear_board_cache' );
 add_action( 'set_object_terms', 'alpaca_clear_board_cache' );
@@ -54,6 +104,9 @@ add_action( 'delete_term', 'alpaca_clear_board_cache' );
 add_action( 'comment_post', 'alpaca_clear_board_cache' );
 add_action( 'edit_comment', 'alpaca_clear_board_cache' );
 add_action( 'delete_comment', 'alpaca_clear_board_cache' );
+add_action( 'added_term_meta', 'alpaca_clear_board_cache_on_term_meta_change', 10, 4 );
+add_action( 'updated_term_meta', 'alpaca_clear_board_cache_on_term_meta_change', 10, 4 );
+add_action( 'deleted_term_meta', 'alpaca_clear_board_cache_on_term_meta_change', 10, 4 );
 
 /**
  * Get checklist progress grouped by parent issue IDs.
@@ -261,7 +314,8 @@ function alpaca_get_board_data() {
 
 	// Build a cache key based on status IDs (stable regardless of order).
 	sort( $status_ids );
-	$cache_key   = 'alpaca_board_data_' . md5( implode( '-', $status_ids ) );
+	$cache_seed  = implode( '-', $status_ids ) . '|' . alpaca_get_board_cache_version();
+	$cache_key   = 'alpaca_board_data_' . md5( $cache_seed );
 	$cache_group = 'alpaca';
 
 	// Try cache first.
