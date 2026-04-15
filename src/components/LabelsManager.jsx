@@ -486,6 +486,7 @@ const LabelsManager = () => {
                 <TextControl
                   className="alpaca-label-name-input"
                   __next40pxDefaultSize
+                  __nextHasNoMarginBottom
                   label={
                     index < INITIAL_LABEL_SLOT_COUNT ? '' : __('Name', 'alpaca')
                   }
@@ -533,6 +534,7 @@ const LabelsManager = () => {
                 <TextControl
                   className="alpaca-label-name-input"
                   __next40pxDefaultSize
+                  __nextHasNoMarginBottom
                   label=""
                   value={label.name}
                   placeholder={__('Label name', 'alpaca')}

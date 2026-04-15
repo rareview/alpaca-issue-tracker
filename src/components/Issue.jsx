@@ -1920,6 +1920,7 @@ const AlpacaIssue = ({
                             >
                               <div className="alpaca-subissues-main">
                                 <CheckboxControl
+                                  __nextHasNoMarginBottom
                                   label=""
                                   hideLabelFromVision
                                   checked={subissue.isCompleted}

@@ -639,6 +639,8 @@ const StatusRow = wp.element.forwardRef(
             {isRenaming ? (
               <TextControl
                 ref={inputRef}
+                __next40pxDefaultSize
+                __nextHasNoMarginBottom
                 value={name}
                 onChange={setName}
                 onBlur={handleSaveRename}

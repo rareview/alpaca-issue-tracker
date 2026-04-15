@@ -323,6 +323,8 @@ const renderNotificationEmailTab = (context, tab) => {
 
       <div className="alpaca-notifications-email-layout">
         <TextControl
+          __next40pxDefaultSize
+          __nextHasNoMarginBottom
           label={__('Email address', 'alpaca')}
           type="email"
           value={context.emailDeliveryValue}
@@ -342,6 +344,7 @@ const renderNotificationEmailTab = (context, tab) => {
         />
 
         <CheckboxControl
+          __nextHasNoMarginBottom
           label={__('Send instant email updates', 'alpaca')}
           checked={context.hasInstantEmailEnabled}
           onChange={(value) =>
@@ -353,6 +356,7 @@ const renderNotificationEmailTab = (context, tab) => {
         <div className="alpaca-notifications-email-digest-row">
           <div className="alpaca-notifications-email-digest-checkbox">
             <CheckboxControl
+              __nextHasNoMarginBottom
               label={__('Send a daily summary at', 'alpaca')}
               checked={context.hasEmailDigestEnabled}
               onChange={(value) =>
@@ -365,6 +369,8 @@ const renderNotificationEmailTab = (context, tab) => {
           <div className="alpaca-notifications-email-time-wrap">
             <div className="alpaca-notifications-email-time">
               <TextControl
+                __next40pxDefaultSize
+                __nextHasNoMarginBottom
                 label={__('Daily summary time', 'alpaca')}
                 hideLabelFromVision
                 type="time"
@@ -900,6 +906,7 @@ const NotificationPreferences = () => {
             return (
               <CheckboxControl
                 key={labelId}
+                __nextHasNoMarginBottom
                 label={label.name}
                 checked={selectedLabelIds.includes(labelId)}
                 disabled={isSaving}
@@ -998,6 +1005,8 @@ const NotificationPreferences = () => {
               return (
                 <TextControl
                   key={field.key}
+                  __next40pxDefaultSize
+                  __nextHasNoMarginBottom
                   label={field.label}
                   type={'email' === field.type ? 'email' : 'text'}
                   value={value}
@@ -1089,6 +1098,7 @@ const NotificationPreferences = () => {
                           className="alpaca-notifications-option-group"
                         >
                           <CheckboxControl
+                            __nextHasNoMarginBottom
                             label={option.label}
                             help={option.help}
                             checked={Boolean(
@@ -1111,6 +1121,7 @@ const NotificationPreferences = () => {
                       {eventOptions.map((option) => (
                         <CheckboxControl
                           key={option.key}
+                          __nextHasNoMarginBottom
                           label={option.label}
                           checked={Boolean(preferences.events?.[option.key])}
                           disabled={isSaving}

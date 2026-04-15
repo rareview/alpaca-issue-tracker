@@ -451,6 +451,8 @@ function Container({
           <>
             <TextControl
               className="alpaca-container-title-input"
+              __next40pxDefaultSize
+              __nextHasNoMarginBottom
               value={newTitle}
               onChange={setNewTitle}
               onBlur={handleRename}

@@ -362,6 +362,8 @@ const BlockTemplateEditorScreen = (props) => {
           </div>
 
           <TextControl
+            __next40pxDefaultSize
+            __nextHasNoMarginBottom
             label={__('Email subject', 'alpaca')}
             value={subject}
             onChange={setSubject}

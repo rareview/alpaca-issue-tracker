@@ -39,6 +39,7 @@ const EnableTestLogsControl = () => {
       <th>{__('Debugging', 'alpaca')}</th>
       <td>
         <CheckboxControl
+          __nextHasNoMarginBottom
           label={__('Enable Browser Console Messages', 'alpaca')}
           checked={isEnabled}
           onChange={handleChange}
