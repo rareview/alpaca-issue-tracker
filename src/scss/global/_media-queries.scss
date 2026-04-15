@@ -100,6 +100,14 @@
         display: flex;
         flex-direction: column;
         height: auto;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar {
+          width: 0;
+          height: 0;
+          display: none;
+        }
 
         .alpaca-items {
           flex-direction: row;
@@ -107,6 +115,14 @@
           gap: $spacegap;
           overflow-x: auto;
           align-items: stretch;
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+
+          &::-webkit-scrollbar {
+            width: 0;
+            height: 0;
+            display: none;
+          }
 
           .alpaca-item {
             width: 200px;
