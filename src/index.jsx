@@ -4,6 +4,7 @@ import './utils/issueCommentHandler.js';
 import './utils/dataDump.js';
 import './utils/boardHelpers.js';
 import { installAlpacaApiRootMiddleware } from './utils/restApiRoot.js';
+import reactMountUtils from './utils/reactMount';
 
 // Import Prism.js and required languages
 import Prism from 'prismjs';
@@ -58,14 +59,19 @@ window.alpaca.services.issueApi = {
   fetchIssueCommentCount,
 };
 
-const { render } = wp.element;
+const { createRoot, render: legacyRender } = wp.element;
+const { createMountReactTree } = reactMountUtils;
 const isAdmin = document.body.classList.contains('wp-admin');
+const mountReactTree = createMountReactTree({
+  createRoot,
+  legacyRender,
+});
 
 if (isAdmin && document.querySelector('#wp-admin-bar-alpaca-report')) {
   const adminBarModalContainer = document.createElement('div');
   adminBarModalContainer.id = 'alpaca-admin-bar-modal-mount';
   document.body.appendChild(adminBarModalContainer);
-  render(<AlpacaModal />, adminBarModalContainer);
+  mountReactTree(<AlpacaModal />, adminBarModalContainer);
 }
 
 if (isAdmin) {
@@ -84,7 +90,7 @@ if (isAdmin) {
       projectBoardSubmenuLink.appendChild(menuBadgeMount);
     }
 
-    render(<AdminSidebarInboxBadge />, menuBadgeMount);
+    mountReactTree(<AdminSidebarInboxBadge />, menuBadgeMount);
   }
 }
 
@@ -92,18 +98,18 @@ if (!isAdmin) {
   const toolbarContainer = document.createElement('div');
   toolbarContainer.id = 'alpaca-toolbar-mount';
   document.body.appendChild(toolbarContainer);
-  render(<AlpacaToolbar />, toolbarContainer);
+  mountReactTree(<AlpacaToolbar />, toolbarContainer);
 }
 
 if (document.querySelector('#alpaca-settings-internal')) {
-  render(
+  mountReactTree(
     <AlpacaSettings />,
     document.querySelector('#alpaca-settings-internal'),
   );
 }
 
 if (document.querySelector('#project-board')) {
-  render(
+  mountReactTree(
     <WatchlistProvider>
       <AlpacaBoard />
     </WatchlistProvider>,
@@ -117,7 +123,7 @@ if (
   document.getElementById('alpaca-presence')
 ) {
   const el = document.getElementById('alpaca-presence');
-  render(<Presence />, el);
+  mountReactTree(<Presence />, el);
 }
 
 if (document.querySelector('#alpaca-dashboard-widget')) {
@@ -129,15 +135,15 @@ if (document.querySelector('#alpaca-dashboard-widget')) {
     // eslint-disable-next-line no-console
     console.error('Alpaca dashboard widget: invalid data-props', e);
   }
-  render(<AlpacaDashboardWidget data={data} />, el);
+  mountReactTree(<AlpacaDashboardWidget data={data} />, el);
 }
 
 if (document.querySelector('#alpaca-about-page')) {
-  render(<About />, document.querySelector('#alpaca-about-page'));
+  mountReactTree(<About />, document.querySelector('#alpaca-about-page'));
 }
 
 if (document.querySelector('#alpaca-activity-page')) {
-  render(
+  mountReactTree(
     <WatchlistProvider>
       <Activity />
     </WatchlistProvider>,
@@ -146,14 +152,14 @@ if (document.querySelector('#alpaca-activity-page')) {
 }
 
 if (document.querySelector('#alpaca-notifications-page')) {
-  render(
+  mountReactTree(
     <NotificationPreferences />,
     document.querySelector('#alpaca-notifications-page'),
   );
 }
 
 if (document.querySelector('#alpaca-email-templates-page')) {
-  render(
+  mountReactTree(
     <EmailTemplatesScreen />,
     document.querySelector('#alpaca-email-templates-page'),
   );

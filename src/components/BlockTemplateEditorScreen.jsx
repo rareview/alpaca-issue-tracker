@@ -4,15 +4,8 @@ const { Fragment, useCallback, useEffect, useMemo, useRef, useState } =
   wp.element;
 const { __ } = wp.i18n;
 const { parse, serialize } = wp.blocks || {};
-const {
-  Button,
-  Notice,
-  Popover,
-  SlotFillProvider,
-  Spinner,
-  TextControl,
-  DropZoneProvider,
-} = wp.components;
+const { Button, Notice, Popover, SlotFillProvider, Spinner, TextControl } =
+  wp.components;
 
 const fallbackBody =
   '<!-- wp:paragraph --><p>' +
@@ -372,41 +365,39 @@ const BlockTemplateEditorScreen = (props) => {
 
           <div className="alpaca-notification-template-editor-shell">
             <SlotFillProvider>
-              <DropZoneProvider>
-                <BlockEditorProvider
-                  value={blocks}
-                  onInput={handleBlocksChange}
-                  onChange={handleBlocksChange}
-                  settings={combinedEditorSettings}
-                >
-                  <BlockTools __unstableContentRef={contentElement}>
-                    <SelectionClearer>
-                      <WritingFlow>
-                        <ObserveTyping>
-                          <div
-                            ref={setContentElement}
-                            className="alpaca-notification-template-canvas editor-styles-wrapper"
-                          >
-                            <BlockList
-                              className="alpaca-notification-template-block-list"
-                              renderAppender={
-                                Appender
-                                  ? () => (
-                                      <div className="alpaca-notification-template-appender">
-                                        <Appender />
-                                      </div>
-                                    )
-                                  : undefined
-                              }
-                            />
-                          </div>
-                        </ObserveTyping>
-                      </WritingFlow>
-                    </SelectionClearer>
-                  </BlockTools>
-                  <Popover.Slot />
-                </BlockEditorProvider>
-              </DropZoneProvider>
+              <BlockEditorProvider
+                value={blocks}
+                onInput={handleBlocksChange}
+                onChange={handleBlocksChange}
+                settings={combinedEditorSettings}
+              >
+                <BlockTools __unstableContentRef={contentElement}>
+                  <SelectionClearer>
+                    <WritingFlow>
+                      <ObserveTyping>
+                        <div
+                          ref={setContentElement}
+                          className="alpaca-notification-template-canvas editor-styles-wrapper"
+                        >
+                          <BlockList
+                            className="alpaca-notification-template-block-list"
+                            renderAppender={
+                              Appender
+                                ? () => (
+                                    <div className="alpaca-notification-template-appender">
+                                      <Appender />
+                                    </div>
+                                  )
+                                : undefined
+                            }
+                          />
+                        </div>
+                      </ObserveTyping>
+                    </WritingFlow>
+                  </SelectionClearer>
+                </BlockTools>
+                <Popover.Slot />
+              </BlockEditorProvider>
             </SlotFillProvider>
           </div>
 
