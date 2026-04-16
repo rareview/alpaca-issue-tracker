@@ -11,6 +11,50 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * Register Alpaca's hidden issue comment type with the reusable private comments library.
+ */
+add_action(
+	'init',
+	function () {
+		\Rareview\PrivateComments\hide_type( 'issuecomment', true );
+	}
+);
+
+/**
+ * Provide the request parameter used by Alpaca to include hidden comments.
+ *
+ * @return string Request parameter name.
+ */
+add_filter(
+	'private_comments_rest_visibility_param',
+	function () {
+		return 'alpaca_include_hidden_comments';
+	}
+);
+
+/**
+ * Allow authorized Alpaca users to view hidden issue comments.
+ *
+ * @param bool   $can_view Whether the current user can view the hidden type.
+ * @param string $type     Hidden comment type.
+ * @return bool Updated visibility decision.
+ */
+add_filter(
+	'private_comments_user_can_view_type',
+	function ( $can_view, $type ) {
+		if ( 'issuecomment' !== $type ) {
+			return $can_view;
+		}
+
+		return $can_view
+			|| \Alpaca\Inc\Helpers::user_can( 'watchlist' )
+			|| \Alpaca\Inc\Helpers::user_can( 'create_issue' );
+	},
+	10,
+	2
+);
+
+/**
  * Allow Contributors to interact with Alpaca issue comments via core REST endpoints.
  *
  * - Adjust permission callbacks for the core `/wp/v2/comments` route when
@@ -21,11 +65,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 add_filter(
 	'rest_endpoints',
 	function ( $endpoints ) {
+		$can_view_issuecomment = static function () {
+			return \Rareview\PrivateComments\user_can_view_type( 'issuecomment' );
+		};
+
 		if ( empty( $endpoints['/wp/v2/comments'] ) ) {
-			return $endpoints;
+			$collection_routes = array();
+		} else {
+			$collection_routes = $endpoints['/wp/v2/comments'];
 		}
 
-		foreach ( $endpoints['/wp/v2/comments'] as $idx => $route ) {
+		foreach ( $collection_routes as $idx => $route ) {
 			$methods            = isset( $route['methods'] ) ? $route['methods'] : '';
 			$methods_normalized = is_array( $methods ) ? $methods : explode( ',', (string) $methods );
 
@@ -33,19 +83,46 @@ add_filter(
 			if ( in_array( 'POST', $methods_normalized, true ) || in_array( 'GET', $methods_normalized, true ) ) {
 				$original = $route['permission_callback'] ?? null;
 
-				$endpoints['/wp/v2/comments'][ $idx ]['permission_callback'] = function ( $request ) use ( $original ) {
+				$endpoints['/wp/v2/comments'][ $idx ]['permission_callback'] = function ( $request ) use ( $original, $can_view_issuecomment ) {
 					$comment_type = (string) $request->get_param( 'comment_type' );
-					$post_id      = (int) $request->get_param( 'post' );
 
 					// If this is an Alpaca issue comment, allow based on our helper.
 					if ( 'issuecomment' === $comment_type ) {
 						// Allow listing/creating issue comments for Contributors by default.
-						if ( \Alpaca\Inc\Helpers::user_can( 'watchlist' ) || \Alpaca\Inc\Helpers::user_can( 'create_issue' ) ) {
+						if ( $can_view_issuecomment() ) {
 							return true;
 						}
 					}
 
 					// Fall back to original permission callback if present.
+					if ( is_callable( $original ) ) {
+						return call_user_func( $original, $request );
+					}
+
+					return false;
+				};
+			}
+		}
+
+		if ( ! empty( $endpoints['/wp/v2/comments/(?P<id>[\\d]+)'] ) ) {
+			foreach ( $endpoints['/wp/v2/comments/(?P<id>[\\d]+)'] as $idx => $route ) {
+				$methods            = isset( $route['methods'] ) ? $route['methods'] : '';
+				$methods_normalized = is_array( $methods ) ? $methods : explode( ',', (string) $methods );
+
+				if ( ! in_array( 'GET', $methods_normalized, true ) ) {
+					continue;
+				}
+
+				$original = $route['permission_callback'] ?? null;
+
+				$endpoints['/wp/v2/comments/(?P<id>[\\d]+)'][ $idx ]['permission_callback'] = function ( $request ) use ( $original, $can_view_issuecomment ) {
+					$comment_id = (int) $request->get_param( 'id' );
+					$comment    = $comment_id > 0 ? get_comment( $comment_id ) : null;
+
+					if ( $comment instanceof WP_Comment && 'issuecomment' === $comment->comment_type ) {
+						return $can_view_issuecomment();
+					}
+
 					if ( is_callable( $original ) ) {
 						return call_user_func( $original, $request );
 					}
