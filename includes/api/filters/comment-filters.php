@@ -115,20 +115,22 @@ add_filter(
 
 				$original = $route['permission_callback'] ?? null;
 
-				$endpoints['/wp/v2/comments/(?P<id>[\\d]+)'][ $idx ]['permission_callback'] = function ( $request ) use ( $original, $can_view_issuecomment ) {
-					$comment_id = (int) $request->get_param( 'id' );
-					$comment    = $comment_id > 0 ? get_comment( $comment_id ) : null;
+				$endpoints['/wp/v2/comments/(?P<id>[\\d]+)'][ $idx ]['permission_callback'] =
+					function ( $request ) use ( $original ) {
 
-					if ( $comment instanceof WP_Comment && 'issuecomment' === $comment->comment_type ) {
-						return $can_view_issuecomment();
-					}
+						$comment_id = (int) $request->get_param( 'id' );
+						$comment    = $comment_id > 0 ? get_comment( $comment_id ) : null;
 
-					if ( is_callable( $original ) ) {
-						return call_user_func( $original, $request );
-					}
+						if ( $comment instanceof WP_Comment && 'issuecomment' === $comment->comment_type ) {
+							return \Rareview\PrivateComments\should_allow_rest_override( 'issuecomment' );
+						}
 
-					return false;
-				};
+						if ( is_callable( $original ) ) {
+							return call_user_func( $original, $request );
+						}
+
+						return false;
+					};
 			}
 		}
 
