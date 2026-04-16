@@ -962,6 +962,7 @@ const NotificationPreferences = () => {
               updateChannelValue(channelKey, 'enabled', value)
             }
             disabled={isSaving || (!isChannelEnabled && !channelCanEnable)}
+            __nextHasNoMarginBottom
           />
 
           {Array.isArray(channel.summary_fields) &&

@@ -25,6 +25,7 @@ const DeadlineControl = memo(({ deadline, onChange, onClear, isLoading }) => {
     <BaseControl
       id="alpaca-deadline-control"
       className="alpaca-deadline-control"
+      __nextHasNoMarginBottom
     >
       <div className="alpaca-deadline flexalign">
         <div

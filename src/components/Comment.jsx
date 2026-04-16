@@ -101,6 +101,8 @@ const AttachmentControls = ({
           multiple
           onChange={onUpload}
           disabled={isSubmitting || isProcessing}
+          __next40pxDefaultSize
+          __nextHasNoMarginBottom
         >
           {isProcessing
             ? __('Uploading…', 'alpaca')

@@ -58,6 +58,8 @@ const AssigneeSelector = memo(
         suggestions={allUsers}
         onChange={onChange}
         disabled={isLoading}
+        __nextHasNoMarginBottom
+        __next40pxDefaultSize
         __experimentalRenderItem={renderSuggestionItem}
       />
     );

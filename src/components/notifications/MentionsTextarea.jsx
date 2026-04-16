@@ -267,6 +267,7 @@ const MentionsTextarea = ({
         onKeyDown={handleKeyDown}
         onKeyUp={handleCaretUpdate}
         onClick={handleCaretUpdate}
+        __nextHasNoMarginBottom
       />
       {mentionState && (
         <Popover

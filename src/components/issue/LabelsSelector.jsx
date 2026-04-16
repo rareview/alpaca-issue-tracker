@@ -164,6 +164,8 @@ const LabelsSelector = memo(
           suggestions={suggestions}
           onChange={handleChange}
           disabled={isLoading}
+          __nextHasNoMarginBottom
+          __next40pxDefaultSize
           __experimentalExpandOnFocus
           __experimentalRenderItem={renderSuggestionItem}
           __experimentalValidateInput={validateToken}

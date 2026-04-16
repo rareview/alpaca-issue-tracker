@@ -62,6 +62,7 @@ const PriorityRow = memo(
           checked={isHighPriority}
           onChange={onChange}
           disabled={isLoading}
+          __nextHasNoMarginBottom
           className="alpaca-priority-toggle"
         />
       </div>

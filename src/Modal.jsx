@@ -217,6 +217,7 @@ const AlpacaModal = () => {
                 onChange={(value) => setFeedback(value)}
                 disabled={status === 'submitting'}
                 ref={textareaRef}
+                __nextHasNoMarginBottom
               />
 
               <div className="small-wrapper">
@@ -225,6 +226,7 @@ const AlpacaModal = () => {
                   checked={isHighPriority}
                   onChange={setIsHighPriority}
                   disabled={status === 'submitting'}
+                  __nextHasNoMarginBottom
                 />
               </div>
 

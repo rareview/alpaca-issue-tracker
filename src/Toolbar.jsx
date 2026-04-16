@@ -256,6 +256,7 @@ const AlpacaToolbar = () => {
               onChange={(value) => setFeedback(value)}
               disabled={status === 'submitting'}
               ref={textareaRef}
+              __nextHasNoMarginBottom
             />
 
             <div className="form-toggles">
@@ -268,6 +269,7 @@ const AlpacaToolbar = () => {
                 checked={isHighPriority}
                 onChange={setIsHighPriority}
                 disabled={status === 'submitting'}
+                __nextHasNoMarginBottom
               />
             </div>
 
