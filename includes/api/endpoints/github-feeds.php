@@ -7,6 +7,11 @@
  * @package Alpaca
  */
 
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 add_action( 'rest_api_init', 'alpaca_register_github_feeds_endpoint' );
 /**
  * Register GitHub feeds endpoint.
