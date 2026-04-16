@@ -1,4 +1,7 @@
 const { createElement } = wp.element;
+import templateBlockConfigUtils from './templateBlockConfig';
+
+const { getTemplateBlockSettings } = templateBlockConfigUtils;
 
 const getBlockProps =
   wp.blockEditor && typeof wp.blockEditor.useBlockProps === 'function'
@@ -63,24 +66,14 @@ export const registerTemplateBlocks = (definitions, icon) => {
       return;
     }
 
-    wp.blocks.registerBlockType(definition.name, {
-      apiVersion: 2,
-      title: definition.title,
-      description: definition.description,
-      icon,
-      category: 'widgets',
-      supports: {
-        html: false,
-        reusable: false,
-        multiple:
-          typeof definition.multiple === 'boolean' ? definition.multiple : true,
-      },
-      edit: () =>
+    wp.blocks.registerBlockType(
+      definition.name,
+      getTemplateBlockSettings(definition, icon, () =>
         createElement(PlaceholderPreview, {
           title: definition.title,
           description: definition.description,
         }),
-      save: () => null,
-    });
+      ),
+    );
   });
 };
