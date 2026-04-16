@@ -126,52 +126,52 @@ const AttachmentControls = ({
           className="alpaca-modal"
         >
           <div className="alpaca-help-content">
-            <ul>
-              <li>
-                {createInterpolateElement(
-                  __(
+            {(() => {
+              const defaultTips = [
+                {
+                  text: __(
                     'Type <kbd>@</kbd> and select a user to notify.',
                     'alpaca',
                   ),
-                  {
-                    kbd: <kbd />,
-                  },
-                )}
-              </li>
-              <li>
-                {createInterpolateElement(
-                  __(
-                    'Type <kbd>#</kbd> and search to link to another issue.',
-                    'alpaca',
-                  ),
-                  {
-                    kbd: <kbd />,
-                  },
-                )}
-              </li>
-              <li>
-                {createInterpolateElement(
-                  __(
+                  placeholders: { kbd: <kbd /> },
+                },
+                {
+                  text: __(
                     'Basic Markdown is supported: <code>**bold**</code>, <code>*italic*</code>, <code>`code`</code>, <code>- lists</code>, etc.',
                     'alpaca',
                   ),
-                  {
-                    code: <code />,
-                  },
-                )}
-              </li>
-              <li>
-                {createInterpolateElement(
-                  __(
+                  placeholders: { code: <code /> },
+                },
+                {
+                  text: __(
                     'You can click <strong>Attach Files</strong> to upload an attachment, or simply drag and drop files into the comment area.',
                     'alpaca',
                   ),
-                  {
-                    strong: <strong />,
-                  },
-                )}
-              </li>
-            </ul>
+                  placeholders: { strong: <strong /> },
+                },
+              ];
+
+              // Allow third-party plugins to add or modify tips.
+              const tips = wp.hooks.applyFilters(
+                'alpaca.commentingTips',
+                defaultTips,
+              );
+
+              return (
+                <ul>
+                  {Array.isArray(tips)
+                    ? tips.map((tip, idx) => (
+                        <li key={idx}>
+                          {createInterpolateElement(
+                            tip.text || '',
+                            tip.placeholders || {},
+                          )}
+                        </li>
+                      ))
+                    : null}
+                </ul>
+              );
+            })()}
           </div>
         </Modal>
       )}
