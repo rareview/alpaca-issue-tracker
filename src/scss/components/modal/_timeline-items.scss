@@ -77,6 +77,13 @@
       }
     }
 
+    &.issue-mentioned {
+      .alpaca-timeline-icon::before {
+        mask-image: url('../components/icons/svg/comment.svg');
+        background-color: $greytext;
+      }
+    }
+
     &.status-changed {
       .alpaca-timeline-icon::before {
         mask-image: url('../components/icons/svg/columns.svg');
@@ -119,8 +126,7 @@
       }
     }
 
-    &.issue-deleted,
-    &.issue-restored {
+    &.issue-deleted {
       .alpaca-timeline-icon::before {
         align-items: center;
         background-color: transparent;
@@ -132,6 +138,13 @@
         justify-content: center;
         line-height: 1;
         mask-image: none;
+      }
+    }
+
+    &.issue-restored {
+      .alpaca-timeline-icon::before {
+        mask-image: url('../components/icons/svg/recycle.svg');
+        background-color: $greytext;
       }
     }
 
