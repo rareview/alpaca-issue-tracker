@@ -205,12 +205,12 @@ const Activity = () => {
       }
 
       try {
-        // context=edit is required so show_hidden_comments surfaces audit entries.
+        // context=edit is required so Alpaca can surface hidden audit entries.
         const response = await wp.apiFetch({
           path:
             '/wp/v2/comments?' +
             'context=edit' +
-            '&show_hidden_comments=1' +
+            '&alpaca_include_hidden_comments=1' +
             '&comment_type=issuecomment' +
             '&orderby=date' +
             '&order=desc' +

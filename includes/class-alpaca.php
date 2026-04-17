@@ -108,14 +108,6 @@ final class Alpaca {
 		// Load third-party libraries.
 		require_once ALPACA_PLUGIN_DIR . 'lib/private-comments.php';
 
-		// Initialize private comments for issue comments.
-		\add_action(
-			'init',
-			function () {
-				alpaca_hide_comment_type( 'issuecomment', true );
-			}
-		);
-
 		// Load core functionality.
 		require_once ALPACA_PLUGIN_DIR . 'includes/core/posttypes-and-taxonomies.php';
 		require_once ALPACA_PLUGIN_DIR . 'includes/core/board.php';

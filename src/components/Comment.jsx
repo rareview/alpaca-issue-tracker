@@ -495,7 +495,7 @@ const Commenting = ({
     setIsLoadingComments(true);
 
     wp.apiFetch({
-      path: `/wp/v2/comments?post=${issueId}&_embed=author&per_page=-1&orderby=date&order=desc&comment_type=issuecomment&show_hidden_comments=1&context=edit`,
+      path: `/wp/v2/comments?post=${issueId}&_embed=author&per_page=-1&orderby=date&order=desc&comment_type=issuecomment&alpaca_include_hidden_comments=1&context=edit`,
     })
       .then(setComments)
       .catch((err) => {

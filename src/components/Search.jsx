@@ -262,7 +262,7 @@ function SearchContainer({
         };
 
         try {
-          const commentSearchPath = `/wp/v2/comments?search=${encodeURIComponent(q)}&per_page=${SEARCH_API_PAGE_SIZE}&comment_type=issuecomment&type=issuecomment&context=edit&show_hidden_comments=1&_fields=post,comment_post_ID,author_user_agent`;
+          const commentSearchPath = `/wp/v2/comments?search=${encodeURIComponent(q)}&per_page=${SEARCH_API_PAGE_SIZE}&comment_type=issuecomment&type=issuecomment&context=edit&alpaca_include_hidden_comments=1&_fields=post,comment_post_ID,author_user_agent`;
           const directIssueSearchPath = `/wp/v2/alpaca_issue?search=${encodeURIComponent(q)}&per_page=${SEARCH_API_PAGE_SIZE}&_fields=${issueFields}`;
           const [comments, directIssues] = await Promise.all([
             fetchPaginatedResults(commentSearchPath),

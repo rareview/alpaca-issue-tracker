@@ -354,7 +354,7 @@ const RestoreManager = () => {
               try {
                 const commentsPath = `/wp/v2/comments?post=${encodeURIComponent(
                   issue.id,
-                )}&per_page=1&orderby=date_gmt&order=desc&comment_type=issuecomment&type=issuecomment&status=all&context=edit&show_hidden_comments=1&_fields=date,date_gmt`;
+                )}&per_page=1&orderby=date_gmt&order=desc&comment_type=issuecomment&type=issuecomment&status=all&context=edit&alpaca_include_hidden_comments=1&_fields=date,date_gmt`;
                 const comments = await wp.apiFetch({ path: commentsPath });
                 const latestComment = Array.isArray(comments)
                   ? comments[0]
