@@ -1,6 +1,18 @@
 const { useState, useRef, useMemo, useEffect, createPortal } = wp.element;
 const { __ } = wp.i18n;
-const { Popover, Tooltip } = wp.components;
+const {
+  Popover,
+  Tooltip,
+  ToggleGroupControl: ComponentsToggleGroupControl,
+  ToggleGroupControlOption: ComponentsToggleGroupControlOption,
+  __experimentalToggleGroupControl,
+  __experimentalToggleGroupControlOption,
+} = wp.components;
+
+const ToggleGroupControl =
+  ComponentsToggleGroupControl || __experimentalToggleGroupControl;
+const ToggleGroupControlOption =
+  ComponentsToggleGroupControlOption || __experimentalToggleGroupControlOption;
 
 import PropTypes from 'prop-types';
 import Icon from './icons/Icon';
@@ -63,6 +75,28 @@ function getActiveAssigneeFilter(activeFilter) {
   }
 
   if ('assignee' === activeFilter.type) {
+    return activeFilter;
+  }
+
+  return null;
+}
+
+/**
+ * Resolve currently selected deadline filter.
+ *
+ * @param {Object|null} activeFilter Active filter payload.
+ * @return {Object|null} Active deadline filter.
+ */
+function getActiveDeadlineFilter(activeFilter) {
+  if (!activeFilter || typeof activeFilter !== 'object') {
+    return null;
+  }
+
+  if (activeFilter.deadline && typeof activeFilter.deadline === 'object') {
+    return activeFilter.deadline;
+  }
+
+  if ('deadline' === activeFilter.type) {
     return activeFilter;
   }
 
@@ -166,6 +200,7 @@ function BoardFilterControl({
   const [openPopoverType, setOpenPopoverType] = useState('');
   const labelTriggerRef = useRef(null);
   const assigneeTriggerRef = useRef(null);
+  const deadlineTriggerRef = useRef(null);
 
   const { labels, assignees } = useMemo(() => {
     const labelsMap = new Map();
@@ -265,7 +300,9 @@ function BoardFilterControl({
       if (
         (labelTriggerRef.current && labelTriggerRef.current.contains(target)) ||
         (assigneeTriggerRef.current &&
-          assigneeTriggerRef.current.contains(target))
+          assigneeTriggerRef.current.contains(target)) ||
+        (deadlineTriggerRef.current &&
+          deadlineTriggerRef.current.contains(target))
       ) {
         return;
       }
@@ -306,6 +343,18 @@ function BoardFilterControl({
   const hasAssigneeOptions = assignees.length > 0;
   const activeLabelFilter = getActiveLabelFilter(activeFilter);
   const activeAssigneeFilter = getActiveAssigneeFilter(activeFilter);
+  const activeDeadlineFilter = getActiveDeadlineFilter(activeFilter);
+
+  const hasDeadlineControl =
+    typeof ToggleGroupControl !== 'undefined' &&
+    typeof ToggleGroupControlOption !== 'undefined';
+  const isDeadlineOpen = openPopoverType === 'deadline';
+  const isDeadlineActive = !!activeDeadlineFilter;
+  const showActiveDeadlineChrome = isDeadlineActive && !isDeadlineOpen;
+  const currentDeadlineLabel = activeDeadlineFilter?.state
+    ? activeDeadlineFilter.state.charAt(0).toUpperCase() +
+      activeDeadlineFilter.state.slice(1)
+    : __('Due Date', 'alpaca');
 
   /**
    * Render a filter control with trigger, clear, and popover content.
@@ -488,6 +537,107 @@ function BoardFilterControl({
           </section>
         ),
       })}
+
+      {hasDeadlineControl ? (
+        <div
+          className={`alpaca-board-filter-control alpaca-deadline-filter-control ${showActiveDeadlineChrome ? 'is-active-filter alpaca-board-control' : ''}`}
+        >
+          <Tooltip text={__('Due Date', 'alpaca')}>
+            <button
+              type="button"
+              className={`alpaca-filter-control-trigger alpaca-board-control ${isDeadlineOpen ? 'is-open' : ''}`}
+              onClick={() =>
+                setOpenPopoverType((previousType) =>
+                  previousType === 'deadline' ? '' : 'deadline',
+                )
+              }
+              ref={deadlineTriggerRef}
+              aria-expanded={isDeadlineOpen}
+              aria-haspopup="dialog"
+            >
+              {showActiveDeadlineChrome ? (
+                <span className="alpaca-filter-control-current alpaca-filter-control-current-text">
+                  {currentDeadlineLabel}
+                </span>
+              ) : (
+                <span className="alpaca-filter-control-trigger-content">
+                  <span
+                    className="dashicons dashicons-calendar-alt alpaca-filter-control-icon"
+                    aria-hidden="true"
+                  />
+                  <span>{__('Due Date', 'alpaca')}</span>
+                </span>
+              )}
+            </button>
+          </Tooltip>
+
+          {showActiveDeadlineChrome ? (
+            <button
+              type="button"
+              className="alpaca-filter-control-clear"
+              onClick={(event) => {
+                event.stopPropagation();
+                onClearFilter('deadline');
+                setOpenPopoverType('');
+              }}
+              aria-label={__('Reset deadline filter', 'alpaca')}
+            >
+              <span className="dashicons dashicons-no-alt" aria-hidden="true" />
+            </button>
+          ) : null}
+
+          {isDeadlineOpen && deadlineTriggerRef.current ? (
+            <Popover
+              anchor={deadlineTriggerRef.current}
+              position="bottom left"
+              className="alpaca-filter-control-popover alpaca-deadline-filter-popover"
+              onClose={() => setOpenPopoverType('')}
+              onFocusOutside={() => setOpenPopoverType('')}
+              onEscape={() => setOpenPopoverType('')}
+              focusOnMount={false}
+              animate={false}
+            >
+              <div className="alpaca-filter-control-popover-content">
+                <section className="alpaca-filter-control-section">
+                  <h3 className="alpaca-filter-control-section-title">
+                    {__('Deadline state', 'alpaca')}
+                  </h3>
+                  <ToggleGroupControl
+                    label={__('Show cards that are', 'alpaca')}
+                    value={
+                      activeDeadlineFilter ? activeDeadlineFilter.state : ''
+                    }
+                    __nextHasNoMarginBottom
+                    __next40pxDefaultSize
+                    onChange={(value) => {
+                      onSetFilter({
+                        filterType: 'deadline',
+                        state: value || '',
+                      });
+                      setOpenPopoverType('');
+                    }}
+                    isBlock
+                    hideLabelFromVision
+                  >
+                    <ToggleGroupControlOption
+                      value="soon"
+                      label={__('Soon', 'alpaca')}
+                    />
+                    <ToggleGroupControlOption
+                      value="today"
+                      label={__('Today', 'alpaca')}
+                    />
+                    <ToggleGroupControlOption
+                      value="late"
+                      label={__('Late', 'alpaca')}
+                    />
+                  </ToggleGroupControl>
+                </section>
+              </div>
+            </Popover>
+          ) : null}
+        </div>
+      ) : null}
     </>,
     mountNode,
   );
@@ -497,6 +647,7 @@ BoardFilterControl.propTypes = {
   selector: PropTypes.string,
   containers: PropTypes.array,
   activeFilter: PropTypes.shape({
+    type: PropTypes.string,
     label: PropTypes.shape({
       type: PropTypes.string,
       termId: PropTypes.string,
@@ -509,6 +660,10 @@ BoardFilterControl.propTypes = {
       id: PropTypes.string,
       displayName: PropTypes.string,
       avatar: PropTypes.string,
+    }),
+    deadline: PropTypes.shape({
+      type: PropTypes.string,
+      state: PropTypes.string,
     }),
   }),
   onSetFilter: PropTypes.func,

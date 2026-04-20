@@ -69,6 +69,19 @@
     white-space: nowrap;
   }
 
+  #project-board-controls
+    .alpaca-deadline-filter-control
+    .alpaca-filter-control-trigger-content {
+    gap: 8px;
+  }
+
+  #project-board-controls
+    .alpaca-deadline-filter-control
+    .alpaca-filter-control-icon {
+    font-size: 20px;
+    line-height: 1;
+  }
+
   /* Idle (before selection) filter trigger should match the inbox square button. */
   .alpaca-board-filter-control:not(.is-active-filter)
     .alpaca-board-filter-control:not(.is-active-filter)
@@ -298,6 +311,19 @@
     max-height: 360px;
     overflow-y: auto;
     padding: 12px;
+  }
+
+  .alpaca-deadline-filter-popover .components-base-control {
+    margin-bottom: 0;
+  }
+
+  .alpaca-deadline-filter-popover .components-toggle-group-control {
+    inline-size: 100%;
+  }
+
+  .alpaca-deadline-filter-popover
+    .components-toggle-group-control-option-base[aria-checked='true'] {
+    font-weight: 600;
   }
 
   .alpaca-filter-control-section {

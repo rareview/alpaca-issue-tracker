@@ -14,6 +14,7 @@ import { transformDataForBoard, saveBoardOrder } from './utils/data';
 import { reorderItemsWithinFilteredSlots } from './utils/boardFiltering';
 import { getUser } from './hooks/useUser';
 import { dispatchStatusChangedAction } from './utils/statusChange';
+import { parseWpDateValue } from './utils/date';
 
 import { updateIssue } from './services/issueApi';
 
@@ -66,6 +67,7 @@ export function AlpacaBoard() {
       return {
         label: null,
         assignee: null,
+        deadline: null,
       };
     }
 
@@ -81,6 +83,15 @@ export function AlpacaBoard() {
       return {
         label: null,
         assignee: filterValue,
+        deadline: null,
+      };
+    }
+
+    if (filterValue.type === 'deadline') {
+      return {
+        label: null,
+        assignee: null,
+        deadline: filterValue,
       };
     }
 
@@ -92,6 +103,10 @@ export function AlpacaBoard() {
       assignee:
         filterValue.assignee && typeof filterValue.assignee === 'object'
           ? filterValue.assignee
+          : null,
+      deadline:
+        filterValue.deadline && typeof filterValue.deadline === 'object'
+          ? filterValue.deadline
           : null,
     };
   }, []);
@@ -124,6 +139,7 @@ export function AlpacaBoard() {
       const normalizedBoardFilter = normalizeBoardFilter(boardFilter);
       const labelFilter = normalizedBoardFilter.label;
       const assigneeFilter = normalizedBoardFilter.assignee;
+      const deadlineFilter = normalizedBoardFilter.deadline;
 
       const hasActiveSearchQuery =
         !!searchFilter &&
@@ -146,7 +162,7 @@ export function AlpacaBoard() {
         }
       }
 
-      if (!labelFilter && !assigneeFilter) {
+      if (!labelFilter && !assigneeFilter && !deadlineFilter) {
         return true;
       }
 
@@ -164,49 +180,97 @@ export function AlpacaBoard() {
         }
       }
 
-      if (!labelFilter) {
-        return true;
+      let labelMatch = true;
+      if (labelFilter) {
+        const labels = Array.isArray(item.labels) ? item.labels : [];
+        const filterSlug = labelFilter.slug
+          ? String(labelFilter.slug).toLowerCase()
+          : '';
+        const filterName = labelFilter.name
+          ? String(labelFilter.name).toLowerCase()
+          : '';
+
+        labelMatch = labels.some((label) => {
+          if (!label || typeof label !== 'object') {
+            return false;
+          }
+
+          if (
+            labelFilter.termId &&
+            typeof label.term_id !== 'undefined' &&
+            String(label.term_id) === String(labelFilter.termId)
+          ) {
+            return true;
+          }
+
+          if (
+            filterSlug &&
+            label.slug &&
+            String(label.slug).toLowerCase() === filterSlug
+          ) {
+            return true;
+          }
+
+          if (
+            filterName &&
+            label.name &&
+            String(label.name).toLowerCase() === filterName
+          ) {
+            return true;
+          }
+
+          return false;
+        });
       }
 
-      const labels = Array.isArray(item.labels) ? item.labels : [];
-      const filterSlug = labelFilter.slug
-        ? String(labelFilter.slug).toLowerCase()
-        : '';
-      const filterName = labelFilter.name
-        ? String(labelFilter.name).toLowerCase()
-        : '';
+      let deadlineMatch = true;
+      if (deadlineFilter) {
+        const rawDeadline =
+          item.meta && item.meta.deadline && item.meta.deadline[0]
+            ? item.meta.deadline[0]
+            : null;
 
-      return labels.some((label) => {
-        if (!label || typeof label !== 'object') {
-          return false;
+        const deadline = rawDeadline
+          ? parseWpDateValue(rawDeadline, {
+              treatDateOnlyAsLocalNoon: true,
+            })
+          : null;
+
+        if (!deadline || Number.isNaN(deadline.getTime())) {
+          deadlineMatch = false;
+        } else {
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          deadline.setHours(0, 0, 0, 0);
+          const diffDays = Math.ceil(
+            (deadline - today) / (1000 * 60 * 60 * 24),
+          );
+
+          let deadlineState = 'future';
+          if (diffDays < 0) {
+            deadlineState = 'late';
+          } else if (diffDays === 0) {
+            deadlineState = 'today';
+          } else if (diffDays < 8) {
+            deadlineState = 'soon';
+          }
+
+          const selectedState = deadlineFilter.state
+            ? String(deadlineFilter.state).toLowerCase()
+            : '';
+          deadlineMatch = !selectedState || selectedState === deadlineState;
         }
+      }
 
-        if (
-          labelFilter.termId &&
-          typeof label.term_id !== 'undefined' &&
-          String(label.term_id) === String(labelFilter.termId)
-        ) {
-          return true;
-        }
-
-        if (
-          filterSlug &&
-          label.slug &&
-          String(label.slug).toLowerCase() === filterSlug
-        ) {
-          return true;
-        }
-
-        if (
-          filterName &&
-          label.name &&
-          String(label.name).toLowerCase() === filterName
-        ) {
-          return true;
-        }
-
+      if (!labelMatch) {
         return false;
-      });
+      }
+
+      if (!deadlineMatch) {
+        return false;
+      }
+
+      return true;
     },
     [activeBoardFilter, activeSearchFilter, normalizeBoardFilter, searchIdsSet],
   );
@@ -377,6 +441,36 @@ export function AlpacaBoard() {
         return;
       }
 
+      if (filterType === 'deadline') {
+        if (!filter.state) {
+          setActiveBoardFilter((previous) => {
+            const normalized = normalizeBoardFilter(previous);
+            if (!normalized.label && !normalized.assignee) {
+              return null;
+            }
+
+            return {
+              ...normalized,
+              deadline: null,
+            };
+          });
+          return;
+        }
+
+        setActiveBoardFilter((previous) => {
+          const normalized = normalizeBoardFilter(previous);
+
+          return {
+            ...normalized,
+            deadline: {
+              type: 'deadline',
+              state: String(filter.state).toLowerCase(),
+            },
+          };
+        });
+        return;
+      }
+
       if (filterType !== 'label') {
         return;
       }
@@ -413,7 +507,7 @@ export function AlpacaBoard() {
         const normalized = normalizeBoardFilter(previous);
 
         if (filterType === 'assignee') {
-          if (!normalized.label) {
+          if (!normalized.label && !normalized.deadline) {
             return null;
           }
 
@@ -424,13 +518,24 @@ export function AlpacaBoard() {
         }
 
         if (filterType === 'label') {
-          if (!normalized.assignee) {
+          if (!normalized.assignee && !normalized.deadline) {
             return null;
           }
 
           return {
             ...normalized,
             label: null,
+          };
+        }
+
+        if (filterType === 'deadline') {
+          if (!normalized.label && !normalized.assignee) {
+            return null;
+          }
+
+          return {
+            ...normalized,
+            deadline: null,
           };
         }
 
