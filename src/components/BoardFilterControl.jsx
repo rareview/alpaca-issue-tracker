@@ -1,8 +1,7 @@
 const { useState, useRef, useMemo, useEffect, createPortal } = wp.element;
 const { __ } = wp.i18n;
+const { Popover, Tooltip } = wp.components;
 const {
-  Popover,
-  Tooltip,
   ToggleGroupControl: ComponentsToggleGroupControl,
   ToggleGroupControlOption: ComponentsToggleGroupControlOption,
   __experimentalToggleGroupControl,
@@ -13,6 +12,8 @@ const ToggleGroupControl =
   ComponentsToggleGroupControl || __experimentalToggleGroupControl;
 const ToggleGroupControlOption =
   ComponentsToggleGroupControlOption || __experimentalToggleGroupControlOption;
+
+import { getActiveFilter, buildBoardOptions } from '../utils/filters';
 
 import PropTypes from 'prop-types';
 import Icon from './icons/Icon';
@@ -43,65 +44,9 @@ function getAssigneeDisplayName(assignee) {
  * @param {Object|null} activeFilter Active filter payload.
  * @return {Object|null} Active label filter.
  */
-function getActiveLabelFilter(activeFilter) {
-  if (!activeFilter || typeof activeFilter !== 'object') {
-    return null;
-  }
+// use getActiveFilter(activeFilter, 'label'|'assignee'|'deadline') from utils/filters
 
-  if (activeFilter.label && typeof activeFilter.label === 'object') {
-    return activeFilter.label;
-  }
-
-  if ('label' === activeFilter.type) {
-    return activeFilter;
-  }
-
-  return null;
-}
-
-/**
- * Resolve currently selected assignee filter.
- *
- * @param {Object|null} activeFilter Active filter payload.
- * @return {Object|null} Active assignee filter.
- */
-function getActiveAssigneeFilter(activeFilter) {
-  if (!activeFilter || typeof activeFilter !== 'object') {
-    return null;
-  }
-
-  if (activeFilter.assignee && typeof activeFilter.assignee === 'object') {
-    return activeFilter.assignee;
-  }
-
-  if ('assignee' === activeFilter.type) {
-    return activeFilter;
-  }
-
-  return null;
-}
-
-/**
- * Resolve currently selected deadline filter.
- *
- * @param {Object|null} activeFilter Active filter payload.
- * @return {Object|null} Active deadline filter.
- */
-function getActiveDeadlineFilter(activeFilter) {
-  if (!activeFilter || typeof activeFilter !== 'object') {
-    return null;
-  }
-
-  if (activeFilter.deadline && typeof activeFilter.deadline === 'object') {
-    return activeFilter.deadline;
-  }
-
-  if ('deadline' === activeFilter.type) {
-    return activeFilter;
-  }
-
-  return null;
-}
+// deadline resolver moved to src/utils/filters.js:getActiveFilter
 
 /**
  * Render active label trigger content.
@@ -202,88 +147,10 @@ function BoardFilterControl({
   const assigneeTriggerRef = useRef(null);
   const deadlineTriggerRef = useRef(null);
 
-  const { labels, assignees } = useMemo(() => {
-    const labelsMap = new Map();
-    const assigneesMap = new Map();
-
-    containers.forEach((container) => {
-      const items = Array.isArray(container.items) ? container.items : [];
-
-      items.forEach((item) => {
-        const itemLabels = Array.isArray(item.labels) ? item.labels : [];
-        itemLabels.forEach((label) => {
-          if (!label || typeof label !== 'object') {
-            return;
-          }
-
-          const labelName = label.name ? String(label.name) : '';
-          const labelSlug = label.slug ? String(label.slug) : '';
-          const labelTermId =
-            typeof label.term_id !== 'undefined' && label.term_id !== null
-              ? String(label.term_id)
-              : '';
-
-          const labelKey = labelTermId || labelSlug || labelName.toLowerCase();
-          if (!labelKey || labelsMap.has(labelKey)) {
-            return;
-          }
-
-          labelsMap.set(labelKey, {
-            termId: labelTermId,
-            slug: labelSlug,
-            name: labelName,
-            color: label.color || null,
-          });
-        });
-
-        const itemAssignees = Array.isArray(item.assignees)
-          ? item.assignees
-          : [];
-        itemAssignees.forEach((assignee) => {
-          if (
-            !assignee ||
-            typeof assignee.id === 'undefined' ||
-            assignee.id === null
-          ) {
-            return;
-          }
-
-          const assigneeId = String(assignee.id);
-          const existingAssignee = assigneesMap.get(assigneeId);
-
-          if (
-            existingAssignee &&
-            existingAssignee.displayName &&
-            existingAssignee.avatar
-          ) {
-            return;
-          }
-
-          assigneesMap.set(assigneeId, {
-            id: assigneeId,
-            displayName:
-              getAssigneeDisplayName(assignee) ||
-              existingAssignee?.displayName ||
-              '',
-            avatar:
-              assignee.avatar ||
-              (assignee.avatar_urls && assignee.avatar_urls[96]) ||
-              existingAssignee?.avatar ||
-              null,
-          });
-        });
-      });
-    });
-
-    return {
-      labels: Array.from(labelsMap.values()).sort((a, b) =>
-        a.name.localeCompare(b.name),
-      ),
-      assignees: Array.from(assigneesMap.values()).sort((a, b) =>
-        a.displayName.localeCompare(b.displayName),
-      ),
-    };
-  }, [containers]);
+  const { labels, assignees } = useMemo(
+    () => buildBoardOptions(containers),
+    [containers],
+  );
 
   useEffect(() => {
     if (!openPopoverType || typeof document === 'undefined') {
@@ -341,9 +208,9 @@ function BoardFilterControl({
 
   const hasLabelOptions = labels.length > 0;
   const hasAssigneeOptions = assignees.length > 0;
-  const activeLabelFilter = getActiveLabelFilter(activeFilter);
-  const activeAssigneeFilter = getActiveAssigneeFilter(activeFilter);
-  const activeDeadlineFilter = getActiveDeadlineFilter(activeFilter);
+  const activeLabelFilter = getActiveFilter(activeFilter, 'label');
+  const activeAssigneeFilter = getActiveFilter(activeFilter, 'assignee');
+  const activeDeadlineFilter = getActiveFilter(activeFilter, 'deadline');
 
   const hasDeadlineControl =
     typeof ToggleGroupControl !== 'undefined' &&

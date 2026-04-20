@@ -14,7 +14,7 @@ import { transformDataForBoard, saveBoardOrder } from './utils/data';
 import { reorderItemsWithinFilteredSlots } from './utils/boardFiltering';
 import { getUser } from './hooks/useUser';
 import { dispatchStatusChangedAction } from './utils/statusChange';
-import { parseWpDateValue } from './utils/date';
+import { computeDeadlineState } from './utils/filters';
 
 import { updateIssue } from './services/issueApi';
 
@@ -230,31 +230,11 @@ export function AlpacaBoard() {
             ? item.meta.deadline[0]
             : null;
 
-        const deadline = rawDeadline
-          ? parseWpDateValue(rawDeadline, {
-              treatDateOnlyAsLocalNoon: true,
-            })
-          : null;
+        const deadlineState = computeDeadlineState(rawDeadline);
 
-        if (!deadline || Number.isNaN(deadline.getTime())) {
+        if (!deadlineState) {
           deadlineMatch = false;
         } else {
-          const today = new Date();
-          today.setHours(0, 0, 0, 0);
-          deadline.setHours(0, 0, 0, 0);
-          const diffDays = Math.ceil(
-            (deadline - today) / (1000 * 60 * 60 * 24),
-          );
-
-          let deadlineState = 'future';
-          if (diffDays < 0) {
-            deadlineState = 'late';
-          } else if (diffDays === 0) {
-            deadlineState = 'today';
-          } else if (diffDays < 8) {
-            deadlineState = 'soon';
-          }
-
           const selectedState = deadlineFilter.state
             ? String(deadlineFilter.state).toLowerCase()
             : '';
