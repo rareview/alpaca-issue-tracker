@@ -34,7 +34,8 @@ module.exports = defineConfig({
     command: 'npm run test:e2e:playground',
     port: getPlaygroundPort(),
     wait: {
-      stdout: /Playground server ready at http:\/\/127\.0\.0\.1:(?<alpaca_playground_port>\d+)/,
+      stdout:
+        /Playground server ready at http:\/\/127\.0\.0\.1:(?<alpaca_playground_port>\d+)/,
     },
     reuseExistingServer: !process.env.CI,
     timeout: 180 * 1000,

@@ -48,7 +48,9 @@ async function startServer() {
       verbosity: process.env.CI ? 'quiet' : 'normal',
     });
   } catch (error) {
-    process.stderr.write(`${error instanceof Error ? error.message : String(error)}\n`);
+    process.stderr.write(
+      `${error instanceof Error ? error.message : String(error)}\n`,
+    );
     process.exitCode = 1;
     return;
   }
@@ -70,9 +72,7 @@ async function startServer() {
     return;
   }
 
-  process.stdout.write(
-    `Playground server ready at ${cliServer.serverUrl}\n`,
-  );
+  process.stdout.write(`Playground server ready at ${cliServer.serverUrl}\n`);
 
   let isClosing = false;
 
@@ -112,7 +112,9 @@ async function startServer() {
 }
 
 try {
-  await import('node:fs/promises').then(({ access }) => access(generatedBlueprintPath));
+  await import('node:fs/promises').then(({ access }) =>
+    access(generatedBlueprintPath),
+  );
 } catch (error) {
   throwMissingBlueprintError();
 }

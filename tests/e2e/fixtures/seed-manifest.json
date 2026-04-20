@@ -44,9 +44,7 @@
       "status": "next",
       "deadline": "2026-04-11",
       "highPriority": false,
-      "labels": [
-        "design"
-      ],
+      "labels": ["design"],
       "assignAdmin": true,
       "watchAdmin": true,
       "comments": [
@@ -60,9 +58,7 @@
       "status": "in-progress",
       "deadline": "2026-04-09",
       "highPriority": true,
-      "labels": [
-        "design"
-      ],
+      "labels": ["design"],
       "assignAdmin": true,
       "watchAdmin": true,
       "comments": [

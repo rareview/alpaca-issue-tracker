@@ -5,7 +5,10 @@ const ROOT_DIR = path.resolve(__dirname, '..', '..', '..');
 const E2E_DIR = path.join(ROOT_DIR, 'tests', 'e2e');
 const GENERATED_DIR = path.join(E2E_DIR, '.generated');
 const GENERATED_BUNDLE_DIR = path.join(GENERATED_DIR, 'playground-bundle');
-const GENERATED_BLUEPRINT_PATH = path.join(GENERATED_BUNDLE_DIR, 'blueprint.json');
+const GENERATED_BLUEPRINT_PATH = path.join(
+  GENERATED_BUNDLE_DIR,
+  'blueprint.json',
+);
 const SEED_MANIFEST_PATH = path.join(
   ROOT_DIR,
   'tests',

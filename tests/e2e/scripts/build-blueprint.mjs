@@ -89,7 +89,10 @@ async function buildBlueprintBundle() {
   await fs.mkdir(generatedBundleDir, { recursive: true });
 
   await copyBundleFile(zipPath, path.join(generatedBundleDir, 'alpaca.zip'));
-  await copyBundleFile(seedScriptPath, path.join(generatedBundleDir, 'seed.php'));
+  await copyBundleFile(
+    seedScriptPath,
+    path.join(generatedBundleDir, 'seed.php'),
+  );
   await copyBundleFile(
     seedManifestPath,
     path.join(generatedBundleDir, 'seed-manifest.json'),

@@ -1,7 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const {
-  readSeedManifest,
-} = require('../../helpers/playground');
+const { readSeedManifest } = require('../../helpers/playground');
 const {
   gotoBoard,
   expectSeededColumns,

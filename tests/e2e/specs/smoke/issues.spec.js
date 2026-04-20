@@ -14,7 +14,9 @@ const {
 const { measureAction } = require('../../helpers/performance');
 
 test.describe('Issue lifecycle smoke', () => {
-  test('creates, edits, and progresses an issue', async ({ page }, testInfo) => {
+  test('creates, edits, and progresses an issue', async ({
+    page,
+  }, testInfo) => {
     const createdTitle = `Playwright created issue ${Date.now()}`;
     const renamedTitle = `${createdTitle} updated`;
 

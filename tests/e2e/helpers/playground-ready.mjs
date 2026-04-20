@@ -62,8 +62,7 @@ export async function waitForWordPressReady({
         lastErrorMessage = WORDPRESS_NOT_READY_TEXT;
       }
     } catch (error) {
-      lastErrorMessage =
-        error instanceof Error ? error.message : String(error);
+      lastErrorMessage = error instanceof Error ? error.message : String(error);
     }
 
     await sleep(pollIntervalMs);

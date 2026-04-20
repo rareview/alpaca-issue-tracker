@@ -212,9 +212,7 @@ export function buildPluginZip(rootDir, outputFile, stageDir) {
   return runtimeFiles;
 }
 
-const executedPath = process.argv[1]
-  ? path.resolve(process.argv[1])
-  : '';
+const executedPath = process.argv[1] ? path.resolve(process.argv[1]) : '';
 const currentModulePath = fileURLToPath(import.meta.url);
 
 if (executedPath === currentModulePath) {

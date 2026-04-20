@@ -1,7 +1,5 @@
 const { expect } = require('@playwright/test');
-const {
-  readSeedManifest,
-} = require('./playground');
+const { readSeedManifest } = require('./playground');
 const { gotoAdminPage } = require('./admin-pages');
 
 const seedManifest = readSeedManifest();
@@ -42,9 +40,7 @@ function escapeRegExp(value) {
  * @return {import('@playwright/test').Locator} Issue card locator.
  */
 function getIssueCard(page, issueTitle) {
-  const issueTitlePattern = new RegExp(
-    `^\\s*${escapeRegExp(issueTitle)}\\s*$`,
-  );
+  const issueTitlePattern = new RegExp(`^\\s*${escapeRegExp(issueTitle)}\\s*$`);
 
   return page.locator('.alpaca-item').filter({
     has: page.locator('.alpaca-item-content').filter({
@@ -75,9 +71,7 @@ function getContainer(page, containerTitle) {
  */
 async function gotoBoard(page) {
   await gotoAdminPage(page, 'project-board');
-  await expect(
-    page.locator('.alpaca-container-title').first(),
-  ).toBeVisible();
+  await expect(page.locator('.alpaca-container-title').first()).toBeVisible();
 }
 
 /**

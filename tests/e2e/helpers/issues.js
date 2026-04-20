@@ -84,9 +84,7 @@ async function renameOpenIssue(page, newTitle) {
  */
 async function progressOpenIssue(page) {
   await page.locator('.alpaca-modal-options-button').click();
-  await page
-    .getByRole('menuitem', { name: /Progress Issue to/i })
-    .click();
+  await page.getByRole('menuitem', { name: /Progress Issue to/i }).click();
 }
 
 /**
