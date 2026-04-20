@@ -22,18 +22,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-
-      - name: Install NPM dependencies
-        run: npm install
-
-      - name: Lint JavaScript files
-        run: npm run lint:js
-
-      - name: Lint CSS/SCSS files
-        run: npm run lint:styles
-
-      - name: Build assets
-        run: npm run build
+          cache: 'npm'
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -41,11 +30,17 @@ jobs:
           php-version: '8.0'
           tools: composer
 
-      - name: Install Composer dependencies
-        run: composer install
+      - name: Install NPM dependencies
+        run: npm ci
 
-      - name: Lint PHP files
-        run: npm run lint:php
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Lint plugin
+        run: npm run lint
+
+      - name: Build assets
+        run: npm run build
 
       - name: Success
         run: echo "✅ All code quality checks passed!"

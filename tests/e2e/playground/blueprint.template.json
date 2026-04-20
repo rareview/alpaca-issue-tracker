@@ -1,0 +1,47 @@
+{
+  "$schema": "https://playground.wordpress.net/blueprint-schema.json",
+  "meta": {
+    "title": "Alpaca E2E Harness",
+    "author": "rareview",
+    "description": "Install the branch ZIP, seed deterministic board data, and land on the Project Board."
+  },
+  "landingPage": "/wp-admin/admin.php?page=project-board",
+  "preferredVersions": {
+    "php": "8.2",
+    "wp": "latest"
+  },
+  "login": true,
+  "steps": [
+    {
+      "step": "installPlugin",
+      "pluginData": {
+        "resource": "bundled",
+        "path": "/alpaca.zip"
+      },
+      "options": {
+        "activate": true,
+        "targetFolderName": "alpaca"
+      }
+    },
+    {
+      "step": "writeFile",
+      "path": "/tmp/alpaca-playground-seed.php",
+      "data": {
+        "resource": "bundled",
+        "path": "/seed.php"
+      }
+    },
+    {
+      "step": "writeFile",
+      "path": "/tmp/alpaca-playground-seed-manifest.json",
+      "data": {
+        "resource": "bundled",
+        "path": "/seed-manifest.json"
+      }
+    },
+    {
+      "step": "runPHP",
+      "code": "<?php require_once '/wordpress/wp-load.php'; require_once '/tmp/alpaca-playground-seed.php'; alpaca_playground_seed( '/tmp/alpaca-playground-seed-manifest.json' );"
+    }
+  ]
+}
