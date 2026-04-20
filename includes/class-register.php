@@ -319,13 +319,14 @@ class Register {
 				'alpacaBoardData',
 				\alpaca_get_board_data()
 			);
-				wp_localize_script(
-					self::PREFIX . '-script',
-					'alpacaUserData',
-					array(
-						'currentUserId' => get_current_user_id(),
-					)
-				);
+
+			wp_localize_script(
+				self::PREFIX . '-script',
+				'alpacaUserData',
+				array(
+					'currentUserId' => get_current_user_id(),
+				)
+			);
 		}
 	}
 }
