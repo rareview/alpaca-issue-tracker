@@ -1085,15 +1085,6 @@ const AlpacaIssue = ({
           }
         }
 
-        if (assignees && assignees.length > 0) {
-          try {
-            const slugs = assignees.map((a) => userMap[a] || a);
-            await updateAssignees(newIssueId, slugs, assignees, assignees, []);
-          } catch (err) {
-            console.error('Failed to set assignees:', err);
-          }
-        }
-
         if (selectedLabelIds.length > 0) {
           try {
             await updateIssue(newIssueId, {
@@ -1124,6 +1115,7 @@ const AlpacaIssue = ({
           },
         );
 
+        // Notify board immediately so the new card appears optimistically.
         if (onIssueCreated) {
           onIssueCreated({
             id: newIssueId,
@@ -1134,6 +1126,20 @@ const AlpacaIssue = ({
             deadline: deadline || null,
             isHighPriority,
           });
+        }
+
+        // Persist assignees after the card is inserted so the board can update
+        // the newly-created item's assignees when the async update completes.
+        if (assignees && assignees.length > 0) {
+          try {
+            const slugs = assignees.map((a) => userMap[a] || a);
+            // don't block UI insertion; update in background
+            updateAssignees(newIssueId, slugs, assignees, assignees, []).catch(
+              (err) => console.error('Failed to set assignees:', err),
+            );
+          } catch (err) {
+            console.error('Failed to set assignees:', err);
+          }
         }
 
         setEditedTitle('');
