@@ -23,6 +23,7 @@ import AlpacaModal from './Modal.jsx';
 import AlpacaToolbar from './Toolbar.jsx';
 import AlpacaSettings from './Settings.jsx';
 import { WatchlistProvider } from './context/WatchlistContext.jsx';
+import { NotificationProvider } from './context/NotificationContext.jsx';
 import { AlpacaBoard } from './Board.jsx';
 import Presence from './components/Presence';
 import NotificationPreferences from './components/NotificationPreferences.jsx';
@@ -90,7 +91,12 @@ if (isAdmin) {
       projectBoardSubmenuLink.appendChild(menuBadgeMount);
     }
 
-    mountReactTree(<AdminSidebarInboxBadge />, menuBadgeMount);
+    mountReactTree(
+      <NotificationProvider>
+        <AdminSidebarInboxBadge />
+      </NotificationProvider>,
+      menuBadgeMount,
+    );
   }
 }
 
@@ -110,9 +116,11 @@ if (document.querySelector('#alpaca-settings-internal')) {
 
 if (document.querySelector('#project-board')) {
   mountReactTree(
-    <WatchlistProvider>
-      <AlpacaBoard />
-    </WatchlistProvider>,
+    <NotificationProvider>
+      <WatchlistProvider>
+        <AlpacaBoard />
+      </WatchlistProvider>
+    </NotificationProvider>,
     document.querySelector('#project-board'),
   );
 }
@@ -144,9 +152,11 @@ if (document.querySelector('#alpaca-about-page')) {
 
 if (document.querySelector('#alpaca-activity-page')) {
   mountReactTree(
-    <WatchlistProvider>
-      <Activity />
-    </WatchlistProvider>,
+    <NotificationProvider>
+      <WatchlistProvider>
+        <Activity />
+      </WatchlistProvider>
+    </NotificationProvider>,
     document.querySelector('#alpaca-activity-page'),
   );
 }

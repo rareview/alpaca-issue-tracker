@@ -1,11 +1,11 @@
 import PropTypes from 'prop-types';
 import {
   fetchNotificationInbox,
-  fetchNotificationInboxCount,
   markAllNotificationInboxItemsRead,
   markNotificationInboxItemsRead,
   markNotificationInboxItemsUnread,
 } from '../services/notificationApi';
+import { useNotification } from '../context/NotificationContext';
 import UnreadCountBadge from './notifications/UnreadCountBadge';
 import TimelineEntry from './comment/TimelineEntry';
 import Icon from './icons/Icon';
@@ -31,7 +31,6 @@ const ToggleGroupControlOption =
   ComponentsToggleGroupControlOption || __experimentalToggleGroupControlOption;
 
 const PAGE_SIZE = 20;
-const POLL_INTERVAL_MS = 30000;
 const PANEL_CLOSE_ANIMATION_MS = 220;
 const IS_UNREAD_KEY = 'is_unread';
 const CREATED_GMT_KEY = 'created_gmt';
@@ -222,29 +221,19 @@ const clearInboxOpenQueryParam = () => {
  * @return {JSX.Element|null} Inbox control.
  */
 function InboxControl({ selector }) {
+  const { unreadCount, updateUnreadCount } = useNotification();
   const [isPanelVisible, setIsPanelVisible] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
   const [filter, setFilter] = useState('unread');
   const [items, setItems] = useState([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(0);
-  const [unreadCount, setUnreadCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [isMutating, setIsMutating] = useState(false);
   const [error, setError] = useState('');
   const buttonRef = useRef(null);
   const panelRef = useRef(null);
-
-  const loadUnreadCount = useCallback(() => {
-    fetchNotificationInboxCount()
-      .then((response) => {
-        setUnreadCount(Number(response?.unread_count || 0));
-      })
-      .catch(() => {
-        setUnreadCount(0);
-      });
-  }, []);
 
   const closePanel = useCallback(() => {
     if (!isPanelVisible || isClosing) {
@@ -283,29 +272,6 @@ function InboxControl({ selector }) {
     };
   }, [isClosing]);
 
-  useEffect(() => {
-    loadUnreadCount();
-
-    const intervalId = window.setInterval(() => {
-      if (!document.hidden) {
-        loadUnreadCount();
-      }
-    }, POLL_INTERVAL_MS);
-
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        loadUnreadCount();
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-
-    return () => {
-      window.clearInterval(intervalId);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
-  }, [loadUnreadCount]);
-
   const loadInbox = useCallback(
     ({ nextPage = 1, nextFilter = filter, append = false } = {}) => {
       if (append) {
@@ -329,7 +295,7 @@ function InboxControl({ selector }) {
           );
           setPage(Number(response?.page || nextPage));
           setTotalPages(Number(response?.total_pages || 0));
-          setUnreadCount(Number(response?.unread_count || 0));
+          updateUnreadCount(Number(response?.unread_count || 0));
         })
         .catch((loadError) => {
           setError(
@@ -341,7 +307,7 @@ function InboxControl({ selector }) {
           setIsLoadingMore(false);
         });
     },
-    [filter],
+    [filter, updateUnreadCount],
   );
 
   useEffect(() => {
@@ -435,7 +401,7 @@ function InboxControl({ selector }) {
       request
         .then((response) => {
           updateLocalReadState(itemId, isUnread);
-          setUnreadCount(Number(response?.unread_count || 0));
+          updateUnreadCount(Number(response?.unread_count || 0));
         })
         .catch((mutationError) => {
           setError(
@@ -447,7 +413,7 @@ function InboxControl({ selector }) {
           setIsMutating(false);
         });
     },
-    [updateLocalReadState],
+    [updateLocalReadState, updateUnreadCount],
   );
 
   const handleOpenItem = useCallback(
@@ -475,7 +441,7 @@ function InboxControl({ selector }) {
       markNotificationInboxItemsRead([item.id])
         .then((response) => {
           updateLocalReadState(item.id, false);
-          setUnreadCount(Number(response?.unread_count || 0));
+          updateUnreadCount(Number(response?.unread_count || 0));
           continueOpen();
         })
         .catch((mutationError) => {
@@ -488,7 +454,7 @@ function InboxControl({ selector }) {
           setIsMutating(false);
         });
     },
-    [closePanel, updateLocalReadState],
+    [closePanel, updateLocalReadState, updateUnreadCount],
   );
 
   const handleMarkAllRead = useCallback(() => {
@@ -497,7 +463,7 @@ function InboxControl({ selector }) {
 
     markAllNotificationInboxItemsRead()
       .then((response) => {
-        setUnreadCount(Number(response?.unread_count || 0));
+        updateUnreadCount(Number(response?.unread_count || 0));
         setItems((currentItems) => {
           if ('unread' === filter) {
             return [];
@@ -518,7 +484,7 @@ function InboxControl({ selector }) {
       .finally(() => {
         setIsMutating(false);
       });
-  }, [filter]);
+  }, [filter, updateUnreadCount]);
 
   const handleLoadMore = useCallback(() => {
     if (!hasMoreItems || isLoadingMore) {
