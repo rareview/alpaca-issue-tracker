@@ -1,7 +1,7 @@
 const { __ } = wp.i18n;
 const { Tooltip } = wp.components;
 import Icon from '../components/icons/Icon';
-import { formatWpDateValue, parseWpDateValue } from '../utils/date';
+import { parseWpDateValue } from '../utils/date';
 
 /**
  * Filter to add deadline to item datapoints.
@@ -24,7 +24,11 @@ export const addDeadlineDatapoint = (originalContent, itemProps) => {
   let deadlineFormatted = '';
 
   if (isValidDeadline) {
-    deadlineFormatted = formatWpDateValue(deadline, 'M j');
+    const userLocale = wp.date.getSettings().l10n.locale.replace('_', '-');
+    deadlineFormatted = new Intl.DateTimeFormat(userLocale, {
+      month: 'short',
+      day: 'numeric',
+    }).format(deadline);
   }
 
   let diffDays = null;
