@@ -6,6 +6,16 @@
 
 /* global bowser */
 
+if (
+  typeof window !== 'undefined' &&
+  typeof window.alpacaDataDump === 'undefined'
+) {
+  window.alpacaDataDump = {};
+}
+
+const alpacaDataDump =
+  typeof window !== 'undefined' ? window.alpacaDataDump : undefined;
+
 // Wait for bowser library to be available
 if (typeof bowser === 'undefined') {
   console.error('Alpaca: bowser library not loaded');

@@ -13,6 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 $alpaca_rest_api_modules = array(
 	'utilities/rest-root.php',
 	'utilities/helpers.php',
+	'endpoints/report-context.php',
 	'endpoints/issues.php',
 	'endpoints/board.php',
 	'endpoints/options-statuses.php',
