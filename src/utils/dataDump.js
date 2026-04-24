@@ -6,8 +6,12 @@
 
 /* global bowser */
 
-// Wait for bowser library to be available
-if (typeof bowser === 'undefined') {
+const isCaptureContextEnabled =
+  window.alpacaSettings?.enableCaptureContext !== false;
+
+if (!isCaptureContextEnabled) {
+  // Capture context can be disabled when a companion addon owns this runtime.
+} else if (typeof bowser === 'undefined') {
   console.error('Alpaca: bowser library not loaded');
 } else {
   const b = bowser.parse(window.navigator.userAgent);

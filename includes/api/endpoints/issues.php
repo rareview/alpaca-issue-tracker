@@ -11,33 +11,56 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /*
- * Issue submit endpoint.
+ * Issue creation endpoints.
  */
-add_action( 'rest_api_init', 'alpaca_issue_submit' );
+add_action( 'rest_api_init', 'alpaca_register_issue_create_routes' );
 /**
- * Register the issue submit REST endpoint.
+ * Register the issue creation REST endpoints.
+ *
+ * Provides a generic issue creation route for core flows and a legacy submit
+ * route for backwards compatibility with capture-specific clients.
+ *
+ * @return void
  */
-function alpaca_issue_submit() {
+function alpaca_register_issue_create_routes() {
+	$create_issue_args = array(
+		'methods'             => 'POST',
+		'callback'            => 'alpaca_issue_create_callback',
+		'permission_callback' => function ( WP_REST_Request $request ) {
+			return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'create_issue' );
+		},
+	);
+
+	register_rest_route(
+		'alpaca/v1',
+		'issues',
+		$create_issue_args
+	);
+
 	register_rest_route(
 		'alpaca/v1',
 		'submit',
-		array(
-			'methods'             => 'POST',
-			'callback'            => 'alpaca_issue_callback',
-			'permission_callback' => function ( WP_REST_Request $request ) {
-				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'create_issue' );
-			},
-		)
+		$create_issue_args
 	);
 }
 
 /**
- * Handle issue submission via REST API.
+ * Backwards-compatible wrapper for the legacy issue submit callback.
  *
  * @param WP_REST_Request $req REST request object.
  * @return WP_REST_Response REST response.
  */
 function alpaca_issue_callback( WP_REST_Request $req ) {
+	return alpaca_issue_create_callback( $req );
+}
+
+/**
+ * Handle issue creation via REST API.
+ *
+ * @param WP_REST_Request $req REST request object.
+ * @return WP_REST_Response REST response.
+ */
+function alpaca_issue_create_callback( WP_REST_Request $req ) {
 	$payload = $req->get_json_params();
 
 	if ( ! is_array( $payload ) ) {
@@ -49,6 +72,17 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 			),
 			400
 		);
+	}
+
+	/**
+	 * Filter the raw issue creation payload before Alpaca processes it.
+	 *
+	 * @param array           $payload Issue creation payload.
+	 * @param WP_REST_Request $req     REST request object.
+	 */
+	$filtered_payload = apply_filters( 'alpaca_issue_create_payload', $payload, $req );
+	if ( is_array( $filtered_payload ) ) {
+		$payload = $filtered_payload;
 	}
 
 	// Extract user + input safely.
@@ -80,6 +114,19 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 		'comment_status' => 'open',
 	);
 
+	/**
+	 * Filter the post arguments used when creating a new Alpaca issue.
+	 *
+	 * @param array           $post_args Post arguments for wp_insert_post().
+	 * @param array           $payload   Issue creation payload.
+	 * @param WP_REST_Request $req       REST request object.
+	 * @param int             $user_id   Current user ID.
+	 */
+	$filtered_post_args = apply_filters( 'alpaca_issue_post_args', $post_args, $payload, $req, $user_id );
+	if ( is_array( $filtered_post_args ) ) {
+		$post_args = $filtered_post_args;
+	}
+
 	$post_id = wp_insert_post( $post_args, true );
 	if ( is_wp_error( $post_id ) || 0 === (int) $post_id ) {
 		return alpaca_rest_response(
@@ -91,6 +138,16 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 			500
 		);
 	}
+
+	/**
+	 * Fires after an Alpaca issue post is created and before enrichment.
+	 *
+	 * @param int             $post_id   Created issue post ID.
+	 * @param array           $payload   Issue creation payload.
+	 * @param WP_REST_Request $req       REST request object.
+	 * @param array           $post_args Inserted post arguments.
+	 */
+	do_action( 'alpaca_issue_created', $post_id, $payload, $req, $post_args );
 
 	$status_term_id = 0;
 	$statuses       = alpaca_get_statuses();
@@ -146,6 +203,7 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 
 	// Optional context.
 	if ( $include_ctx ) {
+		$context_meta = array();
 		$browser_name = (string) alpaca_arr_get( $payload, array( 'client', 'browser', 'name' ), '' );
 		$os_name      = (string) alpaca_arr_get( $payload, array( 'client', 'os' ), '' );
 		$template     = (string) alpaca_arr_get( $payload, array( 'wp', 'template' ), '' );
@@ -166,9 +224,9 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 			}
 		}
 
-		update_post_meta( $post_id, 'alpaca_screenwidth', (int) alpaca_arr_get( $payload, array( 'client', 'browser', 'width' ), 0 ) );
-		update_post_meta( $post_id, 'alpaca_screenheight', (int) alpaca_arr_get( $payload, array( 'client', 'browser', 'height' ), 0 ) );
-		update_post_meta( $post_id, 'alpaca_url', esc_url_raw( (string) alpaca_arr_get( $payload, array( 'server', 'REQUEST_URI' ), '' ) ) );
+		$context_meta['alpaca_screenwidth']  = (int) alpaca_arr_get( $payload, array( 'client', 'browser', 'width' ), 0 );
+		$context_meta['alpaca_screenheight'] = (int) alpaca_arr_get( $payload, array( 'client', 'browser', 'height' ), 0 );
+		$context_meta['alpaca_url']          = esc_url_raw( (string) alpaca_arr_get( $payload, array( 'server', 'REQUEST_URI' ), '' ) );
 
 		$qo = alpaca_arr_get( $payload, array( 'wp', 'queriedObject' ), null );
 		if ( is_array( $qo ) ) {
@@ -185,7 +243,7 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 					}
 				}
 			);
-			update_post_meta( $post_id, 'alpaca_queried_object', $qo );
+			$context_meta['alpaca_queried_object'] = $qo;
 		}
 
 		$headers = alpaca_arr_get( $payload, array( 'headers' ), null );
@@ -198,8 +256,39 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 					}
 				}
 			);
-			update_post_meta( $post_id, 'alpaca_headers', $headers );
+			$context_meta['alpaca_headers'] = $headers;
 		}
+
+		/**
+		 * Filter the context meta stored for a newly created issue.
+		 *
+		 * @param array<string, mixed> $context_meta Context meta keyed by meta name.
+		 * @param array                $payload      Issue creation payload.
+		 * @param int                  $post_id      Created issue post ID.
+		 * @param WP_REST_Request      $req          REST request object.
+		 */
+		$filtered_context_meta = apply_filters( 'alpaca_issue_context_meta', $context_meta, $payload, $post_id, $req );
+		if ( is_array( $filtered_context_meta ) ) {
+			$context_meta = $filtered_context_meta;
+		}
+
+		foreach ( $context_meta as $meta_key => $meta_value ) {
+			if ( ! is_string( $meta_key ) || '' === $meta_key ) {
+				continue;
+			}
+
+			update_post_meta( $post_id, $meta_key, $meta_value );
+		}
+
+		/**
+		 * Fires after Alpaca stores capture context meta for an issue.
+		 *
+		 * @param int                  $post_id      Created issue post ID.
+		 * @param array<string, mixed> $context_meta Stored context meta.
+		 * @param array                $payload      Issue creation payload.
+		 * @param WP_REST_Request      $req          REST request object.
+		 */
+		do_action( 'alpaca_issue_context_saved', $post_id, $context_meta, $payload, $req );
 	}
 
 	// Save JavaScript errors if present.
@@ -222,8 +311,32 @@ function alpaca_issue_callback( WP_REST_Request $req ) {
 				$sanitized_errors[] = $sanitized_error;
 			}
 		}
+
+		/**
+		 * Filter the sanitized JavaScript errors stored against a new issue.
+		 *
+		 * @param array           $sanitized_errors Sanitized JavaScript errors.
+		 * @param array           $errors           Raw JavaScript errors.
+		 * @param int             $post_id          Created issue post ID.
+		 * @param WP_REST_Request $req              REST request object.
+		 */
+		$filtered_errors = apply_filters( 'alpaca_issue_errors', $sanitized_errors, $errors, $post_id, $req );
+		if ( is_array( $filtered_errors ) ) {
+			$sanitized_errors = $filtered_errors;
+		}
+
 		if ( ! empty( $sanitized_errors ) ) {
 			update_post_meta( $post_id, 'alpaca_errors', wp_json_encode( $sanitized_errors, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ) );
+
+			/**
+			 * Fires after Alpaca stores JavaScript errors for a new issue.
+			 *
+			 * @param int             $post_id          Created issue post ID.
+			 * @param array           $sanitized_errors Stored JavaScript errors.
+			 * @param array           $payload          Issue creation payload.
+			 * @param WP_REST_Request $req              REST request object.
+			 */
+			do_action( 'alpaca_issue_errors_saved', $post_id, $sanitized_errors, $payload, $req );
 		}
 	}
 

@@ -10,7 +10,7 @@ export const updateIssue = (id, data) => {
 
 export const createIssue = (data) => {
   return wp.apiFetch({
-    path: '/alpaca/v1/submit',
+    path: '/alpaca/v1/issues',
     method: 'POST',
     data,
   });

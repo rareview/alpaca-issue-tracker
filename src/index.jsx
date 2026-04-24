@@ -63,12 +63,21 @@ window.alpaca.services.issueApi = {
 const { createRoot, render: legacyRender } = wp.element;
 const { createMountReactTree } = reactMountUtils;
 const isAdmin = document.body.classList.contains('wp-admin');
+const alpacaSettings = window.alpacaSettings || {};
+const isCaptureUiEnabled = alpacaSettings.enableCaptureUi !== false;
+const isAdminBarModalEnabled = alpacaSettings.enableAdminBarModal !== false;
+const isFrontendToolbarEnabled = alpacaSettings.enableFrontendToolbar !== false;
 const mountReactTree = createMountReactTree({
   createRoot,
   legacyRender,
 });
 
-if (isAdmin && document.querySelector('#wp-admin-bar-alpaca-report')) {
+if (
+  isAdmin &&
+  isCaptureUiEnabled &&
+  isAdminBarModalEnabled &&
+  document.querySelector('#wp-admin-bar-alpaca-report')
+) {
   const adminBarModalContainer = document.createElement('div');
   adminBarModalContainer.id = 'alpaca-admin-bar-modal-mount';
   document.body.appendChild(adminBarModalContainer);
@@ -100,7 +109,7 @@ if (isAdmin) {
   }
 }
 
-if (!isAdmin) {
+if (!isAdmin && isCaptureUiEnabled && isFrontendToolbarEnabled) {
   const toolbarContainer = document.createElement('div');
   toolbarContainer.id = 'alpaca-toolbar-mount';
   document.body.appendChild(toolbarContainer);

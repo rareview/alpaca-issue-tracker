@@ -22,7 +22,6 @@ import AssigneeSelector from './issue/AssigneeSelector';
 import LabelsSelector from './issue/LabelsSelector';
 import DeadlineControl from './issue/DeadlineControl';
 import TabContent from './issue/TabContent';
-import ErrorsTab from './issue/ErrorsTab';
 import User from './User';
 import Time from './Time';
 import StarControl from './StarControl';
@@ -2043,28 +2042,16 @@ const AlpacaIssue = ({
                   initialTabName="comments"
                   tabs={getTabsConfig(issueDetails)}
                 >
-                  {(tab) => {
-                    if (tab.name === 'errors') {
-                      return (
-                        <ErrorsTab
-                          errorsJson={
-                            issueDetails.meta.alpaca_errors ||
-                            issueDetails.meta.errors
-                          }
-                        />
-                      );
-                    }
-                    return (
-                      <TabContent
-                        tab={tab}
-                        issueDetails={issueDetails}
-                        issueId={issueId}
-                        activeSearchQuery={activeSearchQuery}
-                        commentRefreshKey={commentRefreshKey}
-                        showNotification={showNotification}
-                      />
-                    );
-                  }}
+                  {(tab) => (
+                    <TabContent
+                      tab={tab}
+                      issueDetails={issueDetails}
+                      issueId={issueId}
+                      activeSearchQuery={activeSearchQuery}
+                      commentRefreshKey={commentRefreshKey}
+                      showNotification={showNotification}
+                    />
+                  )}
                 </TabPanel>
               )}
             </div>

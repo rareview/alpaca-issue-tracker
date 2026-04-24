@@ -43,8 +43,7 @@ class Register {
 	 * @return string[] Script dependency handles.
 	 */
 	private function get_base_script_dependencies() {
-
-		return array(
+		$dependencies = array(
 			'wp-element',
 			'wp-api-fetch',
 			'wp-i18n',
@@ -53,6 +52,19 @@ class Register {
 			'wp-data',
 			'bowser',
 		);
+
+		/**
+		 * Filter the base script dependencies shared across Alpaca screens.
+		 *
+		 * @param string[] $dependencies Script dependency handles.
+		 */
+		$filtered_dependencies = apply_filters( 'alpaca_base_script_dependencies', $dependencies );
+
+		if ( ! is_array( $filtered_dependencies ) ) {
+			return $dependencies;
+		}
+
+		return array_values( array_unique( $filtered_dependencies ) );
 	}
 
 	/**
@@ -170,12 +182,87 @@ class Register {
 	}
 
 	/**
+	 * Determine whether capture-specific vendor assets should be enqueued.
+	 *
+	 * @return bool True when capture vendor assets should be enqueued.
+	 */
+	private function should_enqueue_capture_vendor_assets() {
+		/**
+		 * Filter whether Alpaca should enqueue capture-specific vendor assets.
+		 *
+		 * @param bool $should_enqueue True to enqueue capture-specific vendor assets.
+		 */
+		return (bool) apply_filters( 'alpaca_enable_capture_vendor_assets', true );
+	}
+
+	/**
+	 * Determine whether capture context data should be localized to the script.
+	 *
+	 * @return bool True when capture context data should be localized.
+	 */
+	private function should_localize_capture_context() {
+		/**
+		 * Filter whether Alpaca should localize capture context data.
+		 *
+		 * @param bool $should_localize True to localize capture context data.
+		 */
+		return (bool) apply_filters( 'alpaca_enable_capture_context', true );
+	}
+
+	/**
+	 * Build the settings object exposed to the shared Alpaca script.
+	 *
+	 * @param bool   $is_admin    Whether the current request is for wp-admin.
+	 * @param string $hook_suffix Current admin hook suffix when available.
+	 * @return array<string, mixed> Script settings.
+	 */
+	private function get_script_settings( $is_admin = false, $hook_suffix = '' ) {
+		$enable_capture_ui       = (bool) apply_filters( 'alpaca_enable_capture_ui', true, $is_admin, $hook_suffix );
+		$enable_admin_bar_modal  = (bool) apply_filters( 'alpaca_enable_admin_bar_modal', $enable_capture_ui, $is_admin, $hook_suffix );
+		$enable_frontend_toolbar = (bool) apply_filters( 'alpaca_enable_frontend_toolbar', $enable_capture_ui, $is_admin, $hook_suffix );
+		$enable_capture_context  = $this->should_localize_capture_context();
+		$enable_capture_assets   = $this->should_enqueue_capture_vendor_assets();
+
+		$settings = array(
+			'canManageOptions'        => current_user_can( 'manage_options' ),
+			'itemDatapointVisibility' => $this->get_item_datapoint_visibility_setting(),
+			'enableCaptureUi'         => $enable_capture_ui,
+			'enableAdminBarModal'     => $enable_admin_bar_modal,
+			'enableFrontendToolbar'   => $enable_frontend_toolbar,
+			'enableCaptureContext'    => $enable_capture_context,
+			'enableCaptureAssets'     => $enable_capture_assets,
+			'snapdomProxy'            => $enable_capture_assets ? $this->get_snapdom_proxy_setting() : '',
+		);
+
+		if ( $is_admin ) {
+			$settings['adminUrl'] = admin_url( 'admin.php' );
+		}
+
+		/**
+		 * Filter the script settings exposed to the shared Alpaca script.
+		 *
+		 * @param array<string, mixed> $settings    Script settings.
+		 * @param bool                 $is_admin    Whether the current request is for wp-admin.
+		 * @param string               $hook_suffix Current admin hook suffix when available.
+		 */
+		$filtered_settings = apply_filters( 'alpaca_script_settings', $settings, $is_admin, $hook_suffix );
+
+		if ( ! is_array( $filtered_settings ) ) {
+			return $settings;
+		}
+
+		return $filtered_settings;
+	}
+
+	/**
 	 * Enqueue shared Alpaca assets.
 	 *
 	 * @param string[] $script_dependencies Script dependencies for the main bundle.
+	 * @param bool     $is_admin            Whether the current request is for wp-admin.
+	 * @param string   $hook_suffix         Current admin hook suffix when available.
 	 * @return void
 	 */
-	private function enqueue_shared_assets( $script_dependencies ) {
+	private function enqueue_shared_assets( $script_dependencies, $is_admin = false, $hook_suffix = '' ) {
 
 		// Only load Alpaca for logged-in users.
 		if ( ! is_user_logged_in() ) {
@@ -202,22 +289,23 @@ class Register {
 			Helpers::version()
 		);
 
-		// Enqueue vendor scripts.
-		wp_enqueue_script(
-			'bowser',
-			Helpers::asset_url( 'vendor/bowser.es5.min.js' ),
-			array(),
-			Helpers::version(),
-			true
-		);
+		if ( $this->should_enqueue_capture_vendor_assets() ) {
+			wp_enqueue_script(
+				'bowser',
+				Helpers::asset_url( 'vendor/bowser.es5.min.js' ),
+				array(),
+				Helpers::version(),
+				true
+			);
 
-		wp_enqueue_script(
-			'snapdom',
-			Helpers::asset_url( 'vendor/snapdom.min.js' ),
-			array(),
-			Helpers::version(),
-			true
-		);
+			wp_enqueue_script(
+				'snapdom',
+				Helpers::asset_url( 'vendor/snapdom.min.js' ),
+				array(),
+				Helpers::version(),
+				true
+			);
+		}
 
 		// Main script (includes Prism.js via npm import).
 		wp_enqueue_script(
@@ -242,23 +330,24 @@ class Register {
 		);
 
 		// Localize script.
-		if ( function_exists( 'alpaca_prepare_datadump' ) ) {
+		if ( $this->should_localize_capture_context() && function_exists( 'alpaca_prepare_datadump' ) ) {
 			wp_localize_script( self::PREFIX . '-script', 'alpacaDataDump', \alpaca_prepare_datadump() );
 		}
 
 		wp_localize_script(
 			self::PREFIX . '-script',
 			'alpacaSettings',
-			array(
-				'canManageOptions'        => current_user_can( 'manage_options' ),
-				// SnapDOM expects the proxy string to be a prefix the library will append the target URL to.
-				// Provide the proxy endpoint with the query param prefix so SnapDOM can append the encoded target URL.
-				// Provide a signed proxy token that does not rely on browser cookies.
-				// This keeps proxy requests working when SnapDOM fetches across origins.
-				'snapdomProxy'            => $this->get_snapdom_proxy_setting(),
-				'itemDatapointVisibility' => $this->get_item_datapoint_visibility_setting(),
-			)
+			$this->get_script_settings( $is_admin, $hook_suffix )
 		);
+
+		/**
+		 * Fires after Alpaca enqueues its shared frontend assets.
+		 *
+		 * @param bool   $is_admin           Whether the current request is for wp-admin.
+		 * @param string $hook_suffix        Current admin hook suffix when available.
+		 * @param string[] $script_dependencies Script dependencies used for the main bundle.
+		 */
+		do_action( 'alpaca_shared_assets_enqueued', $is_admin, $hook_suffix, $script_dependencies );
 	}
 
 	/**
@@ -267,8 +356,7 @@ class Register {
 	 * @return void
 	 */
 	public function enqueue_assets() {
-
-		$this->enqueue_shared_assets( $this->get_base_script_dependencies() );
+		$this->enqueue_shared_assets( $this->get_base_script_dependencies(), false, '' );
 	}
 
 	/**
@@ -286,19 +374,7 @@ class Register {
 			);
 		}
 
-		$this->enqueue_shared_assets( array_values( array_unique( $script_dependencies ) ) );
-
-		// Expose admin URL for use in JS (e.g., linking to admin pages).
-		wp_localize_script(
-			self::PREFIX . '-script',
-			'alpacaSettings',
-			array(
-				'canManageOptions'        => current_user_can( 'manage_options' ),
-				'adminUrl'                => admin_url( 'admin.php' ),
-				'snapdomProxy'            => $this->get_snapdom_proxy_setting(),
-				'itemDatapointVisibility' => $this->get_item_datapoint_visibility_setting(),
-			)
-		);
+		$this->enqueue_shared_assets( array_values( array_unique( $script_dependencies ) ), true, $hook_suffix );
 
 		if ( $this->is_notification_template_admin_page( $hook_suffix ) ) {
 			wp_enqueue_media();
