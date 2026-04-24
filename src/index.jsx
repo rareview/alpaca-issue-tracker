@@ -5,16 +5,6 @@ import './utils/boardHelpers.js';
 import { installAlpacaApiRootMiddleware } from './utils/restApiRoot.js';
 import reactMountUtils from './utils/reactMount';
 
-// Import Prism.js and required languages
-import Prism from 'prismjs';
-import 'prismjs/components/prism-json';
-import 'prismjs/components/prism-uri';
-import 'prismjs/components/prism-markup';
-import 'prismjs/themes/prism.css';
-
-// Make Prism available globally
-window.Prism = Prism;
-
 import AlpacaSettings from './Settings.jsx';
 import { WatchlistProvider } from './context/WatchlistContext.jsx';
 import { NotificationProvider } from './context/NotificationContext.jsx';
