@@ -99,8 +99,6 @@ Alpaca should work on any current WordPress install, without further dependencie
 
 ### External dependencies
 
-- [Bowser](https://github.com/bowser-js/bowser) for browser detection. Copyright 2015, Dustin Diaz (the "Original Author"). All rights reserved. [📜 MIT license.](https://github.com/bowser-js/bowser/blob/master/LICENSE)
-- [Snapdom](https://github.com/zumerlab/snapdom) for screenshot capture. Copyright (c) 2025 ZumerLab. [📜 MIT license.](https://github.com/zumerlab/snapdom/blob/main/LICENSE)
 - [Marked](https://marked.js.org/license) for Markdown processing. Copyright (c) 2018+, MarkedJS (https://github.com/markedjs/) Copyright (c) 2011-2018, Christopher Jeffrey (https://github.com/chjj/) [📜 License](https://github.com/markedjs/marked/blob/master/LICENSE.md)
 
 ---

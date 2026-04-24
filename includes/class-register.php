@@ -52,10 +52,6 @@ class Register {
 			'wp-data',
 		);
 
-		if ( $this->should_enqueue_capture_vendor_assets() ) {
-			$dependencies[] = 'bowser';
-		}
-
 		/**
 		 * Filter the base script dependencies shared across Alpaca screens.
 		 *
@@ -139,21 +135,6 @@ class Register {
 	}
 
 	/**
-	 * Get the SnapDOM proxy URL prefix for image capture requests.
-	 *
-	 * @return string Proxy URL prefix.
-	 */
-	private function get_snapdom_proxy_setting() {
-		return esc_url_raw(
-			rest_url(
-				'alpaca/v1/proxy?proxy_token=' .
-				rawurlencode( function_exists( 'alpaca_get_proxy_auth_token' ) ? alpaca_get_proxy_auth_token() : '' ) .
-				'&url='
-			)
-		);
-	}
-
-	/**
 	 * Get the saved item datapoint visibility settings.
 	 *
 	 * @return array<string, bool> Visibility map keyed by datapoint slug.
@@ -185,20 +166,6 @@ class Register {
 	}
 
 	/**
-	 * Determine whether capture-specific vendor assets should be enqueued.
-	 *
-	 * @return bool True when capture vendor assets should be enqueued.
-	 */
-	private function should_enqueue_capture_vendor_assets() {
-		/**
-		 * Filter whether Alpaca should enqueue capture-specific vendor assets.
-		 *
-		 * @param bool $should_enqueue True to enqueue capture-specific vendor assets.
-		 */
-		return (bool) apply_filters( 'alpaca_enable_capture_vendor_assets', false );
-	}
-
-	/**
 	 * Determine whether capture context data should be localized to the script.
 	 *
 	 * @return bool True when capture context data should be localized.
@@ -224,7 +191,6 @@ class Register {
 		$enable_admin_bar_modal  = (bool) apply_filters( 'alpaca_enable_admin_bar_modal', $enable_capture_ui, $is_admin, $hook_suffix );
 		$enable_frontend_toolbar = (bool) apply_filters( 'alpaca_enable_frontend_toolbar', $enable_capture_ui, $is_admin, $hook_suffix );
 		$enable_capture_context  = $this->should_localize_capture_context();
-		$enable_capture_assets   = $this->should_enqueue_capture_vendor_assets();
 
 		$settings = array(
 			'canManageOptions'        => current_user_can( 'manage_options' ),
@@ -233,8 +199,6 @@ class Register {
 			'enableAdminBarModal'     => $enable_admin_bar_modal,
 			'enableFrontendToolbar'   => $enable_frontend_toolbar,
 			'enableCaptureContext'    => $enable_capture_context,
-			'enableCaptureAssets'     => $enable_capture_assets,
-			'snapdomProxy'            => $enable_capture_assets ? $this->get_snapdom_proxy_setting() : '',
 		);
 
 		if ( $is_admin ) {
@@ -291,24 +255,6 @@ class Register {
 			array(),
 			Helpers::version()
 		);
-
-		if ( $this->should_enqueue_capture_vendor_assets() ) {
-			wp_enqueue_script(
-				'bowser',
-				Helpers::asset_url( 'vendor/bowser.es5.min.js' ),
-				array(),
-				Helpers::version(),
-				true
-			);
-
-			wp_enqueue_script(
-				'snapdom',
-				Helpers::asset_url( 'vendor/snapdom.min.js' ),
-				array(),
-				Helpers::version(),
-				true
-			);
-		}
 
 		// Main script (includes Prism.js via npm import).
 		wp_enqueue_script(
