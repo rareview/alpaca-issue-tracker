@@ -1,7 +1,6 @@
 import './scss/main.scss';
 
 import './utils/issueCommentHandler.js';
-import './utils/dataDump.js';
 import './utils/boardHelpers.js';
 import { installAlpacaApiRootMiddleware } from './utils/restApiRoot.js';
 import reactMountUtils from './utils/reactMount';
@@ -16,11 +15,6 @@ import 'prismjs/themes/prism.css';
 // Make Prism available globally
 window.Prism = Prism;
 
-// Register custom Prism language on load
-import './utils/prismKeyValue';
-
-import AlpacaModal from './Modal.jsx';
-import AlpacaToolbar from './Toolbar.jsx';
 import AlpacaSettings from './Settings.jsx';
 import { WatchlistProvider } from './context/WatchlistContext.jsx';
 import { NotificationProvider } from './context/NotificationContext.jsx';
@@ -63,26 +57,10 @@ window.alpaca.services.issueApi = {
 const { createRoot, render: legacyRender } = wp.element;
 const { createMountReactTree } = reactMountUtils;
 const isAdmin = document.body.classList.contains('wp-admin');
-const alpacaSettings = window.alpacaSettings || {};
-const isCaptureUiEnabled = alpacaSettings.enableCaptureUi !== false;
-const isAdminBarModalEnabled = alpacaSettings.enableAdminBarModal !== false;
-const isFrontendToolbarEnabled = alpacaSettings.enableFrontendToolbar !== false;
 const mountReactTree = createMountReactTree({
   createRoot,
   legacyRender,
 });
-
-if (
-  isAdmin &&
-  isCaptureUiEnabled &&
-  isAdminBarModalEnabled &&
-  document.querySelector('#wp-admin-bar-alpaca-report')
-) {
-  const adminBarModalContainer = document.createElement('div');
-  adminBarModalContainer.id = 'alpaca-admin-bar-modal-mount';
-  document.body.appendChild(adminBarModalContainer);
-  mountReactTree(<AlpacaModal />, adminBarModalContainer);
-}
 
 if (isAdmin) {
   const projectBoardSubmenuLink = document.querySelector(
@@ -107,13 +85,6 @@ if (isAdmin) {
       menuBadgeMount,
     );
   }
-}
-
-if (!isAdmin && isCaptureUiEnabled && isFrontendToolbarEnabled) {
-  const toolbarContainer = document.createElement('div');
-  toolbarContainer.id = 'alpaca-toolbar-mount';
-  document.body.appendChild(toolbarContainer);
-  mountReactTree(<AlpacaToolbar />, toolbarContainer);
 }
 
 if (document.querySelector('#alpaca-settings-internal')) {

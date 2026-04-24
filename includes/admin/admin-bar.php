@@ -17,6 +17,15 @@ add_action( 'admin_bar_menu', 'alpaca_add_admin_bar_menu', 500 );
  * @param WP_Admin_Bar $admin_bar The admin bar object.
  */
 function alpaca_add_admin_bar_menu( $admin_bar ) {
+	/**
+	 * Filter whether Alpaca should register the admin bar report menu item.
+	 *
+	 * @param bool $enabled True to register the admin bar report menu item.
+	 */
+	if ( ! apply_filters( 'alpaca_enable_admin_bar_report_menu', false ) ) {
+		return;
+	}
+
 	if ( ! is_admin() ) {
 		return;
 	}

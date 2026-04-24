@@ -50,8 +50,11 @@ class Register {
 			'wp-components',
 			'wp-dom-ready',
 			'wp-data',
-			'bowser',
 		);
+
+		if ( $this->should_enqueue_capture_vendor_assets() ) {
+			$dependencies[] = 'bowser';
+		}
 
 		/**
 		 * Filter the base script dependencies shared across Alpaca screens.
@@ -192,7 +195,7 @@ class Register {
 		 *
 		 * @param bool $should_enqueue True to enqueue capture-specific vendor assets.
 		 */
-		return (bool) apply_filters( 'alpaca_enable_capture_vendor_assets', true );
+		return (bool) apply_filters( 'alpaca_enable_capture_vendor_assets', false );
 	}
 
 	/**
@@ -206,7 +209,7 @@ class Register {
 		 *
 		 * @param bool $should_localize True to localize capture context data.
 		 */
-		return (bool) apply_filters( 'alpaca_enable_capture_context', true );
+		return (bool) apply_filters( 'alpaca_enable_capture_context', false );
 	}
 
 	/**
@@ -217,7 +220,7 @@ class Register {
 	 * @return array<string, mixed> Script settings.
 	 */
 	private function get_script_settings( $is_admin = false, $hook_suffix = '' ) {
-		$enable_capture_ui       = (bool) apply_filters( 'alpaca_enable_capture_ui', true, $is_admin, $hook_suffix );
+		$enable_capture_ui       = (bool) apply_filters( 'alpaca_enable_capture_ui', false, $is_admin, $hook_suffix );
 		$enable_admin_bar_modal  = (bool) apply_filters( 'alpaca_enable_admin_bar_modal', $enable_capture_ui, $is_admin, $hook_suffix );
 		$enable_frontend_toolbar = (bool) apply_filters( 'alpaca_enable_frontend_toolbar', $enable_capture_ui, $is_admin, $hook_suffix );
 		$enable_capture_context  = $this->should_localize_capture_context();
