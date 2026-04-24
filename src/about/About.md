@@ -11,7 +11,9 @@ Content management systems were very much the same, not so long ago. So we were 
 
 Our original plan was to provide a solution for issue reporting and management. Clients would only need to write a single sentence explaining the problem. All other context, including a screenshot, would be captured automatically, and delivered into a basic kanban board. Issues would be instantly actionable.
 
-But we soon realised Alpaca could be a full collaboration solution, on par with platforms like Trello, Jira, or Asana.
+But we soon realised Alpaca's kanban implementation was strong enough to support a full collaboration solution, on par with platforms like Trello, Jira, or Asana.
+
+So we adjusted the plan a little. Alpaca is the kanban platform; we also offer an add-on for the front-end context capture.
 
 ---
 
@@ -74,6 +76,7 @@ But we soon realised Alpaca could be a full collaboration solution, on par with 
 <details>
 <summary><strong>In planning</strong></summary>
 
+- Extract front-end issue capture to a separate plugin
 - Framework to support other outbound communication channels (eg Slack)
 - Framework to support inbound communication from other platforms (eg GitHub)
 - Data storage in a different WP instance
