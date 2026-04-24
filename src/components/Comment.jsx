@@ -306,7 +306,7 @@ const Comment = memo(
                     icon="ellipsis"
                     onClick={onToggle}
                     aria-expanded={isOpen}
-                    className="rotate90"
+                    className="alpaca-rotate-90"
                   />
                 </Tooltip>
               )}

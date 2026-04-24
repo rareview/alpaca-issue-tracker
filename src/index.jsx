@@ -11,7 +11,6 @@ import Prism from 'prismjs';
 import 'prismjs/components/prism-json';
 import 'prismjs/components/prism-uri';
 import 'prismjs/components/prism-markup';
-import 'prismjs/themes/prism.css';
 
 // Make Prism available globally
 window.Prism = Prism;

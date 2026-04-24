@@ -144,7 +144,7 @@ const About = () => {
   };
 
   return (
-    <div className="alpaca-about-page layout-grid">
+    <div className="alpaca-about-page alpaca-about-layout-grid">
       <div className="alpaca-about-main">
         <div
           className="alpaca-about-page-content"

@@ -6,9 +6,9 @@
 .wp-admin {
   .alpaca-errors-tab {
     .alpaca-error-item {
-      margin-bottom: 2rem;
-      border-bottom: 1px solid $greyborder;
-      padding-bottom: 1rem;
+      margin-bottom: $space-6xl;
+      border-bottom: 1px solid $color-border;
+      padding-bottom: $space-2xl;
 
       &:last-child {
         border-bottom: none;
@@ -20,19 +20,19 @@
     }
 
     .alpaca-error-stack {
-      margin-top: 1rem;
+      margin-top: $space-2xl;
 
       h5 {
-        margin-bottom: 0.5rem;
+        margin-bottom: $space-sm;
       }
 
       pre,
       pre[class*='language-'] {
-        background: $greyshade !important;
-        padding: 1rem !important;
+        background: $color-surface-neutral !important;
+        padding: $space-2xl !important;
         margin: 0 !important;
         border: 0 !important;
-        border-radius: 4px !important;
+        border-radius: $radius-sm !important;
         white-space: pre-wrap !important;
         word-break: break-word !important;
         overflow-x: auto !important;
@@ -45,8 +45,8 @@
         padding: 0 !important;
         margin: 0 !important;
         border: 0 !important;
-        font-family: $code-font !important;
-        font-size: 0.8125rem !important;
+        font-family: $font-family-code !important;
+        font-size: $font-size-sm !important;
         color: inherit !important;
         text-shadow: none !important;
       }

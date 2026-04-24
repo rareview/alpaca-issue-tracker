@@ -206,7 +206,7 @@ function Container({
     menuControls.push({
       icon: (
         <span
-          className="dashicon dashicons dashicons-arrow-right-alt rtl-mirror"
+          className="dashicon dashicons dashicons-arrow-right-alt alpaca-rtl-mirror"
           aria-hidden="true"
         ></span>
       ),

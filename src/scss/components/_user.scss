@@ -2,9 +2,9 @@
 
 .wp-admin .alpaca-user img {
   aspect-ratio: 1;
-  border-radius: 50%;
-  border: 1px solid $greyborder;
+  border-radius: $radius-round;
+  border: 1px solid $color-border;
   vertical-align: middle;
-  background: $bgwhite;
-  width: 36px;
+  background: $color-white;
+  width: $size-control-lg;
 }

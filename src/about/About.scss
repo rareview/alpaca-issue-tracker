@@ -1,6 +1,8 @@
+@use '../scss/abstracts' as *;
+
 .alpaca-about-page-content {
-  max-width: 800px;
-  margin-top: 20px;
+  max-width: 50rem;
+  margin-top: $space-4xl;
 
   h1,
   h2,
@@ -8,18 +10,18 @@
   h4,
   h5,
   h6 {
-    margin-top: 24px;
-    margin-bottom: 16px;
-    font-weight: 600;
-    line-height: 1.25;
+    margin-top: $space-5xl;
+    margin-bottom: $space-2xl;
+    font-weight: $font-weight-semibold;
+    line-height: $line-height-heading;
   }
 
   p {
-    margin-bottom: 16px;
+    margin-bottom: $space-2xl;
   }
 
   a {
-    color: #0073aa;
+    color: $color-link;
     text-decoration: none;
 
     &:hover {
@@ -29,12 +31,12 @@
 
   ul,
   ol {
-    margin-bottom: 16px;
-    padding-left: 2em;
+    margin-bottom: $space-2xl;
+    padding-inline-start: $space-6xl;
   }
 
   li {
-    margin-bottom: 8px;
+    margin-bottom: $space-sm;
   }
 
   ul li {
@@ -46,32 +48,32 @@
   }
 
   code {
-    font-family: monospace;
+    font-family: $font-family-code;
     margin: 0;
-    font-size: 85%;
+    font-size: $font-size-sm;
     background-color: transparent;
   }
 
   pre {
     overflow: auto;
-    font-size: 85%;
-    line-height: 1.45;
+    font-size: $font-size-sm;
+    line-height: $line-height-code;
 
     code {
       padding: 0;
       margin: 0;
-      font-size: 100%;
+      font-size: inherit;
       background-color: transparent;
       border-radius: 0;
     }
   }
 }
 
-.layout-grid {
+.alpaca-about-layout-grid {
   display: grid;
-  grid-template-columns: 1fr 320px;
+  grid-template-columns: 1fr $width-sidebar;
   grid-template-areas: 'main side';
-  gap: 24px;
+  gap: $space-5xl;
   align-items: start;
 }
 
@@ -81,20 +83,20 @@
 
 .alpaca-about-side {
   grid-area: side;
-  padding-top: 20px;
+  padding-top: $space-4xl;
   background: transparent;
   align-self: start;
   position: sticky;
-  top: 24px;
+  top: $size-icon-xl;
 }
 
-@media (width <= 840px) {
+@media (width <= $breakpoint-about-mobile) {
   .alpaca-about-side {
     position: static;
     top: auto;
   }
 
-  .layout-grid {
+  .alpaca-about-layout-grid {
     grid-template-columns: 1fr;
     grid-template-areas: 'side' 'main';
   }
@@ -103,55 +105,54 @@
 .alpaca-widgets {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: $space-lg;
 }
 
 /* Each widget becomes its own white card */
 .alpaca-widget {
-  background: #fff;
-  border: 1px solid #e5e5e5;
-  border-radius: 6px;
+  background: $color-white;
+  border: 1px solid $color-border-muted;
+  border-radius: $radius-md;
 
   a {
-    font-weight: 600;
+    font-weight: $font-weight-semibold;
   }
 }
 
 .alpaca-widget-title {
   display: block;
-  border-bottom: 1px solid #ececec;
+  border-bottom: 1px solid $color-border-subtle;
   margin: 0;
-  font-size: 14px;
-  font-weight: 600;
-  padding: 16px;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  padding: $space-2xl;
 }
 
 .alpaca-widget-body {
-  font-size: 13px;
-  color: #333;
-  padding: 16px;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  padding: $space-2xl;
 }
 
 .alpaca-widget-empty {
-  color: #666;
-  font-size: 13px;
-}
-
-.alpaca-ann-content {
-  font-size: 13px;
+  color: $color-text-secondary;
+  font-size: $font-size-sm;
 }
 
 .alpaca-ann-excerpt {
-  font-size: 13px;
-  color: #333;
-  line-height: 1.4;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  line-height: $line-height-base;
   margin-top: 0;
 }
 
 .alpaca-ann-item {
-  margin-bottom: 14px;
-  border-bottom: 1px dashed #eee;
-  padding-bottom: 12px;
+  margin-bottom: $space-xl;
+  border-bottom: 1px dashed $color-border-muted;
+  padding-bottom: $space-lg;
+  display: flex;
+  flex-direction: column;
+  gap: $space-2xs;
 }
 
 .alpaca-ann-item:last-child {
@@ -162,11 +163,11 @@
 
 .alpaca-ann-updated,
 .alpaca-release-updated {
-  color: #999;
+  color: $color-text-muted;
 }
 
 .alpaca-loading,
 .alpaca-error {
-  padding: 8px 0;
-  color: #666;
+  padding: $space-sm 0;
+  color: $color-text-secondary;
 }

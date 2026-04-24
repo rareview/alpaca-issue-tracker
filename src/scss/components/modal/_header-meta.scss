@@ -5,14 +5,14 @@
 */
 .wp-admin {
   .alpaca-issue-meta {
-    color: $greytext;
-    font-size: $smallfont;
-    line-height: 3em;
+    color: $color-text-muted;
+    font-size: $font-size-sm;
+    line-height: $line-height-base;
     flex-direction: row;
-    gap: $spacegap;
+    gap: $space-gap-inline;
 
     .alpaca-user-name {
-      font-weight: 600;
+      font-weight: $font-weight-semibold;
     }
   }
 }

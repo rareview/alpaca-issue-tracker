@@ -8,8 +8,8 @@
   .alpaca-details-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px 24px;
-    margin: 1em 0;
+    gap: $space-lg $space-5xl;
+    margin: $space-2xl 0;
     align-items: start;
 
     p.components-form-token-field__help {
@@ -21,30 +21,30 @@
     display: block;
 
     .components-form-token-field__input-container {
-      border-color: $greyborder;
+      border-color: $color-border;
     }
 
     .components-form-token-field__input-container,
     .alpaca-details-grid__value {
-      min-height: 36px;
+      min-height: $size-control-lg;
     }
   }
 }
 
 .alpaca-details-grid__label {
-  margin-bottom: 4px;
+  margin-bottom: $space-2xs;
   text-transform: uppercase;
-  color: var(--wp-components-color-foreground, #1e1e1e);
+  color: var(--wp-components-color-foreground, $color-text-primary);
 }
 
 .alpaca-details-grid__value {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: $space-sm;
 }
 
 .alpaca-subissues-block .alpaca-details-grid__label {
-  margin-bottom: 10px;
+  margin-bottom: $space-md;
 }
 
 /* Labels cell styling (matches token field / assignee selector) */
@@ -62,16 +62,16 @@
   }
 
   .alpaca-label-pill {
-    margin-inline-end: 6px;
+    margin-inline-end: $space-xs;
   }
 }
 
 /* Ensure the default Assignee token field keeps the help paragraph below the input */
 .alpaca-details-grid p.components-form-token-field__help {
   display: block;
-  margin-top: 6px;
-  color: $greytext;
-  font-size: 13px;
+  margin-top: $space-xs;
+  color: $color-text-muted;
+  font-size: $font-size-sm;
 }
 
 /* Make the token-field itself take full width inside the details grid */
@@ -91,29 +91,29 @@
   position: relative;
 }
 
-.components-form-token-field__suggestions,
-.components-form-token-field__suggestions-list {
+.alpaca-details-grid__item .components-form-token-field__suggestions,
+.alpaca-details-grid__item .components-form-token-field__suggestions-list {
   position: absolute;
   top: 100%;
-  left: -1px;
-  right: -1px;
+  inset-inline: -1px;
   z-index: 1000;
-  background: $bgwhite;
-  border: 1px solid $greyborder;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
-  max-height: 240px;
+  background: $color-white;
+  border: 1px solid $color-border;
+  box-shadow: 0 0.375rem 1.125rem rgb(0 0 0 / 12%);
+  max-height: 15rem;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
-  padding: 4px 0;
+  padding: $space-2xs 0;
 }
-.components-form-token-field__suggestions li,
-.components-form-token-field__suggestions-list li,
-.components-form-token-field__suggestion {
+
+.alpaca-details-grid__item .components-form-token-field__suggestions li,
+.alpaca-details-grid__item .components-form-token-field__suggestions-list li,
+.alpaca-details-grid__item .components-form-token-field__suggestion {
   list-style: none;
-  padding: 8px 12px;
+  padding: $space-sm $space-lg;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: $space-sm;
   cursor: pointer;
   color: inherit;
 }
@@ -130,52 +130,57 @@
 .alpaca-assignee-suggestion-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  min-height: 24px;
+  gap: $space-sm;
+  min-height: $size-icon-xl;
 }
 
 .alpaca-assignee-suggestion-avatar {
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
+  width: $size-icon-lg;
+  height: $size-icon-lg;
+  border-radius: $radius-round;
   display: block;
-  flex: 0 0 20px;
+  flex: 0 0 $size-icon-lg;
 }
 
 .alpaca-assignee-suggestion-avatar-fallback {
-  color: $greytext;
-  font-size: 14px;
-  line-height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: $color-text-muted;
+  width: $size-icon-lg;
+  height: $size-icon-lg;
+  font-size: $font-size-sm;
+  line-height: $line-height-reset;
   text-align: center;
 }
 
 .alpaca-assignee-suggestion-name {
   color: inherit;
-  line-height: 1.25;
+  line-height: $line-height-heading;
 }
 
 /* Style selected FormTokenField tokens like alpaca label pills. */
 .alpaca-issue-labels-cell {
   .components-form-token-field__token {
-    --alpaca-label-token-color: #172b4d;
+    --alpaca-label-token-color: #{$color-label-default};
     align-items: center;
     background: var(--alpaca-label-token-color);
     border: none;
-    border-radius: $common-radius;
+    border-radius: $radius-lg;
     box-sizing: border-box;
-    color: #fff;
+    color: $color-white;
     display: inline-flex;
-    gap: 4px;
-    height: 24px;
+    gap: $space-2xs;
+    height: $size-icon-xl;
     margin: 0;
     max-width: 100%;
-    padding: 0 4px 0 6px;
+    padding: 0 $space-2xs 0 $space-xs;
   }
 
   .components-form-token-field__token-text {
     background: transparent;
     color: inherit;
-    line-height: 1;
+    line-height: $line-height-reset;
   }
 
   .components-form-token-field__remove-token {
@@ -193,7 +198,7 @@
 
   .components-form-token-field__remove-token:hover,
   .components-form-token-field__remove-token:focus {
-    background: rgb(255 255 255 / 14%);
+    background: rgb(255 255 255 / 85%)-muted;
     box-shadow: none;
     color: inherit;
   }
@@ -203,7 +208,7 @@
   }
 
   .components-form-token-field__token + .components-form-token-field__token {
-    margin-inline-start: 4px;
+    margin-inline-start: $space-2xs;
   }
 }
 
@@ -213,7 +218,7 @@
    */
   &.post-type-issue {
     .screenshot {
-      margin: 1rem 0 -1rem;
+      margin: $space-2xl 0 calc(-1 * $space-2xl);
 
       img {
         max-width: 100%;
@@ -223,40 +228,40 @@
   }
 
   .alpaca-modal {
-    background: $bgwhite;
+    background: $color-white;
     color: inherit;
 
     .small-wrapper {
-      padding: 0.8rem 0 1rem;
+      padding: $space-xl 0 $space-2xl;
     }
 
     small {
-      font-size: 12px;
+      font-size: $font-size-xs;
     }
 
     p {
       margin-top: 0;
-      margin-bottom: 1rem;
+      margin-bottom: $space-2xl;
     }
 
     button {
-      margin-right: 0.5rem;
+      margin-inline-end: $space-sm;
     }
   }
 
   /* Status pill (used in Issue meta and Search results). */
   .alpaca-search-status-pill {
     display: inline-block;
-    padding: 1px 8px;
-    border-radius: 999px;
-    border: 1px solid #b3b8bf;
-    background: $bgwhite;
-    color: #50575e;
-    font-size: 11px;
-    line-height: 1.4;
-    font-weight: 600;
+    padding: 1px $space-sm;
+    border-radius: $radius-pill;
+    border: 1px solid $color-border-control;
+    background: $color-white;
+    color: $color-text-secondary;
+    font-size: $font-size-xs;
+    line-height: $line-height-base;
+    font-weight: $font-weight-semibold;
     white-space: nowrap;
     vertical-align: baseline;
-    margin-inline-end: 8px;
+    margin-inline-end: $space-sm;
   }
 }

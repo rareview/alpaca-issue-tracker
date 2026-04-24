@@ -2,15 +2,13 @@
 
 /*
  * Media Queries
- *
- * todo: Move to suitable partials.
  */
-@media (width >=861px) {
+@media (width >= $breakpoint-board-desktop) {
   .wp-admin {
     #project-board {
       .alpaca-wrap {
         flex-direction: row;
-        padding: 5px 0 20px;
+        padding: $space-xs 0 $space-4xl;
         overflow-x: auto;
         overflow-y: hidden;
         -ms-overflow-style: none;
@@ -31,7 +29,7 @@
         height: 75vh;
         display: flex;
         flex: 1;
-        min-width: 250px;
+        min-width: 15.625rem;
         flex-direction: column;
 
         &.is-collapsed {
@@ -48,20 +46,20 @@
             }
 
             h2 {
-              margin: 5px 0;
+              margin: $space-xs 0;
             }
 
             input {
-              margin: 5px -1px;
+              margin: $space-xs calc(-1 * 1px);
             }
           }
         }
 
         .alpaca-items {
           overflow-y: auto;
-          padding: 10px 1px;
-          margin-top: -10px;
-          height: calc(75vh - 65px);
+          padding: $space-md 1px;
+          margin-top: -$space-md;
+          height: calc(75vh - 4.0625rem);
           -ms-overflow-style: none;
           scrollbar-width: none;
 
@@ -76,16 +74,49 @@
   }
 }
 
-@media (width <=860px) {
+@media (width <= $breakpoint-board-mobile) {
   .wp-admin {
     #project-board-controls {
       flex-direction: column;
       align-items: stretch;
+      gap: $space-lg;
       margin-block-end: 0;
 
+      > :first-child {
+        margin-inline-end: 0;
+      }
+
+      #project-board-controls-mount {
+        display: grid;
+        grid-template-columns: repeat(
+          auto-fit,
+          minmax(min(100%, 10rem), 1fr)
+        );
+        align-items: stretch;
+        gap: $space-sm;
+        inline-size: 100%;
+      }
+
+      #project-board-controls-mount > *,
+      .alpaca-board-filter-control,
+      .alpaca-inbox-control {
+        min-inline-size: 0;
+      }
+
+      .alpaca-board-control {
+        inline-size: 100%;
+        justify-content: flex-start;
+        min-inline-size: 0;
+      }
+
       .alpaca-board-search.alpaca-board-control {
+        grid-column: 1 / -1;
         inline-size: 100%;
         flex: 1 1 auto;
+      }
+
+      .alpaca-board-search .components-search-control {
+        inline-size: 100%;
       }
     }
 
@@ -95,7 +126,7 @@
       }
 
       .alpaca-container {
-        margin: 1em 0 0 0;
+        margin: $space-2xl 0 0 0;
         overflow-x: auto;
         display: flex;
         flex-direction: column;
@@ -112,7 +143,7 @@
         .alpaca-items {
           flex-direction: row;
           display: flex;
-          gap: $spacegap;
+          gap: $space-gap-inline;
           overflow-x: auto;
           align-items: stretch;
           -ms-overflow-style: none;
@@ -125,7 +156,7 @@
           }
 
           .alpaca-item {
-            width: 200px;
+            width: 12.5rem;
             min-height: 100%;
             flex-shrink: 0;
             display: flex;
@@ -137,11 +168,15 @@
               flex-direction: column;
             }
 
+            .alpaca-item-controls .dashicons-star-empty:not(:disabled) {
+              opacity: 0.3;
+            }
+
             .alpaca-item-assignees {
               &[data-assignees='1'] {
                 .alpaca-user .alpaca-user-name {
                   display: none;
-                  padding-left: 0;
+                  padding-inline-start: 0;
                 }
               }
             }

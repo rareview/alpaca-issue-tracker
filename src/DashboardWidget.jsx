@@ -133,7 +133,7 @@ const AlpacaDashboardWidget = memo(function AlpacaDashboardWidget({ data }) {
                           ) : null}
                         </td>
                         <td className="status">
-                          <span className="nowrap">
+                          <span className="alpaca-nowrap">
                             {issue.status && issue.status[0]
                               ? issue.status[0].name
                               : ''}

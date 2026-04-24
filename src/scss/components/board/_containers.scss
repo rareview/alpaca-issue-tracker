@@ -6,29 +6,30 @@
 .wp-admin {
   .alpaca-container {
     margin-block: 0;
-    margin-inline: 1px 10px;
-    background: $container-bg;
-    border-radius: 4px;
+    margin-inline: 1px $space-md;
+    background: $color-surface-subtle;
+    border-radius: $radius-sm;
     display: flex;
+    overflow: hidden;
 
     .alpaca-container-header,
     .alpaca-container-body {
-      padding-top: 5px;
-      padding-bottom: 5px;
+      padding-top: $space-xs;
+      padding-bottom: $space-xs;
     }
 
     .alpaca-container-header {
       display: grid;
       /* Reserve columns: title, item-count, controls */
-      grid-template-columns: auto 1fr 40px;
+      grid-template-columns: auto 1fr $size-control-xl;
       align-items: center;
       gap: 0;
 
       h2,
       .alpaca-container-title-input input {
         margin: 0;
-        font-size: $container-header-fontsize;
-        font-weight: $container-header-fontweight;
+        font-size: $font-size-lg;
+        font-weight: $font-weight-semibold;
         padding: 0;
         border: none;
         background: transparent;
@@ -55,16 +56,16 @@
         grid-column: 2;
         display: inline-flex;
         align-items: center;
-        margin: 0 6px 0 4px;
-        padding: 2px 4px 0 4px;
-        font-size: 0.95em;
-        font-weight: 400;
+        margin: 0 $space-xs 0 $space-2xs;
+        padding: $space-3xs $space-2xs 0 $space-2xs;
+        font-size: $font-size-sm;
+        font-weight: $font-weight-normal;
         opacity: 0.6;
         white-space: nowrap;
       }
 
       .alpaca-container-controls {
-        padding: 2px 0;
+        padding: $space-3xs 0;
         flex-direction: row;
 
         .components-button:focus:not(:disabled) {
@@ -72,9 +73,9 @@
         }
 
         button {
-          margin-left: 2px;
+          margin-inline-start: $space-3xs;
           opacity: 0.2;
-          transition: opacity 0.2s ease-in-out;
+          transition: opacity $duration-base ease-in-out;
 
           &:hover {
             opacity: 1;
@@ -96,6 +97,6 @@
   }
 
   .alpaca-items {
-    padding: 0 2px;
+    padding: 0 $space-3xs;
   }
 }

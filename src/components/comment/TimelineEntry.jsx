@@ -328,7 +328,7 @@ const TimelineEntry = ({
               />
             )}
           </div>
-          <div className="alpaca-timeline-msg-meta flexalign">
+          <div className="alpaca-timeline-msg-meta alpaca-flex-align">
             {headerActions && (
               <div className="alpaca-comment-buttons">{headerActions}</div>
             )}
@@ -342,7 +342,7 @@ const TimelineEntry = ({
     <div className={timelineItemClasses} data-source={dataSource}>
       <div className="alpaca-timeline-content">
         <div
-          className={`alpaca-comment-header flexalign${
+          className={`alpaca-comment-header alpaca-flex-align${
             showIssueTitle && issueTitle ? ' has-issue-title' : ''
           }`}
         >

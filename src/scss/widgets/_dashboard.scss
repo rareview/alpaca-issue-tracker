@@ -4,7 +4,7 @@
  * Dashboard Widget
  */
 #alpaca-dashboard-widget {
-  margin-top: -6px;
+  margin-top: -$space-xs;
 
   a {
     text-decoration: none;
@@ -18,30 +18,30 @@
     tr {
       &:first-child {
         th {
-          border-bottom: 1px solid $greyborder;
+          border-bottom: 1px solid $color-border;
         }
       }
 
       &:nth-child(even) {
-        background-color: $container-bg;
+        background-color: $color-surface-subtle;
       }
     }
 
     th,
     td {
-      padding: 8px 5px;
+      padding: $space-sm $space-xs;
       vertical-align: top;
       text-align: center;
       white-space: nowrap;
 
       &:first-child {
-        text-align: left;
+        text-align: start;
       }
     }
 
     th {
-      font-size: 13px;
-      font-weight: bold;
+      font-size: $font-size-sm;
+      font-weight: $font-weight-bold;
     }
 
     td {
@@ -53,15 +53,15 @@
       }
 
       &.high-priority {
-        width: 16px;
-        color: $priority-high-bg;
+        width: $size-icon-sm;
+        color: $color-priority-high;
       }
     }
   }
 
   .assignees {
     .alpaca-item-assignees {
-      @include alpaca-assignee-stack(18px, 0, 0, false, 0.8rem, 0.25rem);
+      @include alpaca-assignee-stack($size-icon-md, 0, 0, false, $font-size-xs, $space-2xs);
     }
   }
 }

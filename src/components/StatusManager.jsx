@@ -469,8 +469,8 @@ const StatusManager = ({
                       key="status-placeholder"
                     >
                       <SettingsListNameCell className="status-grid-cell">
-                        <div className="status-row-content flexalign">
-                          <div className="drag-handle flexalign" />
+                        <div className="status-row-content alpaca-flex-align">
+                          <div className="drag-handle alpaca-flex-align" />
                           <Button isTertiary className="placeholder-label">
                             {dragOverStatus.name}
                           </Button>
@@ -546,7 +546,7 @@ const StatusManager = ({
               <strong>{statusToDelete.name}</strong>&quot;?{' '}
               {__('This cannot be undone.', 'alpaca')}
             </p>
-            <div className="alpaca-actions flexalign">
+            <div className="alpaca-actions alpaca-flex-align">
               <Button variant="primary" isDestructive onClick={performDelete}>
                 {__('Delete', 'alpaca')}
               </Button>
@@ -628,10 +628,10 @@ const StatusRow = wp.element.forwardRef(
         style={{ opacity: isDragging ? 0.35 : 1 }}
       >
         <SettingsListNameCell className="status-grid-cell">
-          <div className="status-row-content flexalign">
+          <div className="status-row-content alpaca-flex-align">
             <div
               {...handleProps}
-              className="drag-handle flexalign"
+              className="drag-handle alpaca-flex-align"
               title={__('Drag to reorder', 'alpaca')}
             >
               <Icon name="drag-handle" style={{ verticalAlign: 'middle' }} />
