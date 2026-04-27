@@ -232,6 +232,11 @@ addAction(
       return;
     }
 
+    // If the comment was already created during issue creation, skip
+    if (submission.commentAlreadyCreated) {
+      return;
+    }
+
     const submittedText =
       typeof submission.feedback === 'string' ? submission.feedback.trim() : '';
     const fallbackTitle =

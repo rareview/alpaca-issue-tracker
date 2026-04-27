@@ -4,32 +4,14 @@ import { fetchIssueCommentCount } from '../services/issueApi';
 import useAutoExpandTextarea from '../hooks/useAutoExpandTextarea';
 import TimelineEntry, { injectAvatarStyles } from './comment/TimelineEntry';
 
-const {
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-  memo,
-  createInterpolateElement,
-} = wp.element;
+const { useState, useEffect, useRef, useCallback, memo } = wp.element;
 const { __, _n, sprintf } = wp.i18n;
-const {
-  Button,
-  Modal,
-  Dropdown,
-  MenuGroup,
-  MenuItem,
-  Tooltip,
-  FormFileUpload,
-  DropZone,
-} = wp.components;
+const { Button, Modal, Dropdown, MenuGroup, MenuItem, Tooltip } = wp.components;
 import { getCookie, setCookie } from '../utils/cookies';
 import { marked } from 'marked';
 import { sanitizeHtml } from '../utils/sanitize';
 import Lightbox from './issue/Lightbox';
-import { Attachment } from './issue/AttachmentRow';
-import { uploadIssueAttachment } from '../utils/attachmentUpload';
-import MentionsTextarea from './notifications/MentionsTextarea';
+import CommentForm from './CommentForm';
 
 const deleteCommentAttachment = async (url, issueId, commentId = null) => {
   if (!url || !issueId) {
@@ -60,147 +42,6 @@ const deleteCommentAttachment = async (url, issueId, commentId = null) => {
   }
 };
 
-const AttachmentControls = ({
-  children,
-  attachments,
-  onDrop,
-  onUpload,
-  onRemove,
-  onClick,
-  isSubmitting,
-  isProcessing,
-  actions,
-  pendingAltText,
-}) => {
-  const [showHelp, setShowHelp] = useState(false);
-
-  return (
-    <>
-      <div className="alpaca-comment-dropzone">
-        {children}
-        <DropZone onFilesDrop={onDrop} />
-      </div>
-      {attachments.length > 0 && (
-        <div className="alpaca-attachments-wrapper alpaca-comment-attachments alpaca-comment-attachments--pending">
-          {attachments.map((attachment) => (
-            <Attachment
-              key={attachment.id}
-              attachment={attachment}
-              onAttachmentClick={onClick}
-              onAttachmentDelete={() => onRemove(attachment.id)}
-              isLoading={isSubmitting || isProcessing}
-              showDelete
-              altText={pendingAltText}
-            />
-          ))}
-        </div>
-      )}
-      <div className="alpaca-comment-form-actions">
-        <FormFileUpload
-          icon="paperclip"
-          multiple
-          onChange={onUpload}
-          disabled={isSubmitting || isProcessing}
-          __next40pxDefaultSize
-          __nextHasNoMarginBottom
-        >
-          {isProcessing
-            ? __('Uploading…', 'alpaca')
-            : __('Attach Files', 'alpaca')}
-        </FormFileUpload>
-
-        <Tooltip text={__('Commenting Tips', 'alpaca')}>
-          <Button
-            variant="tertiary"
-            icon="info-outline"
-            onClick={() => setShowHelp(true)}
-            disabled={isSubmitting}
-          />
-        </Tooltip>
-
-        {actions}
-      </div>
-
-      {showHelp && (
-        <Modal
-          title={__('Commenting Tips', 'alpaca')}
-          onRequestClose={() => setShowHelp(false)}
-          className="alpaca-modal"
-        >
-          <div className="alpaca-help-content">
-            {(() => {
-              const defaultTips = [
-                {
-                  text: __(
-                    'Type <kbd>@</kbd> and select a user to notify.',
-                    'alpaca',
-                  ),
-                  placeholders: { kbd: <kbd /> },
-                },
-                {
-                  text: __(
-                    'Basic Markdown is supported: <code>**bold**</code>, <code>*italic*</code>, <code>`code`</code>, <code>- lists</code>, etc.',
-                    'alpaca',
-                  ),
-                  placeholders: { code: <code /> },
-                },
-                {
-                  text: __(
-                    'You can click <strong>Attach Files</strong> to upload an attachment, or simply drag and drop files into the comment area.',
-                    'alpaca',
-                  ),
-                  placeholders: { strong: <strong /> },
-                },
-              ];
-
-              // Allow third-party plugins to add or modify tips.
-              const tips = wp.hooks.applyFilters(
-                'alpaca.commentingTips',
-                defaultTips,
-              );
-
-              return (
-                <ul>
-                  {Array.isArray(tips)
-                    ? tips.map((tip, idx) => (
-                        <li key={idx}>
-                          {createInterpolateElement(
-                            tip.text || '',
-                            tip.placeholders || {},
-                          )}
-                        </li>
-                      ))
-                    : null}
-                </ul>
-              );
-            })()}
-          </div>
-        </Modal>
-      )}
-    </>
-  );
-};
-
-AttachmentControls.propTypes = {
-  children: PropTypes.node.isRequired,
-  attachments: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      url: PropTypes.string.isRequired,
-      name: PropTypes.string,
-      mime: PropTypes.string,
-    }),
-  ).isRequired,
-  onDrop: PropTypes.func.isRequired,
-  onUpload: PropTypes.func.isRequired,
-  onRemove: PropTypes.func.isRequired,
-  onClick: PropTypes.func.isRequired,
-  isSubmitting: PropTypes.bool.isRequired,
-  isProcessing: PropTypes.bool.isRequired,
-  actions: PropTypes.node.isRequired,
-  pendingAltText: PropTypes.string.isRequired,
-};
-
 /*
  * Comment component for displaying individual comments.
  *
@@ -213,14 +54,8 @@ AttachmentControls.propTypes = {
  * @param {Function} props.setEditingContent        - Set editing content function
  * @param {Object}   props.editingRef               - Ref for editing textarea
  * @param {Function} props.saveEdit                 - Save edit function
- * @param {Function} props.cancelEditing            - Cancel editing function
  * @param {boolean}  props.isSubmitting             - Is submitting flag
  * @param {Function} props.onAttachmentClick        - Attachment click handler
- * @param {Array}    props.editingAttachments       - Editing attachments
- * @param {Function} props.onEditAttachFiles        - Handle edit attachment upload
- * @param {Function} props.onEditAttachDrop         - Handle edit attachment drop
- * @param {Function} props.onEditAttachRemove       - Handle edit attachment removal
- * @param {boolean}  props.isProcessingAttachments  - Attachment processing flag
  * @return {JSX.Element} Comment component
  */
 
@@ -236,16 +71,10 @@ const Comment = memo(
     setEditingContent,
     editingRef,
     saveEdit,
-    cancelEditing,
     isSubmitting,
     currentUser,
     userCanManageOptions,
     onAttachmentClick,
-    editingAttachments,
-    onEditAttachFiles,
-    onEditAttachDrop,
-    onEditAttachRemove,
-    isProcessingAttachments,
   }) => {
     const commentAgentType = (
       comment?.author_user_agent ||
@@ -338,38 +167,21 @@ const Comment = memo(
           ) : null
         }
         editBody={
-          <AttachmentControls
-            attachments={editingAttachments}
-            onDrop={onEditAttachDrop}
-            onUpload={onEditAttachFiles}
-            onRemove={onEditAttachRemove}
-            onClick={onAttachmentClick}
+          <CommentForm
+            value={editingContent}
+            onChange={setEditingContent}
+            placeholder={__('Edit comment…', 'alpaca')}
+            textareaRef={editingRef}
+            disabled={isSubmitting}
             isSubmitting={isSubmitting}
-            isProcessing={isProcessingAttachments}
-            pendingAltText={__('Pending comment attachment', 'alpaca')}
-            actions={
-              <>
-                <Button onClick={cancelEditing} disabled={isSubmitting}>
-                  {__('Cancel', 'alpaca')}
-                </Button>
-                <Button
-                  isPrimary
-                  onClick={() => saveEdit(comment.id)}
-                  disabled={isSubmitting || isProcessingAttachments}
-                >
-                  {__('Save', 'alpaca')}
-                </Button>
-              </>
-            }
-          >
-            <MentionsTextarea
-              value={editingContent}
-              onChange={setEditingContent}
-              textareaRef={editingRef}
-              placeholder={__('Edit comment…', 'alpaca')}
-              disabled={isSubmitting}
-            />
-          </AttachmentControls>
+            issueId={comment.post}
+            showNotification={() => {}}
+            onSubmit={(text) => {
+              setEditingContent(text);
+              saveEdit(comment.id);
+            }}
+            submitButtonText={__('Save', 'alpaca')}
+          />
         }
       />
     );
@@ -396,7 +208,6 @@ Comment.propTypes = {
   setEditingContent: PropTypes.func.isRequired,
   editingRef: PropTypes.object,
   saveEdit: PropTypes.func.isRequired,
-  cancelEditing: PropTypes.func.isRequired,
   isSubmitting: PropTypes.bool,
   currentUser: PropTypes.object,
   userCanManageOptions: PropTypes.bool.isRequired,
@@ -426,13 +237,6 @@ const Commenting = ({
   const [currentUser, setCurrentUser] = useState(null);
   const [newComment, setNewComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isProcessingAttachments, setIsProcessingAttachments] = useState(false);
-  const [pendingAttachments, setPendingAttachments] = useState([]);
-  const [editingAttachments, setEditingAttachments] = useState([]);
-  const [editingOriginalAttachmentIds, setEditingOriginalAttachmentIds] =
-    useState([]);
-  const [editingRemovedAttachmentUrls, setEditingRemovedAttachmentUrls] =
-    useState([]);
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editingContent, setEditingContent] = useState('');
   const [deleteCommentId, setDeleteCommentId] = useState(null);
@@ -520,129 +324,113 @@ const Commenting = ({
       wp.hooks.removeAction('alpaca.commentCountChanged', 'alpaca/commenting');
   }, [issueId, fetchComments]);
 
-  const handleCommentSubmit = useCallback(() => {
-    if (!newComment.trim()) {
-      showNotification(
-        __('Please add a comment before submitting.', 'alpaca'),
-        'error',
-      );
-      return;
-    }
-    setIsSubmitting(true);
-
-    const processedOptimisticContent = injectAvatarStyles(
-      sanitizeHtml(marked(newComment)),
-    );
-    const attachmentUrls = pendingAttachments.map(
-      (attachment) => attachment.url,
-    );
-    const hasAttachmentUrls = attachmentUrls.length > 0;
-
-    const optimisticMeta = hasAttachmentUrls
-      ? {
-          alpacaCommentAttachments: attachmentUrls,
-        }
-      : {};
-
-    const createMeta = hasAttachmentUrls
-      ? {
-          alpacaCommentAttachments: attachmentUrls,
-        }
-      : {};
-
-    const optimisticComment = {
-      id: Date.now(),
-      content: { raw: newComment, rendered: processedOptimisticContent },
-      _embedded: { author: currentUser },
-      date: new Date().toISOString(),
-      author_user_agent: 'human',
-      meta: optimisticMeta,
-    };
-    setComments((prev) => [optimisticComment, ...prev]);
-
-    wp.apiFetch({
-      path: `/wp/v2/comments`,
-      method: 'POST',
-      data: {
-        content: newComment,
-        post: issueId,
-        comment_type: 'issuecomment',
-        author_user_agent: 'human',
-        meta: createMeta,
-      },
-    })
-      .then((created) => {
-        const createdComment =
-          created && created.meta
-            ? created
-            : {
-                ...created,
-                meta: {
-                  ...(created && created.meta ? created.meta : {}),
-                  ...createMeta,
-                },
-              };
-
-        setComments((prev) =>
-          prev.map((c) => (c.id === optimisticComment.id ? createdComment : c)),
-        );
-        wp.hooks.doAction(
-          'alpaca.commentPosted',
-          wp.hooks.applyFilters('alpaca.commentObject', createdComment),
-        );
-
-        fetchIssueCommentCount(issueId).then((response) => {
-          if (response?.comment_count !== undefined) {
-            wp.hooks.doAction('alpaca.commentCountChanged', {
-              issueId: issueId.toString(),
-              newCount: response.comment_count,
-              newCountByAgent: response.comment_count_by_agent || null,
-            });
-            wp.hooks.doAction('alpaca.lastActivityChanged', {
-              issueId: issueId.toString(),
-              lastActivity:
-                typeof response.last_activity !== 'undefined'
-                  ? response.last_activity
-                  : new Date().toISOString(),
-            });
-          }
-        });
-        setNewComment('');
-        setPendingAttachments([]);
-      })
-      .catch((err) => {
-        console.error(err);
-        setComments((prev) =>
-          prev.filter((c) => c.id !== optimisticComment.id),
-        );
+  const handleCommentSubmit = useCallback(
+    async (commentText, attachments) => {
+      if (!commentText.trim()) {
         showNotification(
-          `${__('Failed to submit comment:', 'alpaca')} ${err.message || __('Unknown error', 'alpaca')}`,
+          __('Please add a comment before submitting.', 'alpaca'),
+          'error',
         );
+        return;
+      }
+      setIsSubmitting(true);
+
+      const processedOptimisticContent = injectAvatarStyles(
+        sanitizeHtml(marked(commentText)),
+      );
+      const attachmentUrls = attachments.map((attachment) => attachment.url);
+      const hasAttachmentUrls = attachmentUrls.length > 0;
+
+      const optimisticMeta = hasAttachmentUrls
+        ? {
+            alpacaCommentAttachments: attachmentUrls,
+          }
+        : {};
+
+      const createMeta = hasAttachmentUrls
+        ? {
+            alpacaCommentAttachments: attachmentUrls,
+          }
+        : {};
+
+      const optimisticComment = {
+        id: Date.now(),
+        content: { raw: commentText, rendered: processedOptimisticContent },
+        _embedded: { author: currentUser },
+        date: new Date().toISOString(),
+        author_user_agent: 'human',
+        meta: optimisticMeta,
+      };
+      setComments((prev) => [optimisticComment, ...prev]);
+
+      wp.apiFetch({
+        path: `/wp/v2/comments`,
+        method: 'POST',
+        data: {
+          content: commentText,
+          post: issueId,
+          comment_type: 'issuecomment',
+          author_user_agent: 'human',
+          meta: createMeta,
+        },
       })
-      .finally(() => setIsSubmitting(false));
-  }, [newComment, currentUser, issueId, showNotification, pendingAttachments]);
+        .then((created) => {
+          const createdComment =
+            created && created.meta
+              ? created
+              : {
+                  ...created,
+                  meta: {
+                    ...(created && created.meta ? created.meta : {}),
+                    ...createMeta,
+                  },
+                };
+
+          setComments((prev) =>
+            prev.map((c) =>
+              c.id === optimisticComment.id ? createdComment : c,
+            ),
+          );
+          wp.hooks.doAction(
+            'alpaca.commentPosted',
+            wp.hooks.applyFilters('alpaca.commentObject', createdComment),
+          );
+
+          fetchIssueCommentCount(issueId).then((response) => {
+            if (response?.comment_count !== undefined) {
+              wp.hooks.doAction('alpaca.commentCountChanged', {
+                issueId: issueId.toString(),
+                newCount: response.comment_count,
+                newCountByAgent: response.comment_count_by_agent || null,
+              });
+              wp.hooks.doAction('alpaca.lastActivityChanged', {
+                issueId: issueId.toString(),
+                lastActivity:
+                  typeof response.last_activity !== 'undefined'
+                    ? response.last_activity
+                    : new Date().toISOString(),
+              });
+            }
+          });
+          setNewComment('');
+        })
+        .catch((err) => {
+          console.error(err);
+          setComments((prev) =>
+            prev.filter((c) => c.id !== optimisticComment.id),
+          );
+          showNotification(
+            `${__('Failed to submit comment:', 'alpaca')} ${err.message || __('Unknown error', 'alpaca')}`,
+          );
+        })
+        .finally(() => setIsSubmitting(false));
+    },
+    [currentUser, issueId, showNotification],
+  );
 
   const startEditing = useCallback((comment) => {
     setEditingCommentId(comment.id);
     setEditingContent(comment.content.raw || comment.content.rendered || '');
-    const existingAttachments = comment.meta?.alpacaCommentAttachments || [];
-    setEditingRemovedAttachmentUrls([]);
-    const formattedAttachments = existingAttachments.map((url, index) => ({
-      id: `${comment.id}-${index}`,
-      url,
-    }));
-    setEditingOriginalAttachmentIds(
-      formattedAttachments.map((attachment) => attachment.id),
-    );
-    setEditingAttachments(formattedAttachments);
-  }, []);
-
-  const cancelEditing = useCallback(() => {
-    setEditingCommentId(null);
-    setEditingContent('');
-    setEditingAttachments([]);
-    setEditingOriginalAttachmentIds([]);
-    setEditingRemovedAttachmentUrls([]);
   }, []);
 
   const saveEdit = useCallback(
@@ -661,59 +449,23 @@ const Commenting = ({
           currentUser?.name ||
           __('Unknown', 'alpaca'),
       };
-      const attachmentUrls = editingAttachments
-        .map((attachment) => attachment.url)
-        .filter((url) => !editingRemovedAttachmentUrls.includes(url));
-      const attachmentMeta = {
-        alpacaCommentAttachments: attachmentUrls,
-      };
-      const removedUrls = [...editingRemovedAttachmentUrls];
 
-      const performSave = () =>
-        wp.apiFetch({
-          path: `/wp/v2/comments/${commentId}`,
-          method: 'POST',
-          data: {
-            content: editingContent,
-            author_user_agent: agent,
-            meta: {
-              ...attachmentMeta,
-              alpacaCommentLastEdit: lastEditedMeta,
-            },
+      wp.apiFetch({
+        path: `/wp/v2/comments/${commentId}`,
+        method: 'POST',
+        data: {
+          content: editingContent,
+          author_user_agent: agent,
+          meta: {
+            alpacaCommentLastEdit: lastEditedMeta,
           },
-        });
-
-      const deleteRemovedAttachments =
-        removedUrls.length > 0
-          ? Promise.allSettled(
-              removedUrls.map((url) =>
-                deleteCommentAttachment(url, issueId, commentId),
-              ),
-            )
-          : Promise.resolve([]);
-
-      deleteRemovedAttachments
-        .then((results) => {
-          const failedCount = results.filter(
-            (result) => result.status === 'rejected',
-          ).length;
-
-          if (failedCount > 0) {
-            showNotification(
-              __('Failed to delete one or more attachments.', 'alpaca'),
-              'error',
-            );
-            throw new Error('attachment_delete_failed');
-          }
-
-          return performSave();
-        })
+        },
+      })
         .then((updated) => {
           const updatedComment = {
             ...(updated || {}),
             meta: {
               ...(updated && updated.meta ? updated.meta : {}),
-              ...attachmentMeta,
               alpacaCommentLastEdit: lastEditedMeta,
             },
           };
@@ -723,17 +475,10 @@ const Commenting = ({
           );
           setEditingCommentId(null);
           setEditingContent('');
-          setEditingAttachments([]);
-          setEditingOriginalAttachmentIds([]);
-          setEditingRemovedAttachmentUrls([]);
 
           wp.hooks.doAction('alpaca.commentUpdated', updatedComment);
         })
         .catch((err) => {
-          if ('attachment_delete_failed' === err?.message) {
-            return;
-          }
-
           console.error(err);
           showNotification(
             `${__('Failed to update comment:', 'alpaca')} ${err.message || __('Unknown error', 'alpaca')}`,
@@ -741,15 +486,7 @@ const Commenting = ({
         })
         .finally(() => setIsSubmitting(false));
     },
-    [
-      editingContent,
-      comments,
-      showNotification,
-      editingAttachments,
-      editingRemovedAttachmentUrls,
-      currentUser,
-      issueId,
-    ],
+    [editingContent, comments, showNotification, currentUser],
   );
 
   const confirmDeleteComment = useCallback(
@@ -818,162 +555,6 @@ const Commenting = ({
       });
   }, [deleteCommentId, comments, issueId, showNotification]);
 
-  const handleAttachmentFiles = useCallback(
-    async (files, onSuccess) => {
-      if (!files || files.length === 0 || !issueId) return;
-
-      const incomingFiles = Array.from(files);
-      setIsProcessingAttachments(true);
-
-      try {
-        const results = await Promise.allSettled(
-          incomingFiles.map((file) => uploadIssueAttachment(file, issueId)),
-        );
-
-        const uploaded = results
-          .filter((result) => result.status === 'fulfilled')
-          .map((result) => result.value);
-        const failedCount = results.filter(
-          (result) => result.status === 'rejected',
-        ).length;
-
-        if (failedCount > 0) {
-          showNotification(
-            __('Failed to upload one or more attachments.', 'alpaca'),
-            'error',
-          );
-        }
-
-        if (uploaded.length > 0 && typeof onSuccess === 'function') {
-          onSuccess(uploaded);
-        }
-      } catch (error) {
-        console.error('Failed to upload attachments', error);
-        showNotification(
-          __('Failed to upload one or more attachments.', 'alpaca'),
-          'error',
-        );
-      } finally {
-        setIsProcessingAttachments(false);
-      }
-    },
-    [showNotification, issueId],
-  );
-
-  const handleAttachmentUpload = useCallback(
-    (event) => {
-      handleAttachmentFiles(event.target.files, (processed) => {
-        setPendingAttachments((prev) => [...prev, ...processed]);
-      });
-      event.target.value = null;
-    },
-    [handleAttachmentFiles],
-  );
-
-  const handleEditAttachmentUpload = useCallback(
-    (event) => {
-      handleAttachmentFiles(event.target.files, (processed) => {
-        setEditingAttachments((prev) => [...prev, ...processed]);
-      });
-      event.target.value = null;
-    },
-    [handleAttachmentFiles],
-  );
-
-  const handleEditAttachmentDrop = useCallback(
-    (files) => {
-      handleAttachmentFiles(files, (processed) => {
-        setEditingAttachments((prev) => [...prev, ...processed]);
-      });
-    },
-    [handleAttachmentFiles],
-  );
-
-  const handlePendingAttachmentDrop = useCallback(
-    (files) => {
-      handleAttachmentFiles(files, (processed) => {
-        setPendingAttachments((prev) => [...prev, ...processed]);
-      });
-    },
-    [handleAttachmentFiles],
-  );
-
-  const removePendingAttachment = useCallback(
-    async (attachmentId) => {
-      const attachment = pendingAttachments.find(
-        (item) => item.id === attachmentId,
-      );
-
-      if (attachment?.url) {
-        try {
-          await deleteCommentAttachment(attachment.url, issueId);
-        } catch (error) {
-          console.error('Failed to delete attachment', error);
-          showNotification(
-            __('Failed to delete attachment.', 'alpaca'),
-            'error',
-          );
-          return;
-        }
-      }
-
-      setPendingAttachments((prev) =>
-        prev.filter((item) => item.id !== attachmentId),
-      );
-    },
-    [pendingAttachments, issueId, showNotification],
-  );
-
-  const removeEditingAttachment = useCallback(
-    async (attachmentId) => {
-      const attachment = editingAttachments.find(
-        (item) => item.id === attachmentId,
-      );
-
-      if (attachment?.url) {
-        const isOriginalAttachment = editingOriginalAttachmentIds.includes(
-          attachment.id,
-        );
-
-        if (isOriginalAttachment) {
-          setEditingRemovedAttachmentUrls((prev) => {
-            if (prev.includes(attachment.url)) {
-              return prev;
-            }
-
-            return [...prev, attachment.url];
-          });
-        } else {
-          try {
-            await deleteCommentAttachment(
-              attachment.url,
-              issueId,
-              editingCommentId,
-            );
-          } catch (error) {
-            console.error('Failed to delete attachment', error);
-            showNotification(
-              __('Failed to delete attachment.', 'alpaca'),
-              'error',
-            );
-            return;
-          }
-        }
-      }
-
-      setEditingAttachments((prev) =>
-        prev.filter((item) => item.id !== attachmentId),
-      );
-    },
-    [
-      editingAttachments,
-      editingCommentId,
-      editingOriginalAttachmentIds,
-      issueId,
-      showNotification,
-    ],
-  );
-
   const handleLightboxClose = useCallback(() => setLightboxSrc(null), []);
 
   return (
@@ -987,39 +568,18 @@ const Commenting = ({
       </div>
 
       <div id="alpaca-comments">
-        <div className="alpaca-comment-form" data-source="human">
-          <div className="alpaca-timeline-content">
-            <AttachmentControls
-              attachments={pendingAttachments}
-              onDrop={handlePendingAttachmentDrop}
-              onUpload={handleAttachmentUpload}
-              onRemove={removePendingAttachment}
-              onClick={setLightboxSrc}
-              isSubmitting={isSubmitting}
-              isProcessing={isProcessingAttachments}
-              pendingAltText={__('Pending comment attachment', 'alpaca')}
-              actions={
-                <Button
-                  isPrimary
-                  onClick={handleCommentSubmit}
-                  disabled={isSubmitting || isProcessingAttachments}
-                >
-                  {isSubmitting
-                    ? __('Submitting…', 'alpaca')
-                    : __('Submit Comment', 'alpaca')}
-                </Button>
-              }
-            >
-              <MentionsTextarea
-                placeholder={__('Add a comment…', 'alpaca')}
-                value={newComment}
-                onChange={setNewComment}
-                textareaRef={newCommentRef}
-                disabled={isSubmitting}
-              />
-            </AttachmentControls>
-          </div>
-        </div>
+        <CommentForm
+          value={newComment}
+          onChange={setNewComment}
+          placeholder={__('Add a comment…', 'alpaca')}
+          textareaRef={newCommentRef}
+          disabled={isSubmitting}
+          isSubmitting={isSubmitting}
+          issueId={issueId}
+          showNotification={showNotification}
+          onSubmit={handleCommentSubmit}
+          submitButtonText={__('Submit Comment', 'alpaca')}
+        />
 
         {isLoadingComments && (
           <p className="alpaca-loading">{__('Loading comments…', 'alpaca')}</p>
@@ -1038,30 +598,10 @@ const Commenting = ({
               setEditingContent={setEditingContent}
               editingRef={editingRef}
               saveEdit={saveEdit}
-              cancelEditing={cancelEditing}
               isSubmitting={isSubmitting}
               currentUser={currentUser}
               userCanManageOptions={userCanManageOptions}
               onAttachmentClick={setLightboxSrc}
-              editingAttachments={
-                editingCommentId === comment.id ? editingAttachments : []
-              }
-              onEditAttachFiles={
-                editingCommentId === comment.id
-                  ? handleEditAttachmentUpload
-                  : () => {}
-              }
-              onEditAttachDrop={
-                editingCommentId === comment.id
-                  ? handleEditAttachmentDrop
-                  : () => {}
-              }
-              onEditAttachRemove={
-                editingCommentId === comment.id
-                  ? removeEditingAttachment
-                  : () => {}
-              }
-              isProcessingAttachments={isProcessingAttachments}
             />
           ))}
         </div>

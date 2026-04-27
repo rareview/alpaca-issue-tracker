@@ -1313,13 +1313,13 @@ export function AlpacaBoard() {
         id: createdIssue.id.toString(),
         slug: createdIssue.slug || '',
         content: createdIssue.title,
+        postDate: createdIssue.postDate || new Date().toISOString(),
         assignees: createdIssue.assignees || [],
         labels: createdIssue.labels || [],
-        commentCount: 1,
-        commentCountByAgent: {
-          create: 1,
-        },
+        commentCount: Number(createdIssue.commentCount) || 0,
+        commentCountByAgent: createdIssue.commentCountByAgent || null,
         meta: {
+          lastActivity: createdIssue.lastActivity || new Date().toISOString(),
           deadline: createdIssue.deadline ? [createdIssue.deadline] : undefined,
           // eslint-disable-next-line camelcase
           alpaca_high_priority: createdIssue.isHighPriority ? '1' : undefined,
@@ -1385,7 +1385,10 @@ export function AlpacaBoard() {
             labels: issue.labels || [],
             commentCount: issue.comment_count ?? 0,
             commentCountByAgent: issue.comment_count_by_agent || null,
-            meta: issue.meta || {},
+            meta: {
+              ...(issue.meta || {}),
+              lastActivity: new Date().toISOString(),
+            },
           };
 
           // Add new issue to the top of the container for immediate UI update

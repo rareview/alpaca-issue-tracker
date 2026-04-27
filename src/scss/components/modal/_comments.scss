@@ -55,61 +55,61 @@
       }
     }
 
-    .alpaca-comment-form {
-      border: 1px solid $greyborder;
-      border-radius: $common-radius;
-
-      button {
-        margin-bottom: 8px;
-      }
-
-      textarea {
-        border: none !important;
-        outline: none !important;
-        box-shadow: none !important;
-      }
-
-      .alpaca-user {
-        top: -1px; // Needed, not sure why
-      }
-
-      .alpaca-comment-dropzone {
-        position: relative;
-      }
-
-      .alpaca-comment-dropzone .components-drop-zone {
-        border: 2px dashed $greyborder;
-        border-radius: $common-radius;
-        position: absolute;
-        inset: 0;
-        background: rgba(255, 255, 255, 0.85);
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.2s ease-in-out;
-
-        &::after {
-          content: 'Drop images to attach';
-          position: absolute;
-          inset: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: $greytext;
-          font-size: $smallfont;
-          letter-spacing: 0.02em;
-        }
-      }
-
-      .alpaca-comment-dropzone .components-drop-zone.is-active,
-      .alpaca-comment-dropzone .components-drop-zone.is-dragging {
-        opacity: 1;
-        pointer-events: auto;
-      }
-    }
-
     .components-textarea-control__input {
       line-height: 1.5em;
       margin-top: 0;
+    }
+  }
+
+  .alpaca-comment-form {
+    border: 1px solid $greyborder;
+    border-radius: $common-radius;
+
+    button {
+      margin-bottom: 8px;
+    }
+
+    textarea {
+      border: none !important;
+      outline: none !important;
+      box-shadow: none !important;
+    }
+
+    .alpaca-user {
+      top: -1px; // Needed, not sure why
+    }
+
+    .alpaca-comment-dropzone {
+      position: relative;
+    }
+
+    .alpaca-comment-dropzone .components-drop-zone {
+      border: 2px dashed $greyborder;
+      border-radius: $common-radius;
+      position: absolute;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.85);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease-in-out;
+
+      &::after {
+        content: 'Drop images to attach';
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: $greytext;
+        font-size: $smallfont;
+        letter-spacing: 0.02em;
+      }
+    }
+
+    .alpaca-comment-dropzone .components-drop-zone.is-active,
+    .alpaca-comment-dropzone .components-drop-zone.is-dragging {
+      opacity: 1;
+      pointer-events: auto;
     }
   }
 
