@@ -3,6 +3,10 @@ import { dataUrlToFile, uploadIssueAttachment } from './utils/attachmentUpload';
 import { useTestLogger } from './utils/testLogger.js';
 import Icon from './components/icons/Icon';
 import { buildAlpacaRestUrl, getAlpacaRestRoot } from './utils/restApiRoot.js';
+import {
+  ensureAlpacaReportContext,
+  getAlpacaReportContext,
+} from './utils/reportContext.js';
 
 const { __ } = wp.i18n;
 const { Button, TextareaControl, Spinner, ToggleControl } = wp.components;
@@ -108,8 +112,9 @@ const AlpacaToolbar = () => {
     setMessage('');
 
     try {
-      const server = JSON.parse(atob(alpacaDataDump.env));
       setStatus('submitting');
+      const reportContext = await ensureAlpacaReportContext();
+      const server = JSON.parse(atob(reportContext.env));
 
       let screenshot = '';
       try {
@@ -125,9 +130,9 @@ const AlpacaToolbar = () => {
           includeContext: true, // Always include context
           isHighPriority,
         },
-        client: alpacaDataDump.device,
+        client: reportContext.device || getAlpacaReportContext().device,
         screenshot: '',
-        errors: alpacaDataDump.errors,
+        errors: reportContext.errors || getAlpacaReportContext().errors || [],
       };
 
       const payload = { ...submitted, ...server };
