@@ -1047,28 +1047,27 @@ const AlpacaIssue = ({
 
     setLoading('title', true);
     try {
-      const server = {};
-      if (typeof alpacaDataDump !== 'undefined' && alpacaDataDump.env) {
-        try {
-          const loadedServer = JSON.parse(atob(alpacaDataDump.env));
-          Object.assign(server, loadedServer);
-        } catch (e) {
-          // Ignore parse errors
-        }
-      }
-
-      const payload = {
+      const basePayload = {
         userinput: {
           feedback: editedTitle,
           includeContext: false, // Board issues don't need browser context
           isHighPriority,
         },
-        client:
-          typeof alpacaDataDump !== 'undefined' ? alpacaDataDump.device : {},
+        client: {},
         errors: [],
         screenshot: '',
-        ...server,
       };
+
+      const payload = wp.hooks.applyFilters(
+        'alpaca.issue.createPayload',
+        basePayload,
+        {
+          source: 'board',
+          isCreating,
+          issueTitle: editedTitle,
+          isHighPriority,
+        },
+      );
 
       const response = await createIssue(payload);
 
