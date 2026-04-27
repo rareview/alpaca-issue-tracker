@@ -5,13 +5,8 @@
 */
 .wp-admin {
   table.alpaca-data-table,
-  .alpaca-json-table table,
-  .alpaca-report-tab table,
-  .alpaca-errors-tab table,
   .alpaca-data-table,
-  .alpaca-json-table,
-  .alpaca-report-tab,
-  .alpaca-errors-tab {
+  .alpaca-data-table-context {
     &,
     table,
     pre,
