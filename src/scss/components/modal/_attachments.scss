@@ -96,15 +96,37 @@
 
     .alpaca-attachment-delete {
       position: absolute;
-      top: 0;
-      right: 0;
+      /* slightly offset the badge so it sits a bit outside the corner */
+      top: -6px;
+      right: -6px;
       z-index: $z-index-attachment-delete;
+      width: 22px;
+      height: 22px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.5);
+      color: #fff;
+      border: none;
+      font-size: 13px;
+      line-height: 1;
+      padding: 0;
+      cursor: pointer;
       opacity: 0;
-      transition: opacity 0.2s ease-in-out;
+      transform: scale(0.95);
+      transition:
+        opacity 0.12s ease-in-out,
+        transform 0.12s ease-in-out;
     }
 
-    &:hover .alpaca-attachment-delete {
+    /* Ensure the badge stays visible while hovering the thumbnail, file box, the parent, or the badge itself. */
+    .alpaca-attachment-thumbnail:hover ~ .alpaca-attachment-delete,
+    .alpaca-attachment-file:hover ~ .alpaca-attachment-delete,
+    .alpaca-attachment:hover .alpaca-attachment-delete,
+    .alpaca-attachment-delete:hover {
       opacity: 1;
+      transform: scale(1);
     }
   }
 

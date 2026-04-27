@@ -581,6 +581,36 @@ function alpaca_delete_comment_attachment( WP_REST_Request $request ) {
 			500
 		);
 	}
+	// If we have a comment that referenced this attachment, remove the URL
+	// from its `alpacaCommentAttachments` meta so reloading the comment does
+	// not show a broken reference.
+	if ( $attachment_comment instanceof WP_Comment ) {
+		$comment_id  = (int) $attachment_comment->comment_ID;
+		$attachments = get_comment_meta( $comment_id, 'alpacaCommentAttachments', true );
+
+		if ( is_array( $attachments ) ) {
+			$normalized = array_map( 'esc_url_raw', $attachments );
+			$needle     = esc_url_raw( $url );
+
+			$filtered = array_values(
+				array_filter(
+					$normalized,
+					function ( $item ) use ( $needle ) {
+						return $item !== $needle;
+					}
+				)
+			);
+
+			if ( count( $filtered ) !== count( $normalized ) ) {
+				if ( empty( $filtered ) ) {
+					delete_comment_meta( $comment_id, 'alpacaCommentAttachments' );
+				} else {
+					// Update with original raw values where possible to preserve names.
+					update_comment_meta( $comment_id, 'alpacaCommentAttachments', $filtered );
+				}
+			}
+		}
+	}
 
 	return alpaca_rest_response(
 		'comment_attachment_delete',

@@ -184,6 +184,8 @@ export const getProcessedCommentContent = (comment) => {
  * @param {Object}   props.comment                 Comment object.
  * @param {Object}   props.currentUser             Current user object.
  * @param {Function} props.onAttachmentClick       Attachment click callback.
+ * @param {Function} props.onAttachmentDelete      Attachment delete callback.
+ * @param {boolean}  props.showAttachmentDelete    Whether to show attachment delete actions.
  * @param {Object}   props.headerActions           Header actions.
  * @param {Object}   props.footerActions           Footer actions.
  * @param {string}   props.issueTitle              Issue title.
@@ -203,6 +205,8 @@ const TimelineEntry = ({
   comment,
   currentUser,
   onAttachmentClick,
+  onAttachmentDelete,
+  showAttachmentDelete,
   headerActions,
   footerActions,
   issueTitle,
@@ -419,7 +423,8 @@ const TimelineEntry = ({
                   onAttachmentClick={
                     enableAttachmentPreview ? onAttachmentClick : null
                   }
-                  showDelete={false}
+                  onAttachmentDelete={() => onAttachmentDelete(attachmentUrl)}
+                  showDelete={showAttachmentDelete}
                   altText={__('Comment attachment', 'alpaca')}
                 />
               ))}
@@ -438,6 +443,8 @@ TimelineEntry.propTypes = {
   comment: PropTypes.object.isRequired,
   currentUser: PropTypes.object,
   onAttachmentClick: PropTypes.func,
+  onAttachmentDelete: PropTypes.func,
+  showAttachmentDelete: PropTypes.bool,
   headerActions: PropTypes.node,
   footerActions: PropTypes.node,
   issueTitle: PropTypes.string,
@@ -456,6 +463,8 @@ TimelineEntry.propTypes = {
 TimelineEntry.defaultProps = {
   currentUser: null,
   onAttachmentClick: null,
+  onAttachmentDelete: () => {},
+  showAttachmentDelete: false,
   headerActions: null,
   footerActions: null,
   issueTitle: '',

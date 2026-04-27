@@ -75,6 +75,7 @@ const Comment = memo(
     currentUser,
     userCanManageOptions,
     onAttachmentClick,
+    onAttachmentDelete,
   }) => {
     const commentAgentType = (
       comment?.author_user_agent ||
@@ -123,6 +124,10 @@ const Comment = memo(
         highlightQuery={activeSearchQuery}
         currentUser={currentUser}
         onAttachmentClick={onAttachmentClick}
+        onAttachmentDelete={(attachmentUrl) =>
+          onAttachmentDelete(comment.id, attachmentUrl)
+        }
+        showAttachmentDelete={canManageComment}
         isEditing={editingCommentId === comment.id}
         isSubmitting={isSubmitting}
         headerActions={
@@ -212,6 +217,7 @@ Comment.propTypes = {
   currentUser: PropTypes.object,
   userCanManageOptions: PropTypes.bool.isRequired,
   onAttachmentClick: PropTypes.func.isRequired,
+  onAttachmentDelete: PropTypes.func,
   editingAttachments: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.string.isRequired,
@@ -224,6 +230,10 @@ Comment.propTypes = {
   onEditAttachDrop: PropTypes.func.isRequired,
   onEditAttachRemove: PropTypes.func.isRequired,
   isProcessingAttachments: PropTypes.bool.isRequired,
+};
+
+Comment.defaultProps = {
+  onAttachmentDelete: () => {},
 };
 
 // --- Commenting Component ---
@@ -494,6 +504,55 @@ const Commenting = ({
     [],
   );
   const cancelDelete = useCallback(() => setDeleteCommentId(null), []);
+
+  const deleteSingleCommentAttachment = useCallback(
+    (commentId, attachmentUrl) => {
+      if (!commentId || !attachmentUrl) {
+        return;
+      }
+
+      setIsSubmitting(true);
+
+      deleteCommentAttachment(attachmentUrl, issueId, commentId)
+        .then(() => {
+          setComments((previousComments) =>
+            previousComments.map((commentItem) => {
+              if (commentItem.id !== commentId) {
+                return commentItem;
+              }
+
+              const attachments = Array.isArray(
+                commentItem?.meta?.alpacaCommentAttachments,
+              )
+                ? commentItem.meta.alpacaCommentAttachments
+                : [];
+
+              return {
+                ...commentItem,
+                meta: {
+                  ...(commentItem.meta || {}),
+                  alpacaCommentAttachments: attachments.filter(
+                    (url) => url !== attachmentUrl,
+                  ),
+                },
+              };
+            }),
+          );
+        })
+        .catch((error) => {
+          console.error('Failed to delete attachment', error);
+          showNotification(
+            __('Failed to delete attachment.', 'alpaca'),
+            'error',
+          );
+        })
+        .finally(() => {
+          setIsSubmitting(false);
+        });
+    },
+    [issueId, showNotification],
+  );
+
   const deleteComment = useCallback(() => {
     if (!deleteCommentId) return;
     const comment = comments.find((item) => item.id === deleteCommentId);
@@ -602,6 +661,7 @@ const Commenting = ({
               currentUser={currentUser}
               userCanManageOptions={userCanManageOptions}
               onAttachmentClick={setLightboxSrc}
+              onAttachmentDelete={deleteSingleCommentAttachment}
             />
           ))}
         </div>
