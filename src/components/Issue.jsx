@@ -28,6 +28,7 @@ import StarControl from './StarControl';
 import { useWatchlist } from '../context/WatchlistContext';
 import StatusPill from './StatusPill';
 import CommentForm from './CommentForm';
+import { uploadIssueAttachment } from '../utils/attachmentUpload';
 
 /* THEN access WordPress globals */
 const { useState, useEffect, useRef, useMemo, useCallback, memo } = wp.element;
@@ -1134,9 +1135,19 @@ const AlpacaIssue = ({
           // Create comment if user provided one
           if (commentText.trim() || attachments.length > 0) {
             try {
-              const attachmentUrls = attachments.map(
-                (attachment) => attachment.url,
+              const uploadedAttachments = await Promise.all(
+                attachments.map(async (attachment) => {
+                  if (attachment.localOnly && attachment.file) {
+                    return uploadIssueAttachment(attachment.file, newIssueId);
+                  }
+
+                  return attachment;
+                }),
               );
+
+              const attachmentUrls = uploadedAttachments
+                .map((attachment) => attachment.url)
+                .filter(Boolean);
               const meta =
                 attachmentUrls.length > 0
                   ? { alpacaCommentAttachments: attachmentUrls }

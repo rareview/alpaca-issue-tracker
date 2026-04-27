@@ -3,7 +3,8 @@ import { Attachment } from './issue/AttachmentRow';
 import { uploadIssueAttachment } from '../utils/attachmentUpload';
 import MentionsTextarea from './notifications/MentionsTextarea';
 
-const { useState, useCallback, memo, createInterpolateElement } = wp.element;
+const { useState, useCallback, useEffect, memo, createInterpolateElement } =
+  wp.element;
 const { __ } = wp.i18n;
 const { Button, Modal, Tooltip, FormFileUpload, DropZone } = wp.components;
 
@@ -197,11 +198,42 @@ const CommentForm = memo(
     const [isProcessingAttachments, setIsProcessingAttachments] =
       useState(false);
 
+    const clearLocalPreviewUrls = useCallback((items) => {
+      if (!Array.isArray(items) || items.length === 0) {
+        return;
+      }
+
+      items.forEach((item) => {
+        if (item && item.localOnly && item.url) {
+          window.URL.revokeObjectURL(item.url);
+        }
+      });
+    }, []);
+
     const handleAttachmentFiles = useCallback(
       async (files, onSuccess) => {
         if (!files || files.length === 0) return;
 
         const incomingFiles = Array.from(files);
+
+        // New issue flow: queue files locally until the issue exists.
+        if (!issueId) {
+          const queued = incomingFiles.map((file, index) => ({
+            id: `${file.name}-${file.size}-${Date.now()}-${index}`,
+            name: file.name,
+            mime: file.type || '',
+            url: window.URL.createObjectURL(file),
+            file,
+            localOnly: true,
+          }));
+
+          if (typeof onSuccess === 'function') {
+            onSuccess(queued);
+          }
+
+          return;
+        }
+
         setIsProcessingAttachments(true);
 
         try {
@@ -266,6 +298,22 @@ const CommentForm = memo(
           (item) => item.id === attachmentId,
         );
 
+        if (!attachment) {
+          return;
+        }
+
+        if (attachment.localOnly) {
+          if (attachment.url) {
+            window.URL.revokeObjectURL(attachment.url);
+          }
+
+          setPendingAttachments((prev) =>
+            prev.filter((item) => item.id !== attachmentId),
+          );
+
+          return;
+        }
+
         if (attachment?.url) {
           try {
             await deleteCommentAttachment(attachment.url, issueId || 0);
@@ -286,11 +334,25 @@ const CommentForm = memo(
       [pendingAttachments, issueId, showNotification],
     );
 
-    const handleSubmit = useCallback(() => {
-      if (onSubmit) {
-        onSubmit(value, pendingAttachments);
+    const handleSubmit = useCallback(async () => {
+      if (!onSubmit) {
+        return;
       }
-    }, [onSubmit, value, pendingAttachments]);
+
+      const result = onSubmit(value, pendingAttachments);
+      if (result && typeof result.then === 'function') {
+        await result;
+      }
+
+      clearLocalPreviewUrls(pendingAttachments);
+      setPendingAttachments([]);
+    }, [onSubmit, value, pendingAttachments, clearLocalPreviewUrls]);
+
+    useEffect(() => {
+      return () => {
+        clearLocalPreviewUrls(pendingAttachments);
+      };
+    }, [pendingAttachments, clearLocalPreviewUrls]);
 
     let buttonText;
     if (isSubmitting) {
