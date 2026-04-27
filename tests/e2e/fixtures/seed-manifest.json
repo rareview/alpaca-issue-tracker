@@ -1,0 +1,98 @@
+{
+  "statuses": [
+    {
+      "slug": "backlog",
+      "name": "Backlog"
+    },
+    {
+      "slug": "next",
+      "name": "Next"
+    },
+    {
+      "slug": "in-progress",
+      "name": "In Progress"
+    },
+    {
+      "slug": "done",
+      "name": "Done"
+    }
+  ],
+  "labels": [
+    {
+      "slug": "design",
+      "name": "Design",
+      "color": "#ff7a00"
+    }
+  ],
+  "issues": [
+    {
+      "key": "homepage-form-validation",
+      "title": "Triage homepage form validation",
+      "content": "Review the latest homepage form reports and confirm the next fix to ship.",
+      "status": "backlog",
+      "deadline": "2026-04-08",
+      "highPriority": false,
+      "labels": [],
+      "assignAdmin": false,
+      "watchAdmin": true,
+      "comments": []
+    },
+    {
+      "key": "onboarding-copy",
+      "title": "Review onboarding flow copy",
+      "content": "Check the latest onboarding screen copy and prepare the final edits.",
+      "status": "next",
+      "deadline": "2026-04-11",
+      "highPriority": false,
+      "labels": ["design"],
+      "assignAdmin": true,
+      "watchAdmin": true,
+      "comments": [
+        "Updated the welcome step to match the latest product positioning."
+      ]
+    },
+    {
+      "key": "safari-checkout",
+      "title": "Fix checkout error on Safari",
+      "content": "Customers are hitting an intermittent checkout error in Safari and this needs attention today.",
+      "status": "in-progress",
+      "deadline": "2026-04-09",
+      "highPriority": true,
+      "labels": ["design"],
+      "assignAdmin": true,
+      "watchAdmin": true,
+      "comments": [
+        "Confirmed the bug on Safari 18 and narrowed it down to the payment step.",
+        "Patch is in progress and ready for another QA pass."
+      ]
+    },
+    {
+      "key": "daily-summary-settings",
+      "title": "Ship daily summary settings",
+      "content": "The daily summary controls are now live and ready for follow-up polish.",
+      "status": "done",
+      "deadline": "2026-04-14",
+      "highPriority": false,
+      "labels": [],
+      "assignAdmin": false,
+      "watchAdmin": false,
+      "comments": [
+        "Settings layout has been shipped and verified on the notifications screen."
+      ]
+    }
+  ],
+  "deletedIssues": [
+    {
+      "key": "legacy-toolbar-css",
+      "title": "Remove legacy toolbar CSS",
+      "content": "This old toolbar rule is no longer used and should be removed cleanly.",
+      "status": "done",
+      "deadline": "2026-04-06",
+      "highPriority": false,
+      "labels": [],
+      "assignAdmin": false,
+      "watchAdmin": false,
+      "comments": []
+    }
+  ]
+}

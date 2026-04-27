@@ -17,8 +17,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'npm'
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.0'
+          tools: composer
 
       - run: npm ci
+
+      - run: composer install --prefer-dist --no-progress
 
       - run: npm run zip
 

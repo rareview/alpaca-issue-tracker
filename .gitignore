@@ -25,6 +25,10 @@
 
 # Built assets
 /dist/
+/playwright-report/
+/test-results/
+/tests/e2e/.generated/
+/.build/
 
 # ------------------
 # Logs

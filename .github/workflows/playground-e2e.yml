@@ -1,0 +1,113 @@
+name: Playground E2E
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - labeled
+      - synchronize
+      - reopened
+      - ready_for_review
+  workflow_dispatch:
+    inputs:
+      suite:
+        description: Test suite to run.
+        required: true
+        default: smoke
+        type: choice
+        options:
+          - smoke
+          - full
+  schedule:
+    - cron: '17 3 * * *'
+      timezone: 'America/Toronto'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: playground-e2e-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    name: Playground E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    if: >-
+      github.event_name != 'pull_request' ||
+      contains(github.event.pull_request.labels.*.name, 'ready-for-tests') ||
+      contains(github.event.pull_request.labels.*.name, 'playground')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer
+
+      - name: Resolve test suite
+        id: suite
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REQUESTED_SUITE: ${{ inputs.suite }}
+        run: |
+          suite="smoke"
+
+          if [ "$EVENT_NAME" = "schedule" ]; then
+            suite="full"
+          fi
+
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ -n "$REQUESTED_SUITE" ]; then
+            suite="$REQUESTED_SUITE"
+          fi
+
+          if [ "$suite" = "full" ]; then
+            test_glob="tests/e2e/specs"
+          else
+            test_glob="tests/e2e/specs/smoke"
+          fi
+
+          echo "suite=$suite" >> "$GITHUB_OUTPUT"
+          echo "test_glob=$test_glob" >> "$GITHUB_OUTPUT"
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-progress
+
+      - name: Lint plugin
+        run: npm run lint
+
+      - name: Install Playwright browser
+        run: npm run test:e2e:install
+
+      - name: Run Playground E2E suite
+        run: npm run test:e2e -- ${{ steps.suite.outputs.test_glob }}
+
+      - name: Upload Playwright HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ steps.suite.outputs.suite }}
+          path: playwright-report
+          if-no-files-found: ignore
+
+      - name: Upload Playwright test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-results-${{ steps.suite.outputs.suite }}
+          path: test-results
+          if-no-files-found: ignore
