@@ -278,11 +278,6 @@ class Register {
 			$style_version
 		);
 
-		// Localize script.
-		if ( $this->should_localize_capture_context() && function_exists( 'alpaca_prepare_datadump' ) ) {
-			wp_localize_script( self::PREFIX . '-script', 'alpacaDataDump', \alpaca_prepare_datadump() );
-		}
-
 		wp_localize_script(
 			self::PREFIX . '-script',
 			'alpacaSettings',

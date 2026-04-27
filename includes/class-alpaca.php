@@ -125,9 +125,6 @@ final class Alpaca {
 		// Load REST API.
 		require_once ALPACA_PLUGIN_DIR . 'includes/api/rest-api.php';
 		require_once ALPACA_PLUGIN_DIR . 'includes/notifications/notifications.php';
-
-		// Load frontend functionality.
-		require_once ALPACA_PLUGIN_DIR . 'includes/frontend/data-dump.php';
 	}
 
 	/**
