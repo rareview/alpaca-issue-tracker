@@ -1985,6 +1985,8 @@ const AlpacaIssue = ({
                     showNotification={showNotification}
                     onSubmit={handleCreateIssue}
                     dataSource="create"
+                    submitButtonDisabled={loadingStates.title}
+                    isSubmitting={loadingStates.title}
                   />
                 </div>
               )}
