@@ -579,9 +579,13 @@ const AlpacaIssue = ({
   const [commentRefreshKey] = useState(0);
   const [snackbars, setSnackbars] = useState([]);
   const [issueComment, setIssueComment] = useState('');
+  const issueCommentRef = useRef(null);
   const snackbarTimersRef = useRef({});
   const snackbarCloseTimersRef = useRef({});
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // Match comment form behavior: auto-expand Create Issue comment textarea.
+  useAutoExpandTextarea(issueCommentRef, issueComment, isCreating);
 
   const isIssueWatched = !isCreating && issueId && isWatched(issueId);
 
@@ -1148,10 +1152,22 @@ const AlpacaIssue = ({
               const attachmentUrls = uploadedAttachments
                 .map((attachment) => attachment.url)
                 .filter(Boolean);
-              const meta =
-                attachmentUrls.length > 0
+
+              // Ensure initial create comments include the 'issue-created'
+              // tag (and 'high-priority' when applicable) so timeline
+              // styling and notification logic match the server-side
+              // automated comment that would otherwise be created.
+              const commentTags = ['issue-created'];
+              if (isHighPriority) {
+                commentTags.push('high-priority');
+              }
+
+              const meta = {
+                ...(attachmentUrls.length > 0
                   ? { alpacaCommentAttachments: attachmentUrls }
-                  : {};
+                  : {}),
+                alpacaCommentTags: commentTags,
+              };
 
               await wp.apiFetch({
                 path: `/wp/v2/comments`,
@@ -1963,6 +1979,7 @@ const AlpacaIssue = ({
                   <CommentForm
                     value={issueComment}
                     onChange={setIssueComment}
+                    textareaRef={issueCommentRef}
                     placeholder={__('Add a comment to the issue…', 'alpaca')}
                     issueId={null}
                     showNotification={showNotification}

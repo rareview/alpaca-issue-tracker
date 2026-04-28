@@ -2,9 +2,16 @@ import PropTypes from 'prop-types';
 import { Attachment } from './issue/AttachmentRow';
 import { uploadIssueAttachment } from '../utils/attachmentUpload';
 import MentionsTextarea from './notifications/MentionsTextarea';
+import useAutoExpandTextarea from '../hooks/useAutoExpandTextarea';
 
-const { useState, useCallback, useEffect, memo, createInterpolateElement } =
-  wp.element;
+const {
+  useState,
+  useCallback,
+  useEffect,
+  memo,
+  createInterpolateElement,
+  useRef,
+} = wp.element;
 const { __ } = wp.i18n;
 const { Button, Modal, Tooltip, FormFileUpload, DropZone } = wp.components;
 
@@ -201,6 +208,11 @@ const CommentForm = memo(
     const [pendingAttachments, setPendingAttachments] = useState([]);
     const [isProcessingAttachments, setIsProcessingAttachments] =
       useState(false);
+    const innerTextareaRef = useRef(null);
+    const textareaRefToUse = textareaRef || innerTextareaRef;
+
+    // Auto-expand textarea either for provided ref or internal ref.
+    useAutoExpandTextarea(textareaRefToUse, value, !disabled);
 
     useEffect(() => {
       if (
@@ -389,9 +401,9 @@ const CommentForm = memo(
       [
         pendingAttachments,
         issueId,
-        showNotification,
         commentId,
         onRemoteAttachmentDelete,
+        showNotification,
       ],
     );
 
@@ -469,7 +481,7 @@ const CommentForm = memo(
               placeholder={placeholder}
               value={value}
               onChange={onChange}
-              textareaRef={textareaRef}
+              textareaRef={textareaRefToUse}
               disabled={disabled}
             />
           </AttachmentControls>
