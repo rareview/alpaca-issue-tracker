@@ -149,6 +149,16 @@
     border: 1px solid $greyborder;
   }
 
+  /* When the comment edit form is rendered inside the timeline content
+     avoid applying the form's own border so a double border does not
+     appear. The timeline content already provides the outer border. */
+  .alpaca-timeline-item .alpaca-timeline-content .alpaca-comment-form {
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    padding: 0;
+  }
+
   .alpaca-comment-form textarea {
     border: none;
   }
