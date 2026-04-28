@@ -226,7 +226,7 @@
     display: flex;
     font-size: $midfont;
 
-    .alpaca-timeline-content,
+    .alpaca-comment-form__content,
     textarea {
       width: 100%;
     }
@@ -285,7 +285,7 @@
     }
   }
 
-  .alpaca-timeline-content {
+  .alpaca-comment-form__content {
     flex-grow: 1;
   }
 

@@ -187,16 +187,58 @@ const CommentForm = memo(
     disabled = false,
     isSubmitting = false,
     issueId = null,
+    commentId = null,
+    initialAttachments = [],
     showNotification,
     onSubmit,
     submitButtonText = __('Submit Comment', 'alpaca'),
+    onRemoteAttachmentDelete,
     submitButtonDisabled = false,
     className = 'alpaca-comment-form',
     dataSource = 'human',
+    onCancel,
   }) => {
     const [pendingAttachments, setPendingAttachments] = useState([]);
     const [isProcessingAttachments, setIsProcessingAttachments] =
       useState(false);
+
+    useEffect(() => {
+      if (
+        !Array.isArray(initialAttachments) ||
+        initialAttachments.length === 0
+      ) {
+        return;
+      }
+
+      // Map incoming attachment URLs/objects into the pending attachment shape
+      const mapped = initialAttachments.filter(Boolean).map((item) => {
+        if (typeof item === 'string') {
+          return {
+            id: item,
+            url: item,
+            name: undefined,
+            mime: undefined,
+            localOnly: false,
+          };
+        }
+
+        return {
+          id: item.id || item.url || String(item.name || Date.now()),
+          url: item.url,
+          name: item.name,
+          mime: item.mime,
+          localOnly: Boolean(item.localOnly),
+        };
+      });
+
+      setPendingAttachments((prev) => {
+        // Only set if there is a difference to avoid stomping user uploads
+        return [
+          ...mapped,
+          ...prev.filter((p) => !mapped.some((m) => m.url === p.url)),
+        ];
+      });
+    }, [initialAttachments]);
 
     const clearLocalPreviewUrls = useCallback((items) => {
       if (!Array.isArray(items) || items.length === 0) {
@@ -316,7 +358,20 @@ const CommentForm = memo(
 
         if (attachment?.url) {
           try {
-            await deleteCommentAttachment(attachment.url, issueId || 0);
+            // If a parent provided a handler that performs the remote
+            // deletion and updates comment state, prefer that so the UI
+            // stays in sync. Otherwise, call the delete endpoint directly.
+            if (typeof onRemoteAttachmentDelete === 'function') {
+              await onRemoteAttachmentDelete(attachment.url);
+            } else {
+              // When editing an existing comment, pass the commentId so the
+              // server knows which comment the attachment belongs to.
+              await deleteCommentAttachment(
+                attachment.url,
+                issueId || 0,
+                commentId || null,
+              );
+            }
           } catch (deleteError) {
             console.error('Failed to delete attachment', deleteError);
             showNotification(
@@ -331,7 +386,13 @@ const CommentForm = memo(
           prev.filter((item) => item.id !== attachmentId),
         );
       },
-      [pendingAttachments, issueId, showNotification],
+      [
+        pendingAttachments,
+        issueId,
+        showNotification,
+        commentId,
+        onRemoteAttachmentDelete,
+      ],
     );
 
     const handleSubmit = useCallback(async () => {
@@ -365,7 +426,7 @@ const CommentForm = memo(
 
     return (
       <div className={className} data-source={dataSource}>
-        <div className="alpaca-timeline-content">
+        <div className="alpaca-comment-form__content">
           <AttachmentControls
             attachments={pendingAttachments}
             onDrop={handlePendingAttachmentDrop}
@@ -376,17 +437,32 @@ const CommentForm = memo(
             isProcessing={isProcessingAttachments}
             pendingAltText={__('Pending comment attachment', 'alpaca')}
             actions={
-              <Button
-                isPrimary
-                onClick={handleSubmit}
-                disabled={
-                  submitButtonDisabled ||
-                  isSubmitting ||
-                  isProcessingAttachments
-                }
-              >
-                {buttonText}
-              </Button>
+              <>
+                <Button
+                  isPrimary
+                  onClick={handleSubmit}
+                  disabled={
+                    submitButtonDisabled ||
+                    isSubmitting ||
+                    isProcessingAttachments
+                  }
+                >
+                  {buttonText}
+                </Button>
+                {typeof onCancel === 'function' && (
+                  <Button
+                    onClick={() => {
+                      // Clear any local previews before cancelling.
+                      clearLocalPreviewUrls(pendingAttachments);
+                      setPendingAttachments([]);
+                      onCancel();
+                    }}
+                    disabled={isSubmitting || isProcessingAttachments}
+                  >
+                    {__('Cancel', 'alpaca')}
+                  </Button>
+                )}
+              </>
             }
           >
             <MentionsTextarea
@@ -413,10 +489,12 @@ CommentForm.propTypes = {
   issueId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   showNotification: PropTypes.func.isRequired,
   onSubmit: PropTypes.func,
+  onRemoteAttachmentDelete: PropTypes.func,
   submitButtonText: PropTypes.string,
   submitButtonDisabled: PropTypes.bool,
   className: PropTypes.string,
   dataSource: PropTypes.string,
+  onCancel: PropTypes.func,
 };
 
 export default CommentForm;

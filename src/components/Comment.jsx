@@ -66,6 +66,7 @@ const Comment = memo(
     activeSearchQuery,
     startEditing,
     confirmDeleteComment,
+    cancelEditing,
     editingCommentId,
     editingContent,
     setEditingContent,
@@ -180,11 +181,30 @@ const Comment = memo(
             disabled={isSubmitting}
             isSubmitting={isSubmitting}
             issueId={comment.post}
+            commentId={comment.id}
+            initialAttachments={
+              Array.isArray(comment?.meta?.alpacaCommentAttachments)
+                ? comment.meta.alpacaCommentAttachments.map((url) => ({
+                    id: url,
+                    url,
+                  }))
+                : []
+            }
             showNotification={() => {}}
-            onSubmit={(text) => {
+            onSubmit={(text, attachments) => {
               setEditingContent(text);
-              saveEdit(comment.id);
+              saveEdit(comment.id, attachments || []);
             }}
+            onCancel={() => {
+              if (typeof cancelEditing === 'function') {
+                cancelEditing();
+              } else {
+                setEditingContent('');
+              }
+            }}
+            onRemoteAttachmentDelete={(url) =>
+              onAttachmentDelete(comment.id, url)
+            }
             submitButtonText={__('Save', 'alpaca')}
           />
         }
@@ -208,6 +228,7 @@ Comment.propTypes = {
   activeSearchQuery: PropTypes.string,
   startEditing: PropTypes.func.isRequired,
   confirmDeleteComment: PropTypes.func.isRequired,
+  cancelEditing: PropTypes.func,
   editingCommentId: PropTypes.number,
   editingContent: PropTypes.string,
   setEditingContent: PropTypes.func.isRequired,
@@ -444,11 +465,11 @@ const Commenting = ({
   }, []);
 
   const saveEdit = useCallback(
-    (commentId) => {
+    (commentId, attachments = []) => {
       if (!editingContent.trim()) return;
       setIsSubmitting(true);
 
-      const comment = comments.find((c) => c.id === commentId);
+      const comment = comments.find((c) => c.id === commentId) || {};
       const agent = comment?.author_user_agent || 'human';
       const currentTimestamp = new Date().toISOString();
       const lastEditedMeta = {
@@ -460,15 +481,36 @@ const Commenting = ({
           __('Unknown', 'alpaca'),
       };
 
+      // Merge existing attachments with any newly uploaded attachments
+      const existingAttachments = Array.isArray(
+        comment?.meta?.alpacaCommentAttachments,
+      )
+        ? comment.meta.alpacaCommentAttachments
+        : [];
+
+      const newUrls = Array.isArray(attachments)
+        ? attachments.map((a) => a && a.url).filter(Boolean)
+        : [];
+
+      const mergedAttachments = Array.from(
+        new Set([...existingAttachments, ...newUrls]),
+      );
+
+      const metaPayload = {
+        alpacaCommentLastEdit: lastEditedMeta,
+      };
+
+      if (mergedAttachments.length > 0) {
+        metaPayload.alpacaCommentAttachments = mergedAttachments;
+      }
+
       wp.apiFetch({
         path: `/wp/v2/comments/${commentId}`,
         method: 'POST',
         data: {
           content: editingContent,
           author_user_agent: agent,
-          meta: {
-            alpacaCommentLastEdit: lastEditedMeta,
-          },
+          meta: metaPayload,
         },
       })
         .then((updated) => {
@@ -476,7 +518,7 @@ const Commenting = ({
             ...(updated || {}),
             meta: {
               ...(updated && updated.meta ? updated.meta : {}),
-              alpacaCommentLastEdit: lastEditedMeta,
+              ...metaPayload,
             },
           };
 
@@ -662,6 +704,10 @@ const Commenting = ({
               userCanManageOptions={userCanManageOptions}
               onAttachmentClick={setLightboxSrc}
               onAttachmentDelete={deleteSingleCommentAttachment}
+              cancelEditing={() => {
+                setEditingCommentId(null);
+                setEditingContent('');
+              }}
             />
           ))}
         </div>
