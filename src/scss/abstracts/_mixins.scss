@@ -7,8 +7,7 @@
 @mixin deadline-style($bg-color) {
   background-color: $bg-color;
   color: if(
-    color.channel($bg-color, 'lightness', $space: hsl) >
-      67%,
+    color.channel($bg-color, 'lightness', $space: hsl) > 67%,
     $color-black,
     $color-white
   );
@@ -99,15 +98,13 @@
   $text-color: $color-text-muted
 ) {
   color: $text-color;
-  display: flex;
-  flex-wrap: wrap;
-  gap: $space-lg;
 
   > * {
     display: inline-flex;
     align-items: center;
     gap: $space-2xs;
     vertical-align: middle;
+    margin-inline-end: $item-spacing;
   }
 
   > *:last-child {
