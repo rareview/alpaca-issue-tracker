@@ -61,7 +61,14 @@
 
   .assignees {
     .alpaca-item-assignees {
-      @include alpaca-assignee-stack($size-icon-md, 0, 0, false, $font-size-xs, $space-2xs);
+      @include alpaca-assignee-stack(
+        $size-icon-md,
+        0,
+        0,
+        false,
+        $font-size-xs,
+        $space-2xs
+      );
     }
   }
 }

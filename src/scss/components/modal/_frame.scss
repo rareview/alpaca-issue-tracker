@@ -7,7 +7,9 @@
   .components-modal__frame.alpaca-details-modal {
     position: absolute;
     top: 0;
-    inset-inline-end: calc(-1 * var(--alpaca-side-panel-frame-overhang, $space-sm));
+    inset-inline-end: calc(
+      -1 * var(--alpaca-side-panel-frame-overhang, $space-sm)
+    );
     max-width: var(--alpaca-side-panel-max-width, #{$width-side-panel});
     height: calc(100% - var(--alpaca-side-panel-top-offset, $size-control-md));
     margin: var(--alpaca-side-panel-top-offset, $space-6xl) 0 0 0;
@@ -136,5 +138,4 @@
     color: $color-text-muted;
     margin-inline-start: 0.5ch;
   }
-
 }
