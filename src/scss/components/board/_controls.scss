@@ -184,7 +184,7 @@
       flex: 1 1 auto;
       min-width: 0;
       background: transparent;
-      font-size: inherit;
+      font-size: $font-size-sm;
       line-height: inherit;
     }
 
@@ -295,10 +295,7 @@
 
   .alpaca-filter-control-popover .components-popover__content {
     padding: 0;
-    width: min(
-      28.75rem,
-      calc(100vw - $size-control-md)
-    );
+    width: min(28.75rem, calc(100vw - $size-control-md));
   }
 
   .alpaca-filter-control-popover-content {
