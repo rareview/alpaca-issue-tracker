@@ -160,7 +160,7 @@
 /* Canonical label pill styles (shared across items, modals, settings, and board controls)
    Moved here to keep item-specific UI tokens near card styling. */
 .alpaca-label-pill {
-  border-radius: $radius-lg;
+  border-radius: $radius-pill;
   box-sizing: border-box;
   display: inline-flex;
   align-items: center;
@@ -169,4 +169,5 @@
   line-height: $line-height-reset;
   white-space: nowrap;
   gap: $space-2xs;
+  font-size: $font-size-xs;
 }
