@@ -126,6 +126,7 @@
 
   .alpaca-item-datapoints {
     margin: $space-sm 0 $space-2xs 0;
+    font-size: $font-size-xs;
     line-height: $line-height-datapoints;
     @include alpaca-item-datapoints-content;
   }
