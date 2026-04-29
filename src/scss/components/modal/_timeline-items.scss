@@ -47,7 +47,7 @@
       border: 1px solid $color-border;
       border-radius: $radius-round;
       inset-inline-start: $size-icon-2xl;
-      top: -$space-sm;
+      top: -$space-2xs;
 
       &::before {
         content: '';
