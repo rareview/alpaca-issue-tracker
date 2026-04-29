@@ -18,7 +18,6 @@ window.Prism = Prism;
 // Register custom Prism language on load
 import './utils/prismKeyValue';
 
-import AlpacaModal from './Modal.jsx';
 import AlpacaToolbar from './Toolbar.jsx';
 import AlpacaSettings from './Settings.jsx';
 import { WatchlistProvider } from './context/WatchlistContext.jsx';
@@ -27,10 +26,10 @@ import { AlpacaBoard } from './Board.jsx';
 import Presence from './components/Presence';
 import NotificationPreferences from './components/NotificationPreferences.jsx';
 import EmailTemplatesScreen from './components/EmailTemplatesScreen.jsx';
-import AdminSidebarInboxBadge from './components/notifications/AdminSidebarInboxBadge.jsx';
 import AlpacaDashboardWidget from './DashboardWidget.jsx';
 import About from './about/About.jsx';
 import Activity from './Activity.jsx';
+import { mountAdminGlobalUi } from './adminGlobalMounts.jsx';
 
 import { fetchAllAssignees } from './services/userApi.js';
 import {
@@ -67,36 +66,8 @@ const mountReactTree = createMountReactTree({
   legacyRender,
 });
 
-if (isAdmin && document.querySelector('#wp-admin-bar-alpaca-report')) {
-  const adminBarModalContainer = document.createElement('div');
-  adminBarModalContainer.id = 'alpaca-admin-bar-modal-mount';
-  document.body.appendChild(adminBarModalContainer);
-  mountReactTree(<AlpacaModal />, adminBarModalContainer);
-}
-
 if (isAdmin) {
-  const projectBoardSubmenuLink = document.querySelector(
-    '#toplevel_page_project-board .wp-submenu li.wp-first-item > a',
-  );
-
-  if (projectBoardSubmenuLink) {
-    let menuBadgeMount = projectBoardSubmenuLink.querySelector(
-      '.alpaca-admin-menu-badge-mount',
-    );
-
-    if (!menuBadgeMount) {
-      menuBadgeMount = document.createElement('span');
-      menuBadgeMount.className = 'alpaca-admin-menu-badge-mount';
-      projectBoardSubmenuLink.appendChild(menuBadgeMount);
-    }
-
-    mountReactTree(
-      <NotificationProvider>
-        <AdminSidebarInboxBadge />
-      </NotificationProvider>,
-      menuBadgeMount,
-    );
-  }
+  mountAdminGlobalUi(mountReactTree);
 }
 
 if (!isAdmin) {

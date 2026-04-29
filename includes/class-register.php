@@ -51,6 +51,24 @@ class Register {
 			'wp-components',
 			'wp-dom-ready',
 			'wp-data',
+			'wp-hooks',
+			'bowser',
+		);
+	}
+
+	/**
+	 * Get the reduced script dependencies needed on generic wp-admin screens.
+	 *
+	 * @return string[] Script dependency handles.
+	 */
+	private function get_global_admin_script_dependencies() {
+
+		return array(
+			'wp-element',
+			'wp-api-fetch',
+			'wp-i18n',
+			'wp-components',
+			'wp-hooks',
 			'bowser',
 		);
 	}
@@ -170,39 +188,67 @@ class Register {
 	}
 
 	/**
-	 * Enqueue shared Alpaca assets.
+	 * Determine whether the current admin page needs the full Alpaca app bundle.
 	 *
-	 * @param string[] $script_dependencies Script dependencies for the main bundle.
+	 * @param string $hook_suffix Current admin page hook suffix.
+	 * @return bool True when the full bundle should load.
+	 */
+	private function is_full_admin_bundle_screen( $hook_suffix ) {
+		return in_array(
+			$hook_suffix,
+			array(
+				'index.php',
+				'toplevel_page_project-board',
+				'project-board_page_project-activity',
+				'project-board_page_alpaca-settings',
+				'project-board_page_alpaca-notifications',
+				'project-board_page_alpaca-email-templates',
+				'project-board_page_alpaca-about',
+			),
+			true
+		);
+	}
+
+	/**
+	 * Determine whether the current admin page should skip Alpaca admin assets.
+	 *
+	 * Page/post editor screens are already asset-heavy. The matching admin-bar
+	 * report UI is omitted on those screens as well.
+	 *
+	 * @param string $hook_suffix Current admin page hook suffix.
+	 * @return bool True when Alpaca admin assets should not load.
+	 */
+	private function is_skipped_admin_bundle_screen( $hook_suffix ) {
+		if ( function_exists( '\alpaca_should_skip_admin_report_screen' ) ) {
+			return \alpaca_should_skip_admin_report_screen( $hook_suffix );
+		}
+
+		return false;
+	}
+
+	/**
+	 * Get a version string for an asset based on filemtime.
+	 *
+	 * @param string $asset_relative_path Relative path from the plugin root.
+	 * @return string Version string.
+	 */
+	private function get_asset_version( $asset_relative_path ) {
+		$asset_version = Helpers::version();
+		$asset_path    = dirname( __DIR__ ) . '/' . ltrim( $asset_relative_path, '/' );
+
+		if ( file_exists( $asset_path ) ) {
+			$asset_version = (string) filemtime( $asset_path );
+		}
+
+		return $asset_version;
+	}
+
+	/**
+	 * Enqueue shared third-party assets used by Alpaca bundles.
+	 *
 	 * @return void
 	 */
-	private function enqueue_shared_assets( $script_dependencies ) {
-
-		// Only load Alpaca for logged-in users.
-		if ( ! is_user_logged_in() ) {
-			return;
-		}
-		$script_version = Helpers::version();
-		$style_version  = Helpers::version();
-		$plugin_root    = dirname( __DIR__ );
-		$script_path    = $plugin_root . '/dist/index.js';
-		$style_path     = $plugin_root . '/dist/index.css';
-
-		if ( file_exists( $script_path ) ) {
-			$script_version = (string) filemtime( $script_path );
-		}
-
-		if ( file_exists( $style_path ) ) {
-			$style_version = (string) filemtime( $style_path );
-		}
-
-		wp_enqueue_style(
-			'atkinson-hyperlegible-mono',
-			'https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono&display=swap',
-			array(),
-			Helpers::version()
-		);
-
-		// Enqueue vendor scripts.
+	private function enqueue_vendor_assets() {
 		wp_enqueue_script(
 			'bowser',
 			Helpers::asset_url( 'vendor/bowser.es5.min.js' ),
@@ -218,6 +264,62 @@ class Register {
 			Helpers::version(),
 			true
 		);
+	}
+
+	/**
+	 * Enqueue the shared font used by the full Alpaca interface.
+	 *
+	 * @return void
+	 */
+	private function enqueue_full_bundle_font() {
+		wp_enqueue_style(
+			'atkinson-hyperlegible-mono',
+			'https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono&display=swap',
+			array(),
+			Helpers::version()
+		);
+	}
+
+	/**
+	 * Localize shared client settings for an Alpaca script bundle.
+	 *
+	 * @param string $script_handle      Script handle.
+	 * @param bool   $include_admin_url  Whether to expose the wp-admin URL.
+	 * @return void
+	 */
+	private function localize_script_settings( $script_handle, $include_admin_url = false ) {
+		$settings = array(
+			'canManageOptions'        => current_user_can( 'manage_options' ),
+			'snapdomProxy'            => $this->get_snapdom_proxy_setting(),
+			'itemDatapointVisibility' => $this->get_item_datapoint_visibility_setting(),
+		);
+
+		if ( $include_admin_url ) {
+			$settings['adminUrl'] = admin_url( 'admin.php' );
+		}
+
+		wp_localize_script( $script_handle, 'alpacaSettings', $settings );
+	}
+
+	/**
+	 * Enqueue the full Alpaca application bundle.
+	 *
+	 * @param string[] $script_dependencies Script dependencies for the main bundle.
+	 * @param bool     $include_admin_url   Whether to expose the wp-admin URL.
+	 * @param bool     $localize_datadump   Whether to localize the report data dump.
+	 * @return void
+	 */
+	private function enqueue_shared_assets( $script_dependencies, $include_admin_url = false, $localize_datadump = false ) {
+
+		// Only load Alpaca for logged-in users.
+		if ( ! is_user_logged_in() ) {
+			return;
+		}
+		$script_version = $this->get_asset_version( 'dist/index.js' );
+		$style_version  = $this->get_asset_version( 'dist/index.css' );
+
+		$this->enqueue_full_bundle_font();
+		$this->enqueue_vendor_assets();
 
 		// Main script (includes Prism.js via npm import).
 		wp_enqueue_script(
@@ -241,24 +343,54 @@ class Register {
 			$style_version
 		);
 
-		// Localize script.
-		if ( function_exists( 'alpaca_prepare_datadump' ) ) {
+		if ( $localize_datadump && function_exists( 'alpaca_prepare_datadump' ) ) {
 			wp_localize_script( self::PREFIX . '-script', 'alpacaDataDump', \alpaca_prepare_datadump() );
 		}
 
-		wp_localize_script(
-			self::PREFIX . '-script',
-			'alpacaSettings',
-			array(
-				'canManageOptions'        => current_user_can( 'manage_options' ),
-				// SnapDOM expects the proxy string to be a prefix the library will append the target URL to.
-				// Provide the proxy endpoint with the query param prefix so SnapDOM can append the encoded target URL.
-				// Provide a signed proxy token that does not rely on browser cookies.
-				// This keeps proxy requests working when SnapDOM fetches across origins.
-				'snapdomProxy'            => $this->get_snapdom_proxy_setting(),
-				'itemDatapointVisibility' => $this->get_item_datapoint_visibility_setting(),
-			)
+		$this->localize_script_settings( self::PREFIX . '-script', $include_admin_url );
+	}
+
+	/**
+	 * Enqueue the lightweight admin bundle used on generic wp-admin screens.
+	 *
+	 * @return void
+	 */
+	private function enqueue_global_admin_bundle_assets() {
+
+		// Only load Alpaca for logged-in users.
+		if ( ! is_user_logged_in() ) {
+			return;
+		}
+
+		$script_handle  = self::PREFIX . '-admin-global-script';
+		$style_handle   = self::PREFIX . '-admin-global-style';
+		$script_version = $this->get_asset_version( 'dist/admin-global.js' );
+		$style_version  = $this->get_asset_version( 'dist/admin-global.css' );
+
+		$this->enqueue_vendor_assets();
+
+		wp_enqueue_script(
+			$script_handle,
+			Helpers::asset_url( 'dist/admin-global.js' ),
+			$this->get_global_admin_script_dependencies(),
+			$script_version,
+			true
 		);
+
+		wp_set_script_translations(
+			$script_handle,
+			'alpaca',
+			$this->get_script_translation_path()
+		);
+
+		wp_enqueue_style(
+			$style_handle,
+			Helpers::asset_url( 'dist/admin-global.css' ),
+			array( 'wp-components' ),
+			$style_version
+		);
+
+		$this->localize_script_settings( $script_handle, true );
 	}
 
 	/**
@@ -268,7 +400,7 @@ class Register {
 	 */
 	public function enqueue_assets() {
 
-		$this->enqueue_shared_assets( $this->get_base_script_dependencies() );
+		$this->enqueue_shared_assets( $this->get_base_script_dependencies(), false, true );
 	}
 
 	/**
@@ -277,56 +409,53 @@ class Register {
 	 * @param string $hook_suffix Current admin page hook suffix.
 	 */
 	public function enqueue_admin_assets( $hook_suffix ) {
-
-		$script_dependencies = $this->get_base_script_dependencies();
-		if ( $this->is_notification_template_admin_page( $hook_suffix ) ) {
-			$script_dependencies = array_merge(
-				$script_dependencies,
-				$this->get_notification_template_dependencies()
-			);
+		if ( $this->is_skipped_admin_bundle_screen( $hook_suffix ) ) {
+			return;
 		}
 
-		$this->enqueue_shared_assets( array_values( array_unique( $script_dependencies ) ) );
+		if ( $this->is_full_admin_bundle_screen( $hook_suffix ) ) {
+			$script_dependencies = $this->get_base_script_dependencies();
+			if ( $this->is_notification_template_admin_page( $hook_suffix ) ) {
+				$script_dependencies = array_merge(
+					$script_dependencies,
+					$this->get_notification_template_dependencies()
+				);
+			}
 
-		// Expose admin URL for use in JS (e.g., linking to admin pages).
-		wp_localize_script(
-			self::PREFIX . '-script',
-			'alpacaSettings',
-			array(
-				'canManageOptions'        => current_user_can( 'manage_options' ),
-				'adminUrl'                => admin_url( 'admin.php' ),
-				'snapdomProxy'            => $this->get_snapdom_proxy_setting(),
-				'itemDatapointVisibility' => $this->get_item_datapoint_visibility_setting(),
-			)
-		);
+			$this->enqueue_shared_assets( array_values( array_unique( $script_dependencies ) ), true, true );
 
-		if ( $this->is_notification_template_admin_page( $hook_suffix ) ) {
-			wp_enqueue_media();
-			wp_enqueue_style( 'wp-editor' );
-			wp_enqueue_style( 'wp-edit-blocks' );
-			wp_enqueue_style( 'wp-block-library' );
-			wp_enqueue_style( 'wp-block-library-theme' );
+			if ( $this->is_notification_template_admin_page( $hook_suffix ) ) {
+				wp_enqueue_media();
+				wp_enqueue_style( 'wp-editor' );
+				wp_enqueue_style( 'wp-edit-blocks' );
+				wp_enqueue_style( 'wp-block-library' );
+				wp_enqueue_style( 'wp-block-library-theme' );
+			}
+
+			// On the project board page.
+			if ( 'toplevel_page_project-board' === $hook_suffix ) {
+				// Ensure WP Heartbeat is available on the board page.
+				wp_enqueue_script( 'heartbeat' );
+
+				// Pass board data.
+				wp_localize_script(
+					self::PREFIX . '-script',
+					'alpacaBoardData',
+					\alpaca_get_board_data()
+				);
+
+				wp_localize_script(
+					self::PREFIX . '-script',
+					'alpacaUserData',
+					array(
+						'currentUserId' => get_current_user_id(),
+					)
+				);
+			}
+
+			return;
 		}
 
-		// On the project board page.
-		if ( 'toplevel_page_project-board' === $hook_suffix ) {
-			// Ensure WP Heartbeat is available on the board page.
-			wp_enqueue_script( 'heartbeat' );
-
-			// Pass board data.
-			wp_localize_script(
-				self::PREFIX . '-script',
-				'alpacaBoardData',
-				\alpaca_get_board_data()
-			);
-
-			wp_localize_script(
-				self::PREFIX . '-script',
-				'alpacaUserData',
-				array(
-					'currentUserId' => get_current_user_id(),
-				)
-			);
-		}
+		$this->enqueue_global_admin_bundle_assets();
 	}
 }
