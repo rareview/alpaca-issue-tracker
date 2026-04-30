@@ -490,26 +490,40 @@ const Commenting = ({
     }
   }, [sortOrder]);
 
-  const fetchComments = useCallback(() => {
-    if (!issueId) return;
-    setIsLoadingComments(true);
+  const fetchComments = useCallback(
+    (options = {}) => {
+      if (!issueId) return;
 
-    wp.apiFetch({
-      path: `/wp/v2/comments?post=${issueId}&_embed=author&per_page=-1&orderby=date&order=desc&comment_type=issuecomment&alpaca_include_hidden_comments=1&context=edit`,
-    })
-      .then(setComments)
-      .catch((err) => {
-        console.error(err);
-        showNotification(__('Could not load comments.', 'alpaca'), 'error');
+      const { showLoading = true } = options;
+
+      if (showLoading) {
+        setIsLoadingComments(true);
+      }
+
+      wp.apiFetch({
+        path: `/wp/v2/comments?post=${issueId}&_embed=author&per_page=-1&orderby=date&order=desc&comment_type=issuecomment&alpaca_include_hidden_comments=1&context=edit`,
       })
-      .finally(() => setIsLoadingComments(false));
-  }, [issueId, showNotification]);
+        .then(setComments)
+        .catch((err) => {
+          console.error(err);
+          showNotification(__('Could not load comments.', 'alpaca'), 'error');
+        })
+        .finally(() => {
+          if (showLoading) {
+            setIsLoadingComments(false);
+          }
+        });
+    },
+    [issueId, showNotification],
+  );
 
   useEffect(() => fetchComments(), [fetchComments, commentRefreshKey]);
 
   useEffect(() => {
     const handleCommentCountChanged = ({ issueId: changedId }) => {
-      if (changedId.toString() === issueId.toString()) fetchComments();
+      if (changedId.toString() === issueId.toString()) {
+        fetchComments({ showLoading: false });
+      }
     };
     wp.hooks.addAction(
       'alpaca.commentCountChanged',
@@ -550,8 +564,11 @@ const Commenting = ({
         }
       : {};
 
+    const optimisticCommentClientId = `optimistic-comment-${Date.now()}`;
+
     const optimisticComment = {
       id: Date.now(),
+      clientId: optimisticCommentClientId,
       content: { raw: newComment, rendered: processedOptimisticContent },
       _embedded: { author: currentUser },
       date: new Date().toISOString(),
@@ -582,6 +599,8 @@ const Commenting = ({
                   ...createMeta,
                 },
               };
+
+        createdComment.clientId = optimisticCommentClientId;
 
         setComments((prev) =>
           prev.map((c) => (c.id === optimisticComment.id ? createdComment : c)),
@@ -1028,7 +1047,7 @@ const Commenting = ({
         <div className="alpaca-comments-timeline">
           {comments.map((comment) => (
             <Comment
-              key={comment.id}
+              key={comment.clientId || comment.id}
               comment={comment}
               activeSearchQuery={activeSearchQuery}
               startEditing={startEditing}
