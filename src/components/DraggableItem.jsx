@@ -73,12 +73,22 @@ const DraggableItem = forwardRef(
 
           // 2. Clone the element
           const clone = e.currentTarget.cloneNode(true);
+          const cloneInnerCard = clone.querySelector('.alpaca-item-inner');
 
           // Clone element and lock dimensions
           clone.style.width = `${rect.width}px`;
           clone.style.height = `${rect.height}px`;
           clone.style.boxSizing = 'border-box';
           clone.classList.add('alpaca-drag-clone');
+
+          // Detached drag images lose board-scoped mobile layout selectors,
+          // so preserve the resolved card height inline for narrow screens.
+          if (cloneInnerCard instanceof HTMLElement) {
+            cloneInnerCard.style.width = '100%';
+            cloneInnerCard.style.height = '100%';
+            cloneInnerCard.style.display = 'flex';
+            cloneInnerCard.style.flexDirection = 'column';
+          }
 
           // Rotate clone
           clone.style.transform = 'rotate(3deg)';
