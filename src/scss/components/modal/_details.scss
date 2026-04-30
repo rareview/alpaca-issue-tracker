@@ -64,6 +64,134 @@
   .alpaca-label-pill {
     margin-inline-end: $space-xs;
   }
+
+  .components-form-token-field__token {
+    --alpaca-label-token-color: #{$color-label-default};
+    align-items: center;
+    background: var(--alpaca-label-token-color);
+    border: none;
+    border-radius: $radius-lg;
+    box-sizing: border-box;
+    color: $color-white;
+    display: inline-flex;
+    gap: $space-2xs;
+    height: $size-icon-xl;
+    margin: 0;
+    max-width: 100%;
+    padding: 0 $space-2xs 0 $space-xs;
+  }
+
+  .components-form-token-field__token-text {
+    background: transparent;
+    color: inherit;
+    line-height: $line-height-reset;
+  }
+
+  .components-form-token-field__remove-token {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    color: inherit;
+    padding: 0;
+  }
+
+  .components-form-token-field__remove-token.components-button,
+  .components-form-token-field__token .components-form-token-field__token-text {
+    background: transparent;
+  }
+
+  .components-form-token-field__remove-token:hover,
+  .components-form-token-field__remove-token:focus {
+    background: rgb(255 255 255 / 85%)-muted;
+    box-shadow: none;
+    color: inherit;
+  }
+
+  .components-form-token-field__remove-token svg {
+    fill: currentcolor;
+  }
+
+  .components-form-token-field__token + .components-form-token-field__token {
+    margin-inline-start: $space-2xs;
+  }
+}
+
+.alpaca-issue-assignees-cell {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 0;
+  padding: 0;
+  background: transparent;
+
+  .alpaca-assignees-selector,
+  .alpaca-assignees-selector .components-form-token-field {
+    width: 100%;
+  }
+
+  .components-form-token-field__token {
+    align-items: center;
+    background: $color-surface-neutral;
+    border: 1px solid $color-border-subtle;
+    border-radius: $radius-lg;
+    box-sizing: border-box;
+    color: $color-text-secondary;
+    display: inline-flex;
+    gap: $space-2xs;
+    height: $size-icon-xl;
+    margin: 0;
+    max-width: 100%;
+    padding: 0 $space-2xs 0 $space-xs;
+  }
+
+  .components-form-token-field__token-text {
+    align-items: center;
+    background: transparent;
+    color: inherit;
+    display: inline-flex;
+    line-height: $line-height-reset;
+
+    [aria-hidden='true'] {
+      display: block;
+      line-height: inherit;
+    }
+  }
+
+  .components-form-token-field__remove-token {
+    align-items: center;
+    align-self: center;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    color: inherit;
+    display: inline-flex;
+    font-size: $font-size-sm;
+    justify-content: center;
+    line-height: $line-height-reset;
+    padding: 0;
+  }
+
+  .components-form-token-field__remove-token.components-button,
+  .components-form-token-field__token .components-form-token-field__token-text {
+    background: transparent;
+  }
+
+  .components-form-token-field__remove-token:hover,
+  .components-form-token-field__remove-token:focus {
+    background: $color-surface-admin;
+    border-radius: $radius-sm;
+    box-shadow: none;
+    color: $color-text-primary;
+  }
+
+  .components-form-token-field__remove-token svg {
+    display: block;
+    fill: currentcolor;
+  }
+
+  .components-form-token-field__token + .components-form-token-field__token {
+    margin-inline-start: $space-2xs;
+  }
 }
 
 /* Ensure the default Assignee token field keeps the help paragraph below the input */
@@ -159,60 +287,110 @@
   line-height: $line-height-heading;
 }
 
-/* Style selected FormTokenField tokens like alpaca label pills. */
-.alpaca-issue-labels-cell {
-  .components-form-token-field__token {
-    --alpaca-label-token-color: #{$color-label-default};
-    align-items: center;
-    background: var(--alpaca-label-token-color);
-    border: none;
-    border-radius: $radius-lg;
-    box-sizing: border-box;
-    color: $color-white;
-    display: inline-flex;
-    gap: $space-2xs;
-    height: $size-icon-xl;
-    margin: 0;
-    max-width: 100%;
-    padding: 0 $space-2xs 0 $space-xs;
-  }
+@media (width <= $breakpoint-admin-bar-mobile) {
+  .wp-admin {
+    .alpaca-details-grid {
+      grid-template-columns: 1fr;
+      gap: $space-md;
+    }
 
-  .components-form-token-field__token-text {
-    background: transparent;
-    color: inherit;
-    line-height: $line-height-reset;
-  }
+    .alpaca-details-grid__item {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: $space-lg;
+    }
 
-  .components-form-token-field__remove-token {
-    background: transparent;
-    border: none;
-    box-shadow: none;
-    color: inherit;
-    padding: 0;
-  }
+    .alpaca-details-grid__label {
+      flex: 0 0 5.5rem;
+      margin-bottom: 0;
+      font-size: $font-size-xs;
+      line-height: $line-height-base;
+    }
 
-  .components-form-token-field__remove-token.components-button,
-  .components-form-token-field__token .components-form-token-field__token-text {
-    background: transparent;
-  }
+    .alpaca-details-grid__value {
+      align-items: center;
+      flex: 1 1 auto;
+      min-height: $size-control-md;
+      min-inline-size: 0;
+    }
 
-  .components-form-token-field__remove-token:hover,
-  .components-form-token-field__remove-token:focus {
-    background: rgb(255 255 255 / 85%)-muted;
-    box-shadow: none;
-    color: inherit;
-  }
+    .alpaca-details-grid__value .components-base-control,
+    .alpaca-details-grid__value .components-form-token-field,
+    .alpaca-details-grid__value .alpaca-labels-selector,
+    .alpaca-details-grid__value .alpaca-deadline-control {
+      width: 100%;
+    }
 
-  .components-form-token-field__remove-token svg {
-    fill: currentColor;
-  }
+    .alpaca-details-grid__value .components-form-token-field__input-container,
+    .alpaca-details-grid__value .components-form-token-field__input,
+    .alpaca-details-grid__value .components-form-token-field__token-text,
+    .alpaca-details-grid__value .components-input-control__input,
+    .alpaca-details-grid__value .alpaca-deadline-display {
+      font-size: $font-size-sm;
+      line-height: $line-height-base;
+    }
 
-  .components-form-token-field__token + .components-form-token-field__token {
-    margin-inline-start: $space-2xs;
+    .alpaca-details-grid__value
+      .components-form-token-field__input::placeholder {
+      font-size: $font-size-sm;
+      line-height: $line-height-base;
+    }
+
+    .alpaca-details-grid__value .components-form-token-field__input-container {
+      min-height: $size-control-sm;
+      padding-block: 0;
+      padding-inline: $space-xs;
+    }
+
+    .alpaca-details-grid__value .components-form-token-field__input {
+      min-height: $size-control-sm;
+      padding-block: 0;
+    }
+
+    .alpaca-details-grid__value .components-form-token-field__token {
+      height: $size-control-sm;
+    }
+
+    .alpaca-issue-labels-cell .components-form-token-field__input-container,
+    .alpaca-issue-assignees-cell .components-form-token-field__input-container {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid $color-border;
+      border-radius: 0;
+      box-shadow: none;
+      min-height: auto;
+      padding-block: 0 $space-xs;
+      padding-inline: 0;
+      .components-flex {
+        padding: 0 !important;
+      }
+    }
+
+    .alpaca-issue-labels-cell .components-form-token-field__input,
+    .alpaca-issue-assignees-cell .components-form-token-field__input {
+      padding-inline: 0;
+    }
+
+    .alpaca-details-grid__value .components-base-control__field,
+    .alpaca-details-grid__value .alpaca-deadline,
+    .alpaca-details-grid__value .components-toggle-control,
+    .alpaca-details-grid__value .components-toggle-control__label {
+      margin-bottom: 0;
+    }
+
+    .alpaca-details-grid__value .components-toggle-control {
+      width: 100%;
+    }
+
+    .alpaca-details-grid__value .alpaca-deadline {
+      align-items: center;
+      width: 100%;
+    }
   }
 }
 
-.wp-admin {
+body.wp-admin {
   /*
    * 4.0 - Modal (Issue Details)
    */

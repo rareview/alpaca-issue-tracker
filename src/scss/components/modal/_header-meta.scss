@@ -9,10 +9,47 @@
     font-size: $font-size-sm;
     line-height: $line-height-base;
     flex-direction: row;
+    flex-wrap: wrap;
     gap: $space-gap-inline;
+
+    .alpaca-issue-meta-group {
+      display: inline-flex;
+      align-items: center;
+      gap: $space-gap-inline;
+      min-inline-size: 0;
+    }
+
+    .alpaca-issue-meta-prefix {
+      white-space: nowrap;
+    }
 
     .alpaca-user-name {
       font-weight: $font-weight-semibold;
+    }
+  }
+
+  @media (width <= $breakpoint-admin-bar-mobile) {
+    .alpaca-issue-meta {
+      row-gap: $space-2xs;
+
+      .alpaca-issue-meta-group {
+        line-height: $line-height-meta-mobile;
+      }
+
+      .alpaca-user {
+        min-inline-size: 0;
+
+        img {
+          width: $size-icon-xl;
+          height: $size-icon-xl;
+        }
+      }
+
+      .alpaca-user-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
     }
   }
 }

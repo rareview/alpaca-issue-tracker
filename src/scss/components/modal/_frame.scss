@@ -129,6 +129,18 @@
         );
       }
     }
+
+    @media (width <= $breakpoint-admin-bar-mobile) {
+      .alpaca-issue-title-row {
+        align-items: flex-start;
+        gap: $space-xs;
+      }
+
+      .alpaca-issue-title {
+        font-size: $font-size-xl;
+        line-height: $line-height-tight;
+      }
+    }
   }
 
   /* Inline code used in modal menus */

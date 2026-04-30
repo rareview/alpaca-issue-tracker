@@ -51,17 +51,19 @@ const AssigneeSelector = memo(
     );
 
     return (
-      <FormTokenField
-        label=""
-        placeholder={__('Enter username(s)', 'alpaca')}
-        value={assignees}
-        suggestions={allUsers}
-        onChange={onChange}
-        disabled={isLoading}
-        __nextHasNoMarginBottom
-        __next40pxDefaultSize
-        __experimentalRenderItem={renderSuggestionItem}
-      />
+      <div className="alpaca-assignees-selector">
+        <FormTokenField
+          label=""
+          placeholder={__('Enter username(s)', 'alpaca')}
+          value={assignees}
+          suggestions={allUsers}
+          onChange={onChange}
+          disabled={isLoading}
+          __nextHasNoMarginBottom
+          __next40pxDefaultSize
+          __experimentalRenderItem={renderSuggestionItem}
+        />
+      </div>
     );
   },
   // Only re-render if these props actually change

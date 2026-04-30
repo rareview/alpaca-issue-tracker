@@ -79,7 +79,7 @@ const AssigneeRow = memo(
       <div className="alpaca-details-grid__label">
         {__('Assignees', 'alpaca')}
       </div>
-      <div className="alpaca-details-grid__value alpaca-flex-align">
+      <div className="alpaca-details-grid__value alpaca-flex-align alpaca-issue-assignees-cell">
         <AssigneeSelector
           assignees={assignees}
           allUsers={allUsers}
@@ -1846,15 +1846,22 @@ const AlpacaIssue = ({
 
               {!isCreating && (
                 <div className="alpaca-issue-meta alpaca-flex-align">
-                  Created by <User user={issueDetails.post_data.post_author} />{' '}
-                  <Time
-                    value={
-                      issueDetails.post_data.post_date_gmt ||
-                      issueDetails.post_data.post_date
-                    }
-                    isGmt={Boolean(issueDetails.post_data.post_date_gmt)}
-                    type="relative"
-                  />
+                  <span className="alpaca-issue-meta-group">
+                    <span className="alpaca-issue-meta-prefix">
+                      {__('Created by', 'alpaca')}
+                    </span>
+                    <User user={issueDetails.post_data.post_author} />
+                  </span>
+                  <span className="alpaca-issue-meta-group">
+                    <Time
+                      value={
+                        issueDetails.post_data.post_date_gmt ||
+                        issueDetails.post_data.post_date
+                      }
+                      isGmt={Boolean(issueDetails.post_data.post_date_gmt)}
+                      type="relative"
+                    />
+                  </span>
                   <StatusPill className="alpaca-issue-status-meta">
                     {statusLabel}
                   </StatusPill>
