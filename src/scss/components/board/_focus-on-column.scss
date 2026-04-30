@@ -1,0 +1,58 @@
+@use '../../abstracts' as *;
+
+/*
+* 3.4 - Focus On Column
+*/
+.wp-admin {
+  .alpaca-board-canvas {
+    --alpaca-unfocused-column-opacity: 0.3;
+    --alpaca-column-focus-backdrop: rgb(240 240 241 / 50%);
+
+    isolation: isolate;
+    position: relative;
+
+    &.alpaca-focus-on-column-enabled {
+      .alpaca-wrap {
+        overflow-y: visible;
+      }
+
+      .alpaca-container {
+        opacity: var(--alpaca-unfocused-column-opacity);
+        position: relative;
+        transform: scale(1);
+        transform-origin: center top;
+        transition:
+          opacity $duration-fast ease-in-out,
+          inset-block-start $duration-fast ease-in-out,
+          transform $duration-fast ease-in-out;
+        z-index: 2;
+
+        &.alpaca-is-focused-column {
+          opacity: 1;
+          z-index: 1001;
+          transform: scale(1.015);
+          inset-block-start: -4px;
+        }
+      }
+    }
+
+    &.alpaca-focus-on-column-dragging {
+      .alpaca-focus-on-column-backdrop {
+        pointer-events: none;
+      }
+    }
+  }
+
+  .alpaca-focus-on-column-backdrop {
+    appearance: none;
+    border: 0;
+    display: block;
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 0;
+    background-color: var(--alpaca-column-focus-backdrop);
+    cursor: default;
+    z-index: 1000;
+  }
+}

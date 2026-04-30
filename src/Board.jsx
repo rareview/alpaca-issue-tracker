@@ -44,6 +44,8 @@ export function AlpacaBoard() {
   const [restoreError, setRestoreError] = useState(null);
   const [activeBoardFilter, setActiveBoardFilter] = useState(null);
   const [activeSearchFilter, setActiveSearchFilter] = useState(null);
+  const [focusedContainerId, setFocusedContainerId] = useState(null);
+  const [isBoardDraggingItem, setIsBoardDraggingItem] = useState(false);
 
   // Pre-built Set for O(1) lookups inside itemMatchesBoardFilter.
   const searchIdsSet = useMemo(
@@ -254,6 +256,48 @@ export function AlpacaBoard() {
     },
     [activeBoardFilter, activeSearchFilter, normalizeBoardFilter, searchIdsSet],
   );
+
+  useEffect(() => {
+    if (!focusedContainerId) {
+      return;
+    }
+
+    const hasFocusedContainer = containers.some(
+      (container) => String(container.id) === focusedContainerId,
+    );
+
+    if (!hasFocusedContainer) {
+      setFocusedContainerId(null);
+    }
+  }, [containers, focusedContainerId]);
+
+  useEffect(() => {
+    const handleGlobalDragStart = (event) => {
+      const dragTarget = event.target;
+
+      if (!(dragTarget instanceof Element)) {
+        return;
+      }
+
+      if (dragTarget.closest('.alpaca-item')) {
+        setIsBoardDraggingItem(true);
+      }
+    };
+
+    const handleGlobalDragStop = () => {
+      setIsBoardDraggingItem(false);
+    };
+
+    window.addEventListener('dragstart', handleGlobalDragStart);
+    window.addEventListener('dragend', handleGlobalDragStop);
+    window.addEventListener('drop', handleGlobalDragStop);
+
+    return () => {
+      window.removeEventListener('dragstart', handleGlobalDragStart);
+      window.removeEventListener('dragend', handleGlobalDragStop);
+      window.removeEventListener('drop', handleGlobalDragStop);
+    };
+  }, []);
 
   /**
    * Update the `issue` query parameter in the URL.
@@ -1605,6 +1649,42 @@ export function AlpacaBoard() {
     setNeedsSave(true);
   };
 
+  const handleToggleFocusedContainer = useCallback((containerId) => {
+    const normalizedContainerId =
+      typeof containerId === 'undefined' || containerId === null
+        ? null
+        : String(containerId);
+
+    setFocusedContainerId((currentFocusedContainerId) => {
+      if (currentFocusedContainerId === normalizedContainerId) {
+        return null;
+      }
+
+      return normalizedContainerId;
+    });
+  }, []);
+
+  const handleBoardDragStartCapture = useCallback((event) => {
+    const dragTarget = event.target;
+
+    if (!(dragTarget instanceof Element)) {
+      return;
+    }
+
+    if (dragTarget.closest('.alpaca-item')) {
+      setIsBoardDraggingItem(true);
+    }
+  }, []);
+
+  const handleBoardDragStopCapture = useCallback(() => {
+    setIsBoardDraggingItem(false);
+  }, []);
+
+  const hasFocusedContainer = Boolean(focusedContainerId);
+  const boardCanvasClassName = `alpaca-board-canvas ${
+    hasFocusedContainer ? 'alpaca-focus-on-column-enabled' : ''
+  } ${isBoardDraggingItem ? 'alpaca-focus-on-column-dragging' : ''}`.trim();
+
   return (
     <>
       <BoardControls
@@ -1618,63 +1698,82 @@ export function AlpacaBoard() {
         onSetSearchFilter={handleSetSearchFilter}
         onClearSearchFilter={handleClearSearchFilter}
       />
-      {hasNoStatuses ? (
-        <div className="alpaca-empty-state">
-          <Notice status="warning" isDismissible={false}>
-            <p>
-              <strong>
+      <div
+        className={boardCanvasClassName}
+        data-alpaca-focused-column-id={focusedContainerId || undefined}
+        onDragStartCapture={handleBoardDragStartCapture}
+        onDragEndCapture={handleBoardDragStopCapture}
+        onDropCapture={handleBoardDragStopCapture}
+      >
+        {hasFocusedContainer ? (
+          <button
+            type="button"
+            className="alpaca-focus-on-column-backdrop"
+            aria-label={__('Clear column focus', 'alpaca')}
+            onClick={() => setFocusedContainerId(null)}
+          />
+        ) : null}
+        {hasNoStatuses ? (
+          <div className="alpaca-empty-state">
+            <Notice status="warning" isDismissible={false}>
+              <p>
+                <strong>
+                  {__(
+                    'Oh no! All your project statuses have disappeared.',
+                    'alpaca',
+                  )}
+                </strong>
+              </p>
+              <p>
                 {__(
-                  'Oh no! All your project statuses have disappeared.',
+                  'Without statuses, you cannot view or manage issues on the board. Click the button below to restore the default statuses (Backlog, Next, In Progress, Done).',
                   'alpaca',
                 )}
-              </strong>
-            </p>
-            <p>
-              {__(
-                'Without statuses, you cannot view or manage issues on the board. Click the button below to restore the default statuses (Backlog, Next, In Progress, Done).',
-                'alpaca',
-              )}
-            </p>
-            <Button
-              variant="primary"
-              onClick={handleRestoreDefaults}
-              isBusy={isRestoring}
-              disabled={isRestoring}
-            >
-              {isRestoring
-                ? __('Restoring…', 'alpaca')
-                : __('Restore Default Statuses', 'alpaca')}
-            </Button>
-          </Notice>
-          {restoreError && (
-            <Notice status="error" isDismissible={false}>
-              <p>{restoreError}</p>
+              </p>
+              <Button
+                variant="primary"
+                onClick={handleRestoreDefaults}
+                isBusy={isRestoring}
+                disabled={isRestoring}
+              >
+                {isRestoring
+                  ? __('Restoring…', 'alpaca')
+                  : __('Restore Default Statuses', 'alpaca')}
+              </Button>
             </Notice>
-          )}
-        </div>
-      ) : (
-        <div className="alpaca-wrap">
-          {containers.map((container, index) => (
-            <Container
-              key={container.id}
-              id={container.id}
-              title={container.title}
-              items={container.items}
-              activeFilter={combinedBoardFilter}
-              itemMatchesFilter={itemMatchesBoardFilter}
-              onItemClick={handleItemClick}
-              onMoveAllToNext={moveAllItemsToNextContainer}
-              isLastContainer={index === containers.length - 1}
-              isHidden={hiddenContainerIds.includes(container.id)}
-              onToggleHidden={handleToggleHidden}
-              onRename={handleRenameContainer}
-              onDeleteAll={handleDeleteAll}
-              onItemDrop={handleItemDrop}
-              onBulkItemReorder={handleBulkItemReorder}
-            />
-          ))}
-        </div>
-      )}
+            {restoreError && (
+              <Notice status="error" isDismissible={false}>
+                <p>{restoreError}</p>
+              </Notice>
+            )}
+          </div>
+        ) : (
+          <div className="alpaca-wrap">
+            {containers.map((container, index) => (
+              <Container
+                key={container.id}
+                id={container.id}
+                title={container.title}
+                items={container.items}
+                activeFilter={combinedBoardFilter}
+                itemMatchesFilter={itemMatchesBoardFilter}
+                onItemClick={handleItemClick}
+                onMoveAllToNext={moveAllItemsToNextContainer}
+                onDeleteAll={handleDeleteAll}
+                isLastContainer={index === containers.length - 1}
+                isHidden={hiddenContainerIds.includes(container.id)}
+                focusedContainerId={focusedContainerId}
+                isFocused={focusedContainerId === String(container.id)}
+                onToggleHidden={handleToggleHidden}
+                onToggleFocus={handleToggleFocusedContainer}
+                onRename={handleRenameContainer}
+                onItemDrop={handleItemDrop}
+                onBulkItemReorder={handleBulkItemReorder}
+              />
+            ))}
+          </div>
+        )}
+      </div>
 
       <AlpacaIssue
         key={selectedItem?.isCreating ? 'creating' : selectedItem?.id || 'none'}

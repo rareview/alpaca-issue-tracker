@@ -14,6 +14,7 @@ import {
   getAbsoluteDropIndexForFilteredContainer,
   shouldDisableBulkContainerActions,
 } from '../utils/boardFiltering';
+import { getBuiltInContainerMenuControls } from './container/menu-controls';
 import { buildContainerMenuControlContext } from '../utils/containerMenuControls';
 
 import PropTypes from 'prop-types';
@@ -21,21 +22,24 @@ import PropTypes from 'prop-types';
 /**
  * Container component (delegates rename to parent via onRename).
  *
- * @param {Object}   root0                   - Props object
- * @param {number}   root0.id                - Container ID
- * @param {string}   root0.title             - Container title
- * @param {Array}    root0.items             - Array of items in the container
- * @param {Object}   root0.activeFilter      - Current board filter payload
- * @param {Function} root0.itemMatchesFilter - Callback to determine item visibility under filter
- * @param {Function} root0.onItemClick       - Callback when item is clicked
- * @param {Function} root0.onMoveAllToNext   - Callback to move all items to next container
- * @param {Function} root0.onDeleteAll       - Callback to delete all items
- * @param {boolean}  root0.isLastContainer   - Whether this is the last container
- * @param {boolean}  root0.isHidden          - Whether container is hidden
- * @param {Function} root0.onToggleHidden    - Callback to toggle hidden state
- * @param {Function} root0.onRename          - Callback to rename container
- * @param {Function} root0.onItemDrop        - Callback for drag-and-drop moves
- * @param {Function} root0.onBulkItemReorder - Callback for bulk item reordering
+ * @param {Object}   root0                    - Props object
+ * @param {number}   root0.id                 - Container ID
+ * @param {string}   root0.title              - Container title
+ * @param {Array}    root0.items              - Array of items in the container
+ * @param {Object}   root0.activeFilter       - Current board filter payload
+ * @param {Function} root0.itemMatchesFilter  - Callback to determine item visibility under filter
+ * @param {Function} root0.onItemClick        - Callback when item is clicked
+ * @param {Function} root0.onMoveAllToNext    - Callback to move all items to next container
+ * @param {Function} root0.onDeleteAll        - Callback to delete all items
+ * @param {boolean}  root0.isLastContainer    - Whether this is the last container
+ * @param {boolean}  root0.isHidden           - Whether container is hidden
+ * @param {string}   root0.focusedContainerId - Focused container identifier
+ * @param {boolean}  root0.isFocused          - Whether this container is focused
+ * @param {Function} root0.onToggleHidden     - Callback to toggle hidden state
+ * @param {Function} root0.onToggleFocus      - Callback to toggle focused state
+ * @param {Function} root0.onRename           - Callback to rename container
+ * @param {Function} root0.onItemDrop         - Callback for drag-and-drop moves
+ * @param {Function} root0.onBulkItemReorder  - Callback for bulk item reordering
  * @return {JSX.Element} Container component
  */
 function Container({
@@ -49,7 +53,10 @@ function Container({
   onDeleteAll,
   isLastContainer,
   isHidden,
+  focusedContainerId,
+  isFocused,
   onToggleHidden,
+  onToggleFocus,
   onRename,
   onItemDrop,
   onBulkItemReorder,
@@ -142,6 +149,11 @@ function Container({
         : __('Collapse Column', 'alpaca'),
       onClick: toggleHidden,
     },
+    ...getBuiltInContainerMenuControls({
+      containerId: id,
+      isFocused,
+      onToggleFocus,
+    }),
     {
       icon: 'arrow-up-alt',
       title: __('Lift Priority Items', 'alpaca'),
@@ -237,6 +249,8 @@ function Container({
       hasItems,
       isLastContainer,
       isHidden,
+      focusedContainerId,
+      isFocused,
       isFiltering,
       visibleItemEntries,
       itemMatchesFilter,
@@ -244,6 +258,7 @@ function Container({
       onMoveAllToNext,
       onDeleteAll,
       onToggleHidden,
+      onToggleFocus,
       onRename,
       onBulkItemReorder,
       startAnimation,
@@ -459,7 +474,9 @@ function Container({
 
   return (
     <Card
-      className={`alpaca-container ${isHidden ? 'is-collapsed' : ''}`}
+      className={`alpaca-container ${
+        isHidden ? 'is-collapsed' : ''
+      } ${isFocused ? 'alpaca-is-focused-column' : ''}`}
       data-id={id}
     >
       <CardHeader
@@ -764,7 +781,10 @@ Container.propTypes = {
   onDeleteAll: PropTypes.func.isRequired,
   isLastContainer: PropTypes.bool.isRequired,
   isHidden: PropTypes.bool.isRequired,
+  focusedContainerId: PropTypes.string,
+  isFocused: PropTypes.bool,
   onToggleHidden: PropTypes.func.isRequired,
+  onToggleFocus: PropTypes.func.isRequired,
   onRename: PropTypes.func.isRequired,
   onItemDrop: PropTypes.func,
   onBulkItemReorder: PropTypes.func,
