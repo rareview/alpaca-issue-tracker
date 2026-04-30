@@ -177,7 +177,7 @@ const AttachmentRow = ({
   return (
     <tr>
       <th scope="row">Attachments</th>
-      <td className="flexalign">
+      <td className="alpaca-flex-align">
         <div className="alpaca-attachments-wrapper">
           {attachments.map((attachment) => (
             <Attachment

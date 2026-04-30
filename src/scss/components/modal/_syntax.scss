@@ -4,47 +4,46 @@
 * Syntax Highlighting
 */
 .wp-admin {
-  table.alpaca-data-table,
-  .alpaca-json-table table,
-  .alpaca-report-tab table,
-  .alpaca-errors-tab table,
-  .alpaca-data-table,
-  .alpaca-json-table,
-  .alpaca-report-tab,
-  .alpaca-errors-tab {
+  :is(
+    .alpaca-data-table,
+    .alpaca-json-table,
+    .alpaca-report-tab,
+    .alpaca-errors-tab
+  ) {
     &,
     table,
     pre,
     code,
     code[class*='language-'],
     pre[class*='language-'] {
-      font-family: $code-font !important;
-      font-size: 0.8125rem !important;
+      font-family: $font-family-code !important;
+      font-size: $font-size-sm !important;
     }
 
+    &.alpaca-data-table,
     table.alpaca-data-table {
-      border: 1px solid $greyborder;
+      border: 1px solid $color-border;
       border-collapse: collapse;
       width: 100%;
     }
 
     th,
     td {
-      border: 1px solid $greyborder;
-      padding: 10px;
-      text-align: left;
+      border: 1px solid $color-border;
+      padding: $space-md;
+      text-align: start;
       vertical-align: top;
       word-break: break-word;
     }
 
     th {
-      background-color: $greyshade;
-      width: 200px;
+      background-color: $color-surface-neutral;
+      width: 12.5rem;
     }
 
     td {
-      max-width: 600px;
-      line-height: 1.5em;
+      max-width: $width-content-md;
+      line-height: $line-height-code;
     }
 
     pre,
@@ -71,7 +70,7 @@
       padding: 0 !important;
       margin: 0 !important;
       border: 0 !important;
-      line-height: 1.5em !important;
+      line-height: $line-height-code !important;
       background: transparent !important;
       background-color: transparent !important;
       color: inherit !important;
@@ -96,6 +95,71 @@
 
     .token.operator {
       background: none !important;
+    }
+
+    .token.comment,
+    .token.prolog,
+    .token.doctype,
+    .token.cdata {
+      color: $color-text-subtle;
+    }
+
+    .token.punctuation {
+      color: $color-text-muted;
+    }
+
+    .token.property,
+    .token.tag,
+    .token.boolean,
+    .token.number,
+    .token.constant,
+    .token.symbol,
+    .token.deleted {
+      color: $color-danger-dark;
+    }
+
+    .token.selector,
+    .token.attr-name,
+    .token.string,
+    .token.char,
+    .token.builtin,
+    .token.inserted {
+      color: $color-success-muted;
+    }
+
+    .token.operator,
+    .token.entity,
+    .token.url,
+    .language-css .token.string,
+    .style .token.string {
+      color: $color-warning;
+      background: transparent;
+    }
+
+    .token.atrule,
+    .token.attr-value,
+    .token.keyword {
+      color: $color-link-dark;
+    }
+
+    .token.function,
+    .token.class-name {
+      color: $color-link-emphasis;
+    }
+
+    .token.regex,
+    .token.important,
+    .token.variable {
+      color: $color-deadline-soon;
+    }
+
+    .token.important,
+    .token.bold {
+      font-weight: $font-weight-bold;
+    }
+
+    .token.italic {
+      font-style: italic;
     }
   }
 }

@@ -5,15 +5,15 @@
 */
 .wp-admin {
   .alpaca-item {
-    --alpaca-item-controls-width: 2.25rem;
+    --alpaca-item-controls-width: #{$size-control-lg};
 
     display: flex;
     flex-direction: column;
-    gap: $spacegap;
+    gap: $space-gap-inline;
     transition:
-      opacity 0.2s ease-in-out,
-      transform 0.2s ease-in-out;
-    margin: 1px 0 9px 0;
+      opacity $duration-base ease-in-out,
+      transform $duration-base ease-in-out;
+    margin: 1px 0 $space-md 0;
     cursor: pointer;
 
     &:active {
@@ -25,21 +25,21 @@
     }
 
     .components-card__body {
-      padding-bottom: 4px;
+      padding-bottom: $space-2xs;
     }
 
     span.components-text {
-      font-size: $midfont;
+      font-size: $font-size-md;
     }
 
     .components-card__media {
-      margin: 4px 0; // assuming image between body and footer
+      margin: $space-2xs 0;
     }
 
     .alpaca-item-layout {
       display: grid;
       grid-template-columns: minmax(0, 1fr) var(--alpaca-item-controls-width);
-      column-gap: 0.25rem;
+      column-gap: $space-2xs;
       align-items: start;
     }
 
@@ -48,7 +48,7 @@
     }
 
     .alpaca-item-deadline {
-      border-radius: $common-radius;
+      border-radius: $radius-lg;
       margin: 0;
       @include alpaca-item-deadline-states;
     }
@@ -56,14 +56,14 @@
     &.is-high-priority {
       .alpaca-item-inner {
         box-shadow:
-          inset 0 0 100px rgba($priority-high-bg, 0.15),
-          rgba($priority-high-bg, 0.25) 0px 0px 0px 1px;
+          inset 0 0 6.25rem rgba($color-priority-high, 0.15),
+          rgba($color-priority-high, 0.25) 0 0 0 1px;
       }
       .alpaca-item-datapoints {
-        color: rgba(0, 0, 0, 0.6);
+        color: rgb(0 0 0 / 60%);
       }
       .alpaca-item-priority-badge svg {
-        border-color: rgba($priority-high-bg, 0.5);
+        border-color: rgba($color-priority-high, 0.5);
       }
     }
 
@@ -80,21 +80,21 @@
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
-      gap: 4px;
-      padding-bottom: 4px;
+      gap: $space-2xs;
+      padding-bottom: $space-2xs;
     }
 
     .alpaca-item-controls .dashicons {
       opacity: 0;
-      transition: opacity 0.2s ease-in-out;
+      transition: opacity $duration-base ease-in-out;
     }
 
     .alpaca-item-controls button.dashicons {
       background: transparent;
       border: 0;
       padding: 0;
-      width: 20px;
-      height: 20px;
+      width: $size-icon-lg;
+      height: $size-icon-lg;
       color: inherit;
     }
 
@@ -120,22 +120,23 @@
     }
 
     .alpaca-item-controls button.dashicons.dashicons-star-filled {
-      color: #ffb900;
+      color: $color-star;
     }
   }
 
   .alpaca-item-datapoints {
-    margin: 8px 0 4px 0;
-    line-height: 2.3em;
+    margin: $space-sm 0 $space-2xs 0;
+    font-size: $font-size-xs;
+    line-height: $line-height-datapoints;
     @include alpaca-item-datapoints-content;
   }
 
   .alpaca-item.empty {
     font-style: italic;
     background-color: transparent;
-    border: 1px dotted $greyborder;
-    padding: 6px 8px;
-    height: calc(100% - 12px);
+    border: 1px dotted $color-border;
+    padding: $space-xs $space-sm;
+    height: calc(100% - $space-lg);
 
     .alpaca-item-controls {
       display: none;
@@ -160,13 +161,14 @@
 /* Canonical label pill styles (shared across items, modals, settings, and board controls)
    Moved here to keep item-specific UI tokens near card styling. */
 .alpaca-label-pill {
-  border-radius: $common-radius;
+  border-radius: $radius-pill;
   box-sizing: border-box;
   display: inline-flex;
   align-items: center;
-  height: 24px;
-  padding: 0 8px;
-  line-height: 1;
+  height: $size-icon-xl;
+  padding: 0 $space-sm;
+  line-height: $line-height-reset;
   white-space: nowrap;
-  gap: 0.25rem;
+  gap: $space-2xs;
+  font-size: $font-size-xs;
 }

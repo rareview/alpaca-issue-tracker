@@ -4,22 +4,22 @@
  * 5.5 - Empty State
  */
 .alpaca-empty-state {
-  margin: 2rem auto;
-  max-width: 600px;
+  margin: $space-6xl auto;
+  max-width: $width-content-md;
 
   .components-notice {
-    margin-bottom: 1rem;
+    margin-bottom: $space-2xl;
 
     p {
-      margin: 0.5rem 0;
+      margin: $space-sm 0;
     }
 
     strong {
-      font-size: 1.1em;
+      font-size: $font-size-lg;
     }
 
     .components-button {
-      margin-top: 1rem;
+      margin-top: $space-2xl;
     }
   }
 }

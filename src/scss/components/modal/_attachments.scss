@@ -6,20 +6,20 @@
 .wp-admin {
   .alpaca-attachments-wrapper {
     display: flex;
-    gap: 15px;
-    padding-bottom: 10px;
+    gap: $space-2xl;
+    padding-bottom: $space-md;
     flex-wrap: wrap;
   }
 
   .alpaca-comment-attachments--pending {
-    padding-bottom: 15px;
+    padding-bottom: $space-2xl;
   }
 
   .alpaca-attachment {
     position: relative;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: $space-sm;
 
     .alpaca-attachment-thumbnail {
       padding: 0;
@@ -30,8 +30,8 @@
       img {
         display: block;
         width: auto;
-        height: 60px;
-        border: 1px solid $greyborder;
+        height: $size-thumbnail;
+        border: 1px solid $color-border;
         border-radius: inherit;
       }
     }
@@ -39,37 +39,32 @@
     .alpaca-attachment-file {
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 0 12px;
-      border: 1px solid $greyborder;
-      border-radius: 6px;
-      background: $bgwhite;
-      color: $greytext;
+      gap: $space-sm;
+      padding: 0 $space-lg;
+      border: 1px solid $color-border;
+      border-radius: $radius-md;
+      background: $color-white;
+      color: $color-text-muted;
       text-decoration: none;
-      max-width: 260px;
-      min-height: 60px;
+      max-width: 16.25rem;
+      min-height: $size-thumbnail;
     }
 
     .alpaca-attachment-file-link {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: $space-sm;
       flex: 1 1 auto;
       min-width: 0;
       color: inherit;
       text-decoration: none;
     }
 
-    .alpaca-attachment-file-icon {
-      flex: 0 0 auto;
-      color: $greytext;
-    }
-
     .alpaca-attachment-file-meta {
       display: flex;
       flex-direction: column;
       min-width: 0;
-      gap: 4px;
+      gap: $space-2xs;
     }
 
     .alpaca-attachment-file-name {
@@ -78,18 +73,18 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      font-weight: 600;
-      color: #1d2327;
+      font-weight: $font-weight-semibold;
+      color: $color-text-primary;
     }
 
     .alpaca-attachment-file-type {
       flex: 0 0 auto;
-      padding: 2px 6px;
-      border-radius: 999px;
-      background: $greyshade;
-      color: $greytext;
-      font-size: 11px;
-      letter-spacing: 0.02em;
+      padding: $space-3xs $space-xs;
+      border-radius: $radius-pill;
+      background: $color-surface-neutral;
+      color: $color-text-muted;
+      font-size: $font-size-xs;
+      letter-spacing: $letter-spacing-meta;
       text-transform: uppercase;
       align-self: flex-start;
     }
@@ -97,30 +92,14 @@
     .alpaca-attachment-delete {
       position: absolute;
       top: 0;
-      right: 0;
-      z-index: $z-index-attachment-delete;
+      inset-inline-end: 0;
+      z-index: 10;
       opacity: 0;
-      transition: opacity 0.2s ease-in-out;
+      transition: opacity $duration-base ease-in-out;
     }
 
     &:hover .alpaca-attachment-delete {
       opacity: 1;
-    }
-  }
-
-  .alpaca-screenshot-wrapper {
-    position: relative;
-
-    .alpaca-screenshot {
-      width: 100%;
-      height: auto;
-    }
-
-    .alpaca-screenshot-delete {
-      position: absolute;
-      top: 0;
-      right: 0;
-      z-index: $z-index-attachment-delete;
     }
   }
 }

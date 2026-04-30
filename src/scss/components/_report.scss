@@ -1,8 +1,8 @@
 @use '../abstracts' as *;
 
 .wp-admin #wp-admin-bar-alpaca-report a svg {
-  width: 1rem;
-  height: 1rem;
+  width: $size-icon-sm;
+  height: $size-icon-sm;
   vertical-align: text-top;
-  margin-right: 4px;
+  margin-inline-end: $space-2xs;
 }

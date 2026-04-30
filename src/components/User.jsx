@@ -45,7 +45,7 @@ const User = ({
     ) : null;
 
   return (
-    <div className="alpaca-user flexalign" title={userName}>
+    <div className="alpaca-user alpaca-flex-align" title={userName}>
       {!avatarAfterName && avatarNode}
       {showName && <div className="alpaca-user-name">{userName}</div>}
       {avatarAfterName && avatarNode}

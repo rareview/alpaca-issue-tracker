@@ -44,7 +44,9 @@ const Time = memo(
     const tooltipText = formattedOffset
       ? sprintf(offsetFormatLabel, formattedAbsolute, formattedOffset)
       : formattedAbsolute;
-    const spanClassName = ['timestamp', className].filter(Boolean).join(' ');
+    const spanClassName = ['alpaca-timestamp', className]
+      .filter(Boolean)
+      .join(' ');
 
     if (type === 'relative') {
       const now = new Date();

@@ -6,16 +6,16 @@
 .alpaca-status-manager {
   .status-grid {
     .status-row-content {
-      gap: $spacegap;
+      gap: $space-gap-inline;
 
       .drag-handle {
         cursor: grab;
-        padding: 4px;
-        color: $greytext;
+        padding: $space-2xs;
+        color: $color-text-muted;
         display: inline-flex;
-        flex: 0 0 24px;
+        flex: 0 0 $size-icon-xl;
         justify-content: center;
-        width: 24px;
+        width: $size-icon-xl;
       }
     }
 
@@ -29,7 +29,7 @@
   .alpaca-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 8px;
-    margin-top: 16px;
+    gap: $space-sm;
+    margin-top: $space-2xl;
   }
 }

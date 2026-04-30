@@ -8,25 +8,25 @@
   background-color: $bg-color;
   color: if(
     color.channel($bg-color, 'lightness', $space: hsl) > 67%,
-    #000,
-    #fff
+    $color-black,
+    $color-white
   );
-  margin: 2px 0;
-  margin-inline-end: 10px;
-  padding: 0 8px;
+  margin: $space-3xs 0;
+  margin-inline-end: $space-md;
+  padding: 0 $space-sm;
 }
 
 @mixin alpaca-item-deadline-states {
   &[data-deadline-state='late'] {
-    @include deadline-style($deadline-late-bg);
+    @include deadline-style($color-priority-high);
   }
 
   &[data-deadline-state='today'] {
-    @include deadline-style($deadline-today-bg);
+    @include deadline-style($color-deadline-today);
   }
 
   &[data-deadline-state='soon'] {
-    @include deadline-style($deadline-soon-bg);
+    @include deadline-style($color-deadline-soon);
   }
 
   &[data-deadline-state='future'] {
@@ -40,23 +40,23 @@
   gap: 0.4ch;
 
   svg {
-    color: $priority-high-bg;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    padding: 2px;
-    border: 1px solid $greyborder;
+    color: $color-priority-high;
+    width: $size-icon-lg;
+    height: $size-icon-lg;
+    border-radius: $radius-round;
+    padding: $space-3xs;
+    border: 1px solid $color-border;
     flex-shrink: 0;
   }
 }
 
 @mixin alpaca-assignee-stack(
-  $avatar-size: 24px,
-  $user-offset: -8px,
-  $avatar-overlap: -2px,
+  $avatar-size: $size-icon-xl,
+  $user-offset: -$space-sm,
+  $avatar-overlap: calc(-1 * 2px),
   $show-single-name: true,
-  $user-font-size: 0.8rem,
-  $user-gap: 0.5rem
+  $user-font-size: $font-size-xs,
+  $user-gap: $space-sm
 ) {
   .alpaca-user-name {
     display: none;
@@ -85,24 +85,24 @@
   img {
     width: $avatar-size;
     height: $avatar-size;
-    border: 1px solid $greyborder;
-    border-radius: 50%;
-    background: $bgwhite;
+    border: 1px solid $color-border;
+    border-radius: $radius-round;
+    background: $color-white;
     vertical-align: middle;
     margin-inline-end: $avatar-overlap;
   }
 }
 
 @mixin alpaca-item-datapoints-content(
-  $item-spacing: 10px,
-  $text-color: $greytext
+  $item-spacing: $space-md,
+  $text-color: $color-text-muted
 ) {
   color: $text-color;
 
   > * {
     display: inline-flex;
     align-items: center;
-    gap: 0.4ch;
+    gap: $space-2xs;
     vertical-align: middle;
     margin-inline-end: $item-spacing;
   }
@@ -132,7 +132,7 @@
   }
 
   .alpaca-item-labels > * {
-    margin-inline-end: 4px;
+    margin-inline-end: $space-2xs;
   }
 
   .alpaca-item-labels > *:last-child {
@@ -143,20 +143,20 @@
     text-wrap: nowrap;
 
     svg {
-      margin-inline-end: 3px;
+      margin-inline-end: $space-3xs;
       vertical-align: middle;
-      margin-top: -2px;
+      margin-top: calc(-1 * 2px);
     }
   }
 }
 
 @mixin alpaca-slide-right-enter {
-  animation: slide-in-right 300ms ease-out forwards;
+  animation: slide-in-right $duration-slow ease-out forwards;
   transform-origin: 100% center;
 
   html[dir='rtl'] &,
   .rtl & {
-    animation: slide-in-left 300ms ease-out forwards;
+    animation: slide-in-left $duration-slow ease-out forwards;
     transform-origin: 0 center;
   }
 }

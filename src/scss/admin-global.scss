@@ -4,36 +4,36 @@
 @use './abstracts' as *;
 
 .wp-admin #wp-admin-bar-alpaca-report a svg {
-  width: 1rem;
-  height: 1rem;
+  width: $size-icon-sm;
+  height: $size-icon-sm;
   vertical-align: text-top;
-  margin-inline-end: 4px;
+  margin-inline-end: $space-2xs;
 }
 
 .alpaca-admin-menu-badge-mount {
-  margin-inline-start: 6px;
+  margin-inline-start: $space-xs;
 }
 
 .wp-admin {
   .alpaca-modal {
-    background: $bgwhite;
+    background: $color-white;
     color: inherit;
 
     .small-wrapper {
-      padding: 0.8rem 0 1rem;
+      padding: $space-lg 0 $space-2xl;
     }
 
     small {
-      font-size: 12px;
+      font-size: $font-size-xs;
     }
 
     p {
       margin-top: 0;
-      margin-bottom: 1rem;
+      margin-bottom: $space-2xl;
     }
 
     button {
-      margin-inline-end: 0.5rem;
+      margin-inline-end: $space-sm;
     }
   }
 }

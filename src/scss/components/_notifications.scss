@@ -5,43 +5,43 @@
  */
 .alpaca-notifications-screen,
 .alpaca-notification-template-screen {
-  margin-top: 20px;
+  margin-top: $space-4xl;
 }
 
 .alpaca-notifications-screen > .alpaca-notifications-panel {
-  margin-top: 20px;
-  transform: translateY(-6px);
+  margin-top: $space-4xl;
+  transform: translateY(-$space-xs);
   will-change: transform, opacity, max-height;
   transition:
-    max-height 320ms cubic-bezier(0.2, 0.7, 0.2, 1),
-    opacity 240ms ease,
-    transform 240ms cubic-bezier(0.2, 0.7, 0.2, 1),
-    margin-block-start 240ms ease;
+    max-height $duration-slow cubic-bezier(0.2, 0.7, 0.2, 1),
+    opacity $duration-base ease,
+    transform $duration-base cubic-bezier(0.2, 0.7, 0.2, 1),
+    margin-block-start $duration-base ease;
   background: none !important;
   border: 0 !important;
   padding: 0 !important;
 
   p {
     margin: 0;
-    color: #50575e;
+    color: $color-text-secondary;
   }
 }
 
 .alpaca-notifications-tabs {
   .components-tab-panel__tabs {
-    border-bottom: 1px solid $greyborder;
+    border-bottom: 1px solid $color-border;
     margin-bottom: 0;
   }
 
   .components-tab-panel__tab-content {
-    padding-top: 20px;
+    padding-top: $space-4xl;
   }
 }
 
 .alpaca-notifications-grid,
 .alpaca-notification-template-layout {
   display: grid;
-  gap: 20px;
+  gap: $space-4xl;
 }
 
 .alpaca-notifications-grid {
@@ -49,26 +49,26 @@
 }
 
 .alpaca-notification-template-layout {
-  grid-template-columns: minmax(0, 1.5fr) minmax(320px, 0.95fr);
+  grid-template-columns: minmax(0, 1.5fr) minmax($width-sidebar, 0.95fr);
   align-items: start;
 }
 
 .alpaca-notifications-panel {
-  background: $bgwhite;
-  border: 1px solid $greyborder;
-  border-radius: $common-radius;
-  padding: 20px;
+  background: $color-white;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  padding: $space-4xl;
 
   h2 {
-    margin: 0 0 14px;
-    font-size: 18px;
-    line-height: 1.35;
+    margin: 0 0 $space-xl;
+    font-size: $font-size-lg;
+    line-height: $line-height-base;
   }
 
   p {
-    color: #50575e;
-    font-size: 12px;
-    margin: 0 0 1em;
+    color: $color-text-secondary;
+    font-size: $font-size-xs;
+    margin: 0 0 $space-2xl;
   }
 }
 
@@ -82,58 +82,58 @@
 }
 
 .alpaca-notifications-panel-intro {
-  margin: 0 0 16px;
+  margin: 0 0 $space-2xl;
 }
 
 .alpaca-notifications-panel--narrow {
-  max-width: 560px;
+  max-width: 35rem;
 }
 
 .alpaca-notifications-panel--email {
-  max-width: 520px;
+  max-width: 32.5rem;
 }
 
 .alpaca-notifications-options {
   display: grid;
-  gap: 10px;
+  gap: $space-md;
 }
 
 .alpaca-notifications-option-group {
   display: grid;
-  gap: 8px;
+  gap: $space-sm;
 }
 
 .alpaca-notifications-channel-stack,
 .alpaca-notifications-email-layout {
   display: grid;
-  gap: 12px;
+  gap: $space-lg;
 }
 
 .alpaca-notifications-channel-summary {
   display: grid;
-  gap: 12px;
+  gap: $space-lg;
 }
 
 .alpaca-notifications-channel-row {
   display: grid;
-  gap: 4px;
+  gap: $space-2xs;
 }
 
 .alpaca-notifications-channel-label {
-  color: #1d2327;
-  font-size: 13px;
-  font-weight: 600;
+  color: $color-text-primary;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
 }
 
 .alpaca-notifications-channel-value {
-  color: #50575e;
-  font-size: 14px;
-  line-height: 1.5;
+  color: $color-text-secondary;
+  font-size: $font-size-sm;
+  line-height: $line-height-code;
   word-break: break-word;
 }
 
 .alpaca-notifications-label-picker {
-  margin-left: 24px;
+  margin-inline-start: $space-5xl;
   display: none;
 }
 
@@ -143,26 +143,26 @@
 
 .alpaca-notifications-label-grid {
   display: grid;
-  gap: 10px;
+  gap: $space-md;
 }
 
 .alpaca-notifications-label-grid {
   display: grid;
-  gap: 10px;
+  gap: $space-md;
 }
 
 .alpaca-notifications-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 20px;
-  padding-top: 16px;
+  gap: $space-lg;
+  margin-top: $space-4xl;
+  padding-top: $space-2xl;
 }
 
 .alpaca-notifications-email-digest-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: $space-lg;
   align-items: center;
 }
 
@@ -173,7 +173,7 @@
 
 .alpaca-notifications-email-time-wrap {
   flex: 0 0 auto;
-  margin-block-start: 2px;
+  margin-block-start: $space-3xs;
 }
 
 .alpaca-notifications-email-digest-settings {
@@ -183,10 +183,10 @@
 }
 
 .alpaca-notifications-email-time {
-  inline-size: min(100%, 220px);
+  inline-size: min(100%, 13.75rem);
 }
 
-@media (max-width: 600px) {
+@media (max-width: $width-content-md) {
   .alpaca-notifications-email-digest-row {
     align-items: center;
   }
@@ -196,28 +196,11 @@
   }
 }
 
-.alpaca-digest-template-locked-summary {
-  border: 1px solid $greyborder;
-  border-radius: $common-radius;
-  background: $container-bg;
-  padding: 14px 16px;
-
-  strong {
-    display: block;
-    margin-bottom: 8px;
-  }
-
-  ul {
-    margin: 0;
-    padding-left: 18px;
-  }
-}
-
 .alpaca-notification-template-section-header {
-  margin-bottom: 16px;
+  margin-bottom: $space-2xl;
 
   h2 {
-    margin-bottom: 6px;
+    margin-bottom: $space-xs;
   }
 
   p {
@@ -227,20 +210,20 @@
 }
 
 .alpaca-notification-template-editor-shell {
-  border: 1px solid $greyborder;
-  border-radius: $common-radius;
-  background: $bgwhite;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  background: $color-white;
 }
 
 .alpaca-notification-template-canvas {
-  min-height: 460px;
-  padding: 20px;
-  background: $container-bg;
-  font-family: $core-font-stack;
+  min-height: 28.75rem;
+  padding: $space-4xl;
+  background: $color-surface-subtle;
+  font-family: $font-family-base;
 }
 
 .alpaca-notification-template-block-list {
-  max-width: 700px;
+  max-width: 43.75rem;
   margin: 0;
 }
 
@@ -248,13 +231,13 @@
   .block-editor-block-list__layout
   > .wp-block {
   margin-top: 0;
-  margin-bottom: 14px;
+  margin-bottom: $space-xl;
 }
 
 .alpaca-notification-template-canvas .alpaca-notification-header {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: $space-2xl;
 }
 
 .alpaca-notification-template-canvas .alpaca-notification-header__copy {
@@ -267,108 +250,108 @@
 }
 
 .alpaca-notification-template-canvas .wp-block-buttons {
-  margin-top: 18px;
-  margin-bottom: 18px;
+  margin-top: $space-3xl;
+  margin-bottom: $space-3xl;
 }
 
 .alpaca-notification-template-canvas .wp-block-button__link {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 36px;
-  padding: 6px 12px;
+  min-height: $size-control-lg;
+  padding: $space-xs $space-lg;
   border: 0;
-  border-radius: 2px;
-  background: #3858e9;
-  color: #fff;
-  font-size: 13px;
-  line-height: 1;
+  border-radius: $radius-xs;
+  background: $color-brand-blue;
+  color: $color-white;
+  font-size: $font-size-sm;
+  line-height: $line-height-reset;
   text-decoration: none;
   box-sizing: border-box;
 
   &:hover,
   &:focus {
-    background: #2145e6;
-    color: #fff;
+    background: $color-brand-blue-hover;
+    color: $color-white;
   }
 }
 
 .alpaca-notification-template-canvas .wp-block-separator {
   opacity: 1;
-  border-top: 1px solid $greyborder;
+  border-top: 1px solid $color-border;
 }
 
 .alpaca-notification-template-appender {
-  max-width: 700px;
+  max-width: 43.75rem;
   margin: 0;
 
   .block-editor-default-block-appender,
   .block-editor-button-block-appender {
-    margin-top: 12px;
+    margin-top: $space-lg;
   }
 }
 
 .alpaca-notification-token-block {
-  border: 1px solid $greyborder;
-  border-radius: $common-radius;
-  background: $bgwhite;
-  padding: 14px 16px;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  background: $color-white;
+  padding: $space-xl $space-2xl;
 
   strong {
     display: block;
-    margin-bottom: 6px;
-    font-size: 13px;
+    margin-bottom: $space-xs;
+    font-size: $font-size-sm;
   }
 
   p {
     margin: 0;
-    color: #50575e;
-    font-size: 13px;
+    color: $color-text-secondary;
+    font-size: $font-size-sm;
   }
 }
 
 .alpaca-notification-template-preview-panel {
   position: sticky;
-  top: 32px;
+  top: $size-control-md;
 }
 
 .alpaca-notification-preview-frame {
-  border: 1px solid $greyborder;
-  border-radius: $common-radius;
-  background: $bgwhite;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  background: $color-white;
   overflow: hidden;
 }
 
 .alpaca-notification-preview-envelope {
   display: grid;
-  gap: 10px;
-  padding: 16px 18px;
-  border-bottom: 1px solid $greyborder;
-  background: #f6f7f7;
+  gap: $space-md;
+  padding: $space-2xl $space-3xl;
+  border-bottom: 1px solid $color-border;
+  background: $color-surface-muted;
 }
 
 .alpaca-notification-preview-meta {
   display: grid;
-  gap: 4px;
+  gap: $space-2xs;
 
   span {
-    color: #50575e;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
+    color: $color-text-secondary;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+    letter-spacing: $letter-spacing-overline;
     text-transform: uppercase;
   }
 
   strong {
-    font-size: 13px;
-    font-weight: 600;
-    color: #1d2327;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    color: $color-text-primary;
     word-break: break-word;
   }
 }
 
 .alpaca-notification-preview-body {
-  background: $bgwhite;
+  background: $color-white;
 }
 
 .alpaca-mentions-textarea {
@@ -380,42 +363,42 @@
 }
 
 .alpaca-mentions-popover-content {
-  min-width: 280px;
-  max-width: 340px;
-  padding: 8px;
+  min-width: 17.5rem;
+  max-width: 21.25rem;
+  padding: $space-sm;
   display: grid;
-  gap: 4px;
+  gap: $space-2xs;
 }
 
 .alpaca-mentions-empty {
   margin: 0;
-  color: $greytext;
-  padding: 8px;
+  color: $color-text-muted;
+  padding: $space-sm;
 }
 
 .alpaca-mentions-option.components-button {
   width: 100%;
   justify-content: flex-start;
   align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
-  border-radius: 6px;
-  color: #0f172a;
+  gap: $space-md;
+  padding: $space-sm $space-md;
+  border-radius: $radius-md;
+  color: $color-text-strong;
 
   &.is-active,
   &:hover {
-    background: #eff6ff;
-    color: #0f172a;
+    background: $color-link-soft;
+    color: $color-text-strong;
   }
 }
 
 .alpaca-mentions-option-avatar {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  flex: 0 0 28px;
+  width: $size-control-sm;
+  height: $size-control-sm;
+  border-radius: $radius-round;
+  flex: 0 0 $size-control-sm;
   object-fit: cover;
-  border: 1px solid $greyborder;
+  border: 1px solid $color-border;
 }
 
 .alpaca-mentions-option-avatar--fallback {
@@ -428,37 +411,36 @@
 
 .alpaca-mentions-option-labels {
   display: grid;
-  gap: 2px;
-  text-align: left;
+  gap: $space-3xs;
+  text-align: start;
 
   span {
-    color: #64748b;
-    font-size: 12px;
+    color: $color-text-subtle;
+    font-size: $font-size-xs;
   }
 }
 
-.alpaca-comment-mention,
 .alpaca-notification-mention {
   display: inline-flex;
   align-items: center;
-  border-radius: 999px;
-  background: #eff6ff;
-  color: #1d4ed8;
-  font-weight: 600;
-  padding: 0 8px;
+  border-radius: $radius-pill;
+  background: $color-link-soft;
+  color: $color-link-emphasis;
+  font-weight: $font-weight-semibold;
+  padding: 0 $space-sm;
 }
 
 .alpaca-notification-email {
-  background: $container-bg;
-  color: #1d2327;
-  font-family: $core-font-stack;
-  padding: 24px 16px;
+  background: $color-surface-subtle;
+  color: $color-text-primary;
+  font-family: $font-family-base;
+  padding: $space-5xl $space-2xl;
 
   .screen-reader-text {
     position: absolute;
     width: 1px;
     height: 1px;
-    margin: -1px;
+    margin: calc(-1 * 1px);
     border: 0;
     padding: 0;
     clip: rect(1px, 1px, 1px, 1px);
@@ -467,16 +449,16 @@
   }
 
   .alpaca-notification-email__inner {
-    max-width: 680px;
+    max-width: 42.5rem;
     margin: 0 auto;
   }
 
   .alpaca-notification-email__inner > * {
     box-sizing: border-box;
     width: 100%;
-    margin-right: 0;
-    margin-left: 0;
-    margin-bottom: 16px;
+    margin-inline-end: 0;
+    margin-inline-start: 0;
+    margin-bottom: $space-2xl;
   }
 
   h1,
@@ -485,15 +467,15 @@
   h4,
   h5,
   h6 {
-    color: #1d2327;
+    color: $color-text-primary;
     margin-top: 0;
   }
 
   p,
   li {
-    color: #50575e;
-    font-size: 15px;
-    line-height: 1.65;
+    color: $color-text-secondary;
+    font-size: $font-size-md;
+    line-height: $line-height-relaxed;
   }
 
   p {
@@ -501,66 +483,66 @@
   }
 
   a {
-    color: #2271b1;
+    color: $color-link;
   }
 
   .alpaca-notification-comment-content {
-    background: $bgwhite;
-    border: 1px solid $greyborder;
-    border-radius: $common-radius;
-    padding: 20px;
+    background: $color-white;
+    border: 1px solid $color-border;
+    border-radius: $radius-lg;
+    padding: $space-4xl;
     box-shadow: none;
   }
 
   .wp-block-buttons {
-    margin-top: 20px;
-    margin-bottom: 20px;
+    margin-top: $space-4xl;
+    margin-bottom: $space-4xl;
   }
 
   .wp-block-buttons > .wp-block-button {
-    margin-right: 8px;
+    margin-inline-end: $space-sm;
   }
 
   .wp-block-button__link {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 36px;
-    padding: 6px 12px;
+    min-height: $size-control-lg;
+    padding: $space-xs $space-lg;
     border: 0;
-    border-radius: 2px;
-    background: #3858e9;
-    color: #fff;
-    font-size: 13px;
-    line-height: 1;
+    border-radius: $radius-xs;
+    background: $color-brand-blue;
+    color: $color-white;
+    font-size: $font-size-sm;
+    line-height: $line-height-reset;
     text-decoration: none;
   }
 
   .wp-block-separator {
-    border-top: 1px solid $greyborder;
+    border-top: 1px solid $color-border;
     opacity: 1;
-    margin-top: 20px;
-    margin-bottom: 20px;
+    margin-top: $space-4xl;
+    margin-bottom: $space-4xl;
   }
 
   .alpaca-notification-site-logo {
     display: block;
-    max-width: 180px;
+    max-width: 11.25rem;
     height: auto;
   }
 
   .alpaca-notification-site-icon {
     display: block;
-    width: 40px;
-    max-width: 40px;
-    height: 40px;
+    width: $size-control-xl;
+    max-width: $size-control-xl;
+    height: $size-control-xl;
     object-fit: contain;
   }
 
   .alpaca-notification-header {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: $space-xl;
     padding: 0;
     background: transparent;
     border: 0;
@@ -572,15 +554,15 @@
 
   .alpaca-notification-header__title {
     margin: 0;
-    color: #1d2327;
-    font-size: 16px;
-    font-weight: 700;
-    line-height: 1.4;
+    color: $color-text-primary;
+    font-size: $font-size-md;
+    font-weight: $font-weight-bold;
+    line-height: $line-height-base;
   }
 
   .alpaca-notification-header__tagline {
     margin: 0;
-    color: #646970;
+    color: $color-text-secondary;
 
     &:empty {
       display: none;
@@ -588,44 +570,44 @@
   }
 
   .alpaca-notification-attachments {
-    margin-top: 24px;
+    margin-top: $space-5xl;
 
     h3 {
-      font-size: 14px;
-      letter-spacing: 0.08em;
+      font-size: $font-size-sm;
+      letter-spacing: $letter-spacing-overline;
       text-transform: uppercase;
-      color: #50575e;
-      margin-bottom: 8px;
+      color: $color-text-secondary;
+      margin-bottom: $space-sm;
     }
 
     ul {
       margin: 0;
-      padding-left: 20px;
+      padding-inline-start: $space-4xl;
     }
   }
 
   &.alpaca-notification-digest-email h2 {
-    margin: 20px 0 24px;
-    color: #111827;
-    font-size: 30px;
-    line-height: 1.08;
-    letter-spacing: -0.04em;
+    margin: $space-4xl 0 $space-5xl;
+    color: $color-text-strong;
+    font-size: $font-size-display;
+    line-height: $line-height-tight;
+    letter-spacing: $letter-spacing-tight;
   }
 
   .alpaca-notification-digest-section {
-    margin-top: 34px;
+    margin-top: 2.125rem;
 
     h3 {
-      margin-bottom: 16px;
-      color: #111827;
-      font-size: 19px;
-      line-height: 1.2;
+      margin-bottom: $space-2xl;
+      color: $color-text-strong;
+      font-size: $font-size-xl;
+      line-height: $line-height-tight;
     }
   }
 
   .alpaca-notification-digest-deadline-table-wrap {
-    border: 1px solid $greyborder;
-    border-radius: $common-radius;
+    border: 1px solid $color-border;
+    border-radius: $radius-lg;
     overflow: hidden;
   }
 
@@ -635,31 +617,31 @@
     // table-layout: fixed;
 
     th {
-      padding: 8px 12px;
-      border-bottom: 1px solid $greyborder;
-      color: #4b5563;
-      font-size: 12px;
-      font-weight: 700;
+      padding: $space-sm $space-lg;
+      border-bottom: 1px solid $color-border;
+      color: $color-text-secondary;
+      font-size: $font-size-xs;
+      font-weight: $font-weight-bold;
       white-space: nowrap;
-      text-align: left;
+      text-align: start;
 
       &:first-child {
-        text-align: left;
+        text-align: start;
       }
     }
   }
 
   .alpaca-notification-digest-deadline-row {
-    background: $bgwhite;
+    background: $color-white;
     &:nth-child(even) {
-      background: $container-bg;
+      background: $color-surface-subtle;
     }
 
     td {
-      padding: 14px 16px;
-      border-top: 1px solid $greyborder;
-      font-size: 14px;
-      line-height: 1.4;
+      padding: $space-xl $space-2xl;
+      border-top: 1px solid $color-border;
+      font-size: $font-size-sm;
+      line-height: $line-height-base;
       vertical-align: middle;
     }
 
@@ -669,8 +651,8 @@
   }
 
   .alpaca-notification-digest-deadline-row__title {
-    color: #111827;
-    font-weight: 600;
+    color: $color-text-strong;
+    font-weight: $font-weight-semibold;
     width: 44%;
 
     a {
@@ -681,19 +663,13 @@
 
   .alpaca-notification-digest-deadline-row__title-stack {
     display: grid;
-    gap: 8px;
-  }
-
-  .alpaca-notification-digest-deadline-row__title-meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+    gap: $space-sm;
   }
 
   .alpaca-notification-digest-deadline-row__due,
   .alpaca-notification-digest-deadline-row__assignees,
   .alpaca-notification-digest-deadline-row__status {
-    color: #374151;
+    color: $color-text-primary;
     width: auto;
   }
 
@@ -704,12 +680,12 @@
 
   .alpaca-notification-digest-card {
     display: grid;
-    gap: 14px;
-    background: $bgwhite;
-    border: 1px solid $greyborder;
-    border-radius: $common-radius;
-    padding: 22px 24px;
-    margin-top: 18px;
+    gap: $space-xl;
+    background: $color-white;
+    border: 1px solid $color-border;
+    border-radius: $radius-lg;
+    padding: $space-5xl $space-5xl;
+    margin-top: $space-3xl;
 
     &:first-of-type {
       margin-top: 0;
@@ -718,9 +694,9 @@
 
   .alpaca-notification-digest-card__title {
     margin: 0;
-    color: #111827;
-    font-size: 20px;
-    line-height: 1.25;
+    color: $color-text-strong;
+    font-size: $font-size-xl;
+    line-height: $line-height-heading;
 
     a {
       color: inherit;
@@ -730,13 +706,13 @@
 
   .alpaca-notification-digest-card__more {
     margin: 0;
-    font-size: 14px;
-    color: #4b5563;
+    font-size: $font-size-sm;
+    color: $color-text-secondary;
   }
 
   .alpaca-item-datapoints {
-    font-size: 14px;
-    line-height: 1.4;
+    font-size: $font-size-sm;
+    line-height: $line-height-base;
     @include alpaca-item-datapoints-content;
   }
 
@@ -745,7 +721,7 @@
   }
 
   .alpaca-item-deadline {
-    border-radius: $common-radius;
+    border-radius: $radius-lg;
     margin: 0 !important;
     @include alpaca-item-deadline-states;
   }
@@ -756,25 +732,25 @@
 
   .alpaca-notification-digest-events {
     margin: 0;
-    padding-left: 0;
+    padding-inline-start: 0;
     list-style: none;
   }
 
   .alpaca-notification-digest-event {
-    margin-top: 12px;
-    padding-left: 18px;
+    margin-top: $space-lg;
+    padding-inline-start: $space-3xl;
     position: relative;
 
     &::before {
       content: '';
       position: absolute;
-      top: 5px;
+      top: $space-sm;
       inset-inline-start: 0;
-      width: 8px;
-      height: 8px;
-      border: 1.5px solid #94a3b8;
-      border-radius: 50%;
-      background: #fff;
+      width: $space-sm;
+      height: $space-sm;
+      border: 0.09375rem solid $color-text-subtle;
+      border-radius: $radius-round;
+      background: $color-white;
     }
 
     &:first-child {
@@ -786,42 +762,42 @@
     display: flex;
     align-items: baseline;
     justify-content: space-between;
-    gap: 12px;
+    gap: $space-lg;
   }
 
   .alpaca-notification-digest-event__headline {
-    color: #111827;
-    font-size: 15px;
-    line-height: 1.45;
+    color: $color-text-strong;
+    font-size: $font-size-md;
+    line-height: $line-height-code;
   }
 
   .alpaca-notification-digest-event__time {
     flex-shrink: 0;
-    color: #6b7280;
-    font-size: 13px;
-    line-height: 1.4;
+    color: $color-text-subtle;
+    font-size: $font-size-sm;
+    line-height: $line-height-base;
   }
 
   .alpaca-notification-digest-event__excerpt {
-    margin-top: 6px;
-    color: #374151;
-    font-size: 14px;
-    line-height: 1.6;
+    margin-top: $space-xs;
+    color: $color-text-primary;
+    font-size: $font-size-sm;
+    line-height: $line-height-relaxed;
   }
 
   .alpaca-notification-digest-empty {
     margin: 0;
-    color: #6b7280;
+    color: $color-text-subtle;
   }
 
   .alpaca-notification-digest-deadline-row__assignees {
     .alpaca-item-assignees {
-      @include alpaca-assignee-stack(18px, 0, 0, false, 0.8rem);
+      @include alpaca-assignee-stack($size-icon-md, 0, 0, false, $font-size-xs);
     }
   }
 }
 
-@media (max-width: 1200px) {
+@media (max-width: $breakpoint-notifications-lg) {
   .alpaca-notification-template-layout {
     grid-template-columns: 1fr;
   }
@@ -831,7 +807,7 @@
   }
 }
 
-@media (max-width: 960px) {
+@media (max-width: $breakpoint-notifications-md) {
   .alpaca-notifications-grid {
     grid-template-columns: 1fr;
   }

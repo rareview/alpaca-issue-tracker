@@ -56,7 +56,7 @@ const PriorityRow = memo(
       <div className="alpaca-details-grid__label">
         {__('Priority', 'alpaca')}
       </div>
-      <div className="alpaca-details-grid__value flexalign">
+      <div className="alpaca-details-grid__value alpaca-flex-align">
         <ToggleControl
           label={__('High Priority', 'alpaca')}
           checked={isHighPriority}
@@ -79,7 +79,7 @@ const AssigneeRow = memo(
       <div className="alpaca-details-grid__label">
         {__('Assignees', 'alpaca')}
       </div>
-      <div className="alpaca-details-grid__value flexalign">
+      <div className="alpaca-details-grid__value alpaca-flex-align">
         <AssigneeSelector
           assignees={assignees}
           allUsers={allUsers}
@@ -101,7 +101,7 @@ const LabelsRow = memo(
   ({ labels, selectedIds, onChange, isLoading }) => (
     <div id="labels" className="alpaca-details-grid__item">
       <div className="alpaca-details-grid__label">{__('Labels', 'alpaca')}</div>
-      <div className="alpaca-details-grid__value flexalign alpaca-issue-labels-cell">
+      <div className="alpaca-details-grid__value alpaca-flex-align alpaca-issue-labels-cell">
         <LabelsSelector
           labels={labels}
           selectedIds={selectedIds}
@@ -123,7 +123,7 @@ const DeadlineRow = memo(
       <div className="alpaca-details-grid__label">
         {__('Due Date', 'alpaca')}
       </div>
-      <div className="alpaca-details-grid__value flexalign">
+      <div className="alpaca-details-grid__value alpaca-flex-align">
         <DeadlineControl
           deadline={deadline}
           onChange={onChange}
@@ -1713,6 +1713,18 @@ const AlpacaIssue = ({
       })()
     : currentStatus?.name || __('Unknown', 'alpaca');
 
+  useEffect(() => {
+    if (!isOpen || typeof document === 'undefined') {
+      return undefined;
+    }
+
+    document.body.classList.add('alpaca-details-modal-open');
+
+    return () => {
+      document.body.classList.remove('alpaca-details-modal-open');
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
@@ -1833,7 +1845,7 @@ const AlpacaIssue = ({
               </div>
 
               {!isCreating && (
-                <div className="alpaca-issue-meta flexalign">
+                <div className="alpaca-issue-meta alpaca-flex-align">
                   Created by <User user={issueDetails.post_data.post_author} />{' '}
                   <Time
                     value={

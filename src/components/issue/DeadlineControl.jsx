@@ -27,7 +27,7 @@ const DeadlineControl = memo(({ deadline, onChange, onClear, isLoading }) => {
       className="alpaca-deadline-control"
       __nextHasNoMarginBottom
     >
-      <div className="alpaca-deadline flexalign">
+      <div className="alpaca-deadline alpaca-flex-align">
         <div
           ref={calendarButtonRef}
           className={`alpaca-input alpaca-deadline-display ${deadline ? '' : 'placeholder'}`}

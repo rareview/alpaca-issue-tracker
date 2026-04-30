@@ -387,7 +387,7 @@ function BoardFilterControl({
                     setOpenPopoverType('');
                   }}
                 >
-                  <span className="alpaca-user flexalign">
+                  <span className="alpaca-user alpaca-flex-align">
                     {assignee.avatar ? (
                       <span className="alpaca-user-avatar">
                         <img src={assignee.avatar} alt="" aria-hidden="true" />

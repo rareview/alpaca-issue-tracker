@@ -5,33 +5,33 @@
  */
 .alpaca-bottom-toolbar {
   direction: inherit;
-  color: #c3c4c7;
-  font-size: 13px;
-  font-weight: 400;
-  line-height: 32px;
-  height: 32px;
+  color: $color-toolbar-text;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-normal;
+  line-height: 2rem;
+  height: $size-control-md;
   position: fixed;
   width: 100%;
-  min-width: 600px;
-  z-index: $z-index-bottom-toolbar;
-  background: #1d2327;
+  min-width: $width-content-md;
+  z-index: 99999;
+  background: $color-toolbar-bg;
   outline: 1px solid transparent;
-  bottom: 0;
-  left: 0;
-  right: auto;
+  inset-block-end: 0;
+  inset-inline-start: 0;
+  inset-inline-end: auto;
   display: flex;
   flex-direction: row;
-  gap: 14px;
+  gap: $space-xl;
   padding: 0;
-  transform: translateX(calc(-100% + 32px));
-  transition: transform 0.3s ease;
-  font-family: $core-font-stack !important;
+  transform: translateX(calc(-100% + $size-control-md));
+  transition: transform $duration-slow ease;
+  font-family: $font-family-base !important;
 
   html[dir='rtl'] &,
   .rtl & {
-    left: auto;
-    right: 0;
-    transform: translateX(calc(100% - 32px));
+    inset-inline-start: auto;
+    inset-inline-end: 0;
+    transform: translateX(calc(100% - $size-control-md));
 
     &.expanded {
       transform: translateX(0);
@@ -60,31 +60,31 @@
   .alpaca-report-button,
   .project-board-link {
     background: none;
-    color: #f0f0f1;
+    color: $color-toolbar-text-strong;
     border: none;
     display: flex;
     align-items: center;
-    gap: 4px;
-    padding: 0 14px;
-    height: 32px;
-    line-height: 32px;
-    font-size: 13px;
+    gap: $space-2xs;
+    padding: 0 $space-xl;
+    height: $size-control-md;
+    line-height: 2rem;
+    font-size: $font-size-sm;
     cursor: pointer;
     text-decoration: none;
-    font-family: $core-font-stack !important;
+    font-family: $font-family-base !important;
 
     .dashicons {
-      color: #a7aaad;
-      font-size: 20px;
+      color: $color-toolbar-text-muted;
+      font-size: $font-size-xl;
     }
 
     &:hover,
     &.form-visible {
-      color: #72aee6;
-      background-color: #2c3338;
+      color: $color-toolbar-accent;
+      background-color: $color-toolbar-bg-hover;
 
       .dashicons {
-        color: #72aee6;
+        color: $color-toolbar-accent;
       }
     }
   }
@@ -96,124 +96,124 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 32px;
-    height: 32px;
-    color: #a7aaad;
+    width: $size-control-md;
+    height: $size-control-md;
+    color: $color-toolbar-text-muted;
     cursor: pointer;
     padding: 0;
 
     &:hover {
-      color: #72aee6;
+      color: $color-toolbar-accent;
     }
 
     .toggle-pointer {
-      transition: transform 0.3s ease;
+      transition: transform $duration-slow ease;
       display: inline-block;
       transform-origin: center center;
-      font-size: 16px;
+      font-size: $font-size-md;
     }
   }
 }
 
 .alpaca-report-form {
   position: fixed;
-  z-index: $z-index-report-form;
-  width: 400px;
-  max-width: calc(100vw - 40px);
-  padding: 16px;
-  background: $bgwhite;
-  border: 1px solid #c3c4c7;
-  border-radius: 4px 4px 0 0;
-  left: 0;
-  box-shadow: 0 -4px 16px rgb(0 0 0 / 15%);
-  bottom: -500px;
+  z-index: 99998;
+  width: $width-report-form;
+  max-width: calc(100vw - $size-control-xl);
+  padding: $space-2xl;
+  background: $color-white;
+  border: 1px solid $color-border-control;
+  border-radius: $radius-sm $radius-sm 0 0;
+  inset-inline-start: 0;
+  box-shadow: 0 -0.25rem 1rem rgb(0 0 0 / 15%);
+  bottom: -31.25rem;
   transition:
-    bottom 0.3s ease,
-    opacity 0.3s ease,
-    visibility 0s linear 0.3s;
-  font-size: 13px;
-  font-family: $core-font-stack;
+    bottom $duration-slow ease,
+    opacity $duration-slow ease,
+    visibility $duration-none linear $duration-slow;
+  font-size: $font-size-sm;
+  font-family: $font-family-base;
   visibility: hidden;
   opacity: 0;
-  color: #000;
+  color: $color-black;
 
   html[dir='rtl'] &,
   .rtl & {
-    left: auto;
-    right: 0;
+    inset-inline-start: auto;
+    inset-inline-end: 0;
   }
 
   &.visible {
-    bottom: 31px;
+    bottom: 1.9375rem;
     visibility: visible;
     opacity: 1;
     transition:
-      bottom 0.3s ease,
-      opacity 0.3s ease,
-      visibility 0s;
+      bottom $duration-slow ease,
+      opacity $duration-slow ease,
+      visibility $duration-none;
   }
 
   .form-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 16px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid #dcdcde;
+    margin-bottom: $space-2xl;
+    padding-bottom: $space-lg;
+    border-bottom: 1px solid $color-border;
 
     h4 {
       margin: 0;
-      font-size: $smallfont;
-      font-family: $core-font-stack;
-      font-weight: 600;
-      color: #1d2327;
+      font-size: $font-size-sm;
+      font-family: $font-family-base;
+      font-weight: $font-weight-semibold;
+      color: $color-text-primary;
     }
 
     .form-close {
       background: transparent;
       border: none;
-      width: 28px;
-      height: 28px;
+      width: $size-control-sm;
+      height: $size-control-sm;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      border-radius: 2px;
-      font-size: 20px;
-      color: #50575e;
+      border-radius: $radius-xs;
+      font-size: $font-size-xl;
+      color: $color-text-secondary;
       padding: 0;
-      line-height: 1;
+      line-height: $line-height-reset;
 
       &:hover {
-        background: $greyshade;
-        color: #1d2327;
+        background: $color-surface-neutral;
+        color: $color-text-primary;
       }
     }
   }
 
   .components-textarea-control {
-    margin-bottom: 16px;
+    margin-bottom: $space-2xl;
 
     .components-textarea-control__input {
       width: 100%;
       max-width: 100%;
-      min-height: 100px;
-      padding: 8px 12px;
-      border: 1px solid #8c8f94;
-      border-radius: 2px;
-      font-size: 13px;
-      background: $bgwhite;
-      color: #1d2327;
+      min-height: 6.25rem;
+      padding: $space-sm $space-lg;
+      border: 1px solid $color-text-muted;
+      border-radius: $radius-xs;
+      font-size: $font-size-sm;
+      background: $color-white;
+      color: $color-text-primary;
       resize: vertical;
       box-sizing: border-box;
     }
   }
 
   .form-toggles {
-    margin-bottom: 16px;
+    margin-bottom: $space-2xl;
 
     .components-base-control {
-      margin-bottom: 12px;
+      margin-bottom: $space-lg;
 
       &:last-child {
         margin-bottom: 0;
@@ -224,21 +224,21 @@
       }
 
       .components-checkbox-control__label {
-        color: #1d2327;
+        color: $color-text-primary;
       }
 
       .components-base-control__help {
-        font-size: 12px;
+        font-size: $font-size-xs;
         font-style: normal;
-        color: $greytext;
+        color: $color-text-muted;
       }
     }
   }
 
   .form-actions {
     display: flex;
-    gap: 8px;
+    gap: $space-sm;
     justify-content: flex-end;
-    margin-top: 16px;
+    margin-top: $space-2xl;
   }
 }
