@@ -7,19 +7,27 @@
   #alpaca-presence {
     display: flex;
     align-items: center;
+    flex: 0 0 auto;
+    flex-wrap: nowrap;
     margin: 0;
     line-height: 2rem;
+    max-inline-size: 100%;
+    min-inline-size: max-content;
+    white-space: nowrap;
 
     .alpaca-presence-msg {
       margin-inline-end: $space-sm;
       text-align: start;
+      white-space: nowrap;
     }
 
     .alpaca-presence-list {
       display: flex;
       flex-direction: row;
       align-items: center;
+      flex-wrap: nowrap;
       gap: $space-gap-inline;
+      white-space: nowrap;
 
       .alpaca-presence-user-wrap {
         display: inline-flex;
@@ -39,6 +47,7 @@
   #project-board-controls {
     display: flex;
     align-items: center;
+    flex-wrap: wrap;
     gap: $space-gap-inline;
     width: 100%;
     margin-bottom: $space-4xl;
@@ -51,7 +60,10 @@
   #project-board-controls-mount {
     display: flex;
     align-items: center;
+    flex: 1 1 auto;
     gap: $space-lg;
+    justify-content: flex-end;
+    min-inline-size: 0;
   }
 
   .alpaca-board-filter-control {
