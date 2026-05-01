@@ -291,6 +291,17 @@ final class Alpaca {
 
 		\register_setting(
 			'alpaca_options',
+			'alpaca_enable_context_capture',
+			array(
+				'type'         => 'string',
+				'description'  => esc_html__( 'Enable context capture, including the toolbar and data dump.', 'alpaca' ),
+				'show_in_rest' => true,
+				'default'      => '1',
+			)
+		);
+
+		\register_setting(
+			'alpaca_options',
 			'alpaca_item_datapoint_visibility',
 			array(
 				'type'              => 'object',

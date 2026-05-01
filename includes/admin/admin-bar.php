@@ -52,6 +52,10 @@ function alpaca_add_admin_bar_menu( $admin_bar ) {
 		return;
 	}
 
+	if ( function_exists( 'alpaca_is_contextual_capture_enabled' ) && ! alpaca_is_contextual_capture_enabled() ) {
+		return;
+	}
+
 	if ( alpaca_should_skip_admin_report_screen() ) {
 		return;
 	}
@@ -63,7 +67,7 @@ function alpaca_add_admin_bar_menu( $admin_bar ) {
 	}
 
 	/**
-	 * Report an Issue - top-level admin bar item with SVG icon.
+	 * Context Capture - top-level admin bar item with SVG icon.
 	 */
 	$icon_svg = alpaca_get_icon( 'exclamation-circle-fill' );
 

@@ -1,5 +1,6 @@
 import StatusManager from './components/StatusManager';
 import EnableTestLogsControl from './components/EnableTestLogsControl';
+import EnableContextCaptureControl from './components/EnableContextCaptureControl';
 import LabelsManager from './components/LabelsManager';
 import RestoreManager from './components/RestoreManager';
 import ItemDatapointsManager from './components/ItemDatapointsManager';
@@ -107,6 +108,7 @@ const renderSettingsTab = (currentStatuses) => {
             statuses: currentStatuses,
           })}
           <EnableTestLogsControl />
+          <EnableContextCaptureControl />
         </tbody>
       </table>
 

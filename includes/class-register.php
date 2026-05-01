@@ -188,6 +188,17 @@ class Register {
 	}
 
 	/**
+	 * Determine whether contextual capture is enabled.
+	 *
+	 * @return bool True when contextual capture should be active.
+	 */
+	private function is_contextual_capture_enabled() {
+		return function_exists( 'alpaca_is_contextual_capture_enabled' )
+			? alpaca_is_contextual_capture_enabled()
+			: '1' === (string) get_option( 'alpaca_enable_context_capture', '1' );
+	}
+
+	/**
 	 * Determine whether the current admin page needs the full Alpaca app bundle.
 	 *
 	 * @param string $hook_suffix Current admin page hook suffix.
@@ -289,9 +300,10 @@ class Register {
 	 */
 	private function localize_script_settings( $script_handle, $include_admin_url = false ) {
 		$settings = array(
-			'canManageOptions'        => current_user_can( 'manage_options' ),
-			'snapdomProxy'            => $this->get_snapdom_proxy_setting(),
-			'itemDatapointVisibility' => $this->get_item_datapoint_visibility_setting(),
+			'canManageOptions'         => current_user_can( 'manage_options' ),
+			'contextualCaptureEnabled' => $this->is_contextual_capture_enabled(),
+			'snapdomProxy'             => $this->get_snapdom_proxy_setting(),
+			'itemDatapointVisibility'  => $this->get_item_datapoint_visibility_setting(),
 		);
 
 		if ( $include_admin_url ) {
@@ -344,7 +356,9 @@ class Register {
 		);
 
 		if ( $localize_datadump && function_exists( 'alpaca_prepare_datadump' ) ) {
-			wp_localize_script( self::PREFIX . '-script', 'alpacaDataDump', \alpaca_prepare_datadump() );
+			if ( $this->is_contextual_capture_enabled() ) {
+				wp_localize_script( self::PREFIX . '-script', 'alpacaDataDump', \alpaca_prepare_datadump() );
+			}
 		}
 
 		$this->localize_script_settings( self::PREFIX . '-script', $include_admin_url );

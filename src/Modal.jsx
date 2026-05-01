@@ -201,7 +201,7 @@ const AlpacaModal = () => {
           title={(() => {
             if (status === 'success') return __('Issue Submitted', 'alpaca');
             if (status === 'error') return __('Submission Failed', 'alpaca');
-            return __('Report An Issue', 'alpaca');
+            return __('Context Capture', 'alpaca');
           })()}
           onRequestClose={closeModal}
           isDismissible={false}

@@ -36,5 +36,9 @@ function alpaca_register_report_context_endpoint() {
  * @return WP_REST_Response
  */
 function alpaca_get_report_context() {
+	if ( function_exists( 'alpaca_is_contextual_capture_enabled' ) && ! alpaca_is_contextual_capture_enabled() ) {
+		return alpaca_rest_response( 'report_context', array(), 200 );
+	}
+
 	return alpaca_rest_response( 'report_context', alpaca_prepare_datadump(), 200 );
 }

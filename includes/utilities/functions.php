@@ -200,6 +200,15 @@ function alpaca_get_min_term_score() {
 }
 
 /**
+ * Determine whether contextual capture is enabled.
+ *
+ * @return bool True when contextual capture should be active.
+ */
+function alpaca_is_contextual_capture_enabled() {
+	return '1' === (string) get_option( 'alpaca_enable_context_capture', '1' );
+}
+
+/**
  * Setup default status terms.
  *
  * Creates a starter set of status terms if none exist:
