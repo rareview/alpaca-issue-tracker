@@ -100,8 +100,11 @@ Alpaca should work on any current WordPress install, without further dependencie
 ### External dependencies
 
 - [Bowser](https://github.com/bowser-js/bowser) for browser detection. Copyright 2015, Dustin Diaz (the "Original Author"). All rights reserved. [📜 MIT license.](https://github.com/bowser-js/bowser/blob/master/LICENSE)
+- [DOMPurify](https://github.com/cure53/DOMPurify) for HTML sanitization. Copyright 2025, Dr.-Ing. Mario Heiderich, Cure53. [📜 MPL-2.0 or Apache-2.0 license.](https://github.com/cure53/DOMPurify/blob/main/LICENSE)
+- [Marked](https://marked.js.org/license) for Markdown processing. Copyright (c) 2018+, MarkedJS (https://github.com/markedjs/) Copyright (c) 2011-2018, Christopher Jeffrey (https://github.com/chjj/) [📜 MIT license.](https://github.com/markedjs/marked/blob/master/LICENSE.md)
+- [PrismJS](https://prismjs.com/) for syntax highlighting. Copyright (c) 2012, Lea Verou. [📜 MIT license.](https://github.com/PrismJS/prism/blob/master/LICENSE)
+- [PropTypes](https://github.com/facebook/prop-types) for React prop validation. Copyright (c) 2013-present, Facebook, Inc. [📜 MIT license.](https://github.com/facebook/prop-types/blob/main/LICENSE)
 - [Snapdom](https://github.com/zumerlab/snapdom) for screenshot capture. Copyright (c) 2025 ZumerLab. [📜 MIT license.](https://github.com/zumerlab/snapdom/blob/main/LICENSE)
-- [Marked](https://marked.js.org/license) for Markdown processing. Copyright (c) 2018+, MarkedJS (https://github.com/markedjs/) Copyright (c) 2011-2018, Christopher Jeffrey (https://github.com/chjj/) [📜 License](https://github.com/markedjs/marked/blob/master/LICENSE.md)
 
 ---
 
