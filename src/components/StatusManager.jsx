@@ -329,7 +329,8 @@ const StatusManager = ({
         const updatePromises = issuesToUpdate.map((issue) => {
           return updateIssue(issue.id, {
             taxonomies: {
-              status: [newStatusId],
+              // eslint-disable-next-line camelcase
+              alpaca_status: [newStatusId],
             },
           })
             .then(() => {

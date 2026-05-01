@@ -950,7 +950,7 @@ const AlpacaIssue = ({
   // Status progression
   const handleProgressIssue = useCallback(async () => {
     if (!issueDetails || !allStatuses.length) return;
-    const currentStatus = issueDetails.taxonomies?.status?.[0];
+    const currentStatus = issueDetails.taxonomies?.alpaca_status?.[0];
     if (!currentStatus) return;
 
     const currentIndex = allStatuses.findIndex(
@@ -962,11 +962,18 @@ const AlpacaIssue = ({
     setLoading('status', true);
     try {
       await updateIssue(issueId, {
-        taxonomies: { status: [nextStatus.term_id] },
+        taxonomies: {
+          // eslint-disable-next-line camelcase
+          alpaca_status: [nextStatus.term_id],
+        },
       });
       setIssueDetails((prev) => ({
         ...prev,
-        taxonomies: { ...prev.taxonomies, status: [nextStatus] },
+        taxonomies: {
+          ...prev.taxonomies,
+          // eslint-disable-next-line camelcase
+          alpaca_status: [nextStatus],
+        },
       }));
       onStatusChange?.(issueId, nextStatus, currentStatus, issueDetails);
     } catch (err) {
@@ -1519,7 +1526,8 @@ const AlpacaIssue = ({
         return;
       }
 
-      const parentStatusId = issueDetails?.taxonomies?.status?.[0]?.term_id;
+      const parentStatusId =
+        issueDetails?.taxonomies?.alpaca_status?.[0]?.term_id;
       const payload = {
         // eslint-disable-next-line camelcase
         post_parent: 0,
@@ -1527,7 +1535,8 @@ const AlpacaIssue = ({
 
       if (parentStatusId) {
         payload.taxonomies = {
-          status: [parentStatusId],
+          // eslint-disable-next-line camelcase
+          alpaca_status: [parentStatusId],
         };
       }
 
@@ -1677,7 +1686,7 @@ const AlpacaIssue = ({
     () => loadingStates.labels,
     [loadingStates.labels],
   );
-  const currentStatus = issueDetails?.taxonomies?.status?.[0];
+  const currentStatus = issueDetails?.taxonomies?.alpaca_status?.[0];
   const isLastStatus = useMemo(() => {
     if (!currentStatus || !allStatuses.length) return true;
     return (
@@ -1688,7 +1697,7 @@ const AlpacaIssue = ({
 
   const nextStatusName = useMemo(() => {
     if (!allStatuses.length) return '';
-    const current = issueDetails?.taxonomies?.status?.[0];
+    const current = issueDetails?.taxonomies?.alpaca_status?.[0];
     if (!current) return allStatuses[0]?.name || '';
     const currentIndex = allStatuses.findIndex(
       (s) => s.term_id === current.term_id,

@@ -378,10 +378,7 @@ function alpaca_update_issue_callback( WP_REST_Request $request ) {
 			// Sanitize taxonomy name.
 			$taxonomy = sanitize_key( $taxonomy );
 
-				// Map old taxonomy names to new ones if necessary (for backward compat in JS payload).
-			if ( 'status' === $taxonomy ) {
-				$taxonomy = 'alpaca_status';
-			}
+			// Map legacy taxonomy names where needed.
 			if ( 'assignee' === $taxonomy ) {
 				$taxonomy = 'alpaca_assignee';
 			}
@@ -446,7 +443,7 @@ function alpaca_update_issue_callback( WP_REST_Request $request ) {
 	}
 	if ( isset( $data['taxonomies'] ) ) {
 		$tax_data     = $data['taxonomies'];
-		$status_terms = $tax_data['status'] ?? $tax_data['alpaca_status'] ?? null;
+		$status_terms = $tax_data['alpaca_status'] ?? null;
 		if ( $status_terms ) {
 			$term_ids = alpaca_to_int_ids( $status_terms );
 			if ( ! empty( $term_ids ) ) {
@@ -754,10 +751,6 @@ function alpaca_get_issue_data_callback( WP_REST_Request $request ) {
 		$taxonomy_labels[ $taxonomy_obj->name ] = $taxonomy_obj->label;
 	}
 
-	if ( isset( $terms_data['alpaca_status'] ) ) {
-		$terms_data['status']      = $terms_data['alpaca_status'];
-		$taxonomy_labels['status'] = $taxonomy_labels['alpaca_status'];
-	}
 	if ( isset( $terms_data['alpaca_assignee'] ) ) {
 		$terms_data['assignee']      = $terms_data['alpaca_assignee'];
 		$taxonomy_labels['assignee'] = $taxonomy_labels['alpaca_assignee'];
