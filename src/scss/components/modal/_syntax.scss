@@ -22,14 +22,12 @@
 
     &.alpaca-data-table,
     table.alpaca-data-table {
-      border: 1px solid $color-border;
       border-collapse: collapse;
       width: 100%;
     }
 
     th,
     td {
-      border: 1px solid $color-border;
       padding: $space-md;
       text-align: start;
       vertical-align: top;
@@ -37,13 +35,18 @@
     }
 
     th {
-      background-color: $color-surface-neutral;
+      font-family: $font-family-base !important;
+      font-weight: $font-weight-bold;
       width: 12.5rem;
     }
 
     td {
       max-width: $width-content-md;
       line-height: $line-height-code;
+    }
+
+    tr {
+      border-bottom: 1px solid $color-border;
     }
 
     pre,

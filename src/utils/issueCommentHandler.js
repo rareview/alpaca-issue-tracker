@@ -232,6 +232,10 @@ addAction(
       return;
     }
 
+    if (submission.commentAlreadyCreated) {
+      return;
+    }
+
     const submittedText =
       typeof submission.feedback === 'string' ? submission.feedback.trim() : '';
     const fallbackTitle =
