@@ -13,6 +13,8 @@ const { Button, TextareaControl, Spinner, ToggleControl } = wp.components;
 const { doAction } = wp.hooks;
 const { useState, useRef, useEffect, useCallback } = wp.element;
 
+const FORM_CLOSE_RESET_DELAY_MS = 300;
+
 /**
  * Bottom Toolbar component for Alpaca issue reporting.
  * Dark admin bar theme with WP Components form.
@@ -30,6 +32,7 @@ const AlpacaToolbar = () => {
   const textareaRef = useRef(null);
   const formRef = useRef(null);
   const reportButtonRef = useRef(null);
+  const closeResetTimeoutRef = useRef(null);
   const [enableTestLogs, setEnableTestLogs] = useState(false);
 
   useEffect(() => {
@@ -58,19 +61,35 @@ const AlpacaToolbar = () => {
     setIsExpanded((prev) => !prev);
   }, []);
 
-  const openForm = useCallback(() => {
-    setFormVisible(true);
+  const clearCloseResetTimeout = useCallback(() => {
+    if (closeResetTimeoutRef.current) {
+      window.clearTimeout(closeResetTimeoutRef.current);
+      closeResetTimeoutRef.current = null;
+    }
+  }, []);
+
+  const resetFormState = useCallback(() => {
     setMessage('');
     setStatus('idle');
     setFeedback('');
     setIsHighPriority(false);
-    setTimeout(() => textareaRef.current?.focus(), 100);
   }, []);
+
+  const openForm = useCallback(() => {
+    clearCloseResetTimeout();
+    setFormVisible(true);
+    resetFormState();
+    setTimeout(() => textareaRef.current?.focus(), 100);
+  }, [clearCloseResetTimeout, resetFormState]);
 
   const closeForm = useCallback(() => {
     setFormVisible(false);
-    setStatus('idle');
-  }, []);
+    clearCloseResetTimeout();
+    closeResetTimeoutRef.current = window.setTimeout(() => {
+      resetFormState();
+      closeResetTimeoutRef.current = null;
+    }, FORM_CLOSE_RESET_DELAY_MS);
+  }, [clearCloseResetTimeout, resetFormState]);
 
   const toggleFormVisibility = useCallback(() => {
     if (isFormVisible) {
@@ -107,6 +126,8 @@ const AlpacaToolbar = () => {
     wp.hooks.addAction('alpaca.openModal', 'alpaca/toolbar', handleOpen);
     return () => wp.hooks.removeAction('alpaca.openModal', 'alpaca/toolbar');
   }, [openForm]);
+
+  useEffect(() => clearCloseResetTimeout, [clearCloseResetTimeout]);
 
   const submitIssue = useCallback(async () => {
     setMessage('');
