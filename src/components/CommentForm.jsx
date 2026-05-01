@@ -197,7 +197,7 @@ const CommentForm = memo(
     initialAttachments = [],
     showNotification,
     onSubmit,
-    submitButtonText = __('Submit Comment', 'alpaca'),
+    submitButtonText = null,
     onRemoteAttachmentDelete,
     submitButtonDisabled = false,
     className = 'alpaca-comment-form',
@@ -444,10 +444,12 @@ const CommentForm = memo(
     let buttonText;
     if (isSubmitting) {
       buttonText = __('Submitting…', 'alpaca');
+    } else if (submitButtonText) {
+      buttonText = submitButtonText;
     } else if (issueId === null) {
       buttonText = __('Create Issue', 'alpaca');
     } else {
-      buttonText = submitButtonText;
+      buttonText = __('Submit Comment', 'alpaca');
     }
 
     return (

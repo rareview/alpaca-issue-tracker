@@ -138,7 +138,7 @@ addFilter('alpaca.commentObject', 'alpaca/addPlainText', (comment) => {
   return comment;
 });
 
-const postComment = async (
+export const postComment = async (
   issueOrId,
   content,
   commentTags = [],
@@ -201,20 +201,27 @@ const postComment = async (
       applyFilters('alpaca.commentObject', newlyCreatedComment),
     );
 
-    const response = await fetchIssueCommentCount(postId);
-    if (response && typeof response.comment_count !== 'undefined') {
-      doAction('alpaca.commentCountChanged', {
-        issueId: postId.toString(),
-        newCount: response.comment_count,
-        newCountByAgent: response.comment_count_by_agent || null,
-      });
-      doAction('alpaca.lastActivityChanged', {
-        issueId: postId.toString(),
-        lastActivity:
-          typeof response.last_activity !== 'undefined'
-            ? response.last_activity
-            : new Date().toISOString(),
-      });
+    try {
+      const response = await fetchIssueCommentCount(postId);
+      if (response && typeof response.comment_count !== 'undefined') {
+        doAction('alpaca.commentCountChanged', {
+          issueId: postId.toString(),
+          newCount: response.comment_count,
+          newCountByAgent: response.comment_count_by_agent || null,
+        });
+        doAction('alpaca.lastActivityChanged', {
+          issueId: postId.toString(),
+          lastActivity:
+            typeof response.last_activity !== 'undefined'
+              ? response.last_activity
+              : new Date().toISOString(),
+        });
+      }
+    } catch (countError) {
+      console.error(
+        'issueCommentHandler.js: Error updating comment count:',
+        countError,
+      );
     }
 
     return newlyCreatedComment;
