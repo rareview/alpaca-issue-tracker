@@ -6,7 +6,7 @@
  * Version:           1.0.0-beta.4
  * Requires at least: 6.8
  * Requires PHP:      7.4
- * Author:            Rareview
+ * Author:            Rareview®
  * Author URI:        https://rareview.com/
  * Text Domain:       alpaca
  * Domain Path:       /languages

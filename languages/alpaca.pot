@@ -1,4 +1,4 @@
-# Copyright (C) 2026 Rareview
+# Copyright (C) 2026 Rareview®
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
@@ -31,7 +31,7 @@ msgstr ""
 
 #. Author of the plugin
 #: alpaca.php
-msgid "Rareview"
+msgid "Rareview®"
 msgstr ""
 
 #. Author URI of the plugin

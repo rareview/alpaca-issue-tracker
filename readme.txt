@@ -135,4 +135,4 @@ Alpaca does not collect or transmit any data outside of your WordPress installat
 
 == Credits ==
 
-Developed by [Rareview](https://rareview.com/)
+Developed by [Rareview®](https://rareview.com/)
