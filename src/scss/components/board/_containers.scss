@@ -12,6 +12,10 @@
     display: flex;
     overflow: hidden;
 
+    &:last-child {
+      margin-inline-end: 0;
+    }
+
     .alpaca-container-header,
     .alpaca-container-body {
       padding-top: $space-xs;
