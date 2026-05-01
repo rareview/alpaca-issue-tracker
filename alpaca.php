@@ -3,7 +3,7 @@
  * Plugin Name:       Alpaca
  * Plugin URI:        https://github.com/rareview/alpaca
  * Description:       A cute issue tracker for WordPress
- * Version:           1.0.0-beta.4
+ * Version:           1.0.0
  * Requires at least: 6.8
  * Requires PHP:      7.4
  * Author:            Rareview®
