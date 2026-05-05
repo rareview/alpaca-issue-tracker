@@ -433,6 +433,180 @@ function alpaca_restore_issuecomment_approval_statuses( $issue_id ) {
 }
 
 /**
+ * Get direct child issue IDs for a parent issue.
+ *
+ * @param int    $issue_id     Parent issue post ID.
+ * @param string $post_status  Optional post status filter.
+ * @return int[] Direct child issue IDs.
+ */
+function alpaca_get_child_issue_ids( $issue_id, $post_status = 'any' ) {
+	$issue_id = (int) $issue_id;
+	if ( $issue_id <= 0 ) {
+		return array();
+	}
+
+	$post_status = is_string( $post_status ) && '' !== $post_status ? $post_status : 'any';
+
+	$child_ids = get_children(
+		array(
+			'post_parent'    => $issue_id,
+			'post_type'      => 'alpaca_issue',
+			'post_status'    => $post_status,
+			'fields'         => 'ids',
+			'posts_per_page' => -1,
+		)
+	);
+
+	if ( empty( $child_ids ) || ! is_array( $child_ids ) ) {
+		return array();
+	}
+
+	return array_map( 'intval', array_values( $child_ids ) );
+}
+
+/**
+ * Trash direct child issues when a parent issue is trashed.
+ *
+ * Child issues trashed by this cascade are marked so they can be safely
+ * restored only when their parent issue is restored.
+ *
+ * @param int $parent_issue_id Parent issue post ID.
+ * @return int Number of child issues trashed.
+ */
+function alpaca_trash_child_issues_with_parent( $parent_issue_id ) {
+	$parent_issue_id = (int) $parent_issue_id;
+	if ( $parent_issue_id <= 0 ) {
+		return 0;
+	}
+
+	$trashed_count = 0;
+	$child_ids     = alpaca_get_child_issue_ids( $parent_issue_id, 'any' );
+
+	foreach ( $child_ids as $child_id ) {
+		$child_status = get_post_status( $child_id );
+		if ( 'trash' === $child_status ) {
+			continue;
+		}
+
+		update_post_meta( $child_id, 'alpaca_trashed_with_parent', $parent_issue_id );
+		if ( is_string( $child_status ) && '' !== $child_status ) {
+			update_post_meta( $child_id, 'alpaca_status_before_parent_trash', $child_status );
+		}
+
+		if ( wp_trash_post( $child_id ) ) {
+			++$trashed_count;
+		} else {
+			delete_post_meta( $child_id, 'alpaca_trashed_with_parent' );
+			delete_post_meta( $child_id, 'alpaca_status_before_parent_trash' );
+		}
+	}
+
+	return $trashed_count;
+}
+
+/**
+ * Get direct child issues that were auto-trashed with a parent issue.
+ *
+ * @param int    $parent_issue_id Parent issue post ID.
+ * @param string $fields          Query field mode. Accepts `ids` or `all`.
+ * @return array<int, int>|array<int, WP_Post> Matching child issue IDs or posts.
+ */
+function alpaca_get_child_issues_trashed_with_parent( $parent_issue_id, $fields = 'ids' ) {
+	$parent_issue_id = (int) $parent_issue_id;
+	if ( $parent_issue_id <= 0 ) {
+		return array();
+	}
+
+	$fields = 'all' === $fields ? 'all' : 'ids';
+
+	// phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_key,WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+	$child_issues = get_posts(
+		array(
+			'post_type'      => 'alpaca_issue',
+			'post_status'    => 'trash',
+			'post_parent'    => $parent_issue_id,
+			'meta_key'       => 'alpaca_trashed_with_parent',
+			'meta_value'     => (string) $parent_issue_id,
+			'fields'         => $fields,
+			'posts_per_page' => -1,
+			'orderby'        => 'date',
+			'order'          => 'ASC',
+		)
+	);
+	// phpcs:enable WordPress.DB.SlowDBQuery.slow_db_query_meta_key,WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+
+	if ( empty( $child_issues ) || ! is_array( $child_issues ) ) {
+		return array();
+	}
+
+	if ( 'ids' === $fields ) {
+		return array_map( 'intval', array_values( $child_issues ) );
+	}
+
+	return array_values(
+		array_filter(
+			$child_issues,
+			static function ( $child_issue ) {
+				return $child_issue instanceof WP_Post;
+			}
+		)
+	);
+}
+
+/**
+ * Restore direct child issues that were auto-trashed with a parent issue.
+ *
+ * @param int    $parent_issue_id      Parent issue post ID.
+ * @param string $restored_post_status Post status to apply when no prior
+ *                                     child status was recorded.
+ * @return int Number of child issues restored.
+ */
+function alpaca_restore_child_issues_trashed_with_parent( $parent_issue_id, $restored_post_status = 'publish' ) {
+	$parent_issue_id = (int) $parent_issue_id;
+	if ( $parent_issue_id <= 0 ) {
+		return 0;
+	}
+
+	$restored_post_status = is_string( $restored_post_status ) && '' !== $restored_post_status
+		? $restored_post_status
+		: 'publish';
+
+	$restored_count = 0;
+	$child_ids      = alpaca_get_child_issues_trashed_with_parent( $parent_issue_id, 'ids' );
+
+	foreach ( $child_ids as $child_id ) {
+		$child_id = (int) $child_id;
+		if ( $child_id <= 0 ) {
+			continue;
+		}
+
+		if ( wp_untrash_post( $child_id ) ) {
+			$child_post_status = get_post_meta( $child_id, 'alpaca_status_before_parent_trash', true );
+			$child_post_status = is_string( $child_post_status ) && '' !== $child_post_status
+				? $child_post_status
+				: $restored_post_status;
+
+			if ( 'trash' === $child_post_status ) {
+				$child_post_status = $restored_post_status;
+			}
+
+			wp_update_post(
+				array(
+					'ID'          => $child_id,
+					'post_status' => $child_post_status,
+				)
+			);
+
+			delete_post_meta( $child_id, 'alpaca_trashed_with_parent' );
+			delete_post_meta( $child_id, 'alpaca_status_before_parent_trash' );
+			++$restored_count;
+		}
+	}
+
+	return $restored_count;
+}
+
+/**
  * Get or create a taxonomy term that mirrors a user identity.
  *
  * @param WP_User $user     User object.

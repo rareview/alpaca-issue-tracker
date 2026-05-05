@@ -11,6 +11,25 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * Prepare dashboard widget issue list data.
+ *
+ * @param WP_Post[] $posts Issue post objects.
+ * @return array<int, array<string, mixed>>
+ */
+function alpaca_prepare_dashboard_widget_issue_list( $posts ) {
+	$prepared_posts = array();
+
+	foreach ( $posts as $post ) {
+		$prepared_post = alpaca_prepare_issue_data( $post );
+		if ( ! empty( $prepared_post ) ) {
+			$prepared_posts[] = $prepared_post;
+		}
+	}
+
+	return $prepared_posts;
+}
+
+/**
  * Get data for the dashboard widget.
  *
  * @return array
@@ -53,12 +72,7 @@ function alpaca_get_assigned_to_me_issues() {
 	);
 	// phpcs:enable WordPress.DB.SlowDBQuery
 
-	$prepared_posts = array();
-	foreach ( $posts as $post ) {
-		$prepared_posts[] = alpaca_prepare_issue_data( $post );
-	}
-
-	return $prepared_posts;
+	return alpaca_prepare_dashboard_widget_issue_list( $posts );
 }
 
 /**
@@ -80,7 +94,7 @@ function alpaca_get_newly_created_issues() {
 		)
 	);
 
-	return array_map( 'alpaca_prepare_issue_data', $posts );
+	return alpaca_prepare_dashboard_widget_issue_list( $posts );
 }
 
 /**
@@ -118,7 +132,7 @@ function alpaca_get_overdue_issues() {
 	);
 	// phpcs:enable WordPress.DB.SlowDBQuery
 
-	return array_map( 'alpaca_prepare_issue_data', $posts );
+	return alpaca_prepare_dashboard_widget_issue_list( $posts );
 }
 
 /**
@@ -148,7 +162,7 @@ function alpaca_get_watchlist_issues() {
 		)
 	);
 
-	return array_map( 'alpaca_prepare_issue_data', $posts );
+	return alpaca_prepare_dashboard_widget_issue_list( $posts );
 }
 /**
  * Prepare issue data for the widget.
@@ -157,11 +171,18 @@ function alpaca_get_watchlist_issues() {
  * @return array
  */
 function alpaca_prepare_issue_data( $post ) {
+	if ( ! ( $post instanceof WP_Post ) ) {
+		return array();
+	}
+
+	$post_parent_id = (int) $post->post_parent;
+	if ( $post_parent_id > 0 && 'trash' === get_post_status( $post_parent_id ) ) {
+		return array();
+	}
 
 	$deadline         = get_post_meta( $post->ID, 'alpaca_deadline', true );
 	$assignees        = get_the_terms( $post->ID, 'alpaca_assignee' );
 	$status           = get_the_terms( $post->ID, 'alpaca_status' );
-	$post_parent_id   = (int) $post->post_parent;
 	$post_parent      = $post_parent_id > 0 ? get_post( $post_parent_id ) : null;
 	$post_parent_slug = $post_parent ? $post_parent->post_name : '';
 

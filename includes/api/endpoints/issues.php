@@ -713,6 +713,20 @@ function alpaca_get_issue_data_callback( WP_REST_Request $request ) {
 	$post_data                             = $post->to_array();
 	$post_data['post_author_display_name'] = get_the_author_meta( 'display_name', $post_data['post_author'] );
 	$post_data['post_author_img']          = alpaca_avatar( $post_data['post_author'], 32 );
+	$parent_issue_data                     = null;
+	$parent_issue_id                       = isset( $post_data['post_parent'] ) ? (int) $post_data['post_parent'] : 0;
+
+	if ( $parent_issue_id > 0 ) {
+		$parent_issue = alpaca_assert_issue_exists( $parent_issue_id );
+
+		if ( $parent_issue ) {
+			$parent_issue_data = array(
+				'id'     => (int) $parent_issue->ID,
+				'title'  => (string) $parent_issue->post_title,
+				'status' => (string) $parent_issue->post_status,
+			);
+		}
+	}
 
 	$meta           = get_post_meta( $issue_id );
 	$formatted_meta = array();
@@ -787,6 +801,7 @@ function alpaca_get_issue_data_callback( WP_REST_Request $request ) {
 			'message'         => esc_html__( 'Issue data retrieved successfully.', 'alpaca' ),
 			'post_id'         => $issue_id,
 			'post_data'       => $post_data,
+			'parent_issue'    => $parent_issue_data,
 			'meta'            => $formatted_meta,
 			'taxonomies'      => $terms_data,
 			'taxonomy_labels' => $taxonomy_labels,
@@ -859,6 +874,464 @@ function alpaca_get_issue_comment_count_callback( WP_REST_Request $request ) {
 			'comment_count'          => $issue_comment_count,
 			'comment_count_by_agent' => $issue_comment_count_by_agent,
 			'last_activity'          => $last_activity,
+		),
+		200
+	);
+}
+
+/*
+ * Issue: deleted items endpoint.
+ */
+add_action( 'rest_api_init', 'alpaca_register_deleted_items_endpoint' );
+/**
+ * Register deleted items endpoint.
+ */
+function alpaca_register_deleted_items_endpoint() {
+	register_rest_route(
+		'alpaca/v1',
+		'/deleted-items',
+		array(
+			'methods'             => 'GET',
+			'callback'            => 'alpaca_get_deleted_items_callback',
+			'permission_callback' => function () {
+				return \Alpaca\Inc\Helpers::user_can( 'comment_count' );
+			},
+			'args'                => array(
+				'search'   => array(
+					'validate_callback' => function ( $param ) {
+						return is_string( $param ) || null === $param;
+					},
+				),
+				'page'     => array(
+					'default'           => 1,
+					'validate_callback' => function ( $param ) {
+						return is_numeric( $param ) && (int) $param > 0;
+					},
+				),
+				'per_page' => array(
+					'default'           => 20,
+					'validate_callback' => function ( $param ) {
+						return is_numeric( $param ) && (int) $param > 0;
+					},
+				),
+			),
+		)
+	);
+}
+
+/**
+ * Build a display title for a deleted issue.
+ *
+ * @param WP_Post $post Issue post object.
+ * @return string
+ */
+function alpaca_get_deleted_issue_display_title( $post ) {
+	if ( ! ( $post instanceof WP_Post ) ) {
+		return '';
+	}
+
+	$title = trim( (string) $post->post_title );
+	if ( '' !== $title ) {
+		return $title;
+	}
+
+	$content = trim( wp_strip_all_tags( (string) $post->post_content ) );
+	if ( '' !== $content ) {
+		return $content;
+	}
+
+	return esc_html__( '(Untitled issue)', 'alpaca' );
+}
+
+/**
+ * Get label response data for a deleted issue.
+ *
+ * @param int $issue_id Issue post ID.
+ * @return array<int, array<string, string>>
+ */
+function alpaca_get_deleted_issue_labels( $issue_id ) {
+	$issue_id = (int) $issue_id;
+	if ( $issue_id <= 0 ) {
+		return array();
+	}
+
+	$labels = wp_get_object_terms( $issue_id, 'alpaca_label', array( 'fields' => 'all' ) );
+	if ( is_wp_error( $labels ) || empty( $labels ) ) {
+		return array();
+	}
+
+	return array_map(
+		static function ( $label ) {
+			$color = get_term_meta( $label->term_id, 'alpaca_label_color', true );
+
+			if ( ! is_string( $color ) || '' === $color ) {
+				$color = '#172b4d';
+			}
+
+			return array(
+				'name'  => (string) $label->name,
+				'color' => $color,
+			);
+		},
+		$labels
+	);
+}
+
+/**
+ * Get the last action timestamp for a deleted issue.
+ *
+ * @param int $issue_id Issue post ID.
+ * @return array<string, mixed>
+ */
+function alpaca_get_deleted_issue_last_action_data( $issue_id ) {
+	$issue_id = (int) $issue_id;
+	if ( $issue_id <= 0 ) {
+		return array(
+			'value'  => '',
+			'is_gmt' => false,
+		);
+	}
+
+	$last_activity = get_post_meta( $issue_id, 'alpaca_lastActivity', true );
+	if ( is_string( $last_activity ) && '' !== trim( $last_activity ) ) {
+		return array(
+			'value'  => $last_activity,
+			'is_gmt' => true,
+		);
+	}
+
+	if ( function_exists( 'alpaca_update_last_activity_from_issuecomments' ) ) {
+		$last_activity = (string) alpaca_update_last_activity_from_issuecomments( $issue_id );
+		if ( '' !== trim( $last_activity ) ) {
+			return array(
+				'value'  => $last_activity,
+				'is_gmt' => true,
+			);
+		}
+	}
+
+	$comments = get_comments(
+		array(
+			'post_id' => $issue_id,
+			'type'    => 'issuecomment',
+			'status'  => 'all',
+			'number'  => 1,
+			'orderby' => 'comment_date_gmt',
+			'order'   => 'DESC',
+		)
+	);
+
+	if ( ! empty( $comments ) && isset( $comments[0] ) && $comments[0] instanceof WP_Comment ) {
+		$comment = $comments[0];
+		if ( is_string( $comment->comment_date_gmt ) && '0000-00-00 00:00:00' !== $comment->comment_date_gmt ) {
+			return array(
+				'value'  => $comment->comment_date_gmt,
+				'is_gmt' => true,
+			);
+		}
+
+		return array(
+			'value'  => (string) $comment->comment_date,
+			'is_gmt' => false,
+		);
+	}
+
+	return array(
+		'value'  => '',
+		'is_gmt' => false,
+	);
+}
+
+/**
+ * Build deleted issue response data.
+ *
+ * @param WP_Post $post Issue post object.
+ * @return array<string, mixed>
+ */
+function alpaca_get_deleted_issue_response_data( $post ) {
+	if ( ! ( $post instanceof WP_Post ) ) {
+		return array();
+	}
+
+	$issue_id            = (int) $post->ID;
+	$parent_id           = (int) $post->post_parent;
+	$parent_issue        = $parent_id > 0 ? alpaca_assert_issue_exists( $parent_id ) : null;
+	$parent_issue_title  = '';
+	$parent_issue_status = '';
+
+	if ( $parent_issue ) {
+		$parent_issue_title  = alpaca_get_deleted_issue_display_title( $parent_issue );
+		$parent_issue_status = (string) $parent_issue->post_status;
+	}
+
+	$created_at = '';
+	if ( is_string( $post->post_date_gmt ) && '0000-00-00 00:00:00' !== $post->post_date_gmt ) {
+		$created_at = $post->post_date_gmt;
+	} elseif ( is_string( $post->post_date ) ) {
+		$created_at = $post->post_date;
+	}
+
+	$last_action = alpaca_get_deleted_issue_last_action_data( $issue_id );
+
+	return array(
+		'id'                => $issue_id,
+		'title'             => alpaca_get_deleted_issue_display_title( $post ),
+		'parentId'          => $parent_id,
+		'parentTitle'       => 'trash' !== $parent_issue_status ? $parent_issue_title : '',
+		'isCompleted'       => ! empty( get_post_meta( $issue_id, 'alpaca_subissue_completed', true ) ),
+		'labels'            => alpaca_get_deleted_issue_labels( $issue_id ),
+		'createdAt'         => $created_at,
+		'createdAtIsGmt'    => is_string( $post->post_date_gmt ) && '0000-00-00 00:00:00' !== $post->post_date_gmt,
+		'lastActionAt'      => isset( $last_action['value'] ) ? (string) $last_action['value'] : '',
+		'lastActionAtIsGmt' => ! empty( $last_action['is_gmt'] ),
+		'hideFromList'      => $parent_id > 0 && 'trash' === $parent_issue_status,
+	);
+}
+
+/**
+ * Get a sortable timestamp for a deleted issue list item.
+ *
+ * @param array<string, mixed> $item_data Deleted issue response item.
+ * @return int Unix timestamp.
+ */
+function alpaca_get_deleted_issue_sort_timestamp( $item_data ) {
+	$timestamp_value = '';
+	$is_gmt          = false;
+
+	if ( isset( $item_data['lastActionAt'] ) && is_string( $item_data['lastActionAt'] ) && '' !== trim( $item_data['lastActionAt'] ) ) {
+		$timestamp_value = trim( $item_data['lastActionAt'] );
+		$is_gmt          = ! empty( $item_data['lastActionAtIsGmt'] );
+	} elseif ( isset( $item_data['createdAt'] ) && is_string( $item_data['createdAt'] ) && '' !== trim( $item_data['createdAt'] ) ) {
+		$timestamp_value = trim( $item_data['createdAt'] );
+		$is_gmt          = ! empty( $item_data['createdAtIsGmt'] );
+	}
+
+	if ( '' === $timestamp_value ) {
+		return 0;
+	}
+
+	$timestamp = $is_gmt
+		? strtotime( $timestamp_value . ' UTC' )
+		: strtotime( $timestamp_value );
+
+	return false === $timestamp ? 0 : (int) $timestamp;
+}
+
+/**
+ * Return deleted items with exact totals and pagination.
+ *
+ * @param WP_REST_Request $request REST request object.
+ * @return WP_REST_Response
+ */
+function alpaca_get_deleted_items_callback( WP_REST_Request $request ) {
+	$search_term = trim( (string) $request->get_param( 'search' ) );
+	$page        = max( 1, (int) $request->get_param( 'page' ) );
+	$per_page    = max( 1, min( 100, (int) $request->get_param( 'per_page' ) ) );
+
+	$query_args = array(
+		'post_type'           => 'alpaca_issue',
+		'post_status'         => 'trash',
+		'posts_per_page'      => -1,
+		'orderby'             => 'date',
+		'order'               => 'DESC',
+		'fields'              => 'ids',
+		'no_found_rows'       => true,
+		'ignore_sticky_posts' => true,
+	);
+
+	if ( '' !== $search_term ) {
+		$query_args['s'] = $search_term;
+	}
+
+	$query         = new WP_Query( $query_args );
+	$visible_items = array();
+
+	foreach ( (array) $query->posts as $issue_id ) {
+		$post = get_post( (int) $issue_id );
+		if ( ! ( $post instanceof WP_Post ) ) {
+			continue;
+		}
+
+		$item_data = alpaca_get_deleted_issue_response_data( $post );
+		if ( empty( $item_data ) || ! empty( $item_data['hideFromList'] ) ) {
+			continue;
+		}
+
+		unset( $item_data['hideFromList'] );
+		$visible_items[] = $item_data;
+	}
+
+	usort(
+		$visible_items,
+		static function ( $left, $right ) {
+			$left_timestamp  = alpaca_get_deleted_issue_sort_timestamp( $left );
+			$right_timestamp = alpaca_get_deleted_issue_sort_timestamp( $right );
+
+			if ( $left_timestamp === $right_timestamp ) {
+				$left_id  = isset( $left['id'] ) ? (int) $left['id'] : 0;
+				$right_id = isset( $right['id'] ) ? (int) $right['id'] : 0;
+
+				return $right_id <=> $left_id;
+			}
+
+			return $right_timestamp <=> $left_timestamp;
+		}
+	);
+
+	$total_items = count( $visible_items );
+	$total_pages = max( 1, (int) ceil( $total_items / $per_page ) );
+	$page        = min( $page, $total_pages );
+	$offset      = ( $page - 1 ) * $per_page;
+	$paged_items = array_slice( $visible_items, $offset, $per_page );
+
+	return alpaca_rest_response(
+		'',
+		array(
+			'success'    => true,
+			'items'      => array_values( $paged_items ),
+			'pagination' => array(
+				'page'       => $page,
+				'perPage'    => $per_page,
+				'totalItems' => $total_items,
+				'totalPages' => $total_pages,
+			),
+		),
+		200
+	);
+}
+
+/*
+ * Issue: restore endpoint.
+ */
+add_action( 'rest_api_init', 'alpaca_register_restore_issue_endpoint' );
+/**
+ * Register issue restore endpoint.
+ */
+function alpaca_register_restore_issue_endpoint() {
+	register_rest_route(
+		'alpaca/v1',
+		'/restore/(?P<id>\d+)',
+		array(
+			'methods'             => 'POST',
+			'callback'            => 'alpaca_restore_issue_callback',
+			'permission_callback' => function ( WP_REST_Request $request ) {
+				$post_id = (int) $request['id'];
+				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission(
+					$request,
+					'edit_post',
+					array(
+						'post_id' => $post_id,
+					)
+				);
+			},
+			'args'                => array(
+				'id' => array(
+					'validate_callback' => function ( $param ) {
+						return is_numeric( $param ) && $param > 0;
+					},
+				),
+			),
+		)
+	);
+}
+
+/**
+ * Restore a trashed issue and report any checklist items auto-restored with it.
+ *
+ * @param WP_REST_Request $request REST request object.
+ * @return WP_REST_Response
+ */
+function alpaca_restore_issue_callback( WP_REST_Request $request ) {
+	$issue_id = (int) $request['id'];
+	$post     = alpaca_assert_issue_exists( $issue_id );
+
+	if ( ! $post ) {
+		return alpaca_rest_response(
+			'',
+			array(
+				'success' => false,
+				'message' => esc_html__( 'Issue not found.', 'alpaca' ),
+			),
+			404
+		);
+	}
+
+	if ( 'trash' !== (string) $post->post_status ) {
+		return alpaca_rest_response(
+			'',
+			array(
+				'success' => false,
+				'message' => esc_html__( 'Issue is not in trash.', 'alpaca' ),
+			),
+			400
+		);
+	}
+
+	$parent_issue       = null;
+	$parent_issue_id    = (int) $post->post_parent;
+	$parent_issue_title = '';
+
+	if ( $parent_issue_id > 0 ) {
+		$parent_issue = alpaca_assert_issue_exists( $parent_issue_id );
+
+		if ( $parent_issue ) {
+			$parent_issue_title = alpaca_get_deleted_issue_display_title( $parent_issue );
+
+			if ( 'trash' === (string) $parent_issue->post_status ) {
+				return alpaca_rest_response(
+					'',
+					array(
+						'success' => false,
+						'message' => esc_html__( 'Checklist items cannot be restored while their parent issue is still deleted.', 'alpaca' ),
+					),
+					400
+				);
+			}
+		}
+	}
+
+	$untrash_result = wp_untrash_post( $issue_id );
+	if ( ! $untrash_result ) {
+		return alpaca_rest_response(
+			'',
+			array(
+				'success' => false,
+				'message' => esc_html__( 'Failed to restore the issue.', 'alpaca' ),
+			),
+			500
+		);
+	}
+
+	$update_result = wp_update_post(
+		array(
+			'ID'          => $issue_id,
+			'post_status' => 'publish',
+		),
+		true
+	);
+
+	if ( is_wp_error( $update_result ) ) {
+		return alpaca_rest_response(
+			'',
+			array(
+				'success' => false,
+				'message' => esc_html__( 'Failed to restore the issue.', 'alpaca' ),
+			),
+			500
+		);
+	}
+
+	return alpaca_rest_response(
+		'',
+		array(
+			'success'        => true,
+			'message'        => esc_html__( 'Issue restored successfully.', 'alpaca' ),
+			'restored_issue' => array(
+				'id'           => $issue_id,
+				'title'        => alpaca_get_deleted_issue_display_title( get_post( $issue_id ) ),
+				'parent_id'    => $parent_issue_id,
+				'parent_title' => $parent_issue_title,
+			),
 		),
 		200
 	);
