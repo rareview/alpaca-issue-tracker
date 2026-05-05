@@ -5,91 +5,53 @@ import {
   getRestorePaginationInfo,
 } from '../utils/restorePagination';
 
-const { useState, useCallback, useEffect, useMemo } = wp.element;
+const { useState, useCallback, useEffect } = wp.element;
 const { __, _n, sprintf } = wp.i18n;
-const { decodeEntities } = wp.htmlEntities;
 const { SearchControl, Button, Notice, Spinner } = wp.components;
 const { doAction } = wp.hooks;
 
-const DEFAULT_LABEL_COLOR = '#172b4d';
-
 /**
- * Remove HTML tags from a value.
+ * Normalize a deleted issue response item for UI use.
  *
- * @param {string} maybeHtml Input string.
- * @return {string} Plain text.
+ * @param {Object} issue Deleted issue payload.
+ * @return {Object} Normalized deleted issue.
  */
-const stripHtml = (maybeHtml) => {
-  if (!maybeHtml) {
-    return '';
-  }
+const normalizeDeletedIssue = (issue) => {
+  const labels = Array.isArray(issue?.labels)
+    ? issue.labels
+        .map((label) => ({
+          name:
+            typeof label?.name === 'string' && label.name.trim() !== ''
+              ? label.name.trim()
+              : '',
+          color:
+            typeof label?.color === 'string' && label.color.trim() !== ''
+              ? label.color
+              : '#172b4d',
+        }))
+        .filter((label) => label.name)
+    : [];
 
-  return String(maybeHtml)
-    .replace(/<[^>]*>/g, '')
-    .trim();
-};
-
-/**
- * Extract a readable title from an issue REST object.
- *
- * @param {Object} issue Issue REST payload.
- * @return {string} Issue title.
- */
-const getIssueTitle = (issue) => {
-  if (!issue || typeof issue !== 'object') {
-    return '';
-  }
-
-  if (
-    issue.title &&
-    typeof issue.title === 'object' &&
-    typeof issue.title.raw === 'string' &&
-    issue.title.raw.trim() !== ''
-  ) {
-    return decodeEntities(stripHtml(issue.title.raw));
-  }
-
-  if (
-    issue.title &&
-    typeof issue.title === 'object' &&
-    typeof issue.title.rendered === 'string' &&
-    issue.title.rendered.trim() !== ''
-  ) {
-    return decodeEntities(stripHtml(issue.title.rendered));
-  }
-
-  if (typeof issue.post_title === 'string' && issue.post_title.trim() !== '') {
-    return decodeEntities(issue.post_title.trim());
-  }
-
-  if (typeof issue.title === 'string' && issue.title.trim() !== '') {
-    return decodeEntities(issue.title.trim());
-  }
-
-  if (issue.content && typeof issue.content === 'object') {
-    if (
-      typeof issue.content.raw === 'string' &&
-      issue.content.raw.trim() !== ''
-    ) {
-      return decodeEntities(stripHtml(issue.content.raw));
-    }
-
-    if (
-      typeof issue.content.rendered === 'string' &&
-      issue.content.rendered.trim() !== ''
-    ) {
-      return decodeEntities(stripHtml(issue.content.rendered));
-    }
-  }
-
-  if (
-    typeof issue.post_content === 'string' &&
-    issue.post_content.trim() !== ''
-  ) {
-    return decodeEntities(stripHtml(issue.post_content));
-  }
-
-  return '';
+  return {
+    id: String(issue?.id || ''),
+    parentId:
+      Number.isInteger(Number(issue?.parentId)) && Number(issue.parentId) > 0
+        ? String(issue.parentId)
+        : '',
+    parentTitle:
+      typeof issue?.parentTitle === 'string' ? issue.parentTitle.trim() : '',
+    title:
+      typeof issue?.title === 'string' && issue.title.trim() !== ''
+        ? issue.title.trim()
+        : __('(Untitled issue)', 'alpaca'),
+    labels,
+    isCompleted: Boolean(issue?.isCompleted),
+    createdAt: typeof issue?.createdAt === 'string' ? issue.createdAt : '',
+    createdAtIsGmt: Boolean(issue?.createdAtIsGmt),
+    lastActionAt:
+      typeof issue?.lastActionAt === 'string' ? issue.lastActionAt : '',
+    lastActionAtIsGmt: Boolean(issue?.lastActionAtIsGmt),
+  };
 };
 
 /**
@@ -130,131 +92,9 @@ const RestoreManager = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState('');
   const [restoringIds, setRestoringIds] = useState([]);
-  const [availableLabels, setAvailableLabels] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalItems, setTotalItems] = useState(0);
-
-  useEffect(() => {
-    wp.apiFetch({ path: '/alpaca/v1/labels' })
-      .then((response) => {
-        if (!Array.isArray(response)) {
-          setAvailableLabels([]);
-          return;
-        }
-
-        setAvailableLabels(response);
-      })
-      .catch(() => {
-        setAvailableLabels([]);
-      });
-  }, []);
-
-  const labelLookups = useMemo(() => {
-    const byName = new Map();
-    const byId = new Map();
-
-    availableLabels.forEach((label) => {
-      if (!label || typeof label !== 'object') {
-        return;
-      }
-
-      const color =
-        typeof label.color === 'string' && label.color.trim() !== ''
-          ? label.color
-          : DEFAULT_LABEL_COLOR;
-      const name = typeof label.name === 'string' ? label.name.trim() : '';
-
-      if (name) {
-        byName.set(name.toLowerCase(), {
-          name,
-          color,
-        });
-      }
-
-      if (
-        (typeof label.term_id === 'number' ||
-          typeof label.term_id === 'string') &&
-        String(label.term_id).trim() !== ''
-      ) {
-        byId.set(String(label.term_id), {
-          name: name || String(label.term_id),
-          color,
-        });
-      }
-    });
-
-    return {
-      byName,
-      byId,
-    };
-  }, [availableLabels]);
-
-  /**
-   * Build label objects with display name and color.
-   *
-   * @param {Object} issue Issue REST payload.
-   * @return {Array<Object>} Labels for UI.
-   */
-  const getIssueLabels = useCallback(
-    (issue) => {
-      const metaLabels = issue?.meta?.labels;
-      const taxonomyLabelIds = Array.isArray(issue?.alpaca_label)
-        ? issue.alpaca_label
-        : [];
-
-      let labelsFromMeta = [];
-      if (Array.isArray(metaLabels)) {
-        labelsFromMeta = metaLabels
-          .map((labelValue) => {
-            if (!labelValue) {
-              return '';
-            }
-
-            if (typeof labelValue === 'string') {
-              return labelValue.trim();
-            }
-
-            if (
-              typeof labelValue === 'object' &&
-              typeof labelValue.name === 'string'
-            ) {
-              return labelValue.name.trim();
-            }
-
-            return String(labelValue).trim();
-          })
-          .filter(Boolean);
-      } else if (typeof metaLabels === 'string' && metaLabels.trim() !== '') {
-        labelsFromMeta = [metaLabels.trim()];
-      }
-
-      if (labelsFromMeta.length > 0) {
-        return labelsFromMeta.map((name) => {
-          const matched = labelLookups.byName.get(name.toLowerCase());
-
-          return {
-            name,
-            color: matched?.color || DEFAULT_LABEL_COLOR,
-          };
-        });
-      }
-
-      if (taxonomyLabelIds.length > 0) {
-        return taxonomyLabelIds.map((id) => {
-          const matched = labelLookups.byId.get(String(id));
-
-          return {
-            name: matched?.name || String(id),
-            color: matched?.color || DEFAULT_LABEL_COLOR,
-          };
-        });
-      }
-
-      return [];
-    },
-    [labelLookups],
-  );
 
   /**
    * Fetch trashed issues for the current query.
@@ -263,152 +103,42 @@ const RestoreManager = () => {
    * @param {number} page           Page number.
    * @return {Promise<void>} Promise.
    */
-  const loadIssues = useCallback(
-    async (submittedQuery = '', page = 1) => {
-      const trimmedQuery = (submittedQuery || '').trim();
-      const normalizedPage = Math.max(1, parseInt(page, 10) || 1);
-      setError('');
-      setIsSearching(true);
+  const loadIssues = useCallback(async (submittedQuery = '', page = 1) => {
+    const trimmedQuery = (submittedQuery || '').trim();
+    const normalizedPage = Math.max(1, parseInt(page, 10) || 1);
+    setError('');
+    setIsSearching(true);
 
-      try {
-        const response = await wp.apiFetch({
-          path: buildRestoreIssuesPath({
-            query: trimmedQuery,
-            page: normalizedPage,
-            perPage: DEFAULT_RESTORE_PAGE_SIZE,
-          }),
-          parse: false,
-        });
-        const issues = await response.json();
-        const normalizedIssues = Array.isArray(issues) ? issues : [];
-        const paginationInfo = getRestorePaginationInfo(
-          response,
-          DEFAULT_RESTORE_PAGE_SIZE,
-        );
+    try {
+      const response = await wp.apiFetch({
+        path: buildRestoreIssuesPath({
+          query: trimmedQuery,
+          page: normalizedPage,
+          perPage: DEFAULT_RESTORE_PAGE_SIZE,
+        }),
+      });
+      const normalizedIssues = Array.isArray(response?.items)
+        ? response.items.map((issue) => normalizeDeletedIssue(issue))
+        : [];
+      const paginationInfo = getRestorePaginationInfo(
+        response,
+        DEFAULT_RESTORE_PAGE_SIZE,
+      );
 
-        const nextResults = await Promise.all(
-          normalizedIssues.map(async (issue) => {
-            let lastActionDate = '';
-            let lastActionDateIsGmt = false;
-            let detailTitle = '';
-            let detailLastActivity = '';
-
-            try {
-              const detailResponse = await wp.apiFetch({
-                path: `/alpaca/v1/get/${encodeURIComponent(issue.id)}`,
-              });
-
-              if (
-                detailResponse &&
-                detailResponse.success &&
-                detailResponse.post_data &&
-                typeof detailResponse.post_data.post_title === 'string' &&
-                detailResponse.post_data.post_title.trim() !== ''
-              ) {
-                detailTitle = detailResponse.post_data.post_title.trim();
-              }
-
-              if (
-                detailResponse &&
-                detailResponse.success &&
-                detailResponse.meta &&
-                typeof detailResponse.meta.alpaca_lastActivity === 'string' &&
-                detailResponse.meta.alpaca_lastActivity.trim() !== ''
-              ) {
-                detailLastActivity = detailResponse.meta.alpaca_lastActivity;
-              }
-            } catch (detailError) {
-              detailTitle = '';
-              detailLastActivity = '';
-            }
-
-            if (detailLastActivity) {
-              lastActionDate = detailLastActivity;
-              lastActionDateIsGmt = true;
-            }
-
-            if (!lastActionDate) {
-              try {
-                const countResponse = await wp.apiFetch({
-                  path: `/alpaca/v1/comment-count/${encodeURIComponent(
-                    issue.id,
-                  )}`,
-                });
-
-                if (
-                  countResponse &&
-                  countResponse.success &&
-                  typeof countResponse.last_activity === 'string' &&
-                  countResponse.last_activity.trim() !== ''
-                ) {
-                  lastActionDate = countResponse.last_activity;
-                  lastActionDateIsGmt = true;
-                }
-              } catch (countError) {
-                lastActionDate = '';
-                lastActionDateIsGmt = false;
-              }
-            }
-
-            if (!lastActionDate) {
-              try {
-                const commentsPath = `/wp/v2/comments?post=${encodeURIComponent(
-                  issue.id,
-                )}&per_page=1&orderby=date_gmt&order=desc&comment_type=issuecomment&type=issuecomment&status=all&context=edit&alpaca_include_hidden_comments=1&_fields=date,date_gmt`;
-                const comments = await wp.apiFetch({ path: commentsPath });
-                const latestComment = Array.isArray(comments)
-                  ? comments[0]
-                  : null;
-
-                if (latestComment) {
-                  if (
-                    typeof latestComment.date_gmt === 'string' &&
-                    latestComment.date_gmt
-                  ) {
-                    lastActionDate = latestComment.date_gmt;
-                    lastActionDateIsGmt = true;
-                  } else {
-                    lastActionDate = latestComment.date || '';
-                    lastActionDateIsGmt = false;
-                  }
-                }
-              } catch (commentError) {
-                lastActionDate = '';
-                lastActionDateIsGmt = false;
-              }
-            }
-
-            return {
-              id: String(issue.id),
-              title:
-                detailTitle ||
-                getIssueTitle(issue) ||
-                __('(Untitled issue)', 'alpaca'),
-              labels: getIssueLabels(issue),
-              createdAt: issue.date_gmt || issue.date || '',
-              createdAtIsGmt: Boolean(issue.date_gmt),
-              lastActionAt: lastActionDate,
-              lastActionAtIsGmt: lastActionDateIsGmt,
-            };
-          }),
-        );
-
-        setResults(nextResults);
-        setCurrentPage(normalizedPage);
-        setTotalPages(paginationInfo.totalPages);
-        setTotalItems(paginationInfo.totalItems);
-      } catch (searchError) {
-        setResults([]);
-        setCurrentPage(1);
-        setTotalPages(1);
-        setTotalItems(0);
-        setError(__('Search failed. Please try again.', 'alpaca'));
-      } finally {
-        setIsSearching(false);
-      }
-    },
-    [getIssueLabels],
-  );
+      setResults(normalizedIssues);
+      setCurrentPage(response?.pagination?.page || normalizedPage);
+      setTotalPages(paginationInfo.totalPages);
+      setTotalItems(paginationInfo.totalItems);
+    } catch (searchError) {
+      setResults([]);
+      setCurrentPage(1);
+      setTotalPages(1);
+      setTotalItems(0);
+      setError(__('Search failed. Please try again.', 'alpaca'));
+    } finally {
+      setIsSearching(false);
+    }
+  }, []);
 
   useEffect(() => {
     if ((query || '').trim() !== '') {
@@ -464,15 +194,30 @@ const RestoreManager = () => {
       setRestoringIds((previousIds) => [...previousIds, String(issueId)]);
 
       try {
-        await wp.apiFetch({
-          path: `/wp/v2/alpaca_issue/${encodeURIComponent(issueId)}`,
+        const response = await wp.apiFetch({
+          path: `/alpaca/v1/restore/${encodeURIComponent(issueId)}`,
           method: 'POST',
-          data: {
-            status: 'publish',
-          },
         });
 
-        doAction('alpaca.issueRestoredAudit', String(issueId));
+        const restoredIssue = response?.restored_issue;
+
+        if (
+          restoredIssue &&
+          Number.isInteger(Number(restoredIssue.parent_id)) &&
+          Number(restoredIssue.parent_id) > 0
+        ) {
+          doAction(
+            'alpaca.subissueRestoredAudit',
+            String(restoredIssue.parent_id),
+            {
+              id: String(restoredIssue.id || issueId),
+              title: restoredIssue.title || '',
+            },
+          );
+        } else {
+          doAction('alpaca.issueRestoredAudit', String(issueId));
+        }
+
         await loadIssues(
           query,
           results.length <= 1 && currentPage > 1
@@ -547,6 +292,7 @@ const RestoreManager = () => {
           <thead>
             <tr>
               <th scope="col">{__('Title', 'alpaca')}</th>
+              <th scope="col">{__('Type', 'alpaca')}</th>
               <th scope="col">{__('Labels', 'alpaca')}</th>
               <th scope="col">{__('Created', 'alpaca')}</th>
               <th scope="col">{__('Last action', 'alpaca')}</th>
@@ -556,7 +302,7 @@ const RestoreManager = () => {
           <tbody>
             {results.length < 1 ? (
               <tr>
-                <td colSpan={5} className="alpaca-restore-empty-cell">
+                <td colSpan={6} className="alpaca-restore-empty-cell">
                   {isSearching ? (
                     <Spinner />
                   ) : (
@@ -567,10 +313,51 @@ const RestoreManager = () => {
             ) : (
               results.map((result) => {
                 const isRestoring = restoringIds.includes(result.id);
+                const isChecklistItem = Boolean(result.parentId);
+                const itemTypeLabel = isChecklistItem
+                  ? __('Checklist item', 'alpaca')
+                  : __('Issue', 'alpaca');
+                let parentIssueSummary = '';
+
+                if (isChecklistItem && result.parentTitle) {
+                  const parentIssueLabel =
+                    /* translators: %s: Parent issue title. */
+                    __('Issue: %s', 'alpaca');
+
+                  parentIssueSummary = sprintf(
+                    parentIssueLabel,
+                    result.parentTitle,
+                  );
+                }
 
                 return (
                   <tr key={result.id}>
-                    <td>{result.title}</td>
+                    <td>
+                      <div className="alpaca-restore-title-cell">
+                        <div
+                          className={[
+                            'alpaca-restore-title-text',
+                            result.isCompleted
+                              ? 'alpaca-restore-title-text--completed'
+                              : '',
+                          ]
+                            .filter(Boolean)
+                            .join(' ')}
+                        >
+                          {result.title}
+                        </div>
+                        {parentIssueSummary && (
+                          <div className="alpaca-restore-parent-issue">
+                            {parentIssueSummary}
+                          </div>
+                        )}
+                      </div>
+                    </td>
+                    <td className="alpaca-restore-type-cell">
+                      <span className="alpaca-restore-item-type">
+                        {itemTypeLabel}
+                      </span>
+                    </td>
                     <td>
                       <div className="alpaca-restore-labels">
                         {result.labels.length > 0 ? (

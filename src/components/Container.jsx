@@ -31,6 +31,7 @@ import PropTypes from 'prop-types';
  * @param {Function} root0.onItemClick        - Callback when item is clicked
  * @param {Function} root0.onMoveAllToNext    - Callback to move all items to next container
  * @param {Function} root0.onDeleteAll        - Callback to delete all items
+ * @param {boolean}  root0.canDeleteIssues    - Whether current user can delete issues
  * @param {boolean}  root0.isLastContainer    - Whether this is the last container
  * @param {boolean}  root0.isHidden           - Whether container is hidden
  * @param {string}   root0.focusedContainerId - Focused container identifier
@@ -51,6 +52,7 @@ function Container({
   onItemClick,
   onMoveAllToNext,
   onDeleteAll,
+  canDeleteIssues,
   isLastContainer,
   isHidden,
   focusedContainerId,
@@ -228,7 +230,7 @@ function Container({
     });
   }
 
-  if (isLastContainer) {
+  if (isLastContainer && canDeleteIssues) {
     menuControls.push({
       icon: 'trash',
       title: __('Delete All', 'alpaca'),
@@ -779,6 +781,7 @@ Container.propTypes = {
   onItemClick: PropTypes.func.isRequired,
   onMoveAllToNext: PropTypes.func.isRequired,
   onDeleteAll: PropTypes.func.isRequired,
+  canDeleteIssues: PropTypes.bool,
   isLastContainer: PropTypes.bool.isRequired,
   isHidden: PropTypes.bool.isRequired,
   focusedContainerId: PropTypes.string,
@@ -788,6 +791,10 @@ Container.propTypes = {
   onRename: PropTypes.func.isRequired,
   onItemDrop: PropTypes.func,
   onBulkItemReorder: PropTypes.func,
+};
+
+Container.defaultProps = {
+  canDeleteIssues: false,
 };
 
 export default Container;

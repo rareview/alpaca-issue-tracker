@@ -133,7 +133,7 @@
         color: $color-text-muted;
         content: '\f182';
         display: flex;
-        font-family: dashicons;
+        font-family: dashicons, sans-serif;
         font-size: $font-size-sm;
         justify-content: center;
         line-height: $line-height-reset;
@@ -141,7 +141,8 @@
       }
     }
 
-    &.issue-restored {
+    &.issue-restored,
+    &.subissue-restored {
       .alpaca-timeline-icon::before {
         mask-image: url('../components/icons/svg/recycle.svg');
         background-color: $color-text-muted;

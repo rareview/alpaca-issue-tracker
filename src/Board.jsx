@@ -22,6 +22,7 @@ import { updateIssue } from './services/issueApi';
  * Main board component.
  */
 export function AlpacaBoard() {
+  const canDeleteIssues = Boolean(window.alpacaSettings?.canDeleteIssues);
   const [containers, setContainers] = useState(() => {
     if (typeof window.alpacaBoardData !== 'undefined') {
       return transformDataForBoard(window.alpacaBoardData);
@@ -1065,6 +1066,10 @@ export function AlpacaBoard() {
   };
 
   const handleDeleteAll = (containerId) => {
+    if (!canDeleteIssues) {
+      return;
+    }
+
     const originalContainers = containers;
     const containerToDeleteFrom = containers.find((c) => c.id === containerId);
 
@@ -1313,6 +1318,10 @@ export function AlpacaBoard() {
   };
 
   const handleDeleteIssue = (issueId) => {
+    if (!canDeleteIssues) {
+      return;
+    }
+
     // Optimistically remove the issue from the UI
     const originalContainers = containers;
     const newContainers = containers.map((c) => ({
@@ -1766,6 +1775,7 @@ export function AlpacaBoard() {
                 onItemClick={handleItemClick}
                 onMoveAllToNext={moveAllItemsToNextContainer}
                 onDeleteAll={handleDeleteAll}
+                canDeleteIssues={canDeleteIssues}
                 isLastContainer={index === containers.length - 1}
                 isHidden={hiddenContainerIds.includes(container.id)}
                 focusedContainerId={focusedContainerId}
@@ -1793,6 +1803,7 @@ export function AlpacaBoard() {
         }
         onClose={closeModal}
         onDelete={handleDeleteIssue}
+        canDeleteIssues={canDeleteIssues}
         triggerRef={triggerRef}
         onAssigneesChange={handleAssigneesChange}
         onLabelsChange={handleLabelsChange}

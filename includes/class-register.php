@@ -289,6 +289,7 @@ class Register {
 	private function localize_script_settings( $script_handle, $include_admin_url = false ) {
 		$settings = array(
 			'canManageOptions'        => current_user_can( 'manage_options' ),
+			'canDeleteIssues'         => Helpers::user_can( 'delete_issue' ),
 			'snapdomProxy'            => $this->get_snapdom_proxy_setting(),
 			'itemDatapointVisibility' => $this->get_item_datapoint_visibility_setting(),
 		);

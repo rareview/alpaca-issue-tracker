@@ -583,6 +583,34 @@ addAction(
 );
 
 addAction(
+  'alpaca.subissueRestoredAudit',
+  'alpaca/addSubissueRestoredComment',
+  async (issue, subissue) => {
+    if (!issue || !subissue) {
+      return;
+    }
+
+    const currentUser = await getUser();
+    const actionClass = ['subissue-restored'];
+    const subissueLabel = getSubissueLabel(subissue);
+    const commentContent = `${__('Checklist item', 'alpaca')} **${subissueLabel}** ${__(
+      'restored by',
+      'alpaca',
+    )} ${generateAssigneeSpan(currentUser)}`;
+
+    await postComment(issue, commentContent, actionClass, {
+      meta: {
+        alpacaNotificationContext: buildNotificationContext({
+          action: 'restore',
+          subissueId: Number(subissue?.id) || 0,
+          subissueTitle: subissueLabel,
+        }),
+      },
+    });
+  },
+);
+
+addAction(
   'alpaca.issueDeletedAudit',
   'alpaca/addIssueDeletedAuditComment',
   async (issueId) => {
