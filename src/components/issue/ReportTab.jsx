@@ -94,8 +94,8 @@ const ReportTab = memo(({ issueDetails }) => {
   }, [issueDetails, urlValue]);
 
   return (
-    <div className="alpaca-report-tab">
-      <table ref={tableRef} className="alpaca-data-table widefat striped">
+    <div className="alpaca-report-tab alpaca-data-table-context">
+      <table ref={tableRef} className="alpaca-data-table">
         <tbody>
           <tr>
             <th scope="row">{__('Reported', 'alpaca')}</th>

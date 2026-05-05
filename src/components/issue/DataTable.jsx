@@ -74,7 +74,7 @@ const DataTable = memo(
       : parsedData;
 
     return (
-      <table ref={tableRef} className="alpaca-data-table widefat striped">
+      <table ref={tableRef} className="alpaca-data-table">
         <tbody>
           {Object.entries(dataToDisplay).map(([key, value]) => {
             // Convert value to string for display

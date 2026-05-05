@@ -11,7 +11,7 @@ import DataTable from './DataTable';
  */
 const JsonTable = memo(({ data }) => {
   return (
-    <div className="alpaca-json-table">
+    <div className="alpaca-json-table alpaca-data-table-context">
       <DataTable data={data} showSyntaxHighlighting={true} />
     </div>
   );

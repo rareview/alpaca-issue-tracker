@@ -33,7 +33,7 @@ const ErrorsTab = ({ errorsJson }) => {
   }
 
   return (
-    <div className="alpaca-errors-tab">
+    <div className="alpaca-errors-tab alpaca-data-table-context">
       {errors.map((error, index) => {
         // Remove stack from main object to display it separately
         const { stack, ...errorWithoutStack } = error;
