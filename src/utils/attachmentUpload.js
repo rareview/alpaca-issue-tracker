@@ -41,6 +41,41 @@ export const uploadIssueAttachment = async (file, issueId) => {
 };
 
 /**
+ * Delete a previously uploaded issue attachment.
+ *
+ * @param {string}      url       Attachment URL to delete.
+ * @param {number}      issueId   Issue ID the attachment belongs to.
+ * @param {number|null} commentId Optional comment ID for linked attachments.
+ * @return {Promise<void>} Resolves when deletion succeeds.
+ */
+export const deleteIssueAttachment = async (url, issueId, commentId = null) => {
+  if (!url || !issueId) {
+    return;
+  }
+
+  const requestDataEntries = [
+    ['issue_id', issueId],
+    ['url', url],
+  ];
+
+  if (Number(commentId) > 0) {
+    requestDataEntries.push(['comment_id', Number(commentId)]);
+  }
+
+  const response = await wp.apiFetch({
+    path: '/alpaca/v1/comment-attachments/delete',
+    method: 'POST',
+    data: Object.fromEntries(requestDataEntries),
+  });
+
+  if (!response || response.success === false) {
+    throw new Error(
+      response?.message || __('Failed to delete attachment.', 'alpaca'),
+    );
+  }
+};
+
+/**
  * Convert a data URL to a File for uploading.
  *
  * @param {string} dataUrl  Data URL string.

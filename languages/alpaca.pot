@@ -1,8 +1,8 @@
-# Copyright (C) 2026 Rareview
+# Copyright (C) 2026 Rareview®
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Alpaca 1.0.0-beta.4\n"
+"Project-Id-Version: Alpaca 1.0.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/alpaca\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -31,7 +31,7 @@ msgstr ""
 
 #. Author of the plugin
 #: alpaca.php
-msgid "Rareview"
+msgid "Rareview®"
 msgstr ""
 
 #. Author URI of the plugin

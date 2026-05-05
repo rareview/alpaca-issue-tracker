@@ -55,61 +55,138 @@
       }
     }
 
-    .alpaca-comment-form {
-      border: 1px solid $color-border;
-      border-radius: $radius-lg;
-
-      button {
-        margin-bottom: $space-sm;
-      }
-
-      textarea {
-        border: none !important;
-        outline: none !important;
-        box-shadow: none !important;
-      }
-
-      .alpaca-user {
-        top: calc(-1 * 1px);
-      }
-
-      .alpaca-comment-dropzone {
-        position: relative;
-      }
-
-      .alpaca-comment-dropzone .components-drop-zone {
-        border: 2px dashed $color-border;
-        border-radius: $radius-lg;
-        position: absolute;
-        inset: 0;
-        background: rgb(255 255 255 / 85%);
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity $duration-base ease-in-out;
-
-        &::after {
-          content: 'Drop images to attach';
-          position: absolute;
-          inset: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          color: $color-text-muted;
-          font-size: $font-size-sm;
-          letter-spacing: $letter-spacing-meta;
-        }
-      }
-
-      .alpaca-comment-dropzone .components-drop-zone.is-active,
-      .alpaca-comment-dropzone .components-drop-zone.is-dragging {
-        opacity: 1;
-        pointer-events: auto;
-      }
-    }
-
     .components-textarea-control__input {
       line-height: $line-height-code;
       margin-top: 0;
+    }
+  }
+
+  .alpaca-comment-form {
+    border: 1px solid $color-border;
+    border-radius: $radius-lg;
+
+    button {
+      margin-bottom: $space-sm;
+    }
+
+    textarea {
+      border: none !important;
+      outline: none !important;
+      box-shadow: none !important;
+    }
+
+    .alpaca-mentions-textarea,
+    .alpaca-mentions-textarea:focus-within,
+    .components-base-control,
+    .components-base-control:focus-within,
+    .components-base-control__field,
+    .components-base-control__field:focus-within,
+    .components-textarea-control,
+    .components-textarea-control:focus-within,
+    .components-textarea-control__input,
+    .components-textarea-control__input:focus,
+    .components-textarea-control__input:focus-visible {
+      border: none !important;
+      border-color: transparent !important;
+      outline: none !important;
+      outline-offset: 0 !important;
+      box-shadow: none !important;
+    }
+
+    .alpaca-user {
+      top: calc(-1 * 1px);
+    }
+
+    .alpaca-comment-dropzone {
+      position: relative;
+    }
+
+    .alpaca-comment-dropzone .components-drop-zone {
+      border: 2px dashed $color-border;
+      border-radius: $radius-lg;
+      position: absolute;
+      inset: 0;
+      background: rgb(255 255 255 / 85%);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity $duration-base ease-in-out;
+
+      &::after {
+        content: 'Drop images to attach';
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: $color-text-muted;
+        font-size: $font-size-sm;
+        letter-spacing: $letter-spacing-meta;
+      }
+    }
+
+    .alpaca-comment-dropzone .components-drop-zone.is-active,
+    .alpaca-comment-dropzone .components-drop-zone.is-dragging {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  }
+
+  .alpaca-timeline-item .alpaca-comment-body {
+    textarea {
+      border: none !important;
+      outline: none !important;
+      box-shadow: none !important;
+    }
+
+    .alpaca-mentions-textarea,
+    .alpaca-mentions-textarea:focus-within,
+    .components-base-control,
+    .components-base-control:focus-within,
+    .components-base-control__field,
+    .components-base-control__field:focus-within,
+    .components-textarea-control,
+    .components-textarea-control:focus-within,
+    .components-textarea-control__input,
+    .components-textarea-control__input:focus,
+    .components-textarea-control__input:focus-visible {
+      border: none !important;
+      border-color: transparent !important;
+      outline: none !important;
+      outline-offset: 0 !important;
+      box-shadow: none !important;
+    }
+
+    .alpaca-comment-dropzone {
+      position: relative;
+    }
+
+    .alpaca-comment-dropzone .components-drop-zone {
+      border: 2px dashed $color-border;
+      border-radius: $radius-lg;
+      position: absolute;
+      inset: 0;
+      background: rgb(255 255 255 / 85%);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity $duration-base ease-in-out;
+
+      &::after {
+        content: 'Drop images to attach';
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: $color-text-muted;
+        font-size: $font-size-sm;
+        letter-spacing: $letter-spacing-meta;
+      }
+    }
+
+    .alpaca-comment-dropzone .components-drop-zone.is-active,
+    .alpaca-comment-dropzone .components-drop-zone.is-dragging {
+      opacity: 1;
+      pointer-events: auto;
     }
   }
 
@@ -149,8 +226,12 @@
     border: 1px solid $color-border;
   }
 
-  .alpaca-comment-form textarea {
+  .alpaca-timeline-item .alpaca-timeline-content .alpaca-comment-form,
+  .alpaca-timeline-item .alpaca-comment-body {
     border: none;
+    border-radius: 0;
+    background: transparent;
+    padding: 0;
   }
 
   .alpaca-timeline-item {
@@ -202,13 +283,6 @@
     &:hover .alpaca-comment-buttons {
       opacity: 1;
     }
-
-    &[data-source='human'],
-    &[data-source='create'] {
-      .alpaca-timeline-content {
-        flex-grow: 1;
-      }
-    }
   }
 
   .alpaca-comment-form-actions {
@@ -226,6 +300,7 @@
     display: flex;
     font-size: $font-size-md;
 
+    .alpaca-comment-form__content,
     .alpaca-timeline-content,
     textarea {
       width: 100%;

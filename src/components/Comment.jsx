@@ -255,7 +255,7 @@ const Comment = memo(
       .toString()
       .trim()
       .toLowerCase();
-    const defaultIsEditable = ['human'];
+    const defaultIsEditable = ['human', 'create'];
     const isDefaultEditable = defaultIsEditable.includes(commentAgentType);
 
     // Allow extensions to override which issue comments are editable.

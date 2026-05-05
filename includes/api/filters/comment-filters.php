@@ -26,7 +26,7 @@ add_action(
  * @return string Request parameter name.
  */
 add_filter(
-	'private_comments_rest_visibility_param',
+	'alpaca_private_comments_rest_visibility_param',
 	function () {
 		return 'alpaca_include_hidden_comments';
 	}
@@ -40,7 +40,7 @@ add_filter(
  * @return bool Updated visibility decision.
  */
 add_filter(
-	'private_comments_user_can_view_type',
+	'alpaca_private_comments_user_can_view_type',
 	function ( $can_view, $type ) {
 		if ( 'issuecomment' !== $type ) {
 			return $can_view;

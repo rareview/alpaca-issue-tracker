@@ -3,15 +3,15 @@
  * Plugin Name:       Alpaca
  * Plugin URI:        https://github.com/rareview/alpaca
  * Description:       A cute issue tracker for WordPress
- * Version:           1.0.0-beta.4
+ * Version:           1.0.0
  * Requires at least: 6.8
  * Requires PHP:      7.4
- * Author:            Rareview
+ * Author:            Rareview®
  * Author URI:        https://rareview.com/
  * Text Domain:       alpaca
  * Domain Path:       /languages
  * License:           GPL v2 or later
- * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
+ * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  *
  * @package Alpaca
  */

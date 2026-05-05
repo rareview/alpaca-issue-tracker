@@ -4,9 +4,9 @@ Tags: issue tracker, bug tracker, project management, kanban, development
 Requires at least: 6.8
 Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.0.0-beta.4
+Stable tag: 1.0.0
 License: GPLv2 or later
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
 A lightweight issue tracker built entirely inside WordPress, designed for developers and agencies managing client projects.
 
@@ -96,6 +96,17 @@ All data is stored in your WordPress database's core tables using custom post ty
 2. to follow
 3. to follow
 
+== Third-Party Libraries ==
+
+Alpaca includes runtime copies or bundled output from the following GPL-compatible libraries:
+
+* Bowser - MIT license - https://github.com/bowser-js/bowser
+* DOMPurify - MPL-2.0 option from `(MPL-2.0 OR Apache-2.0)` - https://github.com/cure53/DOMPurify
+* Marked - MIT license - https://marked.js.org/
+* PrismJS - MIT license - https://prismjs.com/
+* PropTypes - MIT license - https://github.com/facebook/prop-types
+* SnapDOM - MIT license - https://github.com/zumerlab/snapdom
+
 == Changelog ==
 
 = 1.0 RC1 ( ___ 2026) =
@@ -103,14 +114,20 @@ All data is stored in your WordPress database's core tables using custom post ty
 
 == Development ==
 
-Alpaca is currently in active development. A GitHub repository will be opened for public contributions in the near future.
+Alpaca is currently in active development.
+
+Source code and build configuration are available at:
+https://github.com/rareview/alpaca
 
 = Building from Source =
 
 1. Clone the repository
 2. Run `npm install`
-3. Run `npm run build`
-4. Run `npm run zip` to create a distributable package
+3. Run `npm run lint`
+4. Run `npm run build`
+5. Run `npm run zip` to create a distributable package
+
+The distributed plugin includes compiled JavaScript and CSS assets. The source files, dependency manifests, and build instructions are available in the repository above. Composer dependencies are used for development tooling and coding standards checks.
 
 == Privacy Policy ==
 
@@ -118,4 +135,4 @@ Alpaca does not collect or transmit any data outside of your WordPress installat
 
 == Credits ==
 
-Developed by [Rareview](https://rareview.com/)
+Developed by [Rareview®](https://rareview.com/)
