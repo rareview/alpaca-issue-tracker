@@ -1,7 +1,8 @@
 import PropTypes from 'prop-types';
 
+const { useState } = wp.element;
 const { __ } = wp.i18n;
-const { Button } = wp.components;
+const { Button, Modal } = wp.components;
 
 const IMAGE_EXTENSIONS = [
   'apng',
@@ -74,6 +75,7 @@ const Attachment = ({
   showDelete,
   altText,
 }) => {
+  const [showConfirm, setShowConfirm] = useState(false);
   const canPreviewAttachment = 'function' === typeof onAttachmentClick;
 
   return (
@@ -123,21 +125,50 @@ const Attachment = ({
       )}
 
       {showDelete && (
-        <Button
-          disabled={isLoading}
-          onClick={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            onAttachmentDelete();
-          }}
-          label={__('Delete', 'alpaca')}
-          showTooltip
-          tooltipPosition="top"
-          icon="trash"
-          isDestructive
-          className="alpaca-attachment-delete"
-          variant="primary"
-        />
+        <>
+          <button
+            type="button"
+            disabled={isLoading}
+            onClick={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              setShowConfirm(true);
+            }}
+            aria-label={__('Delete attachment', 'alpaca')}
+            title={__('Delete attachment', 'alpaca')}
+            className="alpaca-attachment-delete"
+          >
+            <span aria-hidden="true">×</span>
+          </button>
+
+          {showConfirm && (
+            <Modal
+              title={__('Delete attachment?', 'alpaca')}
+              onRequestClose={() => setShowConfirm(false)}
+              className="alpaca-modal"
+            >
+              <p>
+                {__(
+                  'Are you sure you want to delete this attachment?',
+                  'alpaca',
+                )}
+              </p>
+              <Button
+                isPrimary
+                isDestructive
+                onClick={() => {
+                  setShowConfirm(false);
+                  onAttachmentDelete();
+                }}
+              >
+                {__('Delete', 'alpaca')}
+              </Button>
+              <Button onClick={() => setShowConfirm(false)}>
+                {__('Cancel', 'alpaca')}
+              </Button>
+            </Modal>
+          )}
+        </>
       )}
     </div>
   );
