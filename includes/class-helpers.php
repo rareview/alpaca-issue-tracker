@@ -80,6 +80,10 @@ class Helpers {
 				$post_id = isset( $args['post_id'] ) ? (int) $args['post_id'] : 0;
 				$allowed = $post_id > 0 ? \current_user_can( 'delete_post', $post_id ) : false;
 				break;
+			case 'delete_issue':
+				// Restrict issue deletion by default while keeping it filterable for custom roles.
+				$allowed = \current_user_can( 'manage_options' );
+				break;
 
 			case 'manage_options':
 			case 'options_update':

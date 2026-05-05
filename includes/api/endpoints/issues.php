@@ -1202,13 +1202,9 @@ function alpaca_register_restore_issue_endpoint() {
 			'methods'             => 'POST',
 			'callback'            => 'alpaca_restore_issue_callback',
 			'permission_callback' => function ( WP_REST_Request $request ) {
-				$post_id = (int) $request['id'];
 				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission(
 					$request,
-					'edit_post',
-					array(
-						'post_id' => $post_id,
-					)
+					'manage_options'
 				);
 			},
 			'args'                => array(
@@ -1342,7 +1338,7 @@ function alpaca_delete_issue() {
 				$post_id = (int) $request['id'];
 				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission(
 					$request,
-					'delete_post',
+					'delete_issue',
 					array(
 						'post_id' => $post_id,
 					)

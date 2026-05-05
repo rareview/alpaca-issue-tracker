@@ -577,6 +577,7 @@ const AlpacaIssue = ({
   activeSearchQuery = '',
   onClose,
   onDelete,
+  canDeleteIssues = false,
   onAssigneesChange,
   onDeadlineChange,
   onStatusChange,
@@ -1866,6 +1867,13 @@ const AlpacaIssue = ({
         setSubissues((prev) => prev.filter((item) => item.id !== subissueId));
         return;
       }
+      if (!canDeleteIssues) {
+        showNotification(
+          __('You do not have permission to delete issues.', 'alpaca'),
+          'error',
+        );
+        return;
+      }
 
       setLoading(`subissue-delete-${subissueId}`, true);
       try {
@@ -1880,7 +1888,7 @@ const AlpacaIssue = ({
         setLoading(`subissue-delete-${subissueId}`, false);
       }
     },
-    [issueDetails, setLoading, showNotification, subissues],
+    [canDeleteIssues, issueDetails, setLoading, showNotification, subissues],
   );
 
   // Memoized stable props
@@ -2023,14 +2031,16 @@ const AlpacaIssue = ({
                       </>
                     </MenuItem>
                   )}
-                  <MenuItem
-                    icon="trash"
-                    iconPosition="left"
-                    isDestructive
-                    onClick={() => setShowDeleteConfirm(true)}
-                  >
-                    {__('Trash Issue', 'alpaca')}
-                  </MenuItem>
+                  {canDeleteIssues && (
+                    <MenuItem
+                      icon="trash"
+                      iconPosition="left"
+                      isDestructive
+                      onClick={() => setShowDeleteConfirm(true)}
+                    >
+                      {__('Trash Issue', 'alpaca')}
+                    </MenuItem>
+                  )}
                 </MenuGroup>
               )}
             />
@@ -2282,21 +2292,23 @@ const AlpacaIssue = ({
                                     subissue.isDraft || isPromoteLoading
                                   }
                                 />
-                                <Button
-                                  className="alpaca-subissues-delete"
-                                  icon="trash"
-                                  label={__('Delete', 'alpaca')}
-                                  showTooltip
-                                  tooltipPosition="top"
-                                  isDestructive
-                                  onMouseDown={(event) =>
-                                    event.preventDefault()
-                                  }
-                                  onClick={() =>
-                                    handleSubissueDelete(subissue.id)
-                                  }
-                                  disabled={isDeleteLoading}
-                                />
+                                {(subissue.isDraft || canDeleteIssues) && (
+                                  <Button
+                                    className="alpaca-subissues-delete"
+                                    icon="trash"
+                                    label={__('Delete', 'alpaca')}
+                                    showTooltip
+                                    tooltipPosition="top"
+                                    isDestructive
+                                    onMouseDown={(event) =>
+                                      event.preventDefault()
+                                    }
+                                    onClick={() =>
+                                      handleSubissueDelete(subissue.id)
+                                    }
+                                    disabled={isDeleteLoading}
+                                  />
+                                )}
                               </div>
                             </li>
                           );
@@ -2374,7 +2386,7 @@ const AlpacaIssue = ({
         )}
       </Modal>
 
-      {showDeleteConfirm && (
+      {canDeleteIssues && showDeleteConfirm && (
         <div className="alpaca-confirm-overlay">
           <div className="alpaca-confirm-box">
             <h2>{__('Delete Issue?', 'alpaca')}</h2>
@@ -2408,6 +2420,7 @@ AlpacaIssue.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
+  canDeleteIssues: PropTypes.bool,
   onAssigneesChange: PropTypes.func.isRequired,
   onDeadlineChange: PropTypes.func.isRequired,
   /**
