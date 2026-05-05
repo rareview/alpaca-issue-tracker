@@ -1,5 +1,5 @@
 === Alpaca ===
-Contributors: rareview, imsimond, pratik260297, tahireu
+Contributors: rareview, s1m0nd, pratikbarvaliya, tahireu
 Tags: issue tracker, bug tracker, project management, kanban, development
 Requires at least: 6.8
 Tested up to: 6.9
