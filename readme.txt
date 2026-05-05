@@ -16,12 +16,12 @@ Alpaca is a powerful yet simple issue tracking system that lives inside your Wor
 
 = Key Features =
 
-* **Kanban Board Interface** - Drag-and-drop issues within and between fully customizable status columns
-* **Automatic Context Capture** - Browser info, page context, and technical details are saved with each bug report
+* **Kanban Board Interface** - Drag-and-drop issues between and within fully customizable status columns
+* **Automatic Context Capture** - Browser info, page context, and technical details are saved with each bug report submitted from the front end
 * **Built for WordPress** - Uses native WordPress components, post types, taxonomies and database tables
-* **Developer Friendly** - Extensible via WordPress action hooks and filters
-* **User Permissions** - Integrates with WordPress user roles and capabilities
-* **Screenshot Capture** - See exactly what the user saw, captured and processed within the browser
+* **Extensibility** - Developers can add custom functions and integrations via conventional WordPress actions & filters
+* **Respects User Permissions** - Integrates with WordPress user roles and capabilities
+* **Screenshot Capture** - See exactly what the user saw, captured and processed locally within the browser
 * **Comment and Activity Thread** - A unified view of each issue's progress, supporting attachment uploads and user mentions
 * **Priority Management** - Flag high-priority items and set deadlines
 * **Assignee System** - Assign issues and checklist items to team members
@@ -34,7 +34,9 @@ Alpaca is a powerful yet simple issue tracking system that lives inside your Wor
 * Freelance developers managing client sites
 * Small agencies tracking bugs and feature requests
 * Development teams needing lightweight project management
-* Anyone who wants issue tracking without leaving WordPress
+* Clients performing QA on a new site
+* Account managers responsible for rolling retainer contracts
+* Enterprises and government bodies needing extra reassurance on hosting
 
 = How It Works =
 
@@ -47,16 +49,16 @@ When a user reports an issue via Alpaca's front-end toolbar, the plugin silently
 - Queried object details and HTTP headers
 - Any JavaScript errors
 
-This gives developers everything they need to reproduce and fix issues quickly.
+This gives developers everything they need to reproduce and fix issues quickly, with zero burden on the client.
 
-Issues can also be created on the admin side, meaning Alpaca can also be used to plan new features or track internal tasks.
+Issues can also be created on the admin side, meaning Alpaca can also be used as a complete project management system, to plan new features or track internal tasks.
 
 == Installation ==
 
-1. Upload the `alpaca` folder to the `/wp-content/plugins/` directory
-2. Activate the plugin through the 'Plugins' menu in WordPress
-3. Find 'Project Board' in your admin sidebar: customize your Status columns and Labels
-4. Find the Alpaca toolbar on the front-end (when logged in): click to Report An Issue
+1. Install and activate the plugin as normal.
+2. Admin users can configure status columns and issue labels at: Project Board / Configure
+3. Admin users can edit the design of Alpaca's email notifications at: Project Board / Email Templates
+4. All users can set up personal notifications about issue progress: Project Board / My Notifications
 
 == Frequently Asked Questions ==
 
@@ -70,7 +72,7 @@ Yes! Alpaca is built using WordPress Gutenberg components for a native WordPress
 
 = Can I customize the Status columns and Labels? =
 
-Yes! You can change the names and order of Alpaca's status columns, and configure Labels to suit your workflow, on the Configure page.
+Yes, of course! You can add extra columns and labels, and change their names or presentation order, on the Configure screen.
 
 = Can I customize the card presentation? =
 
@@ -82,7 +84,9 @@ Alpaca works on multisite installations, with each site having its own independe
 
 = What kinds of notifications can Alpaca send? =
 
-Alpaca ships with a highly configurable email notification system. You can choose to receive instant notifications of activity relevant to you and your issues; or a daily digest of all activity.
+Alpaca ships with a highly configurable email notification system. You can choose to receive instant notifications of activity relevant to you and your issues; or a daily digest of all activity. You can even design the email templates using a block-based editor.
+
+You can @-mention another user within the text of a comment, to send them a notification. A search window will appear as soon as you type an @ symbol.
 
 Alpaca's notification engine has been built with extensibility in mind: additional channels will be added in the future.
 
@@ -107,10 +111,14 @@ Alpaca includes runtime copies or bundled output from the following GPL-compatib
 * PropTypes - MIT license - https://github.com/facebook/prop-types
 * SnapDOM - MIT license - https://github.com/zumerlab/snapdom
 
+== Recommended Plugins ==
+
+Alpaca uses user images throughout its interface, for extra humanity. We recommend **Simple Local Avatars** as a reliable solution for processing and hosting photos of your users without using an external service.
+
 == Changelog ==
 
-= 1.0 RC1 ( ___ 2026) =
-* First public release for testing and feedback
+= 1.0: May 2026 =
+* First public release
 
 == Development ==
 
@@ -131,7 +139,7 @@ The distributed plugin includes compiled JavaScript and CSS assets. The source f
 
 == Privacy Policy ==
 
-Alpaca does not collect or transmit any data outside of your WordPress installation. All issue data, screenshots, and technical information are captured and stored locally in your WordPress database.
+Alpaca does not collect or transmit any data outside of your WordPress installation. All issue data, screenshots, and technical information are captured and stored locally in your WordPress database and/or filesystem.
 
 == Credits ==
 

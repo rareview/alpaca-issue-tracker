@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name:       Alpaca
+ * Plugin Name:       Alpaca Issue Tracker
  * Plugin URI:        https://github.com/rareview/alpaca
- * Description:       A cute issue tracker for WordPress
+ * Description:       Bug reporting and Trello-esque kanban project management inside WordPress. No subscriptions, no new accounts, no artificial limitations.
  * Version:           1.0.0
  * Requires at least: 6.8
  * Requires PHP:      7.4
