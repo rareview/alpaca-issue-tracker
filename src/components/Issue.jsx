@@ -701,12 +701,12 @@ const AlpacaIssue = ({
       if (
         !details ||
         !details.taxonomies ||
-        !Array.isArray(details.taxonomies.assignee)
+        !Array.isArray(details.taxonomies.alpaca_assignee)
       ) {
         return [];
       }
 
-      return details.taxonomies.assignee.map((term) => {
+      return details.taxonomies.alpaca_assignee.map((term) => {
         const userObject = allUserObjects.find(
           (user) => user.slug === term.slug,
         );
@@ -724,12 +724,12 @@ const AlpacaIssue = ({
     if (
       !details ||
       !details.taxonomies ||
-      !Array.isArray(details.taxonomies.label)
+      !Array.isArray(details.taxonomies.alpaca_label)
     ) {
       return [];
     }
 
-    return details.taxonomies.label
+    return details.taxonomies.alpaca_label
       .map((term) => Number(term.term_id))
       .filter((value) => value > 0);
   }, []);
@@ -816,7 +816,9 @@ const AlpacaIssue = ({
     async (updatedIssueId, slugs, newAssignees, added, removed) => {
       setLoading('assignees', true);
       try {
-        await updateIssue(updatedIssueId, { taxonomies: { assignee: slugs } });
+        await updateIssue(updatedIssueId, {
+          taxonomies: { 'alpaca_assignee': slugs },
+        });
 
         if (typeof onAssigneesChange === 'function') {
           const selectedAssignees = allUserObjects.filter(
@@ -924,7 +926,9 @@ const AlpacaIssue = ({
 
       setLoading('labels', true);
       try {
-        await updateIssue(issueId, { taxonomies: { label: normalizedIds } });
+        await updateIssue(issueId, {
+          taxonomies: { 'alpaca_label': normalizedIds },
+        });
         if (typeof onLabelsChange === 'function') {
           const selectedLabels = allLabels.filter((label) =>
             normalizedIds.includes(Number(label.term_id)),
@@ -993,7 +997,7 @@ const AlpacaIssue = ({
   // Status progression
   const handleProgressIssue = useCallback(async () => {
     if (!issueDetails || !allStatuses.length) return;
-    const currentStatus = issueDetails.taxonomies?.status?.[0];
+    const currentStatus = issueDetails.taxonomies?.alpaca_status?.[0];
     if (!currentStatus) return;
 
     const currentIndex = allStatuses.findIndex(
@@ -1005,11 +1009,18 @@ const AlpacaIssue = ({
     setLoading('status', true);
     try {
       await updateIssue(issueId, {
-        taxonomies: { status: [nextStatus.term_id] },
+        taxonomies: {
+          // eslint-disable-next-line camelcase
+          alpaca_status: [nextStatus.term_id],
+        },
       });
       setIssueDetails((prev) => ({
         ...prev,
-        taxonomies: { ...prev.taxonomies, status: [nextStatus] },
+        taxonomies: {
+          ...prev.taxonomies,
+          // eslint-disable-next-line camelcase
+          alpaca_status: [nextStatus],
+        },
       }));
       onStatusChange?.(issueId, nextStatus, currentStatus, issueDetails);
     } catch (err) {
@@ -1185,7 +1196,7 @@ const AlpacaIssue = ({
           if (selectedLabelIds.length > 0) {
             try {
               await updateIssue(newIssueId, {
-                taxonomies: { label: selectedLabelIds },
+                taxonomies: { 'alpaca_label': selectedLabelIds },
               });
               createdIssueLabels = allLabels.filter((label) =>
                 selectedLabelIds.includes(Number(label.term_id)),
@@ -1678,7 +1689,9 @@ const AlpacaIssue = ({
       const slugs = newAssignees.map((name) => userMap[name] || name);
       setLoading(`subissue-assignees-${subissueId}`, true);
       try {
-        await updateIssue(subissue.id, { taxonomies: { assignee: slugs } });
+        await updateIssue(subissue.id, {
+          taxonomies: { 'alpaca_assignee': slugs },
+        });
         added.forEach((name) => {
           const user = allUserObjects.find((u) => u.name === name);
           wp.hooks.doAction(
@@ -1734,7 +1747,8 @@ const AlpacaIssue = ({
         return;
       }
 
-      const parentStatusId = issueDetails?.taxonomies?.status?.[0]?.term_id;
+      const parentStatusId =
+        issueDetails?.taxonomies?.alpaca_status?.[0]?.term_id;
       const payload = {
         // eslint-disable-next-line camelcase
         post_parent: 0,
@@ -1742,7 +1756,8 @@ const AlpacaIssue = ({
 
       if (parentStatusId) {
         payload.taxonomies = {
-          status: [parentStatusId],
+          // eslint-disable-next-line camelcase
+          alpaca_status: [parentStatusId],
         };
       }
 
@@ -1892,7 +1907,7 @@ const AlpacaIssue = ({
     () => loadingStates.labels,
     [loadingStates.labels],
   );
-  const currentStatus = issueDetails?.taxonomies?.status?.[0];
+  const currentStatus = issueDetails?.taxonomies?.alpaca_status?.[0];
   const isLastStatus = useMemo(() => {
     if (!currentStatus || !allStatuses.length) return true;
     return (
@@ -1903,7 +1918,7 @@ const AlpacaIssue = ({
 
   const nextStatusName = useMemo(() => {
     if (!allStatuses.length) return '';
-    const current = issueDetails?.taxonomies?.status?.[0];
+    const current = issueDetails?.taxonomies?.alpaca_status?.[0];
     if (!current) return allStatuses[0]?.name || '';
     const currentIndex = allStatuses.findIndex(
       (s) => s.term_id === current.term_id,
