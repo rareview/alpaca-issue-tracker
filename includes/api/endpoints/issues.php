@@ -378,15 +378,6 @@ function alpaca_update_issue_callback( WP_REST_Request $request ) {
 			// Sanitize taxonomy name.
 			$taxonomy = sanitize_key( $taxonomy );
 
-			// Map legacy taxonomy names where needed.
-			if ( 'assignee' === $taxonomy ) {
-				$taxonomy = 'alpaca_assignee';
-			}
-
-			if ( 'label' === $taxonomy ) {
-				$taxonomy = 'alpaca_label';
-			}
-
 			if ( ! taxonomy_exists( $taxonomy ) ) {
 				continue;
 			}
@@ -409,10 +400,21 @@ function alpaca_update_issue_callback( WP_REST_Request $request ) {
 						$term_ids[] = $term_id;
 					}
 				}
-				wp_set_post_terms( $issue_id, alpaca_to_int_ids( $term_ids ), 'alpaca_assignee', false );
+				$set_terms_result = wp_set_post_terms( $issue_id, alpaca_to_int_ids( $term_ids ), 'alpaca_assignee', false );
 			} else {
-				$term_ids = alpaca_to_int_ids( $terms );
-				wp_set_post_terms( $issue_id, $term_ids, $taxonomy, false );
+				$term_ids         = alpaca_to_int_ids( $terms );
+				$set_terms_result = wp_set_post_terms( $issue_id, $term_ids, $taxonomy, false );
+			}
+
+			if ( is_wp_error( $set_terms_result ) ) {
+				return alpaca_rest_response(
+					'',
+					array(
+						'success' => false,
+						'message' => esc_html__( 'Failed to update issue taxonomy terms.', 'alpaca' ),
+					),
+					500
+				);
 			}
 		}
 	}
@@ -421,7 +423,7 @@ function alpaca_update_issue_callback( WP_REST_Request $request ) {
 	if ( isset( $data['meta'] ) && is_array( $data['meta'] ) ) {
 		foreach ( $data['meta'] as $meta_key => $meta_value ) {
 			$key = sanitize_key( (string) $meta_key );
-				// Prefix meta keys.
+			// Prefix meta keys.
 			if ( ! str_starts_with( $key, 'alpaca_' ) ) {
 				$key = 'alpaca_' . $key;
 			}
@@ -432,6 +434,11 @@ function alpaca_update_issue_callback( WP_REST_Request $request ) {
 	// Update last activity since the issue was modified.
 	if ( function_exists( 'alpaca_update_last_activity' ) ) {
 		alpaca_update_last_activity( $issue_id );
+	}
+
+	// Clear board cache so refreshed board data reflects the latest issue state.
+	if ( function_exists( 'alpaca_clear_board_cache' ) ) {
+		alpaca_clear_board_cache();
 	}
 
 	// Extract overrides for response data.
@@ -749,19 +756,6 @@ function alpaca_get_issue_data_callback( WP_REST_Request $request ) {
 
 		$terms_data[ $taxonomy_obj->name ]      = $terms;
 		$taxonomy_labels[ $taxonomy_obj->name ] = $taxonomy_obj->label;
-	}
-
-	if ( isset( $terms_data['alpaca_assignee'] ) ) {
-		$terms_data['assignee']      = $terms_data['alpaca_assignee'];
-		$taxonomy_labels['assignee'] = $taxonomy_labels['alpaca_assignee'];
-	}
-	if ( isset( $terms_data['alpaca_label'] ) ) {
-		$terms_data['label']      = $terms_data['alpaca_label'];
-		$taxonomy_labels['label'] = $taxonomy_labels['alpaca_label'];
-	}
-	if ( isset( $terms_data['alpaca_watching'] ) ) {
-		$terms_data['watching']      = $terms_data['alpaca_watching'];
-		$taxonomy_labels['watching'] = $taxonomy_labels['alpaca_watching'];
 	}
 
 	$issue_comment_count = get_comments(

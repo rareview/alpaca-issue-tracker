@@ -662,12 +662,12 @@ const AlpacaIssue = ({
       if (
         !details ||
         !details.taxonomies ||
-        !Array.isArray(details.taxonomies.assignee)
+        !Array.isArray(details.taxonomies.alpaca_assignee)
       ) {
         return [];
       }
 
-      return details.taxonomies.assignee.map((term) => {
+      return details.taxonomies.alpaca_assignee.map((term) => {
         const userObject = allUserObjects.find(
           (user) => user.slug === term.slug,
         );
@@ -685,12 +685,12 @@ const AlpacaIssue = ({
     if (
       !details ||
       !details.taxonomies ||
-      !Array.isArray(details.taxonomies.label)
+      !Array.isArray(details.taxonomies.alpaca_label)
     ) {
       return [];
     }
 
-    return details.taxonomies.label
+    return details.taxonomies.alpaca_label
       .map((term) => Number(term.term_id))
       .filter((value) => value > 0);
   }, []);
@@ -773,7 +773,9 @@ const AlpacaIssue = ({
     async (updatedIssueId, slugs, newAssignees, added, removed) => {
       setLoading('assignees', true);
       try {
-        await updateIssue(updatedIssueId, { taxonomies: { assignee: slugs } });
+        await updateIssue(updatedIssueId, {
+          taxonomies: { alpaca_assignee: slugs },
+        });
 
         if (typeof onAssigneesChange === 'function') {
           const selectedAssignees = allUserObjects.filter(
@@ -881,7 +883,9 @@ const AlpacaIssue = ({
 
       setLoading('labels', true);
       try {
-        await updateIssue(issueId, { taxonomies: { label: normalizedIds } });
+        await updateIssue(issueId, {
+          taxonomies: { alpaca_label: normalizedIds },
+        });
         if (typeof onLabelsChange === 'function') {
           const selectedLabels = allLabels.filter((label) =>
             normalizedIds.includes(Number(label.term_id)),
@@ -1095,7 +1099,7 @@ const AlpacaIssue = ({
         if (selectedLabelIds.length > 0) {
           try {
             await updateIssue(newIssueId, {
-              taxonomies: { label: selectedLabelIds },
+              taxonomies: { alpaca_label: selectedLabelIds },
             });
             createdIssueLabels = allLabels.filter((label) =>
               selectedLabelIds.includes(Number(label.term_id)),
@@ -1470,7 +1474,9 @@ const AlpacaIssue = ({
       const slugs = newAssignees.map((name) => userMap[name] || name);
       setLoading(`subissue-assignees-${subissueId}`, true);
       try {
-        await updateIssue(subissue.id, { taxonomies: { assignee: slugs } });
+        await updateIssue(subissue.id, {
+          taxonomies: { alpaca_assignee: slugs },
+        });
         added.forEach((name) => {
           const user = allUserObjects.find((u) => u.name === name);
           wp.hooks.doAction(
