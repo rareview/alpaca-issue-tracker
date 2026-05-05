@@ -58,15 +58,6 @@ add_action(
 			'alpaca-email-templates',
 			'alpaca_email_templates_page'
 		);
-
-		add_submenu_page(
-			'project-board',
-			esc_html__( 'About', 'alpaca' ),
-			esc_html__( 'About', 'alpaca' ),
-			'manage_options',
-			'alpaca-about',
-			'alpaca_about_page'
-		);
 	}
 );
 
@@ -90,18 +81,6 @@ function alpaca_settings_page() {
 	<?php do_action( 'alpaca_settings_plugin' ); ?>
 	</div>
 
-	</div>
-	<?php
-}
-
-/**
- * Render the Alpaca about page.
- */
-function alpaca_about_page() {
-	?>
-	<div class="wrap">
-		<h1><?php echo esc_html__( 'About Alpaca', 'alpaca' ); ?></h1>
-		<div id="alpaca-about-page"></div>
 	</div>
 	<?php
 }

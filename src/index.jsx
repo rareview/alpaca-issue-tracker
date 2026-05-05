@@ -27,7 +27,6 @@ import Presence from './components/Presence';
 import NotificationPreferences from './components/NotificationPreferences.jsx';
 import EmailTemplatesScreen from './components/EmailTemplatesScreen.jsx';
 import AlpacaDashboardWidget from './DashboardWidget.jsx';
-import About from './about/About.jsx';
 import Activity from './Activity.jsx';
 import { mountAdminGlobalUi } from './adminGlobalMounts.jsx';
 
@@ -114,10 +113,6 @@ if (document.querySelector('#alpaca-dashboard-widget')) {
     console.error('Alpaca dashboard widget: invalid data-props', e);
   }
   mountReactTree(<AlpacaDashboardWidget data={data} />, el);
-}
-
-if (document.querySelector('#alpaca-about-page')) {
-  mountReactTree(<About />, document.querySelector('#alpaca-about-page'));
 }
 
 if (document.querySelector('#alpaca-activity-page')) {

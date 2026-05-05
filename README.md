@@ -23,14 +23,6 @@ But we soon realised Alpaca could be a full collaboration solution, on par with 
 
 Alpaca can be everything that a freelancer or small agency needs to track bugs and feature requests; and it can be the basis of a federated solution, suitable for larger agencies serving multiple clients.
 
-## Release plan
-
-- We have issued a number of private betas to friends and partners, to get feedback on the product's fundamentals as we developed its core feature set.
-- When the base feature set is complete, we will make our first Release Candidate version available publicly, initially via a GitHub repository.
-- We intend to release Alpaca as a free plugin within the WordPress.org plugin repository.
-- We plan to launch a documentation site with details of Alpaca's action hooks and filters.
-- We are already working on a set of premium features, some requiring a cloud-based component, as part of a future commercial subscription service.
-
 ## Project principles
 
 Everything should look, feel and operate like a natural extension of how WordPress already works.
@@ -42,3 +34,12 @@ We believe in the [WordPress development philosophy](https://wordpress.org/about
 Our target market is individuals and smaller teams, with limited time and limited expertise. Make the human interactions as simple as possible. Capture more data than you probably need. Automate whatever you can. The base product should be 'perfect for most people', with the _potential_ to be extended to satisfy the rest.
 
 We are building Alpaca as an exemplar of what can be done with WordPress as an application platform.
+
+## External dependencies
+
+- [Bowser](https://github.com/bowser-js/bowser) for browser detection. Copyright 2015, Dustin Diaz (the "Original Author"). All rights reserved. [MIT license.](https://github.com/bowser-js/bowser/blob/master/LICENSE)
+- [DOMPurify](https://github.com/cure53/DOMPurify) for HTML sanitization. Copyright 2025, Dr.-Ing. Mario Heiderich, Cure53. [MPL-2.0 or Apache-2.0 license.](https://github.com/cure53/DOMPurify/blob/main/LICENSE)
+- [Marked](https://marked.js.org/license) for Markdown processing. Copyright (c) 2018+, MarkedJS (https://github.com/markedjs/) Copyright (c) 2011-2018, Christopher Jeffrey (https://github.com/chjj/) [MIT license.](https://github.com/markedjs/marked/blob/master/LICENSE.md)
+- [PrismJS](https://prismjs.com/) for syntax highlighting. Copyright (c) 2012, Lea Verou. [MIT license.](https://github.com/PrismJS/prism/blob/master/LICENSE)
+- [PropTypes](https://github.com/facebook/prop-types) for React prop validation. Copyright (c) 2013-present, Facebook, Inc. [MIT license.](https://github.com/facebook/prop-types/blob/main/LICENSE)
+- [Snapdom](https://github.com/zumerlab/snapdom) for screenshot capture. Copyright (c) 2025 ZumerLab. [MIT license.](https://github.com/zumerlab/snapdom/blob/main/LICENSE)
