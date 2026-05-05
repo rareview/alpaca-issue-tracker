@@ -1053,7 +1053,8 @@ export function AlpacaBoard() {
 
       updateIssue(item.id, {
         taxonomies: {
-          status: [parseInt(nextContainer.id, 10)],
+          // eslint-disable-next-line camelcase
+          alpaca_status: [parseInt(nextContainer.id, 10)],
         },
         // eslint-disable-next-line no-console
       }).catch((err) => console.error(`Error updating issue ${item.id}:`, err));
@@ -1224,7 +1225,8 @@ export function AlpacaBoard() {
         // Update the item's status taxonomy
         movedItem.taxonomies = {
           ...movedItem.taxonomies,
-          status: [newStatusTerm],
+          // eslint-disable-next-line camelcase
+          alpaca_status: [newStatusTerm],
         };
 
         // Add the item to the new container
@@ -1641,7 +1643,8 @@ export function AlpacaBoard() {
 
       updateIssue(movedItemId, {
         taxonomies: {
-          status: [newStatusTermId],
+          // eslint-disable-next-line camelcase
+          alpaca_status: [newStatusTermId],
         },
       }).catch((err) => {
         // eslint-disable-next-line no-console
