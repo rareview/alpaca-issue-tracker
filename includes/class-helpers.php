@@ -23,7 +23,11 @@ class Helpers {
 	 * @return string
 	 */
 	public static function version() {
-		return '1.0.0';
+		if ( defined( 'ALPACA_VERSION' ) ) {
+			return ALPACA_VERSION;
+		}
+
+		return '';
 	}
 
 	/**

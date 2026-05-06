@@ -36,6 +36,7 @@ if ( file_exists( ALPACA_PLUGIN_DIR . 'vendor/autoload.php' ) ) {
 }
 
 // Manually require core classes for now.
+require_once ALPACA_PLUGIN_DIR . 'includes/class-alpaca.php';
 require_once ALPACA_PLUGIN_DIR . 'includes/class-helpers.php';
 require_once ALPACA_PLUGIN_DIR . 'includes/class-register.php';
 require_once ALPACA_PLUGIN_DIR . 'includes/class-alpacaserviceprovider.php';
@@ -50,8 +51,6 @@ register_deactivation_hook( __FILE__, [ 'Alpaca\\Deactivator', 'deactivate' ] );
 if ( class_exists( AlpacaServiceProvider::class ) ) {
 	new AlpacaServiceProvider();
 }
-
-require_once ALPACA_PLUGIN_DIR . 'includes/class-alpaca.php';
 
 /**
  * Initialize the plugin.
