@@ -1,10 +1,10 @@
 import './scss/main.scss';
 
 import './utils/issueCommentHandler.js';
-import './utils/dataDump.js';
 import './utils/boardHelpers.js';
 import { installAlpacaApiRootMiddleware } from './utils/restApiRoot.js';
 import reactMountUtils from './utils/reactMount';
+import { initializeAlpacaDataDump } from './utils/dataDump.js';
 
 // Import Prism.js and required languages
 import Prism from 'prismjs';
@@ -60,16 +60,28 @@ window.alpaca.services.issueApi = {
 const { createRoot, render: legacyRender } = wp.element;
 const { createMountReactTree } = reactMountUtils;
 const isAdmin = document.body.classList.contains('wp-admin');
+const contextualCaptureEnabled =
+  typeof window !== 'undefined' &&
+  (window.alpacaSettings?.contextualCaptureEnabled === true ||
+    window.alpacaSettings?.contextualCaptureEnabled === 1 ||
+    window.alpacaSettings?.contextualCaptureEnabled === '1' ||
+    typeof window.alpacaSettings?.contextualCaptureEnabled === 'undefined');
 const mountReactTree = createMountReactTree({
   createRoot,
   legacyRender,
 });
 
 if (isAdmin) {
-  mountAdminGlobalUi(mountReactTree);
+  if (contextualCaptureEnabled) {
+    initializeAlpacaDataDump();
+  }
+
+  mountAdminGlobalUi(mountReactTree, contextualCaptureEnabled);
 }
 
-if (!isAdmin) {
+if (!isAdmin && contextualCaptureEnabled) {
+  initializeAlpacaDataDump();
+
   const toolbarContainer = document.createElement('div');
   toolbarContainer.id = 'alpaca-toolbar-mount';
   document.body.appendChild(toolbarContainer);

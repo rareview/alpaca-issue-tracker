@@ -3,24 +3,21 @@ import { useCheckboxSetting } from './settings/useCheckboxSetting.js';
 const { __ } = wp.i18n;
 const { CheckboxControl } = wp.components;
 
-const EnableTestLogsControl = () => {
+const EnableContextCaptureControl = () => {
   const { isEnabled, isFetching, isSaving, handleChange } = useCheckboxSetting({
-    settingKey: 'alpaca_enable_test_logs',
-    defaultValue: false,
-    onSave: (value) => {
-      wp.hooks.doAction('alpaca.enableTestLogsChanged', value);
-    },
+    settingKey: 'alpaca_enable_context_capture',
+    defaultValue: true,
   });
 
   return (
     <tr>
-      <th>{__('Debugging', 'alpaca')}</th>
+      <th>{__('Context Capture', 'alpaca')}</th>
       <td>
         <CheckboxControl
           __nextHasNoMarginBottom
           label={
             <InlineCheckboxLabel
-              label={__('Enable Browser Console Messages', 'alpaca')}
+              label={__('Enable Context Capture', 'alpaca')}
               isBusy={isFetching || isSaving}
             />
           }
@@ -33,4 +30,4 @@ const EnableTestLogsControl = () => {
   );
 };
 
-export default EnableTestLogsControl;
+export default EnableContextCaptureControl;

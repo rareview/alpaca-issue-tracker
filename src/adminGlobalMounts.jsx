@@ -5,10 +5,14 @@ import AdminSidebarInboxBadge from './components/notifications/AdminSidebarInbox
 /**
  * Mount the Alpaca UI that should be available across wp-admin screens.
  *
- * @param {Function} mountReactTree Shared React mount helper.
+ * @param {Function} mountReactTree           Shared React mount helper.
+ * @param {boolean}  contextualCaptureEnabled Whether contextual capture is enabled.
  * @return {void}
  */
-export const mountAdminGlobalUi = (mountReactTree) => {
+export const mountAdminGlobalUi = (
+  mountReactTree,
+  contextualCaptureEnabled = true,
+) => {
   if (
     typeof document === 'undefined' ||
     !document.body.classList.contains('wp-admin')
@@ -16,7 +20,10 @@ export const mountAdminGlobalUi = (mountReactTree) => {
     return;
   }
 
-  if (document.querySelector('#wp-admin-bar-alpaca-report')) {
+  if (
+    contextualCaptureEnabled &&
+    document.querySelector('#wp-admin-bar-alpaca-report')
+  ) {
     let adminBarModalContainer = document.getElementById(
       'alpaca-admin-bar-modal-mount',
     );
