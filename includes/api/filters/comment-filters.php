@@ -5,10 +5,10 @@
  * @package Alpaca
  */
 
-use Alpaca\Inc\Helpers;
-use function Rareview\PrivateComments\hide_type;
-use function Rareview\PrivateComments\should_allow_rest_override;
-use function Rareview\PrivateComments\user_can_view_type;
+use Alpaca\Helpers;
+use function Alpaca\hide_type;
+use function Alpaca\should_allow_rest_override;
+use function Alpaca\user_can_view_type;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {

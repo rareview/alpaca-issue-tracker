@@ -18,8 +18,6 @@
 
 namespace Alpaca;
 
-use Alpaca\Inc\AlpacaServiceProvider;
-
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;

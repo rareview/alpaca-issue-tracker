@@ -6,7 +6,7 @@
  * @package Alpaca
  */
 
-use Alpaca\Inc\Helpers;
+use Alpaca\Helpers;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {

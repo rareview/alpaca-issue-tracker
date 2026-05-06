@@ -2,10 +2,12 @@
 /**
  * Functionality to hide and manage private comment types.
  *
- * @package Rareview\PrivateComments
+ * @package Alpaca
  */
 
-namespace Rareview\PrivateComments;
+namespace Alpaca;
+
+use WP_Comment_Query;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -307,7 +309,7 @@ function hide_type( $type = '', $exclude_from_count = true ) {
 	add_action(
 		'pre_get_comments',
 		function ( $query ) use ( $type, $should_hide ) {
-			if ( ! $query instanceof \WP_Comment_Query ) {
+			if ( ! $query instanceof WP_Comment_Query ) {
 				return;
 			}
 

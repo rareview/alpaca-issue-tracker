@@ -5,7 +5,7 @@
  * @package Alpaca
  */
 
-namespace Alpaca\Inc;
+namespace Alpaca;
 
 use WP_Error;
 use WP_REST_Request;

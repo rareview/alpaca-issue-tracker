@@ -5,7 +5,7 @@
  * @package Alpaca
  */
 
-namespace Alpaca\Inc;
+namespace Alpaca;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
