@@ -644,7 +644,7 @@ function alpaca_get_or_create_user_taxonomy_term( $user, $taxonomy ) {
 		$taxonomy,
 		[
 			'slug'        => $user->user_nicename,
-			'description' => $user->user_login,
+			'description' => '',
 		]
 	);
 

@@ -182,9 +182,24 @@ function alpaca_prepare_issue_data( $post ) {
 
 	$deadline         = get_post_meta( $post->ID, 'alpaca_deadline', true );
 	$assignees        = get_the_terms( $post->ID, 'alpaca_assignee' );
+	$assignee_data    = [];
 	$status           = get_the_terms( $post->ID, 'alpaca_status' );
 	$post_parent      = $post_parent_id > 0 ? get_post( $post_parent_id ) : null;
 	$post_parent_slug = $post_parent ? $post_parent->post_name : '';
+
+	if ( ! is_wp_error( $assignees ) && ! empty( $assignees ) ) {
+		foreach ( $assignees as $assignee ) {
+			if ( ! ( $assignee instanceof WP_Term ) ) {
+				continue;
+			}
+
+			$assignee_data[] = [
+				'term_id' => (int) $assignee->term_id,
+				'name'    => (string) $assignee->name,
+				'slug'    => (string) $assignee->slug,
+			];
+		}
+	}
 
 	return [
 		'id'               => $post->ID,
@@ -195,7 +210,7 @@ function alpaca_prepare_issue_data( $post ) {
 		'postDateGmt'      => $post->post_date_gmt,
 		'postDate'         => $post->post_date,
 		'deadline'         => $deadline,
-		'assignees'        => $assignees,
+		'assignees'        => $assignee_data,
 		'status'           => $status,
 		'high_priority'    => get_post_meta(
 			$post->ID,

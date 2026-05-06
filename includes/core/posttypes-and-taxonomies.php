@@ -282,8 +282,9 @@ function alpaca_update_user_terms_on_profile_update( $user_id, $old_user_data ) 
 				$term->term_id,
 				$taxonomy,
 				[
-					'name' => $user->display_name,
-					'slug' => $new_slug,
+					'name'        => $user->display_name,
+					'slug'        => $new_slug,
+					'description' => '',
 				]
 			);
 

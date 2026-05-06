@@ -491,10 +491,10 @@ function alpaca_get_subissue_response_data( WP_Post $post ) {
 		foreach ( $terms as $term ) {
 			$assignees[] = [
 				'term_id'      => (int) $term->term_id,
-				'name'         => $term->name,
-				'slug'         => $term->slug,
-				'username'     => $term->name,
-				'display_name' => $term->description,
+				'name'         => (string) $term->name,
+				'slug'         => (string) $term->slug,
+				'username'     => (string) $term->name,
+				'display_name' => (string) $term->name,
 			];
 		}
 	}
@@ -756,8 +756,9 @@ function alpaca_get_issue_data_callback( WP_REST_Request $request ) {
 		if ( 'alpaca_assignee' === $taxonomy_obj->name ) {
 			foreach ( $terms as $idx => $term ) {
 				// Keep original structure but enrich.
-				$terms[ $idx ]->username     = $term->name;
-				$terms[ $idx ]->display_name = $term->description;
+				$terms[ $idx ]->username     = (string) $term->name;
+				$terms[ $idx ]->display_name = (string) $term->name;
+				$terms[ $idx ]->description  = '';
 			}
 		}
 		if ( 'alpaca_label' === $taxonomy_obj->name ) {
