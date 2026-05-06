@@ -23,7 +23,8 @@
     "fix:styles": "stylelint src/**/*.scss --fix",
     "fix:php": "vendor/bin/phpcbf --ignore=src/*",
     "clear": "rm -rf ./.parcel-cache/ ./dist/",
-    "clb": "npm run clear && npm run lint && npm run build"
+    "clb": "npm run clear && npm run lint && npm run build",
+    "make-pot": "wp i18n make-pot . languages/alpaca.pot --exclude=node_modules,vendor,dist,build,.git"
   },
   "devDependencies": {
     "@parcel/transformer-inline-string": "^2.15.4",
