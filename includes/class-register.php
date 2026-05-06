@@ -33,8 +33,8 @@ class Register {
 	 */
 	public function register_assets() {
 
-		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
-		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
+		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_assets' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_assets' ] );
 	}
 
 	/**
@@ -44,7 +44,7 @@ class Register {
 	 */
 	private function get_base_script_dependencies() {
 
-		return array(
+		return [
 			'wp-element',
 			'wp-api-fetch',
 			'wp-i18n',
@@ -53,7 +53,7 @@ class Register {
 			'wp-data',
 			'wp-hooks',
 			'bowser',
-		);
+		];
 	}
 
 	/**
@@ -63,14 +63,14 @@ class Register {
 	 */
 	private function get_global_admin_script_dependencies() {
 
-		return array(
+		return [
 			'wp-element',
 			'wp-api-fetch',
 			'wp-i18n',
 			'wp-components',
 			'wp-hooks',
 			'bowser',
-		);
+		];
 	}
 
 	/**
@@ -80,7 +80,7 @@ class Register {
 	 */
 	private function get_notification_template_dependencies() {
 
-		return array(
+		return [
 			'wp-blocks',
 			'wp-block-library',
 			'wp-block-editor',
@@ -90,7 +90,7 @@ class Register {
 			'wp-rich-text',
 			'wp-compose',
 			'wp-format-library',
-		);
+		];
 	}
 
 	/**
@@ -102,9 +102,9 @@ class Register {
 	private function is_notification_template_admin_page( $hook_suffix ) {
 		return in_array(
 			$hook_suffix,
-			array(
+			[
 				'project-board_page_alpaca-email-templates',
-			),
+			],
 			true
 		);
 	}
@@ -126,11 +126,11 @@ class Register {
 		$locale = apply_filters( 'plugin_locale', $locale, 'alpaca' );
 
 		$locale_short = strtolower( substr( $locale, 0, 2 ) );
-		$paths        = array(
+		$paths        = [
 			ALPACA_PLUGIN_DIR . 'languages/' . $locale,
 			ALPACA_PLUGIN_DIR . 'languages/' . $locale_short,
 			ALPACA_PLUGIN_DIR . 'languages',
-		);
+		];
 
 		foreach ( $paths as $path ) {
 			if ( is_dir( $path ) ) {
@@ -162,13 +162,13 @@ class Register {
 	 * @return array<string, bool> Visibility map keyed by datapoint slug.
 	 */
 	private function get_item_datapoint_visibility_setting() {
-		$raw_visibility = get_option( 'alpaca_item_datapoint_visibility', array() );
+		$raw_visibility = get_option( 'alpaca_item_datapoint_visibility', [] );
 
 		if ( ! is_array( $raw_visibility ) ) {
-			return array();
+			return [];
 		}
 
-		$visibility = array();
+		$visibility = [];
 
 		foreach ( $raw_visibility as $slug => $is_enabled ) {
 			if ( ! is_string( $slug ) ) {
@@ -207,14 +207,14 @@ class Register {
 	private function is_full_admin_bundle_screen( $hook_suffix ) {
 		return in_array(
 			$hook_suffix,
-			array(
+			[
 				'index.php',
 				'toplevel_page_project-board',
 				'project-board_page_project-activity',
 				'project-board_page_alpaca-settings',
 				'project-board_page_alpaca-notifications',
 				'project-board_page_alpaca-email-templates',
-			),
+			],
 			true
 		);
 	}
@@ -230,7 +230,7 @@ class Register {
 	 */
 	private function is_skipped_admin_bundle_screen( $hook_suffix ) {
 		if ( function_exists( '\alpaca_should_skip_admin_report_screen' ) ) {
-			return \alpaca_should_skip_admin_report_screen( $hook_suffix );
+			return alpaca_should_skip_admin_report_screen( $hook_suffix );
 		}
 
 		return false;
@@ -262,7 +262,7 @@ class Register {
 		wp_enqueue_script(
 			'bowser',
 			Helpers::asset_url( 'vendor/bowser.es5.min.js' ),
-			array(),
+			[],
 			Helpers::version(),
 			true
 		);
@@ -270,7 +270,7 @@ class Register {
 		wp_enqueue_script(
 			'snapdom',
 			Helpers::asset_url( 'vendor/snapdom.min.js' ),
-			array(),
+			[],
 			Helpers::version(),
 			true
 		);
@@ -285,7 +285,7 @@ class Register {
 		wp_enqueue_style(
 			'atkinson-hyperlegible-mono',
 			'https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono&display=swap',
-			array(),
+			[],
 			Helpers::version()
 		);
 	}
@@ -298,13 +298,13 @@ class Register {
 	 * @return void
 	 */
 	private function localize_script_settings( $script_handle, $include_admin_url = false ) {
-		$settings = array(
+		$settings = [
 			'canManageOptions'         => current_user_can( 'manage_options' ),
 			'canDeleteIssues'          => Helpers::user_can( 'delete_issue' ),
 			'contextualCaptureEnabled' => $this->is_contextual_capture_enabled(),
 			'snapdomProxy'             => $this->get_snapdom_proxy_setting(),
 			'itemDatapointVisibility'  => $this->get_item_datapoint_visibility_setting(),
-		);
+		];
 
 		if ( $include_admin_url ) {
 			$settings['adminUrl'] = admin_url( 'admin.php' );
@@ -351,13 +351,13 @@ class Register {
 		wp_enqueue_style(
 			self::PREFIX . '-style',
 			Helpers::asset_url( 'dist/index.css' ),
-			array( 'wp-components', 'atkinson-hyperlegible-mono' ),
+			[ 'wp-components', 'atkinson-hyperlegible-mono' ],
 			$style_version
 		);
 
 		if ( $localize_datadump && function_exists( 'alpaca_prepare_datadump' ) ) {
 			if ( $this->is_contextual_capture_enabled() ) {
-				wp_localize_script( self::PREFIX . '-script', 'alpacaDataDump', \alpaca_prepare_datadump() );
+				wp_localize_script( self::PREFIX . '-script', 'alpacaDataDump', alpaca_prepare_datadump() );
 			}
 		}
 
@@ -400,7 +400,7 @@ class Register {
 		wp_enqueue_style(
 			$style_handle,
 			Helpers::asset_url( 'dist/admin-global.css' ),
-			array( 'wp-components' ),
+			[ 'wp-components' ],
 			$style_version
 		);
 
@@ -458,15 +458,15 @@ class Register {
 				wp_localize_script(
 					self::PREFIX . '-script',
 					'alpacaBoardData',
-					\alpaca_get_board_data()
+					alpaca_get_board_data()
 				);
 
 				wp_localize_script(
 					self::PREFIX . '-script',
 					'alpacaUserData',
-					array(
+					[
 						'currentUserId' => get_current_user_id(),
-					)
+					]
 				);
 			}
 

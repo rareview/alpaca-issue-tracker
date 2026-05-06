@@ -24,7 +24,7 @@ function alpaca_get_notification_template_tokens( $event ) {
 		$time_text = wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), strtotime( $timestamp ) );
 	}
 
-	return array(
+	return [
 		'{{issue_title}}'       => isset( $event['issue']['title'] ) ? (string) $event['issue']['title'] : '',
 		'{{actor_name}}'        => isset( $event['actor']['display_name'] ) ? (string) $event['actor']['display_name'] : '',
 		'{{performed_by}}'      => isset( $event['actor']['display_name'] ) ? (string) $event['actor']['display_name'] : '',
@@ -37,7 +37,7 @@ function alpaca_get_notification_template_tokens( $event ) {
 		'{{notifications_url}}' => alpaca_get_notification_preferences_url(),
 		'{{event_time}}'        => $time_text,
 		'{{issue_url}}'         => isset( $event['issue']['url'] ) ? (string) $event['issue']['url'] : '',
-	);
+	];
 }
 
 /**
@@ -49,7 +49,7 @@ function alpaca_get_notification_template_tokens( $event ) {
  */
 function alpaca_render_notification_mentions( $content, $mentions ) {
 	$content  = is_string( $content ) ? $content : '';
-	$mentions = is_array( $mentions ) ? $mentions : array();
+	$mentions = is_array( $mentions ) ? $mentions : [];
 	if ( '' === $content || empty( $mentions ) ) {
 		return $content;
 	}
@@ -76,25 +76,25 @@ function alpaca_render_notification_mentions( $content, $mentions ) {
  */
 function alpaca_render_notification_comment_html( $event ) {
 	$raw       = isset( $event['comment']['raw'] ) ? (string) $event['comment']['raw'] : '';
-	$mentions  = isset( $event['comment']['mentions'] ) && is_array( $event['comment']['mentions'] ) ? $event['comment']['mentions'] : array();
+	$mentions  = isset( $event['comment']['mentions'] ) && is_array( $event['comment']['mentions'] ) ? $event['comment']['mentions'] : [];
 	$raw       = alpaca_render_notification_mentions( $raw, $mentions );
 	$sanitized = wp_kses(
 		$raw,
-		array(
-			'a'      => array(
+		[
+			'a'      => [
 				'href'   => true,
 				'target' => true,
 				'rel'    => true,
-			),
-			'strong' => array(),
-			'em'     => array(),
-			'br'     => array(),
-			'span'   => array(
+			],
+			'strong' => [],
+			'em'     => [],
+			'br'     => [],
+			'span'   => [
 				'class'       => true,
 				'data-userid' => true,
 				'data-avatar' => true,
-			),
-		)
+			],
+		]
 	);
 	$sanitized = preg_replace( '/\*\*(.*?)\*\*/', '<strong>$1</strong>', $sanitized );
 	$sanitized = preg_replace( '/\*(.*?)\*/', '<em>$1</em>', $sanitized );
@@ -125,12 +125,12 @@ function alpaca_render_notification_comment_html( $event ) {
  * @return string HTML markup.
  */
 function alpaca_render_notification_attachments_html( $attachments ) {
-	$attachments = is_array( $attachments ) ? $attachments : array();
+	$attachments = is_array( $attachments ) ? $attachments : [];
 	if ( empty( $attachments ) ) {
 		return '';
 	}
 
-	$items = array();
+	$items = [];
 	foreach ( $attachments as $attachment ) {
 		$url = esc_url( (string) $attachment );
 		if ( '' === $url ) {
@@ -199,7 +199,7 @@ function alpaca_render_notification_placeholder_block( $block_name, $event ) {
 
 	if ( 'alpaca/email-comment-content' === $block_name ) {
 		$comment_html  = alpaca_render_notification_comment_html( $event );
-		$attachments   = isset( $event['comment']['attachments'] ) && is_array( $event['comment']['attachments'] ) ? $event['comment']['attachments'] : array();
+		$attachments   = isset( $event['comment']['attachments'] ) && is_array( $event['comment']['attachments'] ) ? $event['comment']['attachments'] : [];
 		$attachments_h = alpaca_render_notification_attachments_html( $attachments );
 		return '<div class="alpaca-notification-comment-content">' . $comment_html . $attachments_h . '</div>';
 	}
@@ -224,7 +224,7 @@ function alpaca_render_notification_site_logo_block( $block, $event ) {
 
 	$site_title  = isset( $tokens['{{site_title}}'] ) ? $tokens['{{site_title}}'] : '';
 	$site_url    = isset( $event['site']['url'] ) ? (string) $event['site']['url'] : '';
-	$attributes  = isset( $block['attrs'] ) && is_array( $block['attrs'] ) ? $block['attrs'] : array();
+	$attributes  = isset( $block['attrs'] ) && is_array( $block['attrs'] ) ? $block['attrs'] : [];
 	$width_attr  = isset( $attributes['width'] ) ? absint( $attributes['width'] ) : 0;
 	$width_html  = $width_attr > 0 ? ' width="' . $width_attr . '"' : '';
 	$logo_markup = '<img class="alpaca-notification-site-logo" src="' . esc_url( $logo_url ) . '" alt="' . esc_attr( $site_title ) . '"' . $width_html . ' />';
@@ -250,13 +250,13 @@ function alpaca_render_notification_site_logo_block( $block, $event ) {
  * @return array<string, mixed> Parsed block structure.
  */
 function alpaca_create_notification_html_block( $html ) {
-	return array(
+	return [
 		'blockName'    => 'core/html',
-		'attrs'        => array(),
-		'innerBlocks'  => array(),
+		'attrs'        => [],
+		'innerBlocks'  => [],
 		'innerHTML'    => $html,
-		'innerContent' => array( $html ),
-	);
+		'innerContent' => [ $html ],
+	];
 }
 
 /**
@@ -296,7 +296,7 @@ function alpaca_prepare_notification_block_for_render( $block, $event ) {
  * @return array<int, array<string, mixed>> Prepared parsed blocks.
  */
 function alpaca_prepare_notification_blocks_for_render( $blocks, $event ) {
-	$prepared = array();
+	$prepared = [];
 
 	foreach ( $blocks as $block ) {
 		$prepared[] = alpaca_prepare_notification_block_for_render( $block, $event );
@@ -340,7 +340,7 @@ function alpaca_get_notification_email_css() {
 		return '';
 	}
 
-	$rules = array();
+	$rules = [];
 
 	preg_match_all( '/[^{}]*\.alpaca-notification-email[^{}]*\{[^}]*\}/', $css, $matches );
 	if ( ! empty( $matches[0] ) ) {
@@ -352,9 +352,9 @@ function alpaca_get_notification_email_css() {
 	* notification-email-prefixed selectors. Pull them in explicitly so the
 	* sent email matches the editor preview.
 	*/
-	$shared_selectors = array(
+	$shared_selectors = [
 		'.alpaca-label-pill',
-	);
+	];
 
 	foreach ( $shared_selectors as $selector ) {
 		$pattern = '/[^{}]*' . preg_quote( $selector, '/' ) . '[^{}]*\{[^}]*\}/';
@@ -377,8 +377,8 @@ function alpaca_get_notification_email_css() {
  * @param array<int, string> $extra_classes Extra CSS classes for the outer wrapper.
  * @return string Full HTML document.
  */
-function alpaca_wrap_notification_email_html( $body_html, $extra_classes = array() ) {
-	$classes = array( 'alpaca-notification-email' );
+function alpaca_wrap_notification_email_html( $body_html, $extra_classes = [] ) {
+	$classes = [ 'alpaca-notification-email' ];
 
 	if ( is_array( $extra_classes ) ) {
 		foreach ( $extra_classes as $class_name ) {
@@ -411,14 +411,14 @@ function alpaca_build_notification_message_payload( $subject, $html ) {
 	$text         = wp_strip_all_tags( preg_replace( '/<\/?(p|div|br|li|h[1-6]|tr|section|article|ul|ol)>/i', "\n", $html ) );
 	$from_details = alpaca_get_notification_mail_from_details();
 
-	return array(
+	return [
 		'subject'      => is_string( $subject ) ? $subject : '',
 		'html'         => is_string( $html ) ? $html : '',
 		'text'         => trim( $text ),
 		'from_address' => $from_details['from_address'],
 		'from_name'    => $from_details['from_name'],
 		'from_label'   => $from_details['from_label'],
-	);
+	];
 }
 
 /**
@@ -441,7 +441,7 @@ function alpaca_send_notification_html_email( $address, $message ) {
 		$address,
 		$subject,
 		$html,
-		array( 'Content-Type: text/html; charset=UTF-8' )
+		[ 'Content-Type: text/html; charset=UTF-8' ]
 	);
 }
 
@@ -486,11 +486,11 @@ function alpaca_get_notification_mail_from_details() {
 		$from_label = sprintf( '%1$s <%2$s>', $from_name, $from_address );
 	}
 
-	return array(
+	return [
 		'from_address' => $from_address,
 		'from_name'    => $from_name,
 		'from_label'   => $from_label,
-	);
+	];
 }
 
 /**

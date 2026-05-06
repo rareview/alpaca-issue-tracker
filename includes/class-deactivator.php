@@ -22,10 +22,10 @@ class Deactivator {
 	 */
 	public static function deactivate() {
 		// Flush rewrite rules.
-		\flush_rewrite_rules();
+		flush_rewrite_rules();
 
 		// Clear caches.
-		\wp_cache_flush();
+		wp_cache_flush();
 
 		// Note: We don't delete data on deactivation.
 		// Data is only removed on uninstall (see uninstall.php).

@@ -20,33 +20,33 @@ function alpaca_get_request_origin_parts() {
 	$host_header = isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : '';
 
 	if ( '' === $host_header ) {
-		return array(
+		return [
 			'scheme' => $scheme,
 			'host'   => '',
 			'port'   => null,
 			'origin' => '',
-		);
+		];
 	}
 
 	$parsed_host = wp_parse_url( $scheme . '://' . $host_header );
 	if ( ! is_array( $parsed_host ) || empty( $parsed_host['host'] ) ) {
-		return array(
+		return [
 			'scheme' => $scheme,
 			'host'   => '',
 			'port'   => null,
 			'origin' => '',
-		);
+		];
 	}
 
 	$request_host = (string) $parsed_host['host'];
 	$request_port = isset( $parsed_host['port'] ) ? (int) $parsed_host['port'] : null;
 
-	return array(
+	return [
 		'scheme' => $scheme,
 		'host'   => $request_host,
 		'port'   => $request_port,
 		'origin' => $scheme . '://' . $host_header,
-	);
+	];
 }
 
 /**
@@ -103,10 +103,10 @@ function alpaca_get_wp_api_settings_root_data() {
 	$filtered_root = apply_filters(
 		'alpaca_rest_api_root',
 		$default_root,
-		array(
+		[
 			'default_root' => $default_root,
 			'request'      => alpaca_get_request_origin_parts(),
-		)
+		]
 	);
 
 	$filtered_root = is_string( $filtered_root ) ? trim( $filtered_root ) : '';
@@ -117,10 +117,10 @@ function alpaca_get_wp_api_settings_root_data() {
 	$has_custom_root = untrailingslashit( $filtered_root ) !== untrailingslashit( $default_root );
 	$resolved_root   = $has_custom_root ? $filtered_root : alpaca_align_rest_root_to_request_origin( $filtered_root );
 
-	return array(
+	return [
 		'root'            => esc_url_raw( trailingslashit( $resolved_root ) ),
 		'has_custom_root' => $has_custom_root,
-	);
+	];
 }
 
 /*
@@ -134,11 +134,11 @@ add_action(
 		wp_localize_script(
 			'wp-api',
 			'wpApiSettings',
-			array(
+			[
 				'root'                => $root_data['root'],
 				'nonce'               => wp_create_nonce( 'wp_rest' ),
 				'alpacaHasCustomRoot' => (bool) $root_data['has_custom_root'],
-			)
+			]
 		);
 		wp_enqueue_script( 'wp-api' );
 	}

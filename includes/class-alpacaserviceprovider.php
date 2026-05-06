@@ -22,9 +22,9 @@ class AlpacaServiceProvider {
 	 *
 	 * @var array
 	 */
-	public static array $services = array(
+	public static array $services = [
 		Register::class,
-	);
+	];
 
 	/**
 	 * Boot the service provider.

@@ -22,10 +22,10 @@ function alpaca_get_icon_registry() {
 		return $icon_registry;
 	}
 
-	$icon_registry = array(
-		'icons'   => array(),
-		'aliases' => array(),
-	);
+	$icon_registry = [
+		'icons'   => [],
+		'aliases' => [],
+	];
 
 	$icon_registry_file = trailingslashit( ALPACA_PLUGIN_DIR ) . 'includes/utilities/icon-registry.php';
 
@@ -68,10 +68,10 @@ function alpaca_get_icon_sanitizer_allowlist_data() {
 
 	$allowlist_file = trailingslashit( ALPACA_PLUGIN_DIR ) . 'includes/utilities/icon-sanitizer-allowlist.json';
 
-	$allowlist_data = array(
-		'globalAttributes' => array(),
-		'allowedTags'      => array(),
-	);
+	$allowlist_data = [
+		'globalAttributes' => [],
+		'allowedTags'      => [],
+	];
 
 	if ( ! file_exists( $allowlist_file ) ) {
 		return $allowlist_data;
@@ -108,7 +108,7 @@ function alpaca_get_icon_sanitizer_allowlist_data() {
 function alpaca_get_icon_svg_allowed_tags() {
 	$allowlist_data    = alpaca_get_icon_sanitizer_allowlist_data();
 	$global_attributes = array_map( 'strtolower', $allowlist_data['globalAttributes'] );
-	$allowed_svg_tags  = array();
+	$allowed_svg_tags  = [];
 
 	foreach ( $allowlist_data['allowedTags'] as $tag_name => $tag_attributes ) {
 		if ( ! is_array( $tag_attributes ) ) {
@@ -231,43 +231,43 @@ function alpaca_setup_default_statuses( $force = false ) {
 
 	if ( ! $force ) {
 		$existing_statuses = get_terms(
-			array(
+			[
 				'taxonomy'   => 'alpaca_status',
 				'hide_empty' => false,
-			)
+			]
 		);
 
 		if ( ! empty( $existing_statuses ) && ! is_wp_error( $existing_statuses ) ) {
-			return array(
+			return [
 				'success' => false,
 				'message' => esc_html__( 'Statuses already exist.', 'alpaca' ),
-			);
+			];
 		}
 	}
 
-	$default_statuses = array(
-		array(
+	$default_statuses = [
+		[
 			'name'  => esc_html__( 'Backlog', 'alpaca' ),
 			'slug'  => 'backlog',
 			'score' => 0,
-		),
-		array(
+		],
+		[
 			'name'       => esc_html__( 'Next', 'alpaca' ),
 			'slug'       => 'next',
 			'score'      => 1,
 			'is_default' => true,
-		),
-		array(
+		],
+		[
 			'name'  => esc_html__( 'In Progress', 'alpaca' ),
 			'slug'  => 'in-progress',
 			'score' => 2,
-		),
-		array(
+		],
+		[
 			'name'  => esc_html__( 'Done', 'alpaca' ),
 			'slug'  => 'done',
 			'score' => 3,
-		),
-	);
+		],
+	];
 
 	$default_term_id = 0;
 	$created_count   = 0;
@@ -276,9 +276,9 @@ function alpaca_setup_default_statuses( $force = false ) {
 		$term = wp_insert_term(
 			$status['name'],
 			'alpaca_status',
-			array(
+			[
 				'slug' => $status['slug'],
-			)
+			]
 		);
 
 		if ( ! is_wp_error( $term ) && isset( $term['term_id'] ) ) {
@@ -297,7 +297,7 @@ function alpaca_setup_default_statuses( $force = false ) {
 		update_option( 'alpaca_default_status_id', $default_term_id );
 	}
 
-	return array(
+	return [
 		'success' => true,
 		'message' => sprintf(
 			/* translators: %d: number of statuses created */
@@ -305,7 +305,7 @@ function alpaca_setup_default_statuses( $force = false ) {
 			$created_count
 		),
 		'count'   => $created_count,
-	);
+	];
 }
 
 /**
@@ -451,23 +451,23 @@ function alpaca_restore_issuecomment_approval_statuses( $issue_id ) {
 function alpaca_get_child_issue_ids( $issue_id, $post_status = 'any' ) {
 	$issue_id = (int) $issue_id;
 	if ( $issue_id <= 0 ) {
-		return array();
+		return [];
 	}
 
 	$post_status = is_string( $post_status ) && '' !== $post_status ? $post_status : 'any';
 
 	$child_ids = get_children(
-		array(
+		[
 			'post_parent'    => $issue_id,
 			'post_type'      => 'alpaca_issue',
 			'post_status'    => $post_status,
 			'fields'         => 'ids',
 			'posts_per_page' => -1,
-		)
+		]
 	);
 
 	if ( empty( $child_ids ) || ! is_array( $child_ids ) ) {
-		return array();
+		return [];
 	}
 
 	return array_map( 'intval', array_values( $child_ids ) );
@@ -523,14 +523,14 @@ function alpaca_trash_child_issues_with_parent( $parent_issue_id ) {
 function alpaca_get_child_issues_trashed_with_parent( $parent_issue_id, $fields = 'ids' ) {
 	$parent_issue_id = (int) $parent_issue_id;
 	if ( $parent_issue_id <= 0 ) {
-		return array();
+		return [];
 	}
 
 	$fields = 'all' === $fields ? 'all' : 'ids';
 
 	// phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_meta_key,WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 	$child_issues = get_posts(
-		array(
+		[
 			'post_type'      => 'alpaca_issue',
 			'post_status'    => 'trash',
 			'post_parent'    => $parent_issue_id,
@@ -540,12 +540,12 @@ function alpaca_get_child_issues_trashed_with_parent( $parent_issue_id, $fields 
 			'posts_per_page' => -1,
 			'orderby'        => 'date',
 			'order'          => 'ASC',
-		)
+		]
 	);
 	// phpcs:enable WordPress.DB.SlowDBQuery.slow_db_query_meta_key,WordPress.DB.SlowDBQuery.slow_db_query_meta_value
 
 	if ( empty( $child_issues ) || ! is_array( $child_issues ) ) {
-		return array();
+		return [];
 	}
 
 	if ( 'ids' === $fields ) {
@@ -600,10 +600,10 @@ function alpaca_restore_child_issues_trashed_with_parent( $parent_issue_id, $res
 			}
 
 			wp_update_post(
-				array(
+				[
 					'ID'          => $child_id,
 					'post_status' => $child_post_status,
-				)
+				]
 			);
 
 			delete_post_meta( $child_id, 'alpaca_trashed_with_parent' );
@@ -640,10 +640,10 @@ function alpaca_get_or_create_user_taxonomy_term( $user, $taxonomy ) {
 	$inserted = wp_insert_term(
 		$user->display_name,
 		$taxonomy,
-		array(
+		[
 			'slug'        => $user->user_nicename,
 			'description' => $user->user_login,
-		)
+		]
 	);
 
 	if ( is_wp_error( $inserted ) ) {
@@ -694,7 +694,7 @@ function alpaca_migrate_watchlist_usermeta_to_taxonomy( $user_id ) {
 			continue;
 		}
 
-		wp_set_post_terms( $post_id, array( $term_id ), 'alpaca_watching', true );
+		wp_set_post_terms( $post_id, [ $term_id ], 'alpaca_watching', true );
 	}
 
 	delete_user_meta( $user_id, 'alpaca_watchlist' );
@@ -742,23 +742,23 @@ function alpaca_maybe_migrate_watchlist_usermeta_to_taxonomy( $user_id ) {
 function alpaca_get_watched_issue_ids_for_user( $user_id ) {
 	$user_id = (int) $user_id;
 	if ( $user_id <= 0 ) {
-		return array();
+		return [];
 	}
 
 	if ( ! taxonomy_exists( 'alpaca_watching' ) ) {
-		return array();
+		return [];
 	}
 
 	alpaca_maybe_migrate_watchlist_usermeta_to_taxonomy( $user_id );
 
 	$user = get_user_by( 'id', $user_id );
 	if ( ! ( $user instanceof WP_User ) ) {
-		return array();
+		return [];
 	}
 
 	// phpcs:disable WordPress.DB.SlowDBQuery.slow_db_query_tax_query
 	$watchlist = get_posts(
-		array(
+		[
 			'post_type'              => 'alpaca_issue',
 			'post_status'            => 'any',
 			'posts_per_page'         => -1,
@@ -768,14 +768,14 @@ function alpaca_get_watched_issue_ids_for_user( $user_id ) {
 			'no_found_rows'          => true,
 			'update_post_meta_cache' => false,
 			'update_post_term_cache' => false,
-			'tax_query'              => array(
-				array(
+			'tax_query'              => [
+				[
 					'taxonomy' => 'alpaca_watching',
 					'field'    => 'slug',
 					'terms'    => $user->user_nicename,
-				),
-			),
-		)
+				],
+			],
+		]
 	);
 	// phpcs:enable WordPress.DB.SlowDBQuery.slow_db_query_tax_query
 

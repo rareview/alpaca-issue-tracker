@@ -22,7 +22,7 @@ function alpaca_sync_comment_attachments_meta( $comment_id ) {
 
 	if ( ! is_array( $attachments ) ) {
 		delete_comment_meta( $comment_id, 'alpacaCommentAttachments' );
-		return array();
+		return [];
 	}
 
 	$attachments = array_map( 'esc_url_raw', $attachments );
@@ -30,7 +30,7 @@ function alpaca_sync_comment_attachments_meta( $comment_id ) {
 
 	if ( empty( $attachments ) ) {
 		delete_comment_meta( $comment_id, 'alpacaCommentAttachments' );
-		return array();
+		return [];
 	}
 
 	update_comment_meta( $comment_id, 'alpacaCommentAttachments', $attachments );
@@ -48,13 +48,13 @@ function alpaca_sync_comment_attachments_meta( $comment_id ) {
 function alpaca_get_notification_recipient_routes( $recipient, $event ) {
 	$user_id = isset( $recipient['user_id'] ) ? (int) $recipient['user_id'] : 0;
 	if ( $user_id <= 0 ) {
-		return array();
+		return [];
 	}
 
 	$preferences    = isset( $recipient['preferences'] ) && is_array( $recipient['preferences'] ) ? $recipient['preferences'] : alpaca_get_notification_preferences_for_user( $user_id );
 	$channels       = alpaca_get_notification_channel_registry();
 	$channel_status = alpaca_get_notification_channel_status_for_user( $user_id, $preferences );
-	$routes         = array();
+	$routes         = [];
 
 	foreach ( $channels as $channel_key => $channel ) {
 		if ( empty( $channel['is_available'] ) || ! alpaca_notification_channel_is_enabled( $preferences, $channel_key ) ) {
@@ -67,11 +67,11 @@ function alpaca_get_notification_recipient_routes( $recipient, $event ) {
 				continue;
 			}
 
-			$routes[] = array(
+			$routes[] = [
 				'channel'   => $channel_key,
 				'transport' => isset( $channel['transport'] ) ? (string) $channel['transport'] : $channel_key,
 				'address'   => $email,
-			);
+			];
 		}
 	}
 
@@ -94,7 +94,7 @@ function alpaca_get_notification_recipient_routes( $recipient, $event ) {
  */
 function alpaca_notification_transport_requires_message( $transport ) {
 	$transport = sanitize_key( (string) $transport );
-	$required  = in_array( $transport, array( 'email' ), true );
+	$required  = in_array( $transport, [ 'email' ], true );
 
 	/**
 	 * Filter whether a notification transport requires a rendered message payload.
@@ -130,7 +130,7 @@ function alpaca_send_notification_email_route( $route, $message ) {
 function alpaca_get_notification_message_for_route( $message, $route, $recipient, $event ) {
 	$route_message = apply_filters( 'alpaca_notification_route_message', $message, $route, $recipient, $event );
 
-	return is_array( $route_message ) ? $route_message : array();
+	return is_array( $route_message ) ? $route_message : [];
 }
 
 /**
@@ -176,7 +176,7 @@ function alpaca_send_notifications_for_event( $event, $template = null ) {
 	}
 
 	$message    = null;
-	$transports = apply_filters( 'alpaca_notifications_transports', array( 'email' ), $event, $recipients, array() );
+	$transports = apply_filters( 'alpaca_notifications_transports', [ 'email' ], $event, $recipients, [] );
 	if ( ! is_array( $transports ) ) {
 		return;
 	}
@@ -197,7 +197,7 @@ function alpaca_send_notifications_for_event( $event, $template = null ) {
 				continue;
 			}
 
-			$route_message = array();
+			$route_message = [];
 			if ( alpaca_notification_transport_requires_message( $transport ) ) {
 				if ( ! is_array( $message ) ) {
 					$message = alpaca_render_notification_message( $event, $template );

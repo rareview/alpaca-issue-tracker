@@ -19,206 +19,206 @@ function alpaca_register_notification_endpoints() {
 	register_rest_route(
 		'alpaca/v1',
 		'/notification-preferences',
-		array(
-			array(
+		[
+			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => 'alpaca_get_notification_preferences_callback',
 				'permission_callback' => function () {
 					return \Alpaca\Inc\Helpers::user_can( 'notification_preferences' );
 				},
-			),
-			array(
+			],
+			[
 				'methods'             => WP_REST_Server::EDITABLE,
 				'callback'            => 'alpaca_update_notification_preferences_callback',
 				'permission_callback' => function ( WP_REST_Request $request ) {
 					return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'notification_preferences' );
 				},
-			),
-		)
+			],
+		]
 	);
 
 	register_rest_route(
 		'alpaca/v1',
 		'/notification-inbox',
-		array(
-			array(
+		[
+			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => 'alpaca_get_notification_inbox_callback',
 				'permission_callback' => function () {
 					return \Alpaca\Inc\Helpers::user_can( 'notification_inbox' );
 				},
-			),
-		)
+			],
+		]
 	);
 
 	register_rest_route(
 		'alpaca/v1',
 		'/notification-inbox/count',
-		array(
-			array(
+		[
+			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => 'alpaca_get_notification_inbox_count_callback',
 				'permission_callback' => function () {
 					return \Alpaca\Inc\Helpers::user_can( 'notification_inbox' );
 				},
-			),
-		)
+			],
+		]
 	);
 
 	register_rest_route(
 		'alpaca/v1',
 		'/notification-inbox/mark-read',
-		array(
-			array(
+		[
+			[
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => 'alpaca_mark_notification_inbox_read_callback',
 				'permission_callback' => function ( WP_REST_Request $request ) {
 					return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'notification_inbox' );
 				},
-			),
-		)
+			],
+		]
 	);
 
 	register_rest_route(
 		'alpaca/v1',
 		'/notification-inbox/mark-unread',
-		array(
-			array(
+		[
+			[
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => 'alpaca_mark_notification_inbox_unread_callback',
 				'permission_callback' => function ( WP_REST_Request $request ) {
 					return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'notification_inbox' );
 				},
-			),
-		)
+			],
+		]
 	);
 
 	register_rest_route(
 		'alpaca/v1',
 		'/notification-inbox/mark-all-read',
-		array(
-			array(
+		[
+			[
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => 'alpaca_mark_all_notification_inbox_read_callback',
 				'permission_callback' => function ( WP_REST_Request $request ) {
 					return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'notification_inbox' );
 				},
-			),
-		)
+			],
+		]
 	);
 
 	register_rest_route(
 		'alpaca/v1',
 		'/notification-template',
-		array(
-			array(
+		[
+			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => 'alpaca_get_notification_template_callback',
 				'permission_callback' => function () {
 					return \Alpaca\Inc\Helpers::user_can( 'notification_template_manage' );
 				},
-			),
-			array(
+			],
+			[
 				'methods'             => WP_REST_Server::EDITABLE,
 				'callback'            => 'alpaca_update_notification_template_callback',
 				'permission_callback' => function ( WP_REST_Request $request ) {
 					return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'notification_template_manage' );
 				},
-			),
-		)
+			],
+		]
 	);
 
 	register_rest_route(
 		'alpaca/v1',
 		'/notification-template/preview',
-		array(
+		[
 			'methods'             => WP_REST_Server::CREATABLE,
 			'callback'            => 'alpaca_preview_notification_template_callback',
 			'permission_callback' => function ( WP_REST_Request $request ) {
 				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'notification_template_manage' );
 			},
-		)
+		]
 	);
 
 	register_rest_route(
 		'alpaca/v1',
 		'/notification-template/test',
-		array(
+		[
 			'methods'             => WP_REST_Server::CREATABLE,
 			'callback'            => 'alpaca_test_notification_template_callback',
 			'permission_callback' => function ( WP_REST_Request $request ) {
 				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'notification_template_manage' );
 			},
-		)
+		]
 	);
 
 	register_rest_route(
 		'alpaca/v1',
 		'/notification-template/reset',
-		array(
+		[
 			'methods'             => WP_REST_Server::CREATABLE,
 			'callback'            => 'alpaca_reset_notification_template_callback',
 			'permission_callback' => function ( WP_REST_Request $request ) {
 				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'notification_template_manage' );
 			},
-		)
+		]
 	);
 
 	register_rest_route(
 		'alpaca/v1',
 		'/notification-digest-template',
-		array(
-			array(
+		[
+			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => 'alpaca_get_notification_digest_template_callback',
 				'permission_callback' => function () {
 					return \Alpaca\Inc\Helpers::user_can( 'notification_template_manage' );
 				},
-			),
-			array(
+			],
+			[
 				'methods'             => WP_REST_Server::EDITABLE,
 				'callback'            => 'alpaca_update_notification_digest_template_callback',
 				'permission_callback' => function ( WP_REST_Request $request ) {
 					return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'notification_template_manage' );
 				},
-			),
-		)
+			],
+		]
 	);
 
 	register_rest_route(
 		'alpaca/v1',
 		'/notification-digest-template/preview',
-		array(
+		[
 			'methods'             => WP_REST_Server::CREATABLE,
 			'callback'            => 'alpaca_preview_notification_digest_template_callback',
 			'permission_callback' => function ( WP_REST_Request $request ) {
 				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'notification_template_manage' );
 			},
-		)
+		]
 	);
 
 	register_rest_route(
 		'alpaca/v1',
 		'/notification-digest-template/test',
-		array(
+		[
 			'methods'             => WP_REST_Server::CREATABLE,
 			'callback'            => 'alpaca_test_notification_digest_template_callback',
 			'permission_callback' => function ( WP_REST_Request $request ) {
 				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'notification_template_manage' );
 			},
-		)
+		]
 	);
 
 	register_rest_route(
 		'alpaca/v1',
 		'/notification-digest-template/reset',
-		array(
+		[
 			'methods'             => WP_REST_Server::CREATABLE,
 			'callback'            => 'alpaca_reset_notification_digest_template_callback',
 			'permission_callback' => function ( WP_REST_Request $request ) {
 				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'notification_template_manage' );
 			},
-		)
+		]
 	);
 }
 add_action( 'rest_api_init', 'alpaca_register_notification_endpoints' );
@@ -235,7 +235,7 @@ function alpaca_get_notification_request_params( WP_REST_Request $request ) {
 		$params = $request->get_params();
 	}
 
-	return is_array( $params ) ? $params : array();
+	return is_array( $params ) ? $params : [];
 }
 
 /**
@@ -248,12 +248,12 @@ function alpaca_get_notification_preferences_payload( $user_id ) {
 	$preferences    = alpaca_get_notification_preferences_for_user( $user_id );
 	$channel_status = alpaca_get_notification_channel_status_for_user( $user_id, $preferences );
 
-	return array(
+	return [
 		'preferences'         => $preferences,
 		'available_channels'  => alpaca_get_available_notification_channels(),
 		'channel_status'      => $channel_status,
 		'site_timezone_label' => alpaca_get_notification_site_timezone_label(),
-	);
+	];
 }
 
 /**
@@ -288,15 +288,15 @@ function alpaca_get_notification_inbox_query_args( WP_REST_Request $request ) {
 		$per_page = 50;
 	}
 
-	if ( ! in_array( $filter, array( 'all', 'unread' ), true ) ) {
+	if ( ! in_array( $filter, [ 'all', 'unread' ], true ) ) {
 		$filter = 'unread';
 	}
 
-	return array(
+	return [
 		'page'     => $page,
 		'per_page' => $per_page,
 		'filter'   => $filter,
-	);
+	];
 }
 
 /**
@@ -319,9 +319,9 @@ function alpaca_get_notification_inbox_callback( WP_REST_Request $request ) {
 function alpaca_get_notification_inbox_count_callback() {
 	return alpaca_rest_response(
 		'',
-		array(
+		[
 			'unread_count' => alpaca_get_notification_inbox_unread_count( get_current_user_id() ),
-		),
+		],
 		200
 	);
 }
@@ -334,15 +334,15 @@ function alpaca_get_notification_inbox_count_callback() {
  */
 function alpaca_mark_notification_inbox_read_callback( WP_REST_Request $request ) {
 	$params   = alpaca_get_notification_request_params( $request );
-	$item_ids = isset( $params['item_ids'] ) ? alpaca_get_valid_notification_inbox_item_ids( $params['item_ids'] ) : array();
+	$item_ids = isset( $params['item_ids'] ) ? alpaca_get_valid_notification_inbox_item_ids( $params['item_ids'] ) : [];
 
 	alpaca_mark_notification_inbox_items_read( get_current_user_id(), $item_ids );
 
 	return alpaca_rest_response(
 		'',
-		array(
+		[
 			'unread_count' => alpaca_get_notification_inbox_unread_count( get_current_user_id() ),
-		),
+		],
 		200
 	);
 }
@@ -355,15 +355,15 @@ function alpaca_mark_notification_inbox_read_callback( WP_REST_Request $request 
  */
 function alpaca_mark_notification_inbox_unread_callback( WP_REST_Request $request ) {
 	$params   = alpaca_get_notification_request_params( $request );
-	$item_ids = isset( $params['item_ids'] ) ? alpaca_get_valid_notification_inbox_item_ids( $params['item_ids'] ) : array();
+	$item_ids = isset( $params['item_ids'] ) ? alpaca_get_valid_notification_inbox_item_ids( $params['item_ids'] ) : [];
 
 	alpaca_mark_notification_inbox_items_unread( get_current_user_id(), $item_ids );
 
 	return alpaca_rest_response(
 		'',
-		array(
+		[
 			'unread_count' => alpaca_get_notification_inbox_unread_count( get_current_user_id() ),
-		),
+		],
 		200
 	);
 }
@@ -378,9 +378,9 @@ function alpaca_mark_all_notification_inbox_read_callback() {
 
 	return alpaca_rest_response(
 		'',
-		array(
+		[
 			'unread_count' => alpaca_get_notification_inbox_unread_count( get_current_user_id() ),
-		),
+		],
 		200
 	);
 }
@@ -393,17 +393,17 @@ function alpaca_mark_all_notification_inbox_read_callback() {
  */
 function alpaca_update_notification_preferences_callback( WP_REST_Request $request ) {
 	$params      = alpaca_get_notification_request_params( $request );
-	$preferences = isset( $params['preferences'] ) && is_array( $params['preferences'] ) ? $params['preferences'] : array();
+	$preferences = isset( $params['preferences'] ) && is_array( $params['preferences'] ) ? $params['preferences'] : [];
 	$user_id     = get_current_user_id();
 
 	$updated = alpaca_update_notification_preferences_for_user( $user_id, $preferences );
 	if ( is_wp_error( $updated ) ) {
 		return alpaca_rest_response(
 			'',
-			array(
+			[
 				'success' => false,
 				'message' => $updated->get_error_message(),
-			),
+			],
 			400
 		);
 	}
@@ -419,11 +419,11 @@ function alpaca_update_notification_preferences_callback( WP_REST_Request $reque
 function alpaca_get_notification_template_payload() {
 	$template = alpaca_get_notification_email_template();
 
-	return array(
+	return [
 		'subject'             => $template['subject'],
 		'body'                => $template['body'],
 		'allowed_block_types' => alpaca_get_notification_template_allowed_block_types(),
-	);
+	];
 }
 
 /**
@@ -436,10 +436,10 @@ function alpaca_get_notification_template_payload() {
 function alpaca_get_notification_template_error_response( $message, $status = 400 ) {
 	return alpaca_rest_response(
 		'',
-		array(
+		[
 			'success' => false,
 			'message' => $message,
-		),
+		],
 		$status
 	);
 }
@@ -452,7 +452,7 @@ function alpaca_get_notification_template_error_response( $message, $status = 40
  */
 function alpaca_get_notification_template_rest_config( $template_type ) {
 	if ( 'digest' === $template_type ) {
-		return array(
+		return [
 			'payload_callback'          => 'alpaca_get_notification_digest_template_payload',
 			'update_callback'           => 'alpaca_update_notification_daily_digest_template',
 			'reset_callback'            => 'alpaca_reset_notification_daily_digest_template',
@@ -465,10 +465,10 @@ function alpaca_get_notification_template_rest_config( $template_type ) {
 			'test_failure_message'      => esc_html__( 'Test digest email could not be sent.', 'alpaca' ),
 			/* translators: %s: test email address. */
 			'test_success_message'      => esc_html__( 'Test digest email sent to %s.', 'alpaca' ),
-		);
+		];
 	}
 
-	return array(
+	return [
 		'payload_callback'          => 'alpaca_get_notification_template_payload',
 		'update_callback'           => 'alpaca_update_notification_email_template',
 		'reset_callback'            => 'alpaca_reset_notification_email_template',
@@ -481,7 +481,7 @@ function alpaca_get_notification_template_rest_config( $template_type ) {
 		'test_failure_message'      => esc_html__( 'Test email could not be sent.', 'alpaca' ),
 		/* translators: %s: test email address. */
 		'test_success_message'      => esc_html__( 'Test email sent to %s.', 'alpaca' ),
-	);
+	];
 }
 
 /**
@@ -517,10 +517,10 @@ function alpaca_build_notification_template_message_from_request( WP_REST_Reques
 		return $body;
 	}
 
-	$template = array(
+	$template = [
 		'subject' => call_user_func( $sanitize_subject, $subject ),
 		'body'    => $body,
-	);
+	];
 
 	return call_user_func( $render_message, call_user_func( $get_sample_data ), $template );
 }
@@ -664,14 +664,14 @@ function alpaca_test_notification_template_response( WP_REST_Request $request, $
 
 	return alpaca_rest_response(
 		'',
-		array(
+		[
 			'success' => true,
 			'message' => sprintf(
 				/* translators: %s: test email address. */
 				$config['test_success_message'],
 				esc_html( $email )
 			),
-		),
+		],
 		200
 	);
 }

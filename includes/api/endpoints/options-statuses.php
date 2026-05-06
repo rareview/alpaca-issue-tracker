@@ -21,13 +21,13 @@ function alpaca_restore_default_statuses_endpoint() {
 	register_rest_route(
 		'alpaca/v1',
 		'/statuses/restore-defaults',
-		array(
+		[
 			'methods'             => 'POST',
 			'callback'            => 'alpaca_restore_default_statuses_callback',
 			'permission_callback' => function ( WP_REST_Request $request ) {
 				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'restore_statuses' );
 			},
-		)
+		]
 	);
 }
 
@@ -57,13 +57,13 @@ function alpaca_get_statuses_endpoint() {
 	register_rest_route(
 		'alpaca/v1',
 		'/statuses',
-		array(
+		[
 			'methods'             => 'GET',
 			'callback'            => 'alpaca_get_statuses_callback',
 			'permission_callback' => function () {
 				return \Alpaca\Inc\Helpers::user_can( 'get_statuses' );
 			},
-		)
+		]
 	);
 }
 
@@ -88,20 +88,20 @@ function alpaca_update_status_endpoint() {
 	register_rest_route(
 		'alpaca/v1',
 		'/status/(?P<id>\d+)',
-		array(
+		[
 			'methods'             => 'POST',
 			'callback'            => 'alpaca_update_status_callback',
 			'permission_callback' => function ( WP_REST_Request $request ) {
 				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'update_status' );
 			},
-			'args'                => array(
-				'id' => array(
+			'args'                => [
+				'id' => [
 					'validate_callback' => function ( $param ) {
 						return is_numeric( $param ) && $param > 0;
 					},
-				),
-			),
-		)
+				],
+			],
+		]
 	);
 }
 
@@ -119,10 +119,10 @@ function alpaca_update_status_callback( WP_REST_Request $request ) {
 	if ( ! $term || is_wp_error( $term ) ) {
 		return alpaca_rest_response(
 			'',
-			array(
+			[
 				'success' => false,
 				'message' => esc_html__( 'Status not found.', 'alpaca' ),
-			),
+			],
 			404
 		);
 	}
@@ -134,19 +134,19 @@ function alpaca_update_status_callback( WP_REST_Request $request ) {
 		$update_result = wp_update_term(
 			$term_id,
 			'alpaca_status',
-			array(
+			[
 				'name' => $new_name,
 				'slug' => $new_slug,
-			)
+			]
 		);
 
 		if ( is_wp_error( $update_result ) ) {
 			return alpaca_rest_response(
 				'',
-				array(
+				[
 					'success' => false,
 					'message' => esc_html__( 'Failed to update status name and slug.', 'alpaca' ),
-				),
+				],
 				500
 			);
 		}
@@ -158,10 +158,10 @@ function alpaca_update_status_callback( WP_REST_Request $request ) {
 
 	return alpaca_rest_response(
 		'status_update',
-		array(
+		[
 			'success' => true,
 			'message' => esc_html__( 'Status updated successfully.', 'alpaca' ),
-		),
+		],
 		200
 	);
 }

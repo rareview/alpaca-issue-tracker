@@ -21,13 +21,13 @@ function alpaca_get_board() {
 	register_rest_route(
 		'alpaca/v1',
 		'/board',
-		array(
+		[
 			'methods'             => 'GET',
 			'callback'            => 'alpaca_get_board_data_callback',
 			'permission_callback' => function () {
 				return \Alpaca\Inc\Helpers::user_can( 'get_statuses' );
 			},
-		)
+		]
 	);
 }
 
@@ -49,13 +49,13 @@ function alpaca_update_board() {
 	register_rest_route(
 		'alpaca/v1',
 		'/board',
-		array(
+		[
 			'methods'             => 'POST',
 			'callback'            => 'alpaca_update_board_data_callback',
 			'permission_callback' => function ( WP_REST_Request $request ) {
 				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'update_board' );
 			},
-		)
+		]
 	);
 }
 
@@ -71,10 +71,10 @@ function alpaca_update_board_data_callback( WP_REST_Request $request ) {
 	if ( ! is_array( $columns ) ) {
 		return alpaca_rest_response(
 			'',
-			array(
+			[
 				'success' => false,
 				'message' => esc_html__( 'Invalid data format. Expected an array of columns.', 'alpaca' ),
-			),
+			],
 			400
 		);
 	}
@@ -84,7 +84,7 @@ function alpaca_update_board_data_callback( WP_REST_Request $request ) {
 			continue;
 		}
 		$term_id   = (int) ( $column['id'] ?? 0 );
-		$issue_ids = alpaca_to_int_ids( $column['issues'] ?? array() );
+		$issue_ids = alpaca_to_int_ids( $column['issues'] ?? [] );
 
 		if ( $term_id > 0 ) {
 			update_term_meta( $term_id, 'issue_order', $issue_ids );
@@ -93,10 +93,10 @@ function alpaca_update_board_data_callback( WP_REST_Request $request ) {
 
 	return alpaca_rest_response(
 		'board_update',
-		array(
+		[
 			'success' => true,
 			'message' => esc_html__( 'Board order saved successfully.', 'alpaca' ),
-		),
+		],
 		200
 	);
 }

@@ -91,10 +91,10 @@ final class Alpaca {
 			define( 'ALPACA_PLUGIN_FILE', ALPACA_PLUGIN_DIR . 'alpaca.php' );
 		}
 		if ( ! defined( 'ALPACA_PLUGIN_BASENAME' ) ) {
-			define( 'ALPACA_PLUGIN_BASENAME', \plugin_basename( ALPACA_PLUGIN_FILE ) );
+			define( 'ALPACA_PLUGIN_BASENAME', plugin_basename( ALPACA_PLUGIN_FILE ) );
 		}
 		if ( ! defined( 'ALPACA_PLUGIN_URL' ) ) {
-			define( 'ALPACA_PLUGIN_URL', \plugin_dir_url( ALPACA_PLUGIN_FILE ) );
+			define( 'ALPACA_PLUGIN_URL', plugin_dir_url( ALPACA_PLUGIN_FILE ) );
 		}
 	}
 
@@ -116,7 +116,7 @@ final class Alpaca {
 		require_once ALPACA_PLUGIN_DIR . 'includes/admin/admin-bar.php';
 
 		// Load admin-only functionality.
-		if ( \is_admin() ) {
+		if ( is_admin() ) {
 			require_once ALPACA_PLUGIN_DIR . 'includes/admin/admin-screens.php';
 			require_once ALPACA_PLUGIN_DIR . 'includes/admin/dashboard-widget.php';
 			require_once ALPACA_PLUGIN_DIR . 'includes/admin/dashboard-widget-data.php';
@@ -135,23 +135,23 @@ final class Alpaca {
 	 */
 	private function init_hooks() {
 		// Initialization.
-		\add_action( 'init', array( $this, 'load_textdomain' ), 1 );
-		\add_action( 'init', array( $this, 'init' ), 0 );
+		add_action( 'init', [ $this, 'load_textdomain' ], 1 );
+		add_action( 'init', [ $this, 'init' ], 0 );
 
 		// REST API.
-		\add_action( 'rest_api_init', array( $this, 'register_settings' ) );
+		add_action( 'rest_api_init', [ $this, 'register_settings' ] );
 
 		// Update last activity on new comment.
-		\add_action( 'rest_insert_comment', array( $this, 'update_last_activity_on_rest_comment' ), 10, 3 );
+		add_action( 'rest_insert_comment', [ $this, 'update_last_activity_on_rest_comment' ], 10, 3 );
 
 		// Update last activity on deleted issue comments.
-		\add_action( 'deleted_comment', array( $this, 'update_last_activity_on_deleted_comment' ), 20, 2 );
+		add_action( 'deleted_comment', [ $this, 'update_last_activity_on_deleted_comment' ], 20, 2 );
 
 		// Keep child issues in sync when parent issues are trashed or restored.
-		\add_action( 'transition_post_status', array( $this, 'sync_child_issues_on_status_transition' ), 10, 3 );
+		add_action( 'transition_post_status', [ $this, 'sync_child_issues_on_status_transition' ], 10, 3 );
 
 		// Restore issue comment approval statuses when an issue leaves trash.
-		\add_action( 'transition_post_status', array( $this, 'restore_issue_comments_on_untrash' ), 20, 3 );
+		add_action( 'transition_post_status', [ $this, 'restore_issue_comments_on_untrash' ], 20, 3 );
 	}
 
 	/**
@@ -163,7 +163,7 @@ final class Alpaca {
 	 * @return void
 	 */
 	public function load_textdomain() {
-		$locale = \determine_locale();
+		$locale = determine_locale();
 
 		/**
 		 * Filters the locale used to load Alpaca translations.
@@ -171,19 +171,19 @@ final class Alpaca {
 		 * @param string $locale The locale to load.
 		 */
 		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- This uses the core WordPress plugin locale filter.
-		$locale = \apply_filters( 'plugin_locale', $locale, 'alpaca' );
+		$locale = apply_filters( 'plugin_locale', $locale, 'alpaca' );
 
 		$locale_short = strtolower( substr( $locale, 0, 2 ) );
-		$candidates   = array(
+		$candidates   = [
 			ALPACA_PLUGIN_DIR . 'languages/' . $locale . '/alpaca-' . $locale . '.mo',
 			ALPACA_PLUGIN_DIR . 'languages/' . $locale_short . '/alpaca-' . $locale_short . '.mo',
 			ALPACA_PLUGIN_DIR . 'languages/alpaca-' . $locale . '.mo',
 			ALPACA_PLUGIN_DIR . 'languages/alpaca-' . $locale_short . '.mo',
-		);
+		];
 
 		foreach ( $candidates as $mofile ) {
 			if ( file_exists( $mofile ) ) {
-				\load_textdomain( 'alpaca', $mofile );
+				load_textdomain( 'alpaca', $mofile );
 				return;
 			}
 		}
@@ -222,7 +222,7 @@ final class Alpaca {
 	 */
 	public function update_last_activity_on_deleted_comment( $comment_id, $comment ) {
 		if ( ! ( $comment instanceof \WP_Comment ) ) {
-			$comment = \get_comment( (int) $comment_id );
+			$comment = get_comment( (int) $comment_id );
 		}
 
 		if ( ! ( $comment instanceof \WP_Comment ) ) {
@@ -234,7 +234,7 @@ final class Alpaca {
 		}
 
 		$issue_id = (int) $comment->comment_post_ID;
-		if ( $issue_id <= 0 || 'alpaca_issue' !== \get_post_type( $issue_id ) ) {
+		if ( $issue_id <= 0 || 'alpaca_issue' !== get_post_type( $issue_id ) ) {
 			return;
 		}
 
@@ -313,52 +313,52 @@ final class Alpaca {
 	 */
 	public function init() {
 		// Allow other components to hook in.
-		\do_action( 'alpaca_init' );
+		do_action( 'alpaca_init' );
 	}
 
 	/**
 	 * Register Alpaca settings for REST API.
 	 */
 	public function register_settings() {
-		\register_setting(
+		register_setting(
 			'alpaca_options',
 			'alpaca_enable_test_logs',
-			array(
+			[
 				'type'         => 'string',
 				'description'  => esc_html__( 'Enable console messages for testing purposes.', 'alpaca' ),
 				'show_in_rest' => true,
 				'default'      => '0',
-			)
+			]
 		);
 
-		\register_setting(
+		register_setting(
 			'alpaca_options',
 			'alpaca_enable_context_capture',
-			array(
+			[
 				'type'         => 'string',
 				'description'  => esc_html__( 'Enable context capture, including the toolbar and data dump.', 'alpaca' ),
 				'show_in_rest' => true,
 				'default'      => '1',
-			)
+			]
 		);
 
-		\register_setting(
+		register_setting(
 			'alpaca_options',
 			'alpaca_item_datapoint_visibility',
-			array(
+			[
 				'type'              => 'object',
 				'description'       => esc_html__( 'Visibility map for item datapoints on issue cards.', 'alpaca' ),
-				'sanitize_callback' => array( $this, 'sanitize_item_datapoint_visibility' ),
-				'show_in_rest'      => array(
-					'schema' => array(
+				'sanitize_callback' => [ $this, 'sanitize_item_datapoint_visibility' ],
+				'show_in_rest'      => [
+					'schema' => [
 						'type'                 => 'object',
-						'additionalProperties' => array(
+						'additionalProperties' => [
 							'type' => 'boolean',
-						),
-					),
-				),
-				'default'           => array(),
-			)
+						],
+					],
+				],
+				'default'           => [],
+			]
 		);
 	}
 
@@ -370,10 +370,10 @@ final class Alpaca {
 	 */
 	public function sanitize_item_datapoint_visibility( $value ) {
 		if ( ! is_array( $value ) ) {
-			return array();
+			return [];
 		}
 
-		$sanitized = array();
+		$sanitized = [];
 
 		foreach ( $value as $slug => $is_enabled ) {
 			if ( ! is_string( $slug ) ) {

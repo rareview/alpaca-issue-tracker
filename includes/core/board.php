@@ -85,12 +85,12 @@ function alpaca_clear_board_cache() {
 function alpaca_clear_board_cache_on_term_meta_change( $meta_ids, $object_id, $meta_key, $meta_value ) {
 	unset( $meta_ids, $object_id, $meta_value );
 
-	$meta_keys_that_affect_board = array(
+	$meta_keys_that_affect_board = [
 		'alpaca_label_color',
 		'issue_order',
 		// Term score affects status ordering on the board; clear cache when it changes.
 		'term_score',
-	);
+	];
 
 	if ( in_array( $meta_key, $meta_keys_that_affect_board, true ) ) {
 		alpaca_clear_board_cache();

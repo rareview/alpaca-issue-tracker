@@ -20,13 +20,13 @@ function alpaca_register_report_context_endpoint() {
 	register_rest_route(
 		'alpaca/v1',
 		'/report-context',
-		array(
+		[
 			'methods'             => 'GET',
 			'callback'            => 'alpaca_get_report_context',
 			'permission_callback' => function ( WP_REST_Request $request ) {
 				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'create_issue' );
 			},
-		)
+		]
 	);
 }
 
@@ -37,7 +37,7 @@ function alpaca_register_report_context_endpoint() {
  */
 function alpaca_get_report_context() {
 	if ( function_exists( 'alpaca_is_contextual_capture_enabled' ) && ! alpaca_is_contextual_capture_enabled() ) {
-		return alpaca_rest_response( 'report_context', array(), 200 );
+		return alpaca_rest_response( 'report_context', [], 200 );
 	}
 
 	return alpaca_rest_response( 'report_context', alpaca_prepare_datadump(), 200 );

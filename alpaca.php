@@ -43,8 +43,8 @@ require_once ALPACA_PLUGIN_DIR . 'includes/class-activator.php';
 require_once ALPACA_PLUGIN_DIR . 'includes/class-deactivator.php';
 
 // Register activation and deactivation hooks.
-register_activation_hook( __FILE__, array( 'Alpaca\\Activator', 'activate' ) );
-register_deactivation_hook( __FILE__, array( 'Alpaca\\Deactivator', 'deactivate' ) );
+register_activation_hook( __FILE__, [ 'Alpaca\\Activator', 'activate' ] );
+register_deactivation_hook( __FILE__, [ 'Alpaca\\Deactivator', 'deactivate' ] );
 
 // Initialize the Service Provider.
 if ( class_exists( AlpacaServiceProvider::class ) ) {

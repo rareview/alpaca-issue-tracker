@@ -19,9 +19,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 function alpaca_get_notification_daily_digest_template_tokens( $payload ) {
 	$site_title   = wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES );
 	$site_tagline = wp_specialchars_decode( get_bloginfo( 'description' ), ENT_QUOTES );
-	$counts       = isset( $payload['counts'] ) && is_array( $payload['counts'] ) ? $payload['counts'] : array();
+	$counts       = isset( $payload['counts'] ) && is_array( $payload['counts'] ) ? $payload['counts'] : [];
 
-	return array(
+	return [
 		'{{site_title}}'        => $site_title,
 		'{{site_tagline}}'      => $site_tagline,
 		'{{notifications_url}}' => alpaca_get_notification_preferences_url(),
@@ -29,7 +29,7 @@ function alpaca_get_notification_daily_digest_template_tokens( $payload ) {
 		'{{issue_count}}'       => isset( $counts['issues'] ) ? (string) absint( $counts['issues'] ) : '0',
 		'{{activity_count}}'    => isset( $counts['activity'] ) ? (string) absint( $counts['activity'] ) : '0',
 		'{{new_item_count}}'    => isset( $counts['new_items'] ) ? (string) absint( $counts['new_items'] ) : '0',
-	);
+	];
 }
 
 /**
@@ -55,28 +55,28 @@ function alpaca_get_notification_daily_digest_sample_payload() {
 	$window_start = gmdate( 'Y-m-d H:i:s', strtotime( $window_end ) - DAY_IN_SECONDS );
 	$sample_event = alpaca_get_notification_sample_event();
 
-	$sample_event['recipient_subjects']  = array( 'created', 'mentioned' );
-	$sample_event['stored_item']         = array(
+	$sample_event['recipient_subjects']  = [ 'created', 'mentioned' ];
+	$sample_event['stored_item']         = [
 		'id'          => 0,
 		'created_gmt' => $window_end,
 		'read_at_gmt' => '',
-	);
+	];
 	$sample_event['comment']['raw']      = __( 'This is a sample comment shown inside the daily digest. It is intentionally longer so the excerpt rendering can be previewed.', 'alpaca' );
-	$sample_event['comment']['mentions'] = array(
-		array(
+	$sample_event['comment']['mentions'] = [
+		[
 			'id'           => get_current_user_id(),
 			'slug'         => 'sample-user',
 			'display_name' => __( 'Sample User', 'alpaca' ),
-		),
-	);
+		],
+	];
 
-	$payload = array(
+	$payload = [
 		'user_id'          => get_current_user_id(),
 		'window_start_gmt' => $window_start,
 		'window_end_gmt'   => $window_end,
 		'digest_day'       => alpaca_get_notification_daily_digest_day_label( $window_end ),
-		'deadline_watch'   => array(
-			array(
+		'deadline_watch'   => [
+			[
 				'id'             => 101,
 				'title'          => __( 'Launch homepage refresh', 'alpaca' ),
 				'slug'           => 'launch-homepage-refresh',
@@ -84,61 +84,61 @@ function alpaca_get_notification_daily_digest_sample_payload() {
 				'deadline'       => wp_date( get_option( 'date_format' ), strtotime( '+1 day' ) ),
 				'deadline_state' => 'soon',
 				'headline'       => __( 'Due soon', 'alpaca' ),
-				'meta'           => array(
+				'meta'           => [
 					'status_label'     => __( 'In Progress', 'alpaca' ),
-					'assignees'        => array(
-						array(
+					'assignees'        => [
+						[
 							'name'   => __( 'Sam', 'alpaca' ),
 							'avatar' => alpaca_avatar( get_current_user_id(), 24 ),
-						),
-					),
-					'assignee_names'   => array( __( 'Sam', 'alpaca' ) ),
-					'labels'           => array(
-						array(
+						],
+					],
+					'assignee_names'   => [ __( 'Sam', 'alpaca' ) ],
+					'labels'           => [
+						[
 							'name'  => __( 'Design', 'alpaca' ),
 							'color' => '#f97316',
-						),
-					),
-					'label_names'      => array( __( 'Design', 'alpaca' ) ),
+						],
+					],
+					'label_names'      => [ __( 'Design', 'alpaca' ) ],
 					'deadline_label'   => wp_date( get_option( 'date_format' ), strtotime( '+1 day' ) ),
 					'deadline_text'    => __( 'Tomorrow', 'alpaca' ),
 					'deadline_state'   => 'soon',
 					'is_high_priority' => true,
-				),
-			),
-		),
-		'issue_activity'   => array(
-			array(
-				'issue'   => array(
+				],
+			],
+		],
+		'issue_activity'   => [
+			[
+				'issue'   => [
 					'id'    => isset( $sample_event['issue']['id'] ) ? (int) $sample_event['issue']['id'] : 0,
 					'title' => isset( $sample_event['issue']['title'] ) ? (string) $sample_event['issue']['title'] : __( 'Sample issue title', 'alpaca' ),
 					'slug'  => isset( $sample_event['issue']['slug'] ) ? (string) $sample_event['issue']['slug'] : 'sample-issue-title',
 					'url'   => isset( $sample_event['issue']['url'] ) ? (string) $sample_event['issue']['url'] : admin_url( 'admin.php?page=project-board&issue=sample-issue-title' ),
-					'meta'  => array(
+					'meta'  => [
 						'status_label'     => __( 'In Progress', 'alpaca' ),
-						'assignees'        => array(
-							array(
+						'assignees'        => [
+							[
 								'name'   => __( 'Alex', 'alpaca' ),
 								'avatar' => alpaca_avatar( get_current_user_id(), 24 ),
-							),
-						),
-						'assignee_names'   => array( __( 'Alex', 'alpaca' ) ),
-						'labels'           => array(
-							array(
+							],
+						],
+						'assignee_names'   => [ __( 'Alex', 'alpaca' ) ],
+						'labels'           => [
+							[
 								'name'  => __( 'Design', 'alpaca' ),
 								'color' => '#f97316',
-							),
-						),
-						'label_names'      => array( __( 'Design', 'alpaca' ) ),
+							],
+						],
+						'label_names'      => [ __( 'Design', 'alpaca' ) ],
 						'deadline_label'   => wp_date( get_option( 'date_format' ), strtotime( '+14 days' ) ),
 						'deadline_text'    => wp_date( 'M j', strtotime( '+14 days' ) ),
 						'deadline_state'   => '',
 						'is_high_priority' => true,
-					),
-				),
-				'entries' => array(
+					],
+				],
+				'entries' => [
 					alpaca_get_notification_digest_event_entry( $sample_event ),
-					array(
+					[
 						'event_family' => 'status_changes',
 						'event_label'  => __( 'Status changed', 'alpaca' ),
 						'actor_name'   => __( 'Sam', 'alpaca' ),
@@ -146,45 +146,45 @@ function alpaca_get_notification_daily_digest_sample_payload() {
 						'timestamp'    => gmdate( 'Y-m-d H:i:s', strtotime( $window_end ) - HOUR_IN_SECONDS ),
 						'display_time' => wp_date( get_option( 'time_format' ), strtotime( '-1 hour' ) ),
 						'priority'     => alpaca_get_notification_digest_activity_priority( 'status_changes' ),
-					),
-				),
+					],
+				],
 				'total'   => 4,
 				'more'    => 2,
 				'latest'  => $window_end,
-			),
-		),
-		'new_items'        => array(
-			array(
+			],
+		],
+		'new_items'        => [
+			[
 				'id'    => 202,
 				'title' => __( 'Review new design request', 'alpaca' ),
 				'slug'  => 'review-new-design-request',
 				'url'   => admin_url( 'admin.php?page=project-board&issue=review-new-design-request' ),
-				'meta'  => array(
+				'meta'  => [
 					'status_label'     => __( 'Inbox', 'alpaca' ),
-					'assignees'        => array(),
-					'assignee_names'   => array(),
-					'labels'           => array(
-						array(
+					'assignees'        => [],
+					'assignee_names'   => [],
+					'labels'           => [
+						[
 							'name'  => __( 'Design', 'alpaca' ),
 							'color' => '#f97316',
-						),
-					),
-					'label_names'      => array( __( 'Design', 'alpaca' ) ),
+						],
+					],
+					'label_names'      => [ __( 'Design', 'alpaca' ) ],
 					'deadline_label'   => '',
 					'deadline_text'    => '',
 					'deadline_state'   => '',
 					'is_high_priority' => false,
-				),
-			),
-		),
-		'footer'           => array(),
-		'counts'           => array(
+				],
+			],
+		],
+		'footer'           => [],
+		'counts'           => [
 			'issues'    => 1,
 			'activity'  => 4,
 			'new_items' => 1,
 			'deadlines' => 1,
-		),
-	);
+		],
+	];
 
 	return $payload;
 }
@@ -244,14 +244,14 @@ function alpaca_render_notification_digest_issue_meta_html( $meta ) {
 		return '';
 	}
 
-	$items = array();
+	$items = [];
 
 	if ( ! empty( $meta['is_high_priority'] ) ) {
 		$items[] = alpaca_render_notification_digest_priority_badge_html();
 	}
 
 	if ( ! empty( $meta['labels'] ) && is_array( $meta['labels'] ) ) {
-		$label_html = array();
+		$label_html = [];
 
 		foreach ( $meta['labels'] as $label ) {
 			$label_name  = isset( $label['name'] ) ? (string) $label['name'] : '';
@@ -376,10 +376,10 @@ function alpaca_render_notification_deadline_watch_html( $items ) {
 
 	return alpaca_render_notification_digest_issue_table_html(
 		$items,
-		array(
+		[
 			'empty_message' => esc_html__( 'No followed issues are overdue or due in the next two days.', 'alpaca' ),
 			'visible_limit' => 3,
-		)
+		]
 	);
 }
 
@@ -390,13 +390,13 @@ function alpaca_render_notification_deadline_watch_html( $items ) {
  * @param array<string, mixed>             $args  Table render options.
  * @return string HTML markup.
  */
-function alpaca_render_notification_digest_issue_table_html( $items, $args = array() ) {
+function alpaca_render_notification_digest_issue_table_html( $items, $args = [] ) {
 	$args = wp_parse_args(
 		$args,
-		array(
+		[
 			'empty_message' => '',
 			'visible_limit' => 0,
-		)
+		]
 	);
 
 	if ( empty( $items ) ) {
@@ -409,9 +409,9 @@ function alpaca_render_notification_digest_issue_table_html( $items, $args = arr
 	$html          = '<div class="alpaca-notification-digest-deadline-table-wrap"><table class="alpaca-notification-digest-deadline-table" role="presentation"><thead><tr><th scope="col">' . esc_html__( 'Issue', 'alpaca' ) . '</th><th scope="col" class="alpaca-notification-digest-deadline-table__priority"><span class="screen-reader-text">' . esc_html__( 'Priority', 'alpaca' ) . '</span></th><th scope="col">' . esc_html__( 'Due Date', 'alpaca' ) . '</th><th scope="col">' . esc_html__( 'Assignees', 'alpaca' ) . '</th><th scope="col">' . esc_html__( 'Status', 'alpaca' ) . '</th></tr></thead><tbody>';
 
 	foreach ( $visible_items as $item ) {
-		$meta           = isset( $item['meta'] ) && is_array( $item['meta'] ) ? $item['meta'] : array();
+		$meta           = isset( $item['meta'] ) && is_array( $item['meta'] ) ? $item['meta'] : [];
 		$status_label   = isset( $meta['status_label'] ) ? (string) $meta['status_label'] : '';
-		$assignees      = isset( $meta['assignees'] ) && is_array( $meta['assignees'] ) ? $meta['assignees'] : array();
+		$assignees      = isset( $meta['assignees'] ) && is_array( $meta['assignees'] ) ? $meta['assignees'] : [];
 		$deadline_state = isset( $meta['deadline_state'] ) ? (string) $meta['deadline_state'] : '';
 		$deadline_text  = isset( $meta['deadline_text'] ) ? (string) $meta['deadline_text'] : '';
 		$priority_html  = '';
@@ -458,14 +458,14 @@ function alpaca_render_notification_digest_issue_activity_html( $groups ) {
 
 	$html = '';
 	foreach ( $groups as $group ) {
-		$issue = isset( $group['issue'] ) && is_array( $group['issue'] ) ? $group['issue'] : array();
-		$meta  = isset( $issue['meta'] ) && is_array( $issue['meta'] ) ? $issue['meta'] : array();
+		$issue = isset( $group['issue'] ) && is_array( $group['issue'] ) ? $group['issue'] : [];
+		$meta  = isset( $issue['meta'] ) && is_array( $issue['meta'] ) ? $issue['meta'] : [];
 
 		$html .= '<article class="alpaca-notification-digest-card">';
 		$html .= '<h4 class="alpaca-notification-digest-card__title"><a href="' . esc_url( isset( $issue['url'] ) ? (string) $issue['url'] : '' ) . '">' . esc_html( isset( $issue['title'] ) ? (string) $issue['title'] : '' ) . '</a></h4>';
 		$html .= alpaca_render_notification_digest_issue_meta_html( $meta );
 		$html .= '<ul class="alpaca-notification-digest-events">';
-		foreach ( isset( $group['entries'] ) && is_array( $group['entries'] ) ? $group['entries'] : array() as $entry ) {
+		foreach ( isset( $group['entries'] ) && is_array( $group['entries'] ) ? $group['entries'] : [] as $entry ) {
 			$html .= alpaca_render_notification_digest_event_html( $entry );
 		}
 		$html .= '</ul>';
@@ -495,10 +495,10 @@ function alpaca_render_notification_digest_new_items_html( $items ) {
 
 	return alpaca_render_notification_digest_issue_table_html(
 		$items,
-		array(
+		[
 			'empty_message' => '',
 			'visible_limit' => 0,
-		)
+		]
 	);
 }
 
@@ -535,13 +535,13 @@ function alpaca_render_notification_daily_digest_placeholder_block( $block_name,
 			$html .= $before_html;
 		}
 
-		$html .= '<section class="alpaca-notification-digest-section"><h3>' . esc_html__( 'Issues Falling Due', 'alpaca' ) . '</h3>' . alpaca_render_notification_deadline_watch_html( isset( $payload['deadline_watch'] ) && is_array( $payload['deadline_watch'] ) ? $payload['deadline_watch'] : array() ) . '</section>';
+		$html .= '<section class="alpaca-notification-digest-section"><h3>' . esc_html__( 'Issues Falling Due', 'alpaca' ) . '</h3>' . alpaca_render_notification_deadline_watch_html( isset( $payload['deadline_watch'] ) && is_array( $payload['deadline_watch'] ) ? $payload['deadline_watch'] : [] ) . '</section>';
 
 		return $html;
 	}
 
 	if ( 'alpaca/digest-issue-activity' === $block_name ) {
-		return '<section class="alpaca-notification-digest-section"><h3>' . esc_html__( 'My Issues', 'alpaca' ) . '</h3>' . alpaca_render_notification_digest_issue_activity_html( isset( $payload['issue_activity'] ) && is_array( $payload['issue_activity'] ) ? $payload['issue_activity'] : array() ) . '</section>';
+		return '<section class="alpaca-notification-digest-section"><h3>' . esc_html__( 'My Issues', 'alpaca' ) . '</h3>' . alpaca_render_notification_digest_issue_activity_html( isset( $payload['issue_activity'] ) && is_array( $payload['issue_activity'] ) ? $payload['issue_activity'] : [] ) . '</section>';
 	}
 
 	if ( 'alpaca/digest-new-items' === $block_name ) {
@@ -595,7 +595,7 @@ function alpaca_prepare_notification_daily_digest_block_for_render( $block, $pay
  * @return array<int, array<string, mixed>> Prepared parsed blocks.
  */
 function alpaca_prepare_notification_daily_digest_blocks_for_render( $blocks, $payload, $template ) {
-	$prepared = array();
+	$prepared = [];
 
 	foreach ( $blocks as $block ) {
 		$prepared[] = alpaca_prepare_notification_daily_digest_block_for_render( $block, $payload, $template );
@@ -639,7 +639,7 @@ function alpaca_render_notification_daily_digest_body( $payload, $template ) {
 
 	return alpaca_wrap_notification_email_html(
 		$body_html,
-		array( 'alpaca-notification-digest-email' )
+		[ 'alpaca-notification-digest-email' ]
 	);
 }
 

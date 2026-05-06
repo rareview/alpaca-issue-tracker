@@ -21,13 +21,13 @@ function alpaca_register_presence_endpoint() {
 	register_rest_route(
 		'alpaca/v1',
 		'/presence',
-		array(
+		[
 			'methods'             => 'POST',
 			'callback'            => 'alpaca_update_presence_callback',
 			'permission_callback' => function ( WP_REST_Request $request ) {
 				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'presence' );
 			},
-		)
+		]
 	);
 }
 
@@ -39,7 +39,7 @@ function alpaca_register_presence_endpoint() {
 function alpaca_update_presence_callback() {
 	$current_user = get_current_user_id();
 	if ( $current_user <= 0 ) {
-		return alpaca_rest_response( '', array( 'success' => false ), 403 );
+		return alpaca_rest_response( '', [ 'success' => false ], 403 );
 	}
 
 	$now     = time();
@@ -47,7 +47,7 @@ function alpaca_update_presence_callback() {
 
 	$present = get_transient( 'alpaca_presence_users' );
 	if ( ! is_array( $present ) ) {
-		$present = array();
+		$present = [];
 	}
 
 	// Purge stale entries based on timeout.
@@ -65,35 +65,35 @@ function alpaca_update_presence_callback() {
 	set_transient( 'alpaca_presence_users', $present, $timeout );
 
 	// Build list of other user IDs.
-	$other_ids = array_values( array_diff( array_keys( $present ), array( $current_user ) ) );
+	$other_ids = array_values( array_diff( array_keys( $present ), [ $current_user ] ) );
 	$other_ids = array_map( 'intval', $other_ids );
 
 	// Return richer user objects for the client to render (avoid client fetching all users).
-	$present_users = array();
+	$present_users = [];
 	if ( ! empty( $other_ids ) ) {
 		$users = get_users(
-			array(
+			[
 				'include' => $other_ids,
-				'fields'  => array( 'ID', 'display_name', 'user_nicename' ),
-			)
+				'fields'  => [ 'ID', 'display_name', 'user_nicename' ],
+			]
 		);
 
 		foreach ( $users as $u ) {
-			$present_users[] = array(
+			$present_users[] = [
 				'id'            => (int) $u->ID,
 				'display_name'  => $u->display_name,
 				'user_nicename' => $u->user_nicename,
 				'avatar'        => alpaca_avatar( $u->ID, 48 ),
-			);
+			];
 		}
 	}
 
 	return alpaca_rest_response(
 		'presence_update',
-		array(
+		[
 			'success'       => true,
 			'present_users' => $present_users,
-		),
+		],
 		200
 	);
 }

@@ -92,7 +92,7 @@ function alpaca_to_int_ids( $vals ) {
  * @return string Avatar URL.
  */
 function alpaca_avatar( $user_id, $size = 24 ) {
-	return get_avatar_url( (int) $user_id, array( 'size' => (int) $size ) );
+	return get_avatar_url( (int) $user_id, [ 'size' => (int) $size ] );
 }
 
 /**
@@ -114,10 +114,10 @@ function alpaca_assert_issue_exists( $post_id ) {
  *
  * @return array The issue data structure for API responses.
  */
-function alpaca_get_issue_response_data( $issue, $override_data = array() ) {
+function alpaca_get_issue_response_data( $issue, $override_data = [] ) {
 	$post = get_post( $issue );
 	if ( ! $post ) {
-		return array();
+		return [];
 	}
 
 	$post_id   = $post->ID;
@@ -134,7 +134,7 @@ function alpaca_get_issue_response_data( $issue, $override_data = array() ) {
 	if ( isset( $override_data['statusId'] ) ) {
 		$status_term_id = (int) $override_data['statusId'];
 	} else {
-		$terms = wp_get_post_terms( $post_id, 'alpaca_status', array( 'fields' => 'ids' ) );
+		$terms = wp_get_post_terms( $post_id, 'alpaca_status', [ 'fields' => 'ids' ] );
 		if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) {
 			$status_term_id = (int) $terms[0];
 		}
@@ -142,9 +142,9 @@ function alpaca_get_issue_response_data( $issue, $override_data = array() ) {
 
 	$title = isset( $override_data['title'] ) ? $override_data['title'] : $post->post_title;
 
-	return array(
+	return [
 		'post_id'  => $post_id,
-		'issue'    => array(
+		'issue'    => [
 			'id'            => $post_id,
 			'slug'          => (string) $post->post_name,
 			'title'         => $title,
@@ -153,10 +153,10 @@ function alpaca_get_issue_response_data( $issue, $override_data = array() ) {
 			'author_id'     => $author_id,
 			'author_name'   => get_the_author_meta( 'display_name', $author_id ),
 			'author_img'    => alpaca_avatar( $author_id, 24 ),
-			'meta'          => array(
+			'meta'          => [
 				'alpaca_high_priority' => $is_high_priority,
-			),
-		),
+			],
+		],
 		'statusId' => $status_term_id,
-	);
+	];
 }

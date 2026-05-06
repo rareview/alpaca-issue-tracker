@@ -106,7 +106,7 @@ add_filter(
 		};
 
 		if ( empty( $endpoints['/wp/v2/comments'] ) ) {
-			$collection_routes = array();
+			$collection_routes = [];
 		} else {
 			$collection_routes = $endpoints['/wp/v2/comments'];
 		}
