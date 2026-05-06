@@ -1,6 +1,8 @@
 const { __ } = wp.i18n;
 const { Tooltip } = wp.components;
 
+import { normalizeLabelColor } from '../utils/labelColor';
+
 /**
  * Filter to add labels to item datapoints.
  *
@@ -25,7 +27,7 @@ export const addLabelsDatapoint = (originalContent, itemProps) => {
               key={label.term_id || `${label.slug}-${label.name}`}
               className="alpaca-item-label alpaca-label-pill"
               style={{
-                backgroundColor: label.color || '#172b4d',
+                backgroundColor: normalizeLabelColor(label.color),
                 color: '#fff',
               }}
               title={label.name}

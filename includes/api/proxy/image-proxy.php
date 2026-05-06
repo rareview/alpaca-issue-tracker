@@ -5,6 +5,8 @@
  * @package Alpaca
  */
 
+use Alpaca\Inc\Helpers;
+
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -66,7 +68,7 @@ function alpaca_verify_proxy_auth_token( $token, $user_id = null ) {
  */
 function alpaca_validate_image_proxy_permission( WP_REST_Request $request ) {
 	// Same-origin path: validate nonce and capability.
-	$nonce_validation = \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'view_board' );
+	$nonce_validation = Helpers::validate_rest_nonce_permission( $request, 'view_board' );
 	if ( true === $nonce_validation ) {
 		return true;
 	}

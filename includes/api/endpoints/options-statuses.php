@@ -5,6 +5,8 @@
  * @package Alpaca
  */
 
+use Alpaca\Inc\Helpers;
+
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -25,7 +27,7 @@ function alpaca_restore_default_statuses_endpoint() {
 			'methods'             => 'POST',
 			'callback'            => 'alpaca_restore_default_statuses_callback',
 			'permission_callback' => function ( WP_REST_Request $request ) {
-				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'restore_statuses' );
+				return Helpers::validate_rest_nonce_permission( $request, 'restore_statuses' );
 			},
 		]
 	);
@@ -61,7 +63,7 @@ function alpaca_get_statuses_endpoint() {
 			'methods'             => 'GET',
 			'callback'            => 'alpaca_get_statuses_callback',
 			'permission_callback' => function () {
-				return \Alpaca\Inc\Helpers::user_can( 'get_statuses' );
+				return Helpers::user_can( 'get_statuses' );
 			},
 		]
 	);
@@ -92,7 +94,7 @@ function alpaca_update_status_endpoint() {
 			'methods'             => 'POST',
 			'callback'            => 'alpaca_update_status_callback',
 			'permission_callback' => function ( WP_REST_Request $request ) {
-				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'update_status' );
+				return Helpers::validate_rest_nonce_permission( $request, 'update_status' );
 			},
 			'args'                => [
 				'id' => [

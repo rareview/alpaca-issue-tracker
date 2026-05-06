@@ -5,6 +5,8 @@
  * @package Alpaca
  */
 
+use Alpaca\Inc\Helpers;
+
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -25,7 +27,7 @@ function alpaca_issue_submit() {
 			'methods'             => 'POST',
 			'callback'            => 'alpaca_issue_callback',
 			'permission_callback' => function ( WP_REST_Request $request ) {
-				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'create_issue' );
+				return Helpers::validate_rest_nonce_permission( $request, 'create_issue' );
 			},
 		]
 	);
@@ -264,7 +266,7 @@ function alpaca_update_issue() {
 			'methods'             => 'POST',
 			'callback'            => 'alpaca_update_issue_callback',
 			'permission_callback' => function ( WP_REST_Request $request ) {
-				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'update_issue' );
+				return Helpers::validate_rest_nonce_permission( $request, 'update_issue' );
 			},
 			'args'                => [
 				'id' => [
@@ -567,7 +569,7 @@ function alpaca_register_subissue_endpoint() {
 			'callback'            => 'alpaca_create_subissue_callback',
 			// Require authentication and a valid nonce for browser-originated calls.
 			'permission_callback' => function ( WP_REST_Request $request ) {
-				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'create_issue' );
+				return Helpers::validate_rest_nonce_permission( $request, 'create_issue' );
 			},
 			'args'                => [
 				'parent_id' => [
@@ -680,7 +682,7 @@ function alpaca_get_issue_data() {
 			'methods'             => 'GET',
 			'callback'            => 'alpaca_get_issue_data_callback',
 			'permission_callback' => function () {
-				return \Alpaca\Inc\Helpers::user_can( 'comment_count' );
+				return Helpers::user_can( 'comment_count' );
 			},
 			'args'                => [
 				'id' => [
@@ -762,7 +764,7 @@ function alpaca_get_issue_data_callback( WP_REST_Request $request ) {
 			foreach ( $terms as $idx => $term ) {
 				$color = get_term_meta( $term->term_id, 'alpaca_label_color', true );
 				if ( ! is_string( $color ) || '' === $color ) {
-					$color = '#172b4d';
+					$color = Helpers::DEFAULT_LABEL_COLOR;
 				}
 				$terms[ $idx ]->color = $color;
 			}
@@ -814,7 +816,7 @@ function alpaca_get_issue_comment_count_endpoint() {
 			'methods'             => 'GET',
 			'callback'            => 'alpaca_get_issue_comment_count_callback',
 			'permission_callback' => function () {
-				return \Alpaca\Inc\Helpers::user_can( 'list_users' );
+				return Helpers::user_can( 'list_users' );
 			},
 			'args'                => [
 				'id' => [
@@ -881,7 +883,7 @@ function alpaca_register_deleted_items_endpoint() {
 			'methods'             => 'GET',
 			'callback'            => 'alpaca_get_deleted_items_callback',
 			'permission_callback' => function () {
-				return \Alpaca\Inc\Helpers::user_can( 'comment_count' );
+				return Helpers::user_can( 'comment_count' );
 			},
 			'args'                => [
 				'search'   => [
@@ -952,7 +954,7 @@ function alpaca_get_deleted_issue_labels( $issue_id ) {
 			$color = get_term_meta( $label->term_id, 'alpaca_label_color', true );
 
 			if ( ! is_string( $color ) || '' === $color ) {
-				$color = '#172b4d';
+				$color = Helpers::DEFAULT_LABEL_COLOR;
 			}
 
 			return [
@@ -1202,7 +1204,7 @@ function alpaca_register_restore_issue_endpoint() {
 			'methods'             => 'POST',
 			'callback'            => 'alpaca_restore_issue_callback',
 			'permission_callback' => function ( WP_REST_Request $request ) {
-				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission(
+				return Helpers::validate_rest_nonce_permission(
 					$request,
 					'manage_options'
 				);
@@ -1336,7 +1338,7 @@ function alpaca_delete_issue() {
 			'callback'            => 'alpaca_delete_issue_callback',
 			'permission_callback' => function ( WP_REST_Request $request ) {
 				$post_id = (int) $request['id'];
-				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission(
+				return Helpers::validate_rest_nonce_permission(
 					$request,
 					'delete_issue',
 					[

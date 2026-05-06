@@ -302,6 +302,7 @@ class Register {
 			'canManageOptions'         => current_user_can( 'manage_options' ),
 			'canDeleteIssues'          => Helpers::user_can( 'delete_issue' ),
 			'contextualCaptureEnabled' => $this->is_contextual_capture_enabled(),
+			'defaultLabelColor'        => Helpers::DEFAULT_LABEL_COLOR,
 			'snapdomProxy'             => $this->get_snapdom_proxy_setting(),
 			'itemDatapointVisibility'  => $this->get_item_datapoint_visibility_setting(),
 		];

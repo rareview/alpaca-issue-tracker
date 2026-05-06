@@ -5,6 +5,8 @@
  * @package Alpaca
  */
 
+use Alpaca\Inc\Helpers;
+
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -30,7 +32,7 @@ function alpaca_register_comment_meta_fields() {
 				],
 			],
 			'auth_callback' => function () {
-				return \Alpaca\Inc\Helpers::user_can( 'register_comment_meta' );
+				return Helpers::user_can( 'register_comment_meta' );
 			},
 		]
 	);
@@ -51,7 +53,7 @@ function alpaca_register_comment_meta_fields() {
 				],
 			],
 			'auth_callback' => function () {
-				return \Alpaca\Inc\Helpers::user_can( 'register_comment_meta' );
+				return Helpers::user_can( 'register_comment_meta' );
 			},
 		]
 	);
@@ -86,7 +88,7 @@ function alpaca_register_comment_meta_fields() {
 				],
 			],
 			'auth_callback' => function () {
-				return \Alpaca\Inc\Helpers::user_can( 'register_comment_meta' );
+				return Helpers::user_can( 'register_comment_meta' );
 			},
 		]
 	);
@@ -116,7 +118,7 @@ function alpaca_register_comment_meta_fields() {
 				],
 			],
 			'auth_callback' => function () {
-				return \Alpaca\Inc\Helpers::user_can( 'register_comment_meta' );
+				return Helpers::user_can( 'register_comment_meta' );
 			},
 		]
 	);
@@ -153,7 +155,7 @@ function alpaca_register_comment_meta_fields() {
 			],
 			'sanitize_callback' => 'alpaca_sanitize_notification_context_meta',
 			'auth_callback'     => function () {
-				return \Alpaca\Inc\Helpers::user_can( 'register_comment_meta' );
+				return Helpers::user_can( 'register_comment_meta' );
 			},
 		]
 	);
@@ -256,7 +258,7 @@ function alpaca_register_comment_attachment_endpoint() {
 			'methods'             => WP_REST_Server::CREATABLE,
 			'callback'            => 'alpaca_upload_comment_attachment',
 			'permission_callback' => function ( WP_REST_Request $request ) {
-				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'register_comment_meta' );
+				return Helpers::validate_rest_nonce_permission( $request, 'register_comment_meta' );
 			},
 			'args'                => [
 				'issue_id' => [
@@ -275,7 +277,7 @@ function alpaca_register_comment_attachment_endpoint() {
 			'methods'             => WP_REST_Server::CREATABLE,
 			'callback'            => 'alpaca_delete_comment_attachment',
 			'permission_callback' => function ( WP_REST_Request $request ) {
-				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'register_comment_meta' );
+				return Helpers::validate_rest_nonce_permission( $request, 'register_comment_meta' );
 			},
 			'args'                => [
 				'issue_id'   => [

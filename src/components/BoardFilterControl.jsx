@@ -14,6 +14,7 @@ const ToggleGroupControlOption =
   ComponentsToggleGroupControlOption || __experimentalToggleGroupControlOption;
 
 import { getActiveFilter, buildBoardOptions } from '../utils/filters';
+import { normalizeLabelColor } from '../utils/labelColor';
 
 import PropTypes from 'prop-types';
 import Icon from './icons/Icon';
@@ -72,7 +73,7 @@ function renderLabelTriggerLabel(activeLabelFilter) {
     <span
       className="alpaca-filter-control-current alpaca-label-pill"
       style={{
-        backgroundColor: activeLabelFilter.color || '#172b4d',
+        backgroundColor: normalizeLabelColor(activeLabelFilter.color),
         color: '#fff',
       }}
     >
@@ -346,7 +347,7 @@ function BoardFilterControl({
                   <span
                     className="alpaca-label-pill"
                     style={{
-                      backgroundColor: label.color || '#172b4d',
+                      backgroundColor: normalizeLabelColor(label.color),
                       color: '#fff',
                     }}
                   >

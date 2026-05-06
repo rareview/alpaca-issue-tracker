@@ -5,6 +5,8 @@
  * @package Alpaca
  */
 
+use Alpaca\Inc\Helpers;
+
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -25,7 +27,7 @@ function alpaca_register_user_list_endpoint() {
 			'methods'             => 'GET',
 			'callback'            => 'alpaca_get_all_users_callback',
 			'permission_callback' => function () {
-				return \Alpaca\Inc\Helpers::user_can( 'watchlist' );
+				return Helpers::user_can( 'watchlist' );
 			},
 		]
 	);
@@ -75,14 +77,14 @@ function alpaca_labels_endpoint() {
 				'methods'             => 'GET',
 				'callback'            => 'alpaca_get_labels_callback',
 				'permission_callback' => function () {
-					return \Alpaca\Inc\Helpers::user_can( 'watchlist' );
+					return Helpers::user_can( 'watchlist' );
 				},
 			],
 			[
 				'methods'             => 'POST',
 				'callback'            => 'alpaca_create_label_callback',
 				'permission_callback' => function ( WP_REST_Request $request ) {
-					return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'manage_options' );
+					return Helpers::validate_rest_nonce_permission( $request, 'manage_options' );
 				},
 			],
 		]
@@ -96,14 +98,14 @@ function alpaca_labels_endpoint() {
 				'methods'             => 'POST',
 				'callback'            => 'alpaca_update_label_callback',
 				'permission_callback' => function ( WP_REST_Request $request ) {
-					return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'manage_options' );
+					return Helpers::validate_rest_nonce_permission( $request, 'manage_options' );
 				},
 			],
 			[
 				'methods'             => 'DELETE',
 				'callback'            => 'alpaca_delete_label_callback',
 				'permission_callback' => function ( WP_REST_Request $request ) {
-					return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'manage_options' );
+					return Helpers::validate_rest_nonce_permission( $request, 'manage_options' );
 				},
 			],
 		]
@@ -120,7 +122,7 @@ function alpaca_normalize_label_color( $color ) {
 	$sanitized = sanitize_hex_color( (string) $color );
 
 	if ( ! is_string( $sanitized ) || '' === $sanitized ) {
-		return '#172b4d';
+		return Helpers::DEFAULT_LABEL_COLOR;
 	}
 
 	return $sanitized;
@@ -235,7 +237,11 @@ function alpaca_create_label_callback( WP_REST_Request $request ) {
 		return alpaca_label_name_required_response();
 	}
 
-	$color = isset( $params['color'] ) ? alpaca_normalize_label_color( (string) $params['color'] ) : '#172b4d';
+	if ( isset( $params['color'] ) ) {
+		$color = alpaca_normalize_label_color( (string) $params['color'] );
+	} else {
+		$color = Helpers::DEFAULT_LABEL_COLOR;
+	}
 
 	$created = wp_insert_term( $name, 'alpaca_label' );
 	if ( is_wp_error( $created ) || ! isset( $created['term_id'] ) ) {
@@ -406,7 +412,7 @@ function alpaca_watchlist_endpoint() {
 			'methods'             => 'POST',
 			'callback'            => 'alpaca_update_watchlist_callback',
 			'permission_callback' => function ( WP_REST_Request $request ) {
-				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'watchlist_toggle' );
+				return Helpers::validate_rest_nonce_permission( $request, 'watchlist_toggle' );
 			},
 		]
 	);
@@ -418,7 +424,7 @@ function alpaca_watchlist_endpoint() {
 			'methods'             => 'GET',
 			'callback'            => 'alpaca_get_watchlist_callback',
 			'permission_callback' => function () {
-				return \Alpaca\Inc\Helpers::user_can( 'watchlist' );
+				return Helpers::user_can( 'watchlist' );
 			},
 		]
 	);

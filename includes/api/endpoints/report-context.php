@@ -5,6 +5,8 @@
  * @package Alpaca
  */
 
+use Alpaca\Inc\Helpers;
+
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -24,7 +26,7 @@ function alpaca_register_report_context_endpoint() {
 			'methods'             => 'GET',
 			'callback'            => 'alpaca_get_report_context',
 			'permission_callback' => function ( WP_REST_Request $request ) {
-				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'create_issue' );
+				return Helpers::validate_rest_nonce_permission( $request, 'create_issue' );
 			},
 		]
 	);

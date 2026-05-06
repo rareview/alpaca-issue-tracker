@@ -5,6 +5,8 @@
  * @package Alpaca
  */
 
+use Alpaca\Inc\Helpers;
+
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -25,7 +27,7 @@ function alpaca_get_board() {
 			'methods'             => 'GET',
 			'callback'            => 'alpaca_get_board_data_callback',
 			'permission_callback' => function () {
-				return \Alpaca\Inc\Helpers::user_can( 'get_statuses' );
+				return Helpers::user_can( 'get_statuses' );
 			},
 		]
 	);
@@ -53,7 +55,7 @@ function alpaca_update_board() {
 			'methods'             => 'POST',
 			'callback'            => 'alpaca_update_board_data_callback',
 			'permission_callback' => function ( WP_REST_Request $request ) {
-				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'update_board' );
+				return Helpers::validate_rest_nonce_permission( $request, 'update_board' );
 			},
 		]
 	);

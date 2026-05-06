@@ -5,6 +5,8 @@
  * @package Alpaca
  */
 
+use Alpaca\Inc\Helpers;
+
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -51,7 +53,7 @@ function alpaca_register_cpts_and_taxonomies() {
 			'description'       => 'Display color for issue labels.',
 			'single'            => true,
 			'show_in_rest'      => true,
-			'default'           => '#172b4d',
+			'default'           => Helpers::DEFAULT_LABEL_COLOR,
 			'sanitize_callback' => 'sanitize_hex_color',
 		]
 	);
@@ -127,7 +129,7 @@ function alpaca_register_cpts_and_taxonomies() {
 			if ( 'edit_post' === $cap && ! empty( $args[0] ) ) {
 				$post = get_post( $args[0] );
 
-				if ( $post && 'alpaca_issue' === $post->post_type && \Alpaca\Inc\Helpers::user_can( 'create_issue' ) ) {
+				if ( $post && 'alpaca_issue' === $post->post_type && Helpers::user_can( 'create_issue' ) ) {
 					return [ 'exist' ];
 				}
 			}
@@ -136,7 +138,7 @@ function alpaca_register_cpts_and_taxonomies() {
 			if ( 'delete_post' === $cap && ! empty( $args[0] ) ) {
 				$post = get_post( $args[0] );
 
-				if ( $post && 'alpaca_issue' === $post->post_type && \Alpaca\Inc\Helpers::user_can( 'create_issue' ) ) {
+				if ( $post && 'alpaca_issue' === $post->post_type && Helpers::user_can( 'create_issue' ) ) {
 					return [ 'exist' ];
 				}
 			}

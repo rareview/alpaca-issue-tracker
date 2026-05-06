@@ -6,6 +6,8 @@
  * @package Alpaca
  */
 
+use Alpaca\Inc\Helpers;
+
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -388,7 +390,7 @@ function alpaca_get_board_data() {
 	foreach ( $label_terms as $term ) {
 		$color = get_term_meta( $term->term_id, 'alpaca_label_color', true );
 		if ( ! is_string( $color ) || '' === $color ) {
-			$color = '#172b4d';
+			$color = Helpers::DEFAULT_LABEL_COLOR;
 		}
 
 		$labels_by_post[ $term->object_id ][] = [

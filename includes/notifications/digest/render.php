@@ -5,6 +5,8 @@
  * @package Alpaca
  */
 
+use Alpaca\Inc\Helpers;
+
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -254,8 +256,14 @@ function alpaca_render_notification_digest_issue_meta_html( $meta ) {
 		$label_html = [];
 
 		foreach ( $meta['labels'] as $label ) {
-			$label_name  = isset( $label['name'] ) ? (string) $label['name'] : '';
-			$label_color = isset( $label['color'] ) ? (string) $label['color'] : '#172b4d';
+			$label_name = isset( $label['name'] ) ? (string) $label['name'] : '';
+
+			if ( isset( $label['color'] ) ) {
+				$label_color = (string) $label['color'];
+			} else {
+				$label_color = Helpers::DEFAULT_LABEL_COLOR;
+			}
+
 			if ( '' === $label_name ) {
 				continue;
 			}

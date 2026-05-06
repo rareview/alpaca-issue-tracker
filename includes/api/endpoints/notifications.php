@@ -5,6 +5,8 @@
  * @package Alpaca
  */
 
+use Alpaca\Inc\Helpers;
+
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -24,14 +26,14 @@ function alpaca_register_notification_endpoints() {
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => 'alpaca_get_notification_preferences_callback',
 				'permission_callback' => function () {
-					return \Alpaca\Inc\Helpers::user_can( 'notification_preferences' );
+					return Helpers::user_can( 'notification_preferences' );
 				},
 			],
 			[
 				'methods'             => WP_REST_Server::EDITABLE,
 				'callback'            => 'alpaca_update_notification_preferences_callback',
 				'permission_callback' => function ( WP_REST_Request $request ) {
-					return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'notification_preferences' );
+					return Helpers::validate_rest_nonce_permission( $request, 'notification_preferences' );
 				},
 			],
 		]
@@ -45,7 +47,7 @@ function alpaca_register_notification_endpoints() {
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => 'alpaca_get_notification_inbox_callback',
 				'permission_callback' => function () {
-					return \Alpaca\Inc\Helpers::user_can( 'notification_inbox' );
+					return Helpers::user_can( 'notification_inbox' );
 				},
 			],
 		]
@@ -59,7 +61,7 @@ function alpaca_register_notification_endpoints() {
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => 'alpaca_get_notification_inbox_count_callback',
 				'permission_callback' => function () {
-					return \Alpaca\Inc\Helpers::user_can( 'notification_inbox' );
+					return Helpers::user_can( 'notification_inbox' );
 				},
 			],
 		]
@@ -73,7 +75,7 @@ function alpaca_register_notification_endpoints() {
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => 'alpaca_mark_notification_inbox_read_callback',
 				'permission_callback' => function ( WP_REST_Request $request ) {
-					return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'notification_inbox' );
+					return Helpers::validate_rest_nonce_permission( $request, 'notification_inbox' );
 				},
 			],
 		]
@@ -87,7 +89,7 @@ function alpaca_register_notification_endpoints() {
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => 'alpaca_mark_notification_inbox_unread_callback',
 				'permission_callback' => function ( WP_REST_Request $request ) {
-					return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'notification_inbox' );
+					return Helpers::validate_rest_nonce_permission( $request, 'notification_inbox' );
 				},
 			],
 		]
@@ -101,7 +103,7 @@ function alpaca_register_notification_endpoints() {
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => 'alpaca_mark_all_notification_inbox_read_callback',
 				'permission_callback' => function ( WP_REST_Request $request ) {
-					return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'notification_inbox' );
+					return Helpers::validate_rest_nonce_permission( $request, 'notification_inbox' );
 				},
 			],
 		]
@@ -115,14 +117,14 @@ function alpaca_register_notification_endpoints() {
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => 'alpaca_get_notification_template_callback',
 				'permission_callback' => function () {
-					return \Alpaca\Inc\Helpers::user_can( 'notification_template_manage' );
+					return Helpers::user_can( 'notification_template_manage' );
 				},
 			],
 			[
 				'methods'             => WP_REST_Server::EDITABLE,
 				'callback'            => 'alpaca_update_notification_template_callback',
 				'permission_callback' => function ( WP_REST_Request $request ) {
-					return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'notification_template_manage' );
+					return Helpers::validate_rest_nonce_permission( $request, 'notification_template_manage' );
 				},
 			],
 		]
@@ -135,7 +137,7 @@ function alpaca_register_notification_endpoints() {
 			'methods'             => WP_REST_Server::CREATABLE,
 			'callback'            => 'alpaca_preview_notification_template_callback',
 			'permission_callback' => function ( WP_REST_Request $request ) {
-				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'notification_template_manage' );
+				return Helpers::validate_rest_nonce_permission( $request, 'notification_template_manage' );
 			},
 		]
 	);
@@ -147,7 +149,7 @@ function alpaca_register_notification_endpoints() {
 			'methods'             => WP_REST_Server::CREATABLE,
 			'callback'            => 'alpaca_test_notification_template_callback',
 			'permission_callback' => function ( WP_REST_Request $request ) {
-				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'notification_template_manage' );
+				return Helpers::validate_rest_nonce_permission( $request, 'notification_template_manage' );
 			},
 		]
 	);
@@ -159,7 +161,7 @@ function alpaca_register_notification_endpoints() {
 			'methods'             => WP_REST_Server::CREATABLE,
 			'callback'            => 'alpaca_reset_notification_template_callback',
 			'permission_callback' => function ( WP_REST_Request $request ) {
-				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'notification_template_manage' );
+				return Helpers::validate_rest_nonce_permission( $request, 'notification_template_manage' );
 			},
 		]
 	);
@@ -172,14 +174,14 @@ function alpaca_register_notification_endpoints() {
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => 'alpaca_get_notification_digest_template_callback',
 				'permission_callback' => function () {
-					return \Alpaca\Inc\Helpers::user_can( 'notification_template_manage' );
+					return Helpers::user_can( 'notification_template_manage' );
 				},
 			],
 			[
 				'methods'             => WP_REST_Server::EDITABLE,
 				'callback'            => 'alpaca_update_notification_digest_template_callback',
 				'permission_callback' => function ( WP_REST_Request $request ) {
-					return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'notification_template_manage' );
+					return Helpers::validate_rest_nonce_permission( $request, 'notification_template_manage' );
 				},
 			],
 		]
@@ -192,7 +194,7 @@ function alpaca_register_notification_endpoints() {
 			'methods'             => WP_REST_Server::CREATABLE,
 			'callback'            => 'alpaca_preview_notification_digest_template_callback',
 			'permission_callback' => function ( WP_REST_Request $request ) {
-				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'notification_template_manage' );
+				return Helpers::validate_rest_nonce_permission( $request, 'notification_template_manage' );
 			},
 		]
 	);
@@ -204,7 +206,7 @@ function alpaca_register_notification_endpoints() {
 			'methods'             => WP_REST_Server::CREATABLE,
 			'callback'            => 'alpaca_test_notification_digest_template_callback',
 			'permission_callback' => function ( WP_REST_Request $request ) {
-				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'notification_template_manage' );
+				return Helpers::validate_rest_nonce_permission( $request, 'notification_template_manage' );
 			},
 		]
 	);
@@ -216,7 +218,7 @@ function alpaca_register_notification_endpoints() {
 			'methods'             => WP_REST_Server::CREATABLE,
 			'callback'            => 'alpaca_reset_notification_digest_template_callback',
 			'permission_callback' => function ( WP_REST_Request $request ) {
-				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'notification_template_manage' );
+				return Helpers::validate_rest_nonce_permission( $request, 'notification_template_manage' );
 			},
 		]
 	);

@@ -5,6 +5,8 @@
  * @package Alpaca
  */
 
+use Alpaca\Alpaca;
+
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -187,7 +189,7 @@ function alpaca_get_icon( $icon_slug ) {
  * @return int Maximum term score.
  */
 function alpaca_get_max_term_score() {
-	return \Alpaca\Alpaca::MAX_TERM_SCORE;
+	return Alpaca::MAX_TERM_SCORE;
 }
 
 /**
@@ -196,7 +198,7 @@ function alpaca_get_max_term_score() {
  * @return int Minimum term score.
  */
 function alpaca_get_min_term_score() {
-	return \Alpaca\Alpaca::MIN_TERM_SCORE;
+	return Alpaca::MIN_TERM_SCORE;
 }
 
 /**

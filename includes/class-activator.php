@@ -45,13 +45,13 @@ class Activator {
 	 */
 	private static function check_requirements() {
 		// Check PHP version.
-		if ( version_compare( PHP_VERSION, \Alpaca\Alpaca::MIN_PHP_VERSION, '<' ) ) {
+		if ( version_compare( PHP_VERSION, Alpaca::MIN_PHP_VERSION, '<' ) ) {
 			deactivate_plugins( plugin_basename( ALPACA_PLUGIN_FILE ) );
 			wp_die(
 				sprintf(
 					/* translators: 1: Required PHP version, 2: Current PHP version */
 					esc_html__( 'Alpaca requires PHP version %1$s or higher. You are running version %2$s.', 'alpaca' ),
-					esc_html( \Alpaca\Alpaca::MIN_PHP_VERSION ),
+					esc_html( Alpaca::MIN_PHP_VERSION ),
 					esc_html( PHP_VERSION )
 				),
 				esc_html__( 'Plugin Activation Error', 'alpaca' ),
@@ -61,13 +61,13 @@ class Activator {
 
 		// Check WordPress version.
 		global $wp_version;
-		if ( version_compare( $wp_version, \Alpaca\Alpaca::MIN_WP_VERSION, '<' ) ) {
+		if ( version_compare( $wp_version, Alpaca::MIN_WP_VERSION, '<' ) ) {
 			deactivate_plugins( plugin_basename( ALPACA_PLUGIN_FILE ) );
 			wp_die(
 				sprintf(
 					/* translators: 1: Required WP version, 2: Current WP version */
 					esc_html__( 'Alpaca requires WordPress version %1$s or higher. You are running version %2$s.', 'alpaca' ),
-					esc_html( \Alpaca\Alpaca::MIN_WP_VERSION ),
+					esc_html( Alpaca::MIN_WP_VERSION ),
 					esc_html( $wp_version )
 				),
 				esc_html__( 'Plugin Activation Error', 'alpaca' ),

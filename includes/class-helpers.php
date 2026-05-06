@@ -7,6 +7,9 @@
 
 namespace Alpaca\Inc;
 
+use WP_Error;
+use WP_REST_Request;
+
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -16,6 +19,13 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Class Helpers
  */
 class Helpers {
+
+	/**
+	 * Default label color.
+	 *
+	 * @var string
+	 */
+	const DEFAULT_LABEL_COLOR = '#172b4d';
 
 	/**
 	 * Plugin version.
@@ -114,17 +124,17 @@ class Helpers {
 	/**
 	 * Validate a REST request against an optional Alpaca capability and WP REST nonce.
 	 *
-	 * @param \WP_REST_Request $request           REST request object.
-	 * @param string           $capability_action Optional. Action name passed to user_can().
-	 * @param array            $capability_args   Optional. Context passed to user_can().
-	 * @return true|\WP_Error True when valid, WP_Error otherwise.
+	 * @param WP_REST_Request $request           REST request object.
+	 * @param string          $capability_action Optional. Action name passed to user_can().
+	 * @param array           $capability_args   Optional. Context passed to user_can().
+	 * @return true|WP_Error True when valid, WP_Error otherwise.
 	 */
-	public static function validate_rest_nonce_permission( \WP_REST_Request $request, $capability_action = '', $capability_args = [] ) {
+	public static function validate_rest_nonce_permission( WP_REST_Request $request, $capability_action = '', $capability_args = [] ) {
 		$capability_action = is_string( $capability_action ) ? trim( $capability_action ) : '';
 		$capability_args   = is_array( $capability_args ) ? $capability_args : [];
 
 		if ( '' !== $capability_action && ! self::user_can( $capability_action, $capability_args ) ) {
-			return new \WP_Error(
+			return new WP_Error(
 				'rest_forbidden',
 				esc_html__( 'You are not allowed to access this endpoint.', 'alpaca' ),
 				[ 'status' => 403 ]
@@ -137,7 +147,7 @@ class Helpers {
 		}
 
 		if ( '' === $nonce || ! wp_verify_nonce( $nonce, 'wp_rest' ) ) {
-			return new \WP_Error(
+			return new WP_Error(
 				'rest_forbidden',
 				esc_html__( 'Invalid nonce.', 'alpaca' ),
 				[ 'status' => 401 ]

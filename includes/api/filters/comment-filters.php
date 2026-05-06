@@ -5,6 +5,11 @@
  * @package Alpaca
  */
 
+use Alpaca\Inc\Helpers;
+use function Rareview\PrivateComments\hide_type;
+use function Rareview\PrivateComments\should_allow_rest_override;
+use function Rareview\PrivateComments\user_can_view_type;
+
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -16,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 add_action(
 	'init',
 	function () {
-		\Rareview\PrivateComments\hide_type( 'issuecomment', true );
+		hide_type( 'issuecomment', true );
 	}
 );
 
@@ -47,8 +52,8 @@ add_filter(
 		}
 
 		return $can_view
-			|| \Alpaca\Inc\Helpers::user_can( 'watchlist' )
-			|| \Alpaca\Inc\Helpers::user_can( 'create_issue' );
+			|| Helpers::user_can( 'watchlist' )
+			|| Helpers::user_can( 'create_issue' );
 	},
 	10,
 	2
@@ -102,7 +107,7 @@ add_filter(
 	'rest_endpoints',
 	function ( $endpoints ) {
 		$can_view_issuecomment = static function () {
-			return \Rareview\PrivateComments\user_can_view_type( 'issuecomment' );
+			return user_can_view_type( 'issuecomment' );
 		};
 
 		if ( empty( $endpoints['/wp/v2/comments'] ) ) {
@@ -170,7 +175,7 @@ add_filter(
 							&& 'issuecomment' === $comment->comment_type
 							&& alpaca_is_issue_comment_target_post( $comment->comment_post_ID )
 						) {
-							return \Rareview\PrivateComments\should_allow_rest_override( 'issuecomment' );
+							return should_allow_rest_override( 'issuecomment' );
 						}
 
 						if ( is_callable( $original ) ) {
@@ -217,7 +222,7 @@ add_filter(
 
 		// If the user can create an issue, let them create the comment without manual status assignment.
 		// This prevents the controller from checking for 'moderate_comments' capability.
-		if ( \Alpaca\Inc\Helpers::user_can( 'create_issue' ) ) {
+		if ( Helpers::user_can( 'create_issue' ) ) {
 			// Disable flood control for automated system comments.
 			remove_action( 'check_comment_flood', 'check_comment_flood_db' );
 
@@ -252,7 +257,7 @@ add_filter(
 
 			if (
 				alpaca_is_issue_comment_target_post( $post_id )
-				&& \Alpaca\Inc\Helpers::user_can( 'create_issue' )
+				&& Helpers::user_can( 'create_issue' )
 			) {
 				return 1;
 			}
