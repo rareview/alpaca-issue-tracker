@@ -413,6 +413,9 @@ class Register {
 	 * @return void
 	 */
 	public function enqueue_assets() {
+		if ( ! $this->is_contextual_capture_enabled() ) {
+			return;
+		}
 
 		$this->enqueue_shared_assets( $this->get_base_script_dependencies(), false, true );
 	}

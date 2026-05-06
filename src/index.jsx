@@ -72,6 +72,10 @@ const mountReactTree = createMountReactTree({
 });
 
 if (isAdmin) {
+  if (contextualCaptureEnabled) {
+    initializeAlpacaDataDump();
+  }
+
   mountAdminGlobalUi(mountReactTree, contextualCaptureEnabled);
 }
 
