@@ -1,44 +1,47 @@
 # Alpaca: smart kanban inside WordPress
 
-_Let's face it, nobody loves their project management platform._ They all have their limitations, or force you into certain workflow patterns. They become bloated with features you don't want, and won't let you tweak the experience how you want it. They are rarely client-friendly. Hosted platforms may not meet your regulatory or language requirements. The costs soon mount up.
+- Minimum burden on users reporting website issues
+- Maximum detail in technical reports received by developers
+- Full-featured kanban board in wp-admin, for a familiar and secure user experience
 
-Content management systems were very much the same, not so long ago. So we were thinking:
+**Clients have neither the time nor the knowledge to provide detailed technical reports when they spot a problem on their website.** But developers can't do their job without that detail. Time is wasted on every issue report, as the developer tries to understand and replicate the problem.
 
-- Is it possible to do for kanban boards, what WordPress did for publishing?
-- And can WordPress itself be part of that solution?
+**But WordPress already knows everything about the context of each page request.** So an issue-capturing solution inside WordPress can capture all that information, silently in the background, giving the developer everything necessary to get to work.
 
-**Alpaca uses the WordPress conventions of custom post types, taxonomies, comments, hooks, and filters to deliver a WordPress-like kanban experience inside wp-admin.**
+**Why take it outside WordPress?** Every project needs a method for tracking issue progress: since your clients and developers will already be using WordPress for the website itself, the most logical place to do that is within WordPress.
 
-Our original plan was to provide a solution for issue reporting and management. Clients would only need to write a single sentence explaining the problem. All other context, including a screenshot, would be captured automatically, and delivered into a basic kanban board. Issues would be instantly actionable.
+Alpaca provides a full-featured kanban experience inside wp-admin, using WordPress core components and approaches, for a familiar user _and_ developer experience.
 
-But we soon realised Alpaca could be a full collaboration solution, on par with platforms like Trello, Jira, or Asana.
+## Key features
 
-## What's the big idea?
+- **Kanban Board Interface** - Drag-and-drop issues between and within fully customizable status columns
+- **Automatic Context Capture** - Browser info, page context, and technical details are saved with each bug report submitted from the front end
+- **Built for WordPress** - Uses native WordPress components, post types, taxonomies and database tables
+- **Extensibility** - Developers can add custom functions and integrations via conventional WordPress actions & filters
+- **Respects User Permissions** - Integrates with WordPress user roles and capabilities
+- **Screenshot Capture** - See exactly what the user saw, captured and processed locally within the browser
+- **Comment and Activity Thread** - A unified view of each issue's progress, supporting attachment uploads and user mentions
+- **Priority Management** - Flag high-priority items and set deadlines
+- **Assignee System** - Assign issues and checklist items to team members
+- **Email Notifications** - Instant or daily digest email notifications for the issues you care about
+- **Translation Ready** - Fully localized and ready for translation into any language (including RTL support)
+- **No Artificial Limitations** - Use on as many sites, with as many users, issues, attachments and interactions as you need
 
-**Clients don't have the time or knowledge to provide detailed technical reports when they spot a problem.** But developers can't do their job without that detail. Time is wasted on every issue report as the developer tries to understand and contextualise the problem.
+## Who is Alpaca designed for?
 
-**But WordPress already knows everything about the context of each page request.** So an issue-capturing solution inside WordPress could capture all that information, silently in the background, giving the developer everything necessary to get to work.
+- Freelance developers managing client sites
+- Small agencies tracking bugs and feature requests
+- Engineering teams needing lightweight project management
+- Developers wanting tune their kanban experience
+- Clients performing QA on a new site
+- Account managers responsible for rolling retainer contracts
+- Enterprises and government bodies needing extra reassurance on hosting
 
-**And if you start inside WordPress, you might as well stay inside WordPress.** We can build a Trello-like interface inside wp-admin, using WordPress core components and approaches, for a familiar user and developer experience.
+## External dependencies
 
-Alpaca can be everything that a freelancer or small agency needs to track bugs and feature requests; and it can be the basis of a federated solution, suitable for larger agencies serving multiple clients.
-
-## Release plan
-
-- We have issued a number of private betas to friends and partners, to get feedback on the product's fundamentals as we developed its core feature set.
-- When the base feature set is complete, we will make our first Release Candidate version available publicly, initially via a GitHub repository.
-- We intend to release Alpaca as a free plugin within the WordPress.org plugin repository.
-- We plan to launch a documentation site with details of Alpaca's action hooks and filters.
-- We are already working on a set of premium features, some requiring a cloud-based component, as part of a future commercial subscription service.
-
-## Project principles
-
-Everything should look, feel and operate like a natural extension of how WordPress already works.
-
-Think in terms of post types, taxonomies, comments and meta tables. Use action and filter hooks (php and js) in your custom code; expect and enable others to do the same. Use [existing WordPress components](https://wordpress.github.io/gutenberg/?path=/docs/docs-introduction--page) at every opportunity.
-
-We believe in the [WordPress development philosophy](https://wordpress.org/about/philosophy/), even if WordPress seems to have forgotten it.
-
-Our target market is individuals and smaller teams, with limited time and limited expertise. Make the human interactions as simple as possible. Capture more data than you probably need. Automate whatever you can. The base product should be 'perfect for most people', with the _potential_ to be extended to satisfy the rest.
-
-We are building Alpaca as an exemplar of what can be done with WordPress as an application platform.
+- [Bowser](https://github.com/bowser-js/bowser) for browser detection. Copyright 2015, Dustin Diaz (the "Original Author"). All rights reserved. [MIT license.](https://github.com/bowser-js/bowser/blob/master/LICENSE)
+- [DOMPurify](https://github.com/cure53/DOMPurify) for HTML sanitization. Copyright 2025, Dr.-Ing. Mario Heiderich, Cure53. [MPL-2.0 or Apache-2.0 license.](https://github.com/cure53/DOMPurify/blob/main/LICENSE)
+- [Marked](https://marked.js.org/license) for Markdown processing. Copyright (c) 2018+, MarkedJS (https://github.com/markedjs/) Copyright (c) 2011-2018, Christopher Jeffrey (https://github.com/chjj/) [MIT license.](https://github.com/markedjs/marked/blob/master/LICENSE.md)
+- [PrismJS](https://prismjs.com/) for syntax highlighting. Copyright (c) 2012, Lea Verou. [MIT license.](https://github.com/PrismJS/prism/blob/master/LICENSE)
+- [PropTypes](https://github.com/facebook/prop-types) for React prop validation. Copyright (c) 2013-present, Facebook, Inc. [MIT license.](https://github.com/facebook/prop-types/blob/main/LICENSE)
+- [Snapdom](https://github.com/zumerlab/snapdom) for screenshot capture. Copyright (c) 2025 ZumerLab. [MIT license.](https://github.com/zumerlab/snapdom/blob/main/LICENSE)

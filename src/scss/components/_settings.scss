@@ -198,6 +198,44 @@
         vertical-align: middle;
       }
 
+      .alpaca-restore-title-cell {
+        display: flex;
+        flex-direction: column;
+        gap: $space-2xs;
+      }
+
+      .alpaca-restore-type-cell {
+        inline-size: 10rem;
+        white-space: nowrap;
+      }
+
+      .alpaca-restore-item-type {
+        background: rgb(23 43 77 / 8%);
+        border-radius: $radius-pill;
+        color: $color-text-muted;
+        display: inline-flex;
+        font-size: $font-size-xs;
+        font-weight: 600;
+        line-height: $line-height-reset;
+        padding: $space-3xs $space-sm;
+        width: fit-content;
+      }
+
+      .alpaca-restore-title-text {
+        color: inherit;
+        font-weight: 600;
+      }
+
+      .alpaca-restore-title-text--completed {
+        color: $color-text-muted;
+        text-decoration: line-through;
+      }
+
+      .alpaca-restore-parent-issue {
+        color: $color-text-muted;
+        font-size: $font-size-xs;
+      }
+
       .alpaca-restore-action {
         /* Keep the restore button from resizing when text changes,
            but use a tighter width and center the label. */

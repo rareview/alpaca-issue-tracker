@@ -12,6 +12,7 @@ import { splitTextForHighlight } from '../utils/searchHighlight';
 import {
   fetchStatuses,
   fetchLabels,
+  fetchIssueCommentCount,
   updateIssue,
   createIssue,
   createSubissue,
@@ -28,6 +29,12 @@ import Time from './Time';
 import StarControl from './StarControl';
 import { useWatchlist } from '../context/WatchlistContext';
 import StatusPill from './StatusPill';
+import CommentForm from './CommentForm';
+import {
+  deleteIssueAttachment,
+  uploadIssueAttachment,
+} from '../utils/attachmentUpload';
+import { postComment } from '../utils/issueCommentHandler';
 
 /* THEN access WordPress globals */
 const { useState, useEffect, useRef, useMemo, useCallback, memo } = wp.element;
@@ -535,6 +542,33 @@ const findUserByNameOrSlug = (users, identifier) =>
       userObject.name === identifier || userObject.slug === identifier,
   );
 
+/**
+ * Best-effort cleanup for attachments uploaded before an initial comment fails.
+ *
+ * @param {Array}  attachments Uploaded attachment objects.
+ * @param {number} issueId     Issue ID the attachments belong to.
+ */
+const cleanupUploadedIssueAttachments = async (attachments, issueId) => {
+  const attachmentUrls = Array.isArray(attachments)
+    ? attachments.map((attachment) => attachment?.url).filter(Boolean)
+    : [];
+
+  if (attachmentUrls.length === 0) {
+    return;
+  }
+
+  const cleanupResults = await Promise.allSettled(
+    attachmentUrls.map((url) => deleteIssueAttachment(url, issueId)),
+  );
+  const cleanupFailures = cleanupResults.filter(
+    (result) => result.status === 'rejected',
+  );
+
+  if (cleanupFailures.length > 0) {
+    console.error('Failed to clean up issue attachments:', cleanupFailures);
+  }
+};
+
 // ----- Main Component -----
 const AlpacaIssue = ({
   issueId,
@@ -543,6 +577,7 @@ const AlpacaIssue = ({
   activeSearchQuery = '',
   onClose,
   onDelete,
+  canDeleteIssues = false,
   onAssigneesChange,
   onDeadlineChange,
   onStatusChange,
@@ -577,9 +612,14 @@ const AlpacaIssue = ({
   const [subissues, setSubissues] = useState([]);
   const [commentRefreshKey] = useState(0);
   const [snackbars, setSnackbars] = useState([]);
+  const [issueComment, setIssueComment] = useState('');
+  const [createdIssueRetry, setCreatedIssueRetry] = useState(null);
+  const issueCommentRef = useRef(null);
   const snackbarTimersRef = useRef({});
   const snackbarCloseTimersRef = useRef({});
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  useAutoExpandTextarea(issueCommentRef, issueComment, isCreating);
 
   const isIssueWatched = !isCreating && issueId && isWatched(issueId);
 
@@ -662,12 +702,12 @@ const AlpacaIssue = ({
       if (
         !details ||
         !details.taxonomies ||
-        !Array.isArray(details.taxonomies.assignee)
+        !Array.isArray(details.taxonomies.alpaca_assignee)
       ) {
         return [];
       }
 
-      return details.taxonomies.assignee.map((term) => {
+      return details.taxonomies.alpaca_assignee.map((term) => {
         const userObject = allUserObjects.find(
           (user) => user.slug === term.slug,
         );
@@ -685,12 +725,12 @@ const AlpacaIssue = ({
     if (
       !details ||
       !details.taxonomies ||
-      !Array.isArray(details.taxonomies.label)
+      !Array.isArray(details.taxonomies.alpaca_label)
     ) {
       return [];
     }
 
-    return details.taxonomies.label
+    return details.taxonomies.alpaca_label
       .map((term) => Number(term.term_id))
       .filter((value) => value > 0);
   }, []);
@@ -704,6 +744,8 @@ const AlpacaIssue = ({
       setDeadline(null);
       setIsHighPriority(false);
       setSubissues([]);
+      setIssueComment('');
+      setCreatedIssueRetry(null);
     }
 
     // Cleanup: reset form state when modal closes in create mode
@@ -715,6 +757,8 @@ const AlpacaIssue = ({
       setIsHighPriority(false);
       setIsEditingTitle(false);
       setSubissues([]);
+      setIssueComment('');
+      setCreatedIssueRetry(null);
     }
   }, [isOpen, isCreating]);
 
@@ -773,7 +817,9 @@ const AlpacaIssue = ({
     async (updatedIssueId, slugs, newAssignees, added, removed) => {
       setLoading('assignees', true);
       try {
-        await updateIssue(updatedIssueId, { taxonomies: { assignee: slugs } });
+        await updateIssue(updatedIssueId, {
+          taxonomies: { 'alpaca_assignee': slugs },
+        });
 
         if (typeof onAssigneesChange === 'function') {
           const selectedAssignees = allUserObjects.filter(
@@ -881,7 +927,9 @@ const AlpacaIssue = ({
 
       setLoading('labels', true);
       try {
-        await updateIssue(issueId, { taxonomies: { label: normalizedIds } });
+        await updateIssue(issueId, {
+          taxonomies: { 'alpaca_label': normalizedIds },
+        });
         if (typeof onLabelsChange === 'function') {
           const selectedLabels = allLabels.filter((label) =>
             normalizedIds.includes(Number(label.term_id)),
@@ -950,7 +998,7 @@ const AlpacaIssue = ({
   // Status progression
   const handleProgressIssue = useCallback(async () => {
     if (!issueDetails || !allStatuses.length) return;
-    const currentStatus = issueDetails.taxonomies?.status?.[0];
+    const currentStatus = issueDetails.taxonomies?.alpaca_status?.[0];
     if (!currentStatus) return;
 
     const currentIndex = allStatuses.findIndex(
@@ -962,11 +1010,18 @@ const AlpacaIssue = ({
     setLoading('status', true);
     try {
       await updateIssue(issueId, {
-        taxonomies: { status: [nextStatus.term_id] },
+        taxonomies: {
+          // eslint-disable-next-line camelcase
+          alpaca_status: [nextStatus.term_id],
+        },
       });
       setIssueDetails((prev) => ({
         ...prev,
-        taxonomies: { ...prev.taxonomies, status: [nextStatus] },
+        taxonomies: {
+          ...prev.taxonomies,
+          // eslint-disable-next-line camelcase
+          alpaca_status: [nextStatus],
+        },
       }));
       onStatusChange?.(issueId, nextStatus, currentStatus, issueDetails);
     } catch (err) {
@@ -1041,65 +1096,224 @@ const AlpacaIssue = ({
     }
   }, [issueDetails, isCreating, onClose]);
 
-  const handleCreateIssue = useCallback(async () => {
-    if (!isCreating || !editedTitle || !editedTitle.trim()) {
-      return;
-    }
+  const handleCreateIssue = useCallback(
+    async (commentText = '', attachments = []) => {
+      const retryIssue = createdIssueRetry;
 
-    setLoading('title', true);
-    try {
-      const server = {};
-      if (typeof alpacaDataDump !== 'undefined' && alpacaDataDump.env) {
-        try {
-          const loadedServer = JSON.parse(atob(alpacaDataDump.env));
-          Object.assign(server, loadedServer);
-        } catch (e) {
-          // Ignore parse errors
-        }
+      if (
+        !isCreating ||
+        (!retryIssue && (!editedTitle || !editedTitle.trim()))
+      ) {
+        return false;
       }
 
-      const payload = {
-        userinput: {
-          feedback: editedTitle,
-          includeContext: false, // Board issues don't need browser context
-          isHighPriority,
-        },
-        client:
-          typeof alpacaDataDump !== 'undefined' ? alpacaDataDump.device : {},
-        errors: [],
-        screenshot: '',
-        ...server,
-      };
+      setLoading('title', true);
 
-      const response = await createIssue(payload);
+      try {
+        const normalizedCommentText =
+          typeof commentText === 'string' ? commentText.trim() : '';
+        const normalizedAttachments = Array.isArray(attachments)
+          ? attachments
+          : [];
+        let commentAlreadyCreated = false;
+        let response;
+        let newIssueId;
+        let issuePostDate;
+        let issueLastActivity;
+        let issueCommentCount;
+        let issueCommentCountByAgent;
+        let createdIssueLabels;
+        let createdIssueTitle;
+        let createdIssueDeadline;
+        let createdIssueIsHighPriority;
 
-      if (response && response.issue) {
-        const newIssueId = response.issue.id;
-        let createdIssueLabels = [];
+        if (retryIssue) {
+          response = {
+            issue: retryIssue.issue,
+            statusId: retryIssue.statusId,
+          };
+          newIssueId = retryIssue.id;
+          issuePostDate = retryIssue.postDate || new Date().toISOString();
+          issueLastActivity = retryIssue.lastActivity || issuePostDate;
+          issueCommentCount = Number(retryIssue.commentCount) || 0;
+          issueCommentCountByAgent = retryIssue.commentCountByAgent || null;
+          createdIssueLabels = retryIssue.labels || [];
+          createdIssueTitle = retryIssue.title || editedTitle;
+          createdIssueDeadline = retryIssue.deadline || null;
+          createdIssueIsHighPriority = Boolean(retryIssue.isHighPriority);
+        } else {
+          const server = {};
+          if (typeof alpacaDataDump !== 'undefined' && alpacaDataDump.env) {
+            try {
+              const loadedServer = JSON.parse(atob(alpacaDataDump.env));
+              Object.assign(server, loadedServer);
+            } catch (e) {
+              // Ignore parse errors.
+            }
+          }
 
-        if (deadline) {
-          try {
-            await updateIssue(newIssueId, { meta: { deadline } });
-          } catch (err) {
-            console.error('Failed to set deadline:', err);
+          const payload = {
+            userinput: {
+              feedback: editedTitle,
+              includeContext: false, // Board issues don't need browser context
+              isHighPriority,
+            },
+            client:
+              typeof alpacaDataDump !== 'undefined'
+                ? alpacaDataDump.device
+                : {},
+            errors: [],
+            screenshot: '',
+            ...server,
+          };
+
+          response = await createIssue(payload);
+
+          if (!response || !response.issue) {
+            return false;
+          }
+
+          newIssueId = response.issue.id;
+          issuePostDate =
+            response.issue.post_date ||
+            response.issue.post_date_gmt ||
+            new Date().toISOString();
+          issueLastActivity = issuePostDate;
+          issueCommentCount = 0;
+          issueCommentCountByAgent = null;
+          createdIssueLabels = [];
+          createdIssueTitle = editedTitle;
+          createdIssueDeadline = deadline || null;
+          createdIssueIsHighPriority = isHighPriority;
+
+          if (deadline) {
+            try {
+              await updateIssue(newIssueId, { meta: { deadline } });
+            } catch (err) {
+              console.error('Failed to set deadline:', err);
+            }
+          }
+
+          if (selectedLabelIds.length > 0) {
+            try {
+              await updateIssue(newIssueId, {
+                taxonomies: { 'alpaca_label': selectedLabelIds },
+              });
+              createdIssueLabels = allLabels.filter((label) =>
+                selectedLabelIds.includes(Number(label.term_id)),
+              );
+            } catch (err) {
+              // eslint-disable-next-line no-console
+              console.error('Failed to set labels:', err);
+              showNotification(
+                __('Issue created, but labels could not be saved.', 'alpaca'),
+                'error',
+              );
+            }
           }
         }
 
-        if (selectedLabelIds.length > 0) {
+        const retryState = {
+          id: newIssueId,
+          issue: response.issue,
+          statusId: response.statusId,
+          title: createdIssueTitle,
+          postDate: issuePostDate,
+          lastActivity: issueLastActivity,
+          commentCount: issueCommentCount,
+          commentCountByAgent: issueCommentCountByAgent,
+          labels: createdIssueLabels,
+          deadline: createdIssueDeadline,
+          isHighPriority: createdIssueIsHighPriority,
+        };
+
+        if (normalizedCommentText || normalizedAttachments.length > 0) {
+          const uploadedAttachments = [];
+
           try {
-            await updateIssue(newIssueId, {
-              taxonomies: { label: selectedLabelIds },
-            });
-            createdIssueLabels = allLabels.filter((label) =>
-              selectedLabelIds.includes(Number(label.term_id)),
+            const commentAttachments = [];
+
+            for (const attachment of normalizedAttachments) {
+              if (attachment?.localOnly && attachment?.file) {
+                const uploadedAttachment = await uploadIssueAttachment(
+                  attachment.file,
+                  newIssueId,
+                );
+
+                uploadedAttachments.push(uploadedAttachment);
+                commentAttachments.push(uploadedAttachment);
+              } else {
+                commentAttachments.push(attachment);
+              }
+            }
+
+            const attachmentUrls = commentAttachments
+              .map((attachment) => attachment?.url)
+              .filter(Boolean);
+            const commentTags = ['issue-created'];
+
+            if (createdIssueIsHighPriority) {
+              commentTags.push('high-priority');
+            }
+
+            const createdComment = await postComment(
+              newIssueId,
+              normalizedCommentText || createdIssueTitle.trim(),
+              commentTags,
+              {
+                authorUserAgent: 'create',
+                meta: {
+                  ...(attachmentUrls.length > 0
+                    ? { alpacaCommentAttachments: attachmentUrls }
+                    : {}),
+                },
+              },
             );
+
+            if (!createdComment) {
+              throw new Error(__('Failed to create issue comment.', 'alpaca'));
+            }
+
+            commentAlreadyCreated = true;
+
+            try {
+              const commentCountResponse =
+                await fetchIssueCommentCount(newIssueId);
+
+              if (commentCountResponse) {
+                issueLastActivity =
+                  commentCountResponse.last_activity || issueLastActivity;
+                issueCommentCount =
+                  Number(commentCountResponse.comment_count) || 0;
+                issueCommentCountByAgent =
+                  commentCountResponse.comment_count_by_agent || null;
+                retryState.lastActivity = issueLastActivity;
+                retryState.commentCount = issueCommentCount;
+                retryState.commentCountByAgent = issueCommentCountByAgent;
+              }
+            } catch (countError) {
+              console.error(
+                'Failed to refresh issue comment count:',
+                countError,
+              );
+            }
           } catch (err) {
-            // eslint-disable-next-line no-console
-            console.error('Failed to set labels:', err);
+            await cleanupUploadedIssueAttachments(
+              uploadedAttachments,
+              newIssueId,
+            );
+            setCreatedIssueRetry(retryState);
+            console.error('Failed to create issue comment:', err);
             showNotification(
-              __('Issue created, but labels could not be saved.', 'alpaca'),
+              retryIssue
+                ? __('Comment could not be saved. Please try again.', 'alpaca')
+                : __(
+                    'Issue created, but comment could not be saved.',
+                    'alpaca',
+                  ),
               'error',
             );
+            return false;
           }
         }
 
@@ -1107,33 +1321,34 @@ const AlpacaIssue = ({
           'alpaca.issueSubmitted',
           response.issue,
           response.statusId,
-          isHighPriority,
+          createdIssueIsHighPriority,
           {
-            feedback: editedTitle,
+            feedback: normalizedCommentText || createdIssueTitle,
             screenshotUrl: '',
             skipBoardInsert: true,
+            commentAlreadyCreated,
           },
         );
 
-        // Notify board immediately so the new card appears optimistically.
         if (onIssueCreated) {
           onIssueCreated({
             id: newIssueId,
             slug: response.issue.slug || response.issue.post_name || '',
-            title: editedTitle,
+            title: createdIssueTitle,
+            postDate: issuePostDate,
+            lastActivity: issueLastActivity,
+            commentCount: issueCommentCount,
+            commentCountByAgent: issueCommentCountByAgent,
             assignees: assignees || [],
             labels: createdIssueLabels,
-            deadline: deadline || null,
-            isHighPriority,
+            deadline: createdIssueDeadline,
+            isHighPriority: createdIssueIsHighPriority,
           });
         }
 
-        // Persist assignees after the card is inserted so the board can update
-        // the newly-created item's assignees when the async update completes.
         if (assignees && assignees.length > 0) {
           try {
             const slugs = assignees.map((a) => userMap[a] || a);
-            // don't block UI insertion; update in background
             updateAssignees(newIssueId, slugs, assignees, assignees, []).catch(
               (err) => console.error('Failed to set assignees:', err),
             );
@@ -1147,27 +1362,39 @@ const AlpacaIssue = ({
         setSelectedLabelIds([]);
         setDeadline(null);
         setIsHighPriority(false);
+        setIssueComment('');
+        setCreatedIssueRetry(null);
+
+        return true;
+      } catch (err) {
+        console.error(err);
+        showNotification(
+          retryIssue
+            ? __('Failed to retry comment.', 'alpaca')
+            : __('Failed to create issue.', 'alpaca'),
+          'error',
+        );
+        return false;
+      } finally {
         setLoading('title', false);
       }
-    } catch (err) {
-      console.error(err);
-      showNotification(__('Failed to create issue.', 'alpaca'), 'error');
-      setLoading('title', false);
-    }
-  }, [
-    isCreating,
-    editedTitle,
-    isHighPriority,
-    setLoading,
-    showNotification,
-    onIssueCreated,
-    deadline,
-    assignees,
-    allLabels,
-    userMap,
-    updateAssignees,
-    selectedLabelIds,
-  ]);
+    },
+    [
+      isCreating,
+      editedTitle,
+      isHighPriority,
+      createdIssueRetry,
+      setLoading,
+      showNotification,
+      onIssueCreated,
+      deadline,
+      assignees,
+      allLabels,
+      userMap,
+      updateAssignees,
+      selectedLabelIds,
+    ],
+  );
 
   const persistDraftSubissue = useCallback(
     async (subissueId, options = {}) => {
@@ -1463,7 +1690,9 @@ const AlpacaIssue = ({
       const slugs = newAssignees.map((name) => userMap[name] || name);
       setLoading(`subissue-assignees-${subissueId}`, true);
       try {
-        await updateIssue(subissue.id, { taxonomies: { assignee: slugs } });
+        await updateIssue(subissue.id, {
+          taxonomies: { 'alpaca_assignee': slugs },
+        });
         added.forEach((name) => {
           const user = allUserObjects.find((u) => u.name === name);
           wp.hooks.doAction(
@@ -1519,7 +1748,8 @@ const AlpacaIssue = ({
         return;
       }
 
-      const parentStatusId = issueDetails?.taxonomies?.status?.[0]?.term_id;
+      const parentStatusId =
+        issueDetails?.taxonomies?.alpaca_status?.[0]?.term_id;
       const payload = {
         // eslint-disable-next-line camelcase
         post_parent: 0,
@@ -1527,7 +1757,8 @@ const AlpacaIssue = ({
 
       if (parentStatusId) {
         payload.taxonomies = {
-          status: [parentStatusId],
+          // eslint-disable-next-line camelcase
+          alpaca_status: [parentStatusId],
         };
       }
 
@@ -1636,6 +1867,13 @@ const AlpacaIssue = ({
         setSubissues((prev) => prev.filter((item) => item.id !== subissueId));
         return;
       }
+      if (!canDeleteIssues) {
+        showNotification(
+          __('You do not have permission to delete issues.', 'alpaca'),
+          'error',
+        );
+        return;
+      }
 
       setLoading(`subissue-delete-${subissueId}`, true);
       try {
@@ -1650,7 +1888,7 @@ const AlpacaIssue = ({
         setLoading(`subissue-delete-${subissueId}`, false);
       }
     },
-    [issueDetails, setLoading, showNotification, subissues],
+    [canDeleteIssues, issueDetails, setLoading, showNotification, subissues],
   );
 
   // Memoized stable props
@@ -1677,7 +1915,7 @@ const AlpacaIssue = ({
     () => loadingStates.labels,
     [loadingStates.labels],
   );
-  const currentStatus = issueDetails?.taxonomies?.status?.[0];
+  const currentStatus = issueDetails?.taxonomies?.alpaca_status?.[0];
   const isLastStatus = useMemo(() => {
     if (!currentStatus || !allStatuses.length) return true;
     return (
@@ -1688,7 +1926,7 @@ const AlpacaIssue = ({
 
   const nextStatusName = useMemo(() => {
     if (!allStatuses.length) return '';
-    const current = issueDetails?.taxonomies?.status?.[0];
+    const current = issueDetails?.taxonomies?.alpaca_status?.[0];
     if (!current) return allStatuses[0]?.name || '';
     const currentIndex = allStatuses.findIndex(
       (s) => s.term_id === current.term_id,
@@ -1793,14 +2031,16 @@ const AlpacaIssue = ({
                       </>
                     </MenuItem>
                   )}
-                  <MenuItem
-                    icon="trash"
-                    iconPosition="left"
-                    isDestructive
-                    onClick={() => setShowDeleteConfirm(true)}
-                  >
-                    {__('Trash Issue', 'alpaca')}
-                  </MenuItem>
+                  {canDeleteIssues && (
+                    <MenuItem
+                      icon="trash"
+                      iconPosition="left"
+                      isDestructive
+                      onClick={() => setShowDeleteConfirm(true)}
+                    >
+                      {__('Trash Issue', 'alpaca')}
+                    </MenuItem>
+                  )}
                 </MenuGroup>
               )}
             />
@@ -1897,6 +2137,32 @@ const AlpacaIssue = ({
                   isLoading={stableIsLabelLoading}
                 />
               </div>
+
+              {isCreating && (
+                <div className="alpaca-issue-comment-section">
+                  <CommentForm
+                    value={issueComment}
+                    onChange={setIssueComment}
+                    textareaRef={issueCommentRef}
+                    placeholder={__('Add a comment to the issue…', 'alpaca')}
+                    issueId={null}
+                    showNotification={showNotification}
+                    onSubmit={handleCreateIssue}
+                    dataSource="create"
+                    submitButtonText={
+                      createdIssueRetry
+                        ? __('Retry Comment', 'alpaca')
+                        : undefined
+                    }
+                    submitButtonDisabled={
+                      loadingStates.title ||
+                      (!createdIssueRetry &&
+                        (!editedTitle || !editedTitle.trim()))
+                    }
+                    isSubmitting={loadingStates.title}
+                  />
+                </div>
+              )}
 
               {!isCreating && (
                 <div id="subissues" className="alpaca-subissues-block">
@@ -2026,21 +2292,23 @@ const AlpacaIssue = ({
                                     subissue.isDraft || isPromoteLoading
                                   }
                                 />
-                                <Button
-                                  className="alpaca-subissues-delete"
-                                  icon="trash"
-                                  label={__('Delete', 'alpaca')}
-                                  showTooltip
-                                  tooltipPosition="top"
-                                  isDestructive
-                                  onMouseDown={(event) =>
-                                    event.preventDefault()
-                                  }
-                                  onClick={() =>
-                                    handleSubissueDelete(subissue.id)
-                                  }
-                                  disabled={isDeleteLoading}
-                                />
+                                {(subissue.isDraft || canDeleteIssues) && (
+                                  <Button
+                                    className="alpaca-subissues-delete"
+                                    icon="trash"
+                                    label={__('Delete', 'alpaca')}
+                                    showTooltip
+                                    tooltipPosition="top"
+                                    isDestructive
+                                    onMouseDown={(event) =>
+                                      event.preventDefault()
+                                    }
+                                    onClick={() =>
+                                      handleSubissueDelete(subissue.id)
+                                    }
+                                    disabled={isDeleteLoading}
+                                  />
+                                )}
                               </div>
                             </li>
                           );
@@ -2090,32 +2358,6 @@ const AlpacaIssue = ({
           </div>
         )}
 
-        {/* Create Issue Footer - only shown in create mode */}
-        {isCreating && (
-          <div
-            className="alpaca-modal-footer"
-            style={{
-              padding: '16px 24px',
-              borderTop: '1px solid #ddd',
-              display: 'flex',
-              justifyContent: 'flex-end',
-              gap: '12px',
-            }}
-          >
-            <Button
-              variant="primary"
-              onClick={handleCreateIssue}
-              disabled={
-                !editedTitle || !editedTitle.trim() || loadingStates.title
-              }
-            >
-              {loadingStates.title
-                ? __('Creating…', 'alpaca')
-                : __('Create Issue', 'alpaca')}
-            </Button>
-          </div>
-        )}
-
         {!isCreating &&
           !isLoadingDetails &&
           (!issueDetails || !issueDetails.success) && (
@@ -2144,7 +2386,7 @@ const AlpacaIssue = ({
         )}
       </Modal>
 
-      {showDeleteConfirm && (
+      {canDeleteIssues && showDeleteConfirm && (
         <div className="alpaca-confirm-overlay">
           <div className="alpaca-confirm-box">
             <h2>{__('Delete Issue?', 'alpaca')}</h2>
@@ -2178,6 +2420,7 @@ AlpacaIssue.propTypes = {
   isOpen: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
+  canDeleteIssues: PropTypes.bool,
   onAssigneesChange: PropTypes.func.isRequired,
   onDeadlineChange: PropTypes.func.isRequired,
   /**

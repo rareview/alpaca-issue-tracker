@@ -436,7 +436,7 @@ function alpaca_render_notification_digest_issue_table_html( $items, $args = arr
 
 	if ( $more_count > 0 ) {
 		$html .= '<p class="alpaca-notification-digest-card__more">' . sprintf(
-			/* translators: %d: additional issue count. */
+			/* translators: %d: additional item count. */
 			esc_html__( '+%d more', 'alpaca' ),
 			$more_count
 		) . '</p>';
@@ -471,7 +471,7 @@ function alpaca_render_notification_digest_issue_activity_html( $groups ) {
 		$html .= '</ul>';
 		if ( ! empty( $group['more'] ) ) {
 			$html .= '<p class="alpaca-notification-digest-card__more">' . sprintf(
-				/* translators: %d: additional event count. */
+				/* translators: %d: additional item count. */
 				esc_html__( '+%d more', 'alpaca' ),
 				absint( $group['more'] )
 			) . '</p>';

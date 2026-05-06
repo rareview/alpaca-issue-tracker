@@ -22,7 +22,7 @@ final class Alpaca {
 	 *
 	 * @var string
 	 */
-	const VERSION = '1.0.0-beta.4';
+	const VERSION = '1.0.0';
 
 	/**
 	 * Minimum PHP version.
@@ -147,6 +147,9 @@ final class Alpaca {
 		// Update last activity on deleted issue comments.
 		\add_action( 'deleted_comment', array( $this, 'update_last_activity_on_deleted_comment' ), 20, 2 );
 
+		// Keep child issues in sync when parent issues are trashed or restored.
+		\add_action( 'transition_post_status', array( $this, 'sync_child_issues_on_status_transition' ), 10, 3 );
+
 		// Restore issue comment approval statuses when an issue leaves trash.
 		\add_action( 'transition_post_status', array( $this, 'restore_issue_comments_on_untrash' ), 20, 3 );
 	}
@@ -263,6 +266,45 @@ final class Alpaca {
 
 		if ( function_exists( 'alpaca_restore_issuecomment_approval_statuses' ) ) {
 			alpaca_restore_issuecomment_approval_statuses( (int) $post->ID );
+		}
+	}
+
+	/**
+	 * Sync direct child issues when a parent issue is trashed or restored.
+	 *
+	 * @param string   $new_status New post status.
+	 * @param string   $old_status Previous post status.
+	 * @param \WP_Post $post      Post object.
+	 * @return void
+	 */
+	public function sync_child_issues_on_status_transition( $new_status, $old_status, $post ) {
+		if ( ! ( $post instanceof \WP_Post ) ) {
+			return;
+		}
+
+		if ( 'alpaca_issue' !== (string) $post->post_type ) {
+			return;
+		}
+
+		$post_id = (int) $post->ID;
+		if ( $post_id <= 0 ) {
+			return;
+		}
+
+		if ( 'trash' !== (string) $old_status && 'trash' === (string) $new_status ) {
+			if ( function_exists( 'alpaca_trash_child_issues_with_parent' ) ) {
+				alpaca_trash_child_issues_with_parent( $post_id );
+			}
+		}
+
+		if ( 'trash' === (string) $old_status && 'trash' !== (string) $new_status ) {
+			if ( function_exists( 'alpaca_restore_child_issues_trashed_with_parent' ) ) {
+				alpaca_restore_child_issues_trashed_with_parent( $post_id, (string) $new_status );
+			}
+		}
+
+		if ( ( 'trash' === (string) $old_status || 'trash' === (string) $new_status ) && function_exists( 'alpaca_clear_board_cache' ) ) {
+			alpaca_clear_board_cache();
 		}
 	}
 

@@ -283,7 +283,8 @@ const TimelineEntry = ({
       );
       html = html.replace(/<input\b[^>]*\/?>/gi, '');
     }
-    if (dataSource === 'human') {
+    const highlightableDataSources = ['human', 'create'];
+    if (highlightableDataSources.includes(dataSource)) {
       html = highlightHtmlContent(html, highlightQuery);
     }
 

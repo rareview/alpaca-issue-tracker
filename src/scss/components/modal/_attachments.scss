@@ -91,15 +91,52 @@
 
     .alpaca-attachment-delete {
       position: absolute;
-      top: 0;
-      inset-inline-end: 0;
+      top: calc(-1 * #{$space-xs});
+      inset-inline-end: calc(-1 * #{$space-xs});
       z-index: 10;
+      width: 1.375rem;
+      height: 1.375rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      border: none;
+      border-radius: $radius-pill;
+      background: rgb(0 0 0 / 50%);
+      color: $color-white;
+      font-size: $font-size-sm;
+      line-height: 1;
+      cursor: pointer;
       opacity: 0;
-      transition: opacity $duration-base ease-in-out;
+      transform: scale(0.95);
+      transition:
+        opacity $duration-fast ease-in-out,
+        transform $duration-fast ease-in-out,
+        background-color $duration-fast ease-in-out;
+
+      &:hover,
+      &:focus {
+        background: rgb(0 0 0 / 65%);
+        color: $color-white;
+      }
+
+      &:focus {
+        box-shadow: 0 0 0 1px $color-white;
+        outline: none;
+      }
+
+      &:disabled {
+        cursor: default;
+      }
     }
 
-    &:hover .alpaca-attachment-delete {
+    .alpaca-attachment-thumbnail:hover ~ .alpaca-attachment-delete,
+    .alpaca-attachment-file:hover ~ .alpaca-attachment-delete,
+    &:hover .alpaca-attachment-delete,
+    .alpaca-attachment-delete:hover,
+    .alpaca-attachment-delete:focus {
       opacity: 1;
+      transform: scale(1);
     }
   }
 }

@@ -22,6 +22,7 @@ import { updateIssue } from './services/issueApi';
  * Main board component.
  */
 export function AlpacaBoard() {
+  const canDeleteIssues = Boolean(window.alpacaSettings?.canDeleteIssues);
   const [containers, setContainers] = useState(() => {
     if (typeof window.alpacaBoardData !== 'undefined') {
       return transformDataForBoard(window.alpacaBoardData);
@@ -1053,7 +1054,8 @@ export function AlpacaBoard() {
 
       updateIssue(item.id, {
         taxonomies: {
-          status: [parseInt(nextContainer.id, 10)],
+          // eslint-disable-next-line camelcase
+          alpaca_status: [parseInt(nextContainer.id, 10)],
         },
         // eslint-disable-next-line no-console
       }).catch((err) => console.error(`Error updating issue ${item.id}:`, err));
@@ -1064,6 +1066,10 @@ export function AlpacaBoard() {
   };
 
   const handleDeleteAll = (containerId) => {
+    if (!canDeleteIssues) {
+      return;
+    }
+
     const originalContainers = containers;
     const containerToDeleteFrom = containers.find((c) => c.id === containerId);
 
@@ -1224,7 +1230,8 @@ export function AlpacaBoard() {
         // Update the item's status taxonomy
         movedItem.taxonomies = {
           ...movedItem.taxonomies,
-          status: [newStatusTerm],
+          // eslint-disable-next-line camelcase
+          alpaca_status: [newStatusTerm],
         };
 
         // Add the item to the new container
@@ -1311,6 +1318,10 @@ export function AlpacaBoard() {
   };
 
   const handleDeleteIssue = (issueId) => {
+    if (!canDeleteIssues) {
+      return;
+    }
+
     // Optimistically remove the issue from the UI
     const originalContainers = containers;
     const newContainers = containers.map((c) => ({
@@ -1357,13 +1368,13 @@ export function AlpacaBoard() {
         id: createdIssue.id.toString(),
         slug: createdIssue.slug || '',
         content: createdIssue.title,
+        postDate: createdIssue.postDate || new Date().toISOString(),
         assignees: createdIssue.assignees || [],
         labels: createdIssue.labels || [],
-        commentCount: 1,
-        commentCountByAgent: {
-          create: 1,
-        },
+        commentCount: Number(createdIssue.commentCount) || 0,
+        commentCountByAgent: createdIssue.commentCountByAgent || null,
         meta: {
+          lastActivity: createdIssue.lastActivity || new Date().toISOString(),
           deadline: createdIssue.deadline ? [createdIssue.deadline] : undefined,
           // eslint-disable-next-line camelcase
           alpaca_high_priority: createdIssue.isHighPriority ? '1' : undefined,
@@ -1429,7 +1440,10 @@ export function AlpacaBoard() {
             labels: issue.labels || [],
             commentCount: issue.comment_count ?? 0,
             commentCountByAgent: issue.comment_count_by_agent || null,
-            meta: issue.meta || {},
+            meta: {
+              ...(issue.meta || {}),
+              lastActivity: new Date().toISOString(),
+            },
           };
 
           // Add new issue to the top of the container for immediate UI update
@@ -1638,7 +1652,8 @@ export function AlpacaBoard() {
 
       updateIssue(movedItemId, {
         taxonomies: {
-          status: [newStatusTermId],
+          // eslint-disable-next-line camelcase
+          alpaca_status: [newStatusTermId],
         },
       }).catch((err) => {
         // eslint-disable-next-line no-console
@@ -1760,6 +1775,7 @@ export function AlpacaBoard() {
                 onItemClick={handleItemClick}
                 onMoveAllToNext={moveAllItemsToNextContainer}
                 onDeleteAll={handleDeleteAll}
+                canDeleteIssues={canDeleteIssues}
                 isLastContainer={index === containers.length - 1}
                 isHidden={hiddenContainerIds.includes(container.id)}
                 focusedContainerId={focusedContainerId}
@@ -1787,6 +1803,7 @@ export function AlpacaBoard() {
         }
         onClose={closeModal}
         onDelete={handleDeleteIssue}
+        canDeleteIssues={canDeleteIssues}
         triggerRef={triggerRef}
         onAssigneesChange={handleAssigneesChange}
         onLabelsChange={handleLabelsChange}
