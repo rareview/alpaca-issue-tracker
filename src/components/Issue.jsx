@@ -1378,14 +1378,6 @@ const AlpacaIssue = ({
           onLabelsChange(newIssueId, createdIssueLabels);
         }
 
-        if (createdIssueIsHighPriority) {
-          wp.hooks.doAction('alpaca.priorityUpdated', {
-            issueId: newIssueId,
-            isHighPriority: true,
-            issue: createdIssueHook,
-          });
-        }
-
         if (assignees && assignees.length > 0) {
           try {
             const slugs = assignees.map((a) => userMap[a] || a);

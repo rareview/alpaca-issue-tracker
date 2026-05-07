@@ -1606,8 +1606,8 @@ msgstr ""
 msgid "URL"
 msgstr ""
 
-#: src/components/issue/ReportTab.jsx:123
-msgid "Screen"
+#: src/components/issue/ReportTab.jsx:136
+msgid "Viewport"
 msgstr ""
 
 #: src/components/ItemDatapointsManager.jsx:119
@@ -1656,60 +1656,40 @@ msgstr ""
 msgid "New Label"
 msgstr ""
 
+#: src/components/EnableContextCaptureControl.jsx:14
+msgid "Context Capture"
+msgstr ""
+
+#: src/components/EnableContextCaptureControl.jsx:21
+msgid "Enable reporting of issues with associated context"
+msgstr ""
+
 #: src/components/NotificationPreferences.jsx:42
 msgid "Issues I created"
 msgstr ""
 
-#: src/components/NotificationPreferences.jsx:43
-msgid "Receive updates about issues you created."
-msgstr ""
-
-#: src/components/NotificationPreferences.jsx:47
+#: src/components/NotificationPreferences.jsx:46
 msgid "Issues assigned to me"
 msgstr ""
 
-#: src/components/NotificationPreferences.jsx:48
-msgid "Receive updates when you are assigned or when assigned issues change."
-msgstr ""
-
-#: src/components/NotificationPreferences.jsx:55
+#: src/components/NotificationPreferences.jsx:50
 msgid "Issues I starred"
 msgstr ""
 
-#: src/components/NotificationPreferences.jsx:56
-msgid "Use the existing star/watch feature to follow issue activity."
-msgstr ""
-
-#: src/components/NotificationPreferences.jsx:63
+#: src/components/NotificationPreferences.jsx:54
 msgid "Comments that mention me"
 msgstr ""
 
-#: src/components/NotificationPreferences.jsx:64
-msgid "Receive updates when another user mentions you with @username."
-msgstr ""
-
-#: src/components/NotificationPreferences.jsx:71
+#: src/components/NotificationPreferences.jsx:58
 msgid "Issues with these labels"
 msgstr ""
 
-#: src/components/NotificationPreferences.jsx:72
-msgid "Receive updates about activity on issues with selected labels."
-msgstr ""
-
-#: src/components/NotificationPreferences.jsx:79
+#: src/components/NotificationPreferences.jsx:62
 msgid "Issues currently marked high priority"
 msgstr ""
 
-#: src/components/NotificationPreferences.jsx:80
-msgid "Receive updates about activity on issues that are currently marked High Priority."
-msgstr ""
-
-#: src/components/NotificationPreferences.jsx:87
+#: src/components/NotificationPreferences.jsx:66
 msgid "Whenever a new issue is created"
-msgstr ""
-
-#: src/components/NotificationPreferences.jsx:88
-msgid "Includes both new top-level issues and new checklist items, even when they are not otherwise related to you."
 msgstr ""
 
 #: src/components/NotificationPreferences.jsx:98
@@ -2004,8 +1984,10 @@ msgstr[1] ""
 msgid "Page %1$d of %2$d"
 msgstr ""
 
-#: src/components/RestoreManager.jsx:258
-msgid "Use this screen to find and restore deleted issues from trash."
+#. translators: %d: number of days until trashed items are deleted.
+#: src/components/RestoreManager.jsx:275
+#, js-format
+msgid "Deleted issues will be automatically removed from the database after %d days."
 msgstr ""
 
 #: src/components/RestoreManager.jsx:267
