@@ -18,8 +18,6 @@
 
 namespace Alpaca;
 
-use Alpaca\Inc\AlpacaServiceProvider;
-
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -30,28 +28,19 @@ if ( ! defined( 'ALPACA_PLUGIN_DIR' ) ) {
 	define( 'ALPACA_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 }
 
-// Load Composer autoloader if available.
-if ( file_exists( ALPACA_PLUGIN_DIR . 'vendor/autoload.php' ) ) {
-	require_once ALPACA_PLUGIN_DIR . 'vendor/autoload.php';
-}
-
 // Manually require core classes for now.
+require_once ALPACA_PLUGIN_DIR . 'includes/class-alpaca.php';
 require_once ALPACA_PLUGIN_DIR . 'includes/class-helpers.php';
 require_once ALPACA_PLUGIN_DIR . 'includes/class-register.php';
-require_once ALPACA_PLUGIN_DIR . 'includes/class-alpacaserviceprovider.php';
 require_once ALPACA_PLUGIN_DIR . 'includes/class-activator.php';
 require_once ALPACA_PLUGIN_DIR . 'includes/class-deactivator.php';
 
 // Register activation and deactivation hooks.
-register_activation_hook( __FILE__, array( 'Alpaca\\Activator', 'activate' ) );
-register_deactivation_hook( __FILE__, array( 'Alpaca\\Deactivator', 'deactivate' ) );
+register_activation_hook( __FILE__, [ 'Alpaca\\Activator', 'activate' ] );
+register_deactivation_hook( __FILE__, [ 'Alpaca\\Deactivator', 'deactivate' ] );
 
-// Initialize the Service Provider.
-if ( class_exists( AlpacaServiceProvider::class ) ) {
-	new AlpacaServiceProvider();
-}
-
-require_once ALPACA_PLUGIN_DIR . 'includes/class-alpaca.php';
+// Initialize asset registration.
+new Register();
 
 /**
  * Initialize the plugin.

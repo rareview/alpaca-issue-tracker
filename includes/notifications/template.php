@@ -36,7 +36,7 @@ function alpaca_get_notification_email_subject_template_legacy_default() {
 function alpaca_get_notification_email_body_template_default() {
 	return implode(
 		"\n",
-		array(
+		[
 			'<!-- wp:group {"className":"alpaca-notification-header","layout":{"type":"flex","flexWrap":"nowrap","verticalAlignment":"center"}} -->',
 			'<div class="wp-block-group alpaca-notification-header">',
 			'<!-- wp:alpaca/email-site-logo /-->',
@@ -74,7 +74,7 @@ function alpaca_get_notification_email_body_template_default() {
 			'<!-- wp:paragraph {"fontSize":"small"} -->',
 			'<p class="has-small-font-size"><a href="{{notifications_url}}">' . esc_html__( 'Manage notifications', 'alpaca' ) . '</a></p>',
 			'<!-- /wp:paragraph -->',
-		)
+		]
 	);
 }
 
@@ -86,7 +86,7 @@ function alpaca_get_notification_email_body_template_default() {
 function alpaca_get_notification_email_body_template_legacy_default() {
 	return implode(
 		"\n",
-		array(
+		[
 			'<!-- wp:heading {"level":2} -->',
 			'<h2>{{issue_title}}</h2>',
 			'<!-- /wp:heading -->',
@@ -109,7 +109,7 @@ function alpaca_get_notification_email_body_template_legacy_default() {
 			'<!-- wp:paragraph {"fontSize":"small"} -->',
 			'<p class="has-small-font-size"><a href="{{notifications_url}}">' . esc_html__( 'Manage notifications', 'alpaca' ) . '</a></p>',
 			'<!-- /wp:paragraph -->',
-		)
+		]
 	);
 }
 
@@ -121,10 +121,10 @@ function alpaca_get_notification_email_body_template_legacy_default() {
  */
 function alpaca_sanitize_notification_context_meta( $value ) {
 	if ( ! is_array( $value ) ) {
-		return array();
+		return [];
 	}
 
-	$sanitized = array();
+	$sanitized = [];
 
 	if ( isset( $value['action'] ) ) {
 		$sanitized['action'] = sanitize_key( (string) $value['action'] );
@@ -157,7 +157,7 @@ function alpaca_sanitize_notification_context_meta( $value ) {
  * @return string[] Allowed core block names.
  */
 function alpaca_get_notification_template_allowed_core_blocks() {
-	return array(
+	return [
 		'core/paragraph',
 		'core/heading',
 		'core/list',
@@ -168,7 +168,7 @@ function alpaca_get_notification_template_allowed_core_blocks() {
 		'core/buttons',
 		'core/button',
 		'core/image',
-	);
+	];
 }
 
 /**
@@ -178,7 +178,7 @@ function alpaca_get_notification_template_allowed_core_blocks() {
  * @return string[] Allowed block names.
  */
 function alpaca_get_notification_template_allowed_block_types_for_blocks( $allowed_blocks ) {
-	$normalized_blocks = array();
+	$normalized_blocks = [];
 
 	if ( is_array( $allowed_blocks ) ) {
 		foreach ( $allowed_blocks as $block_name ) {
@@ -235,7 +235,7 @@ function alpaca_notification_template_has_block( $blocks, $target_name ) {
 			return true;
 		}
 
-		$inner_blocks = isset( $block['innerBlocks'] ) && is_array( $block['innerBlocks'] ) ? $block['innerBlocks'] : array();
+		$inner_blocks = isset( $block['innerBlocks'] ) && is_array( $block['innerBlocks'] ) ? $block['innerBlocks'] : [];
 		if ( ! empty( $inner_blocks ) && alpaca_notification_template_has_block( $inner_blocks, $target_name ) ) {
 			return true;
 		}
@@ -279,7 +279,7 @@ function alpaca_notification_template_has_required_blocks( $blocks, $required_bl
  * @return array<int, array<string, mixed>> Filtered blocks.
  */
 function alpaca_filter_notification_template_blocks_with_callbacks( $blocks, $allowed_block_types, $normalize_callback = null, $should_remove_callback = null ) {
-	$filtered = array();
+	$filtered = [];
 
 	foreach ( $blocks as $block ) {
 		$block_name = isset( $block['blockName'] ) ? (string) $block['blockName'] : '';
@@ -293,7 +293,7 @@ function alpaca_filter_notification_template_blocks_with_callbacks( $blocks, $al
 
 		$block['innerBlocks'] = isset( $block['innerBlocks'] ) && is_array( $block['innerBlocks'] )
 			? alpaca_filter_notification_template_blocks_with_callbacks( $block['innerBlocks'], $allowed_block_types, $normalize_callback, $should_remove_callback )
-			: array();
+			: [];
 
 		if ( is_callable( $normalize_callback ) ) {
 			$block = call_user_func( $normalize_callback, $block );
@@ -377,7 +377,7 @@ function alpaca_sanitize_notification_template_subject( $subject, $default_subje
  * @param string             $required_error_message Error message for missing required blocks.
  * @return string|WP_Error Sanitized body string or WP_Error on failure.
  */
-function alpaca_sanitize_notification_template_body_with_callbacks( $body, $default_body, $allowed_block_types, $normalize_callback = null, $should_remove_callback = null, $required_block_names = array(), $empty_error_code = '', $empty_error_message = '', $required_error_code = '', $required_error_message = '' ) {
+function alpaca_sanitize_notification_template_body_with_callbacks( $body, $default_body, $allowed_block_types, $normalize_callback = null, $should_remove_callback = null, $required_block_names = [], $empty_error_code = '', $empty_error_message = '', $required_error_code = '', $required_error_message = '' ) {
 	$body = is_string( $body ) ? trim( $body ) : '';
 	if ( '' === $body ) {
 		$body = $default_body;
@@ -390,7 +390,7 @@ function alpaca_sanitize_notification_template_body_with_callbacks( $body, $defa
 		return new WP_Error(
 			$empty_error_code,
 			$empty_error_message,
-			array( 'status' => 400 )
+			[ 'status' => 400 ]
 		);
 	}
 
@@ -398,7 +398,7 @@ function alpaca_sanitize_notification_template_body_with_callbacks( $body, $defa
 		return new WP_Error(
 			$required_error_code,
 			$required_error_message,
-			array( 'status' => 400 )
+			[ 'status' => 400 ]
 		);
 	}
 
@@ -411,7 +411,7 @@ function alpaca_sanitize_notification_template_body_with_callbacks( $body, $defa
  * @return string[] Allowed placeholder block names.
  */
 function alpaca_get_notification_template_allowed_blocks() {
-	return array(
+	return [
 		'alpaca/email-issue-title',
 		'alpaca/email-actor-name',
 		'alpaca/email-event-label',
@@ -421,7 +421,7 @@ function alpaca_get_notification_template_allowed_blocks() {
 		'alpaca/email-site-tagline',
 		'alpaca/email-site-logo',
 		'alpaca/email-event-time',
-	);
+	];
 }
 
 /**
@@ -478,10 +478,10 @@ function alpaca_get_notification_email_template() {
 
 	$body = alpaca_normalize_notification_email_body_template( $body );
 
-	return array(
+	return [
 		'subject' => $subject,
 		'body'    => $body,
-	);
+	];
 }
 
 /**
@@ -490,10 +490,10 @@ function alpaca_get_notification_email_template() {
  * @return array<string, mixed> Default template values.
  */
 function alpaca_get_notification_email_template_defaults() {
-	return array(
+	return [
 		'subject' => alpaca_get_notification_email_subject_template_default(),
 		'body'    => alpaca_get_notification_email_body_template_default(),
-	);
+	];
 }
 
 /**
@@ -515,10 +515,10 @@ function alpaca_sanitize_notification_email_subject_template( $subject ) {
  * @return array<string, bool> Comment block lock attributes.
  */
 function alpaca_get_notification_template_comment_block_lock() {
-	return array(
+	return [
 		'move'   => false,
 		'remove' => true,
-	);
+	];
 }
 
 /**
@@ -531,7 +531,7 @@ function alpaca_normalize_notification_template_block( $block ) {
 	$block_name = isset( $block['blockName'] ) ? (string) $block['blockName'] : '';
 
 	if ( 'alpaca/email-comment-content' === $block_name ) {
-		$attrs = array();
+		$attrs = [];
 
 		if ( isset( $block['attrs'] ) && is_array( $block['attrs'] ) ) {
 			$attrs = $block['attrs'];
@@ -572,7 +572,7 @@ function alpaca_sanitize_notification_email_body_template( $body ) {
 		alpaca_get_notification_template_allowed_block_types(),
 		'alpaca_normalize_notification_template_block',
 		null,
-		array( 'alpaca/email-comment-content' ),
+		[ 'alpaca/email-comment-content' ],
 		'alpaca_notification_template_empty',
 		esc_html__( 'The email template must contain at least one supported block.', 'alpaca' ),
 		'alpaca_notification_template_missing_comment',

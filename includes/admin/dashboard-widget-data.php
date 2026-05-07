@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return array<int, array<string, mixed>>
  */
 function alpaca_prepare_dashboard_widget_issue_list( $posts ) {
-	$prepared_posts = array();
+	$prepared_posts = [];
 
 	foreach ( $posts as $post ) {
 		$prepared_post = alpaca_prepare_issue_data( $post );
@@ -36,12 +36,12 @@ function alpaca_prepare_dashboard_widget_issue_list( $posts ) {
  */
 function alpaca_get_dashboard_widget_data() {
 
-	$data = array(
+	$data = [
 		'assignedToMe' => alpaca_get_assigned_to_me_issues(),
 		'newlyCreated' => alpaca_get_newly_created_issues(),
 		'overdue'      => alpaca_get_overdue_issues(),
 		'watchlist'    => alpaca_get_watchlist_issues(),
-	);
+	];
 
 	return $data;
 }
@@ -53,22 +53,22 @@ function alpaca_get_dashboard_widget_data() {
 function alpaca_get_assigned_to_me_issues() {
 	$current_user = wp_get_current_user();
 	if ( ! $current_user || ! $current_user->ID ) {
-		return array();
+		return [];
 	}
 
 	// phpcs:disable WordPress.DB.SlowDBQuery
 	$posts = get_posts(
-		array(
+		[
 			'post_type'      => 'alpaca_issue',
 			'posts_per_page' => -1,
-			'tax_query'      => array(
-				array(
+			'tax_query'      => [
+				[
 					'taxonomy' => 'alpaca_assignee',
 					'field'    => 'slug',
 					'terms'    => $current_user->user_nicename,
-				),
-			),
-		)
+				],
+			],
+		]
 	);
 	// phpcs:enable WordPress.DB.SlowDBQuery
 
@@ -82,16 +82,16 @@ function alpaca_get_assigned_to_me_issues() {
  */
 function alpaca_get_newly_created_issues() {
 	$posts = get_posts(
-		array(
+		[
 			'post_type'      => 'alpaca_issue',
 			'posts_per_page' => 5,
 			'post_parent'    => 0, // Exclude checklist items.
-			'date_query'     => array(
-				array(
+			'date_query'     => [
+				[
 					'after' => '1 week ago',
-				),
-			),
-		)
+				],
+			],
+		]
 	);
 
 	return alpaca_prepare_dashboard_widget_issue_list( $posts );
@@ -109,26 +109,26 @@ function alpaca_get_overdue_issues() {
 
 	// phpcs:disable WordPress.DB.SlowDBQuery
 	$posts = get_posts(
-		array(
+		[
 			'post_type'      => 'alpaca_issue',
 			'posts_per_page' => -1,
-			'meta_query'     => array(
-				array(
+			'meta_query'     => [
+				[
 					'key'     => 'alpaca_deadline',
 					'value'   => current_time( 'Y-m-d' ),
 					'compare' => '<',
 					'type'    => 'DATE',
-				),
-			),
-			'tax_query'      => array(
-				array(
+				],
+			],
+			'tax_query'      => [
+				[
 					'taxonomy' => 'alpaca_status',
 					'field'    => 'term_id',
 					'terms'    => $done_status_id,
 					'operator' => 'NOT IN',
-				),
-			),
-		)
+				],
+			],
+		]
 	);
 	// phpcs:enable WordPress.DB.SlowDBQuery
 
@@ -144,22 +144,22 @@ function alpaca_get_watchlist_issues() {
 
 	$user_id = get_current_user_id();
 	if ( ! $user_id ) {
-		return array();
+		return [];
 	}
 
 	$watchlist = alpaca_get_watched_issue_ids_for_user( $user_id );
 
 	if ( empty( $watchlist ) ) {
-		return array();
+		return [];
 	}
 
 	$posts = get_posts(
-		array(
+		[
 			'post_type'      => 'alpaca_issue',
 			'post__in'       => $watchlist,
 			'orderby'        => 'post__in',
 			'posts_per_page' => -1,
-		)
+		]
 	);
 
 	return alpaca_prepare_dashboard_widget_issue_list( $posts );
@@ -172,21 +172,36 @@ function alpaca_get_watchlist_issues() {
  */
 function alpaca_prepare_issue_data( $post ) {
 	if ( ! ( $post instanceof WP_Post ) ) {
-		return array();
+		return [];
 	}
 
 	$post_parent_id = (int) $post->post_parent;
 	if ( $post_parent_id > 0 && 'trash' === get_post_status( $post_parent_id ) ) {
-		return array();
+		return [];
 	}
 
 	$deadline         = get_post_meta( $post->ID, 'alpaca_deadline', true );
 	$assignees        = get_the_terms( $post->ID, 'alpaca_assignee' );
+	$assignee_data    = [];
 	$status           = get_the_terms( $post->ID, 'alpaca_status' );
 	$post_parent      = $post_parent_id > 0 ? get_post( $post_parent_id ) : null;
 	$post_parent_slug = $post_parent ? $post_parent->post_name : '';
 
-	return array(
+	if ( ! is_wp_error( $assignees ) && ! empty( $assignees ) ) {
+		foreach ( $assignees as $assignee ) {
+			if ( ! ( $assignee instanceof WP_Term ) ) {
+				continue;
+			}
+
+			$assignee_data[] = [
+				'term_id' => (int) $assignee->term_id,
+				'name'    => (string) $assignee->name,
+				'slug'    => (string) $assignee->slug,
+			];
+		}
+	}
+
+	return [
 		'id'               => $post->ID,
 		'title'            => $post->post_title,
 		'slug'             => $post->post_name,
@@ -195,12 +210,12 @@ function alpaca_prepare_issue_data( $post ) {
 		'postDateGmt'      => $post->post_date_gmt,
 		'postDate'         => $post->post_date,
 		'deadline'         => $deadline,
-		'assignees'        => $assignees,
+		'assignees'        => $assignee_data,
 		'status'           => $status,
 		'high_priority'    => get_post_meta(
 			$post->ID,
 			'alpaca_high_priority',
 			true
 		),
-	);
+	];
 }

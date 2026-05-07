@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return bool True when the digest should be sent.
  */
 function alpaca_should_send_notification_daily_digest_payload( $payload, $user_id, $preferences ) {
-	$counts         = isset( $payload['counts'] ) && is_array( $payload['counts'] ) ? $payload['counts'] : array();
+	$counts         = isset( $payload['counts'] ) && is_array( $payload['counts'] ) ? $payload['counts'] : [];
 	$activity_count = isset( $counts['activity'] ) ? absint( $counts['activity'] ) : 0;
 	$new_item_count = isset( $counts['new_items'] ) ? absint( $counts['new_items'] ) : 0;
 	$deadline_count = isset( $counts['deadlines'] ) ? absint( $counts['deadlines'] ) : 0;

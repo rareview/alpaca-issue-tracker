@@ -25,10 +25,10 @@ function alpaca_get_notification_daily_digest_subject_template_default() {
  * @return array<string, bool> Block lock attributes.
  */
 function alpaca_get_notification_daily_digest_required_block_lock() {
-	return array(
+	return [
 		'move'   => false,
 		'remove' => true,
-	);
+	];
 }
 
 /**
@@ -37,11 +37,11 @@ function alpaca_get_notification_daily_digest_required_block_lock() {
  * @return string[] Required block names.
  */
 function alpaca_get_notification_daily_digest_required_block_names() {
-	return array(
+	return [
 		'alpaca/digest-deadline-watch',
 		'alpaca/digest-issue-activity',
 		'alpaca/digest-new-items',
-	);
+	];
 }
 
 /**
@@ -50,12 +50,12 @@ function alpaca_get_notification_daily_digest_required_block_names() {
  * @return string[] Allowed custom block names.
  */
 function alpaca_get_notification_daily_digest_template_allowed_blocks() {
-	return array(
+	return [
 		'alpaca/digest-site-icon',
 		'alpaca/digest-deadline-watch',
 		'alpaca/digest-issue-activity',
 		'alpaca/digest-new-items',
-	);
+	];
 }
 
 /**
@@ -87,7 +87,7 @@ function alpaca_get_notification_daily_digest_body_template_default( $preamble =
 
 	return implode(
 		"\n",
-		array(
+		[
 			'<!-- wp:group {"className":"alpaca-notification-header","layout":{"type":"flex","flexWrap":"nowrap","verticalAlignment":"center"}} -->',
 			'<div class="wp-block-group alpaca-notification-header">',
 			'<!-- wp:alpaca/digest-site-icon /-->',
@@ -118,7 +118,7 @@ function alpaca_get_notification_daily_digest_body_template_default( $preamble =
 			'<!-- wp:paragraph {"fontSize":"small"} -->',
 			'<p class="has-small-font-size"><a href="{{notifications_url}}">' . esc_html__( 'Manage notifications', 'alpaca' ) . '</a></p>',
 			'<!-- /wp:paragraph -->',
-		)
+		]
 	);
 }
 
@@ -165,11 +165,11 @@ function alpaca_notification_daily_digest_template_has_required_blocks( $blocks 
  * @return bool True when the layout should be upgraded to the current default.
  */
 function alpaca_notification_daily_digest_template_uses_legacy_placeholder_only_layout( $blocks ) {
-	$allowed_legacy_blocks = array(
+	$allowed_legacy_blocks = [
 		'alpaca/digest-deadline-watch',
 		'alpaca/digest-issue-activity',
 		'alpaca/digest-new-items',
-	);
+	];
 
 	foreach ( $blocks as $block ) {
 		$block_name = isset( $block['blockName'] ) ? (string) $block['blockName'] : '';
@@ -181,7 +181,7 @@ function alpaca_notification_daily_digest_template_uses_legacy_placeholder_only_
 			return false;
 		}
 
-		$inner_blocks = isset( $block['innerBlocks'] ) && is_array( $block['innerBlocks'] ) ? $block['innerBlocks'] : array();
+		$inner_blocks = isset( $block['innerBlocks'] ) && is_array( $block['innerBlocks'] ) ? $block['innerBlocks'] : [];
 		if ( ! empty( $inner_blocks ) ) {
 			return false;
 		}
@@ -200,7 +200,7 @@ function alpaca_normalize_notification_daily_digest_template_block( $block ) {
 	$block_name = isset( $block['blockName'] ) ? (string) $block['blockName'] : '';
 
 	if ( in_array( $block_name, alpaca_get_notification_daily_digest_required_block_names(), true ) ) {
-		$attrs = array();
+		$attrs = [];
 
 		if ( isset( $block['attrs'] ) && is_array( $block['attrs'] ) ) {
 			$attrs = $block['attrs'];
@@ -270,10 +270,10 @@ function alpaca_sanitize_notification_daily_digest_body_template( $body ) {
  * @return array<string, string> Default template values.
  */
 function alpaca_get_notification_daily_digest_template_defaults() {
-	return array(
+	return [
 		'subject' => alpaca_get_notification_daily_digest_subject_template_default(),
 		'body'    => alpaca_get_notification_daily_digest_body_template_default(),
-	);
+	];
 }
 
 /**
@@ -295,10 +295,10 @@ function alpaca_get_notification_daily_digest_template() {
 
 	$body = alpaca_normalize_notification_daily_digest_body_template( $body );
 
-	return array(
+	return [
 		'subject' => is_string( $subject ) && '' !== trim( $subject ) ? trim( $subject ) : $defaults['subject'],
 		'body'    => $body,
-	);
+	];
 }
 
 /**

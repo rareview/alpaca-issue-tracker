@@ -2,10 +2,12 @@
 /**
  * Functionality to hide and manage private comment types.
  *
- * @package Rareview\PrivateComments
+ * @package Alpaca
  */
 
-namespace Rareview\PrivateComments;
+namespace Alpaca;
+
+use WP_Comment_Query;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,13 +17,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Add the "Comment Type" column to the Comments screen.
  */
-\add_filter(
+add_filter(
 	'manage_edit-comments_columns',
 	function ( $columns ) {
 		$where          = array_slice( $columns, 0, 2, true );
-		$new_column     = array(
+		$new_column     = [
 			'comment_type' => 'Type',
-		);
+		];
 		$after_columns  = array_slice( $columns, 2, null, true );
 		$sorted_columns = array_merge( $where, $new_column, $after_columns );
 
@@ -32,12 +34,12 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Populate the "Comment Type" column with data.
  */
-\add_action(
+add_action(
 	'manage_comments_custom_column',
 	function ( $column, $post_id ) {
 		if ( 'comment_type' === $column ) {
-			$comment = \get_comment( $post_id );
-			echo \esc_html( $comment->comment_type ? $comment->comment_type : '—' );
+			$comment = get_comment( $post_id );
+			echo esc_html( $comment->comment_type ? $comment->comment_type : '—' );
 		}
 	},
 	10,
@@ -61,7 +63,7 @@ function get_request_param( $key ) {
 	}
 
 	// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Read-only inspection for request routing.
-	return \sanitize_text_field( \wp_unslash( (string) $_REQUEST[ $key ] ) );
+	return sanitize_text_field( wp_unslash( (string) $_REQUEST[ $key ] ) );
 }
 
 /**
@@ -73,7 +75,7 @@ function get_request_param( $key ) {
  * @return bool Whether the current request asks to include hidden comments.
  */
 function is_rest_override_requested() {
-	$override_param = \apply_filters( 'alpaca_private_comments_rest_visibility_param', '' );
+	$override_param = apply_filters( 'alpaca_private_comments_rest_visibility_param', '' );
 
 	if ( ! is_string( $override_param ) || '' === $override_param ) {
 		return false;
@@ -130,12 +132,12 @@ function request_targets_type( $type ) {
  * @param array  $query_vars Comment query vars.
  * @return bool Whether the query explicitly targets the comment type.
  */
-function query_targets_type( $type, $query_vars = array() ) {
+function query_targets_type( $type, $query_vars = [] ) {
 	if ( ! is_array( $query_vars ) ) {
 		return false;
 	}
 
-	$target_keys = array( 'type', 'comment_type', 'type__in' );
+	$target_keys = [ 'type', 'comment_type', 'type__in' ];
 
 	foreach ( $target_keys as $target_key ) {
 		if ( isset( $query_vars[ $target_key ] ) && value_targets_type( $query_vars[ $target_key ], $type ) ) {
@@ -152,7 +154,7 @@ function query_targets_type( $type, $query_vars = array() ) {
  * @return array<string,int> Visibility stack keyed by comment type.
  */
 function &get_visibility_stack() {
-	static $visibility_stack = array();
+	static $visibility_stack = [];
 
 	return $visibility_stack;
 }
@@ -212,7 +214,7 @@ function is_type_marked_visible( $type ) {
  * @return bool Whether the current user can view the hidden type.
  */
 function user_can_view_type( $type ) {
-	$can_view = \current_user_can( 'moderate_comments' );
+	$can_view = current_user_can( 'moderate_comments' );
 
 	/**
 	 * Filter whether the current user can view a hidden comment type.
@@ -220,7 +222,7 @@ function user_can_view_type( $type ) {
 	 * @param bool   $can_view Whether the current user can view the type.
 	 * @param string $type     Hidden comment type.
 	 */
-	return (bool) \apply_filters( 'alpaca_private_comments_user_can_view_type', $can_view, $type );
+	return (bool) apply_filters( 'alpaca_private_comments_user_can_view_type', $can_view, $type );
 }
 
 /**
@@ -234,7 +236,7 @@ function user_can_view_type( $type ) {
  * @return bool Whether the REST visibility override should be allowed.
  */
 function should_allow_rest_override( $type ) {
-	if ( ! \defined( 'REST_REQUEST' ) || ! REST_REQUEST ) {
+	if ( ! defined( 'REST_REQUEST' ) || ! REST_REQUEST ) {
 		return false;
 	}
 
@@ -264,10 +266,10 @@ function should_allow_rest_override( $type ) {
  * @param array  $query_vars Comment query vars.
  * @return bool Whether the type should be hidden.
  */
-function should_hide_type( $type, $query_vars = array() ) {
+function should_hide_type( $type, $query_vars = [] ) {
 	$targets_type = query_targets_type( $type, $query_vars );
 
-	if ( \defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+	if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
 		if ( $targets_type && ! request_targets_type( $type ) ) {
 			return false;
 		}
@@ -277,7 +279,7 @@ function should_hide_type( $type, $query_vars = array() ) {
 		}
 	}
 
-	if ( ! \defined( 'REST_REQUEST' ) || ! REST_REQUEST ) {
+	if ( ! defined( 'REST_REQUEST' ) || ! REST_REQUEST ) {
 		if ( $targets_type || is_type_marked_visible( $type ) ) {
 			return false;
 		}
@@ -300,19 +302,19 @@ function hide_type( $type = '', $exclude_from_count = true ) {
 		return;
 	}
 
-	$should_hide = function ( $query_vars = array() ) use ( $type ) {
+	$should_hide = function ( $query_vars = [] ) use ( $type ) {
 		return should_hide_type( $type, $query_vars );
 	};
 
-	\add_action(
+	add_action(
 		'pre_get_comments',
 		function ( $query ) use ( $type, $should_hide ) {
-			if ( ! $query instanceof \WP_Comment_Query ) {
+			if ( ! $query instanceof WP_Comment_Query ) {
 				return;
 			}
 
 			if ( $should_hide( $query->query_vars ) ) {
-				$excluded_types = array();
+				$excluded_types = [];
 
 				if ( isset( $query->query_vars['type__not_in'] ) ) {
 					$excluded_types = (array) $query->query_vars['type__not_in'];
@@ -327,7 +329,7 @@ function hide_type( $type = '', $exclude_from_count = true ) {
 		}
 	);
 
-	\add_filter(
+	add_filter(
 		'comment_feed_where',
 		function ( $where ) use ( $type, $should_hide, $wpdb ) {
 			if ( $should_hide() ) {
@@ -340,10 +342,10 @@ function hide_type( $type = '', $exclude_from_count = true ) {
 		2
 	);
 
-	\add_filter(
+	add_filter(
 		'get_comments_number',
 		function ( $count, $post_id ) use ( $type, $exclude_from_count, $should_hide, $wpdb ) {
-			if ( \is_admin() ) {
+			if ( is_admin() ) {
 				return $count;
 			}
 
@@ -371,10 +373,10 @@ function hide_type( $type = '', $exclude_from_count = true ) {
 		2
 	);
 
-	\add_filter(
+	add_filter(
 		'comments_clauses',
 		function ( $clauses, $comment_query ) use ( $type, $should_hide, $wpdb ) {
-			if ( ! \is_admin() && $should_hide( $comment_query->query_vars ) ) {
+			if ( ! is_admin() && $should_hide( $comment_query->query_vars ) ) {
 				$clauses['where'] .= $wpdb->prepare( ' AND comment_type != %s', $type );
 			}
 
@@ -384,7 +386,7 @@ function hide_type( $type = '', $exclude_from_count = true ) {
 		2
 	);
 
-	\add_filter(
+	add_filter(
 		'comments_template_query_args',
 		function ( $args ) use ( $type, $should_hide ) {
 			if ( $should_hide( $args ) ) {
@@ -393,7 +395,7 @@ function hide_type( $type = '', $exclude_from_count = true ) {
 						$args['type__not_in'][] = $type;
 					}
 				} else {
-					$args['type__not_in'] = array( $type );
+					$args['type__not_in'] = [ $type ];
 				}
 			} else {
 				mark_type_visible( $type );
@@ -405,7 +407,7 @@ function hide_type( $type = '', $exclude_from_count = true ) {
 		1
 	);
 
-	\add_filter(
+	add_filter(
 		'comments_array',
 		function ( $comments ) use ( $type, $should_hide ) {
 			if ( is_type_marked_visible( $type ) ) {

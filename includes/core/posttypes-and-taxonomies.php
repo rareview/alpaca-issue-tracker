@@ -5,6 +5,8 @@
  * @package Alpaca
  */
 
+use Alpaca\Helpers;
+
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -16,13 +18,13 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @param string $slug       Taxonomy slug.
  * @param array  $customargs Custom arguments to merge with defaults.
  */
-function alpaca_register_taxonomy( $slug, $customargs = array() ) {
-	$defaults = array(
+function alpaca_register_taxonomy( $slug, $customargs = [] ) {
+	$defaults = [
 		'public'             => true,
 		'publicly_queryable' => false,
 		'label'              => $slug,
 		'hierarchical'       => false,
-	);
+	];
 	$args     = array_merge( $defaults, $customargs );
 	register_taxonomy( $slug, 'alpaca_issue', $args );
 }
@@ -35,84 +37,84 @@ function alpaca_register_cpts_and_taxonomies() {
 	register_term_meta(
 		'alpaca_status',
 		'term_score',
-		array(
+		[
 			'type'         => 'number',
 			'description'  => 'A score for ordering statuses on the board.',
 			'single'       => true,
 			'show_in_rest' => true,
 			'default'      => 0,
-		)
+		]
 	);
 	register_term_meta(
 		'alpaca_label',
 		'alpaca_label_color',
-		array(
+		[
 			'type'              => 'string',
 			'description'       => 'Display color for issue labels.',
 			'single'            => true,
 			'show_in_rest'      => true,
-			'default'           => '#172b4d',
+			'default'           => Helpers::DEFAULT_LABEL_COLOR,
 			'sanitize_callback' => 'sanitize_hex_color',
-		)
+		]
 	);
 
 	register_post_type(
 		'alpaca_issue',
-		array(
+		[
 			'public'        => false,
 			'show_in_rest'  => true,
 			'show_ui'       => false,
 			'label'         => esc_html__( 'Issues', 'alpaca' ),
-			'labels'        => array(
+			'labels'        => [
 				'name'          => esc_html__( 'Issue', 'alpaca' ),
 				'singular_name' => esc_html__( 'Issue', 'alpaca' ),
 				'all_items'     => esc_html__( 'All Issues', 'alpaca' ),
 				'edit_item'     => esc_html__( 'Edit Issue', 'alpaca' ),
 				'view_item'     => esc_html__( 'View Issue', 'alpaca' ),
 				'view_items'    => esc_html__( 'View Issues', 'alpaca' ),
-			),
+			],
 			'menu_icon'     => 'dashicons-warning',
 			'menu_position' => 102,
-			'supports'      => array( 'editor', 'custom-fields', 'author', 'comments' ),
+			'supports'      => [ 'editor', 'custom-fields', 'author', 'comments' ],
 			'map_meta_cap'  => true,
-		)
+		]
 	);
 
-	alpaca_register_taxonomy( 'alpaca_browser', array( 'label' => esc_html__( 'Browser', 'alpaca' ) ) );
-	alpaca_register_taxonomy( 'alpaca_phptemplate', array( 'label' => esc_html__( 'PHP Template', 'alpaca' ) ) );
-	alpaca_register_taxonomy( 'alpaca_type', array( 'label' => esc_html__( 'Type', 'alpaca' ) ) );
+	alpaca_register_taxonomy( 'alpaca_browser', [ 'label' => esc_html__( 'Browser', 'alpaca' ) ] );
+	alpaca_register_taxonomy( 'alpaca_phptemplate', [ 'label' => esc_html__( 'PHP Template', 'alpaca' ) ] );
+	alpaca_register_taxonomy( 'alpaca_type', [ 'label' => esc_html__( 'Type', 'alpaca' ) ] );
 	alpaca_register_taxonomy(
 		'alpaca_assignee',
-		array(
+		[
 			'public' => true,
 			'label'  => esc_html__( 'Assignee', 'alpaca' ),
-		)
+		]
 	);
 	alpaca_register_taxonomy(
 		'alpaca_status',
-		array(
+		[
 			'show_in_rest' => true,
 			'label'        => esc_html__( 'Status', 'alpaca' ),
-		)
+		]
 	);
 	alpaca_register_taxonomy(
 		'alpaca_label',
-		array(
+		[
 			'public'       => true,
 			'show_ui'      => false,
 			'show_in_rest' => true,
 			'label'        => esc_html__( 'Labels', 'alpaca' ),
-		)
+		]
 	);
 	alpaca_register_taxonomy(
 		'alpaca_watching',
-		array(
+		[
 			'public'             => false,
 			'publicly_queryable' => false,
 			'show_ui'            => false,
 			'show_in_rest'       => false,
 			'label'              => esc_html__( 'Watching', 'alpaca' ),
-		)
+		]
 	);
 
 	add_filter( 'rest_pre_insert_comment', 'alpaca_rest_pre_insert_comment', 10, 2 );
@@ -127,8 +129,8 @@ function alpaca_register_cpts_and_taxonomies() {
 			if ( 'edit_post' === $cap && ! empty( $args[0] ) ) {
 				$post = get_post( $args[0] );
 
-				if ( $post && 'alpaca_issue' === $post->post_type && \Alpaca\Inc\Helpers::user_can( 'create_issue' ) ) {
-					return array( 'exist' );
+				if ( $post && 'alpaca_issue' === $post->post_type && Helpers::user_can( 'create_issue' ) ) {
+					return [ 'exist' ];
 				}
 			}
 
@@ -136,8 +138,8 @@ function alpaca_register_cpts_and_taxonomies() {
 			if ( 'delete_post' === $cap && ! empty( $args[0] ) ) {
 				$post = get_post( $args[0] );
 
-				if ( $post && 'alpaca_issue' === $post->post_type && \Alpaca\Inc\Helpers::user_can( 'create_issue' ) ) {
-					return array( 'exist' );
+				if ( $post && 'alpaca_issue' === $post->post_type && Helpers::user_can( 'create_issue' ) ) {
+					return [ 'exist' ];
 				}
 			}
 
@@ -207,7 +209,7 @@ add_action( 'init', 'alpaca_register_cpts_and_taxonomies' );
 add_filter(
 	'alpaca_board_statuses',
 	function ( $statuses ) {
-		$desired_statuses = array();
+		$desired_statuses = [];
 		foreach ( $statuses as $status ) {
 			// Filter out statuses outside the visible range.
 			if ( $status->term_score > alpaca_get_max_term_score() ) {
@@ -244,10 +246,10 @@ function alpaca_update_user_terms_on_profile_update( $user_id, $old_user_data ) 
 
 	$new_slug = sanitize_user( (string) $user->user_nicename );
 	$slugs    = array_filter(
-		array(
+		[
 			$new_slug,
 			$old_slug,
-		)
+		]
 	);
 	$slugs    = array_values( array_unique( $slugs ) );
 
@@ -261,10 +263,10 @@ function alpaca_update_user_terms_on_profile_update( $user_id, $old_user_data ) 
 		return;
 	}
 
-	$taxonomies = array(
+	$taxonomies = [
 		'alpaca_assignee',
 		'alpaca_watching',
-	);
+	];
 	foreach ( $taxonomies as $taxonomy ) {
 		if ( ! taxonomy_exists( $taxonomy ) ) {
 			continue;
@@ -279,10 +281,11 @@ function alpaca_update_user_terms_on_profile_update( $user_id, $old_user_data ) 
 			wp_update_term(
 				$term->term_id,
 				$taxonomy,
-				array(
-					'name' => $user->display_name,
-					'slug' => $new_slug,
-				)
+				[
+					'name'        => $user->display_name,
+					'slug'        => $new_slug,
+					'description' => '',
+				]
 			);
 
 			break;
@@ -299,20 +302,20 @@ add_action( 'profile_update', 'alpaca_update_user_terms_on_profile_update', 10, 
  */
 function alpaca_get_statuses( $order = 'ASC' ) {
 	$terms = get_terms(
-		array(
+		[
 			'taxonomy'   => 'alpaca_status',
 			'hide_empty' => false,
 			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 			'meta_key'   => 'term_score',
 			'orderby'    => 'meta_value_num',
 			'order'      => $order,
-		)
+		]
 	);
 	if ( empty( $terms )
 		|| ! is_array( $terms )
 		|| is_wp_error( $terms )
 	) {
-		return array();
+		return [];
 	}
 	foreach ( $terms as $term ) {
 		$score            = get_term_meta( $term->term_id, 'term_score', true );

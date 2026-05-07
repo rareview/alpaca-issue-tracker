@@ -1,4 +1,5 @@
 import PropTypes from 'prop-types';
+import { normalizeLabelColor } from '../../utils/labelColor';
 
 const { __ } = wp.i18n;
 const { memo, useCallback, useEffect, useMemo, useRef } = wp.element;
@@ -112,7 +113,7 @@ const LabelsSelector = memo(
             <span
               className="alpaca-item-label alpaca-label-pill"
               style={{
-                backgroundColor: (label && label.color) || '#172b4d',
+                backgroundColor: normalizeLabelColor(label && label.color),
                 color: '#fff',
               }}
             >
@@ -149,7 +150,7 @@ const LabelsSelector = memo(
 
         const tokenName = normalizeToken(textElement.textContent);
         const label = labelsByName.get(tokenName);
-        const color = (label && label.color) || '#172b4d';
+        const color = normalizeLabelColor(label && label.color);
 
         tokenElement.style.setProperty('--alpaca-label-token-color', color);
       });

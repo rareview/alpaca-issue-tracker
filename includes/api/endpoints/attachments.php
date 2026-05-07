@@ -5,6 +5,8 @@
  * @package Alpaca
  */
 
+use Alpaca\Helpers;
+
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -17,145 +19,145 @@ function alpaca_register_comment_meta_fields() {
 	register_meta(
 		'comment',
 		'alpacaCommentTags',
-		array(
+		[
 			'type'          => 'array',
 			'description'   => 'Comment tags for Alpaca issues.',
 			'single'        => true,
-			'show_in_rest'  => array(
-				'schema' => array(
+			'show_in_rest'  => [
+				'schema' => [
 					'type'  => 'array',
-					'items' => array(
+					'items' => [
 						'type' => 'string',
-					),
-				),
-			),
+					],
+				],
+			],
 			'auth_callback' => function () {
-				return \Alpaca\Inc\Helpers::user_can( 'register_comment_meta' );
+				return Helpers::user_can( 'register_comment_meta' );
 			},
-		)
+		]
 	);
 
 	register_meta(
 		'comment',
 		'alpacaCommentAttachments',
-		array(
+		[
 			'type'          => 'array',
 			'description'   => 'Attachment URLs for Alpaca issue comments.',
 			'single'        => true,
-			'show_in_rest'  => array(
-				'schema' => array(
+			'show_in_rest'  => [
+				'schema' => [
 					'type'  => 'array',
-					'items' => array(
+					'items' => [
 						'type' => 'string',
-					),
-				),
-			),
+					],
+				],
+			],
 			'auth_callback' => function () {
-				return \Alpaca\Inc\Helpers::user_can( 'register_comment_meta' );
+				return Helpers::user_can( 'register_comment_meta' );
 			},
-		)
+		]
 	);
 
 	register_meta(
 		'comment',
 		'alpacaMentionedUsers',
-		array(
+		[
 			'type'          => 'array',
 			'description'   => 'Mentioned users for Alpaca issue comments.',
 			'single'        => true,
-			'show_in_rest'  => array(
-				'schema' => array(
+			'show_in_rest'  => [
+				'schema' => [
 					'type'  => 'array',
-					'items' => array(
+					'items' => [
 						'type'       => 'object',
-						'properties' => array(
-							'id'           => array(
+						'properties' => [
+							'id'           => [
 								'type' => 'integer',
-							),
-							'slug'         => array(
+							],
+							'slug'         => [
 								'type' => 'string',
-							),
-							'display_name' => array(
+							],
+							'display_name' => [
 								'type' => 'string',
-							),
-							'avatar'       => array(
+							],
+							'avatar'       => [
 								'type' => 'string',
-							),
-						),
-					),
-				),
-			),
+							],
+						],
+					],
+				],
+			],
 			'auth_callback' => function () {
-				return \Alpaca\Inc\Helpers::user_can( 'register_comment_meta' );
+				return Helpers::user_can( 'register_comment_meta' );
 			},
-		)
+		]
 	);
 
 	register_meta(
 		'comment',
 		'alpacaCommentLastEdit',
-		array(
+		[
 			'type'          => 'object',
 			'description'   => 'Latest edit metadata for Alpaca issue comments.',
 			'single'        => true,
-			'show_in_rest'  => array(
-				'schema' => array(
+			'show_in_rest'  => [
+				'schema' => [
 					'type'       => 'object',
-					'properties' => array(
-						'date'     => array(
+					'properties' => [
+						'date'     => [
 							'type'   => 'string',
 							'format' => 'date-time',
-						),
-						'userId'   => array(
+						],
+						'userId'   => [
 							'type' => 'integer',
-						),
-						'userName' => array(
+						],
+						'userName' => [
 							'type' => 'string',
-						),
-					),
-				),
-			),
+						],
+					],
+				],
+			],
 			'auth_callback' => function () {
-				return \Alpaca\Inc\Helpers::user_can( 'register_comment_meta' );
+				return Helpers::user_can( 'register_comment_meta' );
 			},
-		)
+		]
 	);
 
 	register_meta(
 		'comment',
 		'alpacaNotificationContext',
-		array(
+		[
 			'type'              => 'object',
 			'description'       => 'Structured notification context for Alpaca issue comments.',
 			'single'            => true,
-			'show_in_rest'      => array(
-				'schema' => array(
+			'show_in_rest'      => [
+				'schema' => [
 					'type'                 => 'object',
 					'additionalProperties' => true,
-					'properties'           => array(
-						'action'            => array(
+					'properties'           => [
+						'action'            => [
 							'type' => 'string',
-						),
-						'affected_user_ids' => array(
+						],
+						'affected_user_ids' => [
 							'type'  => 'array',
-							'items' => array(
+							'items' => [
 								'type' => 'integer',
-							),
-						),
-						'subissue_id'       => array(
+							],
+						],
+						'subissue_id'       => [
 							'type' => 'integer',
-						),
-						'subissue_title'    => array(
+						],
+						'subissue_title'    => [
 							'type' => 'string',
-						),
-					),
-				),
-			),
+						],
+					],
+				],
+			],
 			'sanitize_callback' => 'alpaca_sanitize_notification_context_meta',
 			'auth_callback'     => function () {
-				return \Alpaca\Inc\Helpers::user_can( 'register_comment_meta' );
+				return Helpers::user_can( 'register_comment_meta' );
 			},
-		)
+		]
 	);
 }
 add_action( 'rest_api_init', 'alpaca_register_comment_meta_fields' );
@@ -171,10 +173,10 @@ add_action( 'rest_api_init', 'alpaca_register_comment_meta_fields' );
 function alpaca_comment_attachment_error_response( $action_type, $message, $status ) {
 	return alpaca_rest_response(
 		$action_type,
-		array(
+		[
 			'success' => false,
 			'message' => esc_html( $message ),
-		),
+		],
 		$status
 	);
 }
@@ -190,20 +192,20 @@ function alpaca_get_issue_for_attachment( $issue_id, $action_type ) {
 	$issue = alpaca_assert_issue_exists( $issue_id );
 
 	if ( ! $issue ) {
-		return array(
+		return [
 			'issue'    => null,
 			'response' => alpaca_comment_attachment_error_response(
 				$action_type,
 				__( 'Invalid issue.', 'alpaca' ),
 				404
 			),
-		);
+		];
 	}
 
-	return array(
+	return [
 		'issue'    => $issue,
 		'response' => null,
-	);
+	];
 }
 
 /**
@@ -228,10 +230,10 @@ function alpaca_get_issue_attachment_subdir( $issue, $issue_id ) {
 function alpaca_get_attachment_base_paths() {
 	$upload_dir = wp_upload_dir();
 
-	return array(
+	return [
 		'base_url' => trailingslashit( $upload_dir['baseurl'] ),
 		'base_dir' => trailingslashit( $upload_dir['basedir'] ),
-	);
+	];
 }
 
 /**
@@ -252,49 +254,49 @@ function alpaca_register_comment_attachment_endpoint() {
 	register_rest_route(
 		'alpaca/v1',
 		'/comment-attachments',
-		array(
+		[
 			'methods'             => WP_REST_Server::CREATABLE,
 			'callback'            => 'alpaca_upload_comment_attachment',
 			'permission_callback' => function ( WP_REST_Request $request ) {
-				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'register_comment_meta' );
+				return Helpers::validate_rest_nonce_permission( $request, 'register_comment_meta' );
 			},
-			'args'                => array(
-				'issue_id' => array(
+			'args'                => [
+				'issue_id' => [
 					'type'              => 'integer',
 					'required'          => true,
 					'sanitize_callback' => 'absint',
-				),
-			),
-		)
+				],
+			],
+		]
 	);
 
 	register_rest_route(
 		'alpaca/v1',
 		'/comment-attachments/delete',
-		array(
+		[
 			'methods'             => WP_REST_Server::CREATABLE,
 			'callback'            => 'alpaca_delete_comment_attachment',
 			'permission_callback' => function ( WP_REST_Request $request ) {
-				return \Alpaca\Inc\Helpers::validate_rest_nonce_permission( $request, 'register_comment_meta' );
+				return Helpers::validate_rest_nonce_permission( $request, 'register_comment_meta' );
 			},
-			'args'                => array(
-				'issue_id'   => array(
+			'args'                => [
+				'issue_id'   => [
 					'type'              => 'integer',
 					'required'          => true,
 					'sanitize_callback' => 'absint',
-				),
-				'comment_id' => array(
+				],
+				'comment_id' => [
 					'type'              => 'integer',
 					'required'          => false,
 					'sanitize_callback' => 'absint',
-				),
-				'url'        => array(
+				],
+				'url'        => [
 					'type'              => 'string',
 					'required'          => true,
 					'sanitize_callback' => 'esc_url_raw',
-				),
-			),
-		)
+				],
+			],
+		]
 	);
 }
 add_action( 'rest_api_init', 'alpaca_register_comment_attachment_endpoint' );
@@ -362,10 +364,10 @@ function alpaca_upload_comment_attachment( WP_REST_Request $request ) {
 
 	$uploaded = wp_handle_sideload(
 		$file,
-		array(
+		[
 			'test_form' => false,
 			'mimes'     => $allowed_mimes,
-		)
+		]
 	);
 
 	remove_filter( 'upload_dir', $upload_dir_filter );
@@ -384,12 +386,12 @@ function alpaca_upload_comment_attachment( WP_REST_Request $request ) {
 
 	return alpaca_rest_response(
 		'comment_attachment_upload',
-		array(
+		[
 			'success' => true,
 			'url'     => esc_url_raw( $uploaded['url'] ),
 			'name'    => sanitize_file_name( wp_basename( $uploaded['file'] ) ),
 			'mime'    => sanitize_text_field( $uploaded['type'] ),
-		),
+		],
 		200
 	);
 }
@@ -403,11 +405,11 @@ function alpaca_upload_comment_attachment( WP_REST_Request $request ) {
  */
 function alpaca_get_comment_for_attachment_url( $issue_id, $url ) {
 	$comments = get_comments(
-		array(
+		[
 			'post_id' => (int) $issue_id,
 			'type'    => 'issuecomment',
 			'status'  => 'all',
-		)
+		]
 	);
 
 	foreach ( $comments as $comment ) {
@@ -584,10 +586,10 @@ function alpaca_delete_comment_attachment( WP_REST_Request $request ) {
 
 	return alpaca_rest_response(
 		'comment_attachment_delete',
-		array(
+		[
 			'success' => true,
 			'message' => esc_html__( 'Attachment deleted.', 'alpaca' ),
-		),
+		],
 		200
 	);
 }

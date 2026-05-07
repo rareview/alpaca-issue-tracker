@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-$alpaca_rest_api_modules = array(
+$alpaca_rest_api_modules = [
 	'utilities/rest-root.php',
 	'utilities/helpers.php',
 	'endpoints/report-context.php',
@@ -24,7 +24,7 @@ $alpaca_rest_api_modules = array(
 	'filters/comment-filters.php',
 	'endpoints/presence.php',
 	'filters/comment-response.php',
-);
+];
 
 foreach ( $alpaca_rest_api_modules as $alpaca_rest_api_module ) {
 	require_once __DIR__ . '/' . $alpaca_rest_api_module;
