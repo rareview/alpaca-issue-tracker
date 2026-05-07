@@ -83,7 +83,6 @@ class Helpers {
 			case 'create_issue':
 			case 'update_issue':
 			case 'update_board':
-			case 'update_status':
 			case 'watchlist_toggle':
 			case 'register_comment_meta':
 				// Contributors should be able to perform these by default.
@@ -103,6 +102,7 @@ class Helpers {
 			case 'options_update':
 			case 'notification_template_manage':
 			case 'restore_statuses':
+			case 'update_status':
 				$allowed = current_user_can( 'manage_options' );
 				break;
 			default:

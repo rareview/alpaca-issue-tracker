@@ -115,7 +115,7 @@ function alpaca_update_status_endpoint() {
  */
 function alpaca_update_status_callback( WP_REST_Request $request ) {
 	$term_id = (int) $request['id'];
-	$data    = $request->get_json_params();
+	$data    = (array) $request->get_json_params();
 
 	$term = get_term( $term_id, 'alpaca_status' );
 	if ( ! $term || is_wp_error( $term ) ) {
@@ -130,7 +130,18 @@ function alpaca_update_status_callback( WP_REST_Request $request ) {
 	}
 
 	if ( isset( $data['name'] ) ) {
-		$new_name = sanitize_text_field( (string) $data['name'] );
+		$new_name = trim( sanitize_text_field( (string) $data['name'] ) );
+		if ( '' === $new_name ) {
+			return alpaca_rest_response(
+				'',
+				[
+					'success' => false,
+					'message' => esc_html__( 'Status name cannot be empty.', 'alpaca' ),
+				],
+				400
+			);
+		}
+
 		$new_slug = sanitize_title( $new_name );
 
 		$update_result = wp_update_term(
@@ -154,8 +165,34 @@ function alpaca_update_status_callback( WP_REST_Request $request ) {
 		}
 	}
 
-	if ( array_key_exists( 'term_score', (array) $data ) ) {
-		update_term_meta( $term_id, 'term_score', (int) $data['term_score'] );
+	if ( array_key_exists( 'term_score', $data ) ) {
+		if ( ! is_numeric( $data['term_score'] ) ) {
+			return alpaca_rest_response(
+				'',
+				[
+					'success' => false,
+					'message' => esc_html__( 'Status order must be a number.', 'alpaca' ),
+				],
+				400
+			);
+		}
+
+		$term_score     = (int) $data['term_score'];
+		$min_term_score = alpaca_get_min_term_score();
+		$max_term_score = alpaca_get_max_term_score();
+
+		if ( $term_score < $min_term_score || $term_score > $max_term_score ) {
+			return alpaca_rest_response(
+				'',
+				[
+					'success' => false,
+					'message' => esc_html__( 'Status order is outside the allowed range.', 'alpaca' ),
+				],
+				400
+			);
+		}
+
+		update_term_meta( $term_id, 'term_score', $term_score );
 	}
 
 	return alpaca_rest_response(
