@@ -57,8 +57,8 @@
       "error",
       {
         "allow": [
+          "^alpaca_",
           "unstable_batchedUpdates",
-          "alpaca_data",
           "alpacaDataDump",
           "hide_from_snapdom",
           "comment_count",
@@ -67,14 +67,12 @@
           "author_img",
           "term_id",
           "term_score",
-          "alpaca_enable_test_logs",
           "comment_type",
           "author_user_agent",
           "post_data",
           "post_content",
           "post_title",
-          "issue_id",
-          "alpaca_screenshot"
+          "issue_id"
         ]
       }
     ]

@@ -814,11 +814,20 @@ const AlpacaIssue = ({
 
   // Update assignees API call
   const updateAssignees = useCallback(
-    async (updatedIssueId, slugs, newAssignees, added, removed) => {
+    async (
+      updatedIssueId,
+      slugs,
+      newAssignees,
+      added,
+      removed,
+      hookIssue = null,
+    ) => {
+      const issueForHooks = hookIssue || issueDetails || { id: updatedIssueId };
+
       setLoading('assignees', true);
       try {
         await updateIssue(updatedIssueId, {
-          taxonomies: { 'alpaca_assignee': slugs },
+          taxonomies: { alpaca_assignee: slugs },
         });
 
         if (typeof onAssigneesChange === 'function') {
@@ -831,13 +840,18 @@ const AlpacaIssue = ({
 
         added.forEach((name) => {
           const user = findUserByNameOrSlug(allUserObjects, name);
-          wp.hooks.doAction('alpaca.assigneeChanged', issueDetails, user, true);
+          wp.hooks.doAction(
+            'alpaca.assigneeChanged',
+            issueForHooks,
+            user,
+            true,
+          );
         });
         removed.forEach((name) => {
           const user = findUserByNameOrSlug(allUserObjects, name);
           wp.hooks.doAction(
             'alpaca.assigneeChanged',
-            issueDetails,
+            issueForHooks,
             user,
             false,
           );
@@ -928,7 +942,7 @@ const AlpacaIssue = ({
       setLoading('labels', true);
       try {
         await updateIssue(issueId, {
-          taxonomies: { 'alpaca_label': normalizedIds },
+          taxonomies: { alpaca_label: normalizedIds },
         });
         if (typeof onLabelsChange === 'function') {
           const selectedLabels = allLabels.filter((label) =>
@@ -1197,7 +1211,7 @@ const AlpacaIssue = ({
           if (selectedLabelIds.length > 0) {
             try {
               await updateIssue(newIssueId, {
-                taxonomies: { 'alpaca_label': selectedLabelIds },
+                taxonomies: { alpaca_label: selectedLabelIds },
               });
               createdIssueLabels = allLabels.filter((label) =>
                 selectedLabelIds.includes(Number(label.term_id)),
@@ -1330,27 +1344,58 @@ const AlpacaIssue = ({
           },
         );
 
+        const createdIssueData = {
+          id: newIssueId,
+          slug: response.issue.slug || response.issue.post_name || '',
+          title: createdIssueTitle,
+          postDate: issuePostDate,
+          lastActivity: issueLastActivity,
+          commentCount: issueCommentCount,
+          commentCountByAgent: issueCommentCountByAgent,
+          assignees: assignees || [],
+          labels: createdIssueLabels,
+          deadline: createdIssueDeadline,
+          isHighPriority: createdIssueIsHighPriority,
+        };
+        const createdIssueHook = {
+          ...(response.issue && typeof response.issue === 'object'
+            ? response.issue
+            : {}),
+          id: newIssueId,
+          slug: createdIssueData.slug,
+          title: createdIssueTitle,
+          post_title: createdIssueTitle,
+        };
+
         if (onIssueCreated) {
-          onIssueCreated({
-            id: newIssueId,
-            slug: response.issue.slug || response.issue.post_name || '',
-            title: createdIssueTitle,
-            postDate: issuePostDate,
-            lastActivity: issueLastActivity,
-            commentCount: issueCommentCount,
-            commentCountByAgent: issueCommentCountByAgent,
-            assignees: assignees || [],
-            labels: createdIssueLabels,
-            deadline: createdIssueDeadline,
-            isHighPriority: createdIssueIsHighPriority,
+          onIssueCreated(createdIssueData);
+        }
+
+        if (
+          typeof onLabelsChange === 'function' &&
+          createdIssueLabels.length > 0
+        ) {
+          onLabelsChange(newIssueId, createdIssueLabels);
+        }
+
+        if (createdIssueIsHighPriority) {
+          wp.hooks.doAction('alpaca.priorityUpdated', {
+            issueId: newIssueId,
+            isHighPriority: true,
+            issue: createdIssueHook,
           });
         }
 
         if (assignees && assignees.length > 0) {
           try {
             const slugs = assignees.map((a) => userMap[a] || a);
-            updateAssignees(newIssueId, slugs, assignees, assignees, []).catch(
-              (err) => console.error('Failed to set assignees:', err),
+            await updateAssignees(
+              newIssueId,
+              slugs,
+              assignees,
+              assignees,
+              [],
+              createdIssueHook,
             );
           } catch (err) {
             console.error('Failed to set assignees:', err);
@@ -1387,6 +1432,7 @@ const AlpacaIssue = ({
       setLoading,
       showNotification,
       onIssueCreated,
+      onLabelsChange,
       deadline,
       assignees,
       allLabels,
@@ -1691,7 +1737,7 @@ const AlpacaIssue = ({
       setLoading(`subissue-assignees-${subissueId}`, true);
       try {
         await updateIssue(subissue.id, {
-          taxonomies: { 'alpaca_assignee': slugs },
+          taxonomies: { alpaca_assignee: slugs },
         });
         added.forEach((name) => {
           const user = allUserObjects.find((u) => u.name === name);

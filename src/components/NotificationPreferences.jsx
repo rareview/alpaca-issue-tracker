@@ -40,55 +40,30 @@ const subjectOptions = [
   {
     key: 'created',
     label: __('Issues I created', 'alpaca'),
-    help: __('Receive updates about issues you created.', 'alpaca'),
   },
   {
     key: 'assigned',
     label: __('Issues assigned to me', 'alpaca'),
-    help: __(
-      'Receive updates when you are assigned or when assigned issues change.',
-      'alpaca',
-    ),
   },
   {
     key: 'starred',
     label: __('Issues I starred', 'alpaca'),
-    help: __(
-      'Use the existing star/watch feature to follow issue activity.',
-      'alpaca',
-    ),
   },
   {
     key: 'mentioned',
     label: __('Comments that mention me', 'alpaca'),
-    help: __(
-      'Receive updates when another user mentions you with @username.',
-      'alpaca',
-    ),
   },
   {
     key: 'labeled',
     label: __('Issues with these labels', 'alpaca'),
-    help: __(
-      'Receive updates about activity on issues with selected labels.',
-      'alpaca',
-    ),
   },
   {
     key: 'high_priority',
     label: __('Issues currently marked high priority', 'alpaca'),
-    help: __(
-      'Receive updates about activity on issues that are currently marked High Priority.',
-      'alpaca',
-    ),
   },
   {
     key: 'all_new_tasks',
     label: __('Whenever a new issue is created', 'alpaca'),
-    help: __(
-      'Includes both new top-level issues and new checklist items, even when they are not otherwise related to you.',
-      'alpaca',
-    ),
   },
 ];
 

@@ -17,7 +17,10 @@ const EnableContextCaptureControl = () => {
           __nextHasNoMarginBottom
           label={
             <InlineCheckboxLabel
-              label={__('Enable Context Capture', 'alpaca')}
+              label={__(
+                'Enable reporting of issues with associated context',
+                'alpaca',
+              )}
               isBusy={isFetching || isSaving}
             />
           }

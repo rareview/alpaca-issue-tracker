@@ -70,6 +70,19 @@ const ReportTab = memo(({ issueDetails }) => {
 
   const urlValue = issueDetails.meta.alpaca_url || issueDetails.meta.URL;
   const taxonomyLabels = issueDetails.taxonomy_labels || {};
+  const defaultExcludedTaxonomies = [
+    'alpaca_assignee',
+    'alpaca_watching',
+    'alpaca_status',
+    'alpaca_label',
+  ];
+  const excludedTaxonomies =
+    wp.hooks && wp.hooks.applyFilters
+      ? wp.hooks.applyFilters(
+          'alpaca.reportTab.excludedTaxonomies',
+          defaultExcludedTaxonomies,
+        )
+      : defaultExcludedTaxonomies;
 
   // Apply syntax highlighting to table cells after render
   useEffect(() => {
@@ -120,7 +133,7 @@ const ReportTab = memo(({ issueDetails }) => {
             </td>
           </tr>
           <tr>
-            <th scope="row">{__('Screen', 'alpaca')}</th>
+            <th scope="row">{__('Viewport', 'alpaca')}</th>
             <td>
               {(issueDetails.meta.alpaca_screenwidth ||
                 issueDetails.meta.screenwidth) &&
@@ -137,7 +150,7 @@ const ReportTab = memo(({ issueDetails }) => {
             </td>
           </tr>
           {Object.entries(issueDetails.taxonomies)
-            .filter(([taxonomy]) => taxonomy !== 'assignee')
+            .filter(([taxonomy]) => !excludedTaxonomies.includes(taxonomy))
             .map(([taxonomy, terms]) => (
               <tr key={taxonomy}>
                 <th>
