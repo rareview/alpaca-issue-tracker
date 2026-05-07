@@ -5,7 +5,10 @@
  * @package Alpaca
  */
 
-namespace Alpaca\Inc;
+namespace Alpaca;
+
+use WP_Error;
+use WP_REST_Request;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -18,12 +21,23 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Helpers {
 
 	/**
+	 * Default label color.
+	 *
+	 * @var string
+	 */
+	const DEFAULT_LABEL_COLOR = '#172b4d';
+
+	/**
 	 * Plugin version.
 	 *
 	 * @return string
 	 */
 	public static function version() {
-		return '1.0.0';
+		if ( defined( 'ALPACA_VERSION' ) ) {
+			return ALPACA_VERSION;
+		}
+
+		return '';
 	}
 
 	/**
@@ -33,7 +47,7 @@ class Helpers {
 	 * @return string Full URL.
 	 */
 	public static function asset_url( $file ) {
-		return \plugins_url( $file, \dirname( __DIR__ ) . '/alpaca.php' );
+		return plugins_url( $file, dirname( __DIR__ ) . '/alpaca.php' );
 	}
 
 	/**
@@ -47,9 +61,9 @@ class Helpers {
 	 * @param array  $args   Optional context (e.g. post_id).
 	 * @return bool True when current user is allowed, false otherwise.
 	 */
-	public static function user_can( $action, $args = array() ) {
+	public static function user_can( $action, $args = [] ) {
 		$action = is_string( $action ) ? $action : '';
-		$args   = is_array( $args ) ? $args : array();
+		$args   = is_array( $args ) ? $args : [];
 
 		// Default decision for common actions.
 		switch ( $action ) {
@@ -64,36 +78,36 @@ class Helpers {
 			case 'notification_inbox':
 				// Allow any logged-in user with basic read/edit capability (Contributor+).
 
-				$allowed = \current_user_can( 'edit_posts' );
+				$allowed = current_user_can( 'edit_posts' );
 				break;
 			case 'create_issue':
 			case 'update_issue':
 			case 'update_board':
-			case 'update_status':
 			case 'watchlist_toggle':
 			case 'register_comment_meta':
 				// Contributors should be able to perform these by default.
-				$allowed = \current_user_can( 'edit_posts' );
+				$allowed = current_user_can( 'edit_posts' );
 				break;
 
 			case 'delete_post':
 				$post_id = isset( $args['post_id'] ) ? (int) $args['post_id'] : 0;
-				$allowed = $post_id > 0 ? \current_user_can( 'delete_post', $post_id ) : false;
+				$allowed = $post_id > 0 ? current_user_can( 'delete_post', $post_id ) : false;
 				break;
 			case 'delete_issue':
 				// Restrict issue deletion by default while keeping it filterable for custom roles.
-				$allowed = \current_user_can( 'manage_options' );
+				$allowed = current_user_can( 'manage_options' );
 				break;
 
 			case 'manage_options':
 			case 'options_update':
 			case 'notification_template_manage':
 			case 'restore_statuses':
-				$allowed = \current_user_can( 'manage_options' );
+			case 'update_status':
+				$allowed = current_user_can( 'manage_options' );
 				break;
 			default:
 				// Conservative default: require edit_posts.
-				$allowed = \current_user_can( 'edit_posts' );
+				$allowed = current_user_can( 'edit_posts' );
 				break;
 		}
 
@@ -110,20 +124,20 @@ class Helpers {
 	/**
 	 * Validate a REST request against an optional Alpaca capability and WP REST nonce.
 	 *
-	 * @param \WP_REST_Request $request           REST request object.
-	 * @param string           $capability_action Optional. Action name passed to user_can().
-	 * @param array            $capability_args   Optional. Context passed to user_can().
-	 * @return true|\WP_Error True when valid, WP_Error otherwise.
+	 * @param WP_REST_Request $request           REST request object.
+	 * @param string          $capability_action Optional. Action name passed to user_can().
+	 * @param array           $capability_args   Optional. Context passed to user_can().
+	 * @return true|WP_Error True when valid, WP_Error otherwise.
 	 */
-	public static function validate_rest_nonce_permission( \WP_REST_Request $request, $capability_action = '', $capability_args = array() ) {
+	public static function validate_rest_nonce_permission( WP_REST_Request $request, $capability_action = '', $capability_args = [] ) {
 		$capability_action = is_string( $capability_action ) ? trim( $capability_action ) : '';
-		$capability_args   = is_array( $capability_args ) ? $capability_args : array();
+		$capability_args   = is_array( $capability_args ) ? $capability_args : [];
 
 		if ( '' !== $capability_action && ! self::user_can( $capability_action, $capability_args ) ) {
-			return new \WP_Error(
+			return new WP_Error(
 				'rest_forbidden',
 				esc_html__( 'You are not allowed to access this endpoint.', 'alpaca' ),
-				array( 'status' => 403 )
+				[ 'status' => 403 ]
 			);
 		}
 
@@ -133,10 +147,10 @@ class Helpers {
 		}
 
 		if ( '' === $nonce || ! wp_verify_nonce( $nonce, 'wp_rest' ) ) {
-			return new \WP_Error(
+			return new WP_Error(
 				'rest_forbidden',
 				esc_html__( 'Invalid nonce.', 'alpaca' ),
-				array( 'status' => 401 )
+				[ 'status' => 401 ]
 			);
 		}
 

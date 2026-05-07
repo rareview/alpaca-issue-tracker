@@ -22,17 +22,17 @@ add_filter(
 			$author_id = (int) $comment->user_id;
 			if ( $author_id > 0 ) {
 				// Include standard fields that our User component expects.
-				$response->data['author_details'] = array(
+				$response->data['author_details'] = [
 					'id'           => $author_id,
 					'name'         => get_the_author_meta( 'display_name', $author_id ),
 					'display_name' => get_the_author_meta( 'display_name', $author_id ),
 					'avatar'       => alpaca_avatar( $author_id, 48 ),
-					'avatar_urls'  => array(
+					'avatar_urls'  => [
 						'24' => alpaca_avatar( $author_id, 24 ),
 						'48' => alpaca_avatar( $author_id, 48 ),
 						'96' => alpaca_avatar( $author_id, 96 ),
-					),
-				);
+					],
+				];
 			}
 		}
 		return $response;

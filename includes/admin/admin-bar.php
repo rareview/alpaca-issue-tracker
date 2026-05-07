@@ -33,12 +33,12 @@ function alpaca_should_skip_admin_report_screen( $hook_suffix = '' ) {
 	$post_type   = isset( $current_screen->post_type ) ? $current_screen->post_type : '';
 	$screen_base = isset( $current_screen->base ) ? $current_screen->base : '';
 
-	if ( ! in_array( $post_type, array( 'page', 'post' ), true ) ) {
+	if ( ! in_array( $post_type, [ 'page', 'post' ], true ) ) {
 		return false;
 	}
 
 	return 'post' === $screen_base
-		|| in_array( $hook_suffix, array( 'post-new.php', 'post.php' ), true );
+		|| in_array( $hook_suffix, [ 'post-new.php', 'post.php' ], true );
 }
 
 /**
@@ -72,11 +72,11 @@ function alpaca_add_admin_bar_menu( $admin_bar ) {
 	$icon_svg = alpaca_get_icon( 'exclamation-circle-fill' );
 
 	$admin_bar->add_menu(
-		array(
+		[
 			'parent' => 'top-secondary',
 			'title'  => $icon_svg . esc_html__( 'Report An Issue', 'alpaca' ),
 			'id'     => 'alpaca-report',
 			'href'   => '#',
-		)
+		]
 	);
 }

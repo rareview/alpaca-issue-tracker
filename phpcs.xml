@@ -21,6 +21,8 @@
     <exclude name="WordPress.WP.AlternativeFunctions"/>
     <!-- Allow commented out code in uninstall.php -->
     <exclude name="Squiz.PHP.CommentedOutCode"/>
+    <!-- Project targets PHP 7.4+, so use modern short array syntax. -->
+    <exclude name="Universal.Arrays.DisallowShortArraySyntax"/>
   </rule>
 
   <!-- Custom naming prefix requirement -->

@@ -184,11 +184,11 @@ function alpaca_delete_notification_daily_digest_schedule( $user_id ) {
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Schedule rows are small, user-specific, and updated on preference save.
 	$wpdb->delete(
 		$table_name,
-		array(
+		[
 			'user_id'    => $user_id,
 			'digest_key' => $digest_key,
-		),
-		array( '%d', '%s' )
+		],
+		[ '%d', '%s' ]
 	);
 }
 
@@ -240,10 +240,10 @@ function alpaca_sync_notification_daily_digest_schedule( $user_id, $preferences 
  */
 function alpaca_register_notification_digest_cron_schedule( $schedules ) {
 	if ( ! isset( $schedules['alpaca_every_fifteen_minutes'] ) ) {
-		$schedules['alpaca_every_fifteen_minutes'] = array(
+		$schedules['alpaca_every_fifteen_minutes'] = [
 			'interval' => 15 * MINUTE_IN_SECONDS,
 			'display'  => esc_html__( 'Every fifteen minutes', 'alpaca' ),
-		);
+		];
 	}
 
 	return $schedules;
@@ -315,7 +315,7 @@ function alpaca_get_due_notification_digest_schedules( $now_gmt = null ) {
 		ARRAY_A
 	);
 
-	return is_array( $rows ) ? $rows : array();
+	return is_array( $rows ) ? $rows : [];
 }
 
 /**
@@ -369,19 +369,19 @@ function alpaca_mark_notification_digest_delivery_sent( $user_id, $digest_key, $
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Delivery log rows are updated once after the send succeeds.
 	$wpdb->update(
 		$table_name,
-		array(
+		[
 			'status'      => 'sent',
 			'sent_at_gmt' => current_time( 'mysql', true ),
-		),
-		array(
+		],
+		[
 			'user_id'          => absint( $user_id ),
 			'digest_key'       => sanitize_key( $digest_key ),
 			'channel'          => sanitize_key( $channel ),
 			'window_start_gmt' => $window_start_gmt,
 			'window_end_gmt'   => $window_end_gmt,
-		),
-		array( '%s', '%s' ),
-		array( '%d', '%s', '%s', '%s', '%s' )
+		],
+		[ '%s', '%s' ],
+		[ '%d', '%s', '%s', '%s', '%s' ]
 	);
 }
 
@@ -403,13 +403,13 @@ function alpaca_release_notification_digest_delivery( $user_id, $digest_key, $ch
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Failed delivery reservations are removed so the next cron tick can retry.
 	$wpdb->delete(
 		$table_name,
-		array(
+		[
 			'user_id'          => absint( $user_id ),
 			'digest_key'       => sanitize_key( $digest_key ),
 			'channel'          => sanitize_key( $channel ),
 			'window_start_gmt' => $window_start_gmt,
 			'window_end_gmt'   => $window_end_gmt,
-		),
-		array( '%d', '%s', '%s', '%s', '%s' )
+		],
+		[ '%d', '%s', '%s', '%s', '%s' ]
 	);
 }

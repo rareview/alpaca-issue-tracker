@@ -10,8 +10,8 @@ import {
   SettingsListNameCell,
   SettingsListActionsCell,
 } from './settings/SettingsList';
+import { getDefaultLabelColor, normalizeLabelColor } from '../utils/labelColor';
 
-const DEFAULT_LABEL_COLOR = '#172b4d';
 const INITIAL_LABEL_SLOT_COUNT = 6;
 const DEFAULT_LABEL_COLOR_OPTIONS = [
   '#7B0F0F',
@@ -23,20 +23,6 @@ const DEFAULT_LABEL_COLOR_OPTIONS = [
   '#283593',
   '#6A1B9A',
 ];
-
-/**
- * Normalize a possible label color to a supported fallback.
- *
- * @param {string} color Candidate color value.
- * @return {string} Normalized color.
- */
-const normalizeLabelColor = (color) => {
-  if (typeof color !== 'string' || color.trim() === '') {
-    return DEFAULT_LABEL_COLOR;
-  }
-
-  return color;
-};
 
 /**
  * Create an empty label row.
@@ -51,7 +37,7 @@ const createEmptyLabelRow = (key = '') => {
   return {
     term_id: null,
     name: '',
-    color: DEFAULT_LABEL_COLOR,
+    color: getDefaultLabelColor(),
     key: normalizedKey,
   };
 };
@@ -448,9 +434,7 @@ const LabelsManager = () => {
                 value={currentColor}
                 disableCustomColors={true}
                 onChange={(value) =>
-                  onColorChange(
-                    normalizeLabelColor(value || DEFAULT_LABEL_COLOR),
-                  )
+                  onColorChange(normalizeLabelColor(value))
                 }
               />
             ) : (

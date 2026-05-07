@@ -19,15 +19,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 function alpaca_extract_mention_slugs_from_content( $content ) {
 	$content = is_string( $content ) ? $content : '';
 	if ( '' === $content ) {
-		return array();
+		return [];
 	}
 
 	preg_match_all( '/(^|[\s>\(\[\{])@([a-zA-Z0-9._-]+)/', $content, $matches );
 	if ( empty( $matches[2] ) || ! is_array( $matches[2] ) ) {
-		return array();
+		return [];
 	}
 
-	$slugs = array();
+	$slugs = [];
 	foreach ( $matches[2] as $slug ) {
 		$slug = sanitize_user( (string) $slug, true );
 		if ( '' !== $slug ) {
@@ -47,34 +47,34 @@ function alpaca_extract_mention_slugs_from_content( $content ) {
 function alpaca_resolve_mention_users( $slugs ) {
 	$slugs = array_values( array_unique( array_filter( array_map( 'sanitize_user', (array) $slugs ) ) ) );
 	if ( empty( $slugs ) ) {
-		return array();
+		return [];
 	}
 
 	$users = get_users(
-		array(
+		[
 			'slug__in' => $slugs,
-			'fields'   => array( 'ID', 'display_name', 'user_nicename', 'user_email' ),
-		)
+			'fields'   => [ 'ID', 'display_name', 'user_nicename', 'user_email' ],
+		]
 	);
 	if ( empty( $users ) ) {
-		return array();
+		return [];
 	}
 
-	$mentions = array();
+	$mentions = [];
 	foreach ( $users as $user ) {
 		$avatar_url = get_avatar_url(
 			$user->ID,
-			array(
+			[
 				'size' => 48,
-			)
+			]
 		);
 
-		$mentions[] = array(
+		$mentions[] = [
 			'id'           => (int) $user->ID,
 			'slug'         => (string) $user->user_nicename,
 			'display_name' => (string) $user->display_name,
 			'avatar'       => is_string( $avatar_url ) ? $avatar_url : '',
-		);
+		];
 	}
 
 	return $mentions;
@@ -89,7 +89,7 @@ function alpaca_resolve_mention_users( $slugs ) {
 function alpaca_sync_comment_mentions( $comment_id ) {
 	$comment = get_comment( (int) $comment_id );
 	if ( ! ( $comment instanceof WP_Comment ) ) {
-		return array();
+		return [];
 	}
 
 	$slugs    = alpaca_extract_mention_slugs_from_content( $comment->comment_content );
@@ -97,7 +97,7 @@ function alpaca_sync_comment_mentions( $comment_id ) {
 
 	if ( empty( $mentions ) ) {
 		delete_comment_meta( $comment->comment_ID, 'alpacaMentionedUsers' );
-		return array();
+		return [];
 	}
 
 	update_comment_meta( $comment->comment_ID, 'alpacaMentionedUsers', $mentions );

@@ -5,6 +5,11 @@
  * @package Alpaca
  */
 
+use Alpaca\Helpers;
+use function Alpaca\hide_type;
+use function Alpaca\should_allow_rest_override;
+use function Alpaca\user_can_view_type;
+
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -16,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 add_action(
 	'init',
 	function () {
-		\Rareview\PrivateComments\hide_type( 'issuecomment', true );
+		hide_type( 'issuecomment', true );
 	}
 );
 
@@ -47,12 +52,48 @@ add_filter(
 		}
 
 		return $can_view
-			|| \Alpaca\Inc\Helpers::user_can( 'watchlist' )
-			|| \Alpaca\Inc\Helpers::user_can( 'create_issue' );
+			|| Helpers::user_can( 'watchlist' )
+			|| Helpers::user_can( 'create_issue' );
 	},
 	10,
 	2
 );
+
+/**
+ * Determine whether a post can receive Alpaca issue comments.
+ *
+ * @param int|array $post_id Post ID or REST post IDs.
+ * @return bool Whether the post is an Alpaca issue.
+ */
+function alpaca_is_issue_comment_target_post( $post_id ) {
+	if ( is_array( $post_id ) ) {
+		if ( empty( $post_id ) ) {
+			return false;
+		}
+
+		foreach ( $post_id as $target_post_id ) {
+			$target_post_id = absint( $target_post_id );
+
+			if ( $target_post_id <= 0 ) {
+				return false;
+			}
+
+			if ( ! alpaca_is_issue_comment_target_post( $target_post_id ) ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	$post_id = (int) $post_id;
+
+	if ( $post_id <= 0 ) {
+		return false;
+	}
+
+	return 'alpaca_issue' === get_post_type( $post_id );
+}
 
 /**
  * Allow Contributors to interact with Alpaca issue comments via core REST endpoints.
@@ -66,11 +107,11 @@ add_filter(
 	'rest_endpoints',
 	function ( $endpoints ) {
 		$can_view_issuecomment = static function () {
-			return \Rareview\PrivateComments\user_can_view_type( 'issuecomment' );
+			return user_can_view_type( 'issuecomment' );
 		};
 
 		if ( empty( $endpoints['/wp/v2/comments'] ) ) {
-			$collection_routes = array();
+			$collection_routes = [];
 		} else {
 			$collection_routes = $endpoints['/wp/v2/comments'];
 		}
@@ -88,6 +129,14 @@ add_filter(
 
 					// If this is an Alpaca issue comment, allow based on our helper.
 					if ( 'issuecomment' === $comment_type ) {
+						$post_id                 = $request->get_param( 'post' );
+						$requires_issue_context  = 'POST' === $request->get_method() || ! empty( $post_id );
+						$has_valid_issue_context = ! $requires_issue_context || alpaca_is_issue_comment_target_post( $post_id );
+
+						if ( ! $has_valid_issue_context ) {
+							return false;
+						}
+
 						// Allow listing/creating issue comments for Contributors by default.
 						if ( $can_view_issuecomment() ) {
 							return true;
@@ -121,8 +170,12 @@ add_filter(
 						$comment_id = (int) $request->get_param( 'id' );
 						$comment    = $comment_id > 0 ? get_comment( $comment_id ) : null;
 
-						if ( $comment instanceof WP_Comment && 'issuecomment' === $comment->comment_type ) {
-							return \Rareview\PrivateComments\should_allow_rest_override( 'issuecomment' );
+						if (
+							$comment instanceof WP_Comment
+							&& 'issuecomment' === $comment->comment_type
+							&& alpaca_is_issue_comment_target_post( $comment->comment_post_ID )
+						) {
+							return should_allow_rest_override( 'issuecomment' );
 						}
 
 						if ( is_callable( $original ) ) {
@@ -163,9 +216,13 @@ add_filter(
 			return $result;
 		}
 
+		if ( ! alpaca_is_issue_comment_target_post( (int) $request->get_param( 'post' ) ) ) {
+			return $result;
+		}
+
 		// If the user can create an issue, let them create the comment without manual status assignment.
 		// This prevents the controller from checking for 'moderate_comments' capability.
-		if ( \Alpaca\Inc\Helpers::user_can( 'create_issue' ) ) {
+		if ( Helpers::user_can( 'create_issue' ) ) {
 			// Disable flood control for automated system comments.
 			remove_action( 'check_comment_flood', 'check_comment_flood_db' );
 
@@ -196,7 +253,12 @@ add_filter(
 	'pre_comment_approved',
 	function ( $approved, $commentdata ) {
 		if ( isset( $commentdata['comment_type'] ) && 'issuecomment' === $commentdata['comment_type'] ) {
-			if ( \Alpaca\Inc\Helpers::user_can( 'create_issue' ) ) {
+			$post_id = isset( $commentdata['comment_post_ID'] ) ? (int) $commentdata['comment_post_ID'] : 0;
+
+			if (
+				alpaca_is_issue_comment_target_post( $post_id )
+				&& Helpers::user_can( 'create_issue' )
+			) {
 				return 1;
 			}
 		}

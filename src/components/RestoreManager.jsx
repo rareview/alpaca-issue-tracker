@@ -4,6 +4,7 @@ import {
   buildRestoreIssuesPath,
   getRestorePaginationInfo,
 } from '../utils/restorePagination';
+import { normalizeLabelColor } from '../utils/labelColor';
 
 const { useState, useCallback, useEffect } = wp.element;
 const { __, _n, sprintf } = wp.i18n;
@@ -24,10 +25,7 @@ const normalizeDeletedIssue = (issue) => {
             typeof label?.name === 'string' && label.name.trim() !== ''
               ? label.name.trim()
               : '',
-          color:
-            typeof label?.color === 'string' && label.color.trim() !== ''
-              ? label.color
-              : '#172b4d',
+          color: normalizeLabelColor(label?.color),
         }))
         .filter((label) => label.name)
     : [];

@@ -35,28 +35,28 @@ function alpaca_get_normalized_user_id( $user ) {
  * @return int[] Assignee user IDs.
  */
 function alpaca_get_issue_assignee_ids( $issue_id ) {
-	$terms = wp_get_post_terms( (int) $issue_id, 'alpaca_assignee', array( 'fields' => 'all' ) );
+	$terms = wp_get_post_terms( (int) $issue_id, 'alpaca_assignee', [ 'fields' => 'all' ] );
 	if ( is_wp_error( $terms ) || empty( $terms ) ) {
-		return array();
+		return [];
 	}
 
-	$slugs = array();
+	$slugs = [];
 	foreach ( $terms as $term ) {
 		$slugs[] = (string) $term->slug;
 	}
 	$slugs = array_values( array_unique( array_filter( $slugs ) ) );
 	if ( empty( $slugs ) ) {
-		return array();
+		return [];
 	}
 
 	$users = get_users(
-		array(
+		[
 			'slug__in' => $slugs,
-			'fields'   => array( 'ID' ),
-		)
+			'fields'   => [ 'ID' ],
+		]
 	);
 
-	$ids = array();
+	$ids = [];
 	foreach ( $users as $user ) {
 		$ids[] = alpaca_get_normalized_user_id( $user );
 	}
@@ -71,28 +71,28 @@ function alpaca_get_issue_assignee_ids( $issue_id ) {
  * @return int[] Watcher user IDs.
  */
 function alpaca_get_issue_watcher_ids( $issue_id ) {
-	$terms = wp_get_post_terms( (int) $issue_id, 'alpaca_watching', array( 'fields' => 'all' ) );
+	$terms = wp_get_post_terms( (int) $issue_id, 'alpaca_watching', [ 'fields' => 'all' ] );
 	if ( is_wp_error( $terms ) || empty( $terms ) ) {
-		return array();
+		return [];
 	}
 
-	$slugs = array();
+	$slugs = [];
 	foreach ( $terms as $term ) {
 		$slugs[] = (string) $term->slug;
 	}
 	$slugs = array_values( array_unique( array_filter( $slugs ) ) );
 	if ( empty( $slugs ) ) {
-		return array();
+		return [];
 	}
 
 	$users = get_users(
-		array(
+		[
 			'slug__in' => $slugs,
-			'fields'   => array( 'ID' ),
-		)
+			'fields'   => [ 'ID' ],
+		]
 	);
 
-	$ids = array();
+	$ids = [];
 	foreach ( $users as $user ) {
 		$ids[] = alpaca_get_normalized_user_id( $user );
 	}
@@ -110,13 +110,13 @@ function alpaca_get_issue_label_ids( $issue_id ) {
 	$terms = wp_get_post_terms(
 		(int) $issue_id,
 		'alpaca_label',
-		array(
+		[
 			'fields' => 'ids',
-		)
+		]
 	);
 
 	if ( is_wp_error( $terms ) || ! is_array( $terms ) ) {
-		return array();
+		return [];
 	}
 
 	return array_values( array_unique( array_filter( array_map( 'absint', $terms ) ) ) );
@@ -152,7 +152,7 @@ function alpaca_get_notification_issue_url( $issue ) {
  */
 function alpaca_get_notification_event_family_for_comment( $comment ) {
 	$tags  = get_comment_meta( $comment->comment_ID, 'alpacaCommentTags', true );
-	$tags  = is_array( $tags ) ? $tags : array();
+	$tags  = is_array( $tags ) ? $tags : [];
 	$agent = (string) $comment->comment_agent;
 
 	if ( 'audit' !== $agent ) {
@@ -201,9 +201,9 @@ function alpaca_get_notification_event_family_for_comment( $comment ) {
  * @param array<string, mixed> $comment      Comment payload.
  * @return string Event label.
  */
-function alpaca_get_notification_event_label( $event_family, $comment = array() ) {
-	$context = isset( $comment['context'] ) && is_array( $comment['context'] ) ? $comment['context'] : array();
-	$tags    = isset( $comment['tags'] ) && is_array( $comment['tags'] ) ? $comment['tags'] : array();
+function alpaca_get_notification_event_label( $event_family, $comment = [] ) {
+	$context = isset( $comment['context'] ) && is_array( $comment['context'] ) ? $comment['context'] : [];
+	$tags    = isset( $comment['tags'] ) && is_array( $comment['tags'] ) ? $comment['tags'] : [];
 	$action  = isset( $context['action'] ) ? sanitize_key( (string) $context['action'] ) : '';
 
 	switch ( $event_family ) {
@@ -300,7 +300,7 @@ function alpaca_get_comment_notification_context( $comment_id ) {
 	$context = get_comment_meta( (int) $comment_id, 'alpacaNotificationContext', true );
 
 	if ( ! is_array( $context ) ) {
-		return array();
+		return [];
 	}
 
 	return $context;
@@ -314,8 +314,8 @@ function alpaca_get_comment_notification_context( $comment_id ) {
  */
 function alpaca_is_notification_new_task_event( $event ) {
 	$event_family = isset( $event['event_family'] ) ? (string) $event['event_family'] : '';
-	$tags         = isset( $event['comment']['tags'] ) && is_array( $event['comment']['tags'] ) ? $event['comment']['tags'] : array();
-	$context      = isset( $event['comment']['context'] ) && is_array( $event['comment']['context'] ) ? $event['comment']['context'] : array();
+	$tags         = isset( $event['comment']['tags'] ) && is_array( $event['comment']['tags'] ) ? $event['comment']['tags'] : [];
+	$context      = isset( $event['comment']['context'] ) && is_array( $event['comment']['context'] ) ? $event['comment']['context'] : [];
 	$action       = isset( $context['action'] ) ? sanitize_key( (string) $context['action'] ) : '';
 
 	if ( 'human_comments' === $event_family && in_array( 'issue-created', $tags, true ) ) {
@@ -361,31 +361,31 @@ function alpaca_get_notification_event_from_comment( $comment ) {
 	$label_ids            = alpaca_get_issue_label_ids( $issue->ID );
 	$is_high_priority     = alpaca_is_issue_high_priority( $issue->ID );
 
-	return array(
+	return [
 		'comment_id'   => (int) $comment->comment_ID,
-		'comment'      => array(
+		'comment'      => [
 			'id'           => (int) $comment->comment_ID,
 			'raw'          => (string) $comment->comment_content,
-			'tags'         => is_array( $tags ) ? $tags : array(),
-			'attachments'  => is_array( $attachments ) ? $attachments : array(),
-			'mentions'     => is_array( $mentioned_users ) ? $mentioned_users : array(),
+			'tags'         => is_array( $tags ) ? $tags : [],
+			'attachments'  => is_array( $attachments ) ? $attachments : [],
+			'mentions'     => is_array( $mentioned_users ) ? $mentioned_users : [],
 			'context'      => $notification_context,
 			'author_agent' => (string) $comment->comment_agent,
-		),
-		'actor'        => array(
+		],
+		'actor'        => [
 			'id'           => $actor instanceof WP_User ? (int) $actor->ID : 0,
 			'display_name' => $actor instanceof WP_User ? (string) $actor->display_name : esc_html__( 'Unknown user', 'alpaca' ),
 			'email'        => $actor instanceof WP_User ? (string) $actor->user_email : '',
-		),
+		],
 		'event_family' => $family,
 		'event_label'  => alpaca_get_notification_event_label(
 			$family,
-			array(
-				'tags'    => is_array( $tags ) ? $tags : array(),
+			[
+				'tags'    => is_array( $tags ) ? $tags : [],
 				'context' => $notification_context,
-			)
+			]
 		),
-		'issue'        => array(
+		'issue'        => [
 			'id'               => (int) $issue->ID,
 			'title'            => (string) $issue->post_title,
 			'slug'             => (string) $issue->post_name,
@@ -395,14 +395,14 @@ function alpaca_get_notification_event_from_comment( $comment ) {
 			'watcher_ids'      => $watcher_ids,
 			'label_ids'        => $label_ids,
 			'is_high_priority' => $is_high_priority,
-		),
-		'site'         => array(
+		],
+		'site'         => [
 			'title'   => wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ),
 			'tagline' => wp_specialchars_decode( get_bloginfo( 'description' ), ENT_QUOTES ),
 			'url'     => home_url( '/' ),
-		),
+		],
 		'timestamp'    => get_comment_date( 'c', $comment ),
-	);
+	];
 }
 
 /**
@@ -414,40 +414,40 @@ function alpaca_get_notification_sample_event() {
 	$current_user = wp_get_current_user();
 	$actor_name   = $current_user instanceof WP_User && $current_user->exists() ? (string) $current_user->display_name : esc_html__( 'Alpaca User', 'alpaca' );
 
-	return array(
+	return [
 		'comment_id'   => 0,
-		'comment'      => array(
+		'comment'      => [
 			'id'           => 0,
 			'raw'          => esc_html__( 'This is a sample notification comment. It includes the full comment content exactly as the email will render it.', 'alpaca' ),
-			'tags'         => array( 'sample' ),
-			'attachments'  => array(),
-			'mentions'     => array(),
-			'context'      => array(),
+			'tags'         => [ 'sample' ],
+			'attachments'  => [],
+			'mentions'     => [],
+			'context'      => [],
 			'author_agent' => 'human',
-		),
-		'actor'        => array(
+		],
+		'actor'        => [
 			'id'           => $current_user instanceof WP_User ? (int) $current_user->ID : 0,
 			'display_name' => $actor_name,
 			'email'        => $current_user instanceof WP_User ? (string) $current_user->user_email : '',
-		),
+		],
 		'event_family' => 'human_comments',
 		'event_label'  => esc_html__( 'Comment added', 'alpaca' ),
-		'issue'        => array(
+		'issue'        => [
 			'id'               => 0,
 			'title'            => esc_html__( 'Sample issue title', 'alpaca' ),
 			'slug'             => 'sample-issue-title',
 			'url'              => admin_url( 'admin.php?page=project-board&issue=sample-issue-title' ),
 			'creator_id'       => $current_user instanceof WP_User ? (int) $current_user->ID : 0,
-			'assignee_ids'     => array(),
-			'watcher_ids'      => array(),
-			'label_ids'        => array(),
+			'assignee_ids'     => [],
+			'watcher_ids'      => [],
+			'label_ids'        => [],
 			'is_high_priority' => false,
-		),
-		'site'         => array(
+		],
+		'site'         => [
 			'title'   => wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ),
 			'tagline' => wp_specialchars_decode( get_bloginfo( 'description' ), ENT_QUOTES ),
 			'url'     => home_url( '/' ),
-		),
+		],
 		'timestamp'    => gmdate( 'c' ),
-	);
+	];
 }
