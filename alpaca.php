@@ -36,8 +36,8 @@ require_once ALPACA_PLUGIN_DIR . 'includes/class-activator.php';
 require_once ALPACA_PLUGIN_DIR . 'includes/class-deactivator.php';
 
 // Register activation and deactivation hooks.
-register_activation_hook( __FILE__, array( Activator::class, 'activate' ) );
-register_deactivation_hook( __FILE__, array( Deactivator::class, 'deactivate' ) );
+register_activation_hook( __FILE__, [ Activator::class, 'activate' ] );
+register_deactivation_hook( __FILE__, [ Deactivator::class, 'deactivate' ] );
 
 // Initialize asset registration.
 new Register();
