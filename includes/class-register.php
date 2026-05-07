@@ -229,7 +229,7 @@ class Register {
 	 * @return bool True when Alpaca admin assets should not load.
 	 */
 	private function is_skipped_admin_bundle_screen( $hook_suffix ) {
-		if ( function_exists( '\alpaca_should_skip_admin_report_screen' ) ) {
+		if ( function_exists( 'alpaca_should_skip_admin_report_screen' ) ) {
 			return alpaca_should_skip_admin_report_screen( $hook_suffix );
 		}
 
