@@ -1,4 +1,4 @@
-# Alpaca: smart kanban inside WordPress
+# Alpaca Issue Tracker: smart kanban inside WordPress
 
 - Minimum burden on users reporting website issues
 - Maximum detail in technical reports received by developers
@@ -10,7 +10,7 @@
 
 **Why take it outside WordPress?** Every project needs a method for tracking issue progress: since your clients and developers will already be using WordPress for the website itself, the most logical place to do that is within WordPress.
 
-Alpaca provides a full-featured kanban experience inside wp-admin, using WordPress core components and approaches, for a familiar user _and_ developer experience.
+Alpaca Issue Tracker provides a full-featured kanban experience inside wp-admin, using WordPress core components and approaches, for a familiar user _and_ developer experience.
 
 ## Key features
 
@@ -27,7 +27,7 @@ Alpaca provides a full-featured kanban experience inside wp-admin, using WordPre
 - **Translation Ready** - Fully localized and ready for translation into any language (including RTL support)
 - **No Artificial Limitations** - Use on as many sites, with as many users, issues, attachments and interactions as you need
 
-## Who is Alpaca designed for?
+## Who is Alpaca Issue Tracker designed for?
 
 - Freelance developers managing client sites
 - Small agencies tracking bugs and feature requests

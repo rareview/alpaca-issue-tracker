@@ -381,7 +381,7 @@ msgstr ""
 #. translators: 1: Required PHP version, 2: Current PHP version
 #: includes/class-activator.php:53
 #, php-format
-msgid "Alpaca requires PHP version %1$s or higher. You are running version %2$s."
+msgid "Alpaca Issue Tracker requires PHP version %1$s or higher. You are running version %2$s."
 msgstr ""
 
 #: includes/class-activator.php:57
@@ -392,7 +392,7 @@ msgstr ""
 #. translators: 1: Required WP version, 2: Current WP version
 #: includes/class-activator.php:69
 #, php-format
-msgid "Alpaca requires WordPress version %1$s or higher. You are running version %2$s."
+msgid "Alpaca Issue Tracker requires WordPress version %1$s or higher. You are running version %2$s."
 msgstr ""
 
 #: includes/class-alpaca.php:328

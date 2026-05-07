@@ -50,7 +50,7 @@ class Activator {
 			wp_die(
 				sprintf(
 					/* translators: 1: Required PHP version, 2: Current PHP version */
-					esc_html__( 'Alpaca requires PHP version %1$s or higher. You are running version %2$s.', 'alpaca' ),
+					esc_html__( 'Alpaca Issue Tracker requires PHP version %1$s or higher. You are running version %2$s.', 'alpaca' ),
 					esc_html( Alpaca::MIN_PHP_VERSION ),
 					esc_html( PHP_VERSION )
 				),
@@ -66,7 +66,7 @@ class Activator {
 			wp_die(
 				sprintf(
 					/* translators: 1: Required WP version, 2: Current WP version */
-					esc_html__( 'Alpaca requires WordPress version %1$s or higher. You are running version %2$s.', 'alpaca' ),
+					esc_html__( 'Alpaca Issue Tracker requires WordPress version %1$s or higher. You are running version %2$s.', 'alpaca' ),
 					esc_html( Alpaca::MIN_WP_VERSION ),
 					esc_html( $wp_version )
 				),

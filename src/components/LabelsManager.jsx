@@ -433,9 +433,7 @@ const LabelsManager = () => {
                 colors={palette}
                 value={currentColor}
                 disableCustomColors={true}
-                onChange={(value) =>
-                  onColorChange(normalizeLabelColor(value))
-                }
+                onChange={(value) => onColorChange(normalizeLabelColor(value))}
               />
             ) : (
               <p>{__('Color picker unavailable.', 'alpaca')}</p>

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
-<ruleset name="Alpaca">
-  <description>WordPress Coding Standards for Alpaca Plugin</description>
+<ruleset name="Alpaca Issue Tracker">
+  <description>WordPress Coding Standards for Alpaca Issue Tracker</description>
 
   <!-- Paths to check -->
   <file>./alpaca.php</file>

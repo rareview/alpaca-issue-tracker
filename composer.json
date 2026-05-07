@@ -1,6 +1,6 @@
 {
   "name": "alpaca/plugin",
-  "description": "A cute issue tracker for WordPress",
+  "description": "A lightweight issue tracker built entirely inside WordPress, designed for developers and agencies managing client projects.",
   "require-dev": {
     "php": ">=7.4",
     "wp-coding-standards/wpcs": "^3.0",

@@ -12,7 +12,7 @@ A lightweight issue tracker built entirely inside WordPress, designed for develo
 
 == Description ==
 
-Alpaca is a powerful yet simple issue tracking system that lives inside your WordPress admin. Built with the WordPress philosophy in mind, it provides a Trello-like kanban board interface for managing bugs, feature requests, and project tasks.
+Alpaca Issue Tracker is a powerful yet simple issue tracking system that lives inside your WordPress admin. Built with the WordPress philosophy in mind, it provides a Trello-like kanban board interface for managing bugs, feature requests, and project tasks.
 
 = Key Features =
 
@@ -40,9 +40,9 @@ Alpaca is a powerful yet simple issue tracking system that lives inside your Wor
 
 = How It Works =
 
-Clients don't have the time or knowledge to provide detailed technical reports when they spot a problem. But developers can't do their job without that detail. Alpaca solves this by automatically capturing all the technical context WordPress already knows about each page request.
+Clients don't have the time or knowledge to provide detailed technical reports when they spot a problem. But developers can't do their job without that detail. Alpaca Issue Tracker solves this by automatically capturing all the technical context WordPress already knows about each page request.
 
-When a user reports an issue via Alpaca's front-end toolbar, the plugin silently captures:
+When a user reports an issue via the Alpaca Issue Tracker front-end toolbar, the plugin silently captures:
 - A screenshot of what the user can see
 - Browser and device information
 - Current page URL and template
@@ -51,24 +51,24 @@ When a user reports an issue via Alpaca's front-end toolbar, the plugin silently
 
 This gives developers everything they need to reproduce and fix issues quickly, with zero burden on the client.
 
-Issues can also be created on the admin side, meaning Alpaca can also be used as a complete project management system, to plan new features or track internal tasks.
+Issues can also be created on the admin side, meaning Alpaca Issue Tracker can also be used as a complete project management system, to plan new features or track internal tasks.
 
 == Installation ==
 
 1. Install and activate the plugin as normal.
 2. Admin users can configure status columns and issue labels at: Project Board / Configure
-3. Admin users can edit the design of Alpaca's email notifications at: Project Board / Email Templates
+3. Admin users can edit the design of Alpaca Issue Tracker email notifications at: Project Board / Email Templates
 4. All users can set up personal notifications about issue progress: Project Board / My Notifications
 
 == Frequently Asked Questions ==
 
-= Who can see the Alpaca interface? =
+= Who can see the Alpaca Issue Tracker interface? =
 
-By default, only logged-in users can see the Alpaca toolbar and report issues. Administrators have full access to the project board and all issues.
+By default, only logged-in users can see the Alpaca Issue Tracker toolbar and report issues. Administrators have full access to the project board and all issues.
 
 = Does this work with Gutenberg? =
 
-Yes! Alpaca is built using WordPress Gutenberg components for a native WordPress experience.
+Yes! Alpaca Issue Tracker is built using WordPress Gutenberg components for a native WordPress experience.
 
 = Can I customize the Status columns and Labels? =
 
@@ -80,15 +80,15 @@ Yes! You can choose which metadata points are shown on cards in the Board view, 
 
 = Is this compatible with multisite? =
 
-Alpaca works on multisite installations, with each site having its own independent project board. An aggregation view across sites is planned for a future release.
+Alpaca Issue Tracker works on multisite installations, with each site having its own independent project board. An aggregation view across sites is planned for a future release.
 
 = What kinds of notifications can Alpaca send? =
 
-Alpaca ships with a highly configurable email notification system. You can choose to receive instant notifications of activity relevant to you and your issues; or a daily digest of all activity. You can even design the email templates using a block-based editor.
+Alpaca Issue Tracker ships with a highly configurable email notification system. You can choose to receive instant notifications of activity relevant to you and your issues; or a daily digest of all activity. You can even design the email templates using a block-based editor.
 
 You can @-mention another user within the text of a comment, to send them a notification. A search window will appear as soon as you type an @ symbol.
 
-Alpaca's notification engine has been built with extensibility in mind: additional channels will be added in the future.
+Alpaca Issue Tracker's notification engine has been built with extensibility in mind: additional channels will be added in the future.
 
 = Where is the data stored? =
 
@@ -102,7 +102,7 @@ All data is stored in your WordPress database's core tables using custom post ty
 
 == Third-Party Libraries ==
 
-Alpaca includes runtime copies or bundled output from the following GPL-compatible libraries:
+Alpaca Issue Tracker includes runtime copies or bundled output from the following GPL-compatible libraries:
 
 * Bowser - MIT license - https://github.com/bowser-js/bowser
 * DOMPurify - MPL-2.0 option from `(MPL-2.0 OR Apache-2.0)` - https://github.com/cure53/DOMPurify
@@ -113,7 +113,7 @@ Alpaca includes runtime copies or bundled output from the following GPL-compatib
 
 == Recommended Plugins ==
 
-Alpaca uses user images throughout its interface, for extra humanity. We recommend **Simple Local Avatars** as a reliable solution for processing and hosting photos of your users without using an external service.
+Alpaca Issue Tracker uses user images throughout its interface, for extra humanity. We recommend **Simple Local Avatars** as a reliable solution for processing and hosting photos of your users without using an external service.
 
 == Changelog ==
 
@@ -122,7 +122,7 @@ Alpaca uses user images throughout its interface, for extra humanity. We recomme
 
 == Development ==
 
-Alpaca is currently in active development.
+Alpaca Issue Tracker is currently in active development.
 
 Source code and build configuration are available at:
 https://github.com/rareview/alpaca
@@ -139,7 +139,7 @@ The distributed plugin includes compiled JavaScript and CSS assets. The source f
 
 == Privacy Policy ==
 
-Alpaca does not collect or transmit any data outside of your WordPress installation. All issue data, screenshots, and technical information are captured and stored locally in your WordPress database and/or filesystem.
+Alpaca Issue Tracker does not collect or transmit any data outside of your WordPress installation. All issue data, screenshots, and technical information are captured and stored locally in your WordPress database and/or filesystem.
 
 == Credits ==
 
