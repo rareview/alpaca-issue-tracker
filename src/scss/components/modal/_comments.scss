@@ -257,6 +257,7 @@
           gap: $space-2xs;
           min-width: 0;
           flex: 1 1 auto;
+          white-space: nowrap;
         }
 
         .alpaca-comment-on-title {
