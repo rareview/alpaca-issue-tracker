@@ -254,12 +254,34 @@ const RestoreManager = () => {
 
   return (
     <div className="alpaca-restore-manager">
-      <p className="alpaca-settings-manager-intro">
-        {__(
-          'Use this screen to find and restore deleted issues from trash.',
-          'alpaca',
-        )}
-      </p>
+      {(() => {
+        if (
+          typeof window === 'undefined' ||
+          !window.alpacaSettings ||
+          typeof window.alpacaSettings.emptyTrashDays === 'undefined' ||
+          window.alpacaSettings.emptyTrashDays === null
+        ) {
+          return null;
+        }
+
+        const days = Number(window.alpacaSettings.emptyTrashDays);
+        if (!Number.isFinite(days) || days <= 0) {
+          return null;
+        }
+
+        return (
+          <p className="alpaca-settings-manager-intro">
+            {sprintf(
+              /* translators: %d: number of days until trashed items are deleted. */
+              __(
+                'Deleted issues will be automatically removed from the database after %d days.',
+                'alpaca',
+              ),
+              days,
+            )}
+          </p>
+        );
+      })()}
 
       <form className="alpaca-restore-search" onSubmit={handleSearch}>
         <div className="alpaca-restore-search-controls">
@@ -416,17 +438,34 @@ const RestoreManager = () => {
         <div className="alpaca-restore-pagination-actions">
           <Button
             variant="secondary"
+            onClick={() => handlePageChange(1)}
+            disabled={isSearching || currentPage <= 1}
+          >
+            {__('First', 'alpaca')}
+          </Button>
+
+          <Button
+            variant="secondary"
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={isSearching || currentPage <= 1}
           >
             {__('Previous', 'alpaca')}
           </Button>
+
           <Button
             variant="secondary"
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={isSearching || currentPage >= totalPages}
           >
             {__('Next', 'alpaca')}
+          </Button>
+
+          <Button
+            variant="secondary"
+            onClick={() => handlePageChange(totalPages)}
+            disabled={isSearching || currentPage >= totalPages}
+          >
+            {__('Last', 'alpaca')}
           </Button>
         </div>
       </div>

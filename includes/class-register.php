@@ -295,9 +295,10 @@ class Register {
 	 *
 	 * @param string $script_handle      Script handle.
 	 * @param bool   $include_admin_url  Whether to expose the wp-admin URL.
+	 * @param array  $extra_settings     Optional extra settings to merge into localized settings.
 	 * @return void
 	 */
-	private function localize_script_settings( $script_handle, $include_admin_url = false ) {
+	private function localize_script_settings( $script_handle, $include_admin_url = false, $extra_settings = array() ) {
 		$settings = array(
 			'canManageOptions'         => current_user_can( 'manage_options' ),
 			'canDeleteIssues'          => Helpers::user_can( 'delete_issue' ),
@@ -310,6 +311,10 @@ class Register {
 			$settings['adminUrl'] = admin_url( 'admin.php' );
 		}
 
+		if ( is_array( $extra_settings ) && ! empty( $extra_settings ) ) {
+			$settings = array_merge( $settings, $extra_settings );
+		}
+
 		wp_localize_script( $script_handle, 'alpacaSettings', $settings );
 	}
 
@@ -319,9 +324,10 @@ class Register {
 	 * @param string[] $script_dependencies Script dependencies for the main bundle.
 	 * @param bool     $include_admin_url   Whether to expose the wp-admin URL.
 	 * @param bool     $localize_datadump   Whether to localize the report data dump.
+	 * @param array    $extra_settings      Optional extra settings to merge into localized settings.
 	 * @return void
 	 */
-	private function enqueue_shared_assets( $script_dependencies, $include_admin_url = false, $localize_datadump = false ) {
+	private function enqueue_shared_assets( $script_dependencies, $include_admin_url = false, $localize_datadump = false, $extra_settings = array() ) {
 
 		// Only load Alpaca for logged-in users.
 		if ( ! is_user_logged_in() ) {
@@ -361,7 +367,7 @@ class Register {
 			}
 		}
 
-		$this->localize_script_settings( self::PREFIX . '-script', $include_admin_url );
+		$this->localize_script_settings( self::PREFIX . '-script', $include_admin_url, $extra_settings );
 	}
 
 	/**
@@ -417,7 +423,7 @@ class Register {
 			return;
 		}
 
-		$this->enqueue_shared_assets( $this->get_base_script_dependencies(), false, true );
+		$this->enqueue_shared_assets( $this->get_base_script_dependencies(), false, true, array() );
 	}
 
 	/**
@@ -439,7 +445,12 @@ class Register {
 				);
 			}
 
-			$this->enqueue_shared_assets( array_values( array_unique( $script_dependencies ) ), true, true );
+			$extra = array();
+			if ( 'project-board_page_alpaca-settings' === $hook_suffix ) {
+				$extra['emptyTrashDays'] = defined( 'EMPTY_TRASH_DAYS' ) ? (int) EMPTY_TRASH_DAYS : null;
+			}
+
+			$this->enqueue_shared_assets( array_values( array_unique( $script_dependencies ) ), true, true, $extra );
 
 			if ( $this->is_notification_template_admin_page( $hook_suffix ) ) {
 				wp_enqueue_media();
