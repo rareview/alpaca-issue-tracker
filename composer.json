@@ -1,6 +1,19 @@
 {
-  "name": "alpaca/plugin",
+  "name": "rareview/alpaca",
+  "type": "wordpress-plugin",
   "description": "A lightweight issue tracker built entirely inside WordPress, designed for developers and agencies managing client projects.",
+  "license": "GPL-2.0-or-later",
+  "homepage": "https://github.com/rareview/alpaca",
+  "authors": [
+    {
+      "name": "Rareview®",
+      "homepage": "https://rareview.com/"
+    }
+  ],
+  "support": {
+    "issues": "https://github.com/rareview/alpaca/issues",
+    "source": "https://github.com/rareview/alpaca"
+  },
   "require-dev": {
     "php": ">=7.4",
     "wp-coding-standards/wpcs": "^3.0",
