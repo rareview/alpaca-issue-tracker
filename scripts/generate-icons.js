@@ -282,6 +282,17 @@ function escapePhpSingleQuotedString(value) {
 }
 
 /**
+ * Format a value as a single-quoted PHP string literal.
+ *
+ * @param {string} value Input string.
+ * @return {string} PHP string literal.
+ */
+function formatPhpStringLiteral(value) {
+  const normalizedValue = value.replace(/\r?\n\s*/g, '');
+  return `'${escapePhpSingleQuotedString(normalizedValue)}'`;
+}
+
+/**
  * Pad a PHP array key string so double arrows can be aligned.
  *
  * @param {string} key       Array key.
@@ -396,7 +407,7 @@ function buildPhpIconRegistryFile(iconDefinitions) {
   );
   const iconEntries = iconDefinitions
     .map((iconDefinition) => {
-      return `\t\t${padPhpArrayKey(iconDefinition.slug, maxIconSlugLength)} => <<<'SVG'\n${iconDefinition.svgMarkup}\nSVG\n\t\t,`;
+      return `\t\t${padPhpArrayKey(iconDefinition.slug, maxIconSlugLength)} => ${formatPhpStringLiteral(iconDefinition.svgMarkup)},`;
     })
     .join('\n');
 
