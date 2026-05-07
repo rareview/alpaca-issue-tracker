@@ -1,5 +1,6 @@
 import AlpacaIssue from './components/Issue';
 import TimelineEntry from './components/comment/TimelineEntry';
+import Lightbox from './components/issue/Lightbox';
 import {
   buildStatusIssuePayload,
   dispatchStatusChangedAction,
@@ -556,6 +557,10 @@ const Activity = () => {
 
   const noop = useCallback(() => {}, []);
 
+  const [lightboxSrc, setLightboxSrc] = useState(null);
+
+  const handleLightboxClose = useCallback(() => setLightboxSrc(null), []);
+
   return (
     <div id="alpaca-activity">
       {isLoading && (
@@ -609,7 +614,7 @@ const Activity = () => {
                     >
                       <TimelineEntry
                         comment={comment}
-                        onAttachmentClick={noop}
+                        onAttachmentClick={setLightboxSrc}
                         issueTitle={
                           issueTitle ||
                           `${__('Issue', 'alpaca')} #${String(issueId)}`
@@ -635,6 +640,10 @@ const Activity = () => {
             <div ref={sentinelRef} className="alpaca-activity-sentinel" />
           )}
         </div>
+      )}
+
+      {lightboxSrc && (
+        <Lightbox src={lightboxSrc} onClose={handleLightboxClose} />
       )}
 
       <AlpacaIssue
