@@ -2,7 +2,7 @@
 
 ## Goal
 
-Alpaca uses a no-touch icon pipeline for React:
+Alpaca Issue Tracker uses a no-touch icon pipeline for React:
 
 - Add or update SVG files in one source folder.
 - Regenerate a single React icon registry automatically.
