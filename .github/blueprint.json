@@ -1,0 +1,39 @@
+{
+  "$schema": "https://playground.wordpress.net/blueprint-schema.json",
+  "meta": {
+    "title": "Alpaca Issue Tracker Playground",
+    "author": "rareview",
+    "description": "Install and activate Alpaca Issue Tracker in WordPress Playground, seed a realistic sample board, and open the Project Board."
+  },
+  "landingPage": "/wp-admin/admin.php?page=project-board",
+  "preferredVersions": {
+    "php": "8.2",
+    "wp": "latest"
+  },
+  "login": true,
+  "steps": [
+    {
+      "step": "installPlugin",
+      "pluginData": {
+        "resource": "url",
+        "url": "https://github.com/rareview/alpaca/releases/latest/download/alpaca.zip"
+      },
+      "options": {
+        "activate": true,
+        "targetFolderName": "alpaca"
+      }
+    },
+    {
+      "step": "writeFile",
+      "path": "/tmp/alpaca-playground-seed.php",
+      "data": {
+        "resource": "url",
+        "url": "https://raw.githubusercontent.com/rareview/alpaca/main/playground/seed-demo-content.php"
+      }
+    },
+    {
+      "step": "wp-cli",
+      "command": "eval-file /tmp/alpaca-playground-seed.php"
+    }
+  ]
+}
