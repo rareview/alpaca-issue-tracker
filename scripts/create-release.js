@@ -109,6 +109,16 @@ function validateVersion(version) {
 }
 
 /**
+ * Determine whether the requested version is a prerelease.
+ *
+ * @param {string} version Candidate version string.
+ * @return {boolean} Whether the version is a prerelease.
+ */
+function isPrereleaseVersion(version) {
+  return version.includes('-');
+}
+
+/**
  * Run a command and return trimmed stdout.
  *
  * @param {string}   command Command name.
@@ -195,7 +205,7 @@ function updateVersionFiles(version, apply = true) {
     const updated = fileConfig.replace(original, version);
 
     if (updated === original) {
-      throw new Error(`Version pattern not found in ${fileConfig.path}.`);
+      return;
     }
 
     if (apply) {
@@ -226,8 +236,11 @@ function createRelease(version, notesFile) {
     releaseTitle,
     '--target',
     run('git', ['rev-parse', 'HEAD']),
-    '--prerelease',
   ];
+
+  if (isPrereleaseVersion(version)) {
+    releaseArgs.push('--prerelease');
+  }
 
   if (notesFile) {
     const absoluteNotesFile = path.isAbsolute(notesFile)
@@ -254,6 +267,10 @@ function createRelease(version, notesFile) {
  * @return {void}
  */
 function commitAndPush(version, changedFiles) {
+  if (0 === changedFiles.length) {
+    return;
+  }
+
   run('git', ['add', ...changedFiles], { stdio: 'inherit' });
   run('git', ['commit', '-m', `chore(release): release ${version}`], {
     stdio: 'inherit',
@@ -281,6 +298,13 @@ function main() {
   const changedFiles = updateVersionFiles(version, !dryRun);
 
   if (dryRun) {
+    if (0 === changedFiles.length) {
+      process.stdout.write(
+        'Dry run complete. Version files already match the requested version.\n',
+      );
+      return;
+    }
+
     process.stdout.write(
       `Dry run complete. Updated files:\n${changedFiles
         .map((filePath) => `- ${filePath}`)

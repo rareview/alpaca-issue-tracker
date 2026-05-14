@@ -5,7 +5,11 @@ const path = require('node:path');
 
 const rootDir = path.resolve(__dirname, '..');
 const publicBlueprintPath = path.join(rootDir, '.github', 'blueprint.json');
-const seedSourcePath = path.join(rootDir, 'playground', 'seed-demo-content.php');
+const seedSourcePath = path.join(
+  rootDir,
+  'playground',
+  'seed-demo-content.php',
+);
 const zipPath = path.join(rootDir, 'alpaca.zip');
 const outputDir = path.join(rootDir, 'playground', '.generated', 'bundle');
 const outputBlueprintPath = path.join(outputDir, 'blueprint.json');
@@ -63,7 +67,9 @@ function buildBundledBlueprint(publicBlueprint) {
   }
 
   if (!writeFileStep) {
-    throw new Error('Public blueprint is missing the Playground seed file step.');
+    throw new Error(
+      'Public blueprint is missing the Playground seed file step.',
+    );
   }
 
   installPluginStep.pluginData = {
