@@ -33,7 +33,7 @@
     },
     {
       "step": "wp-cli",
-      "command": "eval-file /tmp/alpaca-playground-seed.php"
+      "command": "wp eval-file /tmp/alpaca-playground-seed.php"
     }
   ]
 }
