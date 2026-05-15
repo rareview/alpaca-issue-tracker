@@ -85,7 +85,12 @@ if (!isAdmin && contextualCaptureEnabled) {
   const toolbarContainer = document.createElement('div');
   toolbarContainer.id = 'alpaca-toolbar-mount';
   document.body.appendChild(toolbarContainer);
-  mountReactTree(<AlpacaToolbar />, toolbarContainer);
+  mountReactTree(
+    <NotificationProvider>
+      <AlpacaToolbar />
+    </NotificationProvider>,
+    toolbarContainer,
+  );
 }
 
 if (document.querySelector('#alpaca-settings-internal')) {

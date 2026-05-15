@@ -2,6 +2,8 @@ import handleSnapdomCapture from './snapdomHandler.js';
 import { dataUrlToFile, uploadIssueAttachment } from './utils/attachmentUpload';
 import { useTestLogger } from './utils/testLogger.js';
 import Icon from './components/icons/Icon';
+import UnreadCountBadge from './components/notifications/UnreadCountBadge.jsx';
+import { useNotification } from './context/NotificationContext.jsx';
 import { buildAlpacaRestUrl, getAlpacaRestRoot } from './utils/restApiRoot.js';
 import {
   ensureAlpacaReportContext,
@@ -22,6 +24,7 @@ const FORM_CLOSE_RESET_DELAY_MS = 300;
  * @return {JSX.Element} Toolbar component
  */
 const AlpacaToolbar = () => {
+  const { unreadCount } = useNotification();
   const [isExpanded, setIsExpanded] = useState(true); // Open by default
   const [isFormVisible, setFormVisible] = useState(false);
   const [status, setStatus] = useState('idle');
@@ -250,6 +253,11 @@ const AlpacaToolbar = () => {
         <a href={projectBoardUrl} className="project-board-link">
           <Icon name="board" />
           {__('Project Board', 'alpaca')}
+          {unreadCount > 0 && (
+            <span className="alpaca-toolbar-project-board-badge">
+              <UnreadCountBadge count={unreadCount} variant="inline" />
+            </span>
+          )}
         </a>
         <button className="toggle-button" onClick={toggleExpand}>
           <span className="toggle-pointer">►</span>
