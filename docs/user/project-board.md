@@ -6,12 +6,9 @@ The Project Board is the primary workspace for issue tracking. It displays issue
 
 Statuses are stored as WordPress taxonomy terms and ordered by their status score. Administrators manage statuses under Project Board > Configure > Statuses.
 
-Common status work includes:
+Users can drag issues from column to column. They can also drag issues within a column, to imply a priority order.
 
-- Renaming status columns.
-- Reordering status columns.
-- Restoring default statuses if the board has no usable statuses.
-- Dragging issues between columns to update their status.
+Note: at the narrowest screen sizes, columns are presented as rows.
 
 ## Creating Issues
 
@@ -23,9 +20,9 @@ Issues can be created from the board with Add Issue. A new issue can include:
 - Assignees.
 - Labels.
 - Deadline.
-- High priority flag.
+- High Priority flag.
 
-When an issue is created as high priority, the timeline includes priority activity so there is visible history that the issue started that way.
+When an issue is created as High Priority, the timeline includes priority activity so there is visible history that the issue started that way.
 
 ## Editing Issues
 
@@ -38,7 +35,7 @@ Opening a card shows the issue modal. Depending on permission and issue state, u
 - Change assignees.
 - Change labels.
 - Change deadline.
-- Toggle high priority.
+- Toggle High Priority.
 - Add checklist items.
 - Promote checklist items into issues.
 - Delete or restore items when permitted.
@@ -62,8 +59,10 @@ On mobile, the watchlist control is visible on issue cards so users do not need 
 
 ## Deadlines And Priority
 
-Issues can have deadlines and high-priority state. These values are shown on cards and in issue details when configured. Changes are tracked through the activity system.
+Issues can have deadlines and High Priority state. These values are shown on cards and in issue details when configured. Changes are tracked through the activity system.
 
 ## Presence
 
-The board includes a presence area showing whether anyone else is viewing the board. This helps teams understand when multiple users may be working in the same board.
+The board includes a simple presence indicator, showing whether anyone else is viewing the board. This helps teams understand when multiple users may be working in the same board, with the potential for clashing edits.
+
+The Alpaca team is monitoring the development of new collaboration functionality in core WordPress.

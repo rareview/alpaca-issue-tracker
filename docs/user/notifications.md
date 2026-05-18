@@ -1,6 +1,8 @@
 # Notifications
 
-Alpaca Issue Tracker includes inbox and email notification workflows for issue activity.
+Alpaca Issue Tracker ships with an in-app inbox, and email notification workflows for issue activity.
+
+The Alpaca team is planning to add further notification channels in future. Action hooks and filters in the Alpaca codebase can be used to add other channels.
 
 ## Notification Preferences
 
@@ -10,11 +12,13 @@ Users can choose which subjects and event types they care about, including:
 
 - Issues they created.
 - Issues assigned to them.
-- Issues they starred/watched.
+- Issues they have starred/watched.
 - Comments that mention them.
 - Issues with selected labels.
 - Issues currently marked high priority.
 - Newly created issues.
+
+Note: a user will receive a notification that they have been mentioned in discussion of an issue - but they will not be automatically opted into receiving all updates relating to that issue. If they wish to receive further notifications, they should add the issue to their watchlist.
 
 Event categories include:
 
@@ -34,31 +38,22 @@ The notification inbox stores Alpaca Issue Tracker notifications inside WordPres
 
 ## Email Notifications
 
-Email delivery can be enabled and configured from the user's notification settings. A user can use the profile email address or provide an override address if allowed by the current settings.
+Email delivery can be enabled and configured from the user's notification settings.
 
-## Daily Digest
+By default, notifications will be sent to the email address defined in the user's profile.
 
-The notification system includes daily digest support. Digest content can include due items, followed issue activity, and new items.
+The user has the option to specify an alternative address for notification emails.
+
+## Instant Notifications and Daily Digests
+
+Users can receive email notifications immediately following a triggering action.
+
+They can also choose to consolidate all notifications into a single daily digest email, sent at a time of their choosing.
+
+Note: the time for daily digest generation is based on the timezone setting for the site. Users must factor in any time difference to their own location.
 
 ## Email Templates
 
 Administrators manage shared email templates under Project Board > Email Templates.
 
-Template editing uses a block-based editor with Alpaca Issue Tracker placeholder blocks for values such as:
-
-- Issue title.
-- Actor/performed-by name.
-- Event label.
-- Comment content.
-- Issue link.
-- Site title and tagline.
-- Site icon.
-- Event time.
-
-Daily digest templates have their own placeholder blocks for digest sections and summary values.
-
 The full template block and placeholder reference is documented in [Email Templates](../admin/email-templates.md).
-
-## Mentions And Future Notifications
-
-A mention can create a notification for that comment. It does not automatically opt the mentioned user into all future notifications on the issue unless their preferences also match future activity, such as watched/starred issues, assigned issues, or other enabled subjects.

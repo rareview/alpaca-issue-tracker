@@ -8,6 +8,10 @@ Alpaca Issue Tracker requires:
 - PHP 7.4 or newer.
 - A logged-in WordPress user account with access to the Project Board.
 
+## Recommendations
+
+Users are encouraged to set a profile picture, using the standard WordPress profile management screen. By default, WordPress uses an external service (Gravatar) for profile pictures: but you may wish to install a solution for local management, such as [Simple Local Avatars](https://wordpress.org/plugins/simple-local-avatars/).
+
 ## Installation
 
 1. Upload the plugin ZIP in WordPress under Plugins > Add Plugin > Upload Plugin.

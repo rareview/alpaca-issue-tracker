@@ -8,15 +8,17 @@ Users with `edit_posts` can access the main project workflow by default. In stan
 
 Users with `manage_options` can access site-wide configuration and template management. In standard WordPress roles, that usually means Administrators.
 
+We plan to introduce additional permission controls in future releases.
+
 ## Admin Screens
 
-| Screen | Default capability |
-| --- | --- |
-| Project Board | `edit_posts` |
-| Project Activity | `edit_posts` |
-| My Notifications | `edit_posts` |
-| Configure | `manage_options` |
-| Email Templates | `manage_options` |
+| Screen           | Default capability |
+| ---------------- | ------------------ |
+| Project Board    | `edit_posts`       |
+| Project Activity | `edit_posts`       |
+| Configure        | `manage_options`   |
+| My Notifications | `edit_posts`       |
+| Email Templates  | `manage_options`   |
 
 ## Issue Workflows
 

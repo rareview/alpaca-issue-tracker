@@ -6,18 +6,22 @@ Alpaca Issue Tracker uses issue comments and audit entries to show what happened
 
 Users can add comments to issues from the issue modal. Comments support:
 
-- Plain text and formatted content.
+- Plain text, with selected Markdown formatting.
 - Attachments.
 - User mentions with `@username` style suggestions.
-- Edit and delete actions when permissions allow.
+- Edit and delete actions, when permissions allow.
 
 Comments are stored as WordPress comments with plugin-specific metadata and comment type behavior.
 
+Markdown functionality is provided by the open-source [Marked](https://marked.js.org/license).
+
 ## Attachments
 
-Issue and comment attachments are uploaded to the WordPress site and referenced from comment metadata.
+Issue and comment attachments are uploaded to an `alpaca` folder within the WordPress site's `uploads` folder, and referenced from comment metadata.
 
 Attachment behavior is intentionally tied to the issue/comment context so files are not deleted from the wrong issue or comment.
+
+Alpaca uses the site's list of accepted file types.
 
 ## Mentions
 
