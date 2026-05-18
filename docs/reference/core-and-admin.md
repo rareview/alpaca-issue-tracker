@@ -100,10 +100,10 @@ add_filter(
 
 **Parameters**
 
-| Parameter      | Type    | Description                                             |
-| -------------- | ------- | ------------------------------------------------------- | ----------------------------------------------- |
-| `$status_term` | `object | null`                                                   | The status term Alpaca selected as the default. |
-| `$statuses`    | `array` | All available status terms considered during selection. |
+| Parameter      | Type           | Description                                             |
+| -------------- | -------------- | ------------------------------------------------------- |
+| `$status_term` | `object\|null` | The status term Alpaca selected as the default.         |
+| `$statuses`    | `array`        | All available status terms considered during selection. |
 
 **Source:** `includes/api/endpoints/issues.php:123`.
 

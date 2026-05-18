@@ -29,11 +29,11 @@ Use `wp.hooks.addFilter()` from code that runs in the same WordPress admin conte
 
 **Parameters**
 
-| Parameter  | Type       | Description                                                  |
-| ---------- | ---------- | ------------------------------------------------------------ | --------------------------------------------------------------------- |
-| `$content` | `ReactNode | null`                                                        | Existing tab content. Alpaca passes `null` before custom filters run. |
-| `$tab`     | `Object`   | Active tab definition with `name`, `title`, and `className`. |
-| `$context` | `Object`   | Context object containing the current `statuses` array.      |
+| Parameter  | Type              | Description                                                           |
+| ---------- | ----------------- | --------------------------------------------------------------------- |
+| `$content` | `ReactNode\|null` | Existing tab content. Alpaca passes `null` before custom filters run. |
+| `$tab`     | `Object`          | Active tab definition with `name`, `title`, and `className`.          |
+| `$context` | `Object`          | Context object containing the current `statuses` array.               |
 
 **Source:** `src/Settings.jsx:164`.
 
@@ -78,10 +78,10 @@ addFilter(
 
 **Parameters**
 
-| Parameter  | Type       | Description                                             |
-| ---------- | ---------- | ------------------------------------------------------- | ------------------------------------------------------------------------- |
-| `$rows`    | `ReactNode | null`                                                   | Existing row markup. Alpaca passes `null` before third-party filters run. |
-| `$context` | `Object`   | Context object containing the current `statuses` array. |
+| Parameter  | Type              | Description                                                               |
+| ---------- | ----------------- | ------------------------------------------------------------------------- |
+| `$rows`    | `ReactNode\|null` | Existing row markup. Alpaca passes `null` before third-party filters run. |
+| `$context` | `Object`          | Context object containing the current `statuses` array.                   |
 
 **Source:** `src/Settings.jsx:107-109`.
 
@@ -93,10 +93,10 @@ addFilter(
 
 **Parameters**
 
-| Parameter  | Type       | Description                                             |
-| ---------- | ---------- | ------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `$content` | `ReactNode | null`                                                   | Existing content. Alpaca passes `null` before third-party filters run. |
-| `$context` | `Object`   | Context object containing the current `statuses` array. |
+| Parameter  | Type              | Description                                                            |
+| ---------- | ----------------- | ---------------------------------------------------------------------- |
+| `$content` | `ReactNode\|null` | Existing content. Alpaca passes `null` before third-party filters run. |
+| `$context` | `Object`          | Context object containing the current `statuses` array.                |
 
 **Source:** `src/Settings.jsx:116-118`.
 
@@ -128,16 +128,17 @@ addFilter(
 
 **Parameters**
 
-| Parameter  | Type       | Description                                                                             |
-| ---------- | ---------- | --------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| `$content` | `ReactNode | null`                                                                                   | Existing tab content. Alpaca passes `null` before custom filters run. |
-| `$tab`     | `Object`   | Active tab definition.                                                                  |
-| `$context` | `Object`   | Context object containing `channels`, `preferences`, `channelStatus`, and save helpers. |
+| Parameter  | Type              | Description                                                                             |
+| ---------- | ----------------- | --------------------------------------------------------------------------------------- |
+| `$content` | `ReactNode\|null` | Existing tab content. Alpaca passes `null` before custom filters run.                   |
+| `$tab`     | `Object`          | Active tab definition.                                                                  |
+| `$context` | `Object`          | Context object containing `channels`, `preferences`, `channelStatus`, and save helpers. |
 
 **Sources**
 
 - `src/components/NotificationPreferences.jsx:426-436`
 - `src/components/NotificationPreferences.jsx:1118-1123`
+
 ## Board And Issue UI Filters
 
 ### `alpaca.board.controls`
@@ -253,10 +254,10 @@ addFilter(
 
 **Parameters**
 
-| Parameter    | Type       | Description                                                             |
-| ------------ | ---------- | ----------------------------------------------------------------------- | ------------------------- |
-| `$content`   | `ReactNode | null`                                                                   | Current datapoint markup. |
-| `$itemProps` | `Object`   | Item fields including IDs, meta, assignees, labels, and comment counts. |
+| Parameter    | Type              | Description                                                             |
+| ------------ | ----------------- | ----------------------------------------------------------------------- |
+| `$content`   | `ReactNode\|null` | Current datapoint markup.                                               |
+| `$itemProps` | `Object`          | Item fields including IDs, meta, assignees, labels, and comment counts. |
 
 **Sources**
 
@@ -306,10 +307,10 @@ addFilter('alpaca.item.datapoints', 'my-plugin/item-marker', (content, item) =>
 
 **Parameters**
 
-| Parameter     | Type           | Description                                   |
-| ------------- | -------------- | --------------------------------------------- | -------------------------------------------------------------------------------- |
-| `$agentTypes` | `Array<string> | null`                                         | Requested comment agent types. Returning `null` leaves the base count unchanged. |
-| `$itemProps`  | `Object`       | Item fields passed to the datapoint resolver. |
+| Parameter     | Type                  | Description                                                                      |
+| ------------- | --------------------- | -------------------------------------------------------------------------------- |
+| `$agentTypes` | `Array<string>\|null` | Requested comment agent types. Returning `null` leaves the base count unchanged. |
+| `$itemProps`  | `Object`              | Item fields passed to the datapoint resolver.                                    |
 
 **Sources**
 
@@ -353,10 +354,10 @@ addFilter('alpaca.item.datapoints', 'my-plugin/item-marker', (content, item) =>
 
 **Parameters**
 
-| Parameter  | Type       | Description                                            |
-| ---------- | ---------- | ------------------------------------------------------ | ----------------------------------------------------------------- |
-| `$content` | `ReactNode | null`                                                  | Existing content. Alpaca passes `null` before custom filters run. |
-| `$context` | `Object`   | Context with the current `issueId` and `meta` payload. |
+| Parameter  | Type              | Description                                                       |
+| ---------- | ----------------- | ----------------------------------------------------------------- |
+| `$content` | `ReactNode\|null` | Existing content. Alpaca passes `null` before custom filters run. |
+| `$context` | `Object`          | Context with the current `issueId` and `meta` payload.            |
 
 **Source:** `src/components/Issue.jsx:2368-2371`.
 
@@ -434,10 +435,10 @@ addFilter('alpaca.commentingTips', 'my-plugin/comment-tip', (tips) => [
 
 **Parameters**
 
-| Parameter     | Type           | Description                                                           |
-| ------------- | -------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `$agentTypes` | `Array<string> | null`                                                                 | Requested comment agent types. Alpaca defaults to `['human', 'create']`. |
-| `$context`    | `Object`       | Search context containing the current `query` and fetched `comments`. |
+| Parameter     | Type                  | Description                                                              |
+| ------------- | --------------------- | ------------------------------------------------------------------------ |
+| `$agentTypes` | `Array<string>\|null` | Requested comment agent types. Alpaca defaults to `['human', 'create']`. |
+| `$context`    | `Object`              | Search context containing the current `query` and fetched `comments`.    |
 
 **Sources**
 

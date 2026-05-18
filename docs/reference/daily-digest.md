@@ -148,13 +148,13 @@ add_filter(
 
 **Parameters**
 
-| Parameter      | Type     | Description                             |
-| -------------- | -------- | --------------------------------------- | --------------------------------------------------------------- |
-| `$handled`     | `bool    | null`                                   | Return `true` or `false` to override the default dispatch path. |
-| `$channel`     | `string` | The channel currently being dispatched. |
-| `$user_id`     | `int`    | The user receiving the digest.          |
-| `$preferences` | `array`  | The user's notification preferences.    |
-| `$payload`     | `array`  | The structured digest payload.          |
-| `$message`     | `array`  | The channel-specific digest message.    |
+| Parameter      | Type         | Description                                                     |
+| -------------- | ------------ | --------------------------------------------------------------- |
+| `$handled`     | `bool\|null` | Return `true` or `false` to override the default dispatch path. |
+| `$channel`     | `string`     | The channel currently being dispatched.                         |
+| `$user_id`     | `int`        | The user receiving the digest.                                  |
+| `$preferences` | `array`      | The user's notification preferences.                            |
+| `$payload`     | `array`      | The structured digest payload.                                  |
+| `$message`     | `array`      | The channel-specific digest message.                            |
 
 **Source:** `includes/notifications/digest/render.php:728`.

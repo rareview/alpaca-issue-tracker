@@ -104,13 +104,13 @@ add_filter(
 
 **Parameters**
 
-| Parameter    | Type    | Description                         |
-| ------------ | ------- | ----------------------------------- | ------------------------------------------------------------------------ |
-| `$handled`   | `bool   | null`                               | Return `true` or `false` to override Alpaca's default dispatch behavior. |
-| `$route`     | `array` | The route being dispatched.         |
-| `$recipient` | `array` | The current recipient.              |
-| `$event`     | `array` | The notification event payload.     |
-| `$message`   | `array` | The route-specific message payload. |
+| Parameter    | Type         | Description                                                              |
+| ------------ | ------------ | ------------------------------------------------------------------------ |
+| `$handled`   | `bool\|null` | Return `true` or `false` to override Alpaca's default dispatch behavior. |
+| `$route`     | `array`      | The route being dispatched.                                              |
+| `$recipient` | `array`      | The current recipient.                                                   |
+| `$event`     | `array`      | The notification event payload.                                          |
+| `$message`   | `array`      | The route-specific message payload.                                      |
 
 **Source:** `includes/notifications/dispatch.php:147`.
 
