@@ -222,7 +222,8 @@ addFilter(
 
 - `src/components/Item.jsx:85-101`
 - `src/utils/itemControls.js:36-40`
-  **Example**
+
+**Example**
 
 ```jsx
 const { addFilter } = wp.hooks;
@@ -263,7 +264,8 @@ addFilter(
 
 - `src/components/Item.jsx:158-168`
 - `src/utils/itemDatapoints.js:224`
-  **Example**
+
+**Example**
 
 ```jsx
 const { addFilter } = wp.hooks;
@@ -379,7 +381,8 @@ addFilter('alpaca.item.datapoints', 'my-plugin/item-marker', (content, item) =>
 
 - `src/components/Comment.jsx:157-160`
 - `src/components/CommentForm.jsx:140-143`
-  **Example**
+
+**Example**
 
 ```jsx
 const { addFilter } = wp.hooks;
@@ -444,7 +447,8 @@ addFilter('alpaca.commentingTips', 'my-plugin/comment-tip', (tips) => [
 
 - `src/components/Search.jsx:286-289`
 - `src/components/Search.jsx:611-615`
-  **Example**
+
+**Example**
 
 ```jsx
 const { addFilter } = wp.hooks;

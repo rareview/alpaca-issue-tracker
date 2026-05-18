@@ -579,7 +579,7 @@ function replaceSourceBlock(sectionContent, sourceBlock) {
     return null;
   }
 
-  let endIndex = startIndex;
+  let contentStartIndex = startIndex + 1;
 
   if (lines[startIndex].startsWith('**Sources**')) {
     let index = startIndex + 1;
@@ -588,15 +588,30 @@ function replaceSourceBlock(sectionContent, sourceBlock) {
       index < lines.length &&
       ('' === lines[index] || lines[index].startsWith('- '))
     ) {
-      endIndex = index;
       index += 1;
     }
+
+    contentStartIndex = index;
+  }
+
+  const trailingBlankLines = [];
+
+  while (contentStartIndex < lines.length && '' === lines[contentStartIndex]) {
+    trailingBlankLines.push('');
+    contentStartIndex += 1;
+  }
+
+  let separatorLines = trailingBlankLines;
+
+  if (0 === separatorLines.length && contentStartIndex < lines.length) {
+    separatorLines = [''];
   }
 
   return [
     ...lines.slice(0, startIndex),
     ...sourceBlock.split('\n'),
-    ...lines.slice(endIndex + 1),
+    ...separatorLines,
+    ...lines.slice(contentStartIndex),
   ].join('\n');
 }
 
@@ -626,6 +641,7 @@ function updateReferenceFile(fileConfig, context) {
     return false;
   }
 
+  const hadTrailingNewline = content.endsWith('\n');
   let updatedContent = '';
   let lastIndex = 0;
 
@@ -684,13 +700,15 @@ function updateReferenceFile(fileConfig, context) {
 
   updatedContent += content.slice(lastIndex);
 
-  const normalizedContent = updatedContent.replace(/\n{3,}/gu, '\n\n');
+  if (hadTrailingNewline && !updatedContent.endsWith('\n')) {
+    updatedContent += '\n';
+  }
 
-  if (normalizedContent === content) {
+  if (updatedContent === content) {
     return false;
   }
 
-  fs.writeFileSync(filePath, normalizedContent);
+  fs.writeFileSync(filePath, updatedContent);
   return true;
 }
 

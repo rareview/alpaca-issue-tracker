@@ -89,7 +89,8 @@ Use `wp.hooks.addAction()` from code that runs in the same WordPress admin conte
 
 - `src/components/StatusManager.jsx:337-342`
 - `src/utils/statusChange.js:15-20`
-  **Example**
+
+**Example**
 
 ```jsx
 const { addAction } = wp.hooks;
