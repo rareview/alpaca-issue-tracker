@@ -19,43 +19,43 @@ Permissions are checked through `Alpaca\Helpers::user_can()` and `Alpaca\Helpers
 
 Common permission actions:
 
-| Permission action | Default capability |
-| --- | --- |
-| `view_board` | `edit_posts` |
-| `get_issue` | `edit_posts` |
-| `comment_count` | `edit_posts` |
-| `list_users` | `edit_posts` |
-| `presence` | `edit_posts` |
-| `watchlist` | `edit_posts` |
-| `get_statuses` | `edit_posts` |
-| `notification_preferences` | `edit_posts` |
-| `notification_inbox` | `edit_posts` |
-| `create_issue` | `edit_posts` |
-| `update_issue` | `edit_posts` |
-| `update_board` | `edit_posts` |
-| `watchlist_toggle` | `edit_posts` |
-| `register_comment_meta` | `edit_posts` |
-| `delete_issue` | `manage_options` |
-| `manage_options` | `manage_options` |
-| `options_update` | `manage_options` |
-| `notification_template_manage` | `manage_options` |
-| `restore_statuses` | `manage_options` |
-| `update_status` | `manage_options` |
+| Permission action              | Default capability |
+| ------------------------------ | ------------------ |
+| `view_board`                   | `edit_posts`       |
+| `get_issue`                    | `edit_posts`       |
+| `comment_count`                | `edit_posts`       |
+| `list_users`                   | `edit_posts`       |
+| `presence`                     | `edit_posts`       |
+| `watchlist`                    | `edit_posts`       |
+| `get_statuses`                 | `edit_posts`       |
+| `notification_preferences`     | `edit_posts`       |
+| `notification_inbox`           | `edit_posts`       |
+| `create_issue`                 | `edit_posts`       |
+| `update_issue`                 | `edit_posts`       |
+| `update_board`                 | `edit_posts`       |
+| `watchlist_toggle`             | `edit_posts`       |
+| `register_comment_meta`        | `edit_posts`       |
+| `delete_issue`                 | `manage_options`   |
+| `manage_options`               | `manage_options`   |
+| `options_update`               | `manage_options`   |
+| `notification_template_manage` | `manage_options`   |
+| `restore_statuses`             | `manage_options`   |
+| `update_status`                | `manage_options`   |
 
-Custom permission behavior should use the `alpaca_user_can` filter documented in [Extension Points](extension-points.md).
+Custom permission behavior should use the `alpaca_user_can` filter documented in [../reference/core-and-admin.md](../reference/core-and-admin.md).
 
 ## Issue Endpoints
 
-| Method | Route | Permission | Purpose |
-| --- | --- | --- | --- |
-| `POST` | `/wp-json/alpaca/v1/submit` | `create_issue` + nonce | Create a new issue. |
-| `POST` | `/wp-json/alpaca/v1/update/{id}` | `update_issue` + nonce | Update an issue title, content, parent, taxonomies, or meta. |
-| `POST` | `/wp-json/alpaca/v1/subissues` | `create_issue` + nonce | Create a subissue under a parent issue. |
-| `GET` | `/wp-json/alpaca/v1/get/{id}` | `comment_count` | Get full issue details. |
-| `GET` | `/wp-json/alpaca/v1/comment-count/{id}` | `list_users` | Get issue comment counts and last activity. |
-| `GET` | `/wp-json/alpaca/v1/deleted-items` | `comment_count` | List trashed issues for the Deleted Items screen. |
-| `POST` | `/wp-json/alpaca/v1/restore/{id}` | `manage_options` + nonce | Restore a trashed issue. |
-| `DELETE` | `/wp-json/alpaca/v1/delete/{id}` | `delete_issue` + nonce | Trash an issue. |
+| Method   | Route                                   | Permission               | Purpose                                                      |
+| -------- | --------------------------------------- | ------------------------ | ------------------------------------------------------------ |
+| `POST`   | `/wp-json/alpaca/v1/submit`             | `create_issue` + nonce   | Create a new issue.                                          |
+| `POST`   | `/wp-json/alpaca/v1/update/{id}`        | `update_issue` + nonce   | Update an issue title, content, parent, taxonomies, or meta. |
+| `POST`   | `/wp-json/alpaca/v1/subissues`          | `create_issue` + nonce   | Create a subissue under a parent issue.                      |
+| `GET`    | `/wp-json/alpaca/v1/get/{id}`           | `comment_count`          | Get full issue details.                                      |
+| `GET`    | `/wp-json/alpaca/v1/comment-count/{id}` | `list_users`             | Get issue comment counts and last activity.                  |
+| `GET`    | `/wp-json/alpaca/v1/deleted-items`      | `comment_count`          | List trashed issues for the Deleted Items screen.            |
+| `POST`   | `/wp-json/alpaca/v1/restore/{id}`       | `manage_options` + nonce | Restore a trashed issue.                                     |
+| `DELETE` | `/wp-json/alpaca/v1/delete/{id}`        | `delete_issue` + nonce   | Trash an issue.                                              |
 
 ### Create Issue
 
@@ -118,21 +118,21 @@ Expected JSON payload:
 
 Supported query parameters:
 
-| Parameter | Purpose |
-| --- | --- |
-| `search` | Optional search string. |
-| `page` | Page number. Defaults to `1`. |
+| Parameter  | Purpose                           |
+| ---------- | --------------------------------- |
+| `search`   | Optional search string.           |
+| `page`     | Page number. Defaults to `1`.     |
 | `per_page` | Items per page. Defaults to `20`. |
 
 ## Board And Status Endpoints
 
-| Method | Route | Permission | Purpose |
-| --- | --- | --- | --- |
-| `GET` | `/wp-json/alpaca/v1/board` | `get_statuses` | Get board columns and issues. |
-| `POST` | `/wp-json/alpaca/v1/board` | `update_board` + nonce | Save issue ordering inside board columns. |
-| `GET` | `/wp-json/alpaca/v1/statuses` | `get_statuses` | Get status terms. |
-| `POST` | `/wp-json/alpaca/v1/status/{id}` | `update_status` + nonce | Update a status name, slug, or score. |
-| `POST` | `/wp-json/alpaca/v1/statuses/restore-defaults` | `restore_statuses` + nonce | Restore default status terms. |
+| Method | Route                                          | Permission                 | Purpose                                   |
+| ------ | ---------------------------------------------- | -------------------------- | ----------------------------------------- |
+| `GET`  | `/wp-json/alpaca/v1/board`                     | `get_statuses`             | Get board columns and issues.             |
+| `POST` | `/wp-json/alpaca/v1/board`                     | `update_board` + nonce     | Save issue ordering inside board columns. |
+| `GET`  | `/wp-json/alpaca/v1/statuses`                  | `get_statuses`             | Get status terms.                         |
+| `POST` | `/wp-json/alpaca/v1/status/{id}`               | `update_status` + nonce    | Update a status name, slug, or score.     |
+| `POST` | `/wp-json/alpaca/v1/statuses/restore-defaults` | `restore_statuses` + nonce | Restore default status terms.             |
 
 ### Update Board
 
@@ -166,15 +166,15 @@ Supported JSON fields:
 
 ## Users, Labels, And Watchlist Endpoints
 
-| Method | Route | Permission | Purpose |
-| --- | --- | --- | --- |
-| `GET` | `/wp-json/alpaca/v1/users` | `watchlist` | Get assignable users. |
-| `GET` | `/wp-json/alpaca/v1/labels` | `watchlist` | Get labels. |
-| `POST` | `/wp-json/alpaca/v1/labels` | `manage_options` + nonce | Create a label. |
-| `POST` | `/wp-json/alpaca/v1/label/{id}` | `manage_options` + nonce | Update a label. |
-| `DELETE` | `/wp-json/alpaca/v1/label/{id}` | `manage_options` + nonce | Delete a label. |
-| `GET` | `/wp-json/alpaca/v1/watchlist` | `watchlist` | Get the current user's watched issue IDs. |
-| `POST` | `/wp-json/alpaca/v1/watchlist` | `watchlist_toggle` + nonce | Toggle or replace the current user's watchlist. |
+| Method   | Route                           | Permission                 | Purpose                                         |
+| -------- | ------------------------------- | -------------------------- | ----------------------------------------------- |
+| `GET`    | `/wp-json/alpaca/v1/users`      | `watchlist`                | Get assignable users.                           |
+| `GET`    | `/wp-json/alpaca/v1/labels`     | `watchlist`                | Get labels.                                     |
+| `POST`   | `/wp-json/alpaca/v1/labels`     | `manage_options` + nonce   | Create a label.                                 |
+| `POST`   | `/wp-json/alpaca/v1/label/{id}` | `manage_options` + nonce   | Update a label.                                 |
+| `DELETE` | `/wp-json/alpaca/v1/label/{id}` | `manage_options` + nonce   | Delete a label.                                 |
+| `GET`    | `/wp-json/alpaca/v1/watchlist`  | `watchlist`                | Get the current user's watched issue IDs.       |
+| `POST`   | `/wp-json/alpaca/v1/watchlist`  | `watchlist_toggle` + nonce | Toggle or replace the current user's watchlist. |
 
 ### Create Or Update Label
 
@@ -207,35 +207,35 @@ Backward-compatible JSON payload for toggling one issue:
 
 ## Notification Endpoints
 
-| Method | Route | Permission | Purpose |
-| --- | --- | --- | --- |
-| `GET` | `/wp-json/alpaca/v1/notification-preferences` | `notification_preferences` | Get current user's notification preferences. |
-| `POST`, `PUT`, `PATCH` | `/wp-json/alpaca/v1/notification-preferences` | `notification_preferences` + nonce | Update current user's notification preferences. |
-| `GET` | `/wp-json/alpaca/v1/notification-inbox` | `notification_inbox` | Get inbox items. |
-| `GET` | `/wp-json/alpaca/v1/notification-inbox/count` | `notification_inbox` | Get unread inbox count. |
-| `POST` | `/wp-json/alpaca/v1/notification-inbox/mark-read` | `notification_inbox` + nonce | Mark inbox items as read. |
-| `POST` | `/wp-json/alpaca/v1/notification-inbox/mark-unread` | `notification_inbox` + nonce | Mark inbox items as unread. |
-| `POST` | `/wp-json/alpaca/v1/notification-inbox/mark-all-read` | `notification_inbox` + nonce | Mark all inbox items as read. |
-| `GET` | `/wp-json/alpaca/v1/notification-template` | `notification_template_manage` | Get the email notification template. |
-| `POST`, `PUT`, `PATCH` | `/wp-json/alpaca/v1/notification-template` | `notification_template_manage` + nonce | Update the email notification template. |
-| `POST` | `/wp-json/alpaca/v1/notification-template/preview` | `notification_template_manage` + nonce | Preview the email notification template. |
-| `POST` | `/wp-json/alpaca/v1/notification-template/test` | `notification_template_manage` + nonce | Send a test email notification. |
-| `POST` | `/wp-json/alpaca/v1/notification-template/reset` | `notification_template_manage` + nonce | Reset the email notification template. |
-| `GET` | `/wp-json/alpaca/v1/notification-digest-template` | `notification_template_manage` | Get the daily digest template. |
-| `POST`, `PUT`, `PATCH` | `/wp-json/alpaca/v1/notification-digest-template` | `notification_template_manage` + nonce | Update the daily digest template. |
-| `POST` | `/wp-json/alpaca/v1/notification-digest-template/preview` | `notification_template_manage` + nonce | Preview the daily digest template. |
-| `POST` | `/wp-json/alpaca/v1/notification-digest-template/test` | `notification_template_manage` + nonce | Send a test daily digest. |
-| `POST` | `/wp-json/alpaca/v1/notification-digest-template/reset` | `notification_template_manage` + nonce | Reset the daily digest template. |
+| Method                 | Route                                                     | Permission                             | Purpose                                         |
+| ---------------------- | --------------------------------------------------------- | -------------------------------------- | ----------------------------------------------- |
+| `GET`                  | `/wp-json/alpaca/v1/notification-preferences`             | `notification_preferences`             | Get current user's notification preferences.    |
+| `POST`, `PUT`, `PATCH` | `/wp-json/alpaca/v1/notification-preferences`             | `notification_preferences` + nonce     | Update current user's notification preferences. |
+| `GET`                  | `/wp-json/alpaca/v1/notification-inbox`                   | `notification_inbox`                   | Get inbox items.                                |
+| `GET`                  | `/wp-json/alpaca/v1/notification-inbox/count`             | `notification_inbox`                   | Get unread inbox count.                         |
+| `POST`                 | `/wp-json/alpaca/v1/notification-inbox/mark-read`         | `notification_inbox` + nonce           | Mark inbox items as read.                       |
+| `POST`                 | `/wp-json/alpaca/v1/notification-inbox/mark-unread`       | `notification_inbox` + nonce           | Mark inbox items as unread.                     |
+| `POST`                 | `/wp-json/alpaca/v1/notification-inbox/mark-all-read`     | `notification_inbox` + nonce           | Mark all inbox items as read.                   |
+| `GET`                  | `/wp-json/alpaca/v1/notification-template`                | `notification_template_manage`         | Get the email notification template.            |
+| `POST`, `PUT`, `PATCH` | `/wp-json/alpaca/v1/notification-template`                | `notification_template_manage` + nonce | Update the email notification template.         |
+| `POST`                 | `/wp-json/alpaca/v1/notification-template/preview`        | `notification_template_manage` + nonce | Preview the email notification template.        |
+| `POST`                 | `/wp-json/alpaca/v1/notification-template/test`           | `notification_template_manage` + nonce | Send a test email notification.                 |
+| `POST`                 | `/wp-json/alpaca/v1/notification-template/reset`          | `notification_template_manage` + nonce | Reset the email notification template.          |
+| `GET`                  | `/wp-json/alpaca/v1/notification-digest-template`         | `notification_template_manage`         | Get the daily digest template.                  |
+| `POST`, `PUT`, `PATCH` | `/wp-json/alpaca/v1/notification-digest-template`         | `notification_template_manage` + nonce | Update the daily digest template.               |
+| `POST`                 | `/wp-json/alpaca/v1/notification-digest-template/preview` | `notification_template_manage` + nonce | Preview the daily digest template.              |
+| `POST`                 | `/wp-json/alpaca/v1/notification-digest-template/test`    | `notification_template_manage` + nonce | Send a test daily digest.                       |
+| `POST`                 | `/wp-json/alpaca/v1/notification-digest-template/reset`   | `notification_template_manage` + nonce | Reset the daily digest template.                |
 
 ### Notification Inbox Query Parameters
 
 `GET /wp-json/alpaca/v1/notification-inbox`
 
-| Parameter | Purpose |
-| --- | --- |
-| `page` | Page number. Defaults to `1`. |
+| Parameter  | Purpose                                                 |
+| ---------- | ------------------------------------------------------- |
+| `page`     | Page number. Defaults to `1`.                           |
 | `per_page` | Items per page. Defaults to `20` and is capped at `50`. |
-| `filter` | `unread` or `all`. Defaults to `unread`. |
+| `filter`   | `unread` or `all`. Defaults to `unread`.                |
 
 ### Mark Inbox Items
 
@@ -277,10 +277,10 @@ Template update, preview, and test endpoints accept:
 
 ## Attachment Endpoints
 
-| Method | Route | Permission | Purpose |
-| --- | --- | --- | --- |
-| `POST` | `/wp-json/alpaca/v1/comment-attachments` | `register_comment_meta` + nonce | Upload a comment attachment for an issue. |
-| `POST` | `/wp-json/alpaca/v1/comment-attachments/delete` | `register_comment_meta` + nonce | Delete a comment attachment. |
+| Method | Route                                           | Permission                      | Purpose                                   |
+| ------ | ----------------------------------------------- | ------------------------------- | ----------------------------------------- |
+| `POST` | `/wp-json/alpaca/v1/comment-attachments`        | `register_comment_meta` + nonce | Upload a comment attachment for an issue. |
+| `POST` | `/wp-json/alpaca/v1/comment-attachments/delete` | `register_comment_meta` + nonce | Delete a comment attachment.              |
 
 ### Upload Attachment
 
@@ -288,10 +288,10 @@ Template update, preview, and test endpoints accept:
 
 Expected multipart form data:
 
-| Field | Purpose |
-| --- | --- |
+| Field      | Purpose          |
+| ---------- | ---------------- |
 | `issue_id` | Target issue ID. |
-| `file` | Uploaded file. |
+| `file`     | Uploaded file.   |
 
 The upload uses WordPress allowed MIME types and stores the file in an issue-specific upload directory.
 
@@ -301,19 +301,19 @@ The upload uses WordPress allowed MIME types and stores the file in an issue-spe
 
 Expected JSON or form fields:
 
-| Field | Purpose |
-| --- | --- |
-| `issue_id` | Target issue ID. |
+| Field        | Purpose                                           |
+| ------------ | ------------------------------------------------- |
+| `issue_id`   | Target issue ID.                                  |
 | `comment_id` | Optional comment ID used for stricter validation. |
-| `url` | Attachment URL to delete. |
+| `url`        | Attachment URL to delete.                         |
 
 ## Presence, Capture, And Proxy Endpoints
 
-| Method | Route | Permission | Purpose |
-| --- | --- | --- | --- |
-| `POST` | `/wp-json/alpaca/v1/presence` | `presence` + nonce | Update current user's board presence and return other present users. |
-| `GET` | `/wp-json/alpaca/v1/report-context` | `create_issue` + nonce | Return contextual capture data for the current request. |
-| `GET` | `/wp-json/alpaca/v1/proxy` | `view_board` + nonce or valid `proxy_token` | Proxy an image for screenshot capture. |
+| Method | Route                               | Permission                                  | Purpose                                                              |
+| ------ | ----------------------------------- | ------------------------------------------- | -------------------------------------------------------------------- |
+| `POST` | `/wp-json/alpaca/v1/presence`       | `presence` + nonce                          | Update current user's board presence and return other present users. |
+| `GET`  | `/wp-json/alpaca/v1/report-context` | `create_issue` + nonce                      | Return contextual capture data for the current request.              |
+| `GET`  | `/wp-json/alpaca/v1/proxy`          | `view_board` + nonce or valid `proxy_token` | Proxy an image for screenshot capture.                               |
 
 ### Image Proxy
 
@@ -321,10 +321,10 @@ Expected JSON or form fields:
 
 Supported query parameters:
 
-| Parameter | Purpose |
-| --- | --- |
-| `url` | External image URL to proxy. Required. |
-| `nonce` | Same-origin WordPress REST nonce. |
+| Parameter     | Purpose                                     |
+| ------------- | ------------------------------------------- |
+| `url`         | External image URL to proxy. Required.      |
+| `nonce`       | Same-origin WordPress REST nonce.           |
 | `proxy_token` | Signed token used when cookies are omitted. |
 
 The proxy rejects unsafe private or reserved IP targets.
@@ -333,11 +333,11 @@ The proxy rejects unsafe private or reserved IP targets.
 
 Issue comments use WordPress comments with the `issuecomment` type, so the plugin extends selected WordPress core comment routes instead of registering separate comment CRUD routes.
 
-| Method | Route | Purpose |
-| --- | --- | --- |
-| `GET` | `/wp-json/wp/v2/comments` | List issue comments when explicitly requested. |
-| `POST` | `/wp-json/wp/v2/comments` | Create issue comments for Alpaca issues. |
-| `GET` | `/wp-json/wp/v2/comments/{id}` | Read one issue comment when explicitly requested. |
+| Method | Route                          | Purpose                                           |
+| ------ | ------------------------------ | ------------------------------------------------- |
+| `GET`  | `/wp-json/wp/v2/comments`      | List issue comments when explicitly requested.    |
+| `POST` | `/wp-json/wp/v2/comments`      | Create issue comments for Alpaca issues.          |
+| `GET`  | `/wp-json/wp/v2/comments/{id}` | Read one issue comment when explicitly requested. |
 
 For hidden issue comments, REST reads must explicitly target the issue comment type and opt into visibility:
 

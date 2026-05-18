@@ -62,4 +62,5 @@ Related docs:
 
 - [Notifications](../user/notifications.md) explains user-facing notification behavior.
 - [Email Templates](../admin/email-templates.md) documents notification and digest template configuration.
-- [Extension Points](extension-points.md#notifications) documents notification hooks and filters.
+- [../reference/notifications.md](../reference/notifications.md) documents immediate notification hooks and filters.
+- [../reference/daily-digest.md](../reference/daily-digest.md) documents daily digest hooks and filters.

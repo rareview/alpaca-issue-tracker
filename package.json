@@ -15,6 +15,7 @@
   },
   "scripts": {
     "icons:generate": "node scripts/generate-icons.js",
+    "docs:refresh-hook-lines": "node scripts/refresh-hook-reference-lines.js",
     "prestart": "npm run icons:generate",
     "start": "parcel src/index.jsx src/admin-global.jsx",
     "prebuild": "npm run icons:generate",

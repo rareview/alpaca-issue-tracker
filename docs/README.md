@@ -26,5 +26,5 @@ This documentation is for site owners, project teams, and developers working wit
 - [Data Model](developer/data-model.md): post types, taxonomies, meta, comments, options, and notification tables.
 - [Settings And Options](developer/settings-options.md): site options, REST settings, user preferences, and internal options.
 - [REST API](developer/rest-api.md): endpoint reference, permissions, payloads, and REST hooks.
-- [Extension Points](developer/extension-points.md): supported hooks, filters, and integration examples.
+- [Hook Reference](reference/README.md): complete PHP and JavaScript extension point signatures, examples, and source locations grouped by subsystem.
 - [Icon System](developer/icon-system.md): source SVGs, generated icon registries, and SVG sanitization.
