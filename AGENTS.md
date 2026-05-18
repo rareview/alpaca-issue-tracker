@@ -18,6 +18,16 @@ Code should prioritize maintainability, clarity, and compatibility with current 
 
 All code must be compatible with typical WordPress environments ranging from cheap shared hosting to enterprise platforms like WordPress VIP. No build step should be required unless explicitly stated.
 
+## Hook reference documentation
+
+Any time you introduce a new PHP `do_action()` or `apply_filters()` call, or a new JavaScript `wp.hooks.doAction()` or `wp.hooks.applyFilters()` call, you must add a corresponding entry to the appropriate file in `docs/reference/`:
+
+- PHP action hooks → `docs/reference/core-and-admin.md`, `docs/reference/notifications.md`, `docs/reference/daily-digest.md`, `docs/reference/rest-api.md`, or `docs/reference/private-comments.md`, depending on the feature area.
+- JavaScript filter hooks → `docs/reference/javascript-filters.md`.
+- JavaScript action hooks → `docs/reference/javascript-actions.md`.
+
+Follow the style of existing entries in the target file. After adding the entry, update the entry count for that file in `docs/reference/README.md`, and update the `expectedHeadingCount` value for that file in `scripts/refresh-hook-reference-lines.js`. Then run `npm run docs:refresh-hook-lines` to populate the correct source line references.
+
 ## Translation workflow notes
 
 Wrap all user-facing strings in translation functions with the `alpaca` text domain.

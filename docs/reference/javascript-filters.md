@@ -138,7 +138,6 @@ addFilter(
 
 - `src/components/NotificationPreferences.jsx:426-436`
 - `src/components/NotificationPreferences.jsx:1118-1123`
-
 ## Board And Issue UI Filters
 
 ### `alpaca.board.controls`

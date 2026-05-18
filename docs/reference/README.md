@@ -23,12 +23,12 @@ Use the pages below when you need exact signatures, examples, source locations, 
 
 ## Reference Pages
 
-| Page                                           | Focus                                                                            |  Entries |
-| ---------------------------------------------- | -------------------------------------------------------------------------------- | -------: |
-| [core-and-admin.md](core-and-admin.md)         | Initialization, permissions, board behavior, admin UI, localization, migrations  |        7 |
-| [notifications.md](notifications.md)           | Notification channels, recipients, routing, message delivery, mail sender hooks  |       14 |
-| [daily-digest.md](daily-digest.md)             | Daily digest payload building, rendering, and channel dispatch                   |        8 |
-| [rest-api.md](rest-api.md)                     | REST response hooks, dynamic REST hooks, and REST root customization             |        5 |
-| [private-comments.md](private-comments.md)     | Private comment visibility and REST override hooks                               |        2 |
-| [javascript-filters.md](javascript-filters.md) | JavaScript filters and the public card datapoint browser API                     |       26 |
-| [javascript-actions.md](javascript-actions.md) | JavaScript actions emitted by issue, comment, watchlist, and datapoint workflows |       13 |
+| Page                                           | Focus                                                                            | Entries |
+| ---------------------------------------------- | -------------------------------------------------------------------------------- | ------: |
+| [core-and-admin.md](core-and-admin.md)         | Initialization, permissions, board behavior, admin UI, localization, migrations  |       7 |
+| [notifications.md](notifications.md)           | Notification channels, recipients, routing, message delivery, mail sender hooks  |      14 |
+| [daily-digest.md](daily-digest.md)             | Daily digest payload building, rendering, and channel dispatch                   |       8 |
+| [rest-api.md](rest-api.md)                     | REST response hooks, dynamic REST hooks, and REST root customization             |       5 |
+| [private-comments.md](private-comments.md)     | Private comment visibility and REST override hooks                               |       2 |
+| [javascript-filters.md](javascript-filters.md) | JavaScript filters and the public card datapoint browser API                     |      26 |
+| [javascript-actions.md](javascript-actions.md) | JavaScript actions emitted by issue, comment, watchlist, and datapoint workflows |      35 |

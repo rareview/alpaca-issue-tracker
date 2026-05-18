@@ -51,7 +51,7 @@ const REFERENCE_FILE_CONFIGS = [
   },
   {
     fileName: 'javascript-actions.md',
-    expectedHeadingCount: 13,
+    expectedHeadingCount: 35,
     sourceType: 'js-action',
   },
 ];
