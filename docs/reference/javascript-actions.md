@@ -44,12 +44,12 @@ Use `wp.hooks.addAction()` from code that runs in the same WordPress admin conte
 
 **Parameters**
 
-| Parameter         | Type      | Description                                                                                                                                                    |
-| ----------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------- |
-| `$issue`          | `Object`  | Created issue payload.                                                                                                                                         |
-| `$statusId`       | `number   | string`                                                                                                                                                        | Status identifier assigned during creation. |
-| `$isHighPriority` | `boolean` | Whether the created issue is marked high priority.                                                                                                             |
-| `$submission`     | `Object`  | Submission metadata. Contains `feedback` (string), `screenshotUrl` (string), and optionally `commentAlreadyCreated` (boolean) and `skipBoardInsert` (boolean). |
+| Parameter         | Type             | Description                                                                                                                                |
+| ----------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `$issue`          | `Object`         | Created issue payload.                                                                                                                     |
+| `$statusId`       | `number\|string` | Status identifier assigned during creation.                                                                                                |
+| `$isHighPriority` | `boolean`        | Whether the created issue is marked high priority.                                                                                         |
+| `$submission`     | `Object`         | Submission metadata. Contains `feedback` (string), `screenshotUrl` (string), and optionally `commentAlreadyCreated` and `skipBoardInsert`. |
 
 **Sources**
 
@@ -65,9 +65,9 @@ Use `wp.hooks.addAction()` from code that runs in the same WordPress admin conte
 
 **Parameters**
 
-| Parameter  | Type    | Description |
-| ---------- | ------- | ----------- | ----------------- |
-| `$issueId` | `number | string`     | Updated issue ID. |
+| Parameter  | Type             | Description       |
+| ---------- | ---------------- | ----------------- |
+| `$issueId` | `number\|string` | Updated issue ID. |
 
 **Source:** `src/components/Issue.jsx:893`.
 
@@ -191,9 +191,9 @@ addAction(
 
 **Parameters**
 
-| Parameter  | Type    | Description |
-| ---------- | ------- | ----------- | ----------------- |
-| `$issueId` | `number | string`     | Deleted issue ID. |
+| Parameter  | Type             | Description       |
+| ---------- | ---------------- | ----------------- |
+| `$issueId` | `number\|string` | Deleted issue ID. |
 
 **Sources**
 
