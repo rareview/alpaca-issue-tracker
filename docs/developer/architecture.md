@@ -57,10 +57,3 @@ Site options and user preferences are documented in [Settings and Options](setti
 Notifications are built from issue and comment events, routed through notification recipients, and delivered through configured channels such as the in-app inbox and email.
 
 Daily digest behavior is handled separately from immediate notifications.
-
-Related docs:
-
-- [Notifications](../user/notifications.md) explains user-facing notification behavior.
-- [Email Templates](../admin/email-templates.md) documents notification and digest template configuration.
-- [../reference/notifications.md](../reference/notifications.md) documents immediate notification hooks and filters.
-- [../reference/daily-digest.md](../reference/daily-digest.md) documents daily digest hooks and filters.

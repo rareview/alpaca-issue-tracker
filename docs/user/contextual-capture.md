@@ -44,4 +44,6 @@ Issues should be created using the Add Issue button on the Project Board itself.
 
 The base plugin stores captured issue data inside the WordPress database and file system. It does not send issue data to an external service by default.
 
+:::warning
 Because screenshots and request context can include sensitive information, teams should confirm that contextual capture is appropriate for the site and user roles that can access it.
+:::

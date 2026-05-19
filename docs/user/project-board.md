@@ -8,7 +8,9 @@ Statuses are stored as WordPress taxonomy terms and ordered by their status scor
 
 Users can drag issues from column to column. They can also drag issues within a column, to imply a priority order.
 
-Note: at the narrowest screen sizes, columns are presented as rows.
+:::info
+At the narrowest screen sizes, columns are presented as rows.
+:::
 
 ## Creating Issues
 

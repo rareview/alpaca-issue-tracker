@@ -18,7 +18,9 @@ Users can choose which subjects and event types they care about, including:
 - Issues currently marked high priority.
 - Newly created issues.
 
-Note: a user will receive a notification that they have been mentioned in discussion of an issue - but they will not be automatically opted into receiving all updates relating to that issue. If they wish to receive further notifications, they should add the issue to their watchlist.
+:::tip
+A user will receive a notification that they have been mentioned in discussion of an issue - but they will not be automatically opted into receiving all updates relating to that issue. If they wish to receive further notifications, they should add the issue to their watchlist.
+:::
 
 Event categories include:
 
@@ -50,7 +52,9 @@ Users can receive email notifications immediately following a triggering action.
 
 They can also choose to consolidate all notifications into a single daily digest email, sent at a time of their choosing.
 
-Note: the time for daily digest generation is based on the timezone setting for the site. Users must factor in any time difference to their own location.
+:::tip
+The time for daily digest generation is based on the timezone setting for the site. Users must factor in any time difference to their own location.
+:::
 
 ## Email Templates
 
