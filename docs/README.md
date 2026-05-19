@@ -1,3 +1,8 @@
+---
+sidebar_label: 'Home'
+sidebar_position: 1
+---
+
 # Alpaca Issue Tracker Documentation
 
 Alpaca Issue Tracker is a WordPress-native issue tracker for bug reports, QA feedback, and project work inside `wp-admin`.
