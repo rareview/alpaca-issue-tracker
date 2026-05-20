@@ -324,10 +324,11 @@ final class Alpaca {
 			'alpaca_options',
 			'alpaca_enable_test_logs',
 			[
-				'type'         => 'string',
-				'description'  => esc_html__( 'Enable console messages for testing purposes.', 'alpaca' ),
-				'show_in_rest' => true,
-				'default'      => '0',
+				'type'              => 'string',
+				'description'       => esc_html__( 'Enable console messages for testing purposes.', 'alpaca' ),
+				'sanitize_callback' => [ $this, 'sanitize_binary_setting' ],
+				'show_in_rest'      => true,
+				'default'           => '0',
 			]
 		);
 
@@ -335,10 +336,11 @@ final class Alpaca {
 			'alpaca_options',
 			'alpaca_enable_context_capture',
 			[
-				'type'         => 'string',
-				'description'  => esc_html__( 'Enable context capture, including the toolbar and data dump.', 'alpaca' ),
-				'show_in_rest' => true,
-				'default'      => '1',
+				'type'              => 'string',
+				'description'       => esc_html__( 'Enable context capture, including the toolbar and data dump.', 'alpaca' ),
+				'sanitize_callback' => [ $this, 'sanitize_binary_setting' ],
+				'show_in_rest'      => true,
+				'default'           => '1',
 			]
 		);
 
@@ -360,6 +362,30 @@ final class Alpaca {
 				'default'           => [],
 			]
 		);
+	}
+
+	/**
+	 * Sanitize a setting that stores a binary enabled/disabled value.
+	 *
+	 * @param mixed $value Raw setting value.
+	 * @return string
+	 */
+	public function sanitize_binary_setting( $value ) {
+		if ( is_bool( $value ) ) {
+			return $value ? '1' : '0';
+		}
+
+		if ( is_numeric( $value ) ) {
+			return 1 === (int) $value ? '1' : '0';
+		}
+
+		if ( ! is_scalar( $value ) ) {
+			return '0';
+		}
+
+		$normalized_value = strtolower( trim( (string) $value ) );
+
+		return in_array( $normalized_value, [ '1', 'true', 'yes', 'on' ], true ) ? '1' : '0';
 	}
 
 	/**
