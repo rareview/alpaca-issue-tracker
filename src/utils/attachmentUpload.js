@@ -9,7 +9,7 @@ const { __ } = wp.i18n;
  */
 export const uploadIssueAttachment = async (file, issueId) => {
   if (!file) {
-    throw new Error(__('Missing attachment file.', 'alpaca'));
+    throw new Error(__('Missing attachment file.', 'alpaca-issue-tracker'));
   }
 
   const formData = new window.FormData();
@@ -24,12 +24,12 @@ export const uploadIssueAttachment = async (file, issueId) => {
 
   if (!response || response.success === false) {
     throw new Error(
-      response?.message || __('Failed to upload attachment.', 'alpaca'),
+      response?.message || __('Failed to upload attachment.', 'alpaca-issue-tracker'),
     );
   }
 
   if (!response.url) {
-    throw new Error(__('Failed to upload attachment.', 'alpaca'));
+    throw new Error(__('Failed to upload attachment.', 'alpaca-issue-tracker'));
   }
 
   return {
@@ -70,7 +70,7 @@ export const deleteIssueAttachment = async (url, issueId, commentId = null) => {
 
   if (!response || response.success === false) {
     throw new Error(
-      response?.message || __('Failed to delete attachment.', 'alpaca'),
+      response?.message || __('Failed to delete attachment.', 'alpaca-issue-tracker'),
     );
   }
 };
@@ -84,7 +84,7 @@ export const deleteIssueAttachment = async (url, issueId, commentId = null) => {
  */
 export const dataUrlToFile = async (dataUrl, filename) => {
   if (!dataUrl) {
-    throw new Error(__('Missing attachment data.', 'alpaca'));
+    throw new Error(__('Missing attachment data.', 'alpaca-issue-tracker'));
   }
 
   const response = await fetch(dataUrl);

@@ -21,7 +21,7 @@ export const addLastCommentActivityDatapoint = (originalContent, itemProps) => {
   const lastActivityIsGmt = /(?:Z|[+-]\d{2}:\d{2})$/i.test(
     lastActivityDateString,
   );
-  const lastActivityTooltipText = __('Last Activity', 'alpaca');
+  const lastActivityTooltipText = __('Last Activity', 'alpaca-issue-tracker');
 
   return (
     <>
@@ -44,7 +44,7 @@ export const addLastCommentActivityDatapoint = (originalContent, itemProps) => {
 
 export const lastCommentActivityDatapointRegistration = {
   slug: 'last_activity',
-  label: __('Last Activity', 'alpaca'),
+  label: __('Last Activity', 'alpaca-issue-tracker'),
   namespace: 'alpaca/item/addLastCommentActivityDatapoint',
   callback: addLastCommentActivityDatapoint,
   defaultEnabled: true,

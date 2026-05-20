@@ -73,7 +73,7 @@ const Presence = memo(function Presence() {
   if (!presentUsers || presentUsers.length === 0) {
     return (
       <div className="alpaca-presence-msg alpaca-presence-empty">
-        {__('Nobody else is viewing the board right now', 'alpaca')}
+        {__('Nobody else is viewing the board right now', 'alpaca-issue-tracker')}
       </div>
     );
   }
@@ -81,14 +81,14 @@ const Presence = memo(function Presence() {
   return (
     <div className="alpaca-presence-list">
       <div className="alpaca-presence-msg">
-        {__('Currently viewing the board: ', 'alpaca')}
+        {__('Currently viewing the board: ', 'alpaca-issue-tracker')}
       </div>
       {presentUsers.map((u) => {
         const name =
           u.display_name ||
           u.displayName ||
           u.user_nicename ||
-          __('User', 'alpaca');
+          __('User', 'alpaca-issue-tracker');
         return (
           <Tooltip key={u.id} text={name}>
             <span className="alpaca-presence-user-wrap">

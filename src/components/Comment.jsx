@@ -55,7 +55,7 @@ const deleteCommentAttachment = async (url, issueId, commentId = null) => {
 
   if (!response || response.success === false) {
     throw new Error(
-      response?.message || __('Failed to delete attachment.', 'alpaca'),
+      response?.message || __('Failed to delete attachment.', 'alpaca-issue-tracker'),
     );
   }
 };
@@ -105,11 +105,11 @@ const AttachmentControls = ({
           __nextHasNoMarginBottom
         >
           {isProcessing
-            ? __('Uploading…', 'alpaca')
-            : __('Attach Files', 'alpaca')}
+            ? __('Uploading…', 'alpaca-issue-tracker')
+            : __('Attach Files', 'alpaca-issue-tracker')}
         </FormFileUpload>
 
-        <Tooltip text={__('Commenting Tips', 'alpaca')}>
+        <Tooltip text={__('Commenting Tips', 'alpaca-issue-tracker')}>
           <Button
             variant="tertiary"
             icon="info-outline"
@@ -123,7 +123,7 @@ const AttachmentControls = ({
 
       {showHelp && (
         <Modal
-          title={__('Commenting Tips', 'alpaca')}
+          title={__('Commenting Tips', 'alpaca-issue-tracker')}
           onRequestClose={() => setShowHelp(false)}
           className="alpaca-modal"
         >
@@ -133,21 +133,21 @@ const AttachmentControls = ({
                 {
                   text: __(
                     'Type <kbd>@</kbd> and select a user to notify.',
-                    'alpaca',
+                    'alpaca-issue-tracker',
                   ),
                   placeholders: { kbd: <kbd /> },
                 },
                 {
                   text: __(
                     'Basic Markdown is supported: <code>**bold**</code>, <code>*italic*</code>, <code>`code`</code>, <code>- lists</code>, etc.',
-                    'alpaca',
+                    'alpaca-issue-tracker',
                   ),
                   placeholders: { code: <code /> },
                 },
                 {
                   text: __(
                     'You can click <strong>Attach Files</strong> to upload an attachment, or simply drag and drop files into the comment area.',
-                    'alpaca',
+                    'alpaca-issue-tracker',
                   ),
                   placeholders: { strong: <strong /> },
                 },
@@ -301,7 +301,7 @@ const Comment = memo(
             <Dropdown
               popoverProps={{ placement: 'bottom-end' }}
               renderToggle={({ isOpen, onToggle }) => (
-                <Tooltip text={__('Options', 'alpaca')}>
+                <Tooltip text={__('Options', 'alpaca-issue-tracker')}>
                   <Button
                     icon="ellipsis"
                     onClick={onToggle}
@@ -320,7 +320,7 @@ const Comment = memo(
                         onClose();
                       }}
                     >
-                      {__('Edit', 'alpaca')}
+                      {__('Edit', 'alpaca-issue-tracker')}
                     </MenuItem>
                   )}
                   {canDeleteComment && (
@@ -329,7 +329,7 @@ const Comment = memo(
                       isDestructive
                       onClick={() => confirmDeleteComment(comment.id)}
                     >
-                      {__('Delete', 'alpaca')}
+                      {__('Delete', 'alpaca-issue-tracker')}
                     </MenuItem>
                   )}
                 </MenuGroup>
@@ -346,18 +346,18 @@ const Comment = memo(
             onClick={onAttachmentClick}
             isSubmitting={isSubmitting}
             isProcessing={isProcessingAttachments}
-            pendingAltText={__('Pending comment attachment', 'alpaca')}
+            pendingAltText={__('Pending comment attachment', 'alpaca-issue-tracker')}
             actions={
               <>
                 <Button onClick={cancelEditing} disabled={isSubmitting}>
-                  {__('Cancel', 'alpaca')}
+                  {__('Cancel', 'alpaca-issue-tracker')}
                 </Button>
                 <Button
                   isPrimary
                   onClick={() => saveEdit(comment.id)}
                   disabled={isSubmitting || isProcessingAttachments}
                 >
-                  {__('Save', 'alpaca')}
+                  {__('Save', 'alpaca-issue-tracker')}
                 </Button>
               </>
             }
@@ -366,7 +366,7 @@ const Comment = memo(
               value={editingContent}
               onChange={setEditingContent}
               textareaRef={editingRef}
-              placeholder={__('Edit comment…', 'alpaca')}
+              placeholder={__('Edit comment…', 'alpaca-issue-tracker')}
               disabled={isSubmitting}
             />
           </AttachmentControls>
@@ -506,7 +506,7 @@ const Commenting = ({
         .then(setComments)
         .catch((err) => {
           console.error(err);
-          showNotification(__('Could not load comments.', 'alpaca'), 'error');
+          showNotification(__('Could not load comments.', 'alpaca-issue-tracker'), 'error');
         })
         .finally(() => {
           if (showLoading) {
@@ -537,7 +537,7 @@ const Commenting = ({
   const handleCommentSubmit = useCallback(() => {
     if (!newComment.trim()) {
       showNotification(
-        __('Please add a comment before submitting.', 'alpaca'),
+        __('Please add a comment before submitting.', 'alpaca-issue-tracker'),
         'error',
       );
       return;
@@ -635,7 +635,7 @@ const Commenting = ({
           prev.filter((c) => c.id !== optimisticComment.id),
         );
         showNotification(
-          `${__('Failed to submit comment:', 'alpaca')} ${err.message || __('Unknown error', 'alpaca')}`,
+          `${__('Failed to submit comment:', 'alpaca-issue-tracker')} ${err.message || __('Unknown error', 'alpaca-issue-tracker')}`,
         );
       })
       .finally(() => setIsSubmitting(false));
@@ -678,7 +678,7 @@ const Commenting = ({
         userName:
           currentUser?.display_name ||
           currentUser?.name ||
-          __('Unknown', 'alpaca'),
+          __('Unknown', 'alpaca-issue-tracker'),
       };
       const attachmentUrls = editingAttachments
         .map((attachment) => attachment.url)
@@ -719,7 +719,7 @@ const Commenting = ({
 
           if (failedCount > 0) {
             showNotification(
-              __('Failed to delete one or more attachments.', 'alpaca'),
+              __('Failed to delete one or more attachments.', 'alpaca-issue-tracker'),
               'error',
             );
             throw new Error('attachment_delete_failed');
@@ -755,7 +755,7 @@ const Commenting = ({
 
           console.error(err);
           showNotification(
-            `${__('Failed to update comment:', 'alpaca')} ${err.message || __('Unknown error', 'alpaca')}`,
+            `${__('Failed to update comment:', 'alpaca-issue-tracker')} ${err.message || __('Unknown error', 'alpaca-issue-tracker')}`,
           );
         })
         .finally(() => setIsSubmitting(false));
@@ -831,7 +831,7 @@ const Commenting = ({
           .catch((err) => {
             console.error(err);
             showNotification(
-              `${__('Failed to delete comment:', 'alpaca')} ${err.message || __('Unknown error', 'alpaca')}`,
+              `${__('Failed to delete comment:', 'alpaca-issue-tracker')} ${err.message || __('Unknown error', 'alpaca-issue-tracker')}`,
             );
           });
       });
@@ -858,7 +858,7 @@ const Commenting = ({
 
         if (failedCount > 0) {
           showNotification(
-            __('Failed to upload one or more attachments.', 'alpaca'),
+            __('Failed to upload one or more attachments.', 'alpaca-issue-tracker'),
             'error',
           );
         }
@@ -869,7 +869,7 @@ const Commenting = ({
       } catch (error) {
         console.error('Failed to upload attachments', error);
         showNotification(
-          __('Failed to upload one or more attachments.', 'alpaca'),
+          __('Failed to upload one or more attachments.', 'alpaca-issue-tracker'),
           'error',
         );
       } finally {
@@ -929,7 +929,7 @@ const Commenting = ({
         } catch (error) {
           console.error('Failed to delete attachment', error);
           showNotification(
-            __('Failed to delete attachment.', 'alpaca'),
+            __('Failed to delete attachment.', 'alpaca-issue-tracker'),
             'error',
           );
           return;
@@ -972,7 +972,7 @@ const Commenting = ({
           } catch (error) {
             console.error('Failed to delete attachment', error);
             showNotification(
-              __('Failed to delete attachment.', 'alpaca'),
+              __('Failed to delete attachment.', 'alpaca-issue-tracker'),
               'error',
             );
             return;
@@ -1000,8 +1000,8 @@ const Commenting = ({
       <div id="alpaca-comments-header">
         <Button variant="tertiary" onClick={toggleSortOrder}>
           {sortOrder === 'desc'
-            ? __('Sort: ↑', 'alpaca')
-            : __('Sort: ↓', 'alpaca')}
+            ? __('Sort: ↑', 'alpaca-issue-tracker')
+            : __('Sort: ↓', 'alpaca-issue-tracker')}
         </Button>
       </div>
 
@@ -1016,7 +1016,7 @@ const Commenting = ({
               onClick={setLightboxSrc}
               isSubmitting={isSubmitting}
               isProcessing={isProcessingAttachments}
-              pendingAltText={__('Pending comment attachment', 'alpaca')}
+              pendingAltText={__('Pending comment attachment', 'alpaca-issue-tracker')}
               actions={
                 <Button
                   isPrimary
@@ -1024,13 +1024,13 @@ const Commenting = ({
                   disabled={isSubmitting || isProcessingAttachments}
                 >
                   {isSubmitting
-                    ? __('Submitting…', 'alpaca')
-                    : __('Submit Comment', 'alpaca')}
+                    ? __('Submitting…', 'alpaca-issue-tracker')
+                    : __('Submit Comment', 'alpaca-issue-tracker')}
                 </Button>
               }
             >
               <MentionsTextarea
-                placeholder={__('Add a comment…', 'alpaca')}
+                placeholder={__('Add a comment…', 'alpaca-issue-tracker')}
                 value={newComment}
                 onChange={setNewComment}
                 textareaRef={newCommentRef}
@@ -1041,7 +1041,7 @@ const Commenting = ({
         </div>
 
         {isLoadingComments && (
-          <p className="alpaca-loading">{__('Loading comments…', 'alpaca')}</p>
+          <p className="alpaca-loading">{__('Loading comments…', 'alpaca-issue-tracker')}</p>
         )}
 
         <div className="alpaca-comments-timeline">
@@ -1087,7 +1087,7 @@ const Commenting = ({
 
         {deleteCommentId && (
           <Modal
-            title={__('Delete Comment?', 'alpaca')}
+            title={__('Delete Comment?', 'alpaca-issue-tracker')}
             onRequestClose={cancelDelete}
             className="alpaca-modal"
           >
@@ -1101,9 +1101,9 @@ const Commenting = ({
                 let attachmentText = '';
 
                 if (attachmentCount === 1) {
-                  attachmentText = __(' and its attachment', 'alpaca');
+                  attachmentText = __(' and its attachment', 'alpaca-issue-tracker');
                 } else if (attachmentCount > 1) {
-                  attachmentText = __(' and its attachments', 'alpaca');
+                  attachmentText = __(' and its attachments', 'alpaca-issue-tracker');
                 }
 
                 const commentCount = 1;
@@ -1114,16 +1114,16 @@ const Commenting = ({
                     'Are you sure you want to delete this comment%1$s?',
                     'Are you sure you want to delete these comments%1$s?',
                     commentCount,
-                    'alpaca',
+                    'alpaca-issue-tracker',
                   ),
                   attachmentText,
                 );
               })()}
             </p>
             <Button isPrimary onClick={deleteComment}>
-              {__('Delete', 'alpaca')}
+              {__('Delete', 'alpaca-issue-tracker')}
             </Button>
-            <Button onClick={cancelDelete}>{__('Cancel', 'alpaca')}</Button>
+            <Button onClick={cancelDelete}>{__('Cancel', 'alpaca-issue-tracker')}</Button>
           </Modal>
         )}
       </div>

@@ -80,7 +80,7 @@ function alpaca_get_notification_daily_digest_body_template_default( $preamble =
 	$preamble = is_string( $preamble ) ? trim( $preamble ) : '';
 
 	if ( ! is_string( $postscript ) || '' === trim( $postscript ) ) {
-		$postscript = __( 'You are receiving this summary because you opted into the daily digest.', 'alpaca' );
+		$postscript = __( 'You are receiving this summary because you opted into the daily digest.', 'alpaca-issue-tracker' );
 	}
 
 	$lock = wp_json_encode( alpaca_get_notification_daily_digest_required_block_lock() );
@@ -104,7 +104,7 @@ function alpaca_get_notification_daily_digest_body_template_default( $preamble =
 			'</div>',
 			'<!-- /wp:group -->',
 			'<!-- wp:heading {"level":2} -->',
-			'<h2>' . esc_html__( 'Daily Summary for {{digest_day}}', 'alpaca' ) . '</h2>',
+			'<h2>' . esc_html__( 'Daily Summary for {{digest_day}}', 'alpaca-issue-tracker' ) . '</h2>',
 			'<!-- /wp:heading -->',
 			( '' !== $preamble )
 				? '<!-- wp:paragraph --><p>' . esc_html( $preamble ) . '</p><!-- /wp:paragraph -->'
@@ -116,7 +116,7 @@ function alpaca_get_notification_daily_digest_body_template_default( $preamble =
 			'<p>' . esc_html( $postscript ) . '</p>',
 			'<!-- /wp:paragraph -->',
 			'<!-- wp:paragraph {"fontSize":"small"} -->',
-			'<p class="has-small-font-size"><a href="{{notifications_url}}">' . esc_html__( 'Manage notifications', 'alpaca' ) . '</a></p>',
+			'<p class="has-small-font-size"><a href="{{notifications_url}}">' . esc_html__( 'Manage notifications', 'alpaca-issue-tracker' ) . '</a></p>',
 			'<!-- /wp:paragraph -->',
 		]
 	);
@@ -258,9 +258,9 @@ function alpaca_sanitize_notification_daily_digest_body_template( $body ) {
 		null,
 		alpaca_get_notification_daily_digest_required_block_names(),
 		'alpaca_daily_digest_template_empty',
-		esc_html__( 'The daily digest template must contain at least one supported block.', 'alpaca' ),
+		esc_html__( 'The daily digest template must contain at least one supported block.', 'alpaca-issue-tracker' ),
 		'alpaca_daily_digest_template_missing_sections',
-		esc_html__( 'The daily digest template must include the locked digest section blocks.', 'alpaca' )
+		esc_html__( 'The daily digest template must include the locked digest section blocks.', 'alpaca-issue-tracker' )
 	);
 }
 

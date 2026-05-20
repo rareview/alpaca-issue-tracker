@@ -21,9 +21,9 @@ export const addPriorityDatapoint = (originalContent, itemProps) => {
     return (
       <>
         {originalContent}
-        <Tooltip text={__('Priority', 'alpaca')}>
+        <Tooltip text={__('Priority', 'alpaca-issue-tracker')}>
           <div className="alpaca-item-priority-badge">
-            <Icon name="priority" /> {__('Priority', 'alpaca')}
+            <Icon name="priority" /> {__('Priority', 'alpaca-issue-tracker')}
           </div>
         </Tooltip>
       </>
@@ -35,7 +35,7 @@ export const addPriorityDatapoint = (originalContent, itemProps) => {
 
 export const priorityDatapointRegistration = {
   slug: 'priority',
-  label: __('Priority', 'alpaca'),
+  label: __('Priority', 'alpaca-issue-tracker'),
   namespace: 'alpaca/item/addPriorityDatapoint',
   callback: addPriorityDatapoint,
   defaultEnabled: true,

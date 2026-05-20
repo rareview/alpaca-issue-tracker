@@ -123,7 +123,7 @@ function alpaca_update_status_callback( WP_REST_Request $request ) {
 			'',
 			[
 				'success' => false,
-				'message' => esc_html__( 'Status not found.', 'alpaca' ),
+				'message' => esc_html__( 'Status not found.', 'alpaca-issue-tracker' ),
 			],
 			404
 		);
@@ -136,7 +136,7 @@ function alpaca_update_status_callback( WP_REST_Request $request ) {
 				'',
 				[
 					'success' => false,
-					'message' => esc_html__( 'Status name cannot be empty.', 'alpaca' ),
+					'message' => esc_html__( 'Status name cannot be empty.', 'alpaca-issue-tracker' ),
 				],
 				400
 			);
@@ -158,7 +158,7 @@ function alpaca_update_status_callback( WP_REST_Request $request ) {
 				'',
 				[
 					'success' => false,
-					'message' => esc_html__( 'Failed to update status name and slug.', 'alpaca' ),
+					'message' => esc_html__( 'Failed to update status name and slug.', 'alpaca-issue-tracker' ),
 				],
 				500
 			);
@@ -171,7 +171,7 @@ function alpaca_update_status_callback( WP_REST_Request $request ) {
 				'',
 				[
 					'success' => false,
-					'message' => esc_html__( 'Status order must be a number.', 'alpaca' ),
+					'message' => esc_html__( 'Status order must be a number.', 'alpaca-issue-tracker' ),
 				],
 				400
 			);
@@ -186,7 +186,7 @@ function alpaca_update_status_callback( WP_REST_Request $request ) {
 				'',
 				[
 					'success' => false,
-					'message' => esc_html__( 'Status order is outside the allowed range.', 'alpaca' ),
+					'message' => esc_html__( 'Status order is outside the allowed range.', 'alpaca-issue-tracker' ),
 				],
 				400
 			);
@@ -199,7 +199,7 @@ function alpaca_update_status_callback( WP_REST_Request $request ) {
 		'status_update',
 		[
 			'success' => true,
-			'message' => esc_html__( 'Status updated successfully.', 'alpaca' ),
+			'message' => esc_html__( 'Status updated successfully.', 'alpaca-issue-tracker' ),
 		],
 		200
 	);

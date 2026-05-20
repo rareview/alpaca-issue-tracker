@@ -194,7 +194,7 @@ const AlpacaToolbar = () => {
       }
 
       setStatus('success');
-      setMessage(__('Your issue has been submitted successfully.', 'alpaca'));
+      setMessage(__('Your issue has been submitted successfully.', 'alpaca-issue-tracker'));
 
       doAction(
         'alpaca.issueSubmitted',
@@ -214,7 +214,7 @@ const AlpacaToolbar = () => {
       setMessage(
         __(
           'There was an error submitting your issue. Please try again.',
-          'alpaca',
+          'alpaca-issue-tracker',
         ),
       );
     }
@@ -245,11 +245,11 @@ const AlpacaToolbar = () => {
           onClick={toggleFormVisibility}
         >
           <Icon name="report" />
-          {__('Report An Issue', 'alpaca')}
+          {__('Report An Issue', 'alpaca-issue-tracker')}
         </button>
         <a href={projectBoardUrl} className="project-board-link">
           <Icon name="board" />
-          {__('Project Board', 'alpaca')}
+          {__('Project Board', 'alpaca-issue-tracker')}
         </a>
         <button className="toggle-button" onClick={toggleExpand}>
           <span className="toggle-pointer">►</span>
@@ -261,7 +261,7 @@ const AlpacaToolbar = () => {
         className={`alpaca-report-form ${isFormVisible ? 'visible' : ''}`}
       >
         <div className="form-header">
-          <h4>{__('Report An Issue', 'alpaca')}</h4>
+          <h4>{__('Report An Issue', 'alpaca-issue-tracker')}</h4>
           <button className="form-close" onClick={closeForm}>
             ×
           </button>
@@ -271,13 +271,13 @@ const AlpacaToolbar = () => {
           <>
             <p>{message}</p>
             <Button variant="primary" onClick={closeForm} ref={textareaRef}>
-              {__('Close', 'alpaca')}
+              {__('Close', 'alpaca-issue-tracker')}
             </Button>
           </>
         ) : (
           <>
             <TextareaControl
-              placeholder={__('Describe the problem', 'alpaca')}
+              placeholder={__('Describe the problem', 'alpaca-issue-tracker')}
               value={feedback}
               onChange={(value) => setFeedback(value)}
               disabled={status === 'submitting'}
@@ -289,7 +289,7 @@ const AlpacaToolbar = () => {
               <ToggleControl
                 label={
                   <span className="priority-label">
-                    {__('High Priority', 'alpaca')}
+                    {__('High Priority', 'alpaca-issue-tracker')}
                   </span>
                 }
                 checked={isHighPriority}
@@ -305,14 +305,14 @@ const AlpacaToolbar = () => {
                 onClick={submitIssue}
                 disabled={status === 'submitting' || !feedback.trim()}
               >
-                {status === 'submitting' ? <Spinner /> : __('Submit', 'alpaca')}
+                {status === 'submitting' ? <Spinner /> : __('Submit', 'alpaca-issue-tracker')}
               </Button>
               <Button
                 variant="secondary"
                 onClick={closeForm}
                 disabled={status === 'submitting'}
               >
-                {__('Cancel', 'alpaca')}
+                {__('Cancel', 'alpaca-issue-tracker')}
               </Button>
             </div>
           </>

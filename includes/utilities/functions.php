@@ -242,30 +242,30 @@ function alpaca_setup_default_statuses( $force = false ) {
 		if ( ! empty( $existing_statuses ) && ! is_wp_error( $existing_statuses ) ) {
 			return [
 				'success' => false,
-				'message' => esc_html__( 'Statuses already exist.', 'alpaca' ),
+				'message' => esc_html__( 'Statuses already exist.', 'alpaca-issue-tracker' ),
 			];
 		}
 	}
 
 	$default_statuses = [
 		[
-			'name'  => esc_html__( 'Backlog', 'alpaca' ),
+			'name'  => esc_html__( 'Backlog', 'alpaca-issue-tracker' ),
 			'slug'  => 'backlog',
 			'score' => 0,
 		],
 		[
-			'name'       => esc_html__( 'Next', 'alpaca' ),
+			'name'       => esc_html__( 'Next', 'alpaca-issue-tracker' ),
 			'slug'       => 'next',
 			'score'      => 1,
 			'is_default' => true,
 		],
 		[
-			'name'  => esc_html__( 'In Progress', 'alpaca' ),
+			'name'  => esc_html__( 'In Progress', 'alpaca-issue-tracker' ),
 			'slug'  => 'in-progress',
 			'score' => 2,
 		],
 		[
-			'name'  => esc_html__( 'Done', 'alpaca' ),
+			'name'  => esc_html__( 'Done', 'alpaca-issue-tracker' ),
 			'slug'  => 'done',
 			'score' => 3,
 		],
@@ -303,7 +303,7 @@ function alpaca_setup_default_statuses( $force = false ) {
 		'success' => true,
 		'message' => sprintf(
 			/* translators: %d: number of statuses created */
-			esc_html__( 'Successfully created %d default statuses.', 'alpaca' ),
+			esc_html__( 'Successfully created %d default statuses.', 'alpaca-issue-tracker' ),
 			$created_count
 		),
 		'count'   => $created_count,

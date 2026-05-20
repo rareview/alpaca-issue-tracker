@@ -50,11 +50,11 @@ class Activator {
 			wp_die(
 				sprintf(
 					/* translators: 1: Required PHP version, 2: Current PHP version */
-					esc_html__( 'Alpaca Issue Tracker requires PHP version %1$s or higher. You are running version %2$s.', 'alpaca' ),
+					esc_html__( 'Alpaca Issue Tracker requires PHP version %1$s or higher. You are running version %2$s.', 'alpaca-issue-tracker' ),
 					esc_html( Alpaca::MIN_PHP_VERSION ),
 					esc_html( PHP_VERSION )
 				),
-				esc_html__( 'Plugin Activation Error', 'alpaca' ),
+				esc_html__( 'Plugin Activation Error', 'alpaca-issue-tracker' ),
 				[ 'back_link' => true ]
 			);
 		}
@@ -66,11 +66,11 @@ class Activator {
 			wp_die(
 				sprintf(
 					/* translators: 1: Required WP version, 2: Current WP version */
-					esc_html__( 'Alpaca Issue Tracker requires WordPress version %1$s or higher. You are running version %2$s.', 'alpaca' ),
+					esc_html__( 'Alpaca Issue Tracker requires WordPress version %1$s or higher. You are running version %2$s.', 'alpaca-issue-tracker' ),
 					esc_html( Alpaca::MIN_WP_VERSION ),
 					esc_html( $wp_version )
 				),
-				esc_html__( 'Plugin Activation Error', 'alpaca' ),
+				esc_html__( 'Plugin Activation Error', 'alpaca-issue-tracker' ),
 				[ 'back_link' => true ]
 			);
 		}

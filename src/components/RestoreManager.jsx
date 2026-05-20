@@ -41,7 +41,7 @@ const normalizeDeletedIssue = (issue) => {
     title:
       typeof issue?.title === 'string' && issue.title.trim() !== ''
         ? issue.title.trim()
-        : __('(Untitled issue)', 'alpaca'),
+        : __('(Untitled issue)', 'alpaca-issue-tracker'),
     labels,
     isCompleted: Boolean(issue?.isCompleted),
     createdAt: typeof issue?.createdAt === 'string' ? issue.createdAt : '',
@@ -61,7 +61,7 @@ const normalizeDeletedIssue = (issue) => {
  */
 const formatDate = (dateValue, isGmt = false) => {
   if (!dateValue) {
-    return __('-', 'alpaca');
+    return __('-', 'alpaca-issue-tracker');
   }
 
   const formattedValue = formatWpDateValue(
@@ -132,7 +132,7 @@ const RestoreManager = () => {
       setCurrentPage(1);
       setTotalPages(1);
       setTotalItems(0);
-      setError(__('Search failed. Please try again.', 'alpaca'));
+      setError(__('Search failed. Please try again.', 'alpaca-issue-tracker'));
     } finally {
       setIsSearching(false);
     }
@@ -223,7 +223,7 @@ const RestoreManager = () => {
             : currentPage,
         );
       } catch (restoreError) {
-        setError(__('Failed to restore issue.', 'alpaca'));
+        setError(__('Failed to restore issue.', 'alpaca-issue-tracker'));
       } finally {
         setRestoringIds((previousIds) =>
           previousIds.filter((id) => id !== String(issueId)),
@@ -238,12 +238,12 @@ const RestoreManager = () => {
     '%d deleted issue',
     '%d deleted issues',
     totalItems,
-    'alpaca',
+    'alpaca-issue-tracker',
   );
   const deletedIssueSummary = sprintf(deletedIssueSummaryLabel, totalItems);
 
   /* translators: 1: Current page number. 2: Total page count. */
-  const paginationSummaryLabel = __('Page %1$d of %2$d', 'alpaca');
+  const paginationSummaryLabel = __('Page %1$d of %2$d', 'alpaca-issue-tracker');
   const paginationSummary = sprintf(
     paginationSummaryLabel,
     currentPage,
@@ -273,7 +273,7 @@ const RestoreManager = () => {
               /* translators: %d: number of days until trashed items are deleted. */
               __(
                 'Deleted issues will be automatically removed from the database after %d days.',
-                'alpaca',
+                'alpaca-issue-tracker',
               ),
               days,
             )}
@@ -284,15 +284,15 @@ const RestoreManager = () => {
       <form className="alpaca-restore-search" onSubmit={handleSearch}>
         <div className="alpaca-restore-search-controls">
           <SearchControl
-            label={__('Search deleted issues', 'alpaca')}
+            label={__('Search deleted issues', 'alpaca-issue-tracker')}
             value={query}
             onChange={setQuery}
-            placeholder={__('Search deleted issues', 'alpaca')}
+            placeholder={__('Search deleted issues', 'alpaca-issue-tracker')}
             isBusy={isSearching}
             __nextHasNoMarginBottom
           />
           <Button type="submit" variant="primary" disabled={isSearching}>
-            {__('Search', 'alpaca')}
+            {__('Search', 'alpaca-issue-tracker')}
           </Button>
         </div>
       </form>
@@ -311,12 +311,12 @@ const RestoreManager = () => {
         <table className="widefat striped alpaca-restore-table">
           <thead>
             <tr>
-              <th scope="col">{__('Title', 'alpaca')}</th>
-              <th scope="col">{__('Type', 'alpaca')}</th>
-              <th scope="col">{__('Labels', 'alpaca')}</th>
-              <th scope="col">{__('Created', 'alpaca')}</th>
-              <th scope="col">{__('Last action', 'alpaca')}</th>
-              <th scope="col">{__('Actions', 'alpaca')}</th>
+              <th scope="col">{__('Title', 'alpaca-issue-tracker')}</th>
+              <th scope="col">{__('Type', 'alpaca-issue-tracker')}</th>
+              <th scope="col">{__('Labels', 'alpaca-issue-tracker')}</th>
+              <th scope="col">{__('Created', 'alpaca-issue-tracker')}</th>
+              <th scope="col">{__('Last action', 'alpaca-issue-tracker')}</th>
+              <th scope="col">{__('Actions', 'alpaca-issue-tracker')}</th>
             </tr>
           </thead>
           <tbody>
@@ -326,7 +326,7 @@ const RestoreManager = () => {
                   {isSearching ? (
                     <Spinner />
                   ) : (
-                    __('No deleted issues found.', 'alpaca')
+                    __('No deleted issues found.', 'alpaca-issue-tracker')
                   )}
                 </td>
               </tr>
@@ -335,14 +335,14 @@ const RestoreManager = () => {
                 const isRestoring = restoringIds.includes(result.id);
                 const isChecklistItem = Boolean(result.parentId);
                 const itemTypeLabel = isChecklistItem
-                  ? __('Checklist item', 'alpaca')
-                  : __('Issue', 'alpaca');
+                  ? __('Checklist item', 'alpaca-issue-tracker')
+                  : __('Issue', 'alpaca-issue-tracker');
                 let parentIssueSummary = '';
 
                 if (isChecklistItem && result.parentTitle) {
                   const parentIssueLabel =
                     /* translators: %s: Parent issue title. */
-                    __('Issue: %s', 'alpaca');
+                    __('Issue: %s', 'alpaca-issue-tracker');
 
                   parentIssueSummary = sprintf(
                     parentIssueLabel,
@@ -395,7 +395,7 @@ const RestoreManager = () => {
                           ))
                         ) : (
                           <span className="alpaca-restore-muted">
-                            {__('-', 'alpaca')}
+                            {__('-', 'alpaca-issue-tracker')}
                           </span>
                         )}
                       </div>
@@ -417,8 +417,8 @@ const RestoreManager = () => {
                         disabled={isRestoring}
                       >
                         {isRestoring
-                          ? __('Restoring…', 'alpaca')
-                          : __('Restore', 'alpaca')}
+                          ? __('Restoring…', 'alpaca-issue-tracker')
+                          : __('Restore', 'alpaca-issue-tracker')}
                       </Button>
                     </td>
                   </tr>
@@ -439,7 +439,7 @@ const RestoreManager = () => {
             onClick={() => handlePageChange(1)}
             disabled={isSearching || currentPage <= 1}
           >
-            {__('First', 'alpaca')}
+            {__('First', 'alpaca-issue-tracker')}
           </Button>
 
           <Button
@@ -447,7 +447,7 @@ const RestoreManager = () => {
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={isSearching || currentPage <= 1}
           >
-            {__('Previous', 'alpaca')}
+            {__('Previous', 'alpaca-issue-tracker')}
           </Button>
 
           <Button
@@ -455,7 +455,7 @@ const RestoreManager = () => {
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={isSearching || currentPage >= totalPages}
           >
-            {__('Next', 'alpaca')}
+            {__('Next', 'alpaca-issue-tracker')}
           </Button>
 
           <Button
@@ -463,7 +463,7 @@ const RestoreManager = () => {
             onClick={() => handlePageChange(totalPages)}
             disabled={isSearching || currentPage >= totalPages}
           >
-            {__('Last', 'alpaca')}
+            {__('Last', 'alpaca-issue-tracker')}
           </Button>
         </div>
       </div>

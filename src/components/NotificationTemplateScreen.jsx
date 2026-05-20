@@ -13,57 +13,57 @@ const { __ } = wp.i18n;
 const notificationTemplateBlockDefinitions = [
   {
     name: 'alpaca/email-issue-title',
-    title: __('Issue Title', 'alpaca'),
-    description: __('Insert the issue title.', 'alpaca'),
+    title: __('Issue Title', 'alpaca-issue-tracker'),
+    description: __('Insert the issue title.', 'alpaca-issue-tracker'),
   },
   {
     name: 'alpaca/email-actor-name',
-    title: __('Performed By', 'alpaca'),
+    title: __('Performed By', 'alpaca-issue-tracker'),
     description: __(
       'Insert the name of the person who performed the activity.',
-      'alpaca',
+      'alpaca-issue-tracker',
     ),
   },
   {
     name: 'alpaca/email-event-label',
-    title: __('Event Label', 'alpaca'),
+    title: __('Event Label', 'alpaca-issue-tracker'),
     description: __(
       'Insert the event label such as status change or comment.',
-      'alpaca',
+      'alpaca-issue-tracker',
     ),
   },
   {
     name: 'alpaca/email-comment-content',
-    title: __('Full Comment Content', 'alpaca'),
+    title: __('Full Comment Content', 'alpaca-issue-tracker'),
     description: __(
       'Insert the full issue comment, including attachment links.',
-      'alpaca',
+      'alpaca-issue-tracker',
     ),
   },
   {
     name: 'alpaca/email-issue-link',
-    title: __('Issue Link', 'alpaca'),
-    description: __('Insert a link to the issue on the board.', 'alpaca'),
+    title: __('Issue Link', 'alpaca-issue-tracker'),
+    description: __('Insert a link to the issue on the board.', 'alpaca-issue-tracker'),
   },
   {
     name: 'alpaca/email-site-name',
-    title: __('Site Title', 'alpaca'),
-    description: __('Insert the current site title.', 'alpaca'),
+    title: __('Site Title', 'alpaca-issue-tracker'),
+    description: __('Insert the current site title.', 'alpaca-issue-tracker'),
   },
   {
     name: 'alpaca/email-site-tagline',
-    title: __('Site Tagline', 'alpaca'),
-    description: __('Insert the current site tagline.', 'alpaca'),
+    title: __('Site Tagline', 'alpaca-issue-tracker'),
+    description: __('Insert the current site tagline.', 'alpaca-issue-tracker'),
   },
   {
     name: 'alpaca/email-site-logo',
-    title: __('Site Icon', 'alpaca'),
-    description: __('Insert the current site icon.', 'alpaca'),
+    title: __('Site Icon', 'alpaca-issue-tracker'),
+    description: __('Insert the current site icon.', 'alpaca-issue-tracker'),
   },
   {
     name: 'alpaca/email-event-time',
-    title: __('Event Time', 'alpaca'),
-    description: __('Insert the event timestamp.', 'alpaca'),
+    title: __('Event Time', 'alpaca-issue-tracker'),
+    description: __('Insert the event timestamp.', 'alpaca-issue-tracker'),
   },
 ];
 
@@ -92,31 +92,31 @@ const NotificationTemplateScreen = () => {
       registerBlocks={registerNotificationEmailBlocks}
       subjectHelp={__(
         'Available placeholders include {{issue_title}}, {{performed_by}}, {{event_label}}, {{site_title}}, {{site_tagline}}, and {{event_time}}.',
-        'alpaca',
+        'alpaca-issue-tracker',
       )}
       loadErrorMessage={__(
         'Could not load the notification email template.',
-        'alpaca',
+        'alpaca-issue-tracker',
       )}
-      previewErrorMessage={__('Could not refresh the email preview.', 'alpaca')}
+      previewErrorMessage={__('Could not refresh the email preview.', 'alpaca-issue-tracker')}
       saveErrorMessage={__(
         'Could not save the notification email template.',
-        'alpaca',
+        'alpaca-issue-tracker',
       )}
       resetErrorMessage={__(
         'Could not reset the notification email template.',
-        'alpaca',
+        'alpaca-issue-tracker',
       )}
-      testErrorMessage={__('Could not send the test email.', 'alpaca')}
-      saveSuccessMessage={__('Notification email template saved.', 'alpaca')}
+      testErrorMessage={__('Could not send the test email.', 'alpaca-issue-tracker')}
+      saveSuccessMessage={__('Notification email template saved.', 'alpaca-issue-tracker')}
       resetSuccessMessage={__(
         'Notification email template reset to default.',
-        'alpaca',
+        'alpaca-issue-tracker',
       )}
-      testSuccessMessage={__('Test email sent successfully.', 'alpaca')}
+      testSuccessMessage={__('Test email sent successfully.', 'alpaca-issue-tracker')}
       previewEmptyMessage={__(
         'Preview will appear here once the template loads.',
-        'alpaca',
+        'alpaca-issue-tracker',
       )}
     />
   );

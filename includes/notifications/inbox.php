@@ -387,7 +387,7 @@ function alpaca_prepare_notification_inbox_item_payload_from_comment( $row, $com
 		],
 		'actor'        => [
 			'id'           => $actor instanceof WP_User ? (int) $actor->ID : 0,
-			'display_name' => $actor instanceof WP_User ? (string) $actor->display_name : esc_html__( 'Unknown user', 'alpaca' ),
+			'display_name' => $actor instanceof WP_User ? (string) $actor->display_name : esc_html__( 'Unknown user', 'alpaca-issue-tracker' ),
 		],
 	];
 
@@ -412,7 +412,7 @@ function alpaca_prepare_notification_inbox_item_payload_from_comment( $row, $com
 		],
 		'actor'               => [
 			'id'           => $actor instanceof WP_User ? (int) $actor->ID : 0,
-			'display_name' => $actor instanceof WP_User ? (string) $actor->display_name : esc_html__( 'Unknown user', 'alpaca' ),
+			'display_name' => $actor instanceof WP_User ? (string) $actor->display_name : esc_html__( 'Unknown user', 'alpaca-issue-tracker' ),
 			'avatar_url'   => $actor instanceof WP_User ? get_avatar_url( $actor->ID, [ 'size' => 48 ] ) : '',
 		],
 	];

@@ -50,7 +50,7 @@ const getAuditCommentUserLabel = (user, identifier = '') => {
   const fallbackLabel =
     typeof identifier === 'string' && identifier.trim()
       ? identifier.trim()
-      : __('Unknown user', 'alpaca');
+      : __('Unknown user', 'alpaca-issue-tracker');
 
   return fallbackLabel;
 };
@@ -64,7 +64,7 @@ const getAuditCommentUserLabel = (user, identifier = '') => {
 const getSubissueLabel = (subissue) => {
   const title = subissue?.title || subissue?.content || '';
   const cleanedTitle = stripHtmlAndMarkdown(title).trim();
-  return cleanedTitle || __('Untitled subissue', 'alpaca');
+  return cleanedTitle || __('Untitled subissue', 'alpaca-issue-tracker');
 };
 
 /**
@@ -282,10 +282,10 @@ addAction(
   async (issue, fromStatus, toStatus) => {
     const currentUser = await getUser();
     const actionClass = ['status-changed'];
-    const commentContent = `${__('Status changed from', 'alpaca')} **${fromStatus}** ${__(
+    const commentContent = `${__('Status changed from', 'alpaca-issue-tracker')} **${fromStatus}** ${__(
       'to',
-      'alpaca',
-    )} **${toStatus}** ${__('by', 'alpaca')} ${generateAssigneeSpan(
+      'alpaca-issue-tracker',
+    )} **${toStatus}** ${__('by', 'alpaca-issue-tracker')} ${generateAssigneeSpan(
       currentUser,
     )}`;
     await postComment(issue, commentContent, actionClass, {
@@ -309,9 +309,9 @@ addAction(
       isAssigned ? 'action-add' : 'action-remove',
     ];
     const targetUserLabel = getAuditCommentUserLabel(user, identifier);
-    const commentContent = `${targetUserLabel} ${__('was', 'alpaca')} ${actionText} ${__(
+    const commentContent = `${targetUserLabel} ${__('was', 'alpaca-issue-tracker')} ${actionText} ${__(
       'this issue by',
-      'alpaca',
+      'alpaca-issue-tracker',
     )} ${generateAssigneeSpan(currentUser)}`;
     await postComment(issue, commentContent, actionClass, {
       meta: {
@@ -345,21 +345,21 @@ addAction(
     switch (changeType) {
       case 'added':
         actionClass.push('action-add');
-        commentContent = `${__('Deadline set to', 'alpaca')} **${formatDate(
+        commentContent = `${__('Deadline set to', 'alpaca-issue-tracker')} **${formatDate(
           newDeadline,
-        )}** ${__('by', 'alpaca')} ${generateAssigneeSpan(currentUser)}`;
+        )}** ${__('by', 'alpaca-issue-tracker')} ${generateAssigneeSpan(currentUser)}`;
         break;
       case 'deleted':
         actionClass.push('action-remove');
-        commentContent = `${__('Deadline removed by', 'alpaca')} ${generateAssigneeSpan(
+        commentContent = `${__('Deadline removed by', 'alpaca-issue-tracker')} ${generateAssigneeSpan(
           currentUser,
         )}`;
         break;
       case 'changed':
         actionClass.push('action-update');
-        commentContent = `${__('Deadline changed to', 'alpaca')} **${formatDate(
+        commentContent = `${__('Deadline changed to', 'alpaca-issue-tracker')} **${formatDate(
           newDeadline,
-        )}** ${__('by', 'alpaca')} ${generateAssigneeSpan(currentUser)}`;
+        )}** ${__('by', 'alpaca-issue-tracker')} ${generateAssigneeSpan(currentUser)}`;
         break;
       default:
         // Do nothing if changeType is unknown
@@ -389,12 +389,12 @@ addAction(
     let commentContent = '';
     if (isHighPriority) {
       actionClass.push('action-add');
-      commentContent = `${__('Priority set to **High** by', 'alpaca')} ${generateAssigneeSpan(
+      commentContent = `${__('Priority set to **High** by', 'alpaca-issue-tracker')} ${generateAssigneeSpan(
         currentUser,
       )}`;
     } else {
       actionClass.push('action-remove');
-      commentContent = `${__('High priority removed by', 'alpaca')} ${generateAssigneeSpan(
+      commentContent = `${__('High priority removed by', 'alpaca-issue-tracker')} ${generateAssigneeSpan(
         currentUser,
       )}`;
     }
@@ -418,9 +418,9 @@ addAction(
     const currentUser = await getUser();
     const actionClass = ['subissue-created'];
     const subissueLabel = getSubissueLabel(subissue);
-    const commentContent = `${__('Checklist item', 'alpaca')} **${subissueLabel}** ${__(
+    const commentContent = `${__('Checklist item', 'alpaca-issue-tracker')} **${subissueLabel}** ${__(
       'created by',
-      'alpaca',
+      'alpaca-issue-tracker',
     )} ${generateAssigneeSpan(currentUser)}`;
 
     await postComment(issue, commentContent, actionClass, {
@@ -443,10 +443,10 @@ addAction(
     const actionClass = ['subissue-completion-changed'];
     const subissueLabel = getSubissueLabel(subissue);
     const stateLabel = isCompleted ? 'completed' : 'reopened';
-    const commentContent = `${__('Checklist item', 'alpaca')} **${subissueLabel}** ${__(
+    const commentContent = `${__('Checklist item', 'alpaca-issue-tracker')} **${subissueLabel}** ${__(
       'marked as',
-      'alpaca',
-    )} **${stateLabel}** ${__('by', 'alpaca')} ${generateAssigneeSpan(
+      'alpaca-issue-tracker',
+    )} **${stateLabel}** ${__('by', 'alpaca-issue-tracker')} ${generateAssigneeSpan(
       currentUser,
     )}`;
 
@@ -474,10 +474,10 @@ addAction(
     ];
     const subissueLabel = getSubissueLabel(subissue);
     const targetUserLabel = getAuditCommentUserLabel(user, identifier);
-    const commentContent = `${targetUserLabel} ${__('was', 'alpaca')} ${actionText} ${__(
+    const commentContent = `${targetUserLabel} ${__('was', 'alpaca-issue-tracker')} ${actionText} ${__(
       'checklist item',
-      'alpaca',
-    )} **${subissueLabel}** ${__('by', 'alpaca')} ${generateAssigneeSpan(
+      'alpaca-issue-tracker',
+    )} **${subissueLabel}** ${__('by', 'alpaca-issue-tracker')} ${generateAssigneeSpan(
       currentUser,
     )}`;
 
@@ -504,14 +504,14 @@ addAction(
     const subissueLabel = getSubissueLabel(subissue);
 
     const parentTitle = stripHtmlAndMarkdown(parentIssue?.title || '').trim();
-    const parentLabel = parentTitle || __('Unknown issue', 'alpaca');
+    const parentLabel = parentTitle || __('Unknown issue', 'alpaca-issue-tracker');
     const parentIssueLink = getIssueLinkLabel(parentIssue, parentLabel);
 
     const promotedId = promotedIssue?.id || subissue?.id;
     const promotedTitle = stripHtmlAndMarkdown(
       promotedIssue?.title || '',
     ).trim();
-    const promotedLabel = promotedTitle || __('Issue', 'alpaca');
+    const promotedLabel = promotedTitle || __('Issue', 'alpaca-issue-tracker');
     const promotedIssueLink = getIssueLinkLabel(
       {
         slug: promotedIssue?.slug || subissue?.slug || '',
@@ -519,16 +519,16 @@ addAction(
       promotedLabel,
     );
 
-    const parentComment = `${__('Checklist item', 'alpaca')} **${subissueLabel}** ${__(
+    const parentComment = `${__('Checklist item', 'alpaca-issue-tracker')} **${subissueLabel}** ${__(
       'was promoted to issue',
-      'alpaca',
-    )} ${promotedIssueLink} ${__('by', 'alpaca')} ${generateAssigneeSpan(
+      'alpaca-issue-tracker',
+    )} ${promotedIssueLink} ${__('by', 'alpaca-issue-tracker')} ${generateAssigneeSpan(
       currentUser,
     )}`;
-    const promotedComment = `${__('Issue created from checklist item', 'alpaca')} **${subissueLabel}** ${__(
+    const promotedComment = `${__('Issue created from checklist item', 'alpaca-issue-tracker')} **${subissueLabel}** ${__(
       'on',
-      'alpaca',
-    )} ${parentIssueLink} ${__('by', 'alpaca')} ${generateAssigneeSpan(
+      'alpaca-issue-tracker',
+    )} ${parentIssueLink} ${__('by', 'alpaca-issue-tracker')} ${generateAssigneeSpan(
       currentUser,
     )}`;
 
@@ -565,9 +565,9 @@ addAction(
     const currentUser = await getUser();
     const actionClass = ['subissue-deleted'];
     const subissueLabel = getSubissueLabel(subissue);
-    const commentContent = `${__('Checklist item', 'alpaca')} **${subissueLabel}** ${__(
+    const commentContent = `${__('Checklist item', 'alpaca-issue-tracker')} **${subissueLabel}** ${__(
       'deleted by',
-      'alpaca',
+      'alpaca-issue-tracker',
     )} ${generateAssigneeSpan(currentUser)}`;
 
     await postComment(issue, commentContent, actionClass, {
@@ -593,9 +593,9 @@ addAction(
     const currentUser = await getUser();
     const actionClass = ['subissue-restored'];
     const subissueLabel = getSubissueLabel(subissue);
-    const commentContent = `${__('Checklist item', 'alpaca')} **${subissueLabel}** ${__(
+    const commentContent = `${__('Checklist item', 'alpaca-issue-tracker')} **${subissueLabel}** ${__(
       'restored by',
-      'alpaca',
+      'alpaca-issue-tracker',
     )} ${generateAssigneeSpan(currentUser)}`;
 
     await postComment(issue, commentContent, actionClass, {
@@ -620,7 +620,7 @@ addAction(
 
     const currentUser = await getUser();
     const actionClass = ['issue-deleted'];
-    const commentContent = `${__('Issue **deleted** by', 'alpaca')} ${generateAssigneeSpan(
+    const commentContent = `${__('Issue **deleted** by', 'alpaca-issue-tracker')} ${generateAssigneeSpan(
       currentUser,
     )}`;
 
@@ -644,7 +644,7 @@ addAction(
 
     const currentUser = await getUser();
     const actionClass = ['issue-restored'];
-    const commentContent = `${__('Issue **restored** by', 'alpaca')} ${generateAssigneeSpan(
+    const commentContent = `${__('Issue **restored** by', 'alpaca-issue-tracker')} ${generateAssigneeSpan(
       currentUser,
     )}`;
 

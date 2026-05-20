@@ -464,9 +464,9 @@ function alpaca_get_notification_template_rest_config( $template_type ) {
 			'sanitize_body_callback'    => 'alpaca_sanitize_notification_daily_digest_body_template',
 			'render_message_callback'   => 'alpaca_render_notification_daily_digest_message',
 			'sample_data_callback'      => 'alpaca_get_notification_daily_digest_sample_payload',
-			'test_failure_message'      => esc_html__( 'Test digest email could not be sent.', 'alpaca' ),
+			'test_failure_message'      => esc_html__( 'Test digest email could not be sent.', 'alpaca-issue-tracker' ),
 			/* translators: %s: test email address. */
-			'test_success_message'      => esc_html__( 'Test digest email sent to %s.', 'alpaca' ),
+			'test_success_message'      => esc_html__( 'Test digest email sent to %s.', 'alpaca-issue-tracker' ),
 		];
 	}
 
@@ -480,9 +480,9 @@ function alpaca_get_notification_template_rest_config( $template_type ) {
 		'sanitize_body_callback'    => 'alpaca_sanitize_notification_email_body_template',
 		'render_message_callback'   => 'alpaca_render_notification_message',
 		'sample_data_callback'      => 'alpaca_get_notification_sample_event',
-		'test_failure_message'      => esc_html__( 'Test email could not be sent.', 'alpaca' ),
+		'test_failure_message'      => esc_html__( 'Test email could not be sent.', 'alpaca-issue-tracker' ),
 		/* translators: %s: test email address. */
-		'test_success_message'      => esc_html__( 'Test email sent to %s.', 'alpaca' ),
+		'test_success_message'      => esc_html__( 'Test email sent to %s.', 'alpaca-issue-tracker' ),
 	];
 }
 
@@ -537,7 +537,7 @@ function alpaca_get_notification_template_test_email_address() {
 	if ( ! ( $current_user instanceof WP_User ) || ! $current_user->exists() ) {
 		return new WP_Error(
 			'alpaca_notification_template_no_user',
-			esc_html__( 'Could not determine the current user.', 'alpaca' )
+			esc_html__( 'Could not determine the current user.', 'alpaca-issue-tracker' )
 		);
 	}
 
@@ -545,7 +545,7 @@ function alpaca_get_notification_template_test_email_address() {
 	if ( '' === $email || ! is_email( $email ) ) {
 		return new WP_Error(
 			'alpaca_notification_template_invalid_email',
-			esc_html__( 'Your WordPress profile does not have a valid email address.', 'alpaca' )
+			esc_html__( 'Your WordPress profile does not have a valid email address.', 'alpaca-issue-tracker' )
 		);
 	}
 

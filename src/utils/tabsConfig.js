@@ -10,11 +10,11 @@ export const getTabsConfig = (issueDetails) => {
   return [
     {
       name: 'comments',
-      title: __('Timeline', 'alpaca'),
+      title: __('Timeline', 'alpaca-issue-tracker'),
       className: 'comments',
     },
     ...(hasBrowserContext
-      ? [{ name: 'report', title: __('Report', 'alpaca'), className: 'report' }]
+      ? [{ name: 'report', title: __('Report', 'alpaca-issue-tracker'), className: 'report' }]
       : []),
     ...((issueDetails?.meta?.alpaca_queried_object &&
       issueDetails.meta.alpaca_queried_object !== 'null') ||
@@ -23,7 +23,7 @@ export const getTabsConfig = (issueDetails) => {
       ? [
           {
             name: 'queriedobject',
-            title: __('Queried Object', 'alpaca'),
+            title: __('Queried Object', 'alpaca-issue-tracker'),
             className: 'queried-object',
           },
         ]
@@ -34,7 +34,7 @@ export const getTabsConfig = (issueDetails) => {
       ? [
           {
             name: 'headers',
-            title: __('Headers', 'alpaca'),
+            title: __('Headers', 'alpaca-issue-tracker'),
             className: 'headers',
           },
         ]
@@ -45,7 +45,7 @@ export const getTabsConfig = (issueDetails) => {
       ? [
           {
             name: 'errors',
-            title: __('Errors', 'alpaca'),
+            title: __('Errors', 'alpaca-issue-tracker'),
             className: 'errors',
           },
         ]

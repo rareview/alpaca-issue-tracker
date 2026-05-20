@@ -158,7 +158,7 @@ final class Alpaca {
 	 * Load plugin translations.
 	 *
 	 * Supports locale-specific subfolders inside the plugin languages directory,
-	 * for example languages/ar/alpaca-ar.mo.
+	 * for example languages/ar/alpaca-issue-tracker-ar.mo.
 	 *
 	 * @return void
 	 */
@@ -171,19 +171,19 @@ final class Alpaca {
 		 * @param string $locale The locale to load.
 		 */
 		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- This uses the core WordPress plugin locale filter.
-		$locale = apply_filters( 'plugin_locale', $locale, 'alpaca' );
+		$locale = apply_filters( 'plugin_locale', $locale, 'alpaca-issue-tracker' );
 
 		$locale_short = strtolower( substr( $locale, 0, 2 ) );
 		$candidates   = [
-			ALPACA_PLUGIN_DIR . 'languages/' . $locale . '/alpaca-' . $locale . '.mo',
-			ALPACA_PLUGIN_DIR . 'languages/' . $locale_short . '/alpaca-' . $locale_short . '.mo',
-			ALPACA_PLUGIN_DIR . 'languages/alpaca-' . $locale . '.mo',
-			ALPACA_PLUGIN_DIR . 'languages/alpaca-' . $locale_short . '.mo',
+			ALPACA_PLUGIN_DIR . 'languages/' . $locale . '/alpaca-issue-tracker-' . $locale . '.mo',
+			ALPACA_PLUGIN_DIR . 'languages/' . $locale_short . '/alpaca-issue-tracker-' . $locale_short . '.mo',
+			ALPACA_PLUGIN_DIR . 'languages/alpaca-issue-tracker-' . $locale . '.mo',
+			ALPACA_PLUGIN_DIR . 'languages/alpaca-issue-tracker-' . $locale_short . '.mo',
 		];
 
 		foreach ( $candidates as $mofile ) {
 			if ( file_exists( $mofile ) ) {
-				load_textdomain( 'alpaca', $mofile );
+				load_textdomain( 'alpaca-issue-tracker', $mofile );
 				return;
 			}
 		}
@@ -325,7 +325,7 @@ final class Alpaca {
 			'alpaca_enable_test_logs',
 			[
 				'type'              => 'string',
-				'description'       => esc_html__( 'Enable console messages for testing purposes.', 'alpaca' ),
+				'description'       => esc_html__( 'Enable console messages for testing purposes.', 'alpaca-issue-tracker' ),
 				'sanitize_callback' => [ $this, 'sanitize_binary_setting' ],
 				'show_in_rest'      => true,
 				'default'           => '0',
@@ -337,7 +337,7 @@ final class Alpaca {
 			'alpaca_enable_context_capture',
 			[
 				'type'              => 'string',
-				'description'       => esc_html__( 'Enable context capture, including the toolbar and data dump.', 'alpaca' ),
+				'description'       => esc_html__( 'Enable context capture, including the toolbar and data dump.', 'alpaca-issue-tracker' ),
 				'sanitize_callback' => [ $this, 'sanitize_binary_setting' ],
 				'show_in_rest'      => true,
 				'default'           => '1',
@@ -349,7 +349,7 @@ final class Alpaca {
 			'alpaca_item_datapoint_visibility',
 			[
 				'type'              => 'object',
-				'description'       => esc_html__( 'Visibility map for item datapoints on issue cards.', 'alpaca' ),
+				'description'       => esc_html__( 'Visibility map for item datapoints on issue cards.', 'alpaca-issue-tracker' ),
 				'sanitize_callback' => [ $this, 'sanitize_item_datapoint_visibility' ],
 				'show_in_rest'      => [
 					'schema' => [

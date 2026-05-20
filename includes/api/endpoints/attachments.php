@@ -196,7 +196,7 @@ function alpaca_get_issue_for_attachment( $issue_id, $action_type ) {
 			'issue'    => null,
 			'response' => alpaca_comment_attachment_error_response(
 				$action_type,
-				__( 'Invalid issue.', 'alpaca' ),
+				__( 'Invalid issue.', 'alpaca-issue-tracker' ),
 				404
 			),
 		];
@@ -320,7 +320,7 @@ function alpaca_upload_comment_attachment( WP_REST_Request $request ) {
 	if ( empty( $file_params['file'] ) ) {
 		return alpaca_comment_attachment_error_response(
 			'comment_attachment_upload',
-			__( 'Missing attachment file.', 'alpaca' ),
+			__( 'Missing attachment file.', 'alpaca-issue-tracker' ),
 			400
 		);
 	}
@@ -333,7 +333,7 @@ function alpaca_upload_comment_attachment( WP_REST_Request $request ) {
 	if ( empty( $checked_type['type'] ) || empty( $checked_type['ext'] ) ) {
 		return alpaca_comment_attachment_error_response(
 			'comment_attachment_upload',
-			__( 'This file type is not allowed.', 'alpaca' ),
+			__( 'This file type is not allowed.', 'alpaca-issue-tracker' ),
 			400
 		);
 	}
@@ -346,7 +346,7 @@ function alpaca_upload_comment_attachment( WP_REST_Request $request ) {
 	if ( ! wp_mkdir_p( $target_dir ) ) {
 		return alpaca_comment_attachment_error_response(
 			'comment_attachment_upload',
-			__( 'Failed to prepare upload directory.', 'alpaca' ),
+			__( 'Failed to prepare upload directory.', 'alpaca-issue-tracker' ),
 			500
 		);
 	}
@@ -466,7 +466,7 @@ function alpaca_delete_comment_attachment( WP_REST_Request $request ) {
 	if ( empty( $url ) ) {
 		return alpaca_comment_attachment_error_response(
 			'comment_attachment_delete',
-			__( 'Missing attachment URL.', 'alpaca' ),
+			__( 'Missing attachment URL.', 'alpaca-issue-tracker' ),
 			400
 		);
 	}
@@ -479,7 +479,7 @@ function alpaca_delete_comment_attachment( WP_REST_Request $request ) {
 		if ( ! ( $attachment_comment instanceof WP_Comment ) ) {
 			return alpaca_comment_attachment_error_response(
 				'comment_attachment_delete',
-				__( 'Comment was not found.', 'alpaca' ),
+				__( 'Comment was not found.', 'alpaca-issue-tracker' ),
 				404
 			);
 		}
@@ -487,7 +487,7 @@ function alpaca_delete_comment_attachment( WP_REST_Request $request ) {
 		if ( (int) $attachment_comment->comment_post_ID !== $issue_id || 'issuecomment' !== (string) $attachment_comment->comment_type ) {
 			return alpaca_comment_attachment_error_response(
 				'comment_attachment_delete',
-				__( 'Comment does not match this issue.', 'alpaca' ),
+				__( 'Comment does not match this issue.', 'alpaca-issue-tracker' ),
 				400
 			);
 		}
@@ -495,7 +495,7 @@ function alpaca_delete_comment_attachment( WP_REST_Request $request ) {
 		if ( ! alpaca_comment_contains_attachment_url( $comment_id, $url ) ) {
 			return alpaca_comment_attachment_error_response(
 				'comment_attachment_delete',
-				__( 'Attachment does not belong to this comment.', 'alpaca' ),
+				__( 'Attachment does not belong to this comment.', 'alpaca-issue-tracker' ),
 				400
 			);
 		}
@@ -505,7 +505,7 @@ function alpaca_delete_comment_attachment( WP_REST_Request $request ) {
 		if ( $attachment_comment instanceof WP_Comment ) {
 			return alpaca_comment_attachment_error_response(
 				'comment_attachment_delete',
-				__( 'Comment ID is required to delete this attachment.', 'alpaca' ),
+				__( 'Comment ID is required to delete this attachment.', 'alpaca-issue-tracker' ),
 				400
 			);
 		}
@@ -520,7 +520,7 @@ function alpaca_delete_comment_attachment( WP_REST_Request $request ) {
 		if ( ! $can_delete_attachment ) {
 			return alpaca_comment_attachment_error_response(
 				'comment_attachment_delete',
-				__( 'You are not allowed to delete this attachment.', 'alpaca' ),
+				__( 'You are not allowed to delete this attachment.', 'alpaca-issue-tracker' ),
 				403
 			);
 		}
@@ -533,7 +533,7 @@ function alpaca_delete_comment_attachment( WP_REST_Request $request ) {
 	if ( strpos( $url, $base_paths['base_url'] . $subdir ) !== 0 ) {
 		return alpaca_comment_attachment_error_response(
 			'comment_attachment_delete',
-			__( 'Attachment URL is not valid.', 'alpaca' ),
+			__( 'Attachment URL is not valid.', 'alpaca-issue-tracker' ),
 			400
 		);
 	}
@@ -548,7 +548,7 @@ function alpaca_delete_comment_attachment( WP_REST_Request $request ) {
 	if ( false === $issue_dir_raw || false === $file_dir_raw ) {
 		return alpaca_comment_attachment_error_response(
 			'comment_attachment_delete',
-			__( 'Attachment path is not valid.', 'alpaca' ),
+			__( 'Attachment path is not valid.', 'alpaca-issue-tracker' ),
 			400
 		);
 	}
@@ -559,7 +559,7 @@ function alpaca_delete_comment_attachment( WP_REST_Request $request ) {
 	if ( 0 !== strpos( $file_dir, $issue_dir ) ) {
 		return alpaca_comment_attachment_error_response(
 			'comment_attachment_delete',
-			__( 'Attachment path is not valid.', 'alpaca' ),
+			__( 'Attachment path is not valid.', 'alpaca-issue-tracker' ),
 			400
 		);
 	}
@@ -567,7 +567,7 @@ function alpaca_delete_comment_attachment( WP_REST_Request $request ) {
 	if ( ! file_exists( $file_path ) ) {
 		return alpaca_comment_attachment_error_response(
 			'comment_attachment_delete',
-			__( 'Attachment not found.', 'alpaca' ),
+			__( 'Attachment not found.', 'alpaca-issue-tracker' ),
 			404
 		);
 	}
@@ -579,7 +579,7 @@ function alpaca_delete_comment_attachment( WP_REST_Request $request ) {
 	if ( ! $deleted ) {
 		return alpaca_comment_attachment_error_response(
 			'comment_attachment_delete',
-			__( 'Failed to delete attachment.', 'alpaca' ),
+			__( 'Failed to delete attachment.', 'alpaca-issue-tracker' ),
 			500
 		);
 	}
@@ -588,7 +588,7 @@ function alpaca_delete_comment_attachment( WP_REST_Request $request ) {
 		'comment_attachment_delete',
 		[
 			'success' => true,
-			'message' => esc_html__( 'Attachment deleted.', 'alpaca' ),
+			'message' => esc_html__( 'Attachment deleted.', 'alpaca-issue-tracker' ),
 		],
 		200
 	);

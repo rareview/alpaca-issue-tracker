@@ -75,7 +75,7 @@ function alpaca_update_board_data_callback( WP_REST_Request $request ) {
 			'',
 			[
 				'success' => false,
-				'message' => esc_html__( 'Invalid data format. Expected an array of columns.', 'alpaca' ),
+				'message' => esc_html__( 'Invalid data format. Expected an array of columns.', 'alpaca-issue-tracker' ),
 			],
 			400
 		);
@@ -97,7 +97,7 @@ function alpaca_update_board_data_callback( WP_REST_Request $request ) {
 		'board_update',
 		[
 			'success' => true,
-			'message' => esc_html__( 'Board order saved successfully.', 'alpaca' ),
+			'message' => esc_html__( 'Board order saved successfully.', 'alpaca-issue-tracker' ),
 		],
 		200
 	);

@@ -72,7 +72,7 @@ function alpaca_get_notification_email_body_template_default() {
 			'<p class="has-small-font-size">{{event_time}}</p>',
 			'<!-- /wp:paragraph -->',
 			'<!-- wp:paragraph {"fontSize":"small"} -->',
-			'<p class="has-small-font-size"><a href="{{notifications_url}}">' . esc_html__( 'Manage notifications', 'alpaca' ) . '</a></p>',
+			'<p class="has-small-font-size"><a href="{{notifications_url}}">' . esc_html__( 'Manage notifications', 'alpaca-issue-tracker' ) . '</a></p>',
 			'<!-- /wp:paragraph -->',
 		]
 	);
@@ -107,7 +107,7 @@ function alpaca_get_notification_email_body_template_legacy_default() {
 			'<p class="has-small-font-size">{{site_name}} · {{event_time}}</p>',
 			'<!-- /wp:paragraph -->',
 			'<!-- wp:paragraph {"fontSize":"small"} -->',
-			'<p class="has-small-font-size"><a href="{{notifications_url}}">' . esc_html__( 'Manage notifications', 'alpaca' ) . '</a></p>',
+			'<p class="has-small-font-size"><a href="{{notifications_url}}">' . esc_html__( 'Manage notifications', 'alpaca-issue-tracker' ) . '</a></p>',
 			'<!-- /wp:paragraph -->',
 		]
 	);
@@ -574,9 +574,9 @@ function alpaca_sanitize_notification_email_body_template( $body ) {
 		null,
 		[ 'alpaca/email-comment-content' ],
 		'alpaca_notification_template_empty',
-		esc_html__( 'The email template must contain at least one supported block.', 'alpaca' ),
+		esc_html__( 'The email template must contain at least one supported block.', 'alpaca-issue-tracker' ),
 		'alpaca_notification_template_missing_comment',
-		esc_html__( 'The email template must include the Full Comment Content placeholder block.', 'alpaca' )
+		esc_html__( 'The email template must include the Full Comment Content placeholder block.', 'alpaca-issue-tracker' )
 	);
 }
 

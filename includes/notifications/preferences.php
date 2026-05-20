@@ -20,8 +20,8 @@ function alpaca_get_notification_channel_registry() {
 		'email' => [
 			'key'                => 'email',
 			'transport'          => 'email',
-			'label'              => esc_html__( 'Email', 'alpaca' ),
-			'description'        => esc_html__( 'Sends updates to your email address.', 'alpaca' ),
+			'label'              => esc_html__( 'Email', 'alpaca-issue-tracker' ),
+			'description'        => esc_html__( 'Sends updates to your email address.', 'alpaca-issue-tracker' ),
 			'enabled_by_default' => false,
 			'is_available'       => true,
 			'supports_digest'    => true,
@@ -30,8 +30,8 @@ function alpaca_get_notification_channel_registry() {
 				[
 					'key'   => 'address_override',
 					'type'  => 'email',
-					'label' => esc_html__( 'Email address', 'alpaca' ),
-					'help'  => esc_html__( 'Uses your WordPress profile email unless you enter a different address here.', 'alpaca' ),
+					'label' => esc_html__( 'Email address', 'alpaca-issue-tracker' ),
+					'help'  => esc_html__( 'Uses your WordPress profile email unless you enter a different address here.', 'alpaca-issue-tracker' ),
 				],
 			],
 		],
@@ -218,7 +218,7 @@ function alpaca_get_notification_site_timezone_label() {
 		return trim( $timezone_string );
 	}
 
-	return esc_html__( 'Site timezone', 'alpaca' );
+	return esc_html__( 'Site timezone', 'alpaca-issue-tracker' );
 }
 
 /**
@@ -652,7 +652,7 @@ function alpaca_update_notification_preferences_for_user( $user_id, $preferences
 	if ( '' !== $override && ! is_email( $override ) ) {
 		return new WP_Error(
 			'alpaca_invalid_notification_email_override',
-			esc_html__( 'Enter a valid notification email address or leave the override blank.', 'alpaca' )
+			esc_html__( 'Enter a valid notification email address or leave the override blank.', 'alpaca-issue-tracker' )
 		);
 	}
 
@@ -676,7 +676,7 @@ function alpaca_update_notification_preferences_for_user( $user_id, $preferences
 	) {
 		return new WP_Error(
 			'alpaca_invalid_notification_delivery_email',
-			esc_html__( 'Add a valid email address before enabling email notifications or the daily digest.', 'alpaca' )
+			esc_html__( 'Add a valid email address before enabling email notifications or the daily digest.', 'alpaca-issue-tracker' )
 		);
 	}
 

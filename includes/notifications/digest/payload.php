@@ -295,11 +295,11 @@ function alpaca_get_notification_digest_issue_deadline_meta( $issue_id ) {
 	}
 
 	if ( 1 === $diff_days ) {
-		$label = esc_html__( 'Tomorrow', 'alpaca' );
+		$label = esc_html__( 'Tomorrow', 'alpaca-issue-tracker' );
 	} elseif ( 0 === $diff_days ) {
-		$label = esc_html__( 'Today', 'alpaca' );
+		$label = esc_html__( 'Today', 'alpaca-issue-tracker' );
 	} elseif ( -1 === $diff_days ) {
-		$label = esc_html__( 'Yesterday', 'alpaca' );
+		$label = esc_html__( 'Yesterday', 'alpaca-issue-tracker' );
 	}
 
 	return [
@@ -679,14 +679,14 @@ function alpaca_get_notification_deadline_watch_items( $user_id, $preferences, $
 		$deadline_local = ( new DateTimeImmutable( '@' . $deadline_timestamp ) )->setTimezone( $timezone );
 		$diff_days      = (int) $today_local->diff( $deadline_local )->format( '%r%a' );
 		$state          = 'soon';
-		$label          = esc_html__( 'Due soon', 'alpaca' );
+		$label          = esc_html__( 'Due soon', 'alpaca-issue-tracker' );
 
 		if ( $diff_days < 0 ) {
 			$state = 'late';
-			$label = esc_html__( 'Overdue', 'alpaca' );
+			$label = esc_html__( 'Overdue', 'alpaca-issue-tracker' );
 		} elseif ( 0 === $diff_days ) {
 			$state = 'today';
-			$label = esc_html__( 'Due today', 'alpaca' );
+			$label = esc_html__( 'Due today', 'alpaca-issue-tracker' );
 		}
 
 		$meta = alpaca_get_notification_digest_issue_meta( $post->ID );

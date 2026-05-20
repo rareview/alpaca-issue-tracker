@@ -39,70 +39,70 @@ let hasRegisteredNotificationPreferenceFilters = false;
 const subjectOptions = [
   {
     key: 'created',
-    label: __('Issues I created', 'alpaca'),
+    label: __('Issues I created', 'alpaca-issue-tracker'),
   },
   {
     key: 'assigned',
-    label: __('Issues assigned to me', 'alpaca'),
+    label: __('Issues assigned to me', 'alpaca-issue-tracker'),
   },
   {
     key: 'starred',
-    label: __('Issues I starred', 'alpaca'),
+    label: __('Issues I starred', 'alpaca-issue-tracker'),
   },
   {
     key: 'mentioned',
-    label: __('Comments that mention me', 'alpaca'),
+    label: __('Comments that mention me', 'alpaca-issue-tracker'),
   },
   {
     key: 'labeled',
-    label: __('Issues with these labels', 'alpaca'),
+    label: __('Issues with these labels', 'alpaca-issue-tracker'),
   },
   {
     key: 'high_priority',
-    label: __('Issues currently marked high priority', 'alpaca'),
+    label: __('Issues currently marked high priority', 'alpaca-issue-tracker'),
   },
   {
     key: 'all_new_tasks',
-    label: __('Whenever a new issue is created', 'alpaca'),
+    label: __('Whenever a new issue is created', 'alpaca-issue-tracker'),
   },
 ];
 
 const eventOptions = [
   {
     key: 'human_comments',
-    label: __('Human comments', 'alpaca'),
+    label: __('Human comments', 'alpaca-issue-tracker'),
   },
   {
     key: 'status_changes',
-    label: __('Status changes', 'alpaca'),
+    label: __('Status changes', 'alpaca-issue-tracker'),
   },
   {
     key: 'issue_assignment_changes',
-    label: __('Issue assignment changes', 'alpaca'),
+    label: __('Issue assignment changes', 'alpaca-issue-tracker'),
   },
   {
     key: 'due_date_changes',
-    label: __('Due date changes', 'alpaca'),
+    label: __('Due date changes', 'alpaca-issue-tracker'),
   },
   {
     key: 'checklist_created_deleted',
-    label: __('Checklist create/delete', 'alpaca'),
+    label: __('Checklist create/delete', 'alpaca-issue-tracker'),
   },
   {
     key: 'checklist_assignment_changes',
-    label: __('Checklist assignment changes', 'alpaca'),
+    label: __('Checklist assignment changes', 'alpaca-issue-tracker'),
   },
   {
     key: 'checklist_completion_changes',
-    label: __('Checklist completion changes', 'alpaca'),
+    label: __('Checklist completion changes', 'alpaca-issue-tracker'),
   },
   {
     key: 'checklist_promotions',
-    label: __('Checklist promotions', 'alpaca'),
+    label: __('Checklist promotions', 'alpaca-issue-tracker'),
   },
   {
     key: 'priority_changes',
-    label: __('High-priority changes', 'alpaca'),
+    label: __('High-priority changes', 'alpaca-issue-tracker'),
   },
 ];
 
@@ -126,7 +126,7 @@ const isValidEmail = (email) => {
  *
  * @return {string} Fallback display value.
  */
-const getChannelSummaryFallback = () => __('Not configured.', 'alpaca');
+const getChannelSummaryFallback = () => __('Not configured.', 'alpaca-issue-tracker');
 
 /**
  * Get the displayed value for the email delivery field.
@@ -195,7 +195,7 @@ const getNotificationSettingsTabs = (channels) => {
   const tabs = [
     {
       name: PREFERENCES_TAB_NAME,
-      title: __('Preferences', 'alpaca'),
+      title: __('Preferences', 'alpaca-issue-tracker'),
       className: 'alpaca-notifications-tab--preferences',
     },
   ];
@@ -242,7 +242,7 @@ const getChannelKeyFromTabName = (tabName) => {
 const getChannelToggleLabel = (channelLabel) =>
   sprintf(
     /* translators: %s: notification channel label. */
-    __('Enable %s notifications', 'alpaca'),
+    __('Enable %s notifications', 'alpaca-issue-tracker'),
     channelLabel,
   );
 
@@ -256,21 +256,21 @@ const getChannelToggleLabel = (channelLabel) =>
 const getNotificationTabSaveLabel = (tab, isBusy) => {
   if (PREFERENCES_TAB_NAME === tab.name) {
     return isBusy
-      ? __('Saving Preferences…', 'alpaca')
-      : __('Save Preferences', 'alpaca');
+      ? __('Saving Preferences…', 'alpaca-issue-tracker')
+      : __('Save Preferences', 'alpaca-issue-tracker');
   }
 
   if (isBusy) {
     return sprintf(
       /* translators: %s: active notification tab title. */
-      __('Saving %s…', 'alpaca'),
+      __('Saving %s…', 'alpaca-issue-tracker'),
       tab.title,
     );
   }
 
   return sprintf(
     /* translators: %s: active notification tab title. */
-    __('Save %s', 'alpaca'),
+    __('Save %s', 'alpaca-issue-tracker'),
     tab.title,
   );
 };
@@ -292,7 +292,7 @@ const renderNotificationEmailTab = (context, tab) => {
       <p className="alpaca-notifications-panel-intro">
         {__(
           'Choose whether you want instant email updates, a daily summary, or both.',
-          'alpaca',
+          'alpaca-issue-tracker',
         )}
       </p>
 
@@ -300,7 +300,7 @@ const renderNotificationEmailTab = (context, tab) => {
         <TextControl
           __next40pxDefaultSize
           __nextHasNoMarginBottom
-          label={__('Email address', 'alpaca')}
+          label={__('Email address', 'alpaca-issue-tracker')}
           type="email"
           value={context.emailDeliveryValue}
           onChange={context.setEmailDeliveryValue}
@@ -309,18 +309,18 @@ const renderNotificationEmailTab = (context, tab) => {
             context.hasInvalidEmailOverride
               ? __(
                   'Enter a valid email address or leave this blank to use your WordPress profile email.',
-                  'alpaca',
+                  'alpaca-issue-tracker',
                 )
               : __(
                   'Uses your WordPress profile email unless you enter a different address here.',
-                  'alpaca',
+                  'alpaca-issue-tracker',
                 )
           }
         />
 
         <CheckboxControl
           __nextHasNoMarginBottom
-          label={__('Send instant email updates', 'alpaca')}
+          label={__('Send instant email updates', 'alpaca-issue-tracker')}
           checked={context.hasInstantEmailEnabled}
           onChange={(value) =>
             context.updateChannelValue(EMAIL_CHANNEL_KEY, 'enabled', value)
@@ -332,7 +332,7 @@ const renderNotificationEmailTab = (context, tab) => {
           <div className="alpaca-notifications-email-digest-checkbox">
             <CheckboxControl
               __nextHasNoMarginBottom
-              label={__('Send a daily summary at', 'alpaca')}
+              label={__('Send a daily summary at', 'alpaca-issue-tracker')}
               checked={context.hasEmailDigestEnabled}
               onChange={(value) =>
                 context.updateDailyDigestChannelValue(EMAIL_CHANNEL_KEY, value)
@@ -346,7 +346,7 @@ const renderNotificationEmailTab = (context, tab) => {
               <TextControl
                 __next40pxDefaultSize
                 __nextHasNoMarginBottom
-                label={__('Daily summary time', 'alpaca')}
+                label={__('Daily summary time', 'alpaca-issue-tracker')}
                 hideLabelFromVision
                 type="time"
                 value={context.dailyDigestPreferences[SEND_TIME_KEY] || '17:00'}
@@ -365,9 +365,9 @@ const renderNotificationEmailTab = (context, tab) => {
               /* translators: %s: site timezone label. */
               __(
                 "Summaries of activity matching your preferences will be generated for you at this time every day, based on the site's timezone (%s).",
-                'alpaca',
+                'alpaca-issue-tracker',
               ),
-              context.siteTimezoneLabel || __('Site timezone', 'alpaca'),
+              context.siteTimezoneLabel || __('Site timezone', 'alpaca-issue-tracker'),
             )}
           </p>
         </div>
@@ -376,7 +376,7 @@ const renderNotificationEmailTab = (context, tab) => {
           <Notice status="warning" isDismissible={false}>
             {__(
               'Add a valid email address before enabling instant email updates or the daily summary.',
-              'alpaca',
+              'alpaca-issue-tracker',
             )}
           </Notice>
         )}
@@ -502,7 +502,7 @@ const NotificationPreferences = () => {
           setError(
             __(
               'Could not load labels. Label notifications are unavailable until labels load.',
-              'alpaca',
+              'alpaca-issue-tracker',
             ),
           );
         }
@@ -510,7 +510,7 @@ const NotificationPreferences = () => {
       .catch((loadError) => {
         setError(
           loadError?.message ||
-            __('Could not load notification preferences.', 'alpaca'),
+            __('Could not load notification preferences.', 'alpaca-issue-tracker'),
         );
       })
       .finally(() => {
@@ -845,12 +845,12 @@ const NotificationPreferences = () => {
             nextChannelStatus,
           ),
         );
-        setNotice(__('Notification preferences saved.', 'alpaca'));
+        setNotice(__('Notification preferences saved.', 'alpaca-issue-tracker'));
       })
       .catch((saveError) => {
         setError(
           saveError?.message ||
-            __('Could not save notification preferences.', 'alpaca'),
+            __('Could not save notification preferences.', 'alpaca-issue-tracker'),
         );
       })
       .finally(() => {
@@ -892,7 +892,7 @@ const NotificationPreferences = () => {
         </div>
       ) : (
         <p className="alpaca-notifications-help">
-          {__('No labels are available yet.', 'alpaca')}
+          {__('No labels are available yet.', 'alpaca-issue-tracker')}
         </p>
       )}
     </div>
@@ -926,7 +926,7 @@ const NotificationPreferences = () => {
       <section className="alpaca-notifications-panel alpaca-notifications-panel--narrow">
         <p className="alpaca-notifications-panel-intro">
           {channel.description ||
-            __('Configure how this delivery channel should behave.', 'alpaca')}
+            __('Configure how this delivery channel should behave.', 'alpaca-issue-tracker')}
         </p>
 
         <div className="alpaca-notifications-channel-stack">
@@ -997,7 +997,7 @@ const NotificationPreferences = () => {
 
           {!channelCanEnable && (
             <p className="alpaca-notifications-help">
-              {__('This channel is not ready to be enabled yet.', 'alpaca')}
+              {__('This channel is not ready to be enabled yet.', 'alpaca-issue-tracker')}
             </p>
           )}
         </div>
@@ -1017,7 +1017,7 @@ const NotificationPreferences = () => {
     return (
       <div className="alpaca-notifications-screen">
         <Notice status="error" isDismissible={false}>
-          {error || __('Could not load notification preferences.', 'alpaca')}
+          {error || __('Could not load notification preferences.', 'alpaca-issue-tracker')}
         </Notice>
       </div>
     );
@@ -1066,7 +1066,7 @@ const NotificationPreferences = () => {
               <div className="alpaca-notifications-tab-content">
                 <div className="alpaca-notifications-grid">
                   <section className="alpaca-notifications-panel">
-                    <h2>{__('Notify me about', 'alpaca')}</h2>
+                    <h2>{__('Notify me about', 'alpaca-issue-tracker')}</h2>
                     <div className="alpaca-notifications-options">
                       {subjectOptions.map((option) => (
                         <div
@@ -1092,7 +1092,7 @@ const NotificationPreferences = () => {
                   </section>
 
                   <section className="alpaca-notifications-panel">
-                    <h2>{__('Activity types', 'alpaca')}</h2>
+                    <h2>{__('Activity types', 'alpaca-issue-tracker')}</h2>
                     <div className="alpaca-notifications-options">
                       {eventOptions.map((option) => (
                         <CheckboxControl

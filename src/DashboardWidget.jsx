@@ -38,28 +38,28 @@ const AlpacaDashboardWidget = memo(function AlpacaDashboardWidget({ data }) {
       : 'admin.php';
 
   if (!data) {
-    return <div>{__('Loading…', 'alpaca')}</div>;
+    return <div>{__('Loading…', 'alpaca-issue-tracker')}</div>;
   }
 
   const tabs = [
     {
       name: 'assignedToMe',
-      title: __('Assigned to Me', 'alpaca'),
+      title: __('Assigned to Me', 'alpaca-issue-tracker'),
       issues: data.assignedToMe,
     },
     {
       name: 'newlyCreated',
-      title: __('Latest', 'alpaca'),
+      title: __('Latest', 'alpaca-issue-tracker'),
       issues: data.newlyCreated,
     },
     {
       name: 'overdue',
-      title: __('Overdue', 'alpaca'),
+      title: __('Overdue', 'alpaca-issue-tracker'),
       issues: data.overdue,
     },
     {
       name: 'watchlist',
-      title: __('Watchlist', 'alpaca'),
+      title: __('Watchlist', 'alpaca-issue-tracker'),
       issues: data.watchlist,
     },
   ];
@@ -76,11 +76,11 @@ const AlpacaDashboardWidget = memo(function AlpacaDashboardWidget({ data }) {
             <table>
               <thead>
                 <tr>
-                  <th scope="col">{__('Issue', 'alpaca')}</th>
+                  <th scope="col">{__('Issue', 'alpaca-issue-tracker')}</th>
                   <th scope="col" aria-hidden="true" />
-                  <th scope="col">{__('Due Date', 'alpaca')}</th>
-                  <th scope="col">{__('Assignees', 'alpaca')}</th>
-                  <th scope="col">{__('Status', 'alpaca')}</th>
+                  <th scope="col">{__('Due Date', 'alpaca-issue-tracker')}</th>
+                  <th scope="col">{__('Assignees', 'alpaca-issue-tracker')}</th>
+                  <th scope="col">{__('Status', 'alpaca-issue-tracker')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -146,7 +146,7 @@ const AlpacaDashboardWidget = memo(function AlpacaDashboardWidget({ data }) {
               </tbody>
             </table>
           ) : (
-            <p>{__('No issues found.', 'alpaca')}</p>
+            <p>{__('No issues found.', 'alpaca-issue-tracker')}</p>
           )}
         </div>
       )}

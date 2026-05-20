@@ -242,7 +242,7 @@ function alpaca_register_notification_digest_cron_schedule( $schedules ) {
 	if ( ! isset( $schedules['alpaca_every_fifteen_minutes'] ) ) {
 		$schedules['alpaca_every_fifteen_minutes'] = [
 			'interval' => 15 * MINUTE_IN_SECONDS,
-			'display'  => esc_html__( 'Every fifteen minutes', 'alpaca' ),
+			'display'  => esc_html__( 'Every fifteen minutes', 'alpaca-issue-tracker' ),
 		];
 	}
 

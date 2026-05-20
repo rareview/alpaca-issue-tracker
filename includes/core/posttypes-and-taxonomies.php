@@ -64,14 +64,14 @@ function alpaca_register_cpts_and_taxonomies() {
 			'public'        => false,
 			'show_in_rest'  => true,
 			'show_ui'       => false,
-			'label'         => esc_html__( 'Issues', 'alpaca' ),
+			'label'         => esc_html__( 'Issues', 'alpaca-issue-tracker' ),
 			'labels'        => [
-				'name'          => esc_html__( 'Issue', 'alpaca' ),
-				'singular_name' => esc_html__( 'Issue', 'alpaca' ),
-				'all_items'     => esc_html__( 'All Issues', 'alpaca' ),
-				'edit_item'     => esc_html__( 'Edit Issue', 'alpaca' ),
-				'view_item'     => esc_html__( 'View Issue', 'alpaca' ),
-				'view_items'    => esc_html__( 'View Issues', 'alpaca' ),
+				'name'          => esc_html__( 'Issue', 'alpaca-issue-tracker' ),
+				'singular_name' => esc_html__( 'Issue', 'alpaca-issue-tracker' ),
+				'all_items'     => esc_html__( 'All Issues', 'alpaca-issue-tracker' ),
+				'edit_item'     => esc_html__( 'Edit Issue', 'alpaca-issue-tracker' ),
+				'view_item'     => esc_html__( 'View Issue', 'alpaca-issue-tracker' ),
+				'view_items'    => esc_html__( 'View Issues', 'alpaca-issue-tracker' ),
 			],
 			'menu_icon'     => 'dashicons-warning',
 			'menu_position' => 102,
@@ -80,21 +80,21 @@ function alpaca_register_cpts_and_taxonomies() {
 		]
 	);
 
-	alpaca_register_taxonomy( 'alpaca_browser', [ 'label' => esc_html__( 'Browser', 'alpaca' ) ] );
-	alpaca_register_taxonomy( 'alpaca_phptemplate', [ 'label' => esc_html__( 'PHP Template', 'alpaca' ) ] );
-	alpaca_register_taxonomy( 'alpaca_type', [ 'label' => esc_html__( 'Type', 'alpaca' ) ] );
+	alpaca_register_taxonomy( 'alpaca_browser', [ 'label' => esc_html__( 'Browser', 'alpaca-issue-tracker' ) ] );
+	alpaca_register_taxonomy( 'alpaca_phptemplate', [ 'label' => esc_html__( 'PHP Template', 'alpaca-issue-tracker' ) ] );
+	alpaca_register_taxonomy( 'alpaca_type', [ 'label' => esc_html__( 'Type', 'alpaca-issue-tracker' ) ] );
 	alpaca_register_taxonomy(
 		'alpaca_assignee',
 		[
 			'public' => true,
-			'label'  => esc_html__( 'Assignee', 'alpaca' ),
+			'label'  => esc_html__( 'Assignee', 'alpaca-issue-tracker' ),
 		]
 	);
 	alpaca_register_taxonomy(
 		'alpaca_status',
 		[
 			'show_in_rest' => true,
-			'label'        => esc_html__( 'Status', 'alpaca' ),
+			'label'        => esc_html__( 'Status', 'alpaca-issue-tracker' ),
 		]
 	);
 	alpaca_register_taxonomy(
@@ -103,7 +103,7 @@ function alpaca_register_cpts_and_taxonomies() {
 			'public'       => true,
 			'show_ui'      => false,
 			'show_in_rest' => true,
-			'label'        => esc_html__( 'Labels', 'alpaca' ),
+			'label'        => esc_html__( 'Labels', 'alpaca-issue-tracker' ),
 		]
 	);
 	alpaca_register_taxonomy(
@@ -113,7 +113,7 @@ function alpaca_register_cpts_and_taxonomies() {
 			'publicly_queryable' => false,
 			'show_ui'            => false,
 			'show_in_rest'       => false,
-			'label'              => esc_html__( 'Watching', 'alpaca' ),
+			'label'              => esc_html__( 'Watching', 'alpaca-issue-tracker' ),
 		]
 	);
 

@@ -136,7 +136,7 @@ class Helpers {
 		if ( '' !== $capability_action && ! self::user_can( $capability_action, $capability_args ) ) {
 			return new WP_Error(
 				'rest_forbidden',
-				esc_html__( 'You are not allowed to access this endpoint.', 'alpaca' ),
+				esc_html__( 'You are not allowed to access this endpoint.', 'alpaca-issue-tracker' ),
 				[ 'status' => 403 ]
 			);
 		}
@@ -149,7 +149,7 @@ class Helpers {
 		if ( '' === $nonce || ! wp_verify_nonce( $nonce, 'wp_rest' ) ) {
 			return new WP_Error(
 				'rest_forbidden',
-				esc_html__( 'Invalid nonce.', 'alpaca' ),
+				esc_html__( 'Invalid nonce.', 'alpaca-issue-tracker' ),
 				[ 'status' => 401 ]
 			);
 		}

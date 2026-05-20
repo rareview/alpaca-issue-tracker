@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 function alpaca_add_dashboard_widgets() {
 	wp_add_dashboard_widget(
 		'alpaca_dashboard_widget',                          // Widget slug.
-		esc_html__( 'Project Issues', 'alpaca' ),           // Title.
+		esc_html__( 'Project Issues', 'alpaca-issue-tracker' ),           // Title.
 		'alpaca_dashboard_widget_render'                    // Display function.
 	);
 }

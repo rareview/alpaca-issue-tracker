@@ -19,8 +19,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 function alpaca_project_board_page() {
 	?>
 	<div class="wrap">
-        <h1 class="wp-heading-inline"><?php echo esc_html__( 'Project Board', 'alpaca' ); ?></h1>
-        <a id="alpaca-add-issue" href="#" class="page-title-action aria-button-if-js" role="button" aria-expanded="false"><?php echo esc_html__( 'Add Issue', 'alpaca' ); ?></a>
+        <h1 class="wp-heading-inline"><?php echo esc_html__( 'Project Board', 'alpaca-issue-tracker' ); ?></h1>
+        <a id="alpaca-add-issue" href="#" class="page-title-action aria-button-if-js" role="button" aria-expanded="false"><?php echo esc_html__( 'Add Issue', 'alpaca-issue-tracker' ); ?></a>
         
         <hr class="wp-header-end">
 

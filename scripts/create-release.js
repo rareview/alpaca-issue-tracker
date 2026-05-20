@@ -28,10 +28,10 @@ const versionFiles = [
       content.replace(/^(Stable tag:\s+).+$/m, `$1${version}`),
   },
   {
-    path: 'languages/alpaca.pot',
+    path: 'languages/alpaca-issue-tracker.pot',
     replace: (content, version) =>
       content.replace(
-        /(Project-Id-Version: Alpaca )([^\\]+)(\\n")/,
+        /(Project-Id-Version: Alpaca Issue Tracker )([^\\]+)(\\n")/,
         `$1${version}$3`,
       ),
   },

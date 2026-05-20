@@ -101,7 +101,7 @@ $RECYCLE.BIN/
 # ------------------
 # Build Artifacts
 # ------------------
-alpaca.zip
+alpaca-issue-tracker.zip
 *.zip
 
 # ------------------

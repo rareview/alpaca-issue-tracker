@@ -137,14 +137,14 @@ function alpaca_render_notification_attachments_html( $attachments ) {
 			continue;
 		}
 
-		$items[] = '<li' . alpaca_get_notification_email_style_attribute( 'attachment_item' ) . '><a href="' . $url . '"' . alpaca_get_notification_email_style_attribute( 'link' ) . '>' . esc_html__( 'View attachment', 'alpaca' ) . '</a></li>';
+		$items[] = '<li' . alpaca_get_notification_email_style_attribute( 'attachment_item' ) . '><a href="' . $url . '"' . alpaca_get_notification_email_style_attribute( 'link' ) . '>' . esc_html__( 'View attachment', 'alpaca-issue-tracker' ) . '</a></li>';
 	}
 
 	if ( empty( $items ) ) {
 		return '';
 	}
 
-	return '<div class="alpaca-notification-attachments"' . alpaca_get_notification_email_style_attribute( 'attachments' ) . '><h3' . alpaca_get_notification_email_style_attribute( 'attachments_title' ) . '>' . esc_html__( 'Attachments', 'alpaca' ) . '</h3><ul' . alpaca_get_notification_email_style_attribute( 'attachments_list' ) . '>' . implode( '', $items ) . '</ul></div>';
+	return '<div class="alpaca-notification-attachments"' . alpaca_get_notification_email_style_attribute( 'attachments' ) . '><h3' . alpaca_get_notification_email_style_attribute( 'attachments_title' ) . '>' . esc_html__( 'Attachments', 'alpaca-issue-tracker' ) . '</h3><ul' . alpaca_get_notification_email_style_attribute( 'attachments_list' ) . '>' . implode( '', $items ) . '</ul></div>';
 }
 
 /**
@@ -170,7 +170,7 @@ function alpaca_render_notification_placeholder_block( $block_name, $event ) {
 	}
 
 	if ( 'alpaca/email-issue-link' === $block_name ) {
-		return '<p' . alpaca_get_notification_email_style_attribute( 'paragraph' ) . '><a href="' . esc_url( $tokens['{{issue_url}}'] ) . '"' . alpaca_get_notification_email_style_attribute( 'button' ) . '>' . esc_html__( 'Open Issue', 'alpaca' ) . '</a></p>';
+		return '<p' . alpaca_get_notification_email_style_attribute( 'paragraph' ) . '><a href="' . esc_url( $tokens['{{issue_url}}'] ) . '"' . alpaca_get_notification_email_style_attribute( 'button' ) . '>' . esc_html__( 'Open Issue', 'alpaca-issue-tracker' ) . '</a></p>';
 	}
 
 	if ( 'alpaca/email-site-name' === $block_name ) {
@@ -464,7 +464,7 @@ function alpaca_get_notification_mail_from_details() {
 		$default_address = (string) get_option( 'admin_email', '' );
 	}
 
-	$default_name = __( 'WordPress', 'alpaca' );
+	$default_name = __( 'WordPress', 'alpaca-issue-tracker' );
 	// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- This uses the core WordPress mail from filter.
 	$from_address = apply_filters( 'wp_mail_from', $default_address );
 	// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- This uses the core WordPress mail from name filter.

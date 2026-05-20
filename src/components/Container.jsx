@@ -138,7 +138,7 @@ function Container({
   const menuControls = [
     {
       icon: 'edit',
-      title: __('Rename', 'alpaca'),
+      title: __('Rename', 'alpaca-issue-tracker'),
       onClick: () => {
         setNewTitle(title);
         setIsRenaming(true);
@@ -147,8 +147,8 @@ function Container({
     {
       icon: isHidden ? 'visibility' : 'hidden',
       title: isHidden
-        ? __('Expand Column', 'alpaca')
-        : __('Collapse Column', 'alpaca'),
+        ? __('Expand Column', 'alpaca-issue-tracker')
+        : __('Collapse Column', 'alpaca-issue-tracker'),
       onClick: toggleHidden,
     },
     ...getBuiltInContainerMenuControls({
@@ -158,7 +158,7 @@ function Container({
     }),
     {
       icon: 'arrow-up-alt',
-      title: __('Lift Priority Items', 'alpaca'),
+      title: __('Lift Priority Items', 'alpaca-issue-tracker'),
       isDisabled: areBulkActionsDisabled,
       onClick: () => {
         if (!onBulkItemReorder) {
@@ -224,7 +224,7 @@ function Container({
           aria-hidden="true"
         ></span>
       ),
-      title: __('Move All To Next Column', 'alpaca'),
+      title: __('Move All To Next Column', 'alpaca-issue-tracker'),
       onClick: () => onMoveAllToNext(id),
       isDisabled: areBulkActionsDisabled,
     });
@@ -233,7 +233,7 @@ function Container({
   if (isLastContainer && canDeleteIssues) {
     menuControls.push({
       icon: 'trash',
-      title: __('Delete All', 'alpaca'),
+      title: __('Delete All', 'alpaca-issue-tracker'),
       isDisabled: areBulkActionsDisabled,
       onClick: () => onDeleteAll(id),
     });
@@ -520,7 +520,7 @@ function Container({
         <div className="alpaca-container-controls">
           <DropdownMenu
             icon="menu"
-            label={__('Options', 'alpaca')}
+            label={__('Options', 'alpaca-issue-tracker')}
             controls={containerMenuControls}
           />
         </div>
@@ -621,7 +621,7 @@ function Container({
                     />
                   ) : (
                     <div className={innerClasses} {...extraAttrs}>
-                      {__('Moving…', 'alpaca')}
+                      {__('Moving…', 'alpaca-issue-tracker')}
                     </div>
                   )}
                 </div>
@@ -634,14 +634,14 @@ function Container({
                 if (isFiltering) {
                   return (
                     <div className="alpaca-item empty">
-                      {__('No cards match the active filter.', 'alpaca')}
+                      {__('No cards match the active filter.', 'alpaca-issue-tracker')}
                     </div>
                   );
                 }
 
                 return (
                   <div className="alpaca-item empty">
-                    {__('Drop items here', 'alpaca')}
+                    {__('Drop items here', 'alpaca-issue-tracker')}
                   </div>
                 );
               }

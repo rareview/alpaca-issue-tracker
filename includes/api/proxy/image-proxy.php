@@ -80,7 +80,7 @@ function alpaca_validate_image_proxy_permission( WP_REST_Request $request ) {
 
 	return new WP_Error(
 		'rest_forbidden',
-		esc_html__( 'Invalid proxy authentication token.', 'alpaca' ),
+		esc_html__( 'Invalid proxy authentication token.', 'alpaca-issue-tracker' ),
 		[ 'status' => 401 ]
 	);
 }
@@ -162,7 +162,7 @@ function alpaca_validate_proxy_target_url( $url ) {
 	if ( '' === $url || ! wp_http_validate_url( $url ) ) {
 		return new WP_Error(
 			'alpaca_proxy_invalid_url',
-			esc_html__( 'Invalid URL.', 'alpaca' ),
+			esc_html__( 'Invalid URL.', 'alpaca-issue-tracker' ),
 			[ 'status' => 400 ]
 		);
 	}
@@ -171,7 +171,7 @@ function alpaca_validate_proxy_target_url( $url ) {
 	if ( ! in_array( strtolower( $scheme ), [ 'http', 'https' ], true ) ) {
 		return new WP_Error(
 			'alpaca_proxy_invalid_scheme',
-			esc_html__( 'Only HTTP and HTTPS URLs are allowed.', 'alpaca' ),
+			esc_html__( 'Only HTTP and HTTPS URLs are allowed.', 'alpaca-issue-tracker' ),
 			[ 'status' => 400 ]
 		);
 	}
@@ -180,7 +180,7 @@ function alpaca_validate_proxy_target_url( $url ) {
 	if ( '' === $host ) {
 		return new WP_Error(
 			'alpaca_proxy_invalid_host',
-			esc_html__( 'Invalid host.', 'alpaca' ),
+			esc_html__( 'Invalid host.', 'alpaca-issue-tracker' ),
 			[ 'status' => 400 ]
 		);
 	}
@@ -190,7 +190,7 @@ function alpaca_validate_proxy_target_url( $url ) {
 		if ( alpaca_proxy_is_private_or_reserved_ip( $host ) ) {
 			return new WP_Error(
 				'alpaca_proxy_disallowed_ip',
-				esc_html__( 'URL not allowed.', 'alpaca' ),
+				esc_html__( 'URL not allowed.', 'alpaca-issue-tracker' ),
 				[ 'status' => 400 ]
 			);
 		}
@@ -202,7 +202,7 @@ function alpaca_validate_proxy_target_url( $url ) {
 	if ( $ip === $host ) {
 		return new WP_Error(
 			'alpaca_proxy_unresolvable',
-			esc_html__( 'Unable to resolve host.', 'alpaca' ),
+			esc_html__( 'Unable to resolve host.', 'alpaca-issue-tracker' ),
 			[ 'status' => 400 ]
 		);
 	}
@@ -210,7 +210,7 @@ function alpaca_validate_proxy_target_url( $url ) {
 	if ( alpaca_proxy_is_private_or_reserved_ip( $ip ) ) {
 		return new WP_Error(
 			'alpaca_proxy_disallowed_ip',
-			esc_html__( 'URL not allowed.', 'alpaca' ),
+			esc_html__( 'URL not allowed.', 'alpaca-issue-tracker' ),
 			[ 'status' => 400 ]
 		);
 	}
@@ -284,7 +284,7 @@ function alpaca_image_proxy_callback( WP_REST_Request $request ) {
 			'image_proxy',
 			[
 				'success' => false,
-				'message' => esc_html__( 'Failed to fetch image.', 'alpaca' ),
+				'message' => esc_html__( 'Failed to fetch image.', 'alpaca-issue-tracker' ),
 			],
 			502
 		);
@@ -301,7 +301,7 @@ function alpaca_image_proxy_callback( WP_REST_Request $request ) {
 			'image_proxy',
 			[
 				'success' => false,
-				'message' => esc_html__( 'Unsupported image type.', 'alpaca' ),
+				'message' => esc_html__( 'Unsupported image type.', 'alpaca-issue-tracker' ),
 			],
 			400
 		);

@@ -14,8 +14,8 @@ add_action(
 	'admin_menu',
 	function () {
 		add_menu_page(
-			esc_html__( 'Project Board', 'alpaca' ),
-			esc_html__( 'Project Board', 'alpaca' ),
+			esc_html__( 'Project Board', 'alpaca-issue-tracker' ),
+			esc_html__( 'Project Board', 'alpaca-issue-tracker' ),
 			'edit_posts',
 			'project-board',
 			'alpaca_project_board_page',
@@ -25,8 +25,8 @@ add_action(
 
 		add_submenu_page(
 			'project-board',
-			esc_html__( 'Project Activity', 'alpaca' ),
-			esc_html__( 'Project Activity', 'alpaca' ),
+			esc_html__( 'Project Activity', 'alpaca-issue-tracker' ),
+			esc_html__( 'Project Activity', 'alpaca-issue-tracker' ),
 			'edit_posts',
 			'project-activity',
 			'alpaca_activity_page'
@@ -34,8 +34,8 @@ add_action(
 
 		add_submenu_page(
 			'project-board',
-			esc_html__( 'Configure', 'alpaca' ),
-			esc_html__( 'Configure', 'alpaca' ),
+			esc_html__( 'Configure', 'alpaca-issue-tracker' ),
+			esc_html__( 'Configure', 'alpaca-issue-tracker' ),
 			'manage_options',
 			'alpaca-settings',
 			'alpaca_settings_page'
@@ -43,8 +43,8 @@ add_action(
 
 		add_submenu_page(
 			'project-board',
-			esc_html__( 'My Notifications', 'alpaca' ),
-			esc_html__( 'My Notifications', 'alpaca' ),
+			esc_html__( 'My Notifications', 'alpaca-issue-tracker' ),
+			esc_html__( 'My Notifications', 'alpaca-issue-tracker' ),
 			'edit_posts',
 			'alpaca-notifications',
 			'alpaca_notifications_page'
@@ -52,8 +52,8 @@ add_action(
 
 		add_submenu_page(
 			'project-board',
-			esc_html__( 'Email Templates', 'alpaca' ),
-			esc_html__( 'Email Templates', 'alpaca' ),
+			esc_html__( 'Email Templates', 'alpaca-issue-tracker' ),
+			esc_html__( 'Email Templates', 'alpaca-issue-tracker' ),
 			'manage_options',
 			'alpaca-email-templates',
 			'alpaca_email_templates_page'
@@ -69,10 +69,10 @@ add_action(
 function alpaca_settings_page() {
 	?>
 	<div class="alpaca-settings wrap">
-	<h1><?php echo esc_html__( 'Configure', 'alpaca' ); ?></h1>
+	<h1><?php echo esc_html__( 'Configure', 'alpaca-issue-tracker' ); ?></h1>
 
 	<div class="notice notice-warning inline">
-		<p><?php echo esc_html__( 'Changes made on this screen will affect all users.', 'alpaca' ); ?></p>
+		<p><?php echo esc_html__( 'Changes made on this screen will affect all users.', 'alpaca-issue-tracker' ); ?></p>
 	</div>
 
 	<div id="alpaca-settings-internal"></div>
@@ -91,7 +91,7 @@ function alpaca_settings_page() {
 function alpaca_activity_page() {
 	?>
 	<div class="wrap">
-		<h1><?php echo esc_html__( 'Project Activity', 'alpaca' ); ?></h1>
+		<h1><?php echo esc_html__( 'Project Activity', 'alpaca-issue-tracker' ); ?></h1>
 		<div id="alpaca-activity-page"></div>
 	</div>
 	<?php
@@ -103,10 +103,10 @@ function alpaca_activity_page() {
 function alpaca_notifications_page() {
 	?>
 	<div class="alpaca-settings wrap alpaca-notifications-admin-page">
-		<h1><?php echo esc_html__( 'My Notifications', 'alpaca' ); ?></h1>
+		<h1><?php echo esc_html__( 'My Notifications', 'alpaca-issue-tracker' ); ?></h1>
 
 		<div class="notice notice-info inline">
-			<p><?php echo esc_html__( 'Changes made on this screen will only affect the current user.', 'alpaca' ); ?></p>
+			<p><?php echo esc_html__( 'Changes made on this screen will only affect the current user.', 'alpaca-issue-tracker' ); ?></p>
 		</div>
 
 		<div id="alpaca-notifications-page"></div>
@@ -120,7 +120,7 @@ function alpaca_notifications_page() {
 function alpaca_email_templates_page() {
 	?>
 	<div class="alpaca-settings wrap alpaca-email-templates-admin-page">
-		<h1><?php echo esc_html__( 'Email Templates', 'alpaca' ); ?></h1>
+		<h1><?php echo esc_html__( 'Email Templates', 'alpaca-issue-tracker' ); ?></h1>
 		<div id="alpaca-email-templates-page"></div>
 	</div>
 	<?php

@@ -528,10 +528,10 @@ function SearchContainer({
   return (
     <div className="alpaca-board-search alpaca-board-control">
       <SearchControl
-        label={__('Search', 'alpaca')}
+        label={__('Search', 'alpaca-issue-tracker')}
         value={value}
         onChange={(val) => setValue(val)}
-        placeholder={__('Search', 'alpaca')}
+        placeholder={__('Search', 'alpaca-issue-tracker')}
         isBusy={isSearching}
         __nextHasNoMarginBottom
       />

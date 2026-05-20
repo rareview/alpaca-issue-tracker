@@ -63,12 +63,12 @@ function alpaca_get_notification_daily_digest_sample_payload() {
 		'created_gmt' => $window_end,
 		'read_at_gmt' => '',
 	];
-	$sample_event['comment']['raw']      = __( 'This is a sample comment shown inside the daily digest. It is intentionally longer so the excerpt rendering can be previewed.', 'alpaca' );
+	$sample_event['comment']['raw']      = __( 'This is a sample comment shown inside the daily digest. It is intentionally longer so the excerpt rendering can be previewed.', 'alpaca-issue-tracker' );
 	$sample_event['comment']['mentions'] = [
 		[
 			'id'           => get_current_user_id(),
 			'slug'         => 'sample-user',
-			'display_name' => __( 'Sample User', 'alpaca' ),
+			'display_name' => __( 'Sample User', 'alpaca-issue-tracker' ),
 		],
 	];
 
@@ -80,30 +80,30 @@ function alpaca_get_notification_daily_digest_sample_payload() {
 		'deadline_watch'   => [
 			[
 				'id'             => 101,
-				'title'          => __( 'Launch homepage refresh', 'alpaca' ),
+				'title'          => __( 'Launch homepage refresh', 'alpaca-issue-tracker' ),
 				'slug'           => 'launch-homepage-refresh',
 				'url'            => admin_url( 'admin.php?page=project-board&issue=launch-homepage-refresh' ),
 				'deadline'       => wp_date( get_option( 'date_format' ), strtotime( '+1 day' ) ),
 				'deadline_state' => 'soon',
-				'headline'       => __( 'Due soon', 'alpaca' ),
+				'headline'       => __( 'Due soon', 'alpaca-issue-tracker' ),
 				'meta'           => [
-					'status_label'     => __( 'In Progress', 'alpaca' ),
+					'status_label'     => __( 'In Progress', 'alpaca-issue-tracker' ),
 					'assignees'        => [
 						[
-							'name'   => __( 'Sam', 'alpaca' ),
+							'name'   => __( 'Sam', 'alpaca-issue-tracker' ),
 							'avatar' => alpaca_avatar( get_current_user_id(), 24 ),
 						],
 					],
-					'assignee_names'   => [ __( 'Sam', 'alpaca' ) ],
+					'assignee_names'   => [ __( 'Sam', 'alpaca-issue-tracker' ) ],
 					'labels'           => [
 						[
-							'name'  => __( 'Design', 'alpaca' ),
+							'name'  => __( 'Design', 'alpaca-issue-tracker' ),
 							'color' => '#f97316',
 						],
 					],
-					'label_names'      => [ __( 'Design', 'alpaca' ) ],
+					'label_names'      => [ __( 'Design', 'alpaca-issue-tracker' ) ],
 					'deadline_label'   => wp_date( get_option( 'date_format' ), strtotime( '+1 day' ) ),
-					'deadline_text'    => __( 'Tomorrow', 'alpaca' ),
+					'deadline_text'    => __( 'Tomorrow', 'alpaca-issue-tracker' ),
 					'deadline_state'   => 'soon',
 					'is_high_priority' => true,
 				],
@@ -113,25 +113,25 @@ function alpaca_get_notification_daily_digest_sample_payload() {
 			[
 				'issue'   => [
 					'id'    => isset( $sample_event['issue']['id'] ) ? (int) $sample_event['issue']['id'] : 0,
-					'title' => isset( $sample_event['issue']['title'] ) ? (string) $sample_event['issue']['title'] : __( 'Sample issue title', 'alpaca' ),
+					'title' => isset( $sample_event['issue']['title'] ) ? (string) $sample_event['issue']['title'] : __( 'Sample issue title', 'alpaca-issue-tracker' ),
 					'slug'  => isset( $sample_event['issue']['slug'] ) ? (string) $sample_event['issue']['slug'] : 'sample-issue-title',
 					'url'   => isset( $sample_event['issue']['url'] ) ? (string) $sample_event['issue']['url'] : admin_url( 'admin.php?page=project-board&issue=sample-issue-title' ),
 					'meta'  => [
-						'status_label'     => __( 'In Progress', 'alpaca' ),
+						'status_label'     => __( 'In Progress', 'alpaca-issue-tracker' ),
 						'assignees'        => [
 							[
-								'name'   => __( 'Alex', 'alpaca' ),
+								'name'   => __( 'Alex', 'alpaca-issue-tracker' ),
 								'avatar' => alpaca_avatar( get_current_user_id(), 24 ),
 							],
 						],
-						'assignee_names'   => [ __( 'Alex', 'alpaca' ) ],
+						'assignee_names'   => [ __( 'Alex', 'alpaca-issue-tracker' ) ],
 						'labels'           => [
 							[
-								'name'  => __( 'Design', 'alpaca' ),
+								'name'  => __( 'Design', 'alpaca-issue-tracker' ),
 								'color' => '#f97316',
 							],
 						],
-						'label_names'      => [ __( 'Design', 'alpaca' ) ],
+						'label_names'      => [ __( 'Design', 'alpaca-issue-tracker' ) ],
 						'deadline_label'   => wp_date( get_option( 'date_format' ), strtotime( '+14 days' ) ),
 						'deadline_text'    => wp_date( 'M j', strtotime( '+14 days' ) ),
 						'deadline_state'   => '',
@@ -142,8 +142,8 @@ function alpaca_get_notification_daily_digest_sample_payload() {
 					alpaca_get_notification_digest_event_entry( $sample_event ),
 					[
 						'event_family' => 'status_changes',
-						'event_label'  => __( 'Status changed', 'alpaca' ),
-						'actor_name'   => __( 'Sam', 'alpaca' ),
+						'event_label'  => __( 'Status changed', 'alpaca-issue-tracker' ),
+						'actor_name'   => __( 'Sam', 'alpaca-issue-tracker' ),
 						'excerpt'      => '',
 						'timestamp'    => gmdate( 'Y-m-d H:i:s', strtotime( $window_end ) - HOUR_IN_SECONDS ),
 						'display_time' => wp_date( get_option( 'time_format' ), strtotime( '-1 hour' ) ),
@@ -158,20 +158,20 @@ function alpaca_get_notification_daily_digest_sample_payload() {
 		'new_items'        => [
 			[
 				'id'    => 202,
-				'title' => __( 'Review new design request', 'alpaca' ),
+				'title' => __( 'Review new design request', 'alpaca-issue-tracker' ),
 				'slug'  => 'review-new-design-request',
 				'url'   => admin_url( 'admin.php?page=project-board&issue=review-new-design-request' ),
 				'meta'  => [
-					'status_label'     => __( 'Inbox', 'alpaca' ),
+					'status_label'     => __( 'Inbox', 'alpaca-issue-tracker' ),
 					'assignees'        => [],
 					'assignee_names'   => [],
 					'labels'           => [
 						[
-							'name'  => __( 'Design', 'alpaca' ),
+							'name'  => __( 'Design', 'alpaca-issue-tracker' ),
 							'color' => '#f97316',
 						],
 					],
-					'label_names'      => [ __( 'Design', 'alpaca' ) ],
+					'label_names'      => [ __( 'Design', 'alpaca-issue-tracker' ) ],
 					'deadline_label'   => '',
 					'deadline_text'    => '',
 					'deadline_state'   => '',
@@ -203,7 +203,7 @@ function alpaca_render_notification_digest_priority_badge_html( $label = '', $is
 	$is_label_visible = (bool) $is_label_visible;
 
 	if ( '' === $label ) {
-		$label = esc_html__( 'Priority', 'alpaca' );
+		$label = esc_html__( 'Priority', 'alpaca-issue-tracker' );
 	}
 
 	$svg = alpaca_get_icon( 'exclamation-circle' );
@@ -346,7 +346,7 @@ function alpaca_render_notification_digest_event_html( $entry ) {
 	if ( '' !== $actor_name ) {
 		$headline = sprintf(
 			/* translators: 1: event label, 2: actor name. */
-			esc_html__( '%1$s by %2$s', 'alpaca' ),
+			esc_html__( '%1$s by %2$s', 'alpaca-issue-tracker' ),
 			$event_label,
 			$actor_name
 		);
@@ -379,13 +379,13 @@ function alpaca_render_notification_digest_event_html( $entry ) {
  */
 function alpaca_render_notification_deadline_watch_html( $items ) {
 	if ( empty( $items ) ) {
-		return '<p class="alpaca-notification-digest-empty">' . esc_html__( 'No followed issues are overdue or due in the next two days.', 'alpaca' ) . '</p>';
+		return '<p class="alpaca-notification-digest-empty">' . esc_html__( 'No followed issues are overdue or due in the next two days.', 'alpaca-issue-tracker' ) . '</p>';
 	}
 
 	return alpaca_render_notification_digest_issue_table_html(
 		$items,
 		[
-			'empty_message' => esc_html__( 'No followed issues are overdue or due in the next two days.', 'alpaca' ),
+			'empty_message' => esc_html__( 'No followed issues are overdue or due in the next two days.', 'alpaca-issue-tracker' ),
 			'visible_limit' => 3,
 		]
 	);
@@ -414,7 +414,7 @@ function alpaca_render_notification_digest_issue_table_html( $items, $args = [] 
 	$visible_limit = absint( $args['visible_limit'] );
 	$visible_items = $visible_limit > 0 ? array_slice( $items, 0, $visible_limit ) : $items;
 	$more_count    = max( 0, count( $items ) - count( $visible_items ) );
-	$html          = '<div class="alpaca-notification-digest-deadline-table-wrap"><table class="alpaca-notification-digest-deadline-table" role="presentation"><thead><tr><th scope="col">' . esc_html__( 'Issue', 'alpaca' ) . '</th><th scope="col" class="alpaca-notification-digest-deadline-table__priority"><span class="screen-reader-text">' . esc_html__( 'Priority', 'alpaca' ) . '</span></th><th scope="col">' . esc_html__( 'Due Date', 'alpaca' ) . '</th><th scope="col">' . esc_html__( 'Assignees', 'alpaca' ) . '</th><th scope="col">' . esc_html__( 'Status', 'alpaca' ) . '</th></tr></thead><tbody>';
+	$html          = '<div class="alpaca-notification-digest-deadline-table-wrap"><table class="alpaca-notification-digest-deadline-table" role="presentation"><thead><tr><th scope="col">' . esc_html__( 'Issue', 'alpaca-issue-tracker' ) . '</th><th scope="col" class="alpaca-notification-digest-deadline-table__priority"><span class="screen-reader-text">' . esc_html__( 'Priority', 'alpaca-issue-tracker' ) . '</span></th><th scope="col">' . esc_html__( 'Due Date', 'alpaca-issue-tracker' ) . '</th><th scope="col">' . esc_html__( 'Assignees', 'alpaca-issue-tracker' ) . '</th><th scope="col">' . esc_html__( 'Status', 'alpaca-issue-tracker' ) . '</th></tr></thead><tbody>';
 
 	foreach ( $visible_items as $item ) {
 		$meta           = isset( $item['meta'] ) && is_array( $item['meta'] ) ? $item['meta'] : [];
@@ -445,7 +445,7 @@ function alpaca_render_notification_digest_issue_table_html( $items, $args = [] 
 	if ( $more_count > 0 ) {
 		$html .= '<p class="alpaca-notification-digest-card__more">' . sprintf(
 			/* translators: %d: additional item count. */
-			esc_html__( '+%d more', 'alpaca' ),
+			esc_html__( '+%d more', 'alpaca-issue-tracker' ),
 			$more_count
 		) . '</p>';
 	}
@@ -461,7 +461,7 @@ function alpaca_render_notification_digest_issue_table_html( $items, $args = [] 
  */
 function alpaca_render_notification_digest_issue_activity_html( $groups ) {
 	if ( empty( $groups ) ) {
-		return '<p class="alpaca-notification-digest-empty">' . esc_html__( 'No followed issues had activity in the last 24 hours.', 'alpaca' ) . '</p>';
+		return '<p class="alpaca-notification-digest-empty">' . esc_html__( 'No followed issues had activity in the last 24 hours.', 'alpaca-issue-tracker' ) . '</p>';
 	}
 
 	$html = '';
@@ -480,7 +480,7 @@ function alpaca_render_notification_digest_issue_activity_html( $groups ) {
 		if ( ! empty( $group['more'] ) ) {
 			$html .= '<p class="alpaca-notification-digest-card__more">' . sprintf(
 				/* translators: %d: additional item count. */
-				esc_html__( '+%d more', 'alpaca' ),
+				esc_html__( '+%d more', 'alpaca-issue-tracker' ),
 				absint( $group['more'] )
 			) . '</p>';
 		}
@@ -543,20 +543,20 @@ function alpaca_render_notification_daily_digest_placeholder_block( $block_name,
 			$html .= $before_html;
 		}
 
-		$html .= '<section class="alpaca-notification-digest-section"><h3>' . esc_html__( 'Issues Falling Due', 'alpaca' ) . '</h3>' . alpaca_render_notification_deadline_watch_html( isset( $payload['deadline_watch'] ) && is_array( $payload['deadline_watch'] ) ? $payload['deadline_watch'] : [] ) . '</section>';
+		$html .= '<section class="alpaca-notification-digest-section"><h3>' . esc_html__( 'Issues Falling Due', 'alpaca-issue-tracker' ) . '</h3>' . alpaca_render_notification_deadline_watch_html( isset( $payload['deadline_watch'] ) && is_array( $payload['deadline_watch'] ) ? $payload['deadline_watch'] : [] ) . '</section>';
 
 		return $html;
 	}
 
 	if ( 'alpaca/digest-issue-activity' === $block_name ) {
-		return '<section class="alpaca-notification-digest-section"><h3>' . esc_html__( 'My Issues', 'alpaca' ) . '</h3>' . alpaca_render_notification_digest_issue_activity_html( isset( $payload['issue_activity'] ) && is_array( $payload['issue_activity'] ) ? $payload['issue_activity'] : [] ) . '</section>';
+		return '<section class="alpaca-notification-digest-section"><h3>' . esc_html__( 'My Issues', 'alpaca-issue-tracker' ) . '</h3>' . alpaca_render_notification_digest_issue_activity_html( isset( $payload['issue_activity'] ) && is_array( $payload['issue_activity'] ) ? $payload['issue_activity'] : [] ) . '</section>';
 	}
 
 	if ( 'alpaca/digest-new-items' === $block_name ) {
 		$html = '';
 
 		if ( ! empty( $payload['new_items'] ) && is_array( $payload['new_items'] ) ) {
-			$html .= '<section class="alpaca-notification-digest-section"><h3>' . esc_html__( 'New Issues', 'alpaca' ) . '</h3>' . alpaca_render_notification_digest_new_items_html( $payload['new_items'] ) . '</section>';
+			$html .= '<section class="alpaca-notification-digest-section"><h3>' . esc_html__( 'New Issues', 'alpaca-issue-tracker' ) . '</h3>' . alpaca_render_notification_digest_new_items_html( $payload['new_items'] ) . '</section>';
 		}
 
 		$after_html = apply_filters( 'alpaca_daily_digest_post_sections_html', '', $payload, $template );

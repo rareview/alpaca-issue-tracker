@@ -2,8 +2,8 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Alpaca 1.0.0\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/alpaca\n"
+"Project-Id-Version: Alpaca Issue Tracker 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/alpaca-issue-tracker\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -12,7 +12,7 @@ msgstr ""
 "POT-Creation-Date: 2026-05-06T14:31:53+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
-"X-Domain: alpaca\n"
+"X-Domain: alpaca-issue-tracker\n"
 
 #. Plugin Name of the plugin
 #: alpaca.php

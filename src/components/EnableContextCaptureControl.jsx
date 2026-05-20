@@ -11,7 +11,7 @@ const EnableContextCaptureControl = () => {
 
   return (
     <tr>
-      <th>{__('Context Capture', 'alpaca')}</th>
+      <th>{__('Context Capture', 'alpaca-issue-tracker')}</th>
       <td>
         <CheckboxControl
           __nextHasNoMarginBottom
@@ -19,7 +19,7 @@ const EnableContextCaptureControl = () => {
             <InlineCheckboxLabel
               label={__(
                 'Enable reporting of issues with associated context',
-                'alpaca',
+                'alpaca-issue-tracker',
               )}
               isBusy={isFetching || isSaving}
             />

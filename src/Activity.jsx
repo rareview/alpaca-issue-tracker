@@ -40,7 +40,7 @@ const stripHtml = (maybeHtml) => {
  */
 const formatGroupDateLabel = (value, isGmt = false) =>
   formatWpDateDayLabel(value, { treatMysqlAsUtc: isGmt }) ||
-  __('Unknown date', 'alpaca');
+  __('Unknown date', 'alpaca-issue-tracker');
 
 /**
  * Extract a post title from a REST post object.
@@ -257,7 +257,7 @@ const Activity = () => {
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Failed to load project activity comments', error);
-        setErrorMessage(__('Could not load project activity.', 'alpaca'));
+        setErrorMessage(__('Could not load project activity.', 'alpaca-issue-tracker'));
         setHasMorePages(false);
       } finally {
         loadingRef.current = false;
@@ -577,7 +577,7 @@ const Activity = () => {
 
       {!isLoading && !errorMessage && groupedComments.length === 0 && (
         <Notice status="info" isDismissible={false}>
-          <p>{__('No activity found yet.', 'alpaca')}</p>
+          <p>{__('No activity found yet.', 'alpaca-issue-tracker')}</p>
         </Notice>
       )}
 
@@ -617,7 +617,7 @@ const Activity = () => {
                         onAttachmentClick={setLightboxSrc}
                         issueTitle={
                           issueTitle ||
-                          `${__('Issue', 'alpaca')} #${String(issueId)}`
+                          `${__('Issue', 'alpaca-issue-tracker')} #${String(issueId)}`
                         }
                         showIssueTitle
                         showTime

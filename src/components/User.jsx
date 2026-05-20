@@ -25,7 +25,7 @@ const User = ({
   }, [user]);
 
   if (loading)
-    return <div className="alpaca-user">{__('Loading…', 'alpaca')}</div>;
+    return <div className="alpaca-user">{__('Loading…', 'alpaca-issue-tracker')}</div>;
   if (!user) return null;
 
   const avatarInlineStyle =

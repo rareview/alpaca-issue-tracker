@@ -74,7 +74,7 @@ function alpaca_add_admin_bar_menu( $admin_bar ) {
 	$admin_bar->add_menu(
 		[
 			'parent' => 'top-secondary',
-			'title'  => $icon_svg . esc_html__( 'Report An Issue', 'alpaca' ),
+			'title'  => $icon_svg . esc_html__( 'Report An Issue', 'alpaca-issue-tracker' ),
 			'id'     => 'alpaca-report',
 			'href'   => '#',
 		]

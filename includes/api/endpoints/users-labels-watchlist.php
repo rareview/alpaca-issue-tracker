@@ -157,7 +157,7 @@ function alpaca_label_not_found_response() {
 		'',
 		[
 			'success' => false,
-			'message' => esc_html__( 'Label not found.', 'alpaca' ),
+			'message' => esc_html__( 'Label not found.', 'alpaca-issue-tracker' ),
 		],
 		404
 	);
@@ -173,7 +173,7 @@ function alpaca_label_name_required_response() {
 		'',
 		[
 			'success' => false,
-			'message' => esc_html__( 'Label name is required.', 'alpaca' ),
+			'message' => esc_html__( 'Label name is required.', 'alpaca-issue-tracker' ),
 		],
 		400
 	);
@@ -249,7 +249,7 @@ function alpaca_create_label_callback( WP_REST_Request $request ) {
 			'',
 			[
 				'success' => false,
-				'message' => esc_html__( 'Failed to create label.', 'alpaca' ),
+				'message' => esc_html__( 'Failed to create label.', 'alpaca-issue-tracker' ),
 			],
 			500
 		);
@@ -267,7 +267,7 @@ function alpaca_create_label_callback( WP_REST_Request $request ) {
 			'',
 			[
 				'success' => false,
-				'message' => esc_html__( 'Label created, but could not be loaded.', 'alpaca' ),
+				'message' => esc_html__( 'Label created, but could not be loaded.', 'alpaca-issue-tracker' ),
 			],
 			500
 		);
@@ -319,7 +319,7 @@ function alpaca_update_label_callback( WP_REST_Request $request ) {
 				'',
 				[
 					'success' => false,
-					'message' => esc_html__( 'Failed to update label.', 'alpaca' ),
+					'message' => esc_html__( 'Failed to update label.', 'alpaca-issue-tracker' ),
 				],
 				500
 			);
@@ -341,7 +341,7 @@ function alpaca_update_label_callback( WP_REST_Request $request ) {
 			'',
 			[
 				'success' => false,
-				'message' => esc_html__( 'Failed to load updated label.', 'alpaca' ),
+				'message' => esc_html__( 'Failed to load updated label.', 'alpaca-issue-tracker' ),
 			],
 			500
 		);
@@ -377,7 +377,7 @@ function alpaca_delete_label_callback( WP_REST_Request $request ) {
 			'',
 			[
 				'success' => false,
-				'message' => esc_html__( 'Failed to delete label.', 'alpaca' ),
+				'message' => esc_html__( 'Failed to delete label.', 'alpaca-issue-tracker' ),
 			],
 			500
 		);
@@ -469,7 +469,7 @@ function alpaca_update_watchlist_callback( WP_REST_Request $request ) {
 			'',
 			[
 				'success' => false,
-				'message' => esc_html__( 'User not found.', 'alpaca' ),
+				'message' => esc_html__( 'User not found.', 'alpaca-issue-tracker' ),
 			],
 			404
 		);
@@ -495,7 +495,7 @@ function alpaca_update_watchlist_callback( WP_REST_Request $request ) {
 				'',
 				[
 					'success' => false,
-					'message' => esc_html__( 'Could not update watchlist.', 'alpaca' ),
+					'message' => esc_html__( 'Could not update watchlist.', 'alpaca-issue-tracker' ),
 				],
 				500
 			);
@@ -517,7 +517,7 @@ function alpaca_update_watchlist_callback( WP_REST_Request $request ) {
 				'',
 				[
 					'success' => false,
-					'message' => esc_html__( 'Issue not found.', 'alpaca' ),
+					'message' => esc_html__( 'Issue not found.', 'alpaca-issue-tracker' ),
 				],
 				404
 			);
@@ -529,7 +529,7 @@ function alpaca_update_watchlist_callback( WP_REST_Request $request ) {
 				'',
 				[
 					'success' => false,
-					'message' => esc_html__( 'Could not update watchlist.', 'alpaca' ),
+					'message' => esc_html__( 'Could not update watchlist.', 'alpaca-issue-tracker' ),
 				],
 				500
 			);

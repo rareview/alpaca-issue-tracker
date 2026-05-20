@@ -123,7 +123,7 @@ class Register {
 		 * @param string $locale The locale to load.
 		 */
 		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- This uses the core WordPress plugin locale filter.
-		$locale = apply_filters( 'plugin_locale', $locale, 'alpaca' );
+		$locale = apply_filters( 'plugin_locale', $locale, 'alpaca-issue-tracker' );
 
 		$locale_short = strtolower( substr( $locale, 0, 2 ) );
 		$paths        = [
@@ -351,7 +351,7 @@ class Register {
 
 		wp_set_script_translations(
 			self::PREFIX . '-script',
-			'alpaca',
+			'alpaca-issue-tracker',
 			$this->get_script_translation_path()
 		);
 
@@ -400,7 +400,7 @@ class Register {
 
 		wp_set_script_translations(
 			$script_handle,
-			'alpaca',
+			'alpaca-issue-tracker',
 			$this->get_script_translation_path()
 		);
 
