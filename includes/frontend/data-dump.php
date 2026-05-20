@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return array Data to pass to JavaScript.
  */
 function alpaca_prepare_datadump() {
-	global $wp_query, $post, $template;
+	global $wp_query;
 	$theme = wp_get_theme();
 	$user  = wp_get_current_user();
 
@@ -73,8 +73,13 @@ function alpaca_prepare_datadump() {
 		'bodyClasses'   => get_body_class(),
 	];
 
-	if ( $template ) {
-		$wp_data['template'] = basename( $template );
+	$alpaca_template = '';
+	if ( isset( $GLOBALS['template'] ) && is_string( $GLOBALS['template'] ) ) {
+		$alpaca_template = $GLOBALS['template'];
+	}
+
+	if ( '' !== $alpaca_template ) {
+		$wp_data['template'] = basename( $alpaca_template );
 	}
 
 	$user_data = [

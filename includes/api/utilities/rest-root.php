@@ -94,7 +94,7 @@ function alpaca_align_rest_root_to_request_origin( $rest_root ) {
 }
 
 /**
- * Resolve localized wpApiSettings root and custom-root flag.
+ * Resolve localized REST root and custom-root flag.
  *
  * @return array{root:string,has_custom_root:bool}
  */
@@ -124,7 +124,7 @@ function alpaca_get_wp_api_settings_root_data() {
 }
 
 /*
- * Bootstrapping: expose wpApiSettings for frontend REST requests.
+ * Bootstrapping: expose REST settings for frontend requests.
  */
 add_action(
 	'init',
@@ -133,11 +133,11 @@ add_action(
 
 		wp_localize_script(
 			'wp-api',
-			'wpApiSettings',
+			'alpacaIssueTrackerApiSettings',
 			[
-				'root'                => $root_data['root'],
-				'nonce'               => wp_create_nonce( 'wp_rest' ),
-				'alpacaHasCustomRoot' => (bool) $root_data['has_custom_root'],
+				'root'          => $root_data['root'],
+				'nonce'         => wp_create_nonce( 'wp_rest' ),
+				'hasCustomRoot' => (bool) $root_data['has_custom_root'],
 			]
 		);
 		wp_enqueue_script( 'wp-api' );

@@ -1,7 +1,7 @@
 import handleSnapdomCapture from './snapdomHandler.js';
 import { dataUrlToFile, uploadIssueAttachment } from './utils/attachmentUpload';
 import { useTestLogger } from './utils/testLogger.js';
-import { buildAlpacaRestUrl } from './utils/restApiRoot.js';
+import { buildAlpacaRestUrl, getAlpacaRestNonce } from './utils/restApiRoot.js';
 import {
   ensureAlpacaReportContext,
   getAlpacaReportContext,
@@ -117,7 +117,7 @@ const AlpacaModal = () => {
         headers: new Headers({
           Accept: 'application/json',
           'Content-Type': 'application/json',
-          'X-WP-Nonce': wpApiSettings.nonce,
+          'X-WP-Nonce': getAlpacaRestNonce(),
         }),
         body: JSON.stringify(payload),
       });
