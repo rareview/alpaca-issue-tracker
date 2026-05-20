@@ -81,12 +81,13 @@ function alpaca_prepare_datadump() {
 		'id'          => $user->ID,
 		'displayName' => $user->display_name,
 	];
+	$server_data = map_deep( wp_unslash( $_SERVER ), 'sanitize_text_field' );
 
 	// Combine all data into a single object.
 	$alpaca_data = [
 		'time'    => time(),
 		'user'    => $user_data,
-		'server'  => $_SERVER,
+		'server'  => $server_data,
 		'headers' => function_exists( 'getallheaders' ) ? getallheaders() : [],
 		'wp'      => $wp_data,
 	];
