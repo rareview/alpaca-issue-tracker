@@ -12,8 +12,7 @@
   },
   "globals": {
     "wp": "readonly",
-    "alpaca_data": "readonly",
-    "alpacaDataDump": "readonly",
+    "alpaistrDataDump": "readonly",
     "snapdom": "readonly"
   },
   "parserOptions": {
@@ -57,8 +56,9 @@
       {
         "allow": [
           "^alpaca_",
+          "^alpaistr_",
           "unstable_batchedUpdates",
-          "alpacaDataDump",
+          "alpaistrDataDump",
           "hide_from_snapdom",
           "comment_count",
           "display_name",

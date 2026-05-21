@@ -1,8 +1,9 @@
 <?php
+
 /**
- * Alpaca Issues – REST Endpoints facade.
+ * Alpaca Issue Tracker Issues – REST Endpoints facade.
  *
- * @package Alpaca
+ * @package AlpacaIssueTracker
  */
 
 // Exit if accessed directly.

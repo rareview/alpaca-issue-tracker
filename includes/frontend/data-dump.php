@@ -3,7 +3,7 @@
 /**
  * Data dump functionality to expose WordPress data to client-side scripts.
  *
- * @package Alpaca
+ * @package AlpacaIssueTracker
  */
 
 // Exit if accessed directly.
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @return array Data to pass to JavaScript.
  */
-function alpaca_prepare_datadump() {
+function alpaistr_prepare_datadump() {
 	global $wp_query;
 	$theme = wp_get_theme();
 	$user  = wp_get_current_user();
@@ -73,13 +73,13 @@ function alpaca_prepare_datadump() {
 		'bodyClasses'   => get_body_class(),
 	];
 
-	$alpaca_template = '';
+	$alpaistr_template = '';
 	if ( isset( $GLOBALS['template'] ) && is_string( $GLOBALS['template'] ) ) {
-		$alpaca_template = $GLOBALS['template'];
+		$alpaistr_template = $GLOBALS['template'];
 	}
 
-	if ( '' !== $alpaca_template ) {
-		$wp_data['template'] = basename( $alpaca_template );
+	if ( '' !== $alpaistr_template ) {
+		$wp_data['template'] = basename( $alpaistr_template );
 	}
 
 	$user_data = [

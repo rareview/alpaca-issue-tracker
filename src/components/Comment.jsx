@@ -442,7 +442,7 @@ const Commenting = ({
   const newCommentRef = useRef(null);
   const localizedCanManageOptions =
     typeof window !== 'undefined'
-      ? window.alpacaSettings?.canManageOptions
+      ? window.alpaistrSettings?.canManageOptions
       : false;
   const userCanManageOptions = Boolean(
     localizedCanManageOptions === true ||

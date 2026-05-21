@@ -1,5 +1,5 @@
 /**
- * Build settings for an Alpaca notification template placeholder block.
+ * Build settings for an Alpaca Issue Tracker notification template placeholder block.
  *
  * @param {Object}   definition    Block definition.
  * @param {string}   icon          Dashicon slug.

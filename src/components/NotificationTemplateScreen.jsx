@@ -68,7 +68,7 @@ const notificationTemplateBlockDefinitions = [
 ];
 
 /**
- * Register Alpaca email template placeholder blocks.
+ * Register Alpaca Issue Tracker email template placeholder blocks.
  *
  * @return {void}
  */

@@ -82,7 +82,7 @@ Yes! You can choose which metadata points are shown on cards in the Board view, 
 
 Alpaca Issue Tracker works on multisite installations, with each site having its own independent project board. An aggregation view across sites is planned for a future release.
 
-= What kinds of notifications can Alpaca send? =
+= What kinds of notifications can Alpaca Issue Tracker send? =
 
 Alpaca Issue Tracker ships with a highly configurable email notification system. You can choose to receive instant notifications of activity relevant to you and your issues; or a daily digest of all activity. You can even design the email templates using a block-based editor.
 

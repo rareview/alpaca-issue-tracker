@@ -2,7 +2,7 @@
 
 ## Goal
 
-Alpaca uses a no-touch icon pipeline for React:
+Alpaca Issue Tracker uses a no-touch icon pipeline for React:
 
 - Add or update SVG files in one source folder.
 - Regenerate a single React icon registry automatically.
@@ -77,10 +77,10 @@ Parcel only emits hashed files into `dist/` for SVGs that the bundler actually s
 
 ## PHP Usage
 
-For PHP-rendered icons, use `alpaca_get_icon( $icon_slug )` in `includes/utilities/functions.php`.
+For PHP-rendered icons, use `alpaistr_get_icon( $icon_slug )` in `includes/utilities/functions.php`.
 
 - The generator also writes `includes/utilities/icon-registry.php` from the same SVG source folder.
-- `alpaca_get_icon()` reads that generated registry, so PHP icons do not depend on Parcel emitting a separate hashed SVG file.
+- `alpaistr_get_icon()` reads that generated registry, so PHP icons do not depend on Parcel emitting a separate hashed SVG file.
 - When a requested icon cannot be found, this helper returns the generated `missing` icon as a visual developer fallback.
 
 ## Sanitization
@@ -89,6 +89,6 @@ SVG files are sanitized before being returned for output. The repository uses a 
 
 - The allowlist JSON lives at `includes/utilities/icon-sanitizer-allowlist.json`.
 - At build time the icon generator validates SVG source files against this allowlist and skips malformed or disallowed files.
-- At runtime PHP uses `wp_kses()` with the same allowlist to sanitize the SVG markup returned by `alpaca_get_icon()`.
+- At runtime PHP uses `wp_kses()` with the same allowlist to sanitize the SVG markup returned by `alpaistr_get_icon()`.
 
 If you need to allow additional tags or attributes, update `includes/utilities/icon-sanitizer-allowlist.json` and re-run `npm run icons:generate`.

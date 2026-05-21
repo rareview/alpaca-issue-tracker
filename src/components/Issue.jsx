@@ -1157,9 +1157,9 @@ const AlpacaIssue = ({
           createdIssueIsHighPriority = Boolean(retryIssue.isHighPriority);
         } else {
           const server = {};
-          if (typeof alpacaDataDump !== 'undefined' && alpacaDataDump.env) {
+          if (typeof alpaistrDataDump !== 'undefined' && alpaistrDataDump.env) {
             try {
-              const loadedServer = JSON.parse(atob(alpacaDataDump.env));
+              const loadedServer = JSON.parse(atob(alpaistrDataDump.env));
               Object.assign(server, loadedServer);
             } catch (e) {
               // Ignore parse errors.
@@ -1173,8 +1173,8 @@ const AlpacaIssue = ({
               isHighPriority,
             },
             client:
-              typeof alpacaDataDump !== 'undefined'
-                ? alpacaDataDump.device
+              typeof alpaistrDataDump !== 'undefined'
+                ? alpaistrDataDump.device
                 : {},
             errors: [],
             screenshot: '',

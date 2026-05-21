@@ -1,11 +1,12 @@
 <?php
+
 /**
- * Alpaca REST API: User, Label, and Watchlist Endpoints.
+ * Alpaca Issue Tracker REST API: User, Label, and Watchlist Endpoints.
  *
- * @package Alpaca
+ * @package AlpacaIssueTracker
  */
 
-use Alpaca\Helpers;
+use AlpacaIssueTracker\Helpers;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,17 +16,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 /*
  * Users list endpoint.
  */
-add_action( 'rest_api_init', 'alpaca_register_user_list_endpoint' );
+add_action( 'rest_api_init', 'alpaistr_register_user_list_endpoint' );
 /**
  * Register users list endpoint.
  */
-function alpaca_register_user_list_endpoint() {
+function alpaistr_register_user_list_endpoint() {
 	register_rest_route(
 		'alpaca/v1',
 		'/users',
 		[
 			'methods'             => 'GET',
-			'callback'            => 'alpaca_get_all_users_callback',
+			'callback'            => 'alpaistr_get_all_users_callback',
 			'permission_callback' => function () {
 				return Helpers::user_can( 'watchlist' );
 			},
@@ -38,10 +39,10 @@ function alpaca_register_user_list_endpoint() {
  *
  * @return WP_REST_Response REST response with users list.
  */
-function alpaca_get_all_users_callback() {
+function alpaistr_get_all_users_callback() {
 	$users = get_users( [ 'fields' => [ 'ID', 'display_name', 'user_nicename' ] ] );
 	if ( empty( $users ) ) {
-		return alpaca_rest_response( '', [], 200 );
+		return alpaistr_rest_response( '', [], 200 );
 	}
 
 	$response_data = [];
@@ -51,38 +52,38 @@ function alpaca_get_all_users_callback() {
 			'name'        => $user->display_name,
 			'slug'        => $user->user_nicename,
 			'avatar_urls' => [
-				'24' => alpaca_avatar( $user->ID, 24 ),
-				'48' => alpaca_avatar( $user->ID, 48 ),
-				'96' => alpaca_avatar( $user->ID, 96 ),
+				'24' => alpaistr_avatar( $user->ID, 24 ),
+				'48' => alpaistr_avatar( $user->ID, 48 ),
+				'96' => alpaistr_avatar( $user->ID, 96 ),
 			],
 		];
 	}
 
-	return alpaca_rest_response( '', $response_data, 200 );
+	return alpaistr_rest_response( '', $response_data, 200 );
 }
 
 /*
  * Labels endpoints.
  */
-add_action( 'rest_api_init', 'alpaca_labels_endpoint' );
+add_action( 'rest_api_init', 'alpaistr_labels_endpoint' );
 /**
  * Register labels endpoints.
  */
-function alpaca_labels_endpoint() {
+function alpaistr_labels_endpoint() {
 	register_rest_route(
 		'alpaca/v1',
 		'/labels',
 		[
 			[
 				'methods'             => 'GET',
-				'callback'            => 'alpaca_get_labels_callback',
+				'callback'            => 'alpaistr_get_labels_callback',
 				'permission_callback' => function () {
 					return Helpers::user_can( 'watchlist' );
 				},
 			],
 			[
 				'methods'             => 'POST',
-				'callback'            => 'alpaca_create_label_callback',
+				'callback'            => 'alpaistr_create_label_callback',
 				'permission_callback' => function ( WP_REST_Request $request ) {
 					return Helpers::validate_rest_nonce_permission( $request, 'manage_options' );
 				},
@@ -96,14 +97,14 @@ function alpaca_labels_endpoint() {
 		[
 			[
 				'methods'             => 'POST',
-				'callback'            => 'alpaca_update_label_callback',
+				'callback'            => 'alpaistr_update_label_callback',
 				'permission_callback' => function ( WP_REST_Request $request ) {
 					return Helpers::validate_rest_nonce_permission( $request, 'manage_options' );
 				},
 			],
 			[
 				'methods'             => 'DELETE',
-				'callback'            => 'alpaca_delete_label_callback',
+				'callback'            => 'alpaistr_delete_label_callback',
 				'permission_callback' => function ( WP_REST_Request $request ) {
 					return Helpers::validate_rest_nonce_permission( $request, 'manage_options' );
 				},
@@ -118,7 +119,7 @@ function alpaca_labels_endpoint() {
  * @param string $color Color value.
  * @return string Normalized hex color.
  */
-function alpaca_normalize_label_color( $color ) {
+function alpaistr_normalize_label_color( $color ) {
 	$sanitized = sanitize_hex_color( (string) $color );
 
 	if ( ! is_string( $sanitized ) || '' === $sanitized ) {
@@ -134,7 +135,7 @@ function alpaca_normalize_label_color( $color ) {
  * @param WP_REST_Request $request REST request object.
  * @return array<string, mixed> Request parameters.
  */
-function alpaca_get_request_params( WP_REST_Request $request ) {
+function alpaistr_get_request_params( WP_REST_Request $request ) {
 	$params = $request->get_json_params();
 	if ( ! is_array( $params ) ) {
 		$params = $request->get_params();
@@ -152,8 +153,8 @@ function alpaca_get_request_params( WP_REST_Request $request ) {
  *
  * @return WP_REST_Response REST response.
  */
-function alpaca_label_not_found_response() {
-	return alpaca_rest_response(
+function alpaistr_label_not_found_response() {
+	return alpaistr_rest_response(
 		'',
 		[
 			'success' => false,
@@ -168,8 +169,8 @@ function alpaca_label_not_found_response() {
  *
  * @return WP_REST_Response REST response.
  */
-function alpaca_label_name_required_response() {
-	return alpaca_rest_response(
+function alpaistr_label_name_required_response() {
+	return alpaistr_rest_response(
 		'',
 		[
 			'success' => false,
@@ -185,14 +186,14 @@ function alpaca_label_name_required_response() {
  * @param WP_Term $term Label term.
  * @return array Label response data.
  */
-function alpaca_label_response_data( $term ) {
+function alpaistr_label_response_data( $term ) {
 	$color = get_term_meta( $term->term_id, 'alpaca_label_color', true );
 
 	return [
 		'term_id' => (int) $term->term_id,
 		'name'    => (string) $term->name,
 		'slug'    => (string) $term->slug,
-		'color'   => alpaca_normalize_label_color( $color ),
+		'color'   => alpaistr_normalize_label_color( $color ),
 	];
 }
 
@@ -201,7 +202,7 @@ function alpaca_label_response_data( $term ) {
  *
  * @return WP_REST_Response REST response.
  */
-function alpaca_get_labels_callback() {
+function alpaistr_get_labels_callback() {
 	$terms = get_terms(
 		[
 			'taxonomy'   => 'alpaca_label',
@@ -212,15 +213,15 @@ function alpaca_get_labels_callback() {
 	);
 
 	if ( is_wp_error( $terms ) || ! is_array( $terms ) ) {
-		return alpaca_rest_response( '', [], 200 );
+		return alpaistr_rest_response( '', [], 200 );
 	}
 
 	$response_data = [];
 	foreach ( $terms as $term ) {
-		$response_data[] = alpaca_label_response_data( $term );
+		$response_data[] = alpaistr_label_response_data( $term );
 	}
 
-	return alpaca_rest_response( '', $response_data, 200 );
+	return alpaistr_rest_response( '', $response_data, 200 );
 }
 
 /**
@@ -229,23 +230,23 @@ function alpaca_get_labels_callback() {
  * @param WP_REST_Request $request REST request object.
  * @return WP_REST_Response REST response.
  */
-function alpaca_create_label_callback( WP_REST_Request $request ) {
-	$params = alpaca_get_request_params( $request );
+function alpaistr_create_label_callback( WP_REST_Request $request ) {
+	$params = alpaistr_get_request_params( $request );
 
 	$name = isset( $params['name'] ) ? sanitize_text_field( (string) $params['name'] ) : '';
 	if ( '' === trim( $name ) ) {
-		return alpaca_label_name_required_response();
+		return alpaistr_label_name_required_response();
 	}
 
 	if ( isset( $params['color'] ) ) {
-		$color = alpaca_normalize_label_color( (string) $params['color'] );
+		$color = alpaistr_normalize_label_color( (string) $params['color'] );
 	} else {
 		$color = Helpers::DEFAULT_LABEL_COLOR;
 	}
 
 	$created = wp_insert_term( $name, 'alpaca_label' );
 	if ( is_wp_error( $created ) || ! isset( $created['term_id'] ) ) {
-		return alpaca_rest_response(
+		return alpaistr_rest_response(
 			'',
 			[
 				'success' => false,
@@ -257,13 +258,13 @@ function alpaca_create_label_callback( WP_REST_Request $request ) {
 
 	$term_id = (int) $created['term_id'];
 	update_term_meta( $term_id, 'alpaca_label_color', $color );
-	if ( function_exists( 'alpaca_clear_board_cache' ) ) {
-		alpaca_clear_board_cache();
+	if ( function_exists( 'alpaistr_clear_board_cache' ) ) {
+		alpaistr_clear_board_cache();
 	}
 
 	$term = get_term( $term_id, 'alpaca_label' );
 	if ( ! $term || is_wp_error( $term ) ) {
-		return alpaca_rest_response(
+		return alpaistr_rest_response(
 			'',
 			[
 				'success' => false,
@@ -273,11 +274,11 @@ function alpaca_create_label_callback( WP_REST_Request $request ) {
 		);
 	}
 
-	return alpaca_rest_response(
+	return alpaistr_rest_response(
 		'label_create',
 		[
 			'success' => true,
-			'label'   => alpaca_label_response_data( $term ),
+			'label'   => alpaistr_label_response_data( $term ),
 		],
 		200
 	);
@@ -289,20 +290,20 @@ function alpaca_create_label_callback( WP_REST_Request $request ) {
  * @param WP_REST_Request $request REST request object.
  * @return WP_REST_Response REST response.
  */
-function alpaca_update_label_callback( WP_REST_Request $request ) {
+function alpaistr_update_label_callback( WP_REST_Request $request ) {
 	$term_id = (int) $request['id'];
 	$term    = get_term( $term_id, 'alpaca_label' );
 
 	if ( ! $term || is_wp_error( $term ) ) {
-		return alpaca_label_not_found_response();
+		return alpaistr_label_not_found_response();
 	}
 
-	$params = alpaca_get_request_params( $request );
+	$params = alpaistr_get_request_params( $request );
 
 	if ( isset( $params['name'] ) ) {
 		$name = sanitize_text_field( (string) $params['name'] );
 		if ( '' === trim( $name ) ) {
-			return alpaca_label_name_required_response();
+			return alpaistr_label_name_required_response();
 		}
 
 		$updated = wp_update_term(
@@ -315,7 +316,7 @@ function alpaca_update_label_callback( WP_REST_Request $request ) {
 		);
 
 		if ( is_wp_error( $updated ) ) {
-			return alpaca_rest_response(
+			return alpaistr_rest_response(
 				'',
 				[
 					'success' => false,
@@ -327,17 +328,17 @@ function alpaca_update_label_callback( WP_REST_Request $request ) {
 	}
 
 	if ( isset( $params['color'] ) ) {
-		$color = alpaca_normalize_label_color( (string) $params['color'] );
+		$color = alpaistr_normalize_label_color( (string) $params['color'] );
 		update_term_meta( $term_id, 'alpaca_label_color', $color );
 	}
 
-	if ( function_exists( 'alpaca_clear_board_cache' ) ) {
-		alpaca_clear_board_cache();
+	if ( function_exists( 'alpaistr_clear_board_cache' ) ) {
+		alpaistr_clear_board_cache();
 	}
 
 	$updated_term = get_term( $term_id, 'alpaca_label' );
 	if ( ! $updated_term || is_wp_error( $updated_term ) ) {
-		return alpaca_rest_response(
+		return alpaistr_rest_response(
 			'',
 			[
 				'success' => false,
@@ -347,11 +348,11 @@ function alpaca_update_label_callback( WP_REST_Request $request ) {
 		);
 	}
 
-	return alpaca_rest_response(
+	return alpaistr_rest_response(
 		'label_update',
 		[
 			'success' => true,
-			'label'   => alpaca_label_response_data( $updated_term ),
+			'label'   => alpaistr_label_response_data( $updated_term ),
 		],
 		200
 	);
@@ -363,17 +364,17 @@ function alpaca_update_label_callback( WP_REST_Request $request ) {
  * @param WP_REST_Request $request REST request object.
  * @return WP_REST_Response REST response.
  */
-function alpaca_delete_label_callback( WP_REST_Request $request ) {
+function alpaistr_delete_label_callback( WP_REST_Request $request ) {
 	$term_id = (int) $request['id'];
 	$term    = get_term( $term_id, 'alpaca_label' );
 
 	if ( ! $term || is_wp_error( $term ) ) {
-		return alpaca_label_not_found_response();
+		return alpaistr_label_not_found_response();
 	}
 
 	$deleted = wp_delete_term( $term_id, 'alpaca_label' );
 	if ( is_wp_error( $deleted ) || ! $deleted ) {
-		return alpaca_rest_response(
+		return alpaistr_rest_response(
 			'',
 			[
 				'success' => false,
@@ -383,11 +384,11 @@ function alpaca_delete_label_callback( WP_REST_Request $request ) {
 		);
 	}
 
-	if ( function_exists( 'alpaca_clear_board_cache' ) ) {
-		alpaca_clear_board_cache();
+	if ( function_exists( 'alpaistr_clear_board_cache' ) ) {
+		alpaistr_clear_board_cache();
 	}
 
-	return alpaca_rest_response(
+	return alpaistr_rest_response(
 		'label_delete',
 		[
 			'success' => true,
@@ -400,17 +401,17 @@ function alpaca_delete_label_callback( WP_REST_Request $request ) {
 /*
  * Watchlist endpoints (GET/POST toggle).
  */
-add_action( 'rest_api_init', 'alpaca_watchlist_endpoint' );
+add_action( 'rest_api_init', 'alpaistr_watchlist_endpoint' );
 /**
  * Register watchlist endpoints.
  */
-function alpaca_watchlist_endpoint() {
+function alpaistr_watchlist_endpoint() {
 	register_rest_route(
 		'alpaca/v1',
 		'/watchlist',
 		[
 			'methods'             => 'POST',
-			'callback'            => 'alpaca_update_watchlist_callback',
+			'callback'            => 'alpaistr_update_watchlist_callback',
 			'permission_callback' => function ( WP_REST_Request $request ) {
 				return Helpers::validate_rest_nonce_permission( $request, 'watchlist_toggle' );
 			},
@@ -422,7 +423,7 @@ function alpaca_watchlist_endpoint() {
 		'/watchlist',
 		[
 			'methods'             => 'GET',
-			'callback'            => 'alpaca_get_watchlist_callback',
+			'callback'            => 'alpaistr_get_watchlist_callback',
 			'permission_callback' => function () {
 				return Helpers::user_can( 'watchlist' );
 			},
@@ -435,11 +436,11 @@ function alpaca_watchlist_endpoint() {
  *
  * @return WP_REST_Response REST response with watchlist.
  */
-function alpaca_get_watchlist_callback() {
+function alpaistr_get_watchlist_callback() {
 	$user_id   = get_current_user_id();
-	$watchlist = alpaca_get_watched_issue_ids_for_user( $user_id );
+	$watchlist = alpaistr_get_watched_issue_ids_for_user( $user_id );
 
-	return alpaca_rest_response(
+	return alpaistr_rest_response(
 		'',
 		[
 			'success'   => true,
@@ -455,7 +456,7 @@ function alpaca_get_watchlist_callback() {
  * @param WP_REST_Request $request REST request object.
  * @return WP_REST_Response REST response with updated watchlist.
  */
-function alpaca_update_watchlist_callback( WP_REST_Request $request ) {
+function alpaistr_update_watchlist_callback( WP_REST_Request $request ) {
 	$params = $request->get_json_params();
 	if ( ! is_array( $params ) ) {
 		$params = $request->get_params();
@@ -465,7 +466,7 @@ function alpaca_update_watchlist_callback( WP_REST_Request $request ) {
 	$user_id  = get_current_user_id();
 	$user     = get_user_by( 'id', $user_id );
 	if ( ! ( $user instanceof WP_User ) ) {
-		return alpaca_rest_response(
+		return alpaistr_rest_response(
 			'',
 			[
 				'success' => false,
@@ -475,12 +476,12 @@ function alpaca_update_watchlist_callback( WP_REST_Request $request ) {
 		);
 	}
 
-	$current_watchlist = alpaca_get_watched_issue_ids_for_user( $user_id );
+	$current_watchlist = alpaistr_get_watched_issue_ids_for_user( $user_id );
 	$watchlist         = $current_watchlist;
 
 	// Preferred input: set the complete array for this user.
 	if ( isset( $params['watchlist'] ) && is_array( $params['watchlist'] ) ) {
-		$desired_watchlist = alpaca_to_int_ids( $params['watchlist'] );
+		$desired_watchlist = alpaistr_to_int_ids( $params['watchlist'] );
 		$valid_watchlist   = [];
 		foreach ( $desired_watchlist as $post_id ) {
 			if ( 'alpaca_issue' === get_post_type( $post_id ) ) {
@@ -489,9 +490,9 @@ function alpaca_update_watchlist_callback( WP_REST_Request $request ) {
 		}
 		$watchlist = array_values( array_unique( $valid_watchlist ) );
 
-		$term_id = alpaca_get_or_create_user_taxonomy_term( $user, 'alpaca_watching' );
+		$term_id = alpaistr_get_or_create_user_taxonomy_term( $user, 'alpaca_watching' );
 		if ( $term_id <= 0 ) {
-			return alpaca_rest_response(
+			return alpaistr_rest_response(
 				'',
 				[
 					'success' => false,
@@ -513,7 +514,7 @@ function alpaca_update_watchlist_callback( WP_REST_Request $request ) {
 	} elseif ( $issue_id > 0 ) {
 		// Backward compatible input: toggle one issue ID.
 		if ( 'alpaca_issue' !== get_post_type( $issue_id ) ) {
-			return alpaca_rest_response(
+			return alpaistr_rest_response(
 				'',
 				[
 					'success' => false,
@@ -523,9 +524,9 @@ function alpaca_update_watchlist_callback( WP_REST_Request $request ) {
 			);
 		}
 
-		$term_id = alpaca_get_or_create_user_taxonomy_term( $user, 'alpaca_watching' );
+		$term_id = alpaistr_get_or_create_user_taxonomy_term( $user, 'alpaca_watching' );
 		if ( $term_id <= 0 ) {
-			return alpaca_rest_response(
+			return alpaistr_rest_response(
 				'',
 				[
 					'success' => false,
@@ -543,9 +544,9 @@ function alpaca_update_watchlist_callback( WP_REST_Request $request ) {
 		}
 	}
 
-	$watchlist = alpaca_get_watched_issue_ids_for_user( $user_id );
+	$watchlist = alpaistr_get_watched_issue_ids_for_user( $user_id );
 
-	return alpaca_rest_response(
+	return alpaistr_rest_response(
 		'watchlist_update',
 		[
 			'success'   => true,

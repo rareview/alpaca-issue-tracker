@@ -2,7 +2,7 @@
 /**
  * Daily digest notification loader.
  *
- * @package Alpaca
+ * @package AlpacaIssueTracker
  */
 
 // Exit if accessed directly.

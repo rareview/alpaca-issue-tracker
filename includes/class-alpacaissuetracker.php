@@ -2,10 +2,10 @@
 /**
  * Main plugin class.
  *
- * @package Alpaca
+ * @package AlpacaIssueTracker
  */
 
-namespace Alpaca;
+namespace AlpacaIssueTracker;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -13,9 +13,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Main Alpaca class.
+ * Main Alpaca Issue Tracker class.
  */
-final class Alpaca {
+final class AlpacaIssueTracker {
 
 	/**
 	 * Plugin version.
@@ -55,14 +55,14 @@ final class Alpaca {
 	/**
 	 * Plugin instance.
 	 *
-	 * @var Alpaca
+	 * @var AlpacaIssueTracker
 	 */
 	private static $instance = null;
 
 	/**
 	 * Get plugin instance.
 	 *
-	 * @return Alpaca
+	 * @return AlpacaIssueTracker
 	 */
 	public static function instance() {
 		if ( null === self::$instance ) {
@@ -84,17 +84,17 @@ final class Alpaca {
 	 * Define plugin constants.
 	 */
 	private function define_constants() {
-		if ( ! defined( 'ALPACA_VERSION' ) ) {
-			define( 'ALPACA_VERSION', self::VERSION );
+		if ( ! defined( 'ALPAISTR_VERSION' ) ) {
+			define( 'ALPAISTR_VERSION', self::VERSION );
 		}
-		if ( ! defined( 'ALPACA_PLUGIN_FILE' ) ) {
-			define( 'ALPACA_PLUGIN_FILE', ALPACA_PLUGIN_DIR . 'alpaca.php' );
+		if ( ! defined( 'ALPAISTR_PLUGIN_FILE' ) ) {
+			define( 'ALPAISTR_PLUGIN_FILE', ALPAISTR_PLUGIN_DIR . 'alpacaissuetracker.php' );
 		}
-		if ( ! defined( 'ALPACA_PLUGIN_BASENAME' ) ) {
-			define( 'ALPACA_PLUGIN_BASENAME', plugin_basename( ALPACA_PLUGIN_FILE ) );
+		if ( ! defined( 'ALPAISTR_PLUGIN_BASENAME' ) ) {
+			define( 'ALPAISTR_PLUGIN_BASENAME', plugin_basename( ALPAISTR_PLUGIN_FILE ) );
 		}
-		if ( ! defined( 'ALPACA_PLUGIN_URL' ) ) {
-			define( 'ALPACA_PLUGIN_URL', plugin_dir_url( ALPACA_PLUGIN_FILE ) );
+		if ( ! defined( 'ALPAISTR_PLUGIN_URL' ) ) {
+			define( 'ALPAISTR_PLUGIN_URL', plugin_dir_url( ALPAISTR_PLUGIN_FILE ) );
 		}
 	}
 
@@ -103,31 +103,31 @@ final class Alpaca {
 	 */
 	private function load_dependencies() {
 		// Load utility functions first.
-		require_once ALPACA_PLUGIN_DIR . 'includes/utilities/functions.php';
+		require_once ALPAISTR_PLUGIN_DIR . 'includes/utilities/functions.php';
 
 		// Load third-party libraries.
-		require_once ALPACA_PLUGIN_DIR . 'lib/private-comments.php';
+		require_once ALPAISTR_PLUGIN_DIR . 'lib/private-comments.php';
 
 		// Load core functionality.
-		require_once ALPACA_PLUGIN_DIR . 'includes/core/posttypes-and-taxonomies.php';
-		require_once ALPACA_PLUGIN_DIR . 'includes/core/board.php';
+		require_once ALPAISTR_PLUGIN_DIR . 'includes/core/posttypes-and-taxonomies.php';
+		require_once ALPAISTR_PLUGIN_DIR . 'includes/core/board.php';
 
 		// Load admin bar (available both frontend and backend).
-		require_once ALPACA_PLUGIN_DIR . 'includes/admin/admin-bar.php';
+		require_once ALPAISTR_PLUGIN_DIR . 'includes/admin/admin-bar.php';
 
 		// Load admin-only functionality.
 		if ( is_admin() ) {
-			require_once ALPACA_PLUGIN_DIR . 'includes/admin/admin-screens.php';
-			require_once ALPACA_PLUGIN_DIR . 'includes/admin/dashboard-widget.php';
-			require_once ALPACA_PLUGIN_DIR . 'includes/admin/dashboard-widget-data.php';
+			require_once ALPAISTR_PLUGIN_DIR . 'includes/admin/admin-screens.php';
+			require_once ALPAISTR_PLUGIN_DIR . 'includes/admin/dashboard-widget.php';
+			require_once ALPAISTR_PLUGIN_DIR . 'includes/admin/dashboard-widget-data.php';
 		}
 
 		// Load REST API.
-		require_once ALPACA_PLUGIN_DIR . 'includes/api/rest-api.php';
-		require_once ALPACA_PLUGIN_DIR . 'includes/notifications/notifications.php';
+		require_once ALPAISTR_PLUGIN_DIR . 'includes/api/rest-api.php';
+		require_once ALPAISTR_PLUGIN_DIR . 'includes/notifications/notifications.php';
 
 		// Load frontend functionality.
-		require_once ALPACA_PLUGIN_DIR . 'includes/frontend/data-dump.php';
+		require_once ALPAISTR_PLUGIN_DIR . 'includes/frontend/data-dump.php';
 	}
 
 	/**
@@ -166,7 +166,7 @@ final class Alpaca {
 		$locale = determine_locale();
 
 		/**
-		 * Filters the locale used to load Alpaca translations.
+		 * Filters the locale used to load Alpaca Issue Tracker translations.
 		 *
 		 * @param string $locale The locale to load.
 		 */
@@ -175,10 +175,10 @@ final class Alpaca {
 
 		$locale_short = strtolower( substr( $locale, 0, 2 ) );
 		$candidates   = [
-			ALPACA_PLUGIN_DIR . 'languages/' . $locale . '/alpaca-issue-tracker-' . $locale . '.mo',
-			ALPACA_PLUGIN_DIR . 'languages/' . $locale_short . '/alpaca-issue-tracker-' . $locale_short . '.mo',
-			ALPACA_PLUGIN_DIR . 'languages/alpaca-issue-tracker-' . $locale . '.mo',
-			ALPACA_PLUGIN_DIR . 'languages/alpaca-issue-tracker-' . $locale_short . '.mo',
+			ALPAISTR_PLUGIN_DIR . 'languages/' . $locale . '/alpaca-issue-tracker-' . $locale . '.mo',
+			ALPAISTR_PLUGIN_DIR . 'languages/' . $locale_short . '/alpaca-issue-tracker-' . $locale_short . '.mo',
+			ALPAISTR_PLUGIN_DIR . 'languages/alpaca-issue-tracker-' . $locale . '.mo',
+			ALPAISTR_PLUGIN_DIR . 'languages/alpaca-issue-tracker-' . $locale_short . '.mo',
 		];
 
 		foreach ( $candidates as $mofile ) {
@@ -207,7 +207,7 @@ final class Alpaca {
 
 		$post_id = $comment->comment_post_ID;
 
-		alpaca_update_last_activity( $post_id );
+		alpaistr_update_last_activity( $post_id );
 	}
 
 	/**
@@ -238,8 +238,8 @@ final class Alpaca {
 			return;
 		}
 
-		if ( function_exists( 'alpaca_update_last_activity_from_issuecomments' ) ) {
-			alpaca_update_last_activity_from_issuecomments( $issue_id );
+		if ( function_exists( 'alpaistr_update_last_activity_from_issuecomments' ) ) {
+			alpaistr_update_last_activity_from_issuecomments( $issue_id );
 		}
 	}
 
@@ -264,8 +264,8 @@ final class Alpaca {
 			return;
 		}
 
-		if ( function_exists( 'alpaca_restore_issuecomment_approval_statuses' ) ) {
-			alpaca_restore_issuecomment_approval_statuses( (int) $post->ID );
+		if ( function_exists( 'alpaistr_restore_issuecomment_approval_statuses' ) ) {
+			alpaistr_restore_issuecomment_approval_statuses( (int) $post->ID );
 		}
 	}
 
@@ -292,19 +292,19 @@ final class Alpaca {
 		}
 
 		if ( 'trash' !== (string) $old_status && 'trash' === (string) $new_status ) {
-			if ( function_exists( 'alpaca_trash_child_issues_with_parent' ) ) {
-				alpaca_trash_child_issues_with_parent( $post_id );
+			if ( function_exists( 'alpaistr_trash_child_issues_with_parent' ) ) {
+				alpaistr_trash_child_issues_with_parent( $post_id );
 			}
 		}
 
 		if ( 'trash' === (string) $old_status && 'trash' !== (string) $new_status ) {
-			if ( function_exists( 'alpaca_restore_child_issues_trashed_with_parent' ) ) {
-				alpaca_restore_child_issues_trashed_with_parent( $post_id, (string) $new_status );
+			if ( function_exists( 'alpaistr_restore_child_issues_trashed_with_parent' ) ) {
+				alpaistr_restore_child_issues_trashed_with_parent( $post_id, (string) $new_status );
 			}
 		}
 
-		if ( ( 'trash' === (string) $old_status || 'trash' === (string) $new_status ) && function_exists( 'alpaca_clear_board_cache' ) ) {
-			alpaca_clear_board_cache();
+		if ( ( 'trash' === (string) $old_status || 'trash' === (string) $new_status ) && function_exists( 'alpaistr_clear_board_cache' ) ) {
+			alpaistr_clear_board_cache();
 		}
 	}
 
@@ -313,16 +313,16 @@ final class Alpaca {
 	 */
 	public function init() {
 		// Allow other components to hook in.
-		do_action( 'alpaca_init' );
+		do_action( 'alpaistr_init' );
 	}
 
 	/**
-	 * Register Alpaca settings for REST API.
+	 * Register Alpaca Issue Tracker settings for REST API.
 	 */
 	public function register_settings() {
 		register_setting(
-			'alpaca_options',
-			'alpaca_enable_test_logs',
+			'alpaistr_options',
+			'alpaistr_enable_test_logs',
 			[
 				'type'              => 'string',
 				'description'       => esc_html__( 'Enable console messages for testing purposes.', 'alpaca-issue-tracker' ),
@@ -333,8 +333,8 @@ final class Alpaca {
 		);
 
 		register_setting(
-			'alpaca_options',
-			'alpaca_enable_context_capture',
+			'alpaistr_options',
+			'alpaistr_enable_context_capture',
 			[
 				'type'              => 'string',
 				'description'       => esc_html__( 'Enable context capture, including the toolbar and data dump.', 'alpaca-issue-tracker' ),
@@ -345,8 +345,8 @@ final class Alpaca {
 		);
 
 		register_setting(
-			'alpaca_options',
-			'alpaca_item_datapoint_visibility',
+			'alpaistr_options',
+			'alpaistr_item_datapoint_visibility',
 			[
 				'type'              => 'object',
 				'description'       => esc_html__( 'Visibility map for item datapoints on issue cards.', 'alpaca-issue-tracker' ),

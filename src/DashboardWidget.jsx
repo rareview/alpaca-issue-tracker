@@ -32,9 +32,9 @@ const AlpacaDashboardWidget = memo(function AlpacaDashboardWidget({ data }) {
   const { allUserObjects } = useUserManagement();
   const adminUrlBase =
     typeof window !== 'undefined' &&
-    window.alpacaSettings &&
-    window.alpacaSettings.adminUrl
-      ? window.alpacaSettings.adminUrl
+    window.alpaistrSettings &&
+    window.alpaistrSettings.adminUrl
+      ? window.alpaistrSettings.adminUrl
       : 'admin.php';
 
   if (!data) {

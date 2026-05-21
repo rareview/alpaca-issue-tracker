@@ -2,7 +2,7 @@
 /**
  * Admin screens and menu setup for Alpaca.
  *
- * @package Alpaca
+ * @package AlpacaIssueTracker
  */
 
 // Exit if accessed directly.
@@ -18,9 +18,8 @@ add_action(
 			esc_html__( 'Project Board', 'alpaca-issue-tracker' ),
 			'edit_posts',
 			'project-board',
-			'alpaca_project_board_page',
-			'dashicons-schedule',
-			3
+			'alpaistr_project_board_page',
+			'dashicons-schedule'
 		);
 
 		add_submenu_page(
@@ -29,7 +28,7 @@ add_action(
 			esc_html__( 'Project Activity', 'alpaca-issue-tracker' ),
 			'edit_posts',
 			'project-activity',
-			'alpaca_activity_page'
+			'alpaistr_activity_page'
 		);
 
 		add_submenu_page(
@@ -38,7 +37,7 @@ add_action(
 			esc_html__( 'Configure', 'alpaca-issue-tracker' ),
 			'manage_options',
 			'alpaca-settings',
-			'alpaca_settings_page'
+			'alpaistr_settings_page'
 		);
 
 		add_submenu_page(
@@ -47,7 +46,7 @@ add_action(
 			esc_html__( 'My Notifications', 'alpaca-issue-tracker' ),
 			'edit_posts',
 			'alpaca-notifications',
-			'alpaca_notifications_page'
+			'alpaistr_notifications_page'
 		);
 
 		add_submenu_page(
@@ -56,17 +55,17 @@ add_action(
 			esc_html__( 'Email Templates', 'alpaca-issue-tracker' ),
 			'manage_options',
 			'alpaca-email-templates',
-			'alpaca_email_templates_page'
+			'alpaistr_email_templates_page'
 		);
 	}
 );
 
 /**
- * Render the Alpaca settings page.
+ * Render the Alpaca Issue Tracker settings page.
  *
  * @see https://developer.wordpress.org/news/2024/03/how-to-use-wordpress-react-components-for-plugin-pages/
  */
-function alpaca_settings_page() {
+function alpaistr_settings_page() {
 	?>
 	<div class="alpaca-settings wrap">
 	<h1><?php echo esc_html__( 'Configure', 'alpaca-issue-tracker' ); ?></h1>
@@ -86,9 +85,9 @@ function alpaca_settings_page() {
 }
 
 /**
- * Render the Alpaca activity page.
+ * Render the Alpaca Issue Tracker activity page.
  */
-function alpaca_activity_page() {
+function alpaistr_activity_page() {
 	?>
 	<div class="wrap">
 		<h1><?php echo esc_html__( 'Project Activity', 'alpaca-issue-tracker' ); ?></h1>
@@ -100,7 +99,7 @@ function alpaca_activity_page() {
 /**
  * Render the current user's notifications page.
  */
-function alpaca_notifications_page() {
+function alpaistr_notifications_page() {
 	?>
 	<div class="alpaca-settings wrap alpaca-notifications-admin-page">
 		<h1><?php echo esc_html__( 'My Notifications', 'alpaca-issue-tracker' ); ?></h1>
@@ -117,7 +116,7 @@ function alpaca_notifications_page() {
 /**
  * Render the admin email templates page.
  */
-function alpaca_email_templates_page() {
+function alpaistr_email_templates_page() {
 	?>
 	<div class="alpaca-settings wrap alpaca-email-templates-admin-page">
 		<h1><?php echo esc_html__( 'Email Templates', 'alpaca-issue-tracker' ); ?></h1>

@@ -1,8 +1,9 @@
 <?php
+
 /**
- * Alpaca REST API: REST Root Utilities.
+ * Alpaca Issue Tracker REST API: REST Root Utilities.
  *
- * @package Alpaca
+ * @package AlpacaIssueTracker
  */
 
 // Exit if accessed directly.
@@ -15,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @return array{scheme:string,host:string,port:int|null,origin:string}
  */
-function alpaca_get_request_origin_parts() {
+function alpaistr_get_request_origin_parts() {
 	$scheme      = is_ssl() ? 'https' : 'http';
 	$host_header = isset( $_SERVER['HTTP_HOST'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) ) : '';
 
@@ -55,13 +56,13 @@ function alpaca_get_request_origin_parts() {
  * @param string $rest_root REST root URL.
  * @return string
  */
-function alpaca_align_rest_root_to_request_origin( $rest_root ) {
+function alpaistr_align_rest_root_to_request_origin( $rest_root ) {
 	$rest_root = is_string( $rest_root ) ? trim( $rest_root ) : '';
 	if ( '' === $rest_root ) {
 		return esc_url_raw( rest_url() );
 	}
 
-	$request_parts = alpaca_get_request_origin_parts();
+	$request_parts = alpaistr_get_request_origin_parts();
 	if ( '' === $request_parts['origin'] ) {
 		return $rest_root;
 	}
@@ -98,14 +99,14 @@ function alpaca_align_rest_root_to_request_origin( $rest_root ) {
  *
  * @return array{root:string,has_custom_root:bool}
  */
-function alpaca_get_wp_api_settings_root_data() {
+function alpaistr_get_wp_api_settings_root_data() {
 	$default_root  = esc_url_raw( rest_url() );
 	$filtered_root = apply_filters(
 		'alpaca_rest_api_root',
 		$default_root,
 		[
 			'default_root' => $default_root,
-			'request'      => alpaca_get_request_origin_parts(),
+			'request'      => alpaistr_get_request_origin_parts(),
 		]
 	);
 
@@ -115,7 +116,7 @@ function alpaca_get_wp_api_settings_root_data() {
 	}
 
 	$has_custom_root = untrailingslashit( $filtered_root ) !== untrailingslashit( $default_root );
-	$resolved_root   = $has_custom_root ? $filtered_root : alpaca_align_rest_root_to_request_origin( $filtered_root );
+	$resolved_root   = $has_custom_root ? $filtered_root : alpaistr_align_rest_root_to_request_origin( $filtered_root );
 
 	return [
 		'root'            => esc_url_raw( trailingslashit( $resolved_root ) ),
@@ -129,11 +130,11 @@ function alpaca_get_wp_api_settings_root_data() {
 add_action(
 	'init',
 	function () {
-		$root_data = alpaca_get_wp_api_settings_root_data();
+		$root_data = alpaistr_get_wp_api_settings_root_data();
 
 		wp_localize_script(
 			'wp-api',
-			'alpacaIssueTrackerApiSettings',
+			'alpaistrApiSettings',
 			[
 				'root'          => $root_data['root'],
 				'nonce'         => wp_create_nonce( 'wp_rest' ),

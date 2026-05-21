@@ -1,8 +1,9 @@
 <?php
+
 /**
- * Alpaca REST API: Shared Utilities.
+ * Alpaca Issue Tracker REST API: Shared Utilities.
  *
- * @package Alpaca
+ * @package AlpacaIssueTracker
  */
 
 // Exit if accessed directly.
@@ -19,11 +20,11 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @return WP_REST_Response REST response object.
  */
-function alpaca_rest_response( $action_type, $data, $status = 200 ) {
+function alpaistr_rest_response( $action_type, $data, $status = 200 ) {
 	$status      = (int) $status;
 	$action_type = is_string( $action_type ) ? trim( $action_type ) : '';
 
-	do_action( 'alpaca_rest_response', $action_type, $data, $status );
+	do_action( 'alpaistr_rest_response', $action_type, $data, $status );
 
 	if ( '' !== $action_type ) {
 		if ( $status >= 200 && $status < 300 ) {
@@ -52,7 +53,7 @@ function alpaca_rest_response( $action_type, $data, $status = 200 ) {
  * @param mixed $def     Default value if path not found.
  * @return mixed Value at path or default.
  */
-function alpaca_arr_get( $arr, $path, $def = null ) { // phpcs:disable-line WordPress.NamingConventions.ValidParameterName.VariableNotSnakeCase
+function alpaistr_arr_get( $arr, $path, $def = null ) { // phpcs:disable-line WordPress.NamingConventions.ValidParameterName.VariableNotSnakeCase
 	$ref = $arr;
 	foreach ( (array) $path as $key ) {
 		if ( is_array( $ref ) && array_key_exists( $key, $ref ) ) {
@@ -70,7 +71,7 @@ function alpaca_arr_get( $arr, $path, $def = null ) { // phpcs:disable-line Word
  * @param mixed $vals Values to convert.
  * @return array Array of unique integers.
  */
-function alpaca_to_int_ids( $vals ) {
+function alpaistr_to_int_ids( $vals ) {
 	$vals = array_map( 'intval', (array) $vals );
 	return array_values(
 		array_unique(
@@ -91,7 +92,7 @@ function alpaca_to_int_ids( $vals ) {
  * @param int $size    Avatar size in pixels.
  * @return string Avatar URL.
  */
-function alpaca_avatar( $user_id, $size = 24 ) {
+function alpaistr_avatar( $user_id, $size = 24 ) {
 	return get_avatar_url( (int) $user_id, [ 'size' => (int) $size ] );
 }
 
@@ -101,7 +102,7 @@ function alpaca_avatar( $user_id, $size = 24 ) {
  * @param int $post_id Post ID to check.
  * @return WP_Post|null Post object if valid issue, null otherwise.
  */
-function alpaca_assert_issue_exists( $post_id ) {
+function alpaistr_assert_issue_exists( $post_id ) {
 	$post = get_post( (int) $post_id );
 	return ( $post && 'alpaca_issue' === $post->post_type ) ? $post : null;
 }
@@ -114,7 +115,7 @@ function alpaca_assert_issue_exists( $post_id ) {
  *
  * @return array The issue data structure for API responses.
  */
-function alpaca_get_issue_response_data( $issue, $override_data = [] ) {
+function alpaistr_get_issue_response_data( $issue, $override_data = [] ) {
 	$post = get_post( $issue );
 	if ( ! $post ) {
 		return [];
@@ -152,7 +153,7 @@ function alpaca_get_issue_response_data( $issue, $override_data = [] ) {
 			'post_date_gmt' => (string) $post->post_date_gmt,
 			'author_id'     => $author_id,
 			'author_name'   => get_the_author_meta( 'display_name', $author_id ),
-			'author_img'    => alpaca_avatar( $author_id, 24 ),
+			'author_img'    => alpaistr_avatar( $author_id, 24 ),
 			'meta'          => [
 				'alpaca_high_priority' => $is_high_priority,
 			],

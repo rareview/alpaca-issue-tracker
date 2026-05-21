@@ -255,14 +255,14 @@ const RestoreManager = () => {
       {(() => {
         if (
           typeof window === 'undefined' ||
-          !window.alpacaSettings ||
-          typeof window.alpacaSettings.emptyTrashDays === 'undefined' ||
-          window.alpacaSettings.emptyTrashDays === null
+          !window.alpaistrSettings ||
+          typeof window.alpaistrSettings.emptyTrashDays === 'undefined' ||
+          window.alpaistrSettings.emptyTrashDays === null
         ) {
           return null;
         }
 
-        const days = Number(window.alpacaSettings.emptyTrashDays);
+        const days = Number(window.alpaistrSettings.emptyTrashDays);
         if (!Number.isFinite(days) || days <= 0) {
           return null;
         }

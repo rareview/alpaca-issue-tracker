@@ -1,15 +1,16 @@
 <?php
+
 /**
- * Seed demo content for the Alpaca WordPress Playground instance.
+ * Seed demo content for the Alpaca Issue Tracker WordPress Playground instance.
  *
- * @package Alpaca
+ * @package AlpacaIssueTracker
  */
 
-if ( ! function_exists( 'alpaca_setup_default_statuses' ) ) {
+if ( ! function_exists( 'alpaistr_setup_default_statuses' ) ) {
 	return;
 }
 
-alpaca_setup_default_statuses();
+alpaistr_setup_default_statuses();
 
 $existing_issues = get_posts(
 	[
@@ -63,13 +64,13 @@ $watching_term_id = 0;
 
 if (
 	$admin_user instanceof WP_User &&
-	function_exists( 'alpaca_get_or_create_user_taxonomy_term' )
+	function_exists( 'alpaistr_get_or_create_user_taxonomy_term' )
 ) {
-	$assignee_term_id = (int) alpaca_get_or_create_user_taxonomy_term(
+	$assignee_term_id = (int) alpaistr_get_or_create_user_taxonomy_term(
 		$admin_user,
 		'alpaca_assignee'
 	);
-	$watching_term_id = (int) alpaca_get_or_create_user_taxonomy_term(
+	$watching_term_id = (int) alpaistr_get_or_create_user_taxonomy_term(
 		$admin_user,
 		'alpaca_watching'
 	);
@@ -224,9 +225,9 @@ foreach ( $issues as $issue ) {
 		);
 	}
 
-	if ( function_exists( 'alpaca_update_last_activity_from_issuecomments' ) ) {
-		alpaca_update_last_activity_from_issuecomments( $issue_id );
-	} elseif ( function_exists( 'alpaca_update_last_activity' ) ) {
-		alpaca_update_last_activity( $issue_id );
+	if ( function_exists( 'alpaistr_update_last_activity_from_issuecomments' ) ) {
+		alpaistr_update_last_activity_from_issuecomments( $issue_id );
+	} elseif ( function_exists( 'alpaistr_update_last_activity' ) ) {
+		alpaistr_update_last_activity( $issue_id );
 	}
 }

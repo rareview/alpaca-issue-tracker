@@ -23,7 +23,7 @@ const getConfiguredApiSettings = () => {
     return {};
   }
 
-  return window.alpacaIssueTrackerApiSettings || {};
+  return window.alpaistrApiSettings || {};
 };
 
 const getConfiguredRestRoot = () => {

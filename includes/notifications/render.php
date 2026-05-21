@@ -1,8 +1,9 @@
 <?php
+
 /**
- * Notification rendering helpers for Alpaca issue activity emails.
+ * Notification rendering helpers for Alpaca Issue Tracker issue activity emails.
  *
- * @package Alpaca
+ * @package AlpacaIssueTracker
  */
 
 // Exit if accessed directly.
@@ -16,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @param array<string, mixed> $event Notification event.
  * @return array<string, string> Token map.
  */
-function alpaca_get_notification_template_tokens( $event ) {
+function alpaistr_get_notification_template_tokens( $event ) {
 	$timestamp = isset( $event['timestamp'] ) ? (string) $event['timestamp'] : '';
 	$time_text = '';
 
@@ -32,9 +33,9 @@ function alpaca_get_notification_template_tokens( $event ) {
 		'{{site_name}}'         => isset( $event['site']['title'] ) ? (string) $event['site']['title'] : '',
 		'{{site_title}}'        => isset( $event['site']['title'] ) ? (string) $event['site']['title'] : '',
 		'{{site_tagline}}'      => isset( $event['site']['tagline'] ) ? (string) $event['site']['tagline'] : '',
-		'{{site_logo_url}}'     => alpaca_get_notification_site_icon_url(),
-		'{{site_icon_url}}'     => alpaca_get_notification_site_icon_url(),
-		'{{notifications_url}}' => alpaca_get_notification_preferences_url(),
+		'{{site_logo_url}}'     => alpaistr_get_notification_site_icon_url(),
+		'{{site_icon_url}}'     => alpaistr_get_notification_site_icon_url(),
+		'{{notifications_url}}' => alpaistr_get_notification_preferences_url(),
 		'{{event_time}}'        => $time_text,
 		'{{issue_url}}'         => isset( $event['issue']['url'] ) ? (string) $event['issue']['url'] : '',
 	];
@@ -47,7 +48,7 @@ function alpaca_get_notification_template_tokens( $event ) {
  * @param array<int, array<string, mixed>> $mentions Mention metadata.
  * @return string Content with mention markup.
  */
-function alpaca_render_notification_mentions( $content, $mentions ) {
+function alpaistr_render_notification_mentions( $content, $mentions ) {
 	$content  = is_string( $content ) ? $content : '';
 	$mentions = is_array( $mentions ) ? $mentions : [];
 	if ( '' === $content || empty( $mentions ) ) {
@@ -74,10 +75,10 @@ function alpaca_render_notification_mentions( $content, $mentions ) {
  * @param array<string, mixed> $event Notification event.
  * @return string HTML content.
  */
-function alpaca_render_notification_comment_html( $event ) {
+function alpaistr_render_notification_comment_html( $event ) {
 	$raw       = isset( $event['comment']['raw'] ) ? (string) $event['comment']['raw'] : '';
 	$mentions  = isset( $event['comment']['mentions'] ) && is_array( $event['comment']['mentions'] ) ? $event['comment']['mentions'] : [];
-	$raw       = alpaca_render_notification_mentions( $raw, $mentions );
+	$raw       = alpaistr_render_notification_mentions( $raw, $mentions );
 	$sanitized = wp_kses(
 		$raw,
 		[
@@ -124,7 +125,7 @@ function alpaca_render_notification_comment_html( $event ) {
  * @param string[] $attachments Attachment URLs.
  * @return string HTML markup.
  */
-function alpaca_render_notification_attachments_html( $attachments ) {
+function alpaistr_render_notification_attachments_html( $attachments ) {
 	$attachments = is_array( $attachments ) ? $attachments : [];
 	if ( empty( $attachments ) ) {
 		return '';
@@ -137,25 +138,25 @@ function alpaca_render_notification_attachments_html( $attachments ) {
 			continue;
 		}
 
-		$items[] = '<li' . alpaca_get_notification_email_style_attribute( 'attachment_item' ) . '><a href="' . $url . '"' . alpaca_get_notification_email_style_attribute( 'link' ) . '>' . esc_html__( 'View attachment', 'alpaca-issue-tracker' ) . '</a></li>';
+		$items[] = '<li><a href="' . $url . '">' . esc_html__( 'View attachment', 'alpaca-issue-tracker' ) . '</a></li>';
 	}
 
 	if ( empty( $items ) ) {
 		return '';
 	}
 
-	return '<div class="alpaca-notification-attachments"' . alpaca_get_notification_email_style_attribute( 'attachments' ) . '><h3' . alpaca_get_notification_email_style_attribute( 'attachments_title' ) . '>' . esc_html__( 'Attachments', 'alpaca-issue-tracker' ) . '</h3><ul' . alpaca_get_notification_email_style_attribute( 'attachments_list' ) . '>' . implode( '', $items ) . '</ul></div>';
+	return '<div class="alpaca-notification-attachments"><h3>' . esc_html__( 'Attachments', 'alpaca-issue-tracker' ) . '</h3><ul>' . implode( '', $items ) . '</ul></div>';
 }
 
 /**
- * Render a custom Alpaca email placeholder block.
+ * Render a custom Alpaca Issue Tracker email placeholder block.
  *
  * @param string               $block_name Block name.
  * @param array<string, mixed> $event      Notification event.
  * @return string HTML output.
  */
-function alpaca_render_notification_placeholder_block( $block_name, $event ) {
-	$tokens = alpaca_get_notification_template_tokens( $event );
+function alpaistr_render_notification_placeholder_block( $block_name, $event ) {
+	$tokens = alpaistr_get_notification_template_tokens( $event );
 
 	if ( 'alpaca/email-issue-title' === $block_name ) {
 		return '<p>' . esc_html( $tokens['{{issue_title}}'] ) . '</p>';
@@ -170,7 +171,7 @@ function alpaca_render_notification_placeholder_block( $block_name, $event ) {
 	}
 
 	if ( 'alpaca/email-issue-link' === $block_name ) {
-		return '<p' . alpaca_get_notification_email_style_attribute( 'paragraph' ) . '><a href="' . esc_url( $tokens['{{issue_url}}'] ) . '"' . alpaca_get_notification_email_style_attribute( 'button' ) . '>' . esc_html__( 'Open Issue', 'alpaca-issue-tracker' ) . '</a></p>';
+		return '<p><a href="' . esc_url( $tokens['{{issue_url}}'] ) . '">' . esc_html__( 'Open Issue', 'alpaca-issue-tracker' ) . '</a></p>';
 	}
 
 	if ( 'alpaca/email-site-name' === $block_name ) {
@@ -190,7 +191,7 @@ function alpaca_render_notification_placeholder_block( $block_name, $event ) {
 			return '';
 		}
 
-		return '<p' . alpaca_get_notification_email_style_attribute( 'paragraph' ) . '><img class="alpaca-notification-site-icon" src="' . esc_url( $tokens['{{site_logo_url}}'] ) . '" alt="' . esc_attr( $tokens['{{site_title}}'] ) . '"' . alpaca_get_notification_email_style_attribute( 'site_icon' ) . ' /></p>';
+		return '<p><img class="alpaca-notification-site-icon" src="' . esc_url( $tokens['{{site_logo_url}}'] ) . '" alt="' . esc_attr( $tokens['{{site_title}}'] ) . '" /></p>';
 	}
 
 	if ( 'alpaca/email-event-time' === $block_name ) {
@@ -198,10 +199,10 @@ function alpaca_render_notification_placeholder_block( $block_name, $event ) {
 	}
 
 	if ( 'alpaca/email-comment-content' === $block_name ) {
-		$comment_html  = alpaca_render_notification_comment_html( $event );
+		$comment_html  = alpaistr_render_notification_comment_html( $event );
 		$attachments   = isset( $event['comment']['attachments'] ) && is_array( $event['comment']['attachments'] ) ? $event['comment']['attachments'] : [];
-		$attachments_h = alpaca_render_notification_attachments_html( $attachments );
-		return '<div class="alpaca-notification-comment-content"' . alpaca_get_notification_email_style_attribute( 'comment_content' ) . '>' . $comment_html . $attachments_h . '</div>';
+		$attachments_h = alpaistr_render_notification_attachments_html( $attachments );
+		return '<div class="alpaca-notification-comment-content">' . $comment_html . $attachments_h . '</div>';
 	}
 
 	return '';
@@ -214,9 +215,9 @@ function alpaca_render_notification_placeholder_block( $block_name, $event ) {
  * @param array<string, mixed> $event Notification event.
  * @return string HTML output.
  */
-function alpaca_render_notification_site_logo_block( $block, $event ) {
-	$tokens   = alpaca_get_notification_template_tokens( $event );
-	$logo_url = alpaca_get_notification_site_icon_url();
+function alpaistr_render_notification_site_logo_block( $block, $event ) {
+	$tokens   = alpaistr_get_notification_template_tokens( $event );
+	$logo_url = alpaistr_get_notification_site_icon_url();
 
 	if ( '' === $logo_url ) {
 		return '';
@@ -227,7 +228,7 @@ function alpaca_render_notification_site_logo_block( $block, $event ) {
 	$attributes  = isset( $block['attrs'] ) && is_array( $block['attrs'] ) ? $block['attrs'] : [];
 	$width_attr  = isset( $attributes['width'] ) ? absint( $attributes['width'] ) : 0;
 	$width_html  = $width_attr > 0 ? ' width="' . $width_attr . '"' : '';
-	$logo_markup = '<img class="alpaca-notification-site-logo" src="' . esc_url( $logo_url ) . '" alt="' . esc_attr( $site_title ) . '"' . $width_html . alpaca_get_notification_email_style_attribute( 'site_logo' ) . ' />';
+	$logo_markup = '<img class="alpaca-notification-site-logo" src="' . esc_url( $logo_url ) . '" alt="' . esc_attr( $site_title ) . '"' . $width_html . ' />';
 
 	if ( ! empty( $attributes['isLink'] ) && '' !== $site_url ) {
 		$link_attributes = ' href="' . esc_url( $site_url ) . '" class="custom-logo-link"';
@@ -249,7 +250,7 @@ function alpaca_render_notification_site_logo_block( $block, $event ) {
  * @param string $html HTML content.
  * @return array<string, mixed> Parsed block structure.
  */
-function alpaca_create_notification_html_block( $html ) {
+function alpaistr_create_notification_html_block( $html ) {
 	return [
 		'blockName'    => 'core/html',
 		'attrs'        => [],
@@ -266,23 +267,23 @@ function alpaca_create_notification_html_block( $html ) {
  * @param array<string, mixed> $event Notification event.
  * @return array<string, mixed> Prepared parsed block.
  */
-function alpaca_prepare_notification_block_for_render( $block, $event ) {
+function alpaistr_prepare_notification_block_for_render( $block, $event ) {
 	$block_name = isset( $block['blockName'] ) ? (string) $block['blockName'] : '';
 
 	if ( 0 === strpos( $block_name, 'alpaca/email-' ) ) {
-		$html = alpaca_render_notification_placeholder_block( $block_name, $event );
+		$html = alpaistr_render_notification_placeholder_block( $block_name, $event );
 
-		return alpaca_create_notification_html_block( $html );
+		return alpaistr_create_notification_html_block( $html );
 	}
 
 	if ( 'core/site-logo' === $block_name ) {
-		$html = alpaca_render_notification_site_logo_block( $block, $event );
+		$html = alpaistr_render_notification_site_logo_block( $block, $event );
 
-		return alpaca_create_notification_html_block( $html );
+		return alpaistr_create_notification_html_block( $html );
 	}
 
 	if ( isset( $block['innerBlocks'] ) && is_array( $block['innerBlocks'] ) && ! empty( $block['innerBlocks'] ) ) {
-		$block['innerBlocks'] = alpaca_prepare_notification_blocks_for_render( $block['innerBlocks'], $event );
+		$block['innerBlocks'] = alpaistr_prepare_notification_blocks_for_render( $block['innerBlocks'], $event );
 	}
 
 	return $block;
@@ -295,11 +296,11 @@ function alpaca_prepare_notification_block_for_render( $block, $event ) {
  * @param array<string, mixed>             $event  Notification event.
  * @return array<int, array<string, mixed>> Prepared parsed blocks.
  */
-function alpaca_prepare_notification_blocks_for_render( $blocks, $event ) {
+function alpaistr_prepare_notification_blocks_for_render( $blocks, $event ) {
 	$prepared = [];
 
 	foreach ( $blocks as $block ) {
-		$prepared[] = alpaca_prepare_notification_block_for_render( $block, $event );
+		$prepared[] = alpaistr_prepare_notification_block_for_render( $block, $event );
 	}
 
 	return $prepared;
@@ -312,9 +313,9 @@ function alpaca_prepare_notification_blocks_for_render( $blocks, $event ) {
  * @param array<string, mixed>             $event  Notification event.
  * @return string HTML output.
  */
-function alpaca_render_notification_blocks( $blocks, $event ) {
+function alpaistr_render_notification_blocks( $blocks, $event ) {
 	$output = '';
-	$blocks = alpaca_prepare_notification_blocks_for_render( $blocks, $event );
+	$blocks = alpaistr_prepare_notification_blocks_for_render( $blocks, $event );
 
 	foreach ( $blocks as $block ) {
 		$output .= render_block( $block );
@@ -324,51 +325,52 @@ function alpaca_render_notification_blocks( $blocks, $event ) {
 }
 
 /**
- * Get an inline style declaration for email-only markup.
+ * Extract notification email CSS from the compiled stylesheet.
  *
- * @param string $style_name Style key.
- * @return string Inline CSS declaration.
+ * @return string CSS rules.
  */
-function alpaca_get_notification_email_inline_style( $style_name ) {
-	$styles = [
-		'body'              => 'margin:0;background:#f6f7f7;color:#1d2327;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;',
-		'shell'             => 'background:#f6f7f7;color:#1d2327;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;padding:48px 24px;',
-		'inner'             => 'max-width:680px;margin:0 auto;',
-		'paragraph'         => 'margin:0;color:#3c434a;font-size:16px;line-height:1.6;',
-		'link'              => 'color:#2271b1;',
-		'button'            => 'display:inline-block;min-height:40px;padding:12px 18px;border-radius:4px;background:#2271b1;color:#fff;font-size:14px;line-height:1;text-decoration:none;',
-		'comment_content'   => 'background:#fff;border:1px solid #dcdcde;border-radius:8px;padding:32px;',
-		'attachments'       => 'margin-top:32px;',
-		'attachments_title' => 'margin:0 0 8px;color:#646970;font-size:12px;letter-spacing:.04em;text-transform:uppercase;',
-		'attachments_list'  => 'margin:0;padding-left:24px;',
-		'attachment_item'   => 'color:#3c434a;font-size:16px;line-height:1.6;',
-		'site_logo'         => 'display:block;max-width:180px;height:auto;',
-		'site_icon'         => 'display:block;width:48px;max-width:48px;height:48px;object-fit:contain;',
+function alpaistr_get_notification_email_css() {
+
+	$css_path = ALPAISTR_PLUGIN_DIR . 'dist/index.css';
+	if ( ! file_exists( $css_path ) ) {
+		return '';
+	}
+
+	$css = file_get_contents( $css_path );
+	if ( ! is_string( $css ) || '' === $css ) {
+		return '';
+	}
+
+	$rules = [];
+
+	preg_match_all( '/[^{}]*\.alpaca-notification-email[^{}]*\{[^}]*\}/', $css, $matches );
+	if ( ! empty( $matches[0] ) ) {
+		$rules = array_merge( $rules, $matches[0] );
+	}
+
+	/*
+	* Some base email primitives are shared global selectors rather than
+	* notification-email-prefixed selectors. Pull them in explicitly so the
+	* sent email matches the editor preview.
+	*/
+	$shared_selectors = [
+		'.alpaca-label-pill',
 	];
 
-	if ( ! isset( $styles[ $style_name ] ) ) {
-		return '';
+	foreach ( $shared_selectors as $selector ) {
+		$pattern = '/[^{}]*' . preg_quote( $selector, '/' ) . '[^{}]*\{[^}]*\}/';
+		preg_match_all( $pattern, $css, $shared_matches );
+		if ( ! empty( $shared_matches[0] ) ) {
+			$rules = array_merge( $rules, $shared_matches[0] );
+		}
 	}
 
-	return $styles[ $style_name ];
-}
-
-/**
- * Get an escaped HTML style attribute for email-only markup.
- *
- * @param string $style_name Style key.
- * @return string HTML style attribute.
- */
-function alpaca_get_notification_email_style_attribute( $style_name ) {
-	$style = alpaca_get_notification_email_inline_style( $style_name );
-
-	if ( '' === $style ) {
-		return '';
+	if ( empty( $rules ) ) {
+			return '';
 	}
 
-	return ' style="' . esc_attr( $style ) . '"';
+	return implode( "\n", array_values( array_unique( $rules ) ) );
 }
-
 /**
  * Wrap notification email HTML in the standard email document shell.
  *
@@ -376,7 +378,7 @@ function alpaca_get_notification_email_style_attribute( $style_name ) {
  * @param array<int, string> $extra_classes Extra CSS classes for the outer wrapper.
  * @return string Full HTML document.
  */
-function alpaca_wrap_notification_email_html( $body_html, $extra_classes = [] ) {
+function alpaistr_wrap_notification_email_html( $body_html, $extra_classes = [] ) {
 	$classes = [ 'alpaca-notification-email' ];
 
 	if ( is_array( $extra_classes ) ) {
@@ -394,7 +396,9 @@ function alpaca_wrap_notification_email_html( $body_html, $extra_classes = [] ) 
 		}
 	}
 
-	return '<!DOCTYPE html><html><head><meta charset="utf-8" /></head><body' . alpaca_get_notification_email_style_attribute( 'body' ) . '><div class="' . esc_attr( implode( ' ', array_unique( $classes ) ) ) . '"' . alpaca_get_notification_email_style_attribute( 'shell' ) . '><div class="alpaca-notification-email__inner"' . alpaca_get_notification_email_style_attribute( 'inner' ) . '>' . $body_html . '</div></div></body></html>';
+	$css = alpaistr_get_notification_email_css();
+
+	return '<!DOCTYPE html><html><head><meta charset="utf-8" /><style>' . $css . '</style></head><body><div class="' . esc_attr( implode( ' ', array_unique( $classes ) ) ) . '"><div class="alpaca-notification-email__inner">' . $body_html . '</div></div></body></html>';
 }
 
 /**
@@ -404,9 +408,9 @@ function alpaca_wrap_notification_email_html( $body_html, $extra_classes = [] ) 
  * @param string $html    Message HTML body.
  * @return array<string, string> Message payload.
  */
-function alpaca_build_notification_message_payload( $subject, $html ) {
+function alpaistr_build_notification_message_payload( $subject, $html ) {
 	$text         = wp_strip_all_tags( preg_replace( '/<\/?(p|div|br|li|h[1-6]|tr|section|article|ul|ol)>/i', "\n", $html ) );
-	$from_details = alpaca_get_notification_mail_from_details();
+	$from_details = alpaistr_get_notification_mail_from_details();
 
 	return [
 		'subject'      => is_string( $subject ) ? $subject : '',
@@ -425,7 +429,7 @@ function alpaca_build_notification_message_payload( $subject, $html ) {
  * @param array<string, mixed> $message Message payload.
  * @return bool True on success.
  */
-function alpaca_send_notification_html_email( $address, $message ) {
+function alpaistr_send_notification_html_email( $address, $message ) {
 	$address = is_string( $address ) ? sanitize_email( $address ) : '';
 	if ( '' === $address || ! is_email( $address ) ) {
 		return false;
@@ -447,7 +451,7 @@ function alpaca_send_notification_html_email( $address, $message ) {
  *
  * @return array<string, string> Sender details.
  */
-function alpaca_get_notification_mail_from_details() {
+function alpaistr_get_notification_mail_from_details() {
 	$site_host = wp_parse_url( network_home_url(), PHP_URL_HOST );
 	$site_host = is_string( $site_host ) ? strtolower( $site_host ) : '';
 
@@ -497,8 +501,8 @@ function alpaca_get_notification_mail_from_details() {
  * @param array<string, mixed> $event            Notification event.
  * @return string Rendered subject.
  */
-function alpaca_render_notification_subject( $subject_template, $event ) {
-	$tokens = alpaca_get_notification_template_tokens( $event );
+function alpaistr_render_notification_subject( $subject_template, $event ) {
+	$tokens = alpaistr_get_notification_template_tokens( $event );
 	return strtr( $subject_template, $tokens );
 }
 
@@ -509,13 +513,13 @@ function alpaca_render_notification_subject( $subject_template, $event ) {
  * @param array<string, mixed> $event         Notification event.
  * @return string Rendered HTML body.
  */
-function alpaca_render_notification_body( $body_template, $event ) {
-	$tokens        = alpaca_get_notification_template_tokens( $event );
+function alpaistr_render_notification_body( $body_template, $event ) {
+	$tokens        = alpaistr_get_notification_template_tokens( $event );
 	$body_template = strtr( $body_template, $tokens );
 	$blocks        = parse_blocks( $body_template );
-	$body_html     = alpaca_render_notification_blocks( $blocks, $event );
+	$body_html     = alpaistr_render_notification_blocks( $blocks, $event );
 
-	return alpaca_wrap_notification_email_html( $body_html );
+	return alpaistr_wrap_notification_email_html( $body_html );
 }
 
 /**
@@ -525,13 +529,13 @@ function alpaca_render_notification_body( $body_template, $event ) {
  * @param array<string, mixed>|null $template Optional template values.
  * @return array<string, string> Message object.
  */
-function alpaca_render_notification_message( $event, $template = null ) {
+function alpaistr_render_notification_message( $event, $template = null ) {
 	if ( ! is_array( $template ) ) {
-		$template = alpaca_get_notification_email_template();
+		$template = alpaistr_get_notification_email_template();
 	}
 
-	$subject = alpaca_render_notification_subject( $template['subject'], $event );
-	$html    = alpaca_render_notification_body( $template['body'], $event );
+	$subject = alpaistr_render_notification_subject( $template['subject'], $event );
+	$html    = alpaistr_render_notification_body( $template['body'], $event );
 
-	return alpaca_build_notification_message_payload( $subject, $html );
+	return alpaistr_build_notification_message_payload( $subject, $html );
 }

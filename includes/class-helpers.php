@@ -2,10 +2,10 @@
 /**
  * Helpers class.
  *
- * @package Alpaca
+ * @package AlpacaIssueTracker
  */
 
-namespace Alpaca;
+namespace AlpacaIssueTracker;
 
 use WP_Error;
 use WP_REST_Request;
@@ -33,8 +33,8 @@ class Helpers {
 	 * @return string
 	 */
 	public static function version() {
-		if ( defined( 'ALPACA_VERSION' ) ) {
-			return ALPACA_VERSION;
+		if ( defined( 'ALPAISTR_VERSION' ) ) {
+			return ALPAISTR_VERSION;
 		}
 
 		return '';
@@ -47,11 +47,11 @@ class Helpers {
 	 * @return string Full URL.
 	 */
 	public static function asset_url( $file ) {
-		return plugins_url( $file, dirname( __DIR__ ) . '/alpaca.php' );
+		return plugins_url( $file, dirname( __DIR__ ) . '/alpacaissuetracker.php' );
 	}
 
 	/**
-	 * Centralized permission check for Alpaca actions.
+	 * Centralized permission check for Alpaca Issue Tracker actions.
 	 *
 	 * This allows filtering of permission decisions via the
 	 * `alpaca_user_can` filter. Plugins or themes can override
@@ -112,7 +112,7 @@ class Helpers {
 		}
 
 		/**
-		 * Filter Alpaca permission checks.
+		 * Filter Alpaca Issue Tracker permission checks.
 		 *
 		 * @param bool   $allowed Whether the current user is allowed.
 		 * @param string $action  Action identifier.
@@ -122,7 +122,7 @@ class Helpers {
 	}
 
 	/**
-	 * Validate a REST request against an optional Alpaca capability and WP REST nonce.
+	 * Validate a REST request against an optional Alpaca Issue Tracker capability and WP REST nonce.
 	 *
 	 * @param WP_REST_Request $request           REST request object.
 	 * @param string          $capability_action Optional. Action name passed to user_can().

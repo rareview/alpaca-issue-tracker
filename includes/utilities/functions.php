@@ -2,10 +2,10 @@
 /**
  * Utility functions and helpers.
  *
- * @package Alpaca
+ * @package AlpacaIssueTracker
  */
 
-use Alpaca\Alpaca;
+use AlpacaIssueTracker\AlpacaIssueTracker;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @return array<string, array<string, string>> Icon registry data.
  */
-function alpaca_get_icon_registry() {
+function alpaistr_get_icon_registry() {
 	static $icon_registry = null;
 
 	if ( null !== $icon_registry ) {
@@ -29,7 +29,7 @@ function alpaca_get_icon_registry() {
 		'aliases' => [],
 	];
 
-	$icon_registry_file = trailingslashit( ALPACA_PLUGIN_DIR ) . 'includes/utilities/icon-registry.php';
+	$icon_registry_file = trailingslashit( ALPAISTR_PLUGIN_DIR ) . 'includes/utilities/icon-registry.php';
 
 	if ( ! file_exists( $icon_registry_file ) ) {
 		return $icon_registry;
@@ -61,14 +61,14 @@ function alpaca_get_icon_registry() {
  *
  * @return array<string, mixed> Sanitizer allowlist configuration.
  */
-function alpaca_get_icon_sanitizer_allowlist_data() {
+function alpaistr_get_icon_sanitizer_allowlist_data() {
 	static $allowlist_data = null;
 
 	if ( null !== $allowlist_data ) {
 		return $allowlist_data;
 	}
 
-	$allowlist_file = trailingslashit( ALPACA_PLUGIN_DIR ) . 'includes/utilities/icon-sanitizer-allowlist.json';
+	$allowlist_file = trailingslashit( ALPAISTR_PLUGIN_DIR ) . 'includes/utilities/icon-sanitizer-allowlist.json';
 
 	$allowlist_data = [
 		'globalAttributes' => [],
@@ -107,8 +107,8 @@ function alpaca_get_icon_sanitizer_allowlist_data() {
  *
  * @return array<string, array<string, bool>> Allowed SVG tags for wp_kses.
  */
-function alpaca_get_icon_svg_allowed_tags() {
-	$allowlist_data    = alpaca_get_icon_sanitizer_allowlist_data();
+function alpaistr_get_icon_svg_allowed_tags() {
+	$allowlist_data    = alpaistr_get_icon_sanitizer_allowlist_data();
 	$global_attributes = array_map( 'strtolower', $allowlist_data['globalAttributes'] );
 	$allowed_svg_tags  = [];
 
@@ -133,12 +133,12 @@ function alpaca_get_icon_svg_allowed_tags() {
  * @param string $svg_markup Raw SVG markup.
  * @return string Sanitized SVG markup.
  */
-function alpaca_sanitize_icon_svg_markup( $svg_markup ) {
+function alpaistr_sanitize_icon_svg_markup( $svg_markup ) {
 	if ( ! is_string( $svg_markup ) || '' === $svg_markup ) {
 		return '';
 	}
 
-	$allowed_svg_tags = alpaca_get_icon_svg_allowed_tags();
+	$allowed_svg_tags = alpaistr_get_icon_svg_allowed_tags();
 	$svg_markup       = preg_replace( '/<\?(xml|php)[^>]*\?>/i', '', $svg_markup );
 	$svg_markup       = preg_replace( '/<!doctype[^>]*>/i', '', $svg_markup );
 
@@ -159,10 +159,10 @@ function alpaca_sanitize_icon_svg_markup( $svg_markup ) {
  * @param string $icon_slug Logical icon slug, for example `calendar2-week`.
  * @return string SVG markup when found, otherwise an empty string.
  */
-function alpaca_get_icon( $icon_slug ) {
+function alpaistr_get_icon( $icon_slug ) {
 	$icon_slug     = sanitize_title( (string) $icon_slug );
 	$fallback_slug = 'missing';
-	$icon_registry = alpaca_get_icon_registry();
+	$icon_registry = alpaistr_get_icon_registry();
 
 	if ( '' === $icon_slug ) {
 		$icon_slug = $fallback_slug;
@@ -173,11 +173,11 @@ function alpaca_get_icon( $icon_slug ) {
 	}
 
 	if ( isset( $icon_registry['icons'][ $icon_slug ] ) && is_string( $icon_registry['icons'][ $icon_slug ] ) ) {
-		return alpaca_sanitize_icon_svg_markup( $icon_registry['icons'][ $icon_slug ] );
+		return alpaistr_sanitize_icon_svg_markup( $icon_registry['icons'][ $icon_slug ] );
 	}
 
 	if ( isset( $icon_registry['icons'][ $fallback_slug ] ) && is_string( $icon_registry['icons'][ $fallback_slug ] ) ) {
-		return alpaca_sanitize_icon_svg_markup( $icon_registry['icons'][ $fallback_slug ] );
+		return alpaistr_sanitize_icon_svg_markup( $icon_registry['icons'][ $fallback_slug ] );
 	}
 
 	return '';
@@ -188,8 +188,8 @@ function alpaca_get_icon( $icon_slug ) {
  *
  * @return int Maximum term score.
  */
-function alpaca_get_max_term_score() {
-	return Alpaca::MAX_TERM_SCORE;
+function alpaistr_get_max_term_score() {
+	return AlpacaIssueTracker::MAX_TERM_SCORE;
 }
 
 /**
@@ -197,8 +197,8 @@ function alpaca_get_max_term_score() {
  *
  * @return int Minimum term score.
  */
-function alpaca_get_min_term_score() {
-	return Alpaca::MIN_TERM_SCORE;
+function alpaistr_get_min_term_score() {
+	return AlpacaIssueTracker::MIN_TERM_SCORE;
 }
 
 /**
@@ -206,8 +206,8 @@ function alpaca_get_min_term_score() {
  *
  * @return bool True when contextual capture should be active.
  */
-function alpaca_is_contextual_capture_enabled() {
-	return '1' === (string) get_option( 'alpaca_enable_context_capture', '1' );
+function alpaistr_is_contextual_capture_enabled() {
+	return '1' === (string) get_option( 'alpaistr_enable_context_capture', '1' );
 }
 
 /**
@@ -222,13 +222,13 @@ function alpaca_is_contextual_capture_enabled() {
  * @param bool $force Force creation even if statuses exist. Default false.
  * @return array Result array with success status and message.
  */
-function alpaca_setup_default_statuses( $force = false ) {
-	if ( ! function_exists( 'alpaca_register_cpts_and_taxonomies' ) ) {
-		require_once ALPACA_PLUGIN_DIR . 'includes/core/posttypes-and-taxonomies.php';
+function alpaistr_setup_default_statuses( $force = false ) {
+	if ( ! function_exists( 'alpaistr_register_cpts_and_taxonomies' ) ) {
+		require_once ALPAISTR_PLUGIN_DIR . 'includes/core/posttypes-and-taxonomies.php';
 	}
 
 	if ( ! taxonomy_exists( 'alpaca_status' ) ) {
-		alpaca_register_cpts_and_taxonomies();
+		alpaistr_register_cpts_and_taxonomies();
 	}
 
 	if ( ! $force ) {
@@ -296,7 +296,7 @@ function alpaca_setup_default_statuses( $force = false ) {
 	}
 
 	if ( $default_term_id > 0 ) {
-		update_option( 'alpaca_default_status_id', $default_term_id );
+		update_option( 'alpaistr_default_status_id', $default_term_id );
 	}
 
 	return [
@@ -315,7 +315,7 @@ function alpaca_setup_default_statuses( $force = false ) {
  *
  * @param int $post_id The ID of the issue post.
  */
-function alpaca_update_last_activity( $post_id ) {
+function alpaistr_update_last_activity( $post_id ) {
 	if ( 'alpaca_issue' === get_post_type( $post_id ) ) {
 		update_post_meta( $post_id, 'alpaca_lastActivity', gmdate( 'c' ) );
 	}
@@ -332,7 +332,7 @@ function alpaca_update_last_activity( $post_id ) {
  *
  * @return string Latest comment date in UTC (MySQL datetime) or empty string.
  */
-function alpaca_get_latest_issuecomment_date_for_issue( $issue_id ) {
+function alpaistr_get_latest_issuecomment_date_for_issue( $issue_id ) {
 	$issue_id = (int) $issue_id;
 	if ( $issue_id <= 0 ) {
 		return '';
@@ -373,13 +373,13 @@ function alpaca_get_latest_issuecomment_date_for_issue( $issue_id ) {
  * @param int $issue_id The issue post ID.
  * @return string Updated last activity value (ISO-8601 UTC) or empty string.
  */
-function alpaca_update_last_activity_from_issuecomments( $issue_id ) {
+function alpaistr_update_last_activity_from_issuecomments( $issue_id ) {
 	$issue_id = (int) $issue_id;
 	if ( $issue_id <= 0 ) {
 		return '';
 	}
 
-	$latest = alpaca_get_latest_issuecomment_date_for_issue( $issue_id );
+	$latest = alpaistr_get_latest_issuecomment_date_for_issue( $issue_id );
 	if ( '' === $latest ) {
 		delete_post_meta( $issue_id, 'alpaca_lastActivity' );
 		return '';
@@ -406,7 +406,7 @@ function alpaca_update_last_activity_from_issuecomments( $issue_id ) {
  * @param int $issue_id Issue post ID.
  * @return int Number of comments updated.
  */
-function alpaca_restore_issuecomment_approval_statuses( $issue_id ) {
+function alpaistr_restore_issuecomment_approval_statuses( $issue_id ) {
 	$issue_id = (int) $issue_id;
 	if ( $issue_id <= 0 ) {
 		return 0;
@@ -436,8 +436,8 @@ function alpaca_restore_issuecomment_approval_statuses( $issue_id ) {
 		return 0;
 	}
 
-	if ( function_exists( 'alpaca_update_last_activity_from_issuecomments' ) ) {
-		alpaca_update_last_activity_from_issuecomments( $issue_id );
+	if ( function_exists( 'alpaistr_update_last_activity_from_issuecomments' ) ) {
+		alpaistr_update_last_activity_from_issuecomments( $issue_id );
 	}
 
 	return (int) $updated_rows;
@@ -450,7 +450,7 @@ function alpaca_restore_issuecomment_approval_statuses( $issue_id ) {
  * @param string $post_status  Optional post status filter.
  * @return int[] Direct child issue IDs.
  */
-function alpaca_get_child_issue_ids( $issue_id, $post_status = 'any' ) {
+function alpaistr_get_child_issue_ids( $issue_id, $post_status = 'any' ) {
 	$issue_id = (int) $issue_id;
 	if ( $issue_id <= 0 ) {
 		return [];
@@ -484,14 +484,14 @@ function alpaca_get_child_issue_ids( $issue_id, $post_status = 'any' ) {
  * @param int $parent_issue_id Parent issue post ID.
  * @return int Number of child issues trashed.
  */
-function alpaca_trash_child_issues_with_parent( $parent_issue_id ) {
+function alpaistr_trash_child_issues_with_parent( $parent_issue_id ) {
 	$parent_issue_id = (int) $parent_issue_id;
 	if ( $parent_issue_id <= 0 ) {
 		return 0;
 	}
 
 	$trashed_count = 0;
-	$child_ids     = alpaca_get_child_issue_ids( $parent_issue_id, 'any' );
+	$child_ids     = alpaistr_get_child_issue_ids( $parent_issue_id, 'any' );
 
 	foreach ( $child_ids as $child_id ) {
 		$child_status = get_post_status( $child_id );
@@ -522,7 +522,7 @@ function alpaca_trash_child_issues_with_parent( $parent_issue_id ) {
  * @param string $fields          Query field mode. Accepts `ids` or `all`.
  * @return array<int, int>|array<int, WP_Post> Matching child issue IDs or posts.
  */
-function alpaca_get_child_issues_trashed_with_parent( $parent_issue_id, $fields = 'ids' ) {
+function alpaistr_get_child_issues_trashed_with_parent( $parent_issue_id, $fields = 'ids' ) {
 	$parent_issue_id = (int) $parent_issue_id;
 	if ( $parent_issue_id <= 0 ) {
 		return [];
@@ -572,7 +572,7 @@ function alpaca_get_child_issues_trashed_with_parent( $parent_issue_id, $fields 
  *                                     child status was recorded.
  * @return int Number of child issues restored.
  */
-function alpaca_restore_child_issues_trashed_with_parent( $parent_issue_id, $restored_post_status = 'publish' ) {
+function alpaistr_restore_child_issues_trashed_with_parent( $parent_issue_id, $restored_post_status = 'publish' ) {
 	$parent_issue_id = (int) $parent_issue_id;
 	if ( $parent_issue_id <= 0 ) {
 		return 0;
@@ -583,7 +583,7 @@ function alpaca_restore_child_issues_trashed_with_parent( $parent_issue_id, $res
 		: 'publish';
 
 	$restored_count = 0;
-	$child_ids      = alpaca_get_child_issues_trashed_with_parent( $parent_issue_id, 'ids' );
+	$child_ids      = alpaistr_get_child_issues_trashed_with_parent( $parent_issue_id, 'ids' );
 
 	foreach ( $child_ids as $child_id ) {
 		$child_id = (int) $child_id;
@@ -624,7 +624,7 @@ function alpaca_restore_child_issues_trashed_with_parent( $parent_issue_id, $res
  * @param string  $taxonomy Taxonomy slug.
  * @return int Term ID when available, otherwise 0.
  */
-function alpaca_get_or_create_user_taxonomy_term( $user, $taxonomy ) {
+function alpaistr_get_or_create_user_taxonomy_term( $user, $taxonomy ) {
 	if ( ! ( $user instanceof WP_User ) ) {
 		return 0;
 	}
@@ -665,7 +665,7 @@ function alpaca_get_or_create_user_taxonomy_term( $user, $taxonomy ) {
  * @param int $user_id User ID.
  * @return void
  */
-function alpaca_migrate_watchlist_usermeta_to_taxonomy( $user_id ) {
+function alpaistr_migrate_watchlist_usermeta_to_taxonomy( $user_id ) {
 	$user_id = (int) $user_id;
 	if ( $user_id <= 0 ) {
 		return;
@@ -685,12 +685,12 @@ function alpaca_migrate_watchlist_usermeta_to_taxonomy( $user_id ) {
 		return;
 	}
 
-	$term_id = alpaca_get_or_create_user_taxonomy_term( $user, 'alpaca_watching' );
+	$term_id = alpaistr_get_or_create_user_taxonomy_term( $user, 'alpaca_watching' );
 	if ( $term_id <= 0 ) {
 		return;
 	}
 
-	$watchlist = alpaca_to_int_ids( $legacy_watchlist );
+	$watchlist = alpaistr_to_int_ids( $legacy_watchlist );
 	foreach ( $watchlist as $post_id ) {
 		if ( 'alpaca_issue' !== get_post_type( $post_id ) ) {
 			continue;
@@ -710,7 +710,7 @@ function alpaca_migrate_watchlist_usermeta_to_taxonomy( $user_id ) {
  *
  * @return bool True when migration should run.
  */
-function alpaca_should_migrate_legacy_watchlist() {
+function alpaistr_should_migrate_legacy_watchlist() {
 	/**
 	 * Filter whether legacy watchlist usermeta should be migrated.
 	 *
@@ -718,7 +718,7 @@ function alpaca_should_migrate_legacy_watchlist() {
 	 *
 	 * @param bool $should_migrate Whether migration should run.
 	 */
-	return (bool) apply_filters( 'alpaca_should_migrate_legacy_watchlist', true );
+	return (bool) apply_filters( 'alpaistr_should_migrate_legacy_watchlist', true );
 }
 
 /**
@@ -727,12 +727,12 @@ function alpaca_should_migrate_legacy_watchlist() {
  * @param int $user_id User ID.
  * @return void
  */
-function alpaca_maybe_migrate_watchlist_usermeta_to_taxonomy( $user_id ) {
-	if ( ! alpaca_should_migrate_legacy_watchlist() ) {
+function alpaistr_maybe_migrate_watchlist_usermeta_to_taxonomy( $user_id ) {
+	if ( ! alpaistr_should_migrate_legacy_watchlist() ) {
 		return;
 	}
 
-	alpaca_migrate_watchlist_usermeta_to_taxonomy( $user_id );
+	alpaistr_migrate_watchlist_usermeta_to_taxonomy( $user_id );
 }
 
 /**
@@ -741,7 +741,7 @@ function alpaca_maybe_migrate_watchlist_usermeta_to_taxonomy( $user_id ) {
  * @param int $user_id User ID.
  * @return array Watched issue IDs.
  */
-function alpaca_get_watched_issue_ids_for_user( $user_id ) {
+function alpaistr_get_watched_issue_ids_for_user( $user_id ) {
 	$user_id = (int) $user_id;
 	if ( $user_id <= 0 ) {
 		return [];
@@ -751,7 +751,7 @@ function alpaca_get_watched_issue_ids_for_user( $user_id ) {
 		return [];
 	}
 
-	alpaca_maybe_migrate_watchlist_usermeta_to_taxonomy( $user_id );
+	alpaistr_maybe_migrate_watchlist_usermeta_to_taxonomy( $user_id );
 
 	$user = get_user_by( 'id', $user_id );
 	if ( ! ( $user instanceof WP_User ) ) {
@@ -781,5 +781,5 @@ function alpaca_get_watched_issue_ids_for_user( $user_id ) {
 	);
 	// phpcs:enable WordPress.DB.SlowDBQuery.slow_db_query_tax_query
 
-	return alpaca_to_int_ids( $watchlist );
+	return alpaistr_to_int_ids( $watchlist );
 }

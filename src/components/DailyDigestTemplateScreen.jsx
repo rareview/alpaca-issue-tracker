@@ -44,7 +44,7 @@ const dailyDigestTemplateBlockDefinitions = [
 ];
 
 /**
- * Register Alpaca digest template placeholder blocks.
+ * Register Alpaca Issue Tracker digest template placeholder blocks.
  *
  * @return {void}
  */

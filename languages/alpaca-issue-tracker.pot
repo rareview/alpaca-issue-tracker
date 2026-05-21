@@ -15,27 +15,27 @@ msgstr ""
 "X-Domain: alpaca-issue-tracker\n"
 
 #. Plugin Name of the plugin
-#: alpaca.php
+#: alpacaissuetracker.php
 msgid "Alpaca Issue Tracker"
 msgstr ""
 
 #. Plugin URI of the plugin
-#: alpaca.php
+#: alpacaissuetracker.php
 msgid "https://github.com/rareview/alpaca"
 msgstr ""
 
 #. Description of the plugin
-#: alpaca.php
+#: alpacaissuetracker.php
 msgid "Bug reporting and Trello-esque kanban project management inside WordPress. No subscriptions, no new accounts, no artificial limitations."
 msgstr ""
 
 #. Author of the plugin
-#: alpaca.php
+#: alpacaissuetracker.php
 msgid "Rareview®"
 msgstr ""
 
 #. Author URI of the plugin
-#: alpaca.php
+#: alpacaissuetracker.php
 msgid "https://rareview.com/"
 msgstr ""
 
@@ -395,11 +395,11 @@ msgstr ""
 msgid "Alpaca Issue Tracker requires WordPress version %1$s or higher. You are running version %2$s."
 msgstr ""
 
-#: includes/class-alpaca.php:328
+#: includes/class-alpacaissuetracker.php:328
 msgid "Enable console messages for testing purposes."
 msgstr ""
 
-#: includes/class-alpaca.php:339
+#: includes/class-alpacaissuetracker.php:339
 msgid "Visibility map for item datapoints on issue cards."
 msgstr ""
 
@@ -766,7 +766,7 @@ msgid "Unknown user"
 msgstr ""
 
 #: includes/notifications/events.php:415
-msgid "Alpaca User"
+msgid "Alpaca Issue Tracker User"
 msgstr ""
 
 #: includes/notifications/events.php:421

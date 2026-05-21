@@ -5,7 +5,7 @@ const { CheckboxControl } = wp.components;
 
 const EnableContextCaptureControl = () => {
   const { isEnabled, isFetching, isSaving, handleChange } = useCheckboxSetting({
-    settingKey: 'alpaca_enable_context_capture',
+    settingKey: 'alpaistr_enable_context_capture',
     defaultValue: true,
   });
 

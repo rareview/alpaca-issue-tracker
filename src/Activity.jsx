@@ -206,7 +206,7 @@ const Activity = () => {
       }
 
       try {
-        // context=edit is required so Alpaca can surface hidden audit entries.
+        // context=edit is required so Alpaca Issue Tracker can surface hidden audit entries.
         const response = await wp.apiFetch({
           path:
             '/wp/v2/comments?' +

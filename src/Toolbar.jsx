@@ -20,7 +20,7 @@ const { useState, useRef, useEffect, useCallback } = wp.element;
 const FORM_CLOSE_RESET_DELAY_MS = 300;
 
 /**
- * Bottom Toolbar component for Alpaca issue reporting.
+ * Bottom Toolbar component for Alpaca Issue Tracker issue reporting.
  * Dark admin bar theme with WP Components form.
  *
  * @return {JSX.Element} Toolbar component
@@ -41,7 +41,7 @@ const AlpacaToolbar = () => {
 
   useEffect(() => {
     wp.apiFetch({ path: '/wp/v2/settings' }).then((settings) => {
-      setEnableTestLogs(settings.alpaca_enable_test_logs === '1');
+      setEnableTestLogs(settings.alpaistr_enable_test_logs === '1');
     });
 
     const handleTestLogSettingChange = (value) => {
@@ -226,10 +226,10 @@ const AlpacaToolbar = () => {
 
   const projectBoardUrl = (() => {
     if (
-      window.alpacaSettings?.adminUrl &&
-      typeof window.alpacaSettings.adminUrl === 'string'
+      window.alpaistrSettings?.adminUrl &&
+      typeof window.alpaistrSettings.adminUrl === 'string'
     ) {
-      return `${window.alpacaSettings.adminUrl}?page=project-board`;
+      return `${window.alpaistrSettings.adminUrl}?page=project-board`;
     }
 
     const restRoot = getAlpacaRestRoot();

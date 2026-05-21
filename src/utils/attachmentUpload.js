@@ -1,7 +1,7 @@
 const { __ } = wp.i18n;
 
 /**
- * Upload a file to the Alpaca attachments endpoint.
+ * Upload a file to the Alpaca Issue Tracker attachments endpoint.
  *
  * @param {File}   file    File to upload.
  * @param {number} issueId Issue ID.

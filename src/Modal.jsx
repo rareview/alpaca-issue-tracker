@@ -27,7 +27,7 @@ const AlpacaModal = () => {
 
   useEffect(() => {
     wp.apiFetch({ path: '/wp/v2/settings' }).then((settings) => {
-      setEnableTestLogs(settings.alpaca_enable_test_logs === '1');
+      setEnableTestLogs(settings.alpaistr_enable_test_logs === '1');
     });
 
     const handleTestLogSettingChange = (value) => {

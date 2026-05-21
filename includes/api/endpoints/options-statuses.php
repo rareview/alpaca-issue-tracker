@@ -1,11 +1,12 @@
 <?php
+
 /**
- * Alpaca REST API: Options and Status Endpoints.
+ * Alpaca Issue Tracker REST API: Options and Status Endpoints.
  *
- * @package Alpaca
+ * @package AlpacaIssueTracker
  */
 
-use Alpaca\Helpers;
+use AlpacaIssueTracker\Helpers;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,17 +16,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 /*
  * Restore default statuses endpoint.
  */
-add_action( 'rest_api_init', 'alpaca_restore_default_statuses_endpoint' );
+add_action( 'rest_api_init', 'alpaistr_restore_default_statuses_endpoint' );
 /**
  * Register restore default statuses endpoint.
  */
-function alpaca_restore_default_statuses_endpoint() {
+function alpaistr_restore_default_statuses_endpoint() {
 	register_rest_route(
 		'alpaca/v1',
 		'/statuses/restore-defaults',
 		[
 			'methods'             => 'POST',
-			'callback'            => 'alpaca_restore_default_statuses_callback',
+			'callback'            => 'alpaistr_restore_default_statuses_callback',
 			'permission_callback' => function ( WP_REST_Request $request ) {
 				return Helpers::validate_rest_nonce_permission( $request, 'restore_statuses' );
 			},
@@ -38,10 +39,10 @@ function alpaca_restore_default_statuses_endpoint() {
  *
  * @return WP_REST_Response REST response with result.
  */
-function alpaca_restore_default_statuses_callback() {
-	$result = alpaca_setup_default_statuses( true );
+function alpaistr_restore_default_statuses_callback() {
+	$result = alpaistr_setup_default_statuses( true );
 
-	return alpaca_rest_response(
+	return alpaistr_rest_response(
 		'statuses_restore',
 		$result,
 		$result['success'] ? 200 : 400
@@ -51,17 +52,17 @@ function alpaca_restore_default_statuses_callback() {
 /*
  * Statuses: list + update endpoints.
  */
-add_action( 'rest_api_init', 'alpaca_get_statuses_endpoint' );
+add_action( 'rest_api_init', 'alpaistr_get_statuses_endpoint' );
 /**
  * Register statuses GET endpoint.
  */
-function alpaca_get_statuses_endpoint() {
+function alpaistr_get_statuses_endpoint() {
 	register_rest_route(
 		'alpaca/v1',
 		'/statuses',
 		[
 			'methods'             => 'GET',
-			'callback'            => 'alpaca_get_statuses_callback',
+			'callback'            => 'alpaistr_get_statuses_callback',
 			'permission_callback' => function () {
 				return Helpers::user_can( 'get_statuses' );
 			},
@@ -74,25 +75,25 @@ function alpaca_get_statuses_endpoint() {
  *
  * @return WP_REST_Response|WP_Error REST response with statuses or error.
  */
-function alpaca_get_statuses_callback() {
-	$statuses = alpaca_get_statuses();
+function alpaistr_get_statuses_callback() {
+	$statuses = alpaistr_get_statuses();
 	if ( is_wp_error( $statuses ) ) {
 		return $statuses;
 	}
-	return alpaca_rest_response( '', $statuses, 200 );
+	return alpaistr_rest_response( '', $statuses, 200 );
 }
 
-add_action( 'rest_api_init', 'alpaca_update_status_endpoint' );
+add_action( 'rest_api_init', 'alpaistr_update_status_endpoint' );
 /**
  * Register status UPDATE endpoint.
  */
-function alpaca_update_status_endpoint() {
+function alpaistr_update_status_endpoint() {
 	register_rest_route(
 		'alpaca/v1',
 		'/status/(?P<id>\d+)',
 		[
 			'methods'             => 'POST',
-			'callback'            => 'alpaca_update_status_callback',
+			'callback'            => 'alpaistr_update_status_callback',
 			'permission_callback' => function ( WP_REST_Request $request ) {
 				return Helpers::validate_rest_nonce_permission( $request, 'update_status' );
 			},
@@ -113,13 +114,13 @@ function alpaca_update_status_endpoint() {
  * @param WP_REST_Request $request REST request object.
  * @return WP_REST_Response REST response.
  */
-function alpaca_update_status_callback( WP_REST_Request $request ) {
+function alpaistr_update_status_callback( WP_REST_Request $request ) {
 	$term_id = (int) $request['id'];
 	$data    = (array) $request->get_json_params();
 
 	$term = get_term( $term_id, 'alpaca_status' );
 	if ( ! $term || is_wp_error( $term ) ) {
-		return alpaca_rest_response(
+		return alpaistr_rest_response(
 			'',
 			[
 				'success' => false,
@@ -132,7 +133,7 @@ function alpaca_update_status_callback( WP_REST_Request $request ) {
 	if ( isset( $data['name'] ) ) {
 		$new_name = trim( sanitize_text_field( (string) $data['name'] ) );
 		if ( '' === $new_name ) {
-			return alpaca_rest_response(
+			return alpaistr_rest_response(
 				'',
 				[
 					'success' => false,
@@ -154,7 +155,7 @@ function alpaca_update_status_callback( WP_REST_Request $request ) {
 		);
 
 		if ( is_wp_error( $update_result ) ) {
-			return alpaca_rest_response(
+			return alpaistr_rest_response(
 				'',
 				[
 					'success' => false,
@@ -167,7 +168,7 @@ function alpaca_update_status_callback( WP_REST_Request $request ) {
 
 	if ( array_key_exists( 'term_score', $data ) ) {
 		if ( ! is_numeric( $data['term_score'] ) ) {
-			return alpaca_rest_response(
+			return alpaistr_rest_response(
 				'',
 				[
 					'success' => false,
@@ -178,11 +179,11 @@ function alpaca_update_status_callback( WP_REST_Request $request ) {
 		}
 
 		$term_score     = (int) $data['term_score'];
-		$min_term_score = alpaca_get_min_term_score();
-		$max_term_score = alpaca_get_max_term_score();
+		$min_term_score = alpaistr_get_min_term_score();
+		$max_term_score = alpaistr_get_max_term_score();
 
 		if ( $term_score < $min_term_score || $term_score > $max_term_score ) {
-			return alpaca_rest_response(
+			return alpaistr_rest_response(
 				'',
 				[
 					'success' => false,
@@ -195,7 +196,7 @@ function alpaca_update_status_callback( WP_REST_Request $request ) {
 		update_term_meta( $term_id, 'term_score', $term_score );
 	}
 
-	return alpaca_rest_response(
+	return alpaistr_rest_response(
 		'status_update',
 		[
 			'success' => true,

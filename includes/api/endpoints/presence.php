@@ -1,11 +1,12 @@
 <?php
+
 /**
- * Alpaca REST API: Presence Endpoint.
+ * Alpaca Issue Tracker REST API: Presence Endpoint.
  *
- * @package Alpaca
+ * @package AlpacaIssueTracker
  */
 
-use Alpaca\Helpers;
+use AlpacaIssueTracker\Helpers;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -15,17 +16,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 /*
  * Presence endpoint (used by Heartbeat pings).
  */
-add_action( 'rest_api_init', 'alpaca_register_presence_endpoint' );
+add_action( 'rest_api_init', 'alpaistr_register_presence_endpoint' );
 /**
  * Register presence endpoint.
  */
-function alpaca_register_presence_endpoint() {
+function alpaistr_register_presence_endpoint() {
 	register_rest_route(
 		'alpaca/v1',
 		'/presence',
 		[
 			'methods'             => 'POST',
-			'callback'            => 'alpaca_update_presence_callback',
+			'callback'            => 'alpaistr_update_presence_callback',
 			'permission_callback' => function ( WP_REST_Request $request ) {
 				return Helpers::validate_rest_nonce_permission( $request, 'presence' );
 			},
@@ -38,10 +39,10 @@ function alpaca_register_presence_endpoint() {
  *
  * @return WP_REST_Response
  */
-function alpaca_update_presence_callback() {
+function alpaistr_update_presence_callback() {
 	$current_user = get_current_user_id();
 	if ( $current_user <= 0 ) {
-		return alpaca_rest_response( '', [ 'success' => false ], 403 );
+		return alpaistr_rest_response( '', [ 'success' => false ], 403 );
 	}
 
 	$now     = time();
@@ -85,12 +86,12 @@ function alpaca_update_presence_callback() {
 				'id'            => (int) $u->ID,
 				'display_name'  => $u->display_name,
 				'user_nicename' => $u->user_nicename,
-				'avatar'        => alpaca_avatar( $u->ID, 48 ),
+				'avatar'        => alpaistr_avatar( $u->ID, 48 ),
 			];
 		}
 	}
 
-	return alpaca_rest_response(
+	return alpaistr_rest_response(
 		'presence_update',
 		[
 			'success'       => true,

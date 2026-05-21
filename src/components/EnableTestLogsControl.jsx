@@ -5,7 +5,7 @@ const { CheckboxControl } = wp.components;
 
 const EnableTestLogsControl = () => {
   const { isEnabled, isFetching, isSaving, handleChange } = useCheckboxSetting({
-    settingKey: 'alpaca_enable_test_logs',
+    settingKey: 'alpaistr_enable_test_logs',
     defaultValue: false,
     onSave: (value) => {
       wp.hooks.doAction('alpaca.enableTestLogsChanged', value);

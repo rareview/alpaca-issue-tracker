@@ -205,11 +205,11 @@ const handleSnapdomCapture = async () => {
 
     if (
       typeof window !== 'undefined' &&
-      window.alpacaSettings &&
-      window.alpacaSettings.snapdomProxy
+      window.alpaistrSettings &&
+      window.alpaistrSettings.snapdomProxy
     ) {
       // SnapDOM expects useProxy to be the proxy URL string (not boolean).
-      snapdomOptions.useProxy = window.alpacaSettings.snapdomProxy;
+      snapdomOptions.useProxy = window.alpaistrSettings.snapdomProxy;
     }
 
     const canvas = await snapdom.toCanvas(document.body, snapdomOptions);

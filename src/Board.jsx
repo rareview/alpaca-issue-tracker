@@ -22,10 +22,10 @@ import { updateIssue } from './services/issueApi';
  * Main board component.
  */
 export function AlpacaBoard() {
-  const canDeleteIssues = Boolean(window.alpacaSettings?.canDeleteIssues);
+  const canDeleteIssues = Boolean(window.alpaistrSettings?.canDeleteIssues);
   const [containers, setContainers] = useState(() => {
-    if (typeof window.alpacaBoardData !== 'undefined') {
-      return transformDataForBoard(window.alpacaBoardData);
+    if (typeof window.alpaistrBoardData !== 'undefined') {
+      return transformDataForBoard(window.alpaistrBoardData);
     }
     return [];
   });
