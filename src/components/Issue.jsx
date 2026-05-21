@@ -107,7 +107,9 @@ const AssigneeRow = memo(
 const LabelsRow = memo(
   ({ labels, selectedIds, onChange, isLoading }) => (
     <div id="labels" className="alpaca-details-grid__item">
-      <div className="alpaca-details-grid__label">{__('Labels', 'alpaca-issue-tracker')}</div>
+      <div className="alpaca-details-grid__label">
+        {__('Labels', 'alpaca-issue-tracker')}
+      </div>
       <div className="alpaca-details-grid__value alpaca-flex-align alpaca-issue-labels-cell">
         <LabelsSelector
           labels={labels}
@@ -685,7 +687,10 @@ const AlpacaIssue = ({
     fetchStatuses()
       .then(setAllStatuses)
       .catch(() =>
-        showNotification(__('Failed to load statuses.', 'alpaca-issue-tracker'), 'error'),
+        showNotification(
+          __('Failed to load statuses.', 'alpaca-issue-tracker'),
+          'error',
+        ),
       );
   }, [showNotification]);
 
@@ -693,7 +698,10 @@ const AlpacaIssue = ({
     fetchLabels()
       .then((labels) => setAllLabels(Array.isArray(labels) ? labels : []))
       .catch(() =>
-        showNotification(__('Failed to load labels.', 'alpaca-issue-tracker'), 'error'),
+        showNotification(
+          __('Failed to load labels.', 'alpaca-issue-tracker'),
+          'error',
+        ),
       );
   }, [showNotification]);
 
@@ -858,7 +866,10 @@ const AlpacaIssue = ({
         });
       } catch (err) {
         console.error(err);
-        showNotification(__('Failed to update assignees.', 'alpaca-issue-tracker'), 'error');
+        showNotification(
+          __('Failed to update assignees.', 'alpaca-issue-tracker'),
+          'error',
+        );
       } finally {
         setLoading('assignees', false);
       }
@@ -898,7 +909,10 @@ const AlpacaIssue = ({
         });
       } catch (err) {
         console.error(err);
-        showNotification(__('Failed to update priority.', 'alpaca-issue-tracker'), 'error');
+        showNotification(
+          __('Failed to update priority.', 'alpaca-issue-tracker'),
+          'error',
+        );
         setIsHighPriority(!newValue);
       } finally {
         setLoading('priority', false);
@@ -953,7 +967,10 @@ const AlpacaIssue = ({
       } catch (err) {
         // eslint-disable-next-line no-console
         console.error(err);
-        showNotification(__('Failed to update labels.', 'alpaca-issue-tracker'), 'error');
+        showNotification(
+          __('Failed to update labels.', 'alpaca-issue-tracker'),
+          'error',
+        );
       } finally {
         setLoading('labels', false);
       }
@@ -1082,7 +1099,10 @@ const AlpacaIssue = ({
       }));
       onIssueTitleChange?.(issueId, editedTitle);
     } catch {
-      showNotification(__('Failed to update issue title.', 'alpaca-issue-tracker'), 'error');
+      showNotification(
+        __('Failed to update issue title.', 'alpaca-issue-tracker'),
+        'error',
+      );
     } finally {
       setLoading('title', false);
       setIsEditingTitle(false);
@@ -1220,7 +1240,10 @@ const AlpacaIssue = ({
               // eslint-disable-next-line no-console
               console.error('Failed to set labels:', err);
               showNotification(
-                __('Issue created, but labels could not be saved.', 'alpaca-issue-tracker'),
+                __(
+                  'Issue created, but labels could not be saved.',
+                  'alpaca-issue-tracker',
+                ),
                 'error',
               );
             }
@@ -1285,7 +1308,9 @@ const AlpacaIssue = ({
             );
 
             if (!createdComment) {
-              throw new Error(__('Failed to create issue comment.', 'alpaca-issue-tracker'));
+              throw new Error(
+                __('Failed to create issue comment.', 'alpaca-issue-tracker'),
+              );
             }
 
             commentAlreadyCreated = true;
@@ -1320,7 +1345,10 @@ const AlpacaIssue = ({
             console.error('Failed to create issue comment:', err);
             showNotification(
               retryIssue
-                ? __('Comment could not be saved. Please try again.', 'alpaca-issue-tracker')
+                ? __(
+                    'Comment could not be saved. Please try again.',
+                    'alpaca-issue-tracker',
+                  )
                 : __(
                     'Issue created, but comment could not be saved.',
                     'alpaca-issue-tracker',
@@ -1494,7 +1522,10 @@ const AlpacaIssue = ({
       } catch (err) {
         // eslint-disable-next-line no-console
         console.error('Error creating subissue:', err);
-        showNotification(__('Failed to create subissue.', 'alpaca-issue-tracker'), 'error');
+        showNotification(
+          __('Failed to create subissue.', 'alpaca-issue-tracker'),
+          'error',
+        );
         return null;
       } finally {
         setLoading(`subissue-${subissueId}`, false);
@@ -1888,7 +1919,10 @@ const AlpacaIssue = ({
         wp.hooks.doAction('alpaca.issueDeleted', subissue.id);
         // eslint-disable-next-line no-console
         console.error('Error promoting subissue:', err);
-        showNotification(__('Failed to promote subissue.', 'alpaca-issue-tracker'), 'error');
+        showNotification(
+          __('Failed to promote subissue.', 'alpaca-issue-tracker'),
+          'error',
+        );
       } finally {
         setLoading(`subissue-promote-${subissueId}`, false);
       }
@@ -1915,7 +1949,10 @@ const AlpacaIssue = ({
       }
       if (!canDeleteIssues) {
         showNotification(
-          __('You do not have permission to delete issues.', 'alpaca-issue-tracker'),
+          __(
+            'You do not have permission to delete issues.',
+            'alpaca-issue-tracker',
+          ),
           'error',
         );
         return;
@@ -1929,7 +1966,10 @@ const AlpacaIssue = ({
       } catch (err) {
         // eslint-disable-next-line no-console
         console.error('Error deleting subissue:', err);
-        showNotification(__('Failed to delete subissue.', 'alpaca-issue-tracker'), 'error');
+        showNotification(
+          __('Failed to delete subissue.', 'alpaca-issue-tracker'),
+          'error',
+        );
       } finally {
         setLoading(`subissue-delete-${subissueId}`, false);
       }
@@ -2096,11 +2136,15 @@ const AlpacaIssue = ({
         {error && (
           <div className="notice notice-error">
             <p>{error}</p>
-            <Button onClick={refetchData}>{__('Retry', 'alpaca-issue-tracker')}</Button>
+            <Button onClick={refetchData}>
+              {__('Retry', 'alpaca-issue-tracker')}
+            </Button>
           </div>
         )}
 
-        {isLoadingDetails && !isCreating && <p>{__('Loading…', 'alpaca-issue-tracker')}</p>}
+        {isLoadingDetails && !isCreating && (
+          <p>{__('Loading…', 'alpaca-issue-tracker')}</p>
+        )}
         {((!isLoadingDetails && issueDetails && issueDetails.success) ||
           isCreating) && (
           <div className="alpaca-issue-details">
@@ -2116,7 +2160,10 @@ const AlpacaIssue = ({
                   onCancel={handleTitleCancel}
                   placeholder={
                     isCreating
-                      ? __('Enter a title to create issue…', 'alpaca-issue-tracker')
+                      ? __(
+                          'Enter a title to create issue…',
+                          'alpaca-issue-tracker',
+                        )
                       : ''
                   }
                 />
@@ -2190,7 +2237,10 @@ const AlpacaIssue = ({
                     value={issueComment}
                     onChange={setIssueComment}
                     textareaRef={issueCommentRef}
-                    placeholder={__('Add a comment to the issue…', 'alpaca-issue-tracker')}
+                    placeholder={__(
+                      'Add a comment to the issue…',
+                      'alpaca-issue-tracker',
+                    )}
                     issueId={null}
                     showNotification={showNotification}
                     onSubmit={handleCreateIssue}
@@ -2274,7 +2324,10 @@ const AlpacaIssue = ({
                                 />
                                 <SubissueTitleField
                                   value={subissue.title}
-                                  placeholder={__('Enter title…', 'alpaca-issue-tracker')}
+                                  placeholder={__(
+                                    'Enter title…',
+                                    'alpaca-issue-tracker',
+                                  )}
                                   autoFocusOnMount={
                                     subissue.isDraft && subissue.isEditing
                                   }
@@ -2436,7 +2489,12 @@ const AlpacaIssue = ({
         <div className="alpaca-confirm-overlay">
           <div className="alpaca-confirm-box">
             <h2>{__('Delete Issue?', 'alpaca-issue-tracker')}</h2>
-            <p>{__('Are you sure you want to trash this issue?', 'alpaca-issue-tracker')}</p>
+            <p>
+              {__(
+                'Are you sure you want to trash this issue?',
+                'alpaca-issue-tracker',
+              )}
+            </p>
 
             <div>
               <Button

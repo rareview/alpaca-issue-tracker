@@ -64,7 +64,9 @@ const isImageAttachment = (attachment) => {
 
 const getAttachmentTypeLabel = (attachment) => {
   const extension = getAttachmentExtension(getAttachmentName(attachment));
-  return extension ? extension.toUpperCase() : __('File', 'alpaca-issue-tracker');
+  return extension
+    ? extension.toUpperCase()
+    : __('File', 'alpaca-issue-tracker');
 };
 
 const Attachment = ({

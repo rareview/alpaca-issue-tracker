@@ -39,7 +39,8 @@ const deleteCommentAttachment = async (url, issueId, commentId = null) => {
 
   if (!response || response.success === false) {
     throw new Error(
-      response?.message || __('Failed to delete attachment.', 'alpaca-issue-tracker'),
+      response?.message ||
+        __('Failed to delete attachment.', 'alpaca-issue-tracker'),
     );
   }
 };
@@ -309,7 +310,10 @@ const CommentForm = memo(
 
           if (failedCount > 0) {
             showNotification(
-              __('Failed to upload one or more attachments.', 'alpaca-issue-tracker'),
+              __(
+                'Failed to upload one or more attachments.',
+                'alpaca-issue-tracker',
+              ),
               'error',
             );
           }
@@ -323,7 +327,10 @@ const CommentForm = memo(
         } catch (uploadError) {
           console.error('Failed to upload attachments', uploadError);
           showNotification(
-            __('Failed to upload one or more attachments.', 'alpaca-issue-tracker'),
+            __(
+              'Failed to upload one or more attachments.',
+              'alpaca-issue-tracker',
+            ),
             'error',
           );
         } finally {
@@ -463,7 +470,10 @@ const CommentForm = memo(
             onClick={() => {}}
             isSubmitting={isSubmitting}
             isProcessing={isProcessingAttachments}
-            pendingAltText={__('Pending comment attachment', 'alpaca-issue-tracker')}
+            pendingAltText={__(
+              'Pending comment attachment',
+              'alpaca-issue-tracker',
+            )}
             actions={
               <>
                 <Button

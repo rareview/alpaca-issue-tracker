@@ -126,7 +126,8 @@ const isValidEmail = (email) => {
  *
  * @return {string} Fallback display value.
  */
-const getChannelSummaryFallback = () => __('Not configured.', 'alpaca-issue-tracker');
+const getChannelSummaryFallback = () =>
+  __('Not configured.', 'alpaca-issue-tracker');
 
 /**
  * Get the displayed value for the email delivery field.
@@ -367,7 +368,8 @@ const renderNotificationEmailTab = (context, tab) => {
                 "Summaries of activity matching your preferences will be generated for you at this time every day, based on the site's timezone (%s).",
                 'alpaca-issue-tracker',
               ),
-              context.siteTimezoneLabel || __('Site timezone', 'alpaca-issue-tracker'),
+              context.siteTimezoneLabel ||
+                __('Site timezone', 'alpaca-issue-tracker'),
             )}
           </p>
         </div>
@@ -510,7 +512,10 @@ const NotificationPreferences = () => {
       .catch((loadError) => {
         setError(
           loadError?.message ||
-            __('Could not load notification preferences.', 'alpaca-issue-tracker'),
+            __(
+              'Could not load notification preferences.',
+              'alpaca-issue-tracker',
+            ),
         );
       })
       .finally(() => {
@@ -845,12 +850,17 @@ const NotificationPreferences = () => {
             nextChannelStatus,
           ),
         );
-        setNotice(__('Notification preferences saved.', 'alpaca-issue-tracker'));
+        setNotice(
+          __('Notification preferences saved.', 'alpaca-issue-tracker'),
+        );
       })
       .catch((saveError) => {
         setError(
           saveError?.message ||
-            __('Could not save notification preferences.', 'alpaca-issue-tracker'),
+            __(
+              'Could not save notification preferences.',
+              'alpaca-issue-tracker',
+            ),
         );
       })
       .finally(() => {
@@ -926,7 +936,10 @@ const NotificationPreferences = () => {
       <section className="alpaca-notifications-panel alpaca-notifications-panel--narrow">
         <p className="alpaca-notifications-panel-intro">
           {channel.description ||
-            __('Configure how this delivery channel should behave.', 'alpaca-issue-tracker')}
+            __(
+              'Configure how this delivery channel should behave.',
+              'alpaca-issue-tracker',
+            )}
         </p>
 
         <div className="alpaca-notifications-channel-stack">
@@ -997,7 +1010,10 @@ const NotificationPreferences = () => {
 
           {!channelCanEnable && (
             <p className="alpaca-notifications-help">
-              {__('This channel is not ready to be enabled yet.', 'alpaca-issue-tracker')}
+              {__(
+                'This channel is not ready to be enabled yet.',
+                'alpaca-issue-tracker',
+              )}
             </p>
           )}
         </div>
@@ -1017,7 +1033,11 @@ const NotificationPreferences = () => {
     return (
       <div className="alpaca-notifications-screen">
         <Notice status="error" isDismissible={false}>
-          {error || __('Could not load notification preferences.', 'alpaca-issue-tracker')}
+          {error ||
+            __(
+              'Could not load notification preferences.',
+              'alpaca-issue-tracker',
+            )}
         </Notice>
       </div>
     );

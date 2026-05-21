@@ -20,7 +20,10 @@ const EnableTestLogsControl = () => {
           __nextHasNoMarginBottom
           label={
             <InlineCheckboxLabel
-              label={__('Enable Browser Console Messages', 'alpaca-issue-tracker')}
+              label={__(
+                'Enable Browser Console Messages',
+                'alpaca-issue-tracker',
+              )}
               isBusy={isFetching || isSaving}
             />
           }

@@ -413,7 +413,7 @@ function alpaistr_get_notification_event_from_comment( $comment ) {
  */
 function alpaistr_get_notification_sample_event() {
 	$current_user = wp_get_current_user();
-	$actor_name   = $current_user instanceof WP_User && $current_user->exists() ? (string) $current_user->display_name : esc_html__('Alpaca Issue Tracker User', 'alpaca-issue-tracker' );
+	$actor_name   = $current_user instanceof WP_User && $current_user->exists() ? (string) $current_user->display_name : esc_html__( 'Alpaca Issue Tracker User', 'alpaca-issue-tracker' );
 
 	return [
 		'comment_id'   => 0,

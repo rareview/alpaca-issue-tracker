@@ -73,7 +73,10 @@ const Presence = memo(function Presence() {
   if (!presentUsers || presentUsers.length === 0) {
     return (
       <div className="alpaca-presence-msg alpaca-presence-empty">
-        {__('Nobody else is viewing the board right now', 'alpaca-issue-tracker')}
+        {__(
+          'Nobody else is viewing the board right now',
+          'alpaca-issue-tracker',
+        )}
       </div>
     );
   }

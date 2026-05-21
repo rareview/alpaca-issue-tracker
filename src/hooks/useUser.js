@@ -68,7 +68,10 @@ export const generateAssigneeSpan = (user, withAvatar = false) => {
       ? ` data-avatar="${escapeAttr(user.avatar)}"`
       : '';
   const displayName =
-    user.name || user.display_name || user.username || __('Unknown', 'alpaca-issue-tracker');
+    user.name ||
+    user.display_name ||
+    user.username ||
+    __('Unknown', 'alpaca-issue-tracker');
 
   return `<${el} class="alpaca-status-assignee" data-userid="${escapeAttr(String(user.id))}"${avatarAttr}>${escapeHtml(displayName)}</${el}>`;
 };

@@ -116,7 +116,10 @@ const ItemDatapointsManager = () => {
       saveItemDatapointVisibility(nextVisibility)
         .catch(() => {
           setErrorMessage(
-            __('Failed to save datapoint visibility settings.', 'alpaca-issue-tracker'),
+            __(
+              'Failed to save datapoint visibility settings.',
+              'alpaca-issue-tracker',
+            ),
           );
         })
         .finally(() => {
@@ -128,10 +131,15 @@ const ItemDatapointsManager = () => {
 
   return (
     <div className="alpaca-item-datapoints-manager">
-      <h2 className="screen-reader-text">{__('Item Datapoints', 'alpaca-issue-tracker')}</h2>
+      <h2 className="screen-reader-text">
+        {__('Item Datapoints', 'alpaca-issue-tracker')}
+      </h2>
 
       <p className="alpaca-settings-manager-intro">
-        {__('Choose which datapoints appear on issue cards.', 'alpaca-issue-tracker')}
+        {__(
+          'Choose which datapoints appear on issue cards.',
+          'alpaca-issue-tracker',
+        )}
       </p>
 
       {errorMessage && (
@@ -147,7 +155,12 @@ const ItemDatapointsManager = () => {
       {isFetching && <Spinner />}
 
       {!isFetching && datapoints.length < 1 && (
-        <p>{__('No item datapoints are currently registered.', 'alpaca-issue-tracker')}</p>
+        <p>
+          {__(
+            'No item datapoints are currently registered.',
+            'alpaca-issue-tracker',
+          )}
+        </p>
       )}
 
       {!isFetching && datapoints.length > 0 && (

@@ -257,7 +257,9 @@ const Activity = () => {
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Failed to load project activity comments', error);
-        setErrorMessage(__('Could not load project activity.', 'alpaca-issue-tracker'));
+        setErrorMessage(
+          __('Could not load project activity.', 'alpaca-issue-tracker'),
+        );
         setHasMorePages(false);
       } finally {
         loadingRef.current = false;

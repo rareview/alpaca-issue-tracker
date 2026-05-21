@@ -198,7 +198,12 @@ const AlpacaToolbar = () => {
       }
 
       setStatus('success');
-      setMessage(__('Your issue has been submitted successfully.', 'alpaca-issue-tracker'));
+      setMessage(
+        __(
+          'Your issue has been submitted successfully.',
+          'alpaca-issue-tracker',
+        ),
+      );
 
       doAction(
         'alpaca.issueSubmitted',
@@ -309,7 +314,11 @@ const AlpacaToolbar = () => {
                 onClick={submitIssue}
                 disabled={status === 'submitting' || !feedback.trim()}
               >
-                {status === 'submitting' ? <Spinner /> : __('Submit', 'alpaca-issue-tracker')}
+                {status === 'submitting' ? (
+                  <Spinner />
+                ) : (
+                  __('Submit', 'alpaca-issue-tracker')
+                )}
               </Button>
               <Button
                 variant="secondary"

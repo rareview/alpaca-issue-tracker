@@ -252,7 +252,8 @@ const TimelineEntry = ({
     author,
     lastEditMeta,
   );
-  const editedByUserLabel = editedByUserName || __('another user', 'alpaca-issue-tracker');
+  const editedByUserLabel =
+    editedByUserName || __('another user', 'alpaca-issue-tracker');
   let editedByUser = null;
   if (editedByUserId > 0) {
     editedByUser = editedByUserId;

@@ -43,7 +43,10 @@ const notificationTemplateBlockDefinitions = [
   {
     name: 'alpaca/email-issue-link',
     title: __('Issue Link', 'alpaca-issue-tracker'),
-    description: __('Insert a link to the issue on the board.', 'alpaca-issue-tracker'),
+    description: __(
+      'Insert a link to the issue on the board.',
+      'alpaca-issue-tracker',
+    ),
   },
   {
     name: 'alpaca/email-site-name',
@@ -98,7 +101,10 @@ const NotificationTemplateScreen = () => {
         'Could not load the notification email template.',
         'alpaca-issue-tracker',
       )}
-      previewErrorMessage={__('Could not refresh the email preview.', 'alpaca-issue-tracker')}
+      previewErrorMessage={__(
+        'Could not refresh the email preview.',
+        'alpaca-issue-tracker',
+      )}
       saveErrorMessage={__(
         'Could not save the notification email template.',
         'alpaca-issue-tracker',
@@ -107,13 +113,22 @@ const NotificationTemplateScreen = () => {
         'Could not reset the notification email template.',
         'alpaca-issue-tracker',
       )}
-      testErrorMessage={__('Could not send the test email.', 'alpaca-issue-tracker')}
-      saveSuccessMessage={__('Notification email template saved.', 'alpaca-issue-tracker')}
+      testErrorMessage={__(
+        'Could not send the test email.',
+        'alpaca-issue-tracker',
+      )}
+      saveSuccessMessage={__(
+        'Notification email template saved.',
+        'alpaca-issue-tracker',
+      )}
       resetSuccessMessage={__(
         'Notification email template reset to default.',
         'alpaca-issue-tracker',
       )}
-      testSuccessMessage={__('Test email sent successfully.', 'alpaca-issue-tracker')}
+      testSuccessMessage={__(
+        'Test email sent successfully.',
+        'alpaca-issue-tracker',
+      )}
       previewEmptyMessage={__(
         'Preview will appear here once the template loads.',
         'alpaca-issue-tracker',

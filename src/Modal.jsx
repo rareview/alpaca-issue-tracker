@@ -147,7 +147,12 @@ const AlpacaModal = () => {
       }
 
       setStatus('success');
-      setMessage(__('Your issue has been submitted successfully.', 'alpaca-issue-tracker'));
+      setMessage(
+        __(
+          'Your issue has been submitted successfully.',
+          'alpaca-issue-tracker',
+        ),
+      );
 
       doAction(
         'alpaca.issueSubmitted',
@@ -199,8 +204,10 @@ const AlpacaModal = () => {
           size="medium"
           className="alpaca-modal"
           title={(() => {
-            if (status === 'success') return __('Issue Submitted', 'alpaca-issue-tracker');
-            if (status === 'error') return __('Submission Failed', 'alpaca-issue-tracker');
+            if (status === 'success')
+              return __('Issue Submitted', 'alpaca-issue-tracker');
+            if (status === 'error')
+              return __('Submission Failed', 'alpaca-issue-tracker');
             return __('Context Capture', 'alpaca-issue-tracker');
           })()}
           onRequestClose={closeModal}

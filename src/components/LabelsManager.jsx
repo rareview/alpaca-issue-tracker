@@ -446,7 +446,9 @@ const LabelsManager = () => {
 
   return (
     <div className="alpaca-labels-manager">
-      <h2 className="screen-reader-text">{__('Labels', 'alpaca-issue-tracker')}</h2>
+      <h2 className="screen-reader-text">
+        {__('Labels', 'alpaca-issue-tracker')}
+      </h2>
       <p className="alpaca-settings-manager-intro">
         {__(
           'Create and maintain labels to categorize and filter your issues.',
@@ -470,7 +472,9 @@ const LabelsManager = () => {
                   __next40pxDefaultSize
                   __nextHasNoMarginBottom
                   label={
-                    index < INITIAL_LABEL_SLOT_COUNT ? '' : __('Name', 'alpaca-issue-tracker')
+                    index < INITIAL_LABEL_SLOT_COUNT
+                      ? ''
+                      : __('Name', 'alpaca-issue-tracker')
                   }
                   hideLabelFromVision={index < INITIAL_LABEL_SLOT_COUNT}
                   value={label.name}

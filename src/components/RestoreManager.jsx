@@ -243,7 +243,10 @@ const RestoreManager = () => {
   const deletedIssueSummary = sprintf(deletedIssueSummaryLabel, totalItems);
 
   /* translators: 1: Current page number. 2: Total page count. */
-  const paginationSummaryLabel = __('Page %1$d of %2$d', 'alpaca-issue-tracker');
+  const paginationSummaryLabel = __(
+    'Page %1$d of %2$d',
+    'alpaca-issue-tracker',
+  );
   const paginationSummary = sprintf(
     paginationSummaryLabel,
     currentPage,

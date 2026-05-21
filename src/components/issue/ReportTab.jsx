@@ -28,8 +28,12 @@ const formatDateTimeWithUtcOffset = (value) => {
     offset = '+00:00';
   }
 
-  /* translators: 1: formatted date/time. 2: UTC offset, e.g. +02:00. */
-  return sprintf(__('%1$s (UTC%2$s)', 'alpaca-issue-tracker'), formattedDate, offset);
+  return sprintf(
+    /* translators: 1: formatted date/time. 2: UTC offset, e.g. +02:00. */
+    __('%1$s (UTC%2$s)', 'alpaca-issue-tracker'),
+    formattedDate,
+    offset,
+  );
 };
 
 /**

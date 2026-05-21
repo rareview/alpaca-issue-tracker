@@ -24,7 +24,8 @@ export const uploadIssueAttachment = async (file, issueId) => {
 
   if (!response || response.success === false) {
     throw new Error(
-      response?.message || __('Failed to upload attachment.', 'alpaca-issue-tracker'),
+      response?.message ||
+        __('Failed to upload attachment.', 'alpaca-issue-tracker'),
     );
   }
 
@@ -70,7 +71,8 @@ export const deleteIssueAttachment = async (url, issueId, commentId = null) => {
 
   if (!response || response.success === false) {
     throw new Error(
-      response?.message || __('Failed to delete attachment.', 'alpaca-issue-tracker'),
+      response?.message ||
+        __('Failed to delete attachment.', 'alpaca-issue-tracker'),
     );
   }
 };

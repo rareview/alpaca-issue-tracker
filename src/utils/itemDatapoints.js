@@ -49,7 +49,9 @@ const getBootstrappedDatapointVisibility = () => {
     return {};
   }
 
-  return normalizeVisibilityMap(window.alpaistrSettings.itemDatapointVisibility);
+  return normalizeVisibilityMap(
+    window.alpaistrSettings.itemDatapointVisibility,
+  );
 };
 
 let datapointVisibility = getBootstrappedDatapointVisibility();

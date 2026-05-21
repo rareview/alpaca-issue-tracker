@@ -14,7 +14,13 @@ export const getTabsConfig = (issueDetails) => {
       className: 'comments',
     },
     ...(hasBrowserContext
-      ? [{ name: 'report', title: __('Report', 'alpaca-issue-tracker'), className: 'report' }]
+      ? [
+          {
+            name: 'report',
+            title: __('Report', 'alpaca-issue-tracker'),
+            className: 'report',
+          },
+        ]
       : []),
     ...((issueDetails?.meta?.alpaca_queried_object &&
       issueDetails.meta.alpaca_queried_object !== 'null') ||

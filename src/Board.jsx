@@ -344,7 +344,9 @@ export function AlpacaBoard() {
   const showIssueNotFoundMessage = useCallback((issueSlug) => {
     setSelectedItem(null);
     setSnackbarClosing(false);
-    setSnackbarMessage(__('Issue not found.', 'alpaca-issue-tracker') + ` (${issueSlug})`);
+    setSnackbarMessage(
+      __('Issue not found.', 'alpaca-issue-tracker') + ` (${issueSlug})`,
+    );
     if (snackbarTimerRef.current) {
       clearTimeout(snackbarTimerRef.current);
     }
@@ -1309,7 +1311,10 @@ export function AlpacaBoard() {
         console.error('Error restoring default statuses:', err);
         setRestoreError(
           err.message ||
-            __('An error occurred while restoring default statuses.', 'alpaca-issue-tracker'),
+            __(
+              'An error occurred while restoring default statuses.',
+              'alpaca-issue-tracker',
+            ),
         );
       })
       .finally(() => {

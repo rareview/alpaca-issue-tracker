@@ -634,7 +634,10 @@ function Container({
                 if (isFiltering) {
                   return (
                     <div className="alpaca-item empty">
-                      {__('No cards match the active filter.', 'alpaca-issue-tracker')}
+                      {__(
+                        'No cards match the active filter.',
+                        'alpaca-issue-tracker',
+                      )}
                     </div>
                   );
                 }

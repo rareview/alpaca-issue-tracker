@@ -81,7 +81,8 @@ const shouldShowInboxEventLabel = (eventFamily, eventLabel) => {
   }
 
   return (
-    eventLabel.toLowerCase() !== __('Comment added', 'alpaca-issue-tracker').toLowerCase()
+    eventLabel.toLowerCase() !==
+    __('Comment added', 'alpaca-issue-tracker').toLowerCase()
   );
 };
 
@@ -161,7 +162,8 @@ const buildTimelineCommentFromInboxItem = (item) => {
 
   // eslint-disable-next-line camelcase
   timelineComment.author_details = {
-    name: item?.actor?.display_name || __('Unknown user', 'alpaca-issue-tracker'),
+    name:
+      item?.actor?.display_name || __('Unknown user', 'alpaca-issue-tracker'),
     avatar: item?.actor?.avatar_url || '',
   };
 
@@ -299,7 +301,8 @@ function InboxControl({ selector }) {
         })
         .catch((loadError) => {
           setError(
-            loadError?.message || __('Could not load inbox updates.', 'alpaca-issue-tracker'),
+            loadError?.message ||
+              __('Could not load inbox updates.', 'alpaca-issue-tracker'),
           );
         })
         .finally(() => {

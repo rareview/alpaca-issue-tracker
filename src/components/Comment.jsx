@@ -55,7 +55,8 @@ const deleteCommentAttachment = async (url, issueId, commentId = null) => {
 
   if (!response || response.success === false) {
     throw new Error(
-      response?.message || __('Failed to delete attachment.', 'alpaca-issue-tracker'),
+      response?.message ||
+        __('Failed to delete attachment.', 'alpaca-issue-tracker'),
     );
   }
 };
@@ -346,7 +347,10 @@ const Comment = memo(
             onClick={onAttachmentClick}
             isSubmitting={isSubmitting}
             isProcessing={isProcessingAttachments}
-            pendingAltText={__('Pending comment attachment', 'alpaca-issue-tracker')}
+            pendingAltText={__(
+              'Pending comment attachment',
+              'alpaca-issue-tracker',
+            )}
             actions={
               <>
                 <Button onClick={cancelEditing} disabled={isSubmitting}>
@@ -506,7 +510,10 @@ const Commenting = ({
         .then(setComments)
         .catch((err) => {
           console.error(err);
-          showNotification(__('Could not load comments.', 'alpaca-issue-tracker'), 'error');
+          showNotification(
+            __('Could not load comments.', 'alpaca-issue-tracker'),
+            'error',
+          );
         })
         .finally(() => {
           if (showLoading) {
@@ -719,7 +726,10 @@ const Commenting = ({
 
           if (failedCount > 0) {
             showNotification(
-              __('Failed to delete one or more attachments.', 'alpaca-issue-tracker'),
+              __(
+                'Failed to delete one or more attachments.',
+                'alpaca-issue-tracker',
+              ),
               'error',
             );
             throw new Error('attachment_delete_failed');
@@ -858,7 +868,10 @@ const Commenting = ({
 
         if (failedCount > 0) {
           showNotification(
-            __('Failed to upload one or more attachments.', 'alpaca-issue-tracker'),
+            __(
+              'Failed to upload one or more attachments.',
+              'alpaca-issue-tracker',
+            ),
             'error',
           );
         }
@@ -869,7 +882,10 @@ const Commenting = ({
       } catch (error) {
         console.error('Failed to upload attachments', error);
         showNotification(
-          __('Failed to upload one or more attachments.', 'alpaca-issue-tracker'),
+          __(
+            'Failed to upload one or more attachments.',
+            'alpaca-issue-tracker',
+          ),
           'error',
         );
       } finally {
@@ -1016,7 +1032,10 @@ const Commenting = ({
               onClick={setLightboxSrc}
               isSubmitting={isSubmitting}
               isProcessing={isProcessingAttachments}
-              pendingAltText={__('Pending comment attachment', 'alpaca-issue-tracker')}
+              pendingAltText={__(
+                'Pending comment attachment',
+                'alpaca-issue-tracker',
+              )}
               actions={
                 <Button
                   isPrimary
@@ -1041,7 +1060,9 @@ const Commenting = ({
         </div>
 
         {isLoadingComments && (
-          <p className="alpaca-loading">{__('Loading comments…', 'alpaca-issue-tracker')}</p>
+          <p className="alpaca-loading">
+            {__('Loading comments…', 'alpaca-issue-tracker')}
+          </p>
         )}
 
         <div className="alpaca-comments-timeline">
@@ -1101,9 +1122,15 @@ const Commenting = ({
                 let attachmentText = '';
 
                 if (attachmentCount === 1) {
-                  attachmentText = __(' and its attachment', 'alpaca-issue-tracker');
+                  attachmentText = __(
+                    ' and its attachment',
+                    'alpaca-issue-tracker',
+                  );
                 } else if (attachmentCount > 1) {
-                  attachmentText = __(' and its attachments', 'alpaca-issue-tracker');
+                  attachmentText = __(
+                    ' and its attachments',
+                    'alpaca-issue-tracker',
+                  );
                 }
 
                 const commentCount = 1;
@@ -1123,7 +1150,9 @@ const Commenting = ({
             <Button isPrimary onClick={deleteComment}>
               {__('Delete', 'alpaca-issue-tracker')}
             </Button>
-            <Button onClick={cancelDelete}>{__('Cancel', 'alpaca-issue-tracker')}</Button>
+            <Button onClick={cancelDelete}>
+              {__('Cancel', 'alpaca-issue-tracker')}
+            </Button>
           </Modal>
         )}
       </div>

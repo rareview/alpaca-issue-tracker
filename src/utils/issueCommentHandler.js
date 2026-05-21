@@ -504,7 +504,8 @@ addAction(
     const subissueLabel = getSubissueLabel(subissue);
 
     const parentTitle = stripHtmlAndMarkdown(parentIssue?.title || '').trim();
-    const parentLabel = parentTitle || __('Unknown issue', 'alpaca-issue-tracker');
+    const parentLabel =
+      parentTitle || __('Unknown issue', 'alpaca-issue-tracker');
     const parentIssueLink = getIssueLinkLabel(parentIssue, parentLabel);
 
     const promotedId = promotedIssue?.id || subissue?.id;

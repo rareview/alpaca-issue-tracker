@@ -119,7 +119,8 @@ function renderAssigneeTriggerLabel(activeAssigneeFilter) {
         />
       )}
       <span className="alpaca-filter-control-current-text">
-        {activeAssigneeFilter.displayName || __('Assignee', 'alpaca-issue-tracker')}
+        {activeAssigneeFilter.displayName ||
+          __('Assignee', 'alpaca-issue-tracker')}
       </span>
     </span>
   );
@@ -298,7 +299,10 @@ function BoardFilterControl({
             <div className="alpaca-filter-control-popover-content">
               {!hasOptionItems ? (
                 <p className="alpaca-filter-control-empty">
-                  {__('No options found on board cards.', 'alpaca-issue-tracker')}
+                  {__(
+                    'No options found on board cards.',
+                    'alpaca-issue-tracker',
+                  )}
                 </p>
               ) : null}
               {hasOptionItems ? renderPopover() : null}

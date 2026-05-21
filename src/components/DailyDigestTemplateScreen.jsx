@@ -38,7 +38,10 @@ const dailyDigestTemplateBlockDefinitions = [
   {
     name: 'alpaca/digest-new-items',
     title: __('New Items', 'alpaca-issue-tracker'),
-    description: __('Render the locked new-items digest section.', 'alpaca-issue-tracker'),
+    description: __(
+      'Render the locked new-items digest section.',
+      'alpaca-issue-tracker',
+    ),
     multiple: false,
   },
 ];
@@ -69,23 +72,38 @@ const DailyDigestTemplateScreen = () => (
       'Available placeholders include {{site_title}}, {{site_tagline}}, {{digest_day}}, {{issue_count}}, {{activity_count}}, and {{new_item_count}}.',
       'alpaca-issue-tracker',
     )}
-    loadErrorMessage={__('Could not load the daily digest template.', 'alpaca-issue-tracker')}
+    loadErrorMessage={__(
+      'Could not load the daily digest template.',
+      'alpaca-issue-tracker',
+    )}
     previewErrorMessage={__(
       'Could not refresh the daily digest preview.',
       'alpaca-issue-tracker',
     )}
-    saveErrorMessage={__('Could not save the daily digest template.', 'alpaca-issue-tracker')}
+    saveErrorMessage={__(
+      'Could not save the daily digest template.',
+      'alpaca-issue-tracker',
+    )}
     resetErrorMessage={__(
       'Could not reset the daily digest template.',
       'alpaca-issue-tracker',
     )}
-    testErrorMessage={__('Could not send the test digest email.', 'alpaca-issue-tracker')}
-    saveSuccessMessage={__('Daily digest template saved.', 'alpaca-issue-tracker')}
+    testErrorMessage={__(
+      'Could not send the test digest email.',
+      'alpaca-issue-tracker',
+    )}
+    saveSuccessMessage={__(
+      'Daily digest template saved.',
+      'alpaca-issue-tracker',
+    )}
     resetSuccessMessage={__(
       'Daily digest template reset to default.',
       'alpaca-issue-tracker',
     )}
-    testSuccessMessage={__('Test digest email sent successfully.', 'alpaca-issue-tracker')}
+    testSuccessMessage={__(
+      'Test digest email sent successfully.',
+      'alpaca-issue-tracker',
+    )}
     previewEmptyMessage={__(
       'Preview will appear here once the template loads.',
       'alpaca-issue-tracker',

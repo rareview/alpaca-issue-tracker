@@ -400,7 +400,9 @@ const StatusManager = ({
 
   return (
     <>
-      <h2 className="screen-reader-text">{__('Status Manager', 'alpaca-issue-tracker')}</h2>
+      <h2 className="screen-reader-text">
+        {__('Status Manager', 'alpaca-issue-tracker')}
+      </h2>
       <p className="alpaca-settings-manager-intro">
         {__(
           'Create and organize statuses. Drag rows to control their order across the board.',
@@ -542,7 +544,10 @@ const StatusManager = ({
             className="alpaca-modal"
           >
             <p>
-              {__('Are you sure you want to delete the status', 'alpaca-issue-tracker')}{' '}
+              {__(
+                'Are you sure you want to delete the status',
+                'alpaca-issue-tracker',
+              )}{' '}
               &quot;
               <strong>{statusToDelete.name}</strong>&quot;?{' '}
               {__('This cannot be undone.', 'alpaca-issue-tracker')}
