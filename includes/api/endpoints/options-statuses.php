@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Alpaca Issue Tracker REST API: Options and Status Endpoints.
  *

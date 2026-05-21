@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Alpaca Issue Tracker Issues – REST Endpoints facade.
  *

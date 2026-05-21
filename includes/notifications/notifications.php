@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Notification services loader for Alpaca Issue Tracker issue activity emails.
  *

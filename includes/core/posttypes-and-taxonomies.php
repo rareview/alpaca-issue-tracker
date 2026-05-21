@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Post types and taxonomies registration for Alpaca Issue Tracker issues.
  *

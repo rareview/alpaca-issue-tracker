@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Notification preference helpers for Alpaca Issue Tracker issue activity emails.
  *

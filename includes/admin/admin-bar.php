@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Admin bar menu integration for Alpaca Issue Tracker issues.
  *

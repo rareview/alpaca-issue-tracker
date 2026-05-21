@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Notification inbox storage helpers for Alpaca Issue Tracker issue activity.
  *

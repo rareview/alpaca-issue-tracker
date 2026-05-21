@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Seed demo content for the Alpaca Issue Tracker WordPress Playground instance.
  *

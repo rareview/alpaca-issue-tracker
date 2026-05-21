@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Alpaca Issue Tracker REST API: Notification Preferences and Template Endpoints.
  *
