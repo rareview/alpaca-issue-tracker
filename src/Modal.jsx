@@ -1,7 +1,7 @@
 import handleSnapdomCapture from './snapdomHandler.js';
 import { dataUrlToFile, uploadIssueAttachment } from './utils/attachmentUpload';
 import { useTestLogger } from './utils/testLogger.js';
-import { buildAlpacaRestUrl } from './utils/restApiRoot.js';
+import { buildAlpacaRestUrl, getAlpacaRestNonce } from './utils/restApiRoot.js';
 import {
   ensureAlpacaReportContext,
   getAlpacaReportContext,
@@ -27,7 +27,7 @@ const AlpacaModal = () => {
 
   useEffect(() => {
     wp.apiFetch({ path: '/wp/v2/settings' }).then((settings) => {
-      setEnableTestLogs(settings.alpaca_enable_test_logs === '1');
+      setEnableTestLogs(settings.alpaistr_enable_test_logs === '1');
     });
 
     const handleTestLogSettingChange = (value) => {
@@ -117,7 +117,7 @@ const AlpacaModal = () => {
         headers: new Headers({
           Accept: 'application/json',
           'Content-Type': 'application/json',
-          'X-WP-Nonce': wpApiSettings.nonce,
+          'X-WP-Nonce': getAlpacaRestNonce(),
         }),
         body: JSON.stringify(payload),
       });
@@ -147,7 +147,12 @@ const AlpacaModal = () => {
       }
 
       setStatus('success');
-      setMessage(__('Your issue has been submitted successfully.', 'alpaca'));
+      setMessage(
+        __(
+          'Your issue has been submitted successfully.',
+          'alpaca-issue-tracker',
+        ),
+      );
 
       doAction(
         'alpaca.issueSubmitted',
@@ -167,7 +172,7 @@ const AlpacaModal = () => {
       setMessage(
         __(
           'There was an error submitting your issue. Please try again.',
-          'alpaca',
+          'alpaca-issue-tracker',
         ),
       );
     }
@@ -199,9 +204,11 @@ const AlpacaModal = () => {
           size="medium"
           className="alpaca-modal"
           title={(() => {
-            if (status === 'success') return __('Issue Submitted', 'alpaca');
-            if (status === 'error') return __('Submission Failed', 'alpaca');
-            return __('Context Capture', 'alpaca');
+            if (status === 'success')
+              return __('Issue Submitted', 'alpaca-issue-tracker');
+            if (status === 'error')
+              return __('Submission Failed', 'alpaca-issue-tracker');
+            return __('Context Capture', 'alpaca-issue-tracker');
           })()}
           onRequestClose={closeModal}
           isDismissible={false}
@@ -210,13 +217,13 @@ const AlpacaModal = () => {
             <>
               <p>{message}</p>
               <Button variant="primary" onClick={closeModal} ref={closeBtnRef}>
-                {__('Close', 'alpaca')}
+                {__('Close', 'alpaca-issue-tracker')}
               </Button>
             </>
           ) : (
             <>
               <TextareaControl
-                placeholder={__('Describe the problem', 'alpaca')}
+                placeholder={__('Describe the problem', 'alpaca-issue-tracker')}
                 id="alpaca-modal-textarea"
                 value={feedback}
                 onChange={(value) => setFeedback(value)}
@@ -227,7 +234,7 @@ const AlpacaModal = () => {
 
               <div className="small-wrapper">
                 <ToggleControl
-                  label={__('High Priority', 'alpaca')}
+                  label={__('High Priority', 'alpaca-issue-tracker')}
                   checked={isHighPriority}
                   onChange={setIsHighPriority}
                   disabled={status === 'submitting'}
@@ -244,7 +251,7 @@ const AlpacaModal = () => {
                   {status === 'submitting' ? (
                     <Spinner />
                   ) : (
-                    __('Submit', 'alpaca')
+                    __('Submit', 'alpaca-issue-tracker')
                   )}
                 </Button>
                 <Button
@@ -252,7 +259,7 @@ const AlpacaModal = () => {
                   onClick={closeModal}
                   disabled={status === 'submitting'}
                 >
-                  {__('Cancel', 'alpaca')}
+                  {__('Cancel', 'alpaca-issue-tracker')}
                 </Button>
               </div>
             </>

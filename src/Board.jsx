@@ -22,10 +22,10 @@ import { updateIssue } from './services/issueApi';
  * Main board component.
  */
 export function AlpacaBoard() {
-  const canDeleteIssues = Boolean(window.alpacaSettings?.canDeleteIssues);
+  const canDeleteIssues = Boolean(window.alpaistrSettings?.canDeleteIssues);
   const [containers, setContainers] = useState(() => {
-    if (typeof window.alpacaBoardData !== 'undefined') {
-      return transformDataForBoard(window.alpacaBoardData);
+    if (typeof window.alpaistrBoardData !== 'undefined') {
+      return transformDataForBoard(window.alpaistrBoardData);
     }
     return [];
   });
@@ -344,7 +344,9 @@ export function AlpacaBoard() {
   const showIssueNotFoundMessage = useCallback((issueSlug) => {
     setSelectedItem(null);
     setSnackbarClosing(false);
-    setSnackbarMessage(__('Issue not found.', 'alpaca') + ` (${issueSlug})`);
+    setSnackbarMessage(
+      __('Issue not found.', 'alpaca-issue-tracker') + ` (${issueSlug})`,
+    );
     if (snackbarTimerRef.current) {
       clearTimeout(snackbarTimerRef.current);
     }
@@ -1300,7 +1302,7 @@ export function AlpacaBoard() {
         } else {
           setRestoreError(
             response.message ||
-              __('Failed to restore default statuses.', 'alpaca'),
+              __('Failed to restore default statuses.', 'alpaca-issue-tracker'),
           );
         }
       })
@@ -1309,7 +1311,10 @@ export function AlpacaBoard() {
         console.error('Error restoring default statuses:', err);
         setRestoreError(
           err.message ||
-            __('An error occurred while restoring default statuses.', 'alpaca'),
+            __(
+              'An error occurred while restoring default statuses.',
+              'alpaca-issue-tracker',
+            ),
         );
       })
       .finally(() => {
@@ -1724,7 +1729,7 @@ export function AlpacaBoard() {
           <button
             type="button"
             className="alpaca-focus-on-column-backdrop"
-            aria-label={__('Clear column focus', 'alpaca')}
+            aria-label={__('Clear column focus', 'alpaca-issue-tracker')}
             onClick={() => setFocusedContainerId(null)}
           />
         ) : null}
@@ -1735,14 +1740,14 @@ export function AlpacaBoard() {
                 <strong>
                   {__(
                     'Oh no! All your project statuses have disappeared.',
-                    'alpaca',
+                    'alpaca-issue-tracker',
                   )}
                 </strong>
               </p>
               <p>
                 {__(
                   'Without statuses, you cannot view or manage issues on the board. Click the button below to restore the default statuses (Backlog, Next, In Progress, Done).',
-                  'alpaca',
+                  'alpaca-issue-tracker',
                 )}
               </p>
               <Button
@@ -1752,8 +1757,8 @@ export function AlpacaBoard() {
                 disabled={isRestoring}
               >
                 {isRestoring
-                  ? __('Restoring…', 'alpaca')
-                  : __('Restore Default Statuses', 'alpaca')}
+                  ? __('Restoring…', 'alpaca-issue-tracker')
+                  : __('Restore Default Statuses', 'alpaca-issue-tracker')}
               </Button>
             </Notice>
             {restoreError && (

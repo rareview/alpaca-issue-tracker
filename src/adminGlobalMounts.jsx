@@ -3,7 +3,7 @@ import { NotificationProvider } from './context/NotificationContext.jsx';
 import AdminSidebarInboxBadge from './components/notifications/AdminSidebarInboxBadge.jsx';
 
 /**
- * Mount the Alpaca UI that should be available across wp-admin screens.
+ * Mount the Alpaca Issue Tracker UI that should be available across wp-admin screens.
  *
  * @param {Function} mountReactTree           Shared React mount helper.
  * @param {boolean}  contextualCaptureEnabled Whether contextual capture is enabled.

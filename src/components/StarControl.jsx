@@ -29,13 +29,13 @@ const StarControl = ({ watched, onToggle, disabled, className }) => {
       onClick={onToggle}
       aria-label={
         watched
-          ? __('Remove from Watchlist', 'alpaca')
-          : __('Add to Watchlist', 'alpaca')
+          ? __('Remove from Watchlist', 'alpaca-issue-tracker')
+          : __('Add to Watchlist', 'alpaca-issue-tracker')
       }
       title={
         watched
-          ? __('Remove from Watchlist', 'alpaca')
-          : __('Add to Watchlist', 'alpaca')
+          ? __('Remove from Watchlist', 'alpaca-issue-tracker')
+          : __('Add to Watchlist', 'alpaca-issue-tracker')
       }
       disabled={disabled}
     />

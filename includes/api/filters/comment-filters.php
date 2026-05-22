@@ -1,14 +1,14 @@
 <?php
 /**
- * Alpaca REST API: Comment Permission Filters.
+ * Alpaca Issue Tracker REST API: Comment Permission Filters.
  *
- * @package Alpaca
+ * @package AlpacaIssueTracker
  */
 
-use Alpaca\Helpers;
-use function Alpaca\hide_type;
-use function Alpaca\should_allow_rest_override;
-use function Alpaca\user_can_view_type;
+use AlpacaIssueTracker\Helpers;
+use function AlpacaIssueTracker\hide_type;
+use function AlpacaIssueTracker\should_allow_rest_override;
+use function AlpacaIssueTracker\user_can_view_type;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -26,7 +26,7 @@ add_action(
 );
 
 /**
- * Provide the request parameter used by Alpaca to include hidden comments.
+ * Provide the request parameter used by Alpaca Issue Tracker to include hidden comments.
  *
  * @return string Request parameter name.
  */
@@ -38,7 +38,7 @@ add_filter(
 );
 
 /**
- * Allow authorized Alpaca users to view hidden issue comments.
+ * Allow authorized Alpaca Issue Tracker users to view hidden issue comments.
  *
  * @param bool   $can_view Whether the current user can view the hidden type.
  * @param string $type     Hidden comment type.
@@ -60,12 +60,12 @@ add_filter(
 );
 
 /**
- * Determine whether a post can receive Alpaca issue comments.
+ * Determine whether a post can receive Alpaca Issue Tracker issue comments.
  *
  * @param int|array $post_id Post ID or REST post IDs.
- * @return bool Whether the post is an Alpaca issue.
+ * @return bool Whether the post is an Alpaca Issue Tracker issue.
  */
-function alpaca_is_issue_comment_target_post( $post_id ) {
+function alpaistr_is_issue_comment_target_post( $post_id ) {
 	if ( is_array( $post_id ) ) {
 		if ( empty( $post_id ) ) {
 			return false;
@@ -78,7 +78,7 @@ function alpaca_is_issue_comment_target_post( $post_id ) {
 				return false;
 			}
 
-			if ( ! alpaca_is_issue_comment_target_post( $target_post_id ) ) {
+			if ( ! alpaistr_is_issue_comment_target_post( $target_post_id ) ) {
 				return false;
 			}
 		}
@@ -96,7 +96,7 @@ function alpaca_is_issue_comment_target_post( $post_id ) {
 }
 
 /**
- * Allow Contributors to interact with Alpaca issue comments via core REST endpoints.
+ * Allow Contributors to interact with Alpaca Issue Tracker issue comments via core REST endpoints.
  *
  * - Adjust permission callbacks for the core `/wp/v2/comments` route when
  *   `comment_type=issuecomment` so Contributors can list/create issue comments.
@@ -127,11 +127,11 @@ add_filter(
 				$endpoints['/wp/v2/comments'][ $idx ]['permission_callback'] = function ( $request ) use ( $original, $can_view_issuecomment ) {
 					$comment_type = (string) $request->get_param( 'comment_type' );
 
-					// If this is an Alpaca issue comment, allow based on our helper.
+					// If this is an Alpaca Issue Tracker issue comment, allow based on our helper.
 					if ( 'issuecomment' === $comment_type ) {
 						$post_id                 = $request->get_param( 'post' );
 						$requires_issue_context  = 'POST' === $request->get_method() || ! empty( $post_id );
-						$has_valid_issue_context = ! $requires_issue_context || alpaca_is_issue_comment_target_post( $post_id );
+						$has_valid_issue_context = ! $requires_issue_context || alpaistr_is_issue_comment_target_post( $post_id );
 
 						if ( ! $has_valid_issue_context ) {
 							return false;
@@ -173,7 +173,7 @@ add_filter(
 						if (
 							$comment instanceof WP_Comment
 							&& 'issuecomment' === $comment->comment_type
-							&& alpaca_is_issue_comment_target_post( $comment->comment_post_ID )
+							&& alpaistr_is_issue_comment_target_post( $comment->comment_post_ID )
 						) {
 							return should_allow_rest_override( 'issuecomment' );
 						}
@@ -194,7 +194,7 @@ add_filter(
 );
 
 /**
- * Intercept POST requests to the core comments endpoint for Alpaca issue comments.
+ * Intercept POST requests to the core comments endpoint for Alpaca Issue Tracker issue comments.
  *
  * The Core REST controller throws a 403 if 'status' is provided but the user lacks 'moderate_comments'.
  * We work around this by stripping the 'status' param from the request here, allowing the
@@ -216,7 +216,7 @@ add_filter(
 			return $result;
 		}
 
-		if ( ! alpaca_is_issue_comment_target_post( (int) $request->get_param( 'post' ) ) ) {
+		if ( ! alpaistr_is_issue_comment_target_post( (int) $request->get_param( 'post' ) ) ) {
 			return $result;
 		}
 
@@ -244,7 +244,7 @@ add_filter(
 );
 
 /**
- * Force-approve Alpaca issue comments for authorized users.
+ * Force-approve Alpaca Issue Tracker issue comments for authorized users.
  *
  * This handles the approval logic centrally, ensuring comments are live immediately
  * even though we stripped the 'status' param in the REST request.
@@ -256,7 +256,7 @@ add_filter(
 			$post_id = isset( $commentdata['comment_post_ID'] ) ? (int) $commentdata['comment_post_ID'] : 0;
 
 			if (
-				alpaca_is_issue_comment_target_post( $post_id )
+				alpaistr_is_issue_comment_target_post( $post_id )
 				&& Helpers::user_can( 'create_issue' )
 			) {
 				return 1;

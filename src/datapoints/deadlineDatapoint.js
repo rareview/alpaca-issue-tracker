@@ -54,11 +54,11 @@ export const addDeadlineDatapoint = (originalContent, itemProps) => {
     }
 
     if (diffDays === 1) {
-      deadlineText = __('Tomorrow', 'alpaca');
+      deadlineText = __('Tomorrow', 'alpaca-issue-tracker');
     } else if (diffDays === 0) {
-      deadlineText = __('Today', 'alpaca');
+      deadlineText = __('Today', 'alpaca-issue-tracker');
     } else if (diffDays === -1) {
-      deadlineText = __('Yesterday', 'alpaca');
+      deadlineText = __('Yesterday', 'alpaca-issue-tracker');
     }
   }
 
@@ -66,7 +66,7 @@ export const addDeadlineDatapoint = (originalContent, itemProps) => {
     return (
       <>
         {originalContent}
-        <Tooltip text={__('Deadline', 'alpaca')}>
+        <Tooltip text={__('Deadline', 'alpaca-issue-tracker')}>
           <div
             className="alpaca-item-icon alpaca-item-deadline alpaca-label-pill"
             data-days-left={diffDays}
@@ -85,7 +85,7 @@ export const addDeadlineDatapoint = (originalContent, itemProps) => {
 
 export const deadlineDatapointRegistration = {
   slug: 'deadline',
-  label: __('Deadline', 'alpaca'),
+  label: __('Deadline', 'alpaca-issue-tracker'),
   namespace: 'alpaca/item/addDeadlineDatapoint',
   callback: addDeadlineDatapoint,
   defaultEnabled: true,

@@ -2,7 +2,7 @@
 /**
  * Uninstall handler - cleans up plugin data.
  *
- * @package Alpaca
+ * @package AlpacaIssueTracker
  */
 
 // Exit if accessed directly or not during uninstall.
@@ -20,9 +20,9 @@ global $wpdb;
  */
 
 // Delete options.
-delete_option( 'alpaca_needs_term_setup' );
-delete_option( 'alpaca_default_status_id' );
-delete_option( 'alpaca_enable_test_logs' );
+delete_option( 'alpaistr_needs_term_setup' );
+delete_option( 'alpaistr_default_status_id' );
+delete_option( 'alpaistr_enable_test_logs' );
 
 // Delete term meta.
 // Keep label color metadata because label terms are intentionally retained.

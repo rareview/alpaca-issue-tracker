@@ -1,8 +1,8 @@
 <?php
 /**
- * Notification services loader for Alpaca issue activity emails.
+ * Notification services loader for Alpaca Issue Tracker issue activity emails.
  *
- * @package Alpaca
+ * @package AlpacaIssueTracker
  */
 
 // Exit if accessed directly.

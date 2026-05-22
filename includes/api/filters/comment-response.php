@@ -1,8 +1,8 @@
 <?php
 /**
- * Alpaca REST API: Comment Response Filter.
+ * Alpaca Issue Tracker REST API: Comment Response Filter.
  *
- * @package Alpaca
+ * @package AlpacaIssueTracker
  */
 
 // Exit if accessed directly.
@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Expose basic author details in REST comment responses for Alpaca issue comments.
+ * Expose basic author details in REST comment responses for Alpaca Issue Tracker issue comments.
  * This ensures that users with lower privileges can still see the author's name
  * and avatar even if they cannot list users via the standard REST endpoint.
  */
@@ -26,11 +26,11 @@ add_filter(
 					'id'           => $author_id,
 					'name'         => get_the_author_meta( 'display_name', $author_id ),
 					'display_name' => get_the_author_meta( 'display_name', $author_id ),
-					'avatar'       => alpaca_avatar( $author_id, 48 ),
+					'avatar'       => alpaistr_avatar( $author_id, 48 ),
 					'avatar_urls'  => [
-						'24' => alpaca_avatar( $author_id, 24 ),
-						'48' => alpaca_avatar( $author_id, 48 ),
-						'96' => alpaca_avatar( $author_id, 96 ),
+						'24' => alpaistr_avatar( $author_id, 24 ),
+						'48' => alpaistr_avatar( $author_id, 48 ),
+						'96' => alpaistr_avatar( $author_id, 96 ),
 					],
 				];
 			}

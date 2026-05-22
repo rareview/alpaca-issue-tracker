@@ -1,5 +1,5 @@
 # ============================================
-# Alpaca WordPress Plugin - .gitignore
+# Alpaca Issue Tracker WordPress Plugin - .gitignore
 # ============================================
 
 # ------------------
@@ -101,7 +101,7 @@ $RECYCLE.BIN/
 # ------------------
 # Build Artifacts
 # ------------------
-alpaca.zip
+alpaca-issue-tracker.zip
 *.zip
 
 # ------------------

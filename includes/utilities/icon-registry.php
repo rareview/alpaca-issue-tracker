@@ -2,7 +2,7 @@
 /**
  * Auto-generated icon registry for PHP icon rendering.
  *
- * @package Alpaca
+ * @package AlpacaIssueTracker
  */
 
 return array(

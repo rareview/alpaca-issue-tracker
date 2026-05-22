@@ -58,10 +58,10 @@ const DataTable = memo(
       }
 
       if (!parsedData || typeof parsedData !== 'object') {
-        return <p>{__('Invalid data format', 'alpaca')}</p>;
+        return <p>{__('Invalid data format', 'alpaca-issue-tracker')}</p>;
       }
     } catch (e) {
-      return <p>{__('Error parsing JSON data', 'alpaca')}</p>;
+      return <p>{__('Error parsing JSON data', 'alpaca-issue-tracker')}</p>;
     }
 
     // Filter fields if specified

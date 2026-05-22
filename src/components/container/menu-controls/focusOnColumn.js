@@ -17,8 +17,8 @@ export const createFocusOnColumnMenuControl = ({
   return {
     icon: 'visibility',
     title: isFocused
-      ? __('Clear Column Focus', 'alpaca')
-      : __('Focus on Column', 'alpaca'),
+      ? __('Clear Column Focus', 'alpaca-issue-tracker')
+      : __('Focus on Column', 'alpaca-issue-tracker'),
     onClick: () => {
       onToggleFocus(containerId);
     },

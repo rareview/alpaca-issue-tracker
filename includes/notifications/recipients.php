@@ -1,8 +1,8 @@
 <?php
 /**
- * Notification recipient helpers for Alpaca issue activity emails.
+ * Notification recipient helpers for Alpaca Issue Tracker issue activity emails.
  *
- * @package Alpaca
+ * @package AlpacaIssueTracker
  */
 
 // Exit if accessed directly.
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @param array<string, mixed> $event Notification event.
  * @return int[] Affected user IDs.
  */
-function alpaca_get_notification_assignment_target_ids( $event ) {
+function alpaistr_get_notification_assignment_target_ids( $event ) {
 	$context = isset( $event['comment']['context'] ) && is_array( $event['comment']['context'] ) ? $event['comment']['context'] : [];
 	$ids     = isset( $context['affected_user_ids'] ) && is_array( $context['affected_user_ids'] ) ? $context['affected_user_ids'] : [];
 
@@ -29,21 +29,21 @@ function alpaca_get_notification_assignment_target_ids( $event ) {
  * @param array<string, mixed> $event Notification event.
  * @return int[] Matching user IDs.
  */
-function alpaca_get_notification_label_subscriber_ids( $event ) {
+function alpaistr_get_notification_label_subscriber_ids( $event ) {
 	$issue_label_ids = isset( $event['issue']['label_ids'] ) && is_array( $event['issue']['label_ids'] ) ? array_values( array_unique( array_filter( array_map( 'absint', $event['issue']['label_ids'] ) ) ) ) : [];
 	if ( empty( $issue_label_ids ) ) {
 		return [];
 	}
 
-	$user_ids = alpaca_get_notification_preference_user_ids();
+	$user_ids = alpaistr_get_notification_preference_user_ids();
 	if ( empty( $user_ids ) ) {
 		return [];
 	}
 
 	$matched_user_ids = [];
 	foreach ( $user_ids as $user_id ) {
-		$preferences = alpaca_get_notification_preferences_for_user( $user_id );
-		if ( ! alpaca_notification_preferences_have_enabled_delivery_targets( $preferences ) || empty( $preferences['subjects']['labeled'] ) ) {
+		$preferences = alpaistr_get_notification_preferences_for_user( $user_id );
+		if ( ! alpaistr_notification_preferences_have_enabled_delivery_targets( $preferences ) || empty( $preferences['subjects']['labeled'] ) ) {
 			continue;
 		}
 
@@ -66,7 +66,7 @@ function alpaca_get_notification_label_subscriber_ids( $event ) {
  * @param array<string, mixed> $event Notification event.
  * @return int[] Matching user IDs.
  */
-function alpaca_get_notification_high_priority_subscriber_ids( $event ) {
+function alpaistr_get_notification_high_priority_subscriber_ids( $event ) {
 	$is_high_priority = ! empty( $event['issue']['is_high_priority'] );
 	$context          = isset( $event['comment']['context'] ) && is_array( $event['comment']['context'] ) ? $event['comment']['context'] : [];
 	$action           = isset( $context['action'] ) ? sanitize_key( (string) $context['action'] ) : '';
@@ -75,15 +75,15 @@ function alpaca_get_notification_high_priority_subscriber_ids( $event ) {
 		return [];
 	}
 
-	$user_ids = alpaca_get_notification_preference_user_ids();
+	$user_ids = alpaistr_get_notification_preference_user_ids();
 	if ( empty( $user_ids ) ) {
 		return [];
 	}
 
 	$matched_user_ids = [];
 	foreach ( $user_ids as $user_id ) {
-		$preferences = alpaca_get_notification_preferences_for_user( $user_id );
-		if ( ! alpaca_notification_preferences_have_enabled_delivery_targets( $preferences ) || empty( $preferences['subjects']['high_priority'] ) ) {
+		$preferences = alpaistr_get_notification_preferences_for_user( $user_id );
+		if ( ! alpaistr_notification_preferences_have_enabled_delivery_targets( $preferences ) || empty( $preferences['subjects']['high_priority'] ) ) {
 			continue;
 		}
 
@@ -99,20 +99,20 @@ function alpaca_get_notification_high_priority_subscriber_ids( $event ) {
  * @param array<string, mixed> $event Notification event.
  * @return int[] Matching user IDs.
  */
-function alpaca_get_notification_all_new_task_subscriber_ids( $event ) {
-	if ( ! alpaca_is_notification_new_task_event( $event ) ) {
+function alpaistr_get_notification_all_new_task_subscriber_ids( $event ) {
+	if ( ! alpaistr_is_notification_new_task_event( $event ) ) {
 		return [];
 	}
 
-	$user_ids = alpaca_get_notification_preference_user_ids();
+	$user_ids = alpaistr_get_notification_preference_user_ids();
 	if ( empty( $user_ids ) ) {
 		return [];
 	}
 
 	$matched_user_ids = [];
 	foreach ( $user_ids as $user_id ) {
-		$preferences = alpaca_get_notification_preferences_for_user( $user_id );
-		if ( ! alpaca_notification_preferences_have_enabled_delivery_targets( $preferences ) || empty( $preferences['subjects']['all_new_tasks'] ) ) {
+		$preferences = alpaistr_get_notification_preferences_for_user( $user_id );
+		if ( ! alpaistr_notification_preferences_have_enabled_delivery_targets( $preferences ) || empty( $preferences['subjects']['all_new_tasks'] ) ) {
 			continue;
 		}
 
@@ -128,7 +128,7 @@ function alpaca_get_notification_all_new_task_subscriber_ids( $event ) {
  * @param array<string, mixed> $event Notification event.
  * @return array<string, int[]> Subject keyed candidate user IDs.
  */
-function alpaca_get_notification_subject_candidates( $event ) {
+function alpaistr_get_notification_subject_candidates( $event ) {
 	$mentioned_users = isset( $event['comment']['mentions'] ) && is_array( $event['comment']['mentions'] ) ? $event['comment']['mentions'] : [];
 	$mentioned_ids   = [];
 	foreach ( $mentioned_users as $mention ) {
@@ -139,7 +139,7 @@ function alpaca_get_notification_subject_candidates( $event ) {
 
 	$assigned_ids = isset( $event['issue']['assignee_ids'] ) && is_array( $event['issue']['assignee_ids'] ) ? $event['issue']['assignee_ids'] : [];
 	if ( 'issue_assignment_changes' === $event['event_family'] || 'checklist_assignment_changes' === $event['event_family'] ) {
-		$assigned_ids = array_merge( $assigned_ids, alpaca_get_notification_assignment_target_ids( $event ) );
+		$assigned_ids = array_merge( $assigned_ids, alpaistr_get_notification_assignment_target_ids( $event ) );
 	}
 
 	return [
@@ -147,9 +147,9 @@ function alpaca_get_notification_subject_candidates( $event ) {
 		'assigned'      => array_values( array_unique( array_filter( array_map( 'absint', $assigned_ids ) ) ) ),
 		'starred'       => isset( $event['issue']['watcher_ids'] ) && is_array( $event['issue']['watcher_ids'] ) ? array_values( array_unique( array_filter( array_map( 'absint', $event['issue']['watcher_ids'] ) ) ) ) : [],
 		'mentioned'     => array_values( array_unique( array_filter( array_map( 'absint', $mentioned_ids ) ) ) ),
-		'labeled'       => alpaca_get_notification_label_subscriber_ids( $event ),
-		'high_priority' => alpaca_get_notification_high_priority_subscriber_ids( $event ),
-		'all_new_tasks' => alpaca_get_notification_all_new_task_subscriber_ids( $event ),
+		'labeled'       => alpaistr_get_notification_label_subscriber_ids( $event ),
+		'high_priority' => alpaistr_get_notification_high_priority_subscriber_ids( $event ),
+		'all_new_tasks' => alpaistr_get_notification_all_new_task_subscriber_ids( $event ),
 	];
 }
 
@@ -161,8 +161,8 @@ function alpaca_get_notification_subject_candidates( $event ) {
  * @param string               $event_key   Event family key.
  * @return bool True when the notification should be sent.
  */
-function alpaca_user_preferences_allow_notification( $preferences, $subject_key, $event_key ) {
-	if ( ! alpaca_notification_preferences_have_enabled_delivery_targets( $preferences ) ) {
+function alpaistr_user_preferences_allow_notification( $preferences, $subject_key, $event_key ) {
+	if ( ! alpaistr_notification_preferences_have_enabled_delivery_targets( $preferences ) ) {
 		return false;
 	}
 
@@ -184,8 +184,8 @@ function alpaca_user_preferences_allow_notification( $preferences, $subject_key,
  * @param array<string, mixed> $event       Notification event.
  * @return bool True when the notification should be sent.
  */
-function alpaca_user_preferences_allow_new_task_notification( $preferences, $event ) {
-	if ( ! alpaca_notification_preferences_have_enabled_delivery_targets( $preferences ) ) {
+function alpaistr_user_preferences_allow_new_task_notification( $preferences, $event ) {
+	if ( ! alpaistr_notification_preferences_have_enabled_delivery_targets( $preferences ) ) {
 		return false;
 	}
 
@@ -193,7 +193,7 @@ function alpaca_user_preferences_allow_new_task_notification( $preferences, $eve
 		return false;
 	}
 
-	if ( ! alpaca_is_notification_new_task_event( $event ) ) {
+	if ( ! alpaistr_is_notification_new_task_event( $event ) ) {
 		return false;
 	}
 
@@ -206,9 +206,9 @@ function alpaca_user_preferences_allow_new_task_notification( $preferences, $eve
  * @param array<string, mixed> $event Notification event.
  * @return array<int, array<string, mixed>> Recipient data rows.
  */
-function alpaca_resolve_notification_recipients( $event ) {
+function alpaistr_resolve_notification_recipients( $event ) {
 	$actor_id   = isset( $event['actor']['id'] ) ? (int) $event['actor']['id'] : 0;
-	$candidates = alpaca_get_notification_subject_candidates( $event );
+	$candidates = alpaistr_get_notification_subject_candidates( $event );
 	$resolved   = [];
 
 	foreach ( $candidates as $subject_key => $user_ids ) {
@@ -223,11 +223,11 @@ function alpaca_resolve_notification_recipients( $event ) {
 				continue;
 			}
 
-			$preferences = alpaca_get_notification_preferences_for_user( $user_id );
+			$preferences = alpaistr_get_notification_preferences_for_user( $user_id );
 			if ( 'all_new_tasks' === $subject_key ) {
-				$allowed = alpaca_user_preferences_allow_new_task_notification( $preferences, $event );
+				$allowed = alpaistr_user_preferences_allow_new_task_notification( $preferences, $event );
 			} else {
-				$allowed = alpaca_user_preferences_allow_notification( $preferences, $subject_key, (string) $event['event_family'] );
+				$allowed = alpaistr_user_preferences_allow_notification( $preferences, $subject_key, (string) $event['event_family'] );
 			}
 
 			if ( ! $allowed ) {

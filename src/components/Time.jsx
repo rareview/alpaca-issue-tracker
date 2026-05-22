@@ -40,7 +40,7 @@ const Time = memo(
       formattedOffset = '+00:00';
     }
     /* translators: 1: formatted date/time. 2: UTC offset, e.g. +02:00. */
-    const offsetFormatLabel = __('%1$s (UTC%2$s)', 'alpaca');
+    const offsetFormatLabel = __('%1$s (UTC%2$s)', 'alpaca-issue-tracker');
     const tooltipText = formattedOffset
       ? sprintf(offsetFormatLabel, formattedAbsolute, formattedOffset)
       : formattedAbsolute;
@@ -53,7 +53,7 @@ const Time = memo(
       const secondsDiff = Math.floor((now - dateObj) / 1000);
 
       // Show "just now" for the first minute.
-      let relative = __('just now', 'alpaca');
+      let relative = __('just now', 'alpaca-issue-tracker');
 
       if (Math.abs(secondsDiff) >= 60) {
         // Intl gives locale-native unit words and grammar (for example Arabic).

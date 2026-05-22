@@ -86,5 +86,5 @@ export const getStatusName = (statusTerm) => {
     return statusTerm.name;
   }
 
-  return __('Unknown', 'alpaca');
+  return __('Unknown', 'alpaca-issue-tracker');
 };

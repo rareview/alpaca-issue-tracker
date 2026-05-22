@@ -367,7 +367,7 @@ const StatusManager = ({
   const handleAddStatus = () => {
     // eslint-disable-next-line no-alert
     const newName = window.prompt(
-      __('Enter the name for the new status:', 'alpaca'),
+      __('Enter the name for the new status:', 'alpaca-issue-tracker'),
     );
     if (!newName || !newName.trim()) {
       return;
@@ -394,17 +394,19 @@ const StatusManager = ({
   if (error)
     return (
       <p>
-        {__('Error:', 'alpaca')} {error}
+        {__('Error:', 'alpaca-issue-tracker')} {error}
       </p>
     );
 
   return (
     <>
-      <h2 className="screen-reader-text">{__('Status Manager', 'alpaca')}</h2>
+      <h2 className="screen-reader-text">
+        {__('Status Manager', 'alpaca-issue-tracker')}
+      </h2>
       <p className="alpaca-settings-manager-intro">
         {__(
           'Create and organize statuses. Drag rows to control their order across the board.',
-          'alpaca',
+          'alpaca-issue-tracker',
         )}
       </p>
       <div className="alpaca-status-manager">
@@ -531,28 +533,31 @@ const StatusManager = ({
 
         <p>
           <Button isPrimary onClick={handleAddStatus}>
-            {__('New Status', 'alpaca')}
+            {__('New Status', 'alpaca-issue-tracker')}
           </Button>
         </p>
 
         {statusToDelete && (
           <Modal
-            title={__('Delete Status?', 'alpaca')}
+            title={__('Delete Status?', 'alpaca-issue-tracker')}
             onRequestClose={cancelDelete}
             className="alpaca-modal"
           >
             <p>
-              {__('Are you sure you want to delete the status', 'alpaca')}{' '}
+              {__(
+                'Are you sure you want to delete the status',
+                'alpaca-issue-tracker',
+              )}{' '}
               &quot;
               <strong>{statusToDelete.name}</strong>&quot;?{' '}
-              {__('This cannot be undone.', 'alpaca')}
+              {__('This cannot be undone.', 'alpaca-issue-tracker')}
             </p>
             <div className="alpaca-actions alpaca-flex-align">
               <Button variant="primary" isDestructive onClick={performDelete}>
-                {__('Delete', 'alpaca')}
+                {__('Delete', 'alpaca-issue-tracker')}
               </Button>
               <Button isSecondary onClick={cancelDelete}>
-                {__('Cancel', 'alpaca')}
+                {__('Cancel', 'alpaca-issue-tracker')}
               </Button>
             </div>
           </Modal>
@@ -633,7 +638,7 @@ const StatusRow = wp.element.forwardRef(
             <div
               {...handleProps}
               className="drag-handle alpaca-flex-align"
-              title={__('Drag to reorder', 'alpaca')}
+              title={__('Drag to reorder', 'alpaca-issue-tracker')}
             >
               <Icon name="drag-handle" style={{ verticalAlign: 'middle' }} />
             </div>
@@ -664,7 +669,7 @@ const StatusRow = wp.element.forwardRef(
           <Button
             icon="trash"
             className="alpaca-settings-table-delete"
-            label={__('Delete', 'alpaca')}
+            label={__('Delete', 'alpaca-issue-tracker')}
             isDestructive
             onClick={() => onDelete(status.term_id)}
           />

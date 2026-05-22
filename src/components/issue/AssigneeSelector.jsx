@@ -54,7 +54,7 @@ const AssigneeSelector = memo(
       <div className="alpaca-assignees-selector">
         <FormTokenField
           label=""
-          placeholder={__('Enter username(s)', 'alpaca')}
+          placeholder={__('Enter username(s)', 'alpaca-issue-tracker')}
           value={assignees}
           suggestions={allUsers}
           onChange={onChange}
