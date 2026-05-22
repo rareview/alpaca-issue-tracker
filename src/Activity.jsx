@@ -113,7 +113,7 @@ const buildIssueLookupFromPosts = (posts) => {
  * @return {JSX.Element} Activity screen.
  */
 const Activity = () => {
-  const canDeleteIssues = Boolean(window.alpacaSettings?.canDeleteIssues);
+  const canDeleteIssues = Boolean(window.alpaistrSettings?.canDeleteIssues);
 
   const [comments, setComments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -621,6 +621,10 @@ const Activity = () => {
                   const issueTitle = issueEntry?.title || '';
                   const isTrashed = issueEntry?.status === 'trash';
 
+                  if (!issueEntry && !canDeleteIssues) {
+                    return null;
+                  }
+
                   if (
                     issueEntry &&
                     issueEntry.status !== 'publish' &&
@@ -633,7 +637,7 @@ const Activity = () => {
                     return null;
                   }
 
-                  const isClickable = !isTrashed;
+                  const isClickable = Boolean(issueEntry) && !isTrashed;
 
                   return (
                     <div
