@@ -631,7 +631,7 @@ const Activity = () => {
                     return null;
                   }
 
-                  const isClickable = !isTrashed || canDeleteIssues;
+                  const isClickable = !isTrashed;
 
                   return (
                     <div
