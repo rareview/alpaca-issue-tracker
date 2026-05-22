@@ -169,7 +169,7 @@ const Activity = () => {
     try {
       const posts = await wp.apiFetch({
         path:
-          '/wp/v2/alpaca_issue?context=view&_fields=id,title,content,slug,status&per_page=' +
+          '/wp/v2/alpaca_issue?context=view&_fields=id,title,content,slug,status&status=publish,trash&per_page=' +
           issueIdsToFetch.length +
           '&include=' +
           issueIdsToFetch.join(','),
@@ -619,7 +619,8 @@ const Activity = () => {
 
                   if (
                     issueLookup[issueId] &&
-                    issueLookup[issueId].status !== 'publish'
+                    issueLookup[issueId].status !== 'publish' &&
+                    issueLookup[issueId].status !== 'trash'
                   ) {
                     return null;
                   }
