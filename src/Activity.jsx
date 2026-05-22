@@ -113,6 +113,8 @@ const buildIssueLookupFromPosts = (posts) => {
  * @return {JSX.Element} Activity screen.
  */
 const Activity = () => {
+  const canDeleteIssues = Boolean(window.alpaistrSettings?.canDeleteIssues);
+
   const [comments, setComments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -167,7 +169,7 @@ const Activity = () => {
     try {
       const posts = await wp.apiFetch({
         path:
-          '/wp/v2/alpaca_issue?context=view&_fields=id,title,content,slug,status&per_page=' +
+          '/wp/v2/alpaca_issue?context=view&_fields=id,title,content,slug,status&status=publish,trash&per_page=' +
           issueIdsToFetch.length +
           '&include=' +
           issueIdsToFetch.join(','),
@@ -409,8 +411,32 @@ const Activity = () => {
     setSelectedIssue(null);
   }, []);
 
-  const handleIssueDeleted = useCallback(() => {
+  const handleIssueDeleted = useCallback((issueId) => {
     setSelectedIssue(null);
+
+    if (!issueId) {
+      return;
+    }
+
+    wp.apiFetch({
+      path: `/alpaca/v1/delete/${issueId}`,
+      method: 'DELETE',
+    })
+      .then(() => {
+        wp.hooks.doAction('alpaca.issueDeletedAudit', issueId);
+        wp.hooks.doAction('alpaca.issueDeleted', issueId);
+
+        const normalizedId = Number(issueId);
+        setComments((previousComments) =>
+          previousComments.filter(
+            (comment) => Number(comment.post) !== normalizedId,
+          ),
+        );
+      })
+      .catch((err) => {
+        // eslint-disable-next-line no-console
+        console.error('Error deleting issue:', err);
+      });
   }, []);
 
   /**
@@ -591,28 +617,47 @@ const Activity = () => {
               <div className="alpaca-comments-timeline">
                 {group.comments.map((comment) => {
                   const issueId = Number(comment.post);
-                  const issueTitle = issueLookup[issueId]?.title || '';
+                  const issueEntry = issueLookup[issueId];
+                  const issueTitle = issueEntry?.title || '';
+                  const isTrashed = issueEntry?.status === 'trash';
+
+                  if (!issueEntry && !canDeleteIssues) {
+                    return null;
+                  }
 
                   if (
-                    issueLookup[issueId] &&
-                    issueLookup[issueId].status !== 'publish'
+                    issueEntry &&
+                    issueEntry.status !== 'publish' &&
+                    !isTrashed
                   ) {
                     return null;
                   }
 
+                  if (isTrashed && !canDeleteIssues) {
+                    return null;
+                  }
+
+                  const isClickable = Boolean(issueEntry) && !isTrashed;
+
                   return (
                     <div
-                      role="button"
-                      tabIndex={0}
+                      role={isClickable ? 'button' : undefined}
+                      tabIndex={isClickable ? 0 : undefined}
                       key={comment.id}
-                      className="alpaca-activity-entry-button"
-                      onClick={() => handleOpenIssue(comment)}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter' || event.key === ' ') {
-                          event.preventDefault();
-                          handleOpenIssue(comment);
-                        }
-                      }}
+                      className={`alpaca-activity-entry-button${isTrashed ? ' is-trashed' : ''}`}
+                      onClick={
+                        isClickable ? () => handleOpenIssue(comment) : undefined
+                      }
+                      onKeyDown={
+                        isClickable
+                          ? (event) => {
+                              if (event.key === 'Enter' || event.key === ' ') {
+                                event.preventDefault();
+                                handleOpenIssue(comment);
+                              }
+                            }
+                          : undefined
+                      }
                     >
                       <TimelineEntry
                         comment={comment}
@@ -655,6 +700,7 @@ const Activity = () => {
         isOpen={Boolean(selectedIssue)}
         onClose={handleCloseIssue}
         onDelete={handleIssueDeleted}
+        canDeleteIssues={canDeleteIssues}
         onAssigneesChange={noop}
         onDeadlineChange={noop}
         onStatusChange={handleStatusChange}

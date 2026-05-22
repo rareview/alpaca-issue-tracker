@@ -138,6 +138,10 @@
     text-align: start;
     cursor: pointer;
     border-radius: $radius-lg;
+
+    &.is-trashed {
+      cursor: default;
+    }
   }
 
   .alpaca-activity-entry-button:focus-visible {
