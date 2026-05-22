@@ -615,29 +615,43 @@ const Activity = () => {
               <div className="alpaca-comments-timeline">
                 {group.comments.map((comment) => {
                   const issueId = Number(comment.post);
-                  const issueTitle = issueLookup[issueId]?.title || '';
+                  const issueEntry = issueLookup[issueId];
+                  const issueTitle = issueEntry?.title || '';
+                  const isTrashed = issueEntry?.status === 'trash';
 
                   if (
-                    issueLookup[issueId] &&
-                    issueLookup[issueId].status !== 'publish' &&
-                    issueLookup[issueId].status !== 'trash'
+                    issueEntry &&
+                    issueEntry.status !== 'publish' &&
+                    !isTrashed
                   ) {
                     return null;
                   }
 
+                  if (isTrashed && !canDeleteIssues) {
+                    return null;
+                  }
+
+                  const isClickable = !isTrashed || canDeleteIssues;
+
                   return (
                     <div
-                      role="button"
-                      tabIndex={0}
+                      role={isClickable ? 'button' : undefined}
+                      tabIndex={isClickable ? 0 : undefined}
                       key={comment.id}
-                      className="alpaca-activity-entry-button"
-                      onClick={() => handleOpenIssue(comment)}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter' || event.key === ' ') {
-                          event.preventDefault();
-                          handleOpenIssue(comment);
-                        }
-                      }}
+                      className={`alpaca-activity-entry-button${isTrashed ? ' is-trashed' : ''}`}
+                      onClick={
+                        isClickable ? () => handleOpenIssue(comment) : undefined
+                      }
+                      onKeyDown={
+                        isClickable
+                          ? (event) => {
+                              if (event.key === 'Enter' || event.key === ' ') {
+                                event.preventDefault();
+                                handleOpenIssue(comment);
+                              }
+                            }
+                          : undefined
+                      }
                     >
                       <TimelineEntry
                         comment={comment}
