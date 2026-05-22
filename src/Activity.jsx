@@ -113,6 +113,8 @@ const buildIssueLookupFromPosts = (posts) => {
  * @return {JSX.Element} Activity screen.
  */
 const Activity = () => {
+  const canDeleteIssues = Boolean(window.alpacaSettings?.canDeleteIssues);
+
   const [comments, setComments] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -407,8 +409,32 @@ const Activity = () => {
     setSelectedIssue(null);
   }, []);
 
-  const handleIssueDeleted = useCallback(() => {
+  const handleIssueDeleted = useCallback((issueId) => {
     setSelectedIssue(null);
+
+    if (!issueId) {
+      return;
+    }
+
+    wp.apiFetch({
+      path: `/alpaca/v1/delete/${issueId}`,
+      method: 'DELETE',
+    })
+      .then(() => {
+        wp.hooks.doAction('alpaca.issueDeletedAudit', issueId);
+        wp.hooks.doAction('alpaca.issueDeleted', issueId);
+
+        const normalizedId = Number(issueId);
+        setComments((previousComments) =>
+          previousComments.filter(
+            (comment) => Number(comment.post) !== normalizedId,
+          ),
+        );
+      })
+      .catch((err) => {
+        // eslint-disable-next-line no-console
+        console.error('Error deleting issue:', err);
+      });
   }, []);
 
   /**
@@ -653,6 +679,7 @@ const Activity = () => {
         isOpen={Boolean(selectedIssue)}
         onClose={handleCloseIssue}
         onDelete={handleIssueDeleted}
+        canDeleteIssues={canDeleteIssues}
         onAssigneesChange={noop}
         onDeadlineChange={noop}
         onStatusChange={handleStatusChange}
