@@ -2,7 +2,7 @@
 /**
  * Daily digest template helpers.
  *
- * @package Alpaca
+ * @package AlpacaIssueTracker
  */
 
 // Exit if accessed directly.
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @return string Subject template.
  */
-function alpaca_get_notification_daily_digest_subject_template_default() {
+function alpaistr_get_notification_daily_digest_subject_template_default() {
 	return '[{{site_title}}] Daily Summary for {{digest_day}}';
 }
 
@@ -24,7 +24,7 @@ function alpaca_get_notification_daily_digest_subject_template_default() {
  *
  * @return array<string, bool> Block lock attributes.
  */
-function alpaca_get_notification_daily_digest_required_block_lock() {
+function alpaistr_get_notification_daily_digest_required_block_lock() {
 	return [
 		'move'   => false,
 		'remove' => true,
@@ -36,7 +36,7 @@ function alpaca_get_notification_daily_digest_required_block_lock() {
  *
  * @return string[] Required block names.
  */
-function alpaca_get_notification_daily_digest_required_block_names() {
+function alpaistr_get_notification_daily_digest_required_block_names() {
 	return [
 		'alpaca/digest-deadline-watch',
 		'alpaca/digest-issue-activity',
@@ -49,7 +49,7 @@ function alpaca_get_notification_daily_digest_required_block_names() {
  *
  * @return string[] Allowed custom block names.
  */
-function alpaca_get_notification_daily_digest_template_allowed_blocks() {
+function alpaistr_get_notification_daily_digest_template_allowed_blocks() {
 	return [
 		'alpaca/digest-site-icon',
 		'alpaca/digest-deadline-watch',
@@ -63,9 +63,9 @@ function alpaca_get_notification_daily_digest_template_allowed_blocks() {
  *
  * @return string[] Allowed block names.
  */
-function alpaca_get_notification_daily_digest_template_allowed_block_types() {
-	return alpaca_get_notification_template_allowed_block_types_for_blocks(
-		alpaca_get_notification_daily_digest_template_allowed_blocks()
+function alpaistr_get_notification_daily_digest_template_allowed_block_types() {
+	return alpaistr_get_notification_template_allowed_block_types_for_blocks(
+		alpaistr_get_notification_daily_digest_template_allowed_blocks()
 	);
 }
 
@@ -76,14 +76,14 @@ function alpaca_get_notification_daily_digest_template_allowed_block_types() {
  * @param string|null $postscript Optional postscript text.
  * @return string Serialized block content.
  */
-function alpaca_get_notification_daily_digest_body_template_default( $preamble = null, $postscript = null ) {
+function alpaistr_get_notification_daily_digest_body_template_default( $preamble = null, $postscript = null ) {
 	$preamble = is_string( $preamble ) ? trim( $preamble ) : '';
 
 	if ( ! is_string( $postscript ) || '' === trim( $postscript ) ) {
-		$postscript = __( 'You are receiving this summary because you opted into the daily digest.', 'alpaca' );
+		$postscript = __( 'You are receiving this summary because you opted into the daily digest.', 'alpaca-issue-tracker' );
 	}
 
-	$lock = wp_json_encode( alpaca_get_notification_daily_digest_required_block_lock() );
+	$lock = wp_json_encode( alpaistr_get_notification_daily_digest_required_block_lock() );
 
 	return implode(
 		"\n",
@@ -104,7 +104,7 @@ function alpaca_get_notification_daily_digest_body_template_default( $preamble =
 			'</div>',
 			'<!-- /wp:group -->',
 			'<!-- wp:heading {"level":2} -->',
-			'<h2>' . esc_html__( 'Daily Summary for {{digest_day}}', 'alpaca' ) . '</h2>',
+			'<h2>' . esc_html__( 'Daily Summary for {{digest_day}}', 'alpaca-issue-tracker' ) . '</h2>',
 			'<!-- /wp:heading -->',
 			( '' !== $preamble )
 				? '<!-- wp:paragraph --><p>' . esc_html( $preamble ) . '</p><!-- /wp:paragraph -->'
@@ -116,7 +116,7 @@ function alpaca_get_notification_daily_digest_body_template_default( $preamble =
 			'<p>' . esc_html( $postscript ) . '</p>',
 			'<!-- /wp:paragraph -->',
 			'<!-- wp:paragraph {"fontSize":"small"} -->',
-			'<p class="has-small-font-size"><a href="{{notifications_url}}">' . esc_html__( 'Manage notifications', 'alpaca' ) . '</a></p>',
+			'<p class="has-small-font-size"><a href="{{notifications_url}}">' . esc_html__( 'Manage notifications', 'alpaca-issue-tracker' ) . '</a></p>',
 			'<!-- /wp:paragraph -->',
 		]
 	);
@@ -127,8 +127,8 @@ function alpaca_get_notification_daily_digest_body_template_default( $preamble =
  *
  * @return string Legacy preamble text.
  */
-function alpaca_get_notification_daily_digest_legacy_preamble() {
-	$preamble = get_option( 'alpaca_daily_digest_preamble_template', '' );
+function alpaistr_get_notification_daily_digest_legacy_preamble() {
+	$preamble = get_option( 'alpaistr_daily_digest_preamble_template', '' );
 
 	return is_string( $preamble ) ? trim( wp_strip_all_tags( $preamble ) ) : '';
 }
@@ -138,8 +138,8 @@ function alpaca_get_notification_daily_digest_legacy_preamble() {
  *
  * @return string Legacy postscript text.
  */
-function alpaca_get_notification_daily_digest_legacy_postscript() {
-	$postscript = get_option( 'alpaca_daily_digest_postscript_template', '' );
+function alpaistr_get_notification_daily_digest_legacy_postscript() {
+	$postscript = get_option( 'alpaistr_daily_digest_postscript_template', '' );
 
 	return is_string( $postscript ) ? trim( wp_strip_all_tags( $postscript ) ) : '';
 }
@@ -150,10 +150,10 @@ function alpaca_get_notification_daily_digest_legacy_postscript() {
  * @param array<int, array<string, mixed>> $blocks Parsed blocks.
  * @return bool True when all required blocks are present.
  */
-function alpaca_notification_daily_digest_template_has_required_blocks( $blocks ) {
-	return alpaca_notification_template_has_required_blocks(
+function alpaistr_notification_daily_digest_template_has_required_blocks( $blocks ) {
+	return alpaistr_notification_template_has_required_blocks(
 		$blocks,
-		alpaca_get_notification_daily_digest_required_block_names()
+		alpaistr_get_notification_daily_digest_required_block_names()
 	);
 }
 
@@ -164,7 +164,7 @@ function alpaca_notification_daily_digest_template_has_required_blocks( $blocks 
  * @param array<int, array<string, mixed>> $blocks Parsed blocks.
  * @return bool True when the layout should be upgraded to the current default.
  */
-function alpaca_notification_daily_digest_template_uses_legacy_placeholder_only_layout( $blocks ) {
+function alpaistr_notification_daily_digest_template_uses_legacy_placeholder_only_layout( $blocks ) {
 	$allowed_legacy_blocks = [
 		'alpaca/digest-deadline-watch',
 		'alpaca/digest-issue-activity',
@@ -187,7 +187,7 @@ function alpaca_notification_daily_digest_template_uses_legacy_placeholder_only_
 		}
 	}
 
-	return alpaca_notification_daily_digest_template_has_required_blocks( $blocks );
+	return alpaistr_notification_daily_digest_template_has_required_blocks( $blocks );
 }
 
 /**
@@ -196,17 +196,17 @@ function alpaca_notification_daily_digest_template_uses_legacy_placeholder_only_
  * @param array<string, mixed> $block Parsed block data.
  * @return array<string, mixed>|null Normalized block data.
  */
-function alpaca_normalize_notification_daily_digest_template_block( $block ) {
+function alpaistr_normalize_notification_daily_digest_template_block( $block ) {
 	$block_name = isset( $block['blockName'] ) ? (string) $block['blockName'] : '';
 
-	if ( in_array( $block_name, alpaca_get_notification_daily_digest_required_block_names(), true ) ) {
+	if ( in_array( $block_name, alpaistr_get_notification_daily_digest_required_block_names(), true ) ) {
 		$attrs = [];
 
 		if ( isset( $block['attrs'] ) && is_array( $block['attrs'] ) ) {
 			$attrs = $block['attrs'];
 		}
 
-		$attrs['lock']  = alpaca_get_notification_daily_digest_required_block_lock();
+		$attrs['lock']  = alpaistr_get_notification_daily_digest_required_block_lock();
 		$block['attrs'] = $attrs;
 	}
 
@@ -219,14 +219,14 @@ function alpaca_normalize_notification_daily_digest_template_block( $block ) {
  * @param string $body Serialized block content.
  * @return string Normalized serialized block content.
  */
-function alpaca_normalize_notification_daily_digest_body_template( $body ) {
-	return alpaca_normalize_notification_template_body_with_callbacks(
+function alpaistr_normalize_notification_daily_digest_body_template( $body ) {
+	return alpaistr_normalize_notification_template_body_with_callbacks(
 		$body,
-		alpaca_get_notification_daily_digest_body_template_default(),
-		alpaca_get_notification_daily_digest_template_allowed_block_types(),
-		'alpaca_normalize_notification_daily_digest_template_block',
+		alpaistr_get_notification_daily_digest_body_template_default(),
+		alpaistr_get_notification_daily_digest_template_allowed_block_types(),
+		'alpaistr_normalize_notification_daily_digest_template_block',
 		null,
-		'alpaca_notification_daily_digest_template_uses_legacy_placeholder_only_layout'
+		'alpaistr_notification_daily_digest_template_uses_legacy_placeholder_only_layout'
 	);
 }
 
@@ -236,10 +236,10 @@ function alpaca_normalize_notification_daily_digest_body_template( $body ) {
  * @param string $subject Subject template.
  * @return string Sanitized subject template.
  */
-function alpaca_sanitize_notification_daily_digest_subject_template( $subject ) {
-	return alpaca_sanitize_notification_template_subject(
+function alpaistr_sanitize_notification_daily_digest_subject_template( $subject ) {
+	return alpaistr_sanitize_notification_template_subject(
 		$subject,
-		alpaca_get_notification_daily_digest_subject_template_default()
+		alpaistr_get_notification_daily_digest_subject_template_default()
 	);
 }
 
@@ -249,18 +249,18 @@ function alpaca_sanitize_notification_daily_digest_subject_template( $subject ) 
  * @param string $body Serialized block content.
  * @return string|WP_Error Sanitized body string or WP_Error on failure.
  */
-function alpaca_sanitize_notification_daily_digest_body_template( $body ) {
-	return alpaca_sanitize_notification_template_body_with_callbacks(
+function alpaistr_sanitize_notification_daily_digest_body_template( $body ) {
+	return alpaistr_sanitize_notification_template_body_with_callbacks(
 		$body,
-		alpaca_get_notification_daily_digest_body_template_default(),
-		alpaca_get_notification_daily_digest_template_allowed_block_types(),
-		'alpaca_normalize_notification_daily_digest_template_block',
+		alpaistr_get_notification_daily_digest_body_template_default(),
+		alpaistr_get_notification_daily_digest_template_allowed_block_types(),
+		'alpaistr_normalize_notification_daily_digest_template_block',
 		null,
-		alpaca_get_notification_daily_digest_required_block_names(),
+		alpaistr_get_notification_daily_digest_required_block_names(),
 		'alpaca_daily_digest_template_empty',
-		esc_html__( 'The daily digest template must contain at least one supported block.', 'alpaca' ),
+		esc_html__( 'The daily digest template must contain at least one supported block.', 'alpaca-issue-tracker' ),
 		'alpaca_daily_digest_template_missing_sections',
-		esc_html__( 'The daily digest template must include the locked digest section blocks.', 'alpaca' )
+		esc_html__( 'The daily digest template must include the locked digest section blocks.', 'alpaca-issue-tracker' )
 	);
 }
 
@@ -269,10 +269,10 @@ function alpaca_sanitize_notification_daily_digest_body_template( $body ) {
  *
  * @return array<string, string> Default template values.
  */
-function alpaca_get_notification_daily_digest_template_defaults() {
+function alpaistr_get_notification_daily_digest_template_defaults() {
 	return [
-		'subject' => alpaca_get_notification_daily_digest_subject_template_default(),
-		'body'    => alpaca_get_notification_daily_digest_body_template_default(),
+		'subject' => alpaistr_get_notification_daily_digest_subject_template_default(),
+		'body'    => alpaistr_get_notification_daily_digest_body_template_default(),
 	];
 }
 
@@ -281,19 +281,19 @@ function alpaca_get_notification_daily_digest_template_defaults() {
  *
  * @return array<string, string> Saved template values.
  */
-function alpaca_get_notification_daily_digest_template() {
-	$defaults = alpaca_get_notification_daily_digest_template_defaults();
-	$subject  = get_option( 'alpaca_daily_digest_subject_template', $defaults['subject'] );
-	$body     = get_option( 'alpaca_daily_digest_body_template', '' );
+function alpaistr_get_notification_daily_digest_template() {
+	$defaults = alpaistr_get_notification_daily_digest_template_defaults();
+	$subject  = get_option( 'alpaistr_daily_digest_subject_template', $defaults['subject'] );
+	$body     = get_option( 'alpaistr_daily_digest_body_template', '' );
 
 	if ( ! is_string( $body ) || '' === trim( $body ) ) {
-		$body = alpaca_get_notification_daily_digest_body_template_default(
-			alpaca_get_notification_daily_digest_legacy_preamble(),
-			alpaca_get_notification_daily_digest_legacy_postscript()
+		$body = alpaistr_get_notification_daily_digest_body_template_default(
+			alpaistr_get_notification_daily_digest_legacy_preamble(),
+			alpaistr_get_notification_daily_digest_legacy_postscript()
 		);
 	}
 
-	$body = alpaca_normalize_notification_daily_digest_body_template( $body );
+	$body = alpaistr_normalize_notification_daily_digest_body_template( $body );
 
 	return [
 		'subject' => is_string( $subject ) && '' !== trim( $subject ) ? trim( $subject ) : $defaults['subject'],
@@ -308,18 +308,18 @@ function alpaca_get_notification_daily_digest_template() {
  * @param string $body    Serialized block content.
  * @return array<string, string>|WP_Error Saved template values or WP_Error.
  */
-function alpaca_update_notification_daily_digest_template( $subject, $body ) {
-	$subject = alpaca_sanitize_notification_daily_digest_subject_template( $subject );
-	$body    = alpaca_sanitize_notification_daily_digest_body_template( $body );
+function alpaistr_update_notification_daily_digest_template( $subject, $body ) {
+	$subject = alpaistr_sanitize_notification_daily_digest_subject_template( $subject );
+	$body    = alpaistr_sanitize_notification_daily_digest_body_template( $body );
 
 	if ( is_wp_error( $body ) ) {
 		return $body;
 	}
 
-	update_option( 'alpaca_daily_digest_subject_template', $subject );
-	update_option( 'alpaca_daily_digest_body_template', $body );
+	update_option( 'alpaistr_daily_digest_subject_template', $subject );
+	update_option( 'alpaistr_daily_digest_body_template', $body );
 
-	return alpaca_get_notification_daily_digest_template();
+	return alpaistr_get_notification_daily_digest_template();
 }
 
 /**
@@ -327,8 +327,8 @@ function alpaca_update_notification_daily_digest_template( $subject, $body ) {
  *
  * @return array<string, string> Reset template values.
  */
-function alpaca_reset_notification_daily_digest_template() {
-	$defaults = alpaca_get_notification_daily_digest_template_defaults();
+function alpaistr_reset_notification_daily_digest_template() {
+	$defaults = alpaistr_get_notification_daily_digest_template_defaults();
 
-	return alpaca_update_notification_daily_digest_template( $defaults['subject'], $defaults['body'] );
+	return alpaistr_update_notification_daily_digest_template( $defaults['subject'], $defaults['body'] );
 }

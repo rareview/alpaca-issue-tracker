@@ -44,7 +44,7 @@ const Lightbox = memo(({ src, onClose }) => {
     >
       <img
         src={src}
-        alt={__('Enlarged screenshot', 'alpaca')}
+        alt={__('Enlarged screenshot', 'alpaca-issue-tracker')}
         style={{
           maxWidth: '90%',
           maxHeight: '90%',

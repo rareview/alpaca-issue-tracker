@@ -5,13 +5,13 @@ const { CheckboxControl } = wp.components;
 
 const EnableContextCaptureControl = () => {
   const { isEnabled, isFetching, isSaving, handleChange } = useCheckboxSetting({
-    settingKey: 'alpaca_enable_context_capture',
+    settingKey: 'alpaistr_enable_context_capture',
     defaultValue: true,
   });
 
   return (
     <tr>
-      <th>{__('Context Capture', 'alpaca')}</th>
+      <th>{__('Context Capture', 'alpaca-issue-tracker')}</th>
       <td>
         <CheckboxControl
           __nextHasNoMarginBottom
@@ -19,7 +19,7 @@ const EnableContextCaptureControl = () => {
             <InlineCheckboxLabel
               label={__(
                 'Enable reporting of issues with associated context',
-                'alpaca',
+                'alpaca-issue-tracker',
               )}
               isBusy={isFetching || isSaving}
             />

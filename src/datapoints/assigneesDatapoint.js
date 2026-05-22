@@ -16,7 +16,7 @@ export const addAssigneesDatapoint = (originalContent, itemProps) => {
     return (
       <>
         {originalContent}
-        <Tooltip text={__('Assignees', 'alpaca')}>
+        <Tooltip text={__('Assignees', 'alpaca-issue-tracker')}>
           <div
             className="alpaca-item-assignees"
             data-assignees={assignees.length}
@@ -42,7 +42,7 @@ export const addAssigneesDatapoint = (originalContent, itemProps) => {
 
 export const assigneesDatapointRegistration = {
   slug: 'assignees',
-  label: __('Assignees', 'alpaca'),
+  label: __('Assignees', 'alpaca-issue-tracker'),
   namespace: 'alpaca/item/addAssigneesDatapoint',
   callback: addAssigneesDatapoint,
   defaultEnabled: true,

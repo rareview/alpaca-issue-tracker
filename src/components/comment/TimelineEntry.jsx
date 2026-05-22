@@ -219,7 +219,7 @@ const TimelineEntry = ({
 }) => {
   const author = comment.author_details ||
     comment._embedded?.author?.[0] ||
-    currentUser || { name: __('Unknown', 'alpaca') };
+    currentUser || { name: __('Unknown', 'alpaca-issue-tracker') };
 
   let dataSource = 'human';
 
@@ -252,7 +252,8 @@ const TimelineEntry = ({
     author,
     lastEditMeta,
   );
-  const editedByUserLabel = editedByUserName || __('another user', 'alpaca');
+  const editedByUserLabel =
+    editedByUserName || __('another user', 'alpaca-issue-tracker');
   let editedByUser = null;
   if (editedByUserId > 0) {
     editedByUser = editedByUserId;
@@ -270,7 +271,7 @@ const TimelineEntry = ({
     .join(' ');
   const issuePrefix = sprintf(
     /* translators: Prefix before issue title in activity headers. */
-    __('on %s', 'alpaca'),
+    __('on %s', 'alpaca-issue-tracker'),
     '',
   ).trim();
   const processedContent = useMemo(() => {
@@ -373,7 +374,7 @@ const TimelineEntry = ({
                   (
                   {editedByDifferentUser ? (
                     <>
-                      {__('edited by', 'alpaca')}{' '}
+                      {__('edited by', 'alpaca-issue-tracker')}{' '}
                       {editedByUser ? (
                         <User
                           user={editedByUser}
@@ -386,7 +387,7 @@ const TimelineEntry = ({
                       )}
                     </>
                   ) : (
-                    __('edited', 'alpaca')
+                    __('edited', 'alpaca-issue-tracker')
                   )}{' '}
                   <Time
                     value={editedDate}
@@ -421,7 +422,7 @@ const TimelineEntry = ({
                     enableAttachmentPreview ? onAttachmentClick : null
                   }
                   showDelete={false}
-                  altText={__('Comment attachment', 'alpaca')}
+                  altText={__('Comment attachment', 'alpaca-issue-tracker')}
                 />
               ))}
             </div>

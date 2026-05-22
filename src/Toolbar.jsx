@@ -2,7 +2,11 @@ import handleSnapdomCapture from './snapdomHandler.js';
 import { dataUrlToFile, uploadIssueAttachment } from './utils/attachmentUpload';
 import { useTestLogger } from './utils/testLogger.js';
 import Icon from './components/icons/Icon';
-import { buildAlpacaRestUrl, getAlpacaRestRoot } from './utils/restApiRoot.js';
+import {
+  buildAlpacaRestUrl,
+  getAlpacaRestNonce,
+  getAlpacaRestRoot,
+} from './utils/restApiRoot.js';
 import {
   ensureAlpacaReportContext,
   getAlpacaReportContext,
@@ -16,7 +20,7 @@ const { useState, useRef, useEffect, useCallback } = wp.element;
 const FORM_CLOSE_RESET_DELAY_MS = 300;
 
 /**
- * Bottom Toolbar component for Alpaca issue reporting.
+ * Bottom Toolbar component for Alpaca Issue Tracker issue reporting.
  * Dark admin bar theme with WP Components form.
  *
  * @return {JSX.Element} Toolbar component
@@ -37,7 +41,7 @@ const AlpacaToolbar = () => {
 
   useEffect(() => {
     wp.apiFetch({ path: '/wp/v2/settings' }).then((settings) => {
-      setEnableTestLogs(settings.alpaca_enable_test_logs === '1');
+      setEnableTestLogs(settings.alpaistr_enable_test_logs === '1');
     });
 
     const handleTestLogSettingChange = (value) => {
@@ -164,7 +168,7 @@ const AlpacaToolbar = () => {
         headers: new Headers({
           Accept: 'application/json',
           'Content-Type': 'application/json',
-          'X-WP-Nonce': wpApiSettings.nonce,
+          'X-WP-Nonce': getAlpacaRestNonce(),
         }),
         body: JSON.stringify(payload),
       });
@@ -194,7 +198,12 @@ const AlpacaToolbar = () => {
       }
 
       setStatus('success');
-      setMessage(__('Your issue has been submitted successfully.', 'alpaca'));
+      setMessage(
+        __(
+          'Your issue has been submitted successfully.',
+          'alpaca-issue-tracker',
+        ),
+      );
 
       doAction(
         'alpaca.issueSubmitted',
@@ -222,7 +231,7 @@ const AlpacaToolbar = () => {
       setMessage(
         __(
           'There was an error submitting your issue. Please try again.',
-          'alpaca',
+          'alpaca-issue-tracker',
         ),
       );
     }
@@ -230,10 +239,10 @@ const AlpacaToolbar = () => {
 
   const projectBoardUrl = (() => {
     if (
-      window.alpacaSettings?.adminUrl &&
-      typeof window.alpacaSettings.adminUrl === 'string'
+      window.alpaistrSettings?.adminUrl &&
+      typeof window.alpaistrSettings.adminUrl === 'string'
     ) {
-      return `${window.alpacaSettings.adminUrl}?page=project-board`;
+      return `${window.alpaistrSettings.adminUrl}?page=project-board`;
     }
 
     const restRoot = getAlpacaRestRoot();
@@ -253,11 +262,11 @@ const AlpacaToolbar = () => {
           onClick={toggleFormVisibility}
         >
           <Icon name="report" />
-          {__('Report An Issue', 'alpaca')}
+          {__('Report An Issue', 'alpaca-issue-tracker')}
         </button>
         <a href={projectBoardUrl} className="project-board-link">
           <Icon name="board" />
-          {__('Project Board', 'alpaca')}
+          {__('Project Board', 'alpaca-issue-tracker')}
         </a>
         <button className="toggle-button" onClick={toggleExpand}>
           <span className="toggle-pointer">►</span>
@@ -269,7 +278,7 @@ const AlpacaToolbar = () => {
         className={`alpaca-report-form ${isFormVisible ? 'visible' : ''}`}
       >
         <div className="form-header">
-          <h4>{__('Report An Issue', 'alpaca')}</h4>
+          <h4>{__('Report An Issue', 'alpaca-issue-tracker')}</h4>
           <button className="form-close" onClick={closeForm}>
             ×
           </button>
@@ -279,13 +288,13 @@ const AlpacaToolbar = () => {
           <>
             <p>{message}</p>
             <Button variant="primary" onClick={closeForm} ref={textareaRef}>
-              {__('Close', 'alpaca')}
+              {__('Close', 'alpaca-issue-tracker')}
             </Button>
           </>
         ) : (
           <>
             <TextareaControl
-              placeholder={__('Describe the problem', 'alpaca')}
+              placeholder={__('Describe the problem', 'alpaca-issue-tracker')}
               value={feedback}
               onChange={(value) => setFeedback(value)}
               disabled={status === 'submitting'}
@@ -297,7 +306,7 @@ const AlpacaToolbar = () => {
               <ToggleControl
                 label={
                   <span className="priority-label">
-                    {__('High Priority', 'alpaca')}
+                    {__('High Priority', 'alpaca-issue-tracker')}
                   </span>
                 }
                 checked={isHighPriority}
@@ -313,14 +322,18 @@ const AlpacaToolbar = () => {
                 onClick={submitIssue}
                 disabled={status === 'submitting' || !feedback.trim()}
               >
-                {status === 'submitting' ? <Spinner /> : __('Submit', 'alpaca')}
+                {status === 'submitting' ? (
+                  <Spinner />
+                ) : (
+                  __('Submit', 'alpaca-issue-tracker')
+                )}
               </Button>
               <Button
                 variant="secondary"
                 onClick={closeForm}
                 disabled={status === 'submitting'}
               >
-                {__('Cancel', 'alpaca')}
+                {__('Cancel', 'alpaca-issue-tracker')}
               </Button>
             </div>
           </>

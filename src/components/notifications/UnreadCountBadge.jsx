@@ -20,7 +20,7 @@ function UnreadCountBadge({ count, variant }) {
   if ('admin-menu' === variant) {
     const adminMenuScreenReaderLabel = sprintf(
       /* translators: %d is the current user's unread inbox notification count. */
-      __('Project Board has %d unread notifications', 'alpaca'),
+      __('Project Board has %d unread notifications', 'alpaca-issue-tracker'),
       normalizedCount,
     );
 
@@ -39,7 +39,7 @@ function UnreadCountBadge({ count, variant }) {
 
   const srLabel = sprintf(
     /* translators: %d is the number of unread inbox notifications. */
-    __('%d unread notifications', 'alpaca'),
+    __('%d unread notifications', 'alpaca-issue-tracker'),
     normalizedCount,
   );
 

@@ -1,5 +1,5 @@
 /**
- * Alpaca Data Dump - Device & Error Tracking
+ * Alpaca Issue Tracker Data Dump - Device & Error Tracking
  *
  * Captures device information and JavaScript errors for issue reporting.
  */
@@ -17,13 +17,13 @@ export const initializeAlpacaDataDump = () => {
 
   if (
     typeof window !== 'undefined' &&
-    typeof window.alpacaDataDump === 'undefined'
+    typeof window.alpaistrDataDump === 'undefined'
   ) {
-    window.alpacaDataDump = {};
+    window.alpaistrDataDump = {};
   }
 
-  const alpacaDataDump =
-    typeof window !== 'undefined' ? window.alpacaDataDump : undefined;
+  const alpaistrDataDump =
+    typeof window !== 'undefined' ? window.alpaistrDataDump : undefined;
 
   // Wait for bowser library to be available
   if (typeof bowser === 'undefined') {
@@ -31,10 +31,10 @@ export const initializeAlpacaDataDump = () => {
   } else {
     const b = bowser.parse(window.navigator.userAgent);
 
-    if (typeof alpacaDataDump === 'undefined') {
-      console.error('Alpaca: alpacaDataDump not initialized');
+    if (typeof alpaistrDataDump === 'undefined') {
+      console.error('Alpaca: alpaistrDataDump not initialized');
     } else {
-      alpacaDataDump.device = {
+      alpaistrDataDump.device = {
         browser: {
           name: b.browser.name,
           version: b.browser.version,
@@ -49,11 +49,11 @@ export const initializeAlpacaDataDump = () => {
         versionName: b.os.versionName,
       };
 
-      alpacaDataDump.errors = [];
+      alpaistrDataDump.errors = [];
 
       window.addEventListener('resize', function () {
-        alpacaDataDump.device.browser.width = window.innerWidth;
-        alpacaDataDump.device.browser.height = window.innerHeight;
+        alpaistrDataDump.device.browser.width = window.innerWidth;
+        alpaistrDataDump.device.browser.height = window.innerHeight;
       });
 
       window.addEventListener('error', function (event) {
@@ -67,7 +67,7 @@ export const initializeAlpacaDataDump = () => {
         if (event.error && event.error.stack) {
           errorDetails.stack = event.error.stack;
         }
-        alpacaDataDump.errors.push(errorDetails);
+        alpaistrDataDump.errors.push(errorDetails);
       });
 
       // Catch unhandled promise rejections
@@ -80,13 +80,13 @@ export const initializeAlpacaDataDump = () => {
               : String(event.reason),
           stack: event.reason && event.reason.stack ? event.reason.stack : null,
         };
-        alpacaDataDump.errors.push(errorDetails);
+        alpaistrDataDump.errors.push(errorDetails);
       });
 
       // Capture console.error calls
       const origConsoleError = console.error;
       console.error = function (...args) {
-        alpacaDataDump.errors.push({
+        alpaistrDataDump.errors.push({
           type: 'console.error',
           message: args
             .map((a) => (a instanceof Error ? a.message : String(a)))

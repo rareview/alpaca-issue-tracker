@@ -44,4 +44,4 @@ jobs:
       - name: Upload ZIP to release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release upload "${{ github.event.release.tag_name }}" alpaca.zip --clobber
+        run: gh release upload "${{ github.event.release.tag_name }}" alpaca-issue-tracker.zip --clobber

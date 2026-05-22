@@ -61,10 +61,10 @@ const DraggableItem = forwardRef(
 
       try {
         e.dataTransfer.setData('application/json', JSON.stringify(payload));
-        // Use browser detection from alpacaDataDump if available, fallback to regex
+        // Use browser detection from alpaistrDataDump if available, fallback to regex
         const isSafari =
-          (typeof alpacaDataDump !== 'undefined' &&
-            alpacaDataDump.device?.browser?.name === 'Safari') ||
+          (typeof alpaistrDataDump !== 'undefined' &&
+            alpaistrDataDump.device?.browser?.name === 'Safari') ||
           /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
         if (!isSafari) {

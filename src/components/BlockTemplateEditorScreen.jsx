@@ -9,7 +9,7 @@ const { Button, Notice, Popover, SlotFillProvider, Spinner, TextControl } =
 
 const fallbackBody =
   '<!-- wp:paragraph --><p>' +
-  __('Loading template…', 'alpaca') +
+  __('Loading template…', 'alpaca-issue-tracker') +
   '</p><!-- /wp:paragraph -->';
 const DEFAULT_ALLOWED_BLOCK_TYPES = true;
 const registeredTemplateBlockSets = new WeakSet();
@@ -312,7 +312,7 @@ const BlockTemplateEditorScreen = (props) => {
         <Notice status="error" isDismissible={false}>
           {__(
             'The WordPress block editor could not be loaded for this screen.',
-            'alpaca',
+            'alpaca-issue-tracker',
           )}
         </Notice>
       </div>
@@ -350,14 +350,14 @@ const BlockTemplateEditorScreen = (props) => {
       <div className="alpaca-notification-template-layout">
         <div className="alpaca-notification-template-editor-panel alpaca-notifications-panel">
           <div className="alpaca-notification-template-section-header">
-            <h2>{__('Template', 'alpaca')}</h2>
+            <h2>{__('Template', 'alpaca-issue-tracker')}</h2>
             <p>{templateDescription}</p>
           </div>
 
           <TextControl
             __next40pxDefaultSize
             __nextHasNoMarginBottom
-            label={__('Email subject', 'alpaca')}
+            label={__('Email subject', 'alpaca-issue-tracker')}
             value={subject}
             onChange={setSubject}
             help={subjectHelp}
@@ -404,8 +404,8 @@ const BlockTemplateEditorScreen = (props) => {
           <div className="alpaca-notifications-actions">
             <Button isPrimary onClick={handleSave} disabled={isSaving}>
               {isSaving
-                ? __('Saving…', 'alpaca')
-                : __('Save Template', 'alpaca')}
+                ? __('Saving…', 'alpaca-issue-tracker')
+                : __('Save Template', 'alpaca-issue-tracker')}
             </Button>
             <Button
               variant="secondary"
@@ -413,8 +413,8 @@ const BlockTemplateEditorScreen = (props) => {
               disabled={isResetting}
             >
               {isResetting
-                ? __('Resetting…', 'alpaca')
-                : __('Reset to Default', 'alpaca')}
+                ? __('Resetting…', 'alpaca-issue-tracker')
+                : __('Reset to Default', 'alpaca-issue-tracker')}
             </Button>
             <Button
               variant="tertiary"
@@ -422,30 +422,30 @@ const BlockTemplateEditorScreen = (props) => {
               disabled={isSendingTest}
             >
               {isSendingTest
-                ? __('Sending Test…', 'alpaca')
-                : __('Send Test Email', 'alpaca')}
+                ? __('Sending Test…', 'alpaca-issue-tracker')
+                : __('Send Test Email', 'alpaca-issue-tracker')}
             </Button>
           </div>
         </div>
 
         <div className="alpaca-notification-template-preview-panel alpaca-notifications-panel">
           <div className="alpaca-notification-template-section-header">
-            <h2>{__('Live Preview', 'alpaca')}</h2>
+            <h2>{__('Live Preview', 'alpaca-issue-tracker')}</h2>
             <p>{previewDescription}</p>
           </div>
           {preview ? (
             <div className="alpaca-notification-preview-frame">
               <div className="alpaca-notification-preview-envelope">
                 <div className="alpaca-notification-preview-meta">
-                  <span>{__('From', 'alpaca')}</span>
+                  <span>{__('From', 'alpaca-issue-tracker')}</span>
                   <strong>
                     {preview.from_label ||
                       preview.from_address ||
-                      __('WordPress', 'alpaca')}
+                      __('WordPress', 'alpaca-issue-tracker')}
                   </strong>
                 </div>
                 <div className="alpaca-notification-preview-meta">
-                  <span>{__('Subject', 'alpaca')}</span>
+                  <span>{__('Subject', 'alpaca-issue-tracker')}</span>
                   <strong>{preview.subject}</strong>
                 </div>
               </div>

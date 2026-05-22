@@ -22,7 +22,7 @@ export const addChecklistProgressDatapoint = (originalContent, itemProps) => {
     return (
       <>
         {originalContent}
-        <Tooltip text={__('Checklist Progress', 'alpaca')}>
+        <Tooltip text={__('Checklist Progress', 'alpaca-issue-tracker')}>
           <div className="alpaca-item-icon alpaca-item-checklist-progress">
             <Icon name="check2-square" />
             {`${subissueCompleted}/${subissueTotal}`}
@@ -37,7 +37,7 @@ export const addChecklistProgressDatapoint = (originalContent, itemProps) => {
 
 export const checklistProgressDatapointRegistration = {
   slug: 'checklist_progress',
-  label: __('Checklist Progress', 'alpaca'),
+  label: __('Checklist Progress', 'alpaca-issue-tracker'),
   namespace: 'alpaca/item/addChecklistProgressDatapoint',
   callback: addChecklistProgressDatapoint,
   defaultEnabled: true,

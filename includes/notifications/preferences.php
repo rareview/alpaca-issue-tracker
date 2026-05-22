@@ -1,8 +1,8 @@
 <?php
 /**
- * Notification preference helpers for Alpaca issue activity emails.
+ * Notification preference helpers for Alpaca Issue Tracker issue activity emails.
  *
- * @package Alpaca
+ * @package AlpacaIssueTracker
  */
 
 // Exit if accessed directly.
@@ -15,13 +15,13 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @return array<string, array<string, mixed>> Channel registry keyed by channel ID.
  */
-function alpaca_get_notification_channel_registry() {
+function alpaistr_get_notification_channel_registry() {
 	$channels = [
 		'email' => [
 			'key'                => 'email',
 			'transport'          => 'email',
-			'label'              => esc_html__( 'Email', 'alpaca' ),
-			'description'        => esc_html__( 'Sends updates to your email address.', 'alpaca' ),
+			'label'              => esc_html__( 'Email', 'alpaca-issue-tracker' ),
+			'description'        => esc_html__( 'Sends updates to your email address.', 'alpaca-issue-tracker' ),
 			'enabled_by_default' => false,
 			'is_available'       => true,
 			'supports_digest'    => true,
@@ -30,8 +30,8 @@ function alpaca_get_notification_channel_registry() {
 				[
 					'key'   => 'address_override',
 					'type'  => 'email',
-					'label' => esc_html__( 'Email address', 'alpaca' ),
-					'help'  => esc_html__( 'Uses your WordPress profile email unless you enter a different address here.', 'alpaca' ),
+					'label' => esc_html__( 'Email address', 'alpaca-issue-tracker' ),
+					'help'  => esc_html__( 'Uses your WordPress profile email unless you enter a different address here.', 'alpaca-issue-tracker' ),
 				],
 			],
 		],
@@ -72,8 +72,8 @@ function alpaca_get_notification_channel_registry() {
  *
  * @return array<string, array<string, mixed>> Default channel settings.
  */
-function alpaca_get_notification_channel_defaults() {
-	$channels = alpaca_get_notification_channel_registry();
+function alpaistr_get_notification_channel_defaults() {
+	$channels = alpaistr_get_notification_channel_registry();
 	$defaults = [];
 
 	foreach ( $channels as $channel_key => $channel ) {
@@ -94,11 +94,11 @@ function alpaca_get_notification_channel_defaults() {
  *
  * @return array<string, mixed> Default preferences.
  */
-function alpaca_get_notification_preference_defaults() {
+function alpaistr_get_notification_preference_defaults() {
 	return [
-		'channels'  => alpaca_get_notification_channel_defaults(),
+		'channels'  => alpaistr_get_notification_channel_defaults(),
 		'digests'   => [
-			'daily' => alpaca_get_notification_daily_digest_defaults(),
+			'daily' => alpaistr_get_notification_daily_digest_defaults(),
 		],
 		'label_ids' => [],
 		'subjects'  => [
@@ -129,8 +129,8 @@ function alpaca_get_notification_preference_defaults() {
  *
  * @return string[] Digest-capable channel keys.
  */
-function alpaca_get_notification_digest_supported_channel_keys() {
-	$channels     = alpaca_get_notification_channel_registry();
+function alpaistr_get_notification_digest_supported_channel_keys() {
+	$channels     = alpaistr_get_notification_channel_registry();
 	$channel_keys = [];
 
 	foreach ( $channels as $channel_key => $channel ) {
@@ -149,10 +149,10 @@ function alpaca_get_notification_digest_supported_channel_keys() {
  *
  * @return array<string, mixed> Daily digest defaults.
  */
-function alpaca_get_notification_daily_digest_defaults() {
+function alpaistr_get_notification_daily_digest_defaults() {
 	$channels = [];
 
-	foreach ( alpaca_get_notification_digest_supported_channel_keys() as $channel_key ) {
+	foreach ( alpaistr_get_notification_digest_supported_channel_keys() as $channel_key ) {
 		$channels[ $channel_key ] = 'email' === $channel_key;
 	}
 
@@ -169,7 +169,7 @@ function alpaca_get_notification_daily_digest_defaults() {
  * @param mixed $send_time Raw send time.
  * @return string Normalized time string.
  */
-function alpaca_normalize_notification_daily_digest_time( $send_time ) {
+function alpaistr_normalize_notification_daily_digest_time( $send_time ) {
 	$send_time = is_string( $send_time ) ? trim( $send_time ) : '';
 	if ( preg_match( '/^(?:[01]\d|2[0-3]):[0-5]\d$/', $send_time ) ) {
 		return $send_time;
@@ -184,9 +184,9 @@ function alpaca_normalize_notification_daily_digest_time( $send_time ) {
  * @param mixed $daily_preferences Raw daily digest preferences.
  * @return array<string, mixed> Sanitized daily digest preferences.
  */
-function alpaca_sanitize_notification_daily_digest_preferences( $daily_preferences ) {
-	$defaults           = alpaca_get_notification_daily_digest_defaults();
-	$supported_channels = alpaca_get_notification_digest_supported_channel_keys();
+function alpaistr_sanitize_notification_daily_digest_preferences( $daily_preferences ) {
+	$defaults           = alpaistr_get_notification_daily_digest_defaults();
+	$supported_channels = alpaistr_get_notification_digest_supported_channel_keys();
 
 	if ( ! is_array( $daily_preferences ) ) {
 		return $defaults;
@@ -202,7 +202,7 @@ function alpaca_sanitize_notification_daily_digest_preferences( $daily_preferenc
 	return [
 		'enabled'   => ! empty( $daily_preferences['enabled'] ),
 		'channels'  => $channels,
-		'send_time' => alpaca_normalize_notification_daily_digest_time( isset( $daily_preferences['send_time'] ) ? $daily_preferences['send_time'] : $defaults['send_time'] ),
+		'send_time' => alpaistr_normalize_notification_daily_digest_time( isset( $daily_preferences['send_time'] ) ? $daily_preferences['send_time'] : $defaults['send_time'] ),
 	];
 }
 
@@ -211,14 +211,14 @@ function alpaca_sanitize_notification_daily_digest_preferences( $daily_preferenc
  *
  * @return string Timezone label.
  */
-function alpaca_get_notification_site_timezone_label() {
+function alpaistr_get_notification_site_timezone_label() {
 	$timezone_string = wp_timezone_string();
 
 	if ( is_string( $timezone_string ) && '' !== trim( $timezone_string ) ) {
 		return trim( $timezone_string );
 	}
 
-	return esc_html__( 'Site timezone', 'alpaca' );
+	return esc_html__( 'Site timezone', 'alpaca-issue-tracker' );
 }
 
 /**
@@ -227,8 +227,8 @@ function alpaca_get_notification_site_timezone_label() {
  * @param array<string, mixed>|null $preferences Notification preferences.
  * @return array<string, mixed> Email channel settings.
  */
-function alpaca_get_notification_email_channel_preferences( $preferences ) {
-	$defaults      = alpaca_get_notification_channel_defaults();
+function alpaistr_get_notification_email_channel_preferences( $preferences ) {
+	$defaults      = alpaistr_get_notification_channel_defaults();
 	$email_default = isset( $defaults['email'] ) && is_array( $defaults['email'] ) ? $defaults['email'] : [
 		'enabled'          => false,
 		'address_override' => '',
@@ -258,12 +258,12 @@ function alpaca_get_notification_email_channel_preferences( $preferences ) {
 }
 
 /**
- * Return valid Alpaca label term IDs from a raw list.
+ * Return valid Alpaca Issue Tracker label term IDs from a raw list.
  *
  * @param mixed $label_ids Raw label IDs.
- * @return int[] Valid Alpaca label term IDs.
+ * @return int[] Valid Alpaca Issue Tracker label term IDs.
  */
-function alpaca_get_valid_notification_label_ids( $label_ids ) {
+function alpaistr_get_valid_notification_label_ids( $label_ids ) {
 	if ( ! is_array( $label_ids ) ) {
 		return [];
 	}
@@ -295,7 +295,7 @@ function alpaca_get_valid_notification_label_ids( $label_ids ) {
  * @param int $user_id User ID.
  * @return string Valid profile email or an empty string.
  */
-function alpaca_get_notification_profile_email( $user_id ) {
+function alpaistr_get_notification_profile_email( $user_id ) {
 	$user = get_user_by( 'id', (int) $user_id );
 	if ( ! ( $user instanceof WP_User ) ) {
 		return '';
@@ -315,8 +315,8 @@ function alpaca_get_notification_profile_email( $user_id ) {
  * @param array<string, mixed> $preferences Notification preferences.
  * @return bool True when a non-empty override is present.
  */
-function alpaca_notification_preferences_use_email_override( $preferences ) {
-	$email_preferences = alpaca_get_notification_email_channel_preferences( $preferences );
+function alpaistr_notification_preferences_use_email_override( $preferences ) {
+	$email_preferences = alpaistr_get_notification_email_channel_preferences( $preferences );
 	$override          = isset( $email_preferences['address_override'] ) ? trim( (string) $email_preferences['address_override'] ) : '';
 
 	return '' !== $override;
@@ -329,14 +329,14 @@ function alpaca_notification_preferences_use_email_override( $preferences ) {
  * @param array<string, mixed>|null $preferences Optional preferences payload.
  * @return string Valid delivery email or an empty string.
  */
-function alpaca_get_notification_effective_email( $user_id, $preferences = null ) {
-	$email_preferences = alpaca_get_notification_email_channel_preferences( $preferences );
+function alpaistr_get_notification_effective_email( $user_id, $preferences = null ) {
+	$email_preferences = alpaistr_get_notification_email_channel_preferences( $preferences );
 	$override          = isset( $email_preferences['address_override'] ) ? trim( (string) $email_preferences['address_override'] ) : '';
 	if ( '' !== $override && is_email( $override ) ) {
 		return $override;
 	}
 
-	return alpaca_get_notification_profile_email( $user_id );
+	return alpaistr_get_notification_profile_email( $user_id );
 }
 
 /**
@@ -344,13 +344,13 @@ function alpaca_get_notification_effective_email( $user_id, $preferences = null 
  *
  * @return bool True when the built-in inbox is enabled.
  */
-function alpaca_notification_builtin_inbox_is_enabled() {
+function alpaistr_notification_builtin_inbox_is_enabled() {
 	/**
-	 * Filter whether the built-in inbox should capture Alpaca notifications.
+	 * Filter whether the built-in inbox should capture Alpaca Issue Tracker notifications.
 	 *
 	 * @param bool $enabled Whether the built-in inbox is enabled.
 	 */
-	return (bool) apply_filters( 'alpaca_notification_builtin_inbox_is_enabled', true );
+	return (bool) apply_filters( 'alpaistr_notification_builtin_inbox_is_enabled', true );
 }
 
 /**
@@ -360,10 +360,10 @@ function alpaca_notification_builtin_inbox_is_enabled() {
  * @param string               $channel_key Channel key.
  * @return bool True when the channel is enabled.
  */
-function alpaca_notification_channel_is_enabled( $preferences, $channel_key ) {
+function alpaistr_notification_channel_is_enabled( $preferences, $channel_key ) {
 	$channel_key = sanitize_key( (string) $channel_key );
 	if ( 'email' === $channel_key ) {
-		$email_preferences = alpaca_get_notification_email_channel_preferences( $preferences );
+		$email_preferences = alpaistr_get_notification_email_channel_preferences( $preferences );
 
 		return ! empty( $email_preferences['enabled'] );
 	}
@@ -381,10 +381,10 @@ function alpaca_notification_channel_is_enabled( $preferences, $channel_key ) {
  * @param array<string, mixed> $preferences Notification preferences.
  * @return bool True when at least one channel is enabled.
  */
-function alpaca_notification_preferences_have_enabled_channels( $preferences ) {
-	$channels = alpaca_get_notification_channel_registry();
+function alpaistr_notification_preferences_have_enabled_channels( $preferences ) {
+	$channels = alpaistr_get_notification_channel_registry();
 	foreach ( array_keys( $channels ) as $channel_key ) {
-		if ( alpaca_notification_channel_is_enabled( $preferences, $channel_key ) ) {
+		if ( alpaistr_notification_channel_is_enabled( $preferences, $channel_key ) ) {
 			return true;
 		}
 	}
@@ -399,7 +399,7 @@ function alpaca_notification_preferences_have_enabled_channels( $preferences ) {
  * @param string               $channel_key Channel key.
  * @return bool True when the digest channel is enabled.
  */
-function alpaca_notification_digest_channel_is_enabled( $preferences, $channel_key ) {
+function alpaistr_notification_digest_channel_is_enabled( $preferences, $channel_key ) {
 	$channel_key = sanitize_key( (string) $channel_key );
 	if ( '' === $channel_key || ! is_array( $preferences ) ) {
 		return false;
@@ -422,7 +422,7 @@ function alpaca_notification_digest_channel_is_enabled( $preferences, $channel_k
  * @param array<string, mixed> $preferences Notification preferences.
  * @return bool True when at least one digest channel is enabled.
  */
-function alpaca_notification_preferences_have_enabled_digest_channels( $preferences ) {
+function alpaistr_notification_preferences_have_enabled_digest_channels( $preferences ) {
 	if (
 		! is_array( $preferences ) ||
 		empty( $preferences['digests']['daily'] ) ||
@@ -432,8 +432,8 @@ function alpaca_notification_preferences_have_enabled_digest_channels( $preferen
 		return false;
 	}
 
-	foreach ( alpaca_get_notification_digest_supported_channel_keys() as $channel_key ) {
-		if ( alpaca_notification_digest_channel_is_enabled( $preferences, $channel_key ) ) {
+	foreach ( alpaistr_get_notification_digest_supported_channel_keys() as $channel_key ) {
+		if ( alpaistr_notification_digest_channel_is_enabled( $preferences, $channel_key ) ) {
 			return true;
 		}
 	}
@@ -447,16 +447,16 @@ function alpaca_notification_preferences_have_enabled_digest_channels( $preferen
  * @param array<string, mixed> $preferences Notification preferences.
  * @return bool True when any instant or digest delivery target is enabled.
  */
-function alpaca_notification_preferences_have_enabled_delivery_targets( $preferences ) {
-	if ( alpaca_notification_builtin_inbox_is_enabled() ) {
+function alpaistr_notification_preferences_have_enabled_delivery_targets( $preferences ) {
+	if ( alpaistr_notification_builtin_inbox_is_enabled() ) {
 		return true;
 	}
 
-	if ( alpaca_notification_preferences_have_enabled_channels( $preferences ) ) {
+	if ( alpaistr_notification_preferences_have_enabled_channels( $preferences ) ) {
 		return true;
 	}
 
-	return alpaca_notification_preferences_have_enabled_digest_channels( $preferences );
+	return alpaistr_notification_preferences_have_enabled_digest_channels( $preferences );
 }
 
 /**
@@ -466,16 +466,16 @@ function alpaca_notification_preferences_have_enabled_delivery_targets( $prefere
  * @param array<string, mixed> $preferences Notification preferences.
  * @return array<string, array<string, mixed>> Channel status keyed by channel ID.
  */
-function alpaca_get_notification_channel_status_for_user( $user_id, $preferences ) {
+function alpaistr_get_notification_channel_status_for_user( $user_id, $preferences ) {
 	$statuses            = [];
-	$channels            = alpaca_get_notification_channel_registry();
-	$profile_address     = alpaca_get_notification_profile_email( $user_id );
-	$effective_address   = alpaca_get_notification_effective_email( $user_id, $preferences );
+	$channels            = alpaistr_get_notification_channel_registry();
+	$profile_address     = alpaistr_get_notification_profile_email( $user_id );
+	$effective_address   = alpaistr_get_notification_effective_email( $user_id, $preferences );
 	$uses_email_override = false;
 
 	if ( '' !== $effective_address ) {
 		if ( '' === $profile_address ) {
-			$uses_email_override = alpaca_notification_preferences_use_email_override( $preferences );
+			$uses_email_override = alpaistr_notification_preferences_use_email_override( $preferences );
 		} elseif ( 0 !== strcasecmp( $effective_address, $profile_address ) ) {
 			$uses_email_override = true;
 		}
@@ -501,11 +501,11 @@ function alpaca_get_notification_channel_status_for_user( $user_id, $preferences
 }
 
 /**
- * Return user IDs with saved Alpaca notification preferences.
+ * Return user IDs with saved Alpaca Issue Tracker notification preferences.
  *
  * @return int[] User IDs.
  */
-function alpaca_get_notification_preference_user_ids() {
+function alpaistr_get_notification_preference_user_ids() {
 	global $wpdb;
 
 	$cache_key       = 'notification_preference_user_ids';
@@ -537,15 +537,15 @@ function alpaca_get_notification_preference_user_ids() {
  * @param int $user_id User ID.
  * @return array<string, mixed> Preferences merged with defaults.
  */
-function alpaca_get_notification_preferences_for_user( $user_id ) {
-	$defaults = alpaca_get_notification_preference_defaults();
+function alpaistr_get_notification_preferences_for_user( $user_id ) {
+	$defaults = alpaistr_get_notification_preference_defaults();
 	$stored   = get_user_meta( (int) $user_id, 'alpaca_notification_preferences', true );
 
 	if ( ! is_array( $stored ) ) {
 		return $defaults;
 	}
 
-	$stored = alpaca_sanitize_notification_preferences( $stored );
+	$stored = alpaistr_sanitize_notification_preferences( $stored );
 
 	return [
 		'channels'  => array_merge( $defaults['channels'], isset( $stored['channels'] ) && is_array( $stored['channels'] ) ? $stored['channels'] : [] ),
@@ -567,8 +567,8 @@ function alpaca_get_notification_preferences_for_user( $user_id ) {
  * @param mixed $preferences Raw preferences.
  * @return array<string, mixed> Sanitized preferences.
  */
-function alpaca_sanitize_notification_preferences( $preferences ) {
-	$defaults  = alpaca_get_notification_preference_defaults();
+function alpaistr_sanitize_notification_preferences( $preferences ) {
+	$defaults  = alpaistr_get_notification_preference_defaults();
 	$sanitized = [
 		'channels'  => $defaults['channels'],
 		'digests'   => $defaults['digests'],
@@ -580,7 +580,7 @@ function alpaca_sanitize_notification_preferences( $preferences ) {
 	if ( is_array( $preferences ) ) {
 		foreach ( $defaults['channels'] as $channel_key => $channel_defaults ) {
 			if ( 'email' === $channel_key ) {
-				$sanitized['channels']['email'] = alpaca_get_notification_email_channel_preferences( $preferences );
+				$sanitized['channels']['email'] = alpaistr_get_notification_email_channel_preferences( $preferences );
 				continue;
 			}
 
@@ -596,11 +596,11 @@ function alpaca_sanitize_notification_preferences( $preferences ) {
 	}
 
 	if ( is_array( $preferences ) && isset( $preferences['label_ids'] ) ) {
-		$sanitized['label_ids'] = alpaca_get_valid_notification_label_ids( $preferences['label_ids'] );
+		$sanitized['label_ids'] = alpaistr_get_valid_notification_label_ids( $preferences['label_ids'] );
 	}
 
 	if ( is_array( $preferences ) && isset( $preferences['digests'] ) && is_array( $preferences['digests'] ) ) {
-		$sanitized['digests']['daily'] = alpaca_sanitize_notification_daily_digest_preferences(
+		$sanitized['digests']['daily'] = alpaistr_sanitize_notification_daily_digest_preferences(
 			isset( $preferences['digests']['daily'] ) ? $preferences['digests']['daily'] : []
 		);
 	}
@@ -623,8 +623,8 @@ function alpaca_sanitize_notification_preferences( $preferences ) {
  *
  * @return array<int, array<string, mixed>> Available channel definitions.
  */
-function alpaca_get_available_notification_channels() {
-	$channels  = alpaca_get_notification_channel_registry();
+function alpaistr_get_available_notification_channels() {
+	$channels  = alpaistr_get_notification_channel_registry();
 	$available = [];
 
 	foreach ( $channels as $channel ) {
@@ -645,20 +645,20 @@ function alpaca_get_available_notification_channels() {
  * @param array<string,mixed> $preferences Preferences to save.
  * @return array<string, mixed>|WP_Error Saved preferences.
  */
-function alpaca_update_notification_preferences_for_user( $user_id, $preferences ) {
-	$email_preferences = alpaca_get_notification_email_channel_preferences( is_array( $preferences ) ? $preferences : [] );
+function alpaistr_update_notification_preferences_for_user( $user_id, $preferences ) {
+	$email_preferences = alpaistr_get_notification_email_channel_preferences( is_array( $preferences ) ? $preferences : [] );
 	$override          = isset( $email_preferences['address_override'] ) ? trim( (string) $email_preferences['address_override'] ) : '';
 
 	if ( '' !== $override && ! is_email( $override ) ) {
 		return new WP_Error(
 			'alpaca_invalid_notification_email_override',
-			esc_html__( 'Enter a valid notification email address or leave the override blank.', 'alpaca' )
+			esc_html__( 'Enter a valid notification email address or leave the override blank.', 'alpaca-issue-tracker' )
 		);
 	}
 
-	$sanitized = alpaca_sanitize_notification_preferences( $preferences );
+	$sanitized = alpaistr_sanitize_notification_preferences( $preferences );
 	if ( isset( $sanitized['channels']['email']['address_override'] ) ) {
-		$profile_email = alpaca_get_notification_profile_email( $user_id );
+		$profile_email = alpaistr_get_notification_profile_email( $user_id );
 		$override      = trim( (string) $sanitized['channels']['email']['address_override'] );
 
 		if ( '' !== $override && '' !== $profile_email && 0 === strcasecmp( $override, $profile_email ) ) {
@@ -666,26 +666,26 @@ function alpaca_update_notification_preferences_for_user( $user_id, $preferences
 		}
 	}
 
-	$effective_email = alpaca_get_notification_effective_email( $user_id, $sanitized );
+	$effective_email = alpaistr_get_notification_effective_email( $user_id, $sanitized );
 	if (
 		(
-			alpaca_notification_channel_is_enabled( $sanitized, 'email' ) ||
-			alpaca_notification_digest_channel_is_enabled( $sanitized, 'email' )
+			alpaistr_notification_channel_is_enabled( $sanitized, 'email' ) ||
+			alpaistr_notification_digest_channel_is_enabled( $sanitized, 'email' )
 		) &&
 		( '' === $effective_email || ! is_email( $effective_email ) )
 	) {
 		return new WP_Error(
 			'alpaca_invalid_notification_delivery_email',
-			esc_html__( 'Add a valid email address before enabling email notifications or the daily digest.', 'alpaca' )
+			esc_html__( 'Add a valid email address before enabling email notifications or the daily digest.', 'alpaca-issue-tracker' )
 		);
 	}
 
 	update_user_meta( (int) $user_id, 'alpaca_notification_preferences', $sanitized );
 	wp_cache_delete( 'notification_preference_user_ids', 'alpaca_notifications' );
 
-	if ( function_exists( 'alpaca_sync_notification_daily_digest_schedule' ) ) {
-		alpaca_sync_notification_daily_digest_schedule( (int) $user_id, $sanitized );
+	if ( function_exists( 'alpaistr_sync_notification_daily_digest_schedule' ) ) {
+		alpaistr_sync_notification_daily_digest_schedule( (int) $user_id, $sanitized );
 	}
 
-	return alpaca_get_notification_preferences_for_user( $user_id );
+	return alpaistr_get_notification_preferences_for_user( $user_id );
 }

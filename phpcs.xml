@@ -3,7 +3,7 @@
   <description>WordPress Coding Standards for Alpaca Issue Tracker</description>
 
   <!-- Paths to check -->
-  <file>./alpaca.php</file>
+  <file>./alpacaissuetracker.php</file>
   <file>./includes</file>
   <file>./lib</file>
   <file>./uninstall.php</file>

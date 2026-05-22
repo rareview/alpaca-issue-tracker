@@ -64,7 +64,9 @@ const isImageAttachment = (attachment) => {
 
 const getAttachmentTypeLabel = (attachment) => {
   const extension = getAttachmentExtension(getAttachmentName(attachment));
-  return extension ? extension.toUpperCase() : __('File', 'alpaca');
+  return extension
+    ? extension.toUpperCase()
+    : __('File', 'alpaca-issue-tracker');
 };
 
 const Attachment = ({
@@ -110,7 +112,7 @@ const Attachment = ({
             className="alpaca-attachment-file-link"
             href={attachment.url}
             download
-            aria-label={__('Download attachment', 'alpaca')}
+            aria-label={__('Download attachment', 'alpaca-issue-tracker')}
           >
             <span className="alpaca-attachment-file-meta">
               <span className="alpaca-attachment-file-name">
@@ -134,8 +136,8 @@ const Attachment = ({
               event.stopPropagation();
               setShowConfirm(true);
             }}
-            aria-label={__('Delete attachment', 'alpaca')}
-            title={__('Delete attachment', 'alpaca')}
+            aria-label={__('Delete attachment', 'alpaca-issue-tracker')}
+            title={__('Delete attachment', 'alpaca-issue-tracker')}
             className="alpaca-attachment-delete"
           >
             <span aria-hidden="true">×</span>
@@ -143,14 +145,14 @@ const Attachment = ({
 
           {showConfirm && (
             <Modal
-              title={__('Delete attachment?', 'alpaca')}
+              title={__('Delete attachment?', 'alpaca-issue-tracker')}
               onRequestClose={() => setShowConfirm(false)}
               className="alpaca-modal"
             >
               <p>
                 {__(
                   'Are you sure you want to delete this attachment?',
-                  'alpaca',
+                  'alpaca-issue-tracker',
                 )}
               </p>
               <Button
@@ -161,10 +163,10 @@ const Attachment = ({
                   onAttachmentDelete();
                 }}
               >
-                {__('Delete', 'alpaca')}
+                {__('Delete', 'alpaca-issue-tracker')}
               </Button>
               <Button onClick={() => setShowConfirm(false)}>
-                {__('Cancel', 'alpaca')}
+                {__('Cancel', 'alpaca-issue-tracker')}
               </Button>
             </Modal>
           )}

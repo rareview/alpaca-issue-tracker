@@ -4,7 +4,7 @@
  * @return {string} Default label color.
  */
 export const getDefaultLabelColor = () => {
-  const defaultLabelColor = window.alpacaSettings?.defaultLabelColor;
+  const defaultLabelColor = window.alpaistrSettings?.defaultLabelColor;
 
   if (typeof defaultLabelColor !== 'string') {
     return '';

@@ -2,7 +2,7 @@
 Contributors: rareview, s1m0nd, pratikbarvaliya, tahireu
 Tags: issue tracker, bug tracker, project management, kanban, development
 Requires at least: 6.8
-Tested up to: 6.9
+Tested up to: 7.0
 Requires PHP: 7.4
 Stable tag: 1.0.0
 License: GPLv2 or later
@@ -82,7 +82,7 @@ Yes! You can choose which metadata points are shown on cards in the Board view, 
 
 Alpaca Issue Tracker works on multisite installations, with each site having its own independent project board. An aggregation view across sites is planned for a future release.
 
-= What kinds of notifications can Alpaca send? =
+= What kinds of notifications can Alpaca Issue Tracker send? =
 
 Alpaca Issue Tracker ships with a highly configurable email notification system. You can choose to receive instant notifications of activity relevant to you and your issues; or a daily digest of all activity. You can even design the email templates using a block-based editor.
 

@@ -8,15 +8,15 @@
  * Requires PHP:      7.4
  * Author:            Rareview®
  * Author URI:        https://rareview.com/
- * Text Domain:       alpaca
+ * Text Domain:       alpaca-issue-tracker
  * Domain Path:       /languages
  * License:           GPL v2 or later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  *
- * @package Alpaca
+ * @package AlpacaIssueTracker
  */
 
-namespace Alpaca;
+namespace AlpacaIssueTracker;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -24,16 +24,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Define plugin directory constant.
-if ( ! defined( 'ALPACA_PLUGIN_DIR' ) ) {
-	define( 'ALPACA_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+if ( ! defined( 'ALPAISTR_PLUGIN_DIR' ) ) {
+	define( 'ALPAISTR_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 }
 
 // Manually require core classes for now.
-require_once ALPACA_PLUGIN_DIR . 'includes/class-alpaca.php';
-require_once ALPACA_PLUGIN_DIR . 'includes/class-helpers.php';
-require_once ALPACA_PLUGIN_DIR . 'includes/class-register.php';
-require_once ALPACA_PLUGIN_DIR . 'includes/class-activator.php';
-require_once ALPACA_PLUGIN_DIR . 'includes/class-deactivator.php';
+require_once ALPAISTR_PLUGIN_DIR . 'includes/class-alpacaissuetracker.php';
+require_once ALPAISTR_PLUGIN_DIR . 'includes/class-helpers.php';
+require_once ALPAISTR_PLUGIN_DIR . 'includes/class-register.php';
+require_once ALPAISTR_PLUGIN_DIR . 'includes/class-activator.php';
+require_once ALPAISTR_PLUGIN_DIR . 'includes/class-deactivator.php';
 
 // Register activation and deactivation hooks.
 register_activation_hook( __FILE__, [ Activator::class, 'activate' ] );
@@ -45,11 +45,11 @@ new Register();
 /**
  * Initialize the plugin.
  *
- * @return Alpaca
+ * @return AlpacaIssueTracker
  */
-function alpaca_init() {
-	return Alpaca::instance();
+function alpaistr_init() {
+	return AlpacaIssueTracker::instance();
 }
 
 // Start the plugin.
-alpaca_init();
+alpaistr_init();

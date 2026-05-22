@@ -62,10 +62,10 @@ const { createMountReactTree } = reactMountUtils;
 const isAdmin = document.body.classList.contains('wp-admin');
 const contextualCaptureEnabled =
   typeof window !== 'undefined' &&
-  (window.alpacaSettings?.contextualCaptureEnabled === true ||
-    window.alpacaSettings?.contextualCaptureEnabled === 1 ||
-    window.alpacaSettings?.contextualCaptureEnabled === '1' ||
-    typeof window.alpacaSettings?.contextualCaptureEnabled === 'undefined');
+  (window.alpaistrSettings?.contextualCaptureEnabled === true ||
+    window.alpaistrSettings?.contextualCaptureEnabled === 1 ||
+    window.alpaistrSettings?.contextualCaptureEnabled === '1' ||
+    typeof window.alpaistrSettings?.contextualCaptureEnabled === 'undefined');
 const mountReactTree = createMountReactTree({
   createRoot,
   legacyRender,
@@ -122,7 +122,10 @@ if (document.querySelector('#alpaca-dashboard-widget')) {
     data = el.dataset.props ? JSON.parse(el.dataset.props) : null;
   } catch (e) {
     // eslint-disable-next-line no-console
-    console.error('Alpaca dashboard widget: invalid data-props', e);
+    console.error(
+      'Alpaca Issue Tracker dashboard widget: invalid data-props',
+      e,
+    );
   }
   mountReactTree(<AlpacaDashboardWidget data={data} />, el);
 }

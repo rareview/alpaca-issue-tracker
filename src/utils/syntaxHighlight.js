@@ -1,5 +1,5 @@
 /**
- * Syntax highlighting utilities for Alpaca data tabs.
+ * Syntax highlighting utilities for Alpaca Issue Tracker data tabs.
  * Provides language detection and formatting for Prism.js integration.
  */
 
