@@ -207,6 +207,14 @@ const AlpacaToolbar = () => {
         },
       );
 
+      if (isHighPriority) {
+        doAction('alpaca.priorityUpdated', {
+          issueId: responseData.issue.id,
+          isHighPriority: true,
+          issue: responseData.issue,
+        });
+      }
+
       setTimeout(closeForm, 1500);
     } catch (error) {
       console.error('Submission error:', error);
