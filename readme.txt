@@ -96,9 +96,14 @@ All data is stored in your WordPress database's core tables using custom post ty
 
 == Screenshots ==
 
-1. to follow
-2. to follow
-3. to follow
+1. Project Board organizes issues by status with labels, assignees, deadlines, watchlist state, and priority indicators.
+2. Issue details keep priority, due dates, assignees, labels, checklist items, attachments, and the comment timeline in one place.
+3. Project Activity shows a chronological feed of issue comments and updates across the board.
+4. Context Capture lets users report an issue from wp-admin with an optional high-priority flag and technical context.
+5. Notification preferences let each user control instant and daily digest updates for issue activity.
+6. Configure keeps board statuses, labels, deleted items, cards, and global settings inside WordPress.
+7. Frontend issue capture lets logged-in users report problems from public pages without opening wp-admin.
+8. Email Templates let admins edit instant and daily digest email content with a live preview.
 
 == Third-Party Libraries ==
 
