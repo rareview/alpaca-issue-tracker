@@ -1365,9 +1365,18 @@ export function AlpacaBoard() {
         return prevContainers;
       }
 
-      const firstContainerIndex = 0;
       const updatedContainers = [...prevContainers];
-      const firstContainer = { ...updatedContainers[firstContainerIndex] };
+
+      // If the issue carries a statusId, insert into the matching container;
+      // otherwise fall back to the first container.
+      const targetIndex = createdIssue.statusId
+        ? updatedContainers.findIndex(
+            (c) => c.id === String(createdIssue.statusId),
+          )
+        : -1;
+      const insertIndex = targetIndex !== -1 ? targetIndex : 0;
+
+      const targetContainer = { ...updatedContainers[insertIndex] };
 
       const newItem = {
         id: createdIssue.id.toString(),
@@ -1386,15 +1395,19 @@ export function AlpacaBoard() {
         },
       };
 
-      // Add new issue to the top of the first container for immediate UI update
-      firstContainer.items = [newItem, ...firstContainer.items];
-      updatedContainers[firstContainerIndex] = firstContainer;
+      // Add new issue to the top of the target container for immediate UI update.
+      targetContainer.items = [newItem, ...targetContainer.items];
+      updatedContainers[insertIndex] = targetContainer;
 
       return updatedContainers;
     });
 
     closeModal();
   };
+
+  const handleAddIssueInColumn = useCallback((containerId) => {
+    setSelectedItem({ isCreating: true, initialStatusId: containerId });
+  }, []);
 
   useEffect(() => {
     if (!selectedItem && triggerRef.current) {
@@ -1790,6 +1803,7 @@ export function AlpacaBoard() {
                 onRename={handleRenameContainer}
                 onItemDrop={handleItemDrop}
                 onBulkItemReorder={handleBulkItemReorder}
+                onAddIssue={handleAddIssueInColumn}
               />
             ))}
           </div>
@@ -1800,6 +1814,7 @@ export function AlpacaBoard() {
         key={selectedItem?.isCreating ? 'creating' : selectedItem?.id || 'none'}
         issueId={selectedItem?.id}
         isCreating={selectedItem?.isCreating}
+        initialStatusId={selectedItem?.initialStatusId || null}
         isOpen={!!selectedItem}
         activeSearchQuery={
           activeSearchFilter && typeof activeSearchFilter.query === 'string'
