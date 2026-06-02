@@ -1,0 +1,2311 @@
+# Copyright (C) 2026 Rareview®
+# This file is distributed under the GPL v2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Alpaca Issue Tracker 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/alpaca-issue-"
+"tracker\n"
+"Last-Translator: \n"
+"Language-Team: Hindi\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-05-06T14:31:53+00:00\n"
+"PO-Revision-Date: 2026-06-02 14:21+0000\n"
+"X-Generator: Loco https://localise.biz/\n"
+"X-Domain: alpaca-issue-tracker\n"
+"Language: hi_IN\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Loco-Version: 2.8.5; wp-7.0; php-8.2.29"
+
+#. Plugin Name of the plugin
+#: alpacaissuetracker.php
+msgid "Alpaca Issue Tracker"
+msgstr "Alpaca इश्यू ट्रैकर"
+
+#. Plugin URI of the plugin
+#: alpacaissuetracker.php
+msgid "https://github.com/rareview/alpaca"
+msgstr "https://github.com/rareview/alpaca"
+
+#. Description of the plugin
+#: alpacaissuetracker.php
+msgid ""
+"Bug reporting and Trello-esque kanban project management inside WordPress. "
+"No subscriptions, no new accounts, no artificial limitations."
+msgstr ""
+"बग रिपोर्टिंग और ट्रेलो-जैसे कानबन प्रोजेक्ट मैनेजमेंट, जो वर्डप्रेस के अंदर "
+"उपलब्ध है। कोई सब्सक्रिप्शन नहीं, कोई नई खाते नहीं, कोई कृत्रिम सीमाएं नहीं।"
+
+#. Author of the plugin
+#: alpacaissuetracker.php
+msgid "Rareview®"
+msgstr "रेयरव्यू®"
+
+#. Author URI of the plugin
+#: alpacaissuetracker.php
+msgid "https://rareview.com/"
+msgstr "https://rareview.com/"
+
+#: includes/admin/admin-bar.php:73 src/Modal.jsx:204 src/Toolbar.jsx:248
+#: src/Toolbar.jsx:264
+msgid "Report An Issue"
+msgstr "समस्या की रिपोर्ट करें"
+
+#: includes/admin/admin-screens.php:17 includes/admin/admin-screens.php:18
+#: includes/core/board.php:20 src/Toolbar.jsx:252
+msgid "Project Board"
+msgstr "प्रोजेक्ट बोर्ड"
+
+#: includes/admin/admin-screens.php:28 includes/admin/admin-screens.php:29
+#: includes/admin/admin-screens.php:94
+msgid "Project Activity"
+msgstr "परियोजना गतिविधि"
+
+#: includes/admin/admin-screens.php:37 includes/admin/admin-screens.php:38
+#: includes/admin/admin-screens.php:72
+msgid "Configure"
+msgstr "कॉन्फ़िगर करें"
+
+#: includes/admin/admin-screens.php:46 includes/admin/admin-screens.php:47
+#: includes/admin/admin-screens.php:106
+msgid "My Notifications"
+msgstr "मेरे सूचनाएं"
+
+#: includes/admin/admin-screens.php:55 includes/admin/admin-screens.php:56
+#: includes/admin/admin-screens.php:123
+msgid "Email Templates"
+msgstr "ईमेल टेम्प्लेट"
+
+#: includes/admin/admin-screens.php:75
+msgid "Changes made on this screen will affect all users."
+msgstr "इस स्क्रीन पर किए गए बदलाव सभी उपयोगकर्ताओं को प्रभावित करेंगे।"
+
+#: includes/admin/admin-screens.php:109
+msgid "Changes made on this screen will only affect the current user."
+msgstr "इस स्क्रीन पर किए गए बदलाव केवल वर्तमान उपयोगकर्ता को प्रभावित करेंगे।"
+
+#: includes/admin/dashboard-widget.php:19
+msgid "Project Issues"
+msgstr "परियोजना संबंधी समस्याएं"
+
+#: includes/api/endpoints/attachments.php:197
+msgid "Invalid issue."
+msgstr "अमान्य समस्या।"
+
+#: includes/api/endpoints/attachments.php:321 src/utils/attachmentUpload.js:12
+msgid "Missing attachment file."
+msgstr "अटैचमेंट फ़ाइल गायब है।"
+
+#: includes/api/endpoints/attachments.php:334
+msgid "This file type is not allowed."
+msgstr "यह फ़ाइल प्रकार अनुमति नहीं है।"
+
+#: includes/api/endpoints/attachments.php:347
+msgid "Failed to prepare upload directory."
+msgstr "अपलोड निर्देशिका तैयार करने में विफल।"
+
+#: includes/api/endpoints/attachments.php:467
+msgid "Missing attachment URL."
+msgstr "अटैचमेंट यूआरएल गायब है।"
+
+#: includes/api/endpoints/attachments.php:480
+msgid "Comment was not found."
+msgstr "टिप्पणी नहीं मिली।"
+
+#: includes/api/endpoints/attachments.php:488
+msgid "Comment does not match this issue."
+msgstr "टिप्पणी इस मुद्दे से मेल नहीं खाती।"
+
+#: includes/api/endpoints/attachments.php:496
+msgid "Attachment does not belong to this comment."
+msgstr "यह अटैचमेंट इस कमेंट से संबंधित नहीं है।"
+
+#: includes/api/endpoints/attachments.php:506
+msgid "Comment ID is required to delete this attachment."
+msgstr "इस अटैचमेंट को हटाने के लिए कमेंट आईडी आवश्यक है।"
+
+#: includes/api/endpoints/attachments.php:521
+msgid "You are not allowed to delete this attachment."
+msgstr "आप इस संलग्नक को हटाने की अनुमति नहीं है।"
+
+#: includes/api/endpoints/attachments.php:534
+msgid "Attachment URL is not valid."
+msgstr "अटैचमेंट यूआरएल अमान्य है।"
+
+#: includes/api/endpoints/attachments.php:549
+#: includes/api/endpoints/attachments.php:560
+msgid "Attachment path is not valid."
+msgstr "अटैचमेंट पाथ मान्य नहीं है।"
+
+#: includes/api/endpoints/attachments.php:568
+msgid "Attachment not found."
+msgstr "फ़ाइल नहीं मिली।"
+
+#: includes/api/endpoints/attachments.php:580 src/components/Comment.jsx:58
+#: src/components/Comment.jsx:932 src/components/Comment.jsx:975
+#: src/components/CommentForm.jsx:42 src/components/CommentForm.jsx:397
+#: src/utils/attachmentUpload.js:73
+msgid "Failed to delete attachment."
+msgstr "अटैचमेंट हटाने में विफल।"
+
+#: includes/api/endpoints/attachments.php:589
+msgid "Attachment deleted."
+msgstr "फ़ाइल हटा दी गई।"
+
+#: includes/api/endpoints/board.php:76
+msgid "Invalid data format. Expected an array of columns."
+msgstr "अवैध डेटा प्रारूप। कॉलम की एक सरणी की अपेक्षा है।"
+
+#: includes/api/endpoints/board.php:98
+msgid "Board order saved successfully."
+msgstr "बोर्ड का ऑर्डर सफलतापूर्वक सहेजा गया।"
+
+#: includes/api/endpoints/issues.php:48
+msgid "Invalid request body."
+msgstr "अमान्य अनुरोध निकाय।"
+
+#: includes/api/endpoints/issues.php:65
+msgid "Feedback is required."
+msgstr "प्रतिक्रिया आवश्यक है।"
+
+#: includes/api/endpoints/issues.php:89 src/components/Issue.jsx:1374
+msgid "Failed to create issue."
+msgstr "समस्या बनाने में विफल।"
+
+#: includes/api/endpoints/issues.php:244
+msgid "Issue submitted successfully."
+msgstr "समस्या सफलतापूर्वक जमा की गई।"
+
+#: includes/api/endpoints/issues.php:296 includes/api/endpoints/issues.php:711
+#: includes/api/endpoints/issues.php:1236
+#: includes/api/endpoints/issues.php:1373
+#: includes/api/endpoints/users-labels-watchlist.php:514 src/Board.jsx:347
+msgid "Issue not found."
+msgstr "समस्या नहीं मिली।"
+
+#: includes/api/endpoints/issues.php:317
+msgid "Invalid parent issue."
+msgstr "अमान्य पैरेंट इश्यू।"
+
+#: includes/api/endpoints/issues.php:328
+msgid "An issue cannot be its own parent."
+msgstr "कोई समस्या अपने ही पैरेंट नहीं हो सकती।"
+
+#: includes/api/endpoints/issues.php:341 includes/api/endpoints/issues.php:610
+msgid "Parent issue not found."
+msgstr "मुख्य समस्या नहीं मिली।"
+
+#: includes/api/endpoints/issues.php:353
+msgid "Invalid parent hierarchy."
+msgstr "अमान्य पैरेंट हायरार्की।"
+
+#: includes/api/endpoints/issues.php:369
+msgid "Failed to update the issue."
+msgstr "समस्या को अपडेट करने में विफल।"
+
+#: includes/api/endpoints/issues.php:414
+msgid "Failed to update issue taxonomy terms."
+msgstr "समस्या वर्गीकरण शर्तों को अपडेट करने में विफल।"
+
+#: includes/api/endpoints/issues.php:469
+msgid "Issue updated successfully."
+msgstr "समस्या सफलतापूर्वक अपडेट की गई।"
+
+#: includes/api/endpoints/issues.php:621
+msgid "Subissue title is required."
+msgstr "उप-विषय शीर्षक आवश्यक है।"
+
+#: includes/api/endpoints/issues.php:644 src/components/Issue.jsx:1451
+msgid "Failed to create subissue."
+msgstr "उप-समस्या बनाने में विफल।"
+
+#: includes/api/endpoints/issues.php:661
+msgid "Subissue created successfully."
+msgstr "उप-समस्या सफलतापूर्वक बनाई गई।"
+
+#: includes/api/endpoints/issues.php:788
+msgid "Issue data retrieved successfully."
+msgstr "समस्या डेटा सफलतापूर्वक प्राप्त किया गया।"
+
+#: includes/api/endpoints/issues.php:930 src/components/RestoreManager.jsx:46
+msgid "(Untitled issue)"
+msgstr "(बिना शीर्षक वाली समस्या)"
+
+#: includes/api/endpoints/issues.php:1247
+msgid "Issue is not in trash."
+msgstr "समस्या कूड़े में नहीं है।"
+
+#: includes/api/endpoints/issues.php:1268
+msgid ""
+"Checklist items cannot be restored while their parent issue is still deleted."
+msgstr ""
+"चेकलिस्ट आइटम को तब पुनर्प्राप्त नहीं किया जा सकता जब उनके पैरेंट इशू अभी भी "
+"हटा दिया गया हो।"
+
+#: includes/api/endpoints/issues.php:1282
+#: includes/api/endpoints/issues.php:1301
+msgid "Failed to restore the issue."
+msgstr "समस्या को पुनर्स्थापित करने में विफल।"
+
+#: includes/api/endpoints/issues.php:1311
+msgid "Issue restored successfully."
+msgstr "समस्या सफलतापूर्वक बहाल की गई।"
+
+#: includes/api/endpoints/issues.php:1386
+msgid "Failed to trash the issue."
+msgstr "समस्या को कूड़ेदान में डालने में विफल।"
+
+#: includes/api/endpoints/issues.php:1396
+msgid "Issue trashed successfully."
+msgstr "समस्या सफलतापूर्वक हटा दी गई।"
+
+#: includes/api/endpoints/notifications.php:465
+msgid "Test digest email could not be sent."
+msgstr "परीक्षण ईमेल भेजने में विफल।"
+
+#. translators: %s: test email address.
+#: includes/api/endpoints/notifications.php:467
+#, php-format
+msgid "Test digest email sent to %s."
+msgstr "परीक्षण डाइजेस्ट ईमेल %s को भेजा गया।"
+
+#: includes/api/endpoints/notifications.php:481
+msgid "Test email could not be sent."
+msgstr "परीक्षण ईमेल भेजने में विफल।"
+
+#. translators: %s: test email address.
+#: includes/api/endpoints/notifications.php:483
+#, php-format
+msgid "Test email sent to %s."
+msgstr "परीक्षण ईमेल %s पर भेजा गया।"
+
+#: includes/api/endpoints/notifications.php:538
+msgid "Could not determine the current user."
+msgstr "वर्तमान उपयोगकर्ता निर्धारित नहीं किया जा सका।"
+
+#: includes/api/endpoints/notifications.php:546
+msgid "Your WordPress profile does not have a valid email address."
+msgstr "आपका वर्डप्रेस प्रोफाइल में एक मान्य ईमेल पता नहीं है।"
+
+#: includes/api/endpoints/options-statuses.php:124
+msgid "Status not found."
+msgstr "स्थिति नहीं मिली।"
+
+#: includes/api/endpoints/options-statuses.php:148
+msgid "Failed to update status name and slug."
+msgstr "स्थिति नाम और स्लग को अपडेट करने में विफल।"
+
+#: includes/api/endpoints/options-statuses.php:163
+msgid "Status updated successfully."
+msgstr "स्थिति सफलतापूर्वक अपडेट की गई।"
+
+#: includes/api/endpoints/users-labels-watchlist.php:158
+msgid "Label not found."
+msgstr "लेबल नहीं मिला।"
+
+#: includes/api/endpoints/users-labels-watchlist.php:174
+msgid "Label name is required."
+msgstr "लेबल नाम आवश्यक है।"
+
+#: includes/api/endpoints/users-labels-watchlist.php:246
+msgid "Failed to create label."
+msgstr "लेबल बनाने में विफल।"
+
+#: includes/api/endpoints/users-labels-watchlist.php:264
+msgid "Label created, but could not be loaded."
+msgstr "लेबल बनाया गया, लेकिन लोड नहीं हो सका।"
+
+#: includes/api/endpoints/users-labels-watchlist.php:316
+msgid "Failed to update label."
+msgstr "लेबल अपडेट करने में विफल।"
+
+#: includes/api/endpoints/users-labels-watchlist.php:338
+msgid "Failed to load updated label."
+msgstr "अपडेटेड लेबल लोड करने में विफल।"
+
+#: includes/api/endpoints/users-labels-watchlist.php:374
+#: src/components/LabelsManager.jsx:395
+msgid "Failed to delete label."
+msgstr "लेबल हटाने में विफल।"
+
+#: includes/api/endpoints/users-labels-watchlist.php:466
+msgid "User not found."
+msgstr "उपयोगकर्ता नहीं मिला।"
+
+#: includes/api/endpoints/users-labels-watchlist.php:492
+#: includes/api/endpoints/users-labels-watchlist.php:526
+msgid "Could not update watchlist."
+msgstr "वॉचलिस्ट अपडेट नहीं हो सका।"
+
+#: includes/api/proxy/image-proxy.php:81
+msgid "Invalid proxy authentication token."
+msgstr "अवैध प्रॉक्सी प्रमाणीकरण टोकन।"
+
+#: includes/api/proxy/image-proxy.php:163
+msgid "Invalid URL."
+msgstr "अमान्य यूआरएल।"
+
+#: includes/api/proxy/image-proxy.php:172
+msgid "Only HTTP and HTTPS URLs are allowed."
+msgstr "केवल HTTP और HTTPS यूआरएल की अनुमति है।"
+
+#: includes/api/proxy/image-proxy.php:181
+msgid "Invalid host."
+msgstr "अमान्य होस्ट।"
+
+#: includes/api/proxy/image-proxy.php:191
+#: includes/api/proxy/image-proxy.php:211
+msgid "URL not allowed."
+msgstr "URL की अनुमति नहीं है।"
+
+#: includes/api/proxy/image-proxy.php:203
+msgid "Unable to resolve host."
+msgstr "होस्ट को हल करने में असमर्थ।"
+
+#: includes/api/proxy/image-proxy.php:285
+msgid "Failed to fetch image."
+msgstr "छवि प्राप्त करने में विफल।"
+
+#: includes/api/proxy/image-proxy.php:302
+msgid "Unsupported image type."
+msgstr "समर्थित छवि प्रकार नहीं।"
+
+#. translators: 1: Required PHP version, 2: Current PHP version
+#: includes/class-activator.php:53
+#, php-format
+msgid ""
+"Alpaca Issue Tracker requires PHP version %1$s or higher. You are running "
+"version %2$s."
+msgstr ""
+"अल्पाका इशू ट्रैकर को PHP संस्करण %1$s या उससे अधिक की आवश्यकता है। आप %2$s "
+"संस्करण चला रहे हैं।"
+
+#: includes/class-activator.php:57 includes/class-activator.php:73
+msgid "Plugin Activation Error"
+msgstr "प्लगइन सक्रियण त्रुटि"
+
+#. translators: 1: Required WP version, 2: Current WP version
+#: includes/class-activator.php:69
+#, php-format
+msgid ""
+"Alpaca Issue Tracker requires WordPress version %1$s or higher. You are "
+"running version %2$s."
+msgstr ""
+"अल्पाका इशू ट्रैकर को वर्डप्रेस संस्करण %1$s या उससे अधिक की आवश्यकता है। आप "
+"%2$s संस्करण चला रहे हैं।"
+
+#: includes/class-alpacaissuetracker.php:328
+msgid "Enable console messages for testing purposes."
+msgstr "परीक्षण उद्देश्यों के लिए कंसोल संदेश सक्षम करें।"
+
+#: includes/class-alpacaissuetracker.php:339
+msgid "Visibility map for item datapoints on issue cards."
+msgstr "आइटम डेटा पॉइंट्स के लिए इश्यू कार्ड पर दृश्यता मानचित्र।"
+
+#: includes/class-helpers.php:125
+msgid "You are not allowed to access this endpoint."
+msgstr "आपको इस एंडपॉइंट तक पहुंचने की अनुमति नहीं है।"
+
+#: includes/class-helpers.php:138
+msgid "Invalid nonce."
+msgstr "अवैध नॉनस।"
+
+#: includes/core/board.php:21
+msgid "Add Issue"
+msgstr "समस्या जोड़ें"
+
+#: includes/core/posttypes-and-taxonomies.php:65
+msgid "Issues"
+msgstr "समस्याएँ"
+
+#: includes/core/posttypes-and-taxonomies.php:67
+#: includes/core/posttypes-and-taxonomies.php:68
+#: includes/notifications/digest/render.php:409 src/Activity.jsx:615
+#: src/components/RestoreManager.jsx:319 src/DashboardWidget.jsx:79
+#: src/utils/issueCommentHandler.js:514
+msgid "Issue"
+msgstr "समस्या"
+
+#: includes/core/posttypes-and-taxonomies.php:69
+msgid "All Issues"
+msgstr "सभी मुद्दे"
+
+#: includes/core/posttypes-and-taxonomies.php:70
+msgid "Edit Issue"
+msgstr "समस्या संपादित करें"
+
+#: includes/core/posttypes-and-taxonomies.php:71
+msgid "View Issue"
+msgstr "समस्या देखें"
+
+#: includes/core/posttypes-and-taxonomies.php:72
+msgid "View Issues"
+msgstr "समस्याएं देखें"
+
+#: includes/core/posttypes-and-taxonomies.php:81
+msgid "Browser"
+msgstr "ब्राउज़र"
+
+#: includes/core/posttypes-and-taxonomies.php:82
+msgid "PHP Template"
+msgstr "PHP टेम्प्लेट"
+
+#: includes/core/posttypes-and-taxonomies.php:83
+#: src/components/RestoreManager.jsx:295
+msgid "Type"
+msgstr "प्रकार"
+
+#: includes/core/posttypes-and-taxonomies.php:88
+#: src/components/BoardFilterControl.jsx:99
+#: src/components/BoardFilterControl.jsx:121
+#: src/components/BoardFilterControl.jsx:364
+#: src/components/BoardFilterControl.jsx:398
+msgid "Assignee"
+msgstr "असाइन की गई व्यक्ति"
+
+#: includes/core/posttypes-and-taxonomies.php:95
+#: includes/notifications/digest/render.php:409 src/DashboardWidget.jsx:83
+msgid "Status"
+msgstr "स्थिति"
+
+#: includes/core/posttypes-and-taxonomies.php:104
+#: src/components/BoardFilterControl.jsx:323 src/components/Issue.jsx:110
+#: src/components/LabelsManager.jsx:467 src/components/RestoreManager.jsx:296
+#: src/datapoints/labelsDatapoint.js:21 src/datapoints/labelsDatapoint.js:44
+#: src/Settings.jsx:56
+msgid "Labels"
+msgstr "लेबल"
+
+#: includes/core/posttypes-and-taxonomies.php:114
+msgid "Watching"
+msgstr "देख रहा है"
+
+#: includes/notifications/digest/payload.php:298
+#: includes/notifications/digest/render.php:104
+#: src/datapoints/deadlineDatapoint.js:57
+msgid "Tomorrow"
+msgstr "कल"
+
+#: includes/notifications/digest/payload.php:300
+#: src/components/BoardFilterControl.jsx:495
+#: src/datapoints/deadlineDatapoint.js:59
+msgid "Today"
+msgstr "आज"
+
+#: includes/notifications/digest/payload.php:302
+#: src/datapoints/deadlineDatapoint.js:61
+msgid "Yesterday"
+msgstr "कल"
+
+#: includes/notifications/digest/payload.php:682
+#: includes/notifications/digest/render.php:86
+msgid "Due soon"
+msgstr "जल्द ही"
+
+#: includes/notifications/digest/payload.php:686 src/DashboardWidget.jsx:57
+msgid "Overdue"
+msgstr "देय"
+
+#: includes/notifications/digest/payload.php:689
+msgid "Due today"
+msgstr "आज ही जमा करना है"
+
+#: includes/notifications/digest/render.php:64
+msgid ""
+"This is a sample comment shown inside the daily digest. It is intentionally "
+"longer so the excerpt rendering can be previewed."
+msgstr ""
+"यह एक नमूना टिप्पणी है जो दैनिक डाइजेस्ट के अंदर दिखाई देती है। इसे जानबूझकर "
+"लंबा बनाया गया है ताकि एक्सट्रेक्ट रेंडरिंग का पूर्वावलोकन देखा जा सके।"
+
+#: includes/notifications/digest/render.php:69
+msgid "Sample User"
+msgstr "नमूना उपयोगकर्ता"
+
+#: includes/notifications/digest/render.php:81
+msgid "Launch homepage refresh"
+msgstr "होमपेज को फिर से लॉन्च करें"
+
+#: includes/notifications/digest/render.php:88
+#: includes/notifications/digest/render.php:118
+#: includes/utilities/functions.php:252
+msgid "In Progress"
+msgstr "प्रगति में"
+
+#: includes/notifications/digest/render.php:91
+#: includes/notifications/digest/render.php:95
+#: includes/notifications/digest/render.php:144
+msgid "Sam"
+msgstr "सम"
+
+#: includes/notifications/digest/render.php:98
+#: includes/notifications/digest/render.php:102
+#: includes/notifications/digest/render.php:128
+#: includes/notifications/digest/render.php:132
+#: includes/notifications/digest/render.php:168
+#: includes/notifications/digest/render.php:172
+msgid "Design"
+msgstr "डिज़ाइन"
+
+#: includes/notifications/digest/render.php:114
+#: includes/notifications/events.php:437
+msgid "Sample issue title"
+msgstr "नमूना समस्या शीर्षक"
+
+#: includes/notifications/digest/render.php:121
+#: includes/notifications/digest/render.php:125
+msgid "Alex"
+msgstr "अलेक्स"
+
+#: includes/notifications/digest/render.php:143
+#: includes/notifications/events.php:218
+msgid "Status changed"
+msgstr "स्थिति बदल दी गई"
+
+#: includes/notifications/digest/render.php:159
+msgid "Review new design request"
+msgstr "नया डिज़ाइन अनुरोध की समीक्षा करें"
+
+#: includes/notifications/digest/render.php:163
+#: src/components/InboxControl.jsx:602 src/components/InboxControl.jsx:624
+#: src/components/InboxControl.jsx:639 src/components/InboxControl.jsx:643
+msgid "Inbox"
+msgstr "इनबॉक्स"
+
+#: includes/notifications/digest/render.php:204
+#: includes/notifications/digest/render.php:409 src/components/Issue.jsx:64
+#: src/datapoints/priorityDatapoint.js:24
+#: src/datapoints/priorityDatapoint.js:26
+#: src/datapoints/priorityDatapoint.js:38
+msgid "Priority"
+msgstr "प्राथमिकता"
+
+#. translators: 1: event label, 2: actor name.
+#: includes/notifications/digest/render.php:341
+#, php-format
+msgid "%1$s by %2$s"
+msgstr "%1$s द्वारा %2$s"
+
+#: includes/notifications/digest/render.php:374
+#: includes/notifications/digest/render.php:380
+msgid "No followed issues are overdue or due in the next two days."
+msgstr ""
+"कोई भी ट्रैक किए गए मुद्दे समय पर नहीं हैं या अगले दो दिनों में आने वाले हैं।"
+
+#: includes/notifications/digest/render.php:409
+#: src/components/BoardFilterControl.jsx:224
+#: src/components/BoardFilterControl.jsx:412
+#: src/components/BoardFilterControl.jsx:435 src/components/Issue.jsx:131
+#: src/DashboardWidget.jsx:81
+msgid "Due Date"
+msgstr "अंतिम तिथि"
+
+#: includes/notifications/digest/render.php:409
+#: src/components/BoardFilterControl.jsx:372 src/components/Issue.jsx:87
+#: src/DashboardWidget.jsx:82 src/datapoints/assigneesDatapoint.js:19
+#: src/datapoints/assigneesDatapoint.js:45
+msgid "Assignees"
+msgstr "असाइन किए गए"
+
+#. translators: %d: additional item count.
+#: includes/notifications/digest/render.php:440
+#: includes/notifications/digest/render.php:475
+#, php-format
+msgid "+%d more"
+msgstr "+%d और अधिक"
+
+#: includes/notifications/digest/render.php:456
+msgid "No followed issues had activity in the last 24 hours."
+msgstr "पिछले 24 घंटों में कोई फॉलो किए गए मुद्दों में गतिविधि नहीं हुई।"
+
+#: includes/notifications/digest/render.php:538
+#: src/components/DailyDigestTemplateScreen.jsx:22
+msgid "Issues Falling Due"
+msgstr "समस्याएँ जो देय हैं"
+
+#: includes/notifications/digest/render.php:544
+#: src/components/DailyDigestTemplateScreen.jsx:31
+msgid "My Issues"
+msgstr "मेरे मुद्दे"
+
+#: includes/notifications/digest/render.php:551
+msgid "New Issues"
+msgstr "नया मुद्दे"
+
+#: includes/notifications/digest/schedule.php:245
+msgid "Every fifteen minutes"
+msgstr "हर पंद्रह मिनट में"
+
+#: includes/notifications/digest/template.php:83
+msgid "You are receiving this summary because you opted into the daily digest."
+msgstr ""
+"आप इस सारांश प्राप्त कर रहे हैं क्योंकि आपने दैनिक डाइजेस्ट के लिए साइन अप "
+"किया है।"
+
+#: includes/notifications/digest/template.php:107
+msgid "Daily Summary for {{digest_day}}"
+msgstr "दैनिक सारांश {{digest_day}} के लिए"
+
+#: includes/notifications/digest/template.php:119
+#: includes/notifications/template.php:75
+#: includes/notifications/template.php:110
+msgid "Manage notifications"
+msgstr "नोटिफिकेशन प्रबंधित करें"
+
+#: includes/notifications/digest/template.php:261
+msgid "The daily digest template must contain at least one supported block."
+msgstr ""
+"दैनिक डाइजेस्ट टेम्पलेट में कम से कम एक समर्थित ब्लॉक शामिल होना चाहिए।"
+
+#: includes/notifications/digest/template.php:263
+msgid ""
+"The daily digest template must include the locked digest section blocks."
+msgstr ""
+"द दैनिक डाइजेस्ट टेम्पलेट में लॉक किए गए डाइजेस्ट सेक्शन ब्लॉक शामिल होने "
+"चाहिए।"
+
+#: includes/notifications/events.php:212
+msgid "Issue added"
+msgstr "समस्या जोड़ी गई"
+
+#: includes/notifications/events.php:215 includes/notifications/events.php:434
+#: src/components/InboxControl.jsx:84
+msgid "Comment added"
+msgstr "टिप्पणी जोड़ी गई"
+
+#: includes/notifications/events.php:222
+msgid "Issue assigned"
+msgstr "समस्या असाइन की गई है"
+
+#: includes/notifications/events.php:226
+msgid "Issue unassigned"
+msgstr "समस्या असाइन नहीं की गई है"
+
+#: includes/notifications/events.php:229
+msgid "Issue assignment changed"
+msgstr "समस्या असाइनमेंट बदल गया"
+
+#: includes/notifications/events.php:233
+msgid "Due date set"
+msgstr "ड्यू डेट निर्धारित की गई"
+
+#: includes/notifications/events.php:237
+msgid "Due date removed"
+msgstr "डेडलाइन हटा दी गई"
+
+#: includes/notifications/events.php:240
+msgid "Due date changed"
+msgstr "अंतिम तिथि बदल दी गई"
+
+#: includes/notifications/events.php:244
+msgid "Checklist item created"
+msgstr "चेकलिस्ट आइटम बनाया गया"
+
+#: includes/notifications/events.php:248
+msgid "Checklist item deleted"
+msgstr "चेकलिस्ट आइटम हटा दिया गया"
+
+#: includes/notifications/events.php:251
+msgid "Checklist updated"
+msgstr "चेकलिस्ट अपडेट की गई"
+
+#: includes/notifications/events.php:255
+msgid "Checklist item assigned"
+msgstr "चेकलिस्ट आइटम असाइन किया गया"
+
+#: includes/notifications/events.php:259
+msgid "Checklist item unassigned"
+msgstr "चेकलिस्ट आइटम असाइन नहीं किया गया"
+
+#: includes/notifications/events.php:262
+msgid "Checklist assignment changed"
+msgstr "चेकलिस्ट असाइनमेंट बदल गया"
+
+#: includes/notifications/events.php:266
+msgid "Checklist item completed"
+msgstr "चेकलिस्ट आइटम पूरा हुआ"
+
+#: includes/notifications/events.php:270
+msgid "Checklist item reopened"
+msgstr "चेकलिस्ट आइटम फिर से खोला गया"
+
+#: includes/notifications/events.php:273
+msgid "Checklist completion changed"
+msgstr "चेकलिस्ट पूर्ण होने में बदलाव"
+
+#: includes/notifications/events.php:276
+msgid "Checklist item promoted"
+msgstr "चेकलिस्ट आइटम को बढ़ावा दिया गया"
+
+#: includes/notifications/events.php:280
+msgid "High priority enabled"
+msgstr "उच्च प्राथमिकता सक्षम की गई"
+
+#: includes/notifications/events.php:284
+msgid "High priority removed"
+msgstr "उच्च प्राथमिकता हटा दी गई"
+
+#: includes/notifications/events.php:287
+msgid "Priority changed"
+msgstr "प्राथमिकता बदली गई"
+
+#: includes/notifications/events.php:290
+msgid "Issue activity updated"
+msgstr "समस्या गतिविधि अपडेट की गई"
+
+#: includes/notifications/events.php:377 includes/notifications/inbox.php:390
+#: includes/notifications/inbox.php:415 src/components/InboxControl.jsx:164
+#: src/utils/issueCommentHandler.js:53
+msgid "Unknown user"
+msgstr "अज्ञात उपयोगकर्ता"
+
+#: includes/notifications/events.php:415
+msgid "Alpaca Issue Tracker User"
+msgstr "अल्पाका इशू ट्रैकर उपयोगकर्ता"
+
+#: includes/notifications/events.php:421
+msgid ""
+"This is a sample notification comment. It includes the full comment content "
+"exactly as the email will render it."
+msgstr ""
+"यह एक नमूना अधिसूचना टिप्पणी है। इसमें पूरी टिप्पणी सामग्री बिल्कुल उसी तरह "
+"शामिल है जैसा कि ईमेल में प्रदर्शित होगी।"
+
+#: includes/notifications/preferences.php:23
+msgid "Email"
+msgstr "ईमेल"
+
+#: includes/notifications/preferences.php:24
+msgid "Sends updates to your email address."
+msgstr "आपके ईमेल पते पर अपडेट भेजता है।"
+
+#: includes/notifications/preferences.php:33
+#: src/components/NotificationPreferences.jsx:328
+msgid "Email address"
+msgstr "ईमेल पता"
+
+#: includes/notifications/preferences.php:34
+#: src/components/NotificationPreferences.jsx:339
+msgid ""
+"Uses your WordPress profile email unless you enter a different address here."
+msgstr ""
+"यदि आप यहां एक अलग पता दर्ज करते हैं, तो इसका उपयोग आपके वर्डप्रेस प्रोफाइल "
+"ईमेल के बजाय किया जाएगा।"
+
+#: includes/notifications/preferences.php:221
+#: src/components/NotificationPreferences.jsx:395
+msgid "Site timezone"
+msgstr "वेबसाइट का समय क्षेत्र"
+
+#: includes/notifications/preferences.php:655
+msgid "Enter a valid notification email address or leave the override blank."
+msgstr "एक मान्य अधिसूचना ईमेल पता दर्ज करें या ओवरराइड को खाली छोड़ दें।"
+
+#: includes/notifications/preferences.php:679
+msgid ""
+"Add a valid email address before enabling email notifications or the daily "
+"digest."
+msgstr ""
+"वैध ईमेल पता दर्ज करने के बाद ही ईमेल नोटिफिकेशन या दैनिक सारांश को सक्षम "
+"करें।"
+
+#: includes/notifications/render.php:140
+msgid "View attachment"
+msgstr "View attachment"
+
+#: includes/notifications/render.php:147
+msgid "Attachments"
+msgstr "अटैचमेंट"
+
+#: includes/notifications/render.php:173
+msgid "Open Issue"
+msgstr "खुला मुद्दा"
+
+#: includes/notifications/render.php:470
+#: src/components/BlockTemplateEditorScreen.jsx:444
+msgid "WordPress"
+msgstr "वर्डप्रेस"
+
+#: includes/notifications/template.php:577
+msgid "The email template must contain at least one supported block."
+msgstr "ईमेल टेम्पलेट में कम से कम एक समर्थित ब्लॉक शामिल होना चाहिए।"
+
+#: includes/notifications/template.php:579
+msgid ""
+"The email template must include the Full Comment Content placeholder block."
+msgstr "ईमेल टेम्पलेट में फुल कमेंट कंटेंट प्लेसहोल्डर ब्लॉक शामिल होना चाहिए।"
+
+#: includes/utilities/functions.php:234
+msgid "Statuses already exist."
+msgstr "स्थिति पहले से मौजूद हैं।"
+
+#: includes/utilities/functions.php:241
+msgid "Backlog"
+msgstr "बैकलॉग"
+
+#: includes/utilities/functions.php:246 src/components/RestoreManager.jsx:429
+msgid "Next"
+msgstr "अगला"
+
+#: includes/utilities/functions.php:257
+msgid "Done"
+msgstr "पूर्ण"
+
+#. translators: %d: number of statuses created
+#: includes/utilities/functions.php:295
+#, php-format
+msgid "Successfully created %d default statuses."
+msgstr "सफलतापूर्वक %d डिफ़ॉल्ट स्टेटस बनाए गए।"
+
+#: src/Activity.jsx:42
+msgid "Unknown date"
+msgstr "अज्ञात तिथि"
+
+#: src/Activity.jsx:259
+msgid "Could not load project activity."
+msgstr "परियोजना गतिविधि लोड नहीं हो सकी।"
+
+#: src/Activity.jsx:575
+msgid "No activity found yet."
+msgstr "अभी कोई गतिविधि नहीं मिली।"
+
+#: src/Board.jsx:1303
+msgid "Failed to restore default statuses."
+msgstr "डिफ़ॉल्ट स्टेटस पुनर्स्थापित करने में विफल।"
+
+#: src/Board.jsx:1312
+msgid "An error occurred while restoring default statuses."
+msgstr "डिफ़ॉल्ट स्टेटस को पुनर्स्थापित करते समय एक त्रुटि हुई।"
+
+#: src/Board.jsx:1727
+msgid "Clear column focus"
+msgstr "कॉलम फोकस साफ़ करें"
+
+#: src/Board.jsx:1736
+msgid "Oh no! All your project statuses have disappeared."
+msgstr "ओह नहीं! आपकी सभी प्रोजेक्ट की स्थिति गायब हो गई हैं।"
+
+#: src/Board.jsx:1743
+msgid ""
+"Without statuses, you cannot view or manage issues on the board. Click the "
+"button below to restore the default statuses (Backlog, Next, In Progress, "
+"Done)."
+msgstr ""
+"बिना स्टेटस के, आप बोर्ड पर मुद्दों को नहीं देख या प्रबंधित कर सकते। "
+"डिफ़ॉल्ट स्टेटस (बैकलॉग, अगला, प्रगति में, पूरा) को पुनर्स्थापित करने के लिए "
+"नीचे दिए गए बटन पर क्लिक करें।"
+
+#: src/Board.jsx:1755 src/components/RestoreManager.jsx:400
+msgid "Restoring…"
+msgstr "पुनर्स्थापित कर रहा है…"
+
+#: src/Board.jsx:1756
+msgid "Restore Default Statuses"
+msgstr "डिफ़ॉल्ट स्टेटस पुनर्स्थापित करें"
+
+#: src/components/BlockTemplateEditorScreen.jsx:12
+msgid "Loading template…"
+msgstr "टेम्प्लेट लोड हो रहा है…"
+
+#: src/components/BlockTemplateEditorScreen.jsx:313
+msgid "The WordPress block editor could not be loaded for this screen."
+msgstr "यह स्क्रीन के लिए वर्डप्रेस ब्लॉक संपादक लोड नहीं हो सका।"
+
+#: src/components/BlockTemplateEditorScreen.jsx:353
+msgid "Template"
+msgstr "टेम्प्लेट"
+
+#: src/components/BlockTemplateEditorScreen.jsx:360
+msgid "Email subject"
+msgstr "ईमेल विषय"
+
+#: src/components/BlockTemplateEditorScreen.jsx:407
+msgid "Saving…"
+msgstr "बचत कर रहा है…"
+
+#: src/components/BlockTemplateEditorScreen.jsx:408
+msgid "Save Template"
+msgstr "टेम्प्लेट सहेजें"
+
+#: src/components/BlockTemplateEditorScreen.jsx:416
+msgid "Resetting…"
+msgstr "रीसेट हो रहा है…"
+
+#: src/components/BlockTemplateEditorScreen.jsx:417
+msgid "Reset to Default"
+msgstr "डिफ़ॉल्ट पर रीसेट करें"
+
+#: src/components/BlockTemplateEditorScreen.jsx:425
+msgid "Sending Test…"
+msgstr "परीक्षण भेज रहा हूँ…"
+
+#: src/components/BlockTemplateEditorScreen.jsx:426
+msgid "Send Test Email"
+msgstr "टेस्ट ईमेल भेजें"
+
+#: src/components/BlockTemplateEditorScreen.jsx:433
+msgid "Live Preview"
+msgstr "लाइव पूर्वावलोकन"
+
+#: src/components/BlockTemplateEditorScreen.jsx:440
+msgid "From"
+msgstr "से"
+
+#: src/components/BlockTemplateEditorScreen.jsx:448
+msgid "Subject"
+msgstr "विषय"
+
+#: src/components/BoardFilterControl.jsx:66
+#: src/components/BoardFilterControl.jsx:79
+#: src/components/BoardFilterControl.jsx:315
+msgid "Label"
+msgstr "लेबल"
+
+#: src/components/BoardFilterControl.jsx:280
+msgid "Clear filter"
+msgstr "फ़िल्टर साफ़ करें"
+
+#: src/components/BoardFilterControl.jsx:300
+msgid "No options found on board cards."
+msgstr "बोर्ड कार्ड पर कोई विकल्प नहीं मिले।"
+
+#: src/components/BoardFilterControl.jsx:450
+msgid "Reset deadline filter"
+msgstr "डेडलाइन फ़िल्टर रीसेट करें"
+
+#: src/components/BoardFilterControl.jsx:470
+msgid "Deadline state"
+msgstr "समय सीमा की स्थिति"
+
+#: src/components/BoardFilterControl.jsx:473
+msgid "Show cards that are"
+msgstr "कार्ड दिखाएं जो कि"
+
+#: src/components/BoardFilterControl.jsx:491
+msgid "Soon"
+msgstr "जल्द ही"
+
+#: src/components/BoardFilterControl.jsx:499
+msgid "Late"
+msgstr "देर"
+
+#: src/components/Comment.jsx:108 src/components/CommentForm.jsx:92
+msgid "Uploading…"
+msgstr "अपलोड किया जा रहा है…"
+
+#: src/components/Comment.jsx:109 src/components/CommentForm.jsx:93
+msgid "Attach Files"
+msgstr "फ़ाइलें संलग्न करें"
+
+#: src/components/Comment.jsx:112 src/components/Comment.jsx:126
+#: src/components/CommentForm.jsx:96 src/components/CommentForm.jsx:110
+msgid "Commenting Tips"
+msgstr "टिप्पणी करने के सुझाव"
+
+#: src/components/Comment.jsx:134 src/components/CommentForm.jsx:118
+msgid "Type <kbd>@</kbd> and select a user to notify."
+msgstr "टाइप <kbd>@</kbd> और एक उपयोगकर्ता का चयन करें।"
+
+#: src/components/Comment.jsx:141 src/components/CommentForm.jsx:125
+msgid ""
+"Basic Markdown is supported: <code>**bold**</code>, <code>*italic*</code>, "
+"<code>`code`</code>, <code>- lists</code>, etc."
+msgstr ""
+"मूल Markdown समर्थित है: <code>**bold**</code>, <code>*italic*</code>, <code>"
+"`code`</code>, <code>- सूचियाँ</code>, आदि।"
+
+#: src/components/Comment.jsx:148 src/components/CommentForm.jsx:132
+msgid ""
+"You can click <strong>Attach Files</strong> to upload an attachment, or "
+"simply drag and drop files into the comment area."
+msgstr ""
+"आप <strong>फ़ाइलें संलग्न करें</strong> पर क्लिक कर सकते हैं ताकि एक "
+"अटैचमेंट अपलोड किया जा सके, या बस फ़ाइलों को कमेंट क्षेत्र में खींचकर छोड़ "
+"दें।"
+
+#: src/components/Comment.jsx:304 src/components/Container.jsx:523
+#: src/components/Issue.jsx:1979
+msgid "Options"
+msgstr "विकल्प"
+
+#: src/components/Comment.jsx:323
+msgid "Edit"
+msgstr "संपादित करें"
+
+#: src/components/Comment.jsx:332 src/components/Comment.jsx:1124
+#: src/components/Issue.jsx:2299 src/components/Issue.jsx:2404
+#: src/components/issue/AttachmentRow.jsx:164
+#: src/components/StatusManager.jsx:552 src/components/StatusManager.jsx:667
+msgid "Delete"
+msgstr "मिटा दें"
+
+#: src/components/Comment.jsx:349 src/components/Comment.jsx:1019
+#: src/components/CommentForm.jsx:466
+msgid "Pending comment attachment"
+msgstr "प्रतीक्षित टिप्पणी संलग्नक"
+
+#: src/components/Comment.jsx:353 src/components/Comment.jsx:1126
+#: src/components/CommentForm.jsx:489 src/components/Issue.jsx:2408
+#: src/components/issue/AttachmentRow.jsx:167
+#: src/components/StatusManager.jsx:555 src/Modal.jsx:255 src/Toolbar.jsx:315
+msgid "Cancel"
+msgstr "रद्द करें"
+
+#: src/components/Comment.jsx:360
+msgid "Save"
+msgstr "सेव करें"
+
+#: src/components/Comment.jsx:369
+msgid "Edit comment…"
+msgstr "टिप्पणी संपादित करें…"
+
+#: src/components/Comment.jsx:509
+msgid "Could not load comments."
+msgstr "टिप्पणियाँ लोड नहीं हो सकीं।"
+
+#: src/components/Comment.jsx:540
+msgid "Please add a comment before submitting."
+msgstr "कृपया जमा करने से पहले एक टिप्पणी जोड़ें।"
+
+#: src/components/Comment.jsx:638
+msgid "Failed to submit comment:"
+msgstr "टिप्पणी जमा करने में विफल:"
+
+#: src/components/Comment.jsx:638 src/components/Comment.jsx:758
+#: src/components/Comment.jsx:834
+msgid "Unknown error"
+msgstr "अज्ञात त्रुटि"
+
+#: src/components/Comment.jsx:681 src/components/comment/TimelineEntry.jsx:222
+#: src/components/Issue.jsx:1946 src/components/Issue.jsx:1950
+#: src/components/Issue.jsx:1952 src/hooks/useUser.js:71
+#: src/utils/statusChange.js:89
+msgid "Unknown"
+msgstr "अज्ञात"
+
+#: src/components/Comment.jsx:722
+msgid "Failed to delete one or more attachments."
+msgstr "एक या अधिक संलग्नक हटाने में विफल।"
+
+#: src/components/Comment.jsx:758
+msgid "Failed to update comment:"
+msgstr "टिप्पणी अपडेट करने में विफल:"
+
+#: src/components/Comment.jsx:834
+msgid "Failed to delete comment:"
+msgstr "टिप्पणी हटाने में विफल:"
+
+#: src/components/Comment.jsx:861 src/components/Comment.jsx:872
+#: src/components/CommentForm.jsx:312 src/components/CommentForm.jsx:326
+msgid "Failed to upload one or more attachments."
+msgstr "एक या अधिक संलग्नक अपलोड करने में विफल।"
+
+#: src/components/Comment.jsx:1003
+msgid "Sort: ↑"
+msgstr "क्रमबद्ध करें: ↑"
+
+#: src/components/Comment.jsx:1004
+msgid "Sort: ↓"
+msgstr "क्रमबद्ध करें: ↓"
+
+#: src/components/Comment.jsx:1027 src/components/CommentForm.jsx:446
+msgid "Submitting…"
+msgstr "भेज रहा हूँ…"
+
+#: src/components/Comment.jsx:1028 src/components/CommentForm.jsx:452
+msgid "Submit Comment"
+msgstr "टिप्पणी सबमिट करें"
+
+#: src/components/Comment.jsx:1033 src/components/CommentForm.jsx:191
+msgid "Add a comment…"
+msgstr "टिप्पणी जोड़ें…"
+
+#: src/components/Comment.jsx:1044
+msgid "Loading comments…"
+msgstr "टिप्पणियाँ लोड हो रही हैं…"
+
+#: src/components/Comment.jsx:1090
+msgid "Delete Comment?"
+msgstr "टिप्पणी हटाएं?"
+
+#: src/components/Comment.jsx:1104
+msgid " and its attachment"
+msgstr "और इसका अटैचमेंट"
+
+#: src/components/Comment.jsx:1106
+msgid " and its attachments"
+msgstr "और इसके अटैचमेंट"
+
+#. translators: %1$s: attachment text suffix for comment deletion confirmation.
+#: src/components/Comment.jsx:1113
+#, js-format
+msgid "Are you sure you want to delete this comment%1$s?"
+msgid_plural "Are you sure you want to delete these comments%1$s?"
+msgstr[0] ""
+"क्या आप वाकई इस टिप्पणी को हटाना चाहते हैं%1$s? पड़ोस के फ़ाइल के नाम के साथ।"
+msgstr[1] ""
+"क्या आप वाकई इन टिप्पणियों को हटाना चाहते हैं%1$s? पड़ोस के लोगों को भी "
+"नुकसान हो सकता है।"
+
+#: src/components/comment/TimelineEntry.jsx:255
+msgid "another user"
+msgstr "एक और उपयोगकर्ता"
+
+#. translators: Prefix before issue title in activity headers.
+#: src/components/comment/TimelineEntry.jsx:273
+#, js-format
+msgid "on %s"
+msgstr "पर %s"
+
+#: src/components/comment/TimelineEntry.jsx:376
+msgid "edited by"
+msgstr "संपादित किया गया"
+
+#: src/components/comment/TimelineEntry.jsx:389
+msgid "edited"
+msgstr "संशोधित"
+
+#: src/components/comment/TimelineEntry.jsx:424
+msgid "Comment attachment"
+msgstr "टिप्पणी संलग्नक"
+
+#: src/components/CommentForm.jsx:450
+msgid "Create Issue"
+msgstr "समस्या बनाएँ"
+
+#: src/components/Container.jsx:141
+msgid "Rename"
+msgstr "नाम बदलें"
+
+#: src/components/Container.jsx:150
+msgid "Expand Column"
+msgstr "कॉलम का विस्तार करें"
+
+#: src/components/Container.jsx:151
+msgid "Collapse Column"
+msgstr "कॉलम को संक्षिप्त करें"
+
+#: src/components/Container.jsx:161
+msgid "Lift Priority Items"
+msgstr "प्राथमिकता वाले आइटम उठाएं"
+
+#: src/components/Container.jsx:227
+msgid "Move All To Next Column"
+msgstr "सभी को अगले कॉलम में ले जाएं"
+
+#: src/components/Container.jsx:236
+msgid "Delete All"
+msgstr "सब कुछ हटाएँ"
+
+#: src/components/Container.jsx:624
+msgid "Moving…"
+msgstr "चल रहा है…"
+
+#: src/components/Container.jsx:637
+msgid "No cards match the active filter."
+msgstr "कोई कार्ड सक्रिय फ़िल्टर से मेल नहीं खाते।"
+
+#: src/components/Container.jsx:644
+msgid "Drop items here"
+msgstr "आइटम यहां गिराएं"
+
+#: src/components/container/menu-controls/focusOnColumn.js:20
+msgid "Clear Column Focus"
+msgstr "कॉलम फोकस साफ़ करें"
+
+#: src/components/container/menu-controls/focusOnColumn.js:21
+msgid "Focus on Column"
+msgstr "कॉलम पर ध्यान दें"
+
+#: src/components/DailyDigestTemplateScreen.jsx:16
+#: src/components/NotificationTemplateScreen.jsx:60
+msgid "Site Icon"
+msgstr "साइट आइकन"
+
+#: src/components/DailyDigestTemplateScreen.jsx:17
+#: src/components/NotificationTemplateScreen.jsx:61
+msgid "Insert the current site icon."
+msgstr "वर्तमान साइट आइकन डालें।"
+
+#: src/components/DailyDigestTemplateScreen.jsx:23
+msgid "Render the locked deadline-watch digest section."
+msgstr "लॉक किए गए डेडलाइन-वॉच डाइजेस्ट सेक्शन को रेंडर करें।"
+
+#: src/components/DailyDigestTemplateScreen.jsx:32
+msgid "Render the locked followed-issues digest section."
+msgstr "लॉक किए गए फॉलो किए गए मुद्दों का डाइजेस्ट सेक्शन रेंडर करें।"
+
+#: src/components/DailyDigestTemplateScreen.jsx:40
+msgid "New Items"
+msgstr "नया आइटम"
+
+#: src/components/DailyDigestTemplateScreen.jsx:41
+msgid "Render the locked new-items digest section."
+msgstr "लॉक किए गए नए आइटम डाइजेस्ट सेक्शन को रेंडर करें।"
+
+#: src/components/DailyDigestTemplateScreen.jsx:68
+msgid ""
+"Available placeholders include {{site_title}}, {{site_tagline}}, "
+"{{digest_day}}, {{issue_count}}, {{activity_count}}, and {{new_item_count}}."
+msgstr ""
+"उपलब्ध प्लेसहोल्डर में {{site_title}}, {{site_tagline}}, {{digest_day}}, "
+"{{issue_count}}, {{activity_count}}, और {{new_item_count}} शामिल हैं।"
+
+#: src/components/DailyDigestTemplateScreen.jsx:72
+msgid "Could not load the daily digest template."
+msgstr "दैनिक डाइजेस्ट टेम्पलेट लोड नहीं कर सका।"
+
+#: src/components/DailyDigestTemplateScreen.jsx:73
+msgid "Could not refresh the daily digest preview."
+msgstr "दैनिक डाइजेस्ट पूर्वावलोकन को ताज़ा नहीं कर सका।"
+
+#: src/components/DailyDigestTemplateScreen.jsx:77
+msgid "Could not save the daily digest template."
+msgstr "दैनिक डाइजेस्ट टेम्पलेट सहेजने में असमर्थ।"
+
+#: src/components/DailyDigestTemplateScreen.jsx:78
+msgid "Could not reset the daily digest template."
+msgstr "दैनिक डाइजेस्ट टेम्पलेट रीसेट नहीं कर सका।"
+
+#: src/components/DailyDigestTemplateScreen.jsx:82
+msgid "Could not send the test digest email."
+msgstr "टेस्ट डाइजेस्ट ईमेल भेजने में विफल।"
+
+#: src/components/DailyDigestTemplateScreen.jsx:83
+msgid "Daily digest template saved."
+msgstr "दैनिक डाइजेस्ट टेम्पलेट सहेजा गया।"
+
+#: src/components/DailyDigestTemplateScreen.jsx:84
+msgid "Daily digest template reset to default."
+msgstr "दैनिक डाइजेस्ट टेम्पलेट को डिफ़ॉल्ट पर रीसेट किया गया।"
+
+#: src/components/DailyDigestTemplateScreen.jsx:88
+msgid "Test digest email sent successfully."
+msgstr "टेस्ट डाइजेस्ट ईमेल सफलतापूर्वक भेजा गया।"
+
+#: src/components/DailyDigestTemplateScreen.jsx:89
+#: src/components/NotificationTemplateScreen.jsx:117
+msgid "Preview will appear here once the template loads."
+msgstr "टेम्प्लेट लोड होने के बाद यहां पूर्वावलोकन दिखाई देगा।"
+
+#: src/components/EmailTemplatesScreen.jsx:10
+msgid "Instant Emails"
+msgstr "तत्काल ईमेल"
+
+#: src/components/EmailTemplatesScreen.jsx:15
+msgid "Daily Digest"
+msgstr "दैनिक सारांश"
+
+#: src/components/EmailTemplatesScreen.jsx:30
+msgid ""
+"Manage the templates used for outbound emails in the block editor areas "
+"below. Locked blocks are essential for the correct functioning of the "
+"templates. They can be moved, but should not be removed."
+msgstr ""
+"आउटबाउंड ईमेल के लिए उपयोग किए जाने वाले टेम्प्लेट को ब्लॉक एडिटर के नीचे के "
+"क्षेत्रों में प्रबंधित करें। लॉक किए गए ब्लॉक टेम्प्लेट के सही ढंग से काम "
+"करने के लिए आवश्यक हैं। उन्हें स्थानांतरित किया जा सकता है, लेकिन उन्हें "
+"हटाया नहीं जाना चाहिए।"
+
+#: src/components/EnableTestLogsControl.jsx:39
+msgid "Debugging"
+msgstr "डीबगिंग"
+
+#: src/components/EnableTestLogsControl.jsx:43
+msgid "Enable Browser Console Messages"
+msgstr "ब्राउज़र कंसोल संदेश सक्षम करें"
+
+#: src/components/InboxControl.jsx:302
+msgid "Could not load inbox updates."
+msgstr "इनबॉक्स अपडेट लोड नहीं हो सके।"
+
+#: src/components/InboxControl.jsx:409 src/components/InboxControl.jsx:450
+msgid "Could not update inbox state."
+msgstr "इनबॉक्स की स्थिति अपडेट नहीं की जा सकी।"
+
+#: src/components/InboxControl.jsx:481
+msgid "Could not mark inbox items as read."
+msgstr "इनबॉक्स आइटम को पढ़ने के रूप में चिह्नित नहीं किया जा सका।"
+
+#: src/components/InboxControl.jsx:501
+msgid "No unread updates right now."
+msgstr "अभी कोई अप्रयुक्त अपडेट नहीं हैं।"
+
+#: src/components/InboxControl.jsx:502
+msgid "No inbox updates yet."
+msgstr "अभी कोई इनबॉक्स अपडेट नहीं हैं।"
+
+#: src/components/InboxControl.jsx:519
+msgid "Untitled issue"
+msgstr "अनाम समस्या"
+
+#: src/components/InboxControl.jsx:522
+msgid "Mark Read"
+msgstr "पढ़ा हुआ"
+
+#: src/components/InboxControl.jsx:523
+msgid "Mark Unread"
+msgstr "अंकित करें"
+
+#: src/components/InboxControl.jsx:651
+msgid "Close inbox"
+msgstr "इनबॉक्स बंद करें"
+
+#: src/components/InboxControl.jsx:675
+msgid "Inbox filter"
+msgstr "इनबॉक्स फ़िल्टर"
+
+#: src/components/InboxControl.jsx:680
+msgid "Unread"
+msgstr "पढ़ने के लिए"
+
+#: src/components/InboxControl.jsx:684
+msgid "All"
+msgstr "सब"
+
+#: src/components/InboxControl.jsx:694
+msgid "Mark All Read"
+msgstr "सब कुछ पढ़ें"
+
+#: src/components/InboxControl.jsx:714 src/components/Issue.jsx:2057
+#: src/components/User.jsx:28 src/DashboardWidget.jsx:41
+msgid "Loading…"
+msgstr "लोड हो रहा है…"
+
+#: src/components/InboxControl.jsx:715
+msgid "Load More"
+msgstr "और लोड करें"
+
+#: src/components/Issue.jsx:68 src/Modal.jsx:230 src/Toolbar.jsx:292
+msgid "High Priority"
+msgstr "उच्च प्राथमिकता"
+
+#: src/components/Issue.jsx:378
+msgid "Edit assignees"
+msgstr "असाइन करने वालों को संपादित करें"
+
+#: src/components/Issue.jsx:397
+msgid "Assign"
+msgstr "असाइन करें"
+
+#: src/components/Issue.jsx:688
+msgid "Failed to load statuses."
+msgstr "स्टेटस लोड करने में विफल।"
+
+#: src/components/Issue.jsx:696 src/components/LabelsManager.jsx:104
+msgid "Failed to load labels."
+msgstr "लेबल लोड करने में विफल।"
+
+#: src/components/Issue.jsx:847
+msgid "Failed to update assignees."
+msgstr "असाइनियों को अपडेट करने में विफल।"
+
+#: src/components/Issue.jsx:887
+msgid "Failed to update priority."
+msgstr "प्राथमिकता अपडेट करने में विफल।"
+
+#: src/components/Issue.jsx:942
+msgid "Failed to update labels."
+msgstr "लेबल अपडेट करने में विफल।"
+
+#: src/components/Issue.jsx:1029
+msgid "Failed to progress issue status."
+msgstr "समस्या की स्थिति में प्रगति करने में विफल।"
+
+#: src/components/Issue.jsx:1071
+msgid "Failed to update issue title."
+msgstr "समस्या शीर्षक को अपडेट करने में विफल।"
+
+#: src/components/Issue.jsx:1209
+msgid "Issue created, but labels could not be saved."
+msgstr "समस्या बनाई गई, लेकिन लेबल नहीं सहेजे जा सके।"
+
+#: src/components/Issue.jsx:1274
+msgid "Failed to create issue comment."
+msgstr "समस्या टिप्पणी बनाने में विफल।"
+
+#: src/components/Issue.jsx:1309
+msgid "Comment could not be saved. Please try again."
+msgstr "टिप्पणी सहेजने में विफल। कृपया फिर प्रयास करें।"
+
+#: src/components/Issue.jsx:1310
+msgid "Issue created, but comment could not be saved."
+msgstr "समस्या बनाई गई, लेकिन टिप्पणी सहेज नहीं पाई।"
+
+#: src/components/Issue.jsx:1373
+msgid "Failed to retry comment."
+msgstr "टिप्पणी को पुनः प्रयास करने में विफल।"
+
+#: src/components/Issue.jsx:1568
+msgid "Failed to update subissue title."
+msgstr "सब विषय शीर्षक को अपडेट करने में विफल।"
+
+#: src/components/Issue.jsx:1642
+msgid "Failed to update subissue completion."
+msgstr "सब-इस्यू पूर्ण करने में विफल।"
+
+#: src/components/Issue.jsx:1727
+msgid "Failed to update subissue assignees."
+msgstr "सब-इस्यू असाइन करने में विफल।"
+
+#: src/components/Issue.jsx:1832 src/utils/issueCommentHandler.js:507
+msgid "Unknown issue"
+msgstr "अज्ञात समस्या"
+
+#: src/components/Issue.jsx:1845
+msgid "Failed to promote subissue."
+msgstr "सब-समस्या को बढ़ावा देने में विफल।"
+
+#: src/components/Issue.jsx:1872
+msgid "You do not have permission to delete issues."
+msgstr "आपके पास इश्यू को हटाने की अनुमति नहीं है।"
+
+#: src/components/Issue.jsx:1886
+msgid "Failed to delete subissue."
+msgstr "उप-विषय को हटाने में विफल।"
+
+#: src/components/Issue.jsx:2015
+msgid "Copy Issue ID"
+msgstr "समस्या आईडी कॉपी करें"
+
+#: src/components/Issue.jsx:2028
+msgid "Progress Issue to"
+msgstr "प्रगति समस्या को"
+
+#: src/components/Issue.jsx:2041
+msgid "Trash Issue"
+msgstr "कचरा समस्या"
+
+#: src/components/Issue.jsx:2053
+msgid "Retry"
+msgstr "फिर प्रयास करें"
+
+#: src/components/Issue.jsx:2073
+msgid "Enter a title to create issue…"
+msgstr "एक शीर्षक दर्ज करें ताकि समस्या बनाई जा सके…"
+
+#: src/components/Issue.jsx:2091
+msgid "Created by"
+msgstr "द्वारा निर्मित"
+
+#: src/components/Issue.jsx:2147
+msgid "Add a comment to the issue…"
+msgstr "समस्या पर टिप्पणी जोड़ें…"
+
+#: src/components/Issue.jsx:2154
+msgid "Retry Comment"
+msgstr "फिर से टिप्पणी करें"
+
+#: src/components/Issue.jsx:2171
+msgid "Checklist"
+msgstr "चेकलिस्ट"
+
+#: src/components/Issue.jsx:2183
+msgid "Add"
+msgstr "जोड़ें"
+
+#: src/components/Issue.jsx:2231
+msgid "Enter title…"
+msgstr "शीर्षक दर्ज करें…"
+
+#: src/components/Issue.jsx:2282
+msgid "Promote"
+msgstr "प्रचार करें"
+
+#: src/components/Issue.jsx:2366
+msgid "Could not load issue details."
+msgstr "समस्या की जानकारी लोड नहीं हो सकी।"
+
+#: src/components/Issue.jsx:2392
+msgid "Delete Issue?"
+msgstr "समस्या हटाएं?"
+
+#: src/components/Issue.jsx:2393
+msgid "Are you sure you want to trash this issue?"
+msgstr "क्या आप वाकई इस मुद्दे को हटाना चाहते हैं?"
+
+#: src/components/issue/AssigneeSelector.jsx:57
+msgid "Enter username(s)"
+msgstr "उपयोगकर्ता नाम दर्ज करें(s)"
+
+#: src/components/issue/AttachmentRow.jsx:67
+msgid "File"
+msgstr "फ़ाइल"
+
+#: src/components/issue/AttachmentRow.jsx:113
+msgid "Download attachment"
+msgstr "डाउनलोड अटैचमेंट"
+
+#: src/components/issue/AttachmentRow.jsx:137
+#: src/components/issue/AttachmentRow.jsx:138
+msgid "Delete attachment"
+msgstr "अटैचमेंट हटाएँ"
+
+#: src/components/issue/AttachmentRow.jsx:146
+msgid "Delete attachment?"
+msgstr "अटैचमेंट हटाएँ?"
+
+#: src/components/issue/AttachmentRow.jsx:151
+msgid "Are you sure you want to delete this attachment?"
+msgstr "क्या आप निश्चित रूप से इस अटैचमेंट को हटाना चाहते हैं? "
+
+#: src/components/issue/DataTable.jsx:61
+msgid "Invalid data format"
+msgstr "अमान्य डेटा प्रारूप"
+
+#: src/components/issue/DataTable.jsx:64
+msgid "Error parsing JSON data"
+msgstr "JSON डेटा को पार्स करने में त्रुटि"
+
+#: src/components/issue/DeadlineControl.jsx:47
+msgid "Click to select a deadline"
+msgstr "चुनने के लिए क्लिक करें"
+
+#: src/components/issue/DeadlineControl.jsx:73
+msgid "Clear deadline"
+msgstr "समय सीमा साफ़ करें"
+
+#: src/components/issue/ErrorsTab.jsx:30
+msgid "No JavaScript errors were recorded for this issue."
+msgstr "इस मुद्दे के लिए कोई जावास्क्रिप्ट त्रुटि दर्ज नहीं की गई।"
+
+#: src/components/issue/ErrorsTab.jsx:86
+msgid "Stack Trace"
+msgstr "स्टैक ट्रेस"
+
+#: src/components/issue/LabelsSelector.jsx:162
+msgid "Edit labels"
+msgstr "लेबल संपादित करें"
+
+#: src/components/issue/Lightbox.jsx:47
+msgid "Enlarged screenshot"
+msgstr "बड़ा स्क्रीनशॉट"
+
+#. translators: 1: formatted date/time. 2: UTC offset, e.g. +02:00.
+#: src/components/issue/ReportTab.jsx:32 src/components/Time.jsx:43
+#, js-format
+msgid "%1$s (UTC%2$s)"
+msgstr "%1$s (UTC%2$s)"
+
+#: src/components/issue/ReportTab.jsx:101
+msgid "Reported"
+msgstr "रिपोर्ट किया गया"
+
+#: src/components/issue/ReportTab.jsx:105
+#: src/components/issue/ReportTab.jsx:113
+#: src/components/issue/ReportTab.jsx:119
+#: src/components/issue/ReportTab.jsx:136
+msgid "N/A"
+msgstr "उपलब्ध नहीं"
+
+#: src/components/issue/ReportTab.jsx:109
+msgid "Last edit"
+msgstr "अंतिम संपादन"
+
+#: src/components/issue/ReportTab.jsx:117
+msgid "URL"
+msgstr "URL"
+
+#: src/components/issue/ReportTab.jsx:136
+msgid "Viewport"
+msgstr "व्यूपोर्ट"
+
+#: src/components/ItemDatapointsManager.jsx:119
+msgid "Failed to save datapoint visibility settings."
+msgstr "डेटापॉइंट दृश्यता सेटिंग्स सहेजने में विफल।"
+
+#: src/components/ItemDatapointsManager.jsx:131
+msgid "Item Datapoints"
+msgstr "आइटम डेटा पॉइंट्स"
+
+#: src/components/ItemDatapointsManager.jsx:134
+msgid "Choose which datapoints appear on issue cards."
+msgstr "यह चुनें कि कौन से डेटा पॉइंट इश्यू कार्ड पर दिखाई दें।"
+
+#: src/components/ItemDatapointsManager.jsx:150
+msgid "No item datapoints are currently registered."
+msgstr "कोई आइटम डेटा पॉइंट्स वर्तमान में पंजीकृत नहीं हैं।"
+
+#: src/components/LabelsManager.jsx:346
+msgid "Failed to save label."
+msgstr "लेबल सेव करने में विफल।"
+
+#: src/components/LabelsManager.jsx:457
+msgid "Color picker unavailable."
+msgstr "कलर पिकर उपलब्ध नहीं है।"
+
+#: src/components/LabelsManager.jsx:469
+msgid "Create and maintain labels to categorize and filter your issues."
+msgstr "समस्याओं को वर्गीकृत और फ़िल्टर करने के लिए लेबल बनाएं और बनाए रखें।"
+
+#: src/components/LabelsManager.jsx:491
+msgid "Name"
+msgstr "नाम"
+
+#: src/components/LabelsManager.jsx:495 src/components/LabelsManager.jsx:540
+msgid "Label name"
+msgstr "लेबल नाम"
+
+#: src/components/LabelsManager.jsx:515 src/components/LabelsManager.jsx:559
+msgid "Delete label"
+msgstr "लेबल हटाएं"
+
+#: src/components/LabelsManager.jsx:577
+msgid "New Label"
+msgstr "नया लेबल"
+
+#: src/components/EnableContextCaptureControl.jsx:14
+msgid "Context Capture"
+msgstr "संदर्भ कैप्चर करें"
+
+#: src/components/EnableContextCaptureControl.jsx:21
+msgid "Enable reporting of issues with associated context"
+msgstr "समस्याओं की रिपोर्टिंग सक्षम करें, जिसमें संबंधित जानकारी भी शामिल हो"
+
+#: src/components/NotificationPreferences.jsx:42
+msgid "Issues I created"
+msgstr "मुझे बनाए गए मुद्दे"
+
+#: src/components/NotificationPreferences.jsx:46
+msgid "Issues assigned to me"
+msgstr "मुझे असाइन किए गए मुद्दे"
+
+#: src/components/NotificationPreferences.jsx:50
+msgid "Issues I starred"
+msgstr "मुझे जिन मुद्दों को मैंने स्टार किया है"
+
+#: src/components/NotificationPreferences.jsx:54
+msgid "Comments that mention me"
+msgstr "टिप्पणियाँ जो मुझे उल्लेख करती हैं"
+
+#: src/components/NotificationPreferences.jsx:58
+msgid "Issues with these labels"
+msgstr "इन लेबल के साथ समस्याएँ"
+
+#: src/components/NotificationPreferences.jsx:62
+msgid "Issues currently marked high priority"
+msgstr "वर्तमान में उच्च प्राथमिकता के रूप में चिह्नित मुद्दे"
+
+#: src/components/NotificationPreferences.jsx:66
+msgid "Whenever a new issue is created"
+msgstr "जब भी कोई नई समस्या बनाई जाती है"
+
+#: src/components/NotificationPreferences.jsx:98
+msgid "Human comments"
+msgstr "मानवीय टिप्पणियाँ"
+
+#: src/components/NotificationPreferences.jsx:102
+msgid "Status changes"
+msgstr "स्थिति परिवर्तन"
+
+#: src/components/NotificationPreferences.jsx:106
+msgid "Issue assignment changes"
+msgstr "समस्या असाइनमेंट में बदलाव"
+
+#: src/components/NotificationPreferences.jsx:110
+msgid "Due date changes"
+msgstr "अंतिम तिथि में बदलाव"
+
+#: src/components/NotificationPreferences.jsx:114
+msgid "Checklist create/delete"
+msgstr "चेकलिस्ट बनाएं/हटाएं"
+
+#: src/components/NotificationPreferences.jsx:118
+msgid "Checklist assignment changes"
+msgstr "चेकलिस्ट असाइनमेंट में बदलाव"
+
+#: src/components/NotificationPreferences.jsx:122
+msgid "Checklist completion changes"
+msgstr "चेकलिस्ट पूर्ण होने में बदलाव"
+
+#: src/components/NotificationPreferences.jsx:126
+msgid "Checklist promotions"
+msgstr "चेकलिस्ट प्रमोशन"
+
+#: src/components/NotificationPreferences.jsx:130
+msgid "High-priority changes"
+msgstr "उच्च प्राथमिकता वाले बदलाव"
+
+#: src/components/NotificationPreferences.jsx:154
+msgid "Not configured."
+msgstr "कॉन्फ़िगर नहीं किया गया।"
+
+#: src/components/NotificationPreferences.jsx:223
+msgid "Preferences"
+msgstr "प्राथमिकताएं"
+
+#. translators: %s: notification channel label.
+#: src/components/NotificationPreferences.jsx:270
+#, js-format
+msgid "Enable %s notifications"
+msgstr "%s सूचना सक्षम करें"
+
+#: src/components/NotificationPreferences.jsx:284
+msgid "Saving Preferences…"
+msgstr "प्राथमिकताओं को सहेज रहा है…"
+
+#: src/components/NotificationPreferences.jsx:285
+msgid "Save Preferences"
+msgstr "प्राथमिकताओं को सहेजें"
+
+#. translators: %s: active notification tab title.
+#: src/components/NotificationPreferences.jsx:291
+#, js-format
+msgid "Saving %s…"
+msgstr "%s सहेजा जा रहा है…"
+
+#. translators: %s: active notification tab title.
+#: src/components/NotificationPreferences.jsx:298
+#, js-format
+msgid "Save %s"
+msgstr "%s सहेजें"
+
+#: src/components/NotificationPreferences.jsx:318
+msgid ""
+"Choose whether you want instant email updates, a daily summary, or both."
+msgstr "तत्काल ईमेल अपडेट, दैनिक सारांश, या दोनों में से चुनें।"
+
+#: src/components/NotificationPreferences.jsx:335
+msgid ""
+"Enter a valid email address or leave this blank to use your WordPress "
+"profile email."
+msgstr ""
+"एक वैध ईमेल पता दर्ज करें या इसे खाली छोड़ दें ताकि आप अपने वर्डप्रेस "
+"प्रोफाइल ईमेल का उपयोग कर सकें।"
+
+#: src/components/NotificationPreferences.jsx:348
+msgid "Send instant email updates"
+msgstr "तत्काल ईमेल अपडेट भेजें"
+
+#: src/components/NotificationPreferences.jsx:360
+msgid "Send a daily summary at"
+msgstr "दैनिक सारांश भेजें पर"
+
+#: src/components/NotificationPreferences.jsx:374
+msgid "Daily summary time"
+msgstr "दैनिक सारांश समय"
+
+#. translators: %s: site timezone label.
+#: src/components/NotificationPreferences.jsx:391
+#, js-format
+msgid ""
+"Summaries of activity matching your preferences will be generated for you at "
+"this time every day, based on the site's timezone (%s)."
+msgstr ""
+"आपके प्राथमिकताओं से मेल खाने वाली गतिविधियों के सारांश हर दिन आपके लिए "
+"उत्पन्न किए जाएंगे, जो साइट के समय क्षेत्र (%s) पर आधारित हैं।"
+
+#: src/components/NotificationPreferences.jsx:402
+msgid ""
+"Add a valid email address before enabling instant email updates or the daily "
+"summary."
+msgstr ""
+"एक मान्य ईमेल पता दर्ज करने के बाद ही इंस्टेंट ईमेल अपडेट या दैनिक सारांश को "
+"सक्षम करें।"
+
+#: src/components/NotificationPreferences.jsx:528
+msgid ""
+"Could not load labels. Label notifications are unavailable until labels load."
+msgstr ""
+"लेबल लोड नहीं हो सके। लेबल लोड होने तक लेबल नोटिफिकेशन उपलब्ध नहीं हैं।"
+
+#: src/components/NotificationPreferences.jsx:538
+#: src/components/NotificationPreferences.jsx:1045
+msgid "Could not load notification preferences."
+msgstr "सूचना वरीयताओं को लोड करने में असमर्थ।"
+
+#: src/components/NotificationPreferences.jsx:873
+msgid "Notification preferences saved."
+msgstr "नोटिफिकेशन प्राथमिकताएँ सहेजी गईं।"
+
+#: src/components/NotificationPreferences.jsx:878
+msgid "Could not save notification preferences."
+msgstr "नोटिफिकेशन प्राथमिकताएँ सहेजने में असमर्थ।"
+
+#: src/components/NotificationPreferences.jsx:920
+msgid "No labels are available yet."
+msgstr "अभी कोई लेबल उपलब्ध नहीं हैं।"
+
+#: src/components/NotificationPreferences.jsx:954
+msgid "Configure how this delivery channel should behave."
+msgstr "यह डिलीवरी चैनल कैसे व्यवहार करेगा, इसे कॉन्फ़िगर करें।"
+
+#: src/components/NotificationPreferences.jsx:1025
+msgid "This channel is not ready to be enabled yet."
+msgstr "यह चैनल अभी सक्षम नहीं किया जा सकता।"
+
+#: src/components/NotificationPreferences.jsx:1094
+msgid "Notify me about"
+msgstr "मुझे सूचित करें कि"
+
+#: src/components/NotificationPreferences.jsx:1120
+msgid "Activity types"
+msgstr "गतिविधि प्रकार"
+
+#: src/components/notifications/MentionsTextarea.jsx:284
+msgid "No matching users found."
+msgstr "कोई मिलान करने वाले उपयोगकर्ता नहीं मिले।"
+
+#. translators: %d is the current user's unread inbox notification count.
+#: src/components/notifications/UnreadCountBadge.jsx:23
+#, js-format
+msgid "Project Board has %d unread notifications"
+msgstr "प्रोजेक्ट बोर्ड में %d अप्रयुक्त सूचनाएं हैं"
+
+#. translators: %d is the number of unread inbox notifications.
+#: src/components/notifications/UnreadCountBadge.jsx:42
+#, js-format
+msgid "%d unread notifications"
+msgstr "%d अनपठित सूचनाएं"
+
+#: src/components/NotificationTemplateScreen.jsx:16
+msgid "Issue Title"
+msgstr "समस्या का शीर्षक"
+
+#: src/components/NotificationTemplateScreen.jsx:17
+msgid "Insert the issue title."
+msgstr "समस्या का शीर्षक डालें।"
+
+#: src/components/NotificationTemplateScreen.jsx:21
+msgid "Performed By"
+msgstr "Performed By"
+
+#: src/components/NotificationTemplateScreen.jsx:22
+msgid "Insert the name of the person who performed the activity."
+msgstr "उस व्यक्ति का नाम डालें जिसने गतिविधि की।"
+
+#: src/components/NotificationTemplateScreen.jsx:29
+msgid "Event Label"
+msgstr "इवेंट लेबल"
+
+#: src/components/NotificationTemplateScreen.jsx:30
+msgid "Insert the event label such as status change or comment."
+msgstr "इवेंट लेबल दर्ज करें जैसे कि स्थिति परिवर्तन या टिप्पणी।"
+
+#: src/components/NotificationTemplateScreen.jsx:37
+msgid "Full Comment Content"
+msgstr "पूर्ण टिप्पणी सामग्री"
+
+#: src/components/NotificationTemplateScreen.jsx:38
+msgid "Insert the full issue comment, including attachment links."
+msgstr "पूरा इश्यू कमेंट डालें, जिसमें अटैचमेंट लिंक भी शामिल हों।"
+
+#: src/components/NotificationTemplateScreen.jsx:45
+msgid "Issue Link"
+msgstr "समस्या लिंक"
+
+#: src/components/NotificationTemplateScreen.jsx:46
+msgid "Insert a link to the issue on the board."
+msgstr "बोर्ड पर मुद्दे के लिए एक लिंक डालें।"
+
+#: src/components/NotificationTemplateScreen.jsx:50
+msgid "Site Title"
+msgstr "साइट का शीर्षक"
+
+#: src/components/NotificationTemplateScreen.jsx:51
+msgid "Insert the current site title."
+msgstr "वर्तमान साइट का शीर्षक डालें।"
+
+#: src/components/NotificationTemplateScreen.jsx:55
+msgid "Site Tagline"
+msgstr "साइट टैगलाइन"
+
+#: src/components/NotificationTemplateScreen.jsx:56
+msgid "Insert the current site tagline."
+msgstr "वर्तमान साइट टैगलाइन डालें।"
+
+#: src/components/NotificationTemplateScreen.jsx:65
+msgid "Event Time"
+msgstr "इवेंट का समय"
+
+#: src/components/NotificationTemplateScreen.jsx:66
+msgid "Insert the event timestamp."
+msgstr "इवेंट टाइमस्टैम्प डालें।"
+
+#: src/components/NotificationTemplateScreen.jsx:93
+msgid ""
+"Available placeholders include {{issue_title}}, {{performed_by}}, "
+"{{event_label}}, {{site_title}}, {{site_tagline}}, and {{event_time}}."
+msgstr ""
+"उपलब्ध प्लेसहोल्डर में {{issue_title}}, {{performed_by}}, {{event_label}}, "
+"{{site_title}}, {{site_tagline}}, और {{event_time}} शामिल हैं।"
+
+#: src/components/NotificationTemplateScreen.jsx:97
+msgid "Could not load the notification email template."
+msgstr "सूचना ईमेल टेम्पलेट लोड करने में असमर्थ।"
+
+#: src/components/NotificationTemplateScreen.jsx:101
+msgid "Could not refresh the email preview."
+msgstr "ईमेल पूर्वावलोकन को ताज़ा नहीं किया जा सका।"
+
+#: src/components/NotificationTemplateScreen.jsx:102
+msgid "Could not save the notification email template."
+msgstr "सूचना ईमेल टेम्पलेट सहेजने में असमर्थ।"
+
+#: src/components/NotificationTemplateScreen.jsx:106
+msgid "Could not reset the notification email template."
+msgstr "सूचना ईमेल टेम्पलेट रीसेट नहीं हो सका।"
+
+#: src/components/NotificationTemplateScreen.jsx:110
+msgid "Could not send the test email."
+msgstr "परीक्षण ईमेल भेजने में विफल।"
+
+#: src/components/NotificationTemplateScreen.jsx:111
+msgid "Notification email template saved."
+msgstr "सूचना ईमेल टेम्पलेट सहेजा गया।"
+
+#: src/components/NotificationTemplateScreen.jsx:112
+msgid "Notification email template reset to default."
+msgstr "सूचना ईमेल टेम्पलेट को डिफ़ॉल्ट पर रीसेट किया गया।"
+
+#: src/components/NotificationTemplateScreen.jsx:116
+msgid "Test email sent successfully."
+msgstr "टेस्ट ईमेल सफलतापूर्वक भेजा गया।"
+
+#: src/components/Presence.jsx:76
+msgid "Nobody else is viewing the board right now"
+msgstr "कोई और अभी बोर्ड नहीं देख रहा है"
+
+#: src/components/Presence.jsx:84
+msgid "Currently viewing the board: "
+msgstr "वर्तमान में बोर्ड प्रदर्शित किया जा रहा है: "
+
+#: src/components/Presence.jsx:91
+msgid "User"
+msgstr "उपयोगकर्ता"
+
+#: src/components/RestoreManager.jsx:66 src/components/RestoreManager.jsx:378
+msgid "-"
+msgstr "-"
+
+#: src/components/RestoreManager.jsx:137
+msgid "Search failed. Please try again."
+msgstr "खोज विफल। कृपया फिर प्रयास करें।"
+
+#: src/components/RestoreManager.jsx:228
+msgid "Failed to restore issue."
+msgstr "समस्या को पुनर्स्थापित करने में विफल।"
+
+#. translators: %d: Number of deleted issues.
+#: src/components/RestoreManager.jsx:239
+#, js-format
+msgid "%d deleted issue"
+msgid_plural "%d deleted issues"
+msgstr[0] "%d हटाए गए मुद्दे"
+msgstr[1] "%d हटाए गए मुद्दे"
+
+#. translators: 1: Current page number. 2: Total page count.
+#: src/components/RestoreManager.jsx:248
+#, js-format
+msgid "Page %1$d of %2$d"
+msgstr "पृष्ठ %1$d में से %2$d"
+
+#. translators: %d: number of days until trashed items are deleted.
+#: src/components/RestoreManager.jsx:275
+#, js-format
+msgid ""
+"Deleted issues will be automatically removed from the database after %d days."
+msgstr ""
+"डिलीट किए गए मुद्दों को स्वचालित रूप से %d दिनों के बाद डेटाबेस से हटा दिया "
+"जाएगा।"
+
+#: src/components/RestoreManager.jsx:267 src/components/RestoreManager.jsx:270
+msgid "Search deleted issues"
+msgstr "डिलीट किए गए मुद्दों की खोज करें"
+
+#: src/components/RestoreManager.jsx:275 src/components/Search.jsx:531
+#: src/components/Search.jsx:534
+msgid "Search"
+msgstr "खोजें"
+
+#: src/components/RestoreManager.jsx:294
+msgid "Title"
+msgstr "शीर्षक"
+
+#: src/components/RestoreManager.jsx:297
+msgid "Created"
+msgstr "बनाया गया"
+
+#: src/components/RestoreManager.jsx:298
+msgid "Last action"
+msgstr "अंतिम कार्रवाई"
+
+#: src/components/RestoreManager.jsx:299
+msgid "Actions"
+msgstr "क्रियाएं"
+
+#: src/components/RestoreManager.jsx:309
+msgid "No deleted issues found."
+msgstr "कोई डिलीट किए गए मुद्दे नहीं मिले।"
+
+#: src/components/RestoreManager.jsx:318 src/utils/issueCommentHandler.js:421
+#: src/utils/issueCommentHandler.js:446 src/utils/issueCommentHandler.js:522
+#: src/utils/issueCommentHandler.js:568 src/utils/issueCommentHandler.js:596
+msgid "Checklist item"
+msgstr "चेकलिस्ट आइटम"
+
+#. translators: %s: Parent issue title.
+#: src/components/RestoreManager.jsx:325
+#, js-format
+msgid "Issue: %s"
+msgstr "समस्या: %s"
+
+#: src/components/RestoreManager.jsx:401
+msgid "Restore"
+msgstr "पुनर्स्थापित करें"
+
+#: src/components/RestoreManager.jsx:422
+msgid "Previous"
+msgstr "पिछला"
+
+#: src/components/StarControl.jsx:32 src/components/StarControl.jsx:37
+msgid "Remove from Watchlist"
+msgstr "वॉचलिस्ट से हटाएं"
+
+#: src/components/StarControl.jsx:33 src/components/StarControl.jsx:38
+msgid "Add to Watchlist"
+msgstr "वॉचलिस्ट में जोड़ें"
+
+#: src/components/StatusManager.jsx:370
+msgid "Enter the name for the new status:"
+msgstr "नया स्टेटस के लिए नाम दर्ज करें:"
+
+#: src/components/StatusManager.jsx:397
+msgid "Error:"
+msgstr "त्रुटि:"
+
+#: src/components/StatusManager.jsx:403
+msgid "Status Manager"
+msgstr "स्थिति प्रबंधक"
+
+#: src/components/StatusManager.jsx:405
+msgid ""
+"Create and organize statuses. Drag rows to control their order across the "
+"board."
+msgstr ""
+"स्थिति बनाएँ और व्यवस्थित करें। बोर्ड पर उनकी क्रम को नियंत्रित करने के लिए "
+"पंक्तियों को खींचें।"
+
+#: src/components/StatusManager.jsx:534
+msgid "New Status"
+msgstr "नया स्टेटस"
+
+#: src/components/StatusManager.jsx:540
+msgid "Delete Status?"
+msgstr "डिलीट स्टेटस?"
+
+#: src/components/StatusManager.jsx:545
+msgid "Are you sure you want to delete the status"
+msgstr "क्या आप वाकई इस स्थिति को हटाना चाहते हैं?คิดให้ดี"
+
+#: src/components/StatusManager.jsx:548
+msgid "This cannot be undone."
+msgstr "यह बदला नहीं जा सकता।"
+
+#: src/components/StatusManager.jsx:636
+msgid "Drag to reorder"
+msgstr "इसे फिर से व्यवस्थित करने के लिए खींचें"
+
+#: src/components/Time.jsx:56
+msgid "just now"
+msgstr "अभी"
+
+#: src/DashboardWidget.jsx:47
+msgid "Assigned to Me"
+msgstr "मेरे लिए असाइन किया गया"
+
+#: src/DashboardWidget.jsx:52
+msgid "Latest"
+msgstr "नवीनतम"
+
+#: src/DashboardWidget.jsx:62
+msgid "Watchlist"
+msgstr "वॉचलिस्ट"
+
+#: src/DashboardWidget.jsx:149
+msgid "No issues found."
+msgstr "कोई समस्या नहीं मिली।"
+
+#: src/datapoints/checklistProgressDatapoint.js:25
+#: src/datapoints/checklistProgressDatapoint.js:40
+msgid "Checklist Progress"
+msgstr "चेकलिस्ट प्रगति"
+
+#: src/datapoints/commentCountDatapoint.js:135
+#: src/datapoints/commentCountDatapoint.js:150
+msgid "Comments"
+msgstr "टिप्पणियाँ"
+
+#: src/datapoints/deadlineDatapoint.js:69
+#: src/datapoints/deadlineDatapoint.js:88
+msgid "Deadline"
+msgstr "अंतिम तिथि"
+
+#: src/datapoints/lastCommentActivityDatapoint.js:24
+#: src/datapoints/lastCommentActivityDatapoint.js:47
+msgid "Last Activity"
+msgstr "अंतिम गतिविधि"
+
+#: src/hooks/useIssueData.js:22 src/hooks/useIssueData.js:42
+msgid "Failed to load issue details. Please try again."
+msgstr "समस्या की जानकारी लोड करने में विफल। कृपया फिर से प्रयास करें।"
+
+#: src/Modal.jsx:150 src/Toolbar.jsx:197
+msgid "Your issue has been submitted successfully."
+msgstr "आपका मुद्दा सफलतापूर्वक जमा किया गया है।"
+
+#: src/Modal.jsx:168 src/Toolbar.jsx:215
+msgid "There was an error submitting your issue. Please try again."
+msgstr "आपके मुद्दे को सबमिट करने में त्रुटि हुई। कृपया फिर से प्रयास करें।"
+
+#: src/Modal.jsx:202
+msgid "Issue Submitted"
+msgstr "समस्या जमा की गई"
+
+#: src/Modal.jsx:203
+msgid "Submission Failed"
+msgstr "सबमिशन विफल"
+
+#: src/Modal.jsx:213 src/Toolbar.jsx:274
+msgid "Close"
+msgstr "बंद करें"
+
+#: src/Modal.jsx:219 src/Toolbar.jsx:280
+msgid "Describe the problem"
+msgstr "समस्या का वर्णन करें"
+
+#: src/Modal.jsx:247 src/Toolbar.jsx:308
+msgid "Submit"
+msgstr "सबमिट करें"
+
+#: src/Settings.jsx:46
+msgid "Statuses"
+msgstr "स्थितियाँ"
+
+#: src/Settings.jsx:51
+msgid "Cards"
+msgstr "कार्ड्स"
+
+#: src/Settings.jsx:61
+msgid "Deleted Items"
+msgstr "डिलीटेड आइटम"
+
+#: src/Settings.jsx:68
+msgid "Settings"
+msgstr "सेटिंग्स"
+
+#: src/utils/attachmentUpload.js:27 src/utils/attachmentUpload.js:32
+msgid "Failed to upload attachment."
+msgstr "अटैचमेंट अपलोड करने में विफल।"
+
+#: src/utils/attachmentUpload.js:87
+msgid "Missing attachment data."
+msgstr "अटैचमेंट डेटा गायब है।"
+
+#: src/utils/issueCommentHandler.js:67
+msgid "Untitled subissue"
+msgstr "अनाम उप-विषय"
+
+#: src/utils/issueCommentHandler.js:285
+msgid "Status changed from"
+msgstr "स्थिति बदल दी गई है"
+
+#: src/utils/issueCommentHandler.js:285
+msgid "to"
+msgstr "के लिए"
+
+#: src/utils/issueCommentHandler.js:288 src/utils/issueCommentHandler.js:350
+#: src/utils/issueCommentHandler.js:362 src/utils/issueCommentHandler.js:449
+#: src/utils/issueCommentHandler.js:480 src/utils/issueCommentHandler.js:525
+#: src/utils/issueCommentHandler.js:531
+msgid "by"
+msgstr "द्वारा"
+
+#: src/utils/issueCommentHandler.js:312 src/utils/issueCommentHandler.js:477
+msgid "was"
+msgstr "था"
+
+#: src/utils/issueCommentHandler.js:312
+msgid "this issue by"
+msgstr "यह समस्या है"
+
+#: src/utils/issueCommentHandler.js:348
+msgid "Deadline set to"
+msgstr "समय सीमा निर्धारित की गई है"
+
+#: src/utils/issueCommentHandler.js:354
+msgid "Deadline removed by"
+msgstr "समय सीमा हटा दी गई है"
+
+#: src/utils/issueCommentHandler.js:360
+msgid "Deadline changed to"
+msgstr "समय सीमा बदल दी गई है"
+
+#: src/utils/issueCommentHandler.js:392
+msgid "Priority set to **High** by"
+msgstr "प्राथमिकता **उच्च** पर सेट की गई है"
+
+#: src/utils/issueCommentHandler.js:397
+msgid "High priority removed by"
+msgstr "उच्च प्राथमिकता हटा दी गई है"
+
+#: src/utils/issueCommentHandler.js:421
+msgid "created by"
+msgstr "द्वारा निर्मित"
+
+#: src/utils/issueCommentHandler.js:446
+msgid "marked as"
+msgstr "दर्ज किया गया"
+
+#: src/utils/issueCommentHandler.js:477
+msgid "checklist item"
+msgstr "चेकलिस्ट आइटम"
+
+#: src/utils/issueCommentHandler.js:522
+msgid "was promoted to issue"
+msgstr "was promoted to issue"
+
+#: src/utils/issueCommentHandler.js:528
+msgid "Issue created from checklist item"
+msgstr "चेकलिस्ट आइटम से बनाया गया मुद्दा"
+
+#: src/utils/issueCommentHandler.js:528
+msgid "on"
+msgstr "पर"
+
+#: src/utils/issueCommentHandler.js:568
+msgid "deleted by"
+msgstr "डिलीट किया गया"
+
+#: src/utils/issueCommentHandler.js:596
+msgid "restored by"
+msgstr "पुनः स्थापित किया गया"
+
+#: src/utils/issueCommentHandler.js:623
+msgid "Issue **deleted** by"
+msgstr "समस्या **हटा दी गई**"
+
+#: src/utils/issueCommentHandler.js:647
+msgid "Issue **restored** by"
+msgstr "समस्या **पुनःस्थापित** की गई है"
+
+#: src/utils/tabsConfig.js:13
+msgid "Timeline"
+msgstr "टाइमलाइन"
+
+#: src/utils/tabsConfig.js:17
+msgid "Report"
+msgstr "रिपोर्ट"
+
+#: src/utils/tabsConfig.js:26
+msgid "Queried Object"
+msgstr "पूछित वस्तु"
+
+#: src/utils/tabsConfig.js:37
+msgid "Headers"
+msgstr "शीर्षक"
+
+#: src/utils/tabsConfig.js:48
+msgid "Errors"
+msgstr "त्रुटियाँ"
