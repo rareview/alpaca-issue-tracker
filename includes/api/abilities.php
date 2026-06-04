@@ -71,6 +71,10 @@ function alpaistr_register_abilities() {
 			],
 			'meta'                => [
 				'show_in_rest' => true,
+				'mcp'          => [
+					'public' => true,
+					'type'   => 'tool',
+				],
 			],
 		]
 	);
@@ -108,6 +112,10 @@ function alpaistr_register_abilities() {
 			],
 			'meta'                => [
 				'show_in_rest' => true,
+				'mcp'          => [
+					'public' => true,
+					'type'   => 'tool',
+				],
 			],
 		]
 	);
@@ -146,6 +154,10 @@ function alpaistr_register_abilities() {
 			],
 			'meta'                => [
 				'show_in_rest' => true,
+				'mcp'          => [
+					'public' => true,
+					'type'   => 'tool',
+				],
 			],
 		]
 	);
@@ -204,6 +216,10 @@ function alpaistr_register_abilities() {
 			],
 			'meta'                => [
 				'show_in_rest' => true,
+				'mcp'          => [
+					'public' => true,
+					'type'   => 'tool',
+				],
 			],
 		]
 	);
@@ -237,6 +253,10 @@ function alpaistr_register_abilities() {
 			],
 			'meta'                => [
 				'show_in_rest' => true,
+				'mcp'          => [
+					'public' => true,
+					'type'   => 'tool',
+				],
 			],
 		]
 	);
@@ -274,6 +294,10 @@ function alpaistr_register_abilities() {
 			],
 			'meta'                => [
 				'show_in_rest' => true,
+				'mcp'          => [
+					'public' => true,
+					'type'   => 'tool',
+				],
 			],
 		]
 	);
@@ -313,6 +337,10 @@ function alpaistr_register_abilities() {
 			],
 			'meta'                => [
 				'show_in_rest' => true,
+				'mcp'          => [
+					'public' => true,
+					'type'   => 'tool',
+				],
 			],
 		]
 	);

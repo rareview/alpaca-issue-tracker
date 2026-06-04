@@ -280,3 +280,25 @@ Retrieves comments posted on an issue.
     }
   ]
   ```
+
+---
+
+## Model Context Protocol (MCP) Adapter Support
+
+If the WordPress site has the [WordPress MCP Adapter](https://github.com/WordPress/mcp-adapter) installed, these registered abilities are automatically exposed to MCP clients as native MCP tools.
+
+### Tool Name Mapping
+
+The MCP Adapter automatically translates namespaced ability names by replacing forward slashes (`/`) with hyphens (`-`).
+
+The mapping is as follows:
+
+| Abilities API Name    | MCP Tool Name         |
+| :-------------------- | :-------------------- |
+| `alpaca/get-board`    | `alpaca-get-board`    |
+| `alpaca/create-issue` | `alpaca-create-issue` |
+| `alpaca/get-issue`    | `alpaca-get-issue`    |
+| `alpaca/update-issue` | `alpaca-update-issue` |
+| `alpaca/delete-issue` | `alpaca-delete-issue` |
+| `alpaca/add-comment`  | `alpaca-add-comment`  |
+| `alpaca/get-comments` | `alpaca-get-comments` |
