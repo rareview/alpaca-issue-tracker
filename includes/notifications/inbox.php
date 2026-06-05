@@ -1,8 +1,8 @@
 <?php
 /**
- * Notification inbox storage helpers for Alpaca issue activity.
+ * Notification inbox storage helpers for Alpaca Issue Tracker issue activity.
  *
- * @package Alpaca
+ * @package AlpacaIssueTracker
  */
 
 // Exit if accessed directly.
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @return string Schema version.
  */
-function alpaca_get_notification_inbox_schema_version() {
+function alpaistr_get_notification_inbox_schema_version() {
 	return '2';
 }
 
@@ -24,7 +24,7 @@ function alpaca_get_notification_inbox_schema_version() {
  *
  * @return string Table name.
  */
-function alpaca_get_notification_inbox_table_name() {
+function alpaistr_get_notification_inbox_table_name() {
 	global $wpdb;
 
 	return $wpdb->prefix . 'alpaca_inbox';
@@ -35,10 +35,10 @@ function alpaca_get_notification_inbox_table_name() {
  *
  * @return void
  */
-function alpaca_install_notification_inbox_table() {
+function alpaistr_install_notification_inbox_table() {
 	global $wpdb;
 
-	$table_name      = alpaca_get_notification_inbox_table_name();
+	$table_name      = alpaistr_get_notification_inbox_table_name();
 	$charset_collate = $wpdb->get_charset_collate();
 
 	require_once ABSPATH . 'wp-admin/includes/upgrade.php';
@@ -59,7 +59,7 @@ function alpaca_install_notification_inbox_table() {
 	) {$charset_collate};";
 
 	dbDelta( $sql );
-	update_option( 'alpaca_notification_inbox_schema_version', alpaca_get_notification_inbox_schema_version() );
+	update_option( 'alpaistr_notification_inbox_schema_version', alpaistr_get_notification_inbox_schema_version() );
 }
 
 /**
@@ -67,15 +67,15 @@ function alpaca_install_notification_inbox_table() {
  *
  * @return void
  */
-function alpaca_maybe_install_notification_inbox_table() {
-	$installed_version = (string) get_option( 'alpaca_notification_inbox_schema_version', '' );
-	if ( alpaca_get_notification_inbox_schema_version() === $installed_version ) {
+function alpaistr_maybe_install_notification_inbox_table() {
+	$installed_version = (string) get_option( 'alpaistr_notification_inbox_schema_version', '' );
+	if ( alpaistr_get_notification_inbox_schema_version() === $installed_version ) {
 		return;
 	}
 
-	alpaca_install_notification_inbox_table();
+	alpaistr_install_notification_inbox_table();
 }
-add_action( 'init', 'alpaca_maybe_install_notification_inbox_table', 5 );
+add_action( 'init', 'alpaistr_maybe_install_notification_inbox_table', 5 );
 
 /**
  * Build a durable notification item snapshot.
@@ -84,7 +84,7 @@ add_action( 'init', 'alpaca_maybe_install_notification_inbox_table', 5 );
  * @param string[]             $subjects Matched recipient subjects.
  * @return array<string, mixed> Snapshot payload.
  */
-function alpaca_get_notification_item_snapshot_payload( $event, $subjects = [] ) {
+function alpaistr_get_notification_item_snapshot_payload( $event, $subjects = [] ) {
 	$snapshot = is_array( $event ) ? $event : [];
 
 	$snapshot['recipient_subjects'] = array_values(
@@ -108,8 +108,8 @@ function alpaca_get_notification_item_snapshot_payload( $event, $subjects = [] )
  * @param string[]             $subjects Matched recipient subjects.
  * @return string Encoded snapshot JSON string.
  */
-function alpaca_encode_notification_item_snapshot_payload( $event, $subjects = [] ) {
-	$snapshot = alpaca_get_notification_item_snapshot_payload( $event, $subjects );
+function alpaistr_encode_notification_item_snapshot_payload( $event, $subjects = [] ) {
+	$snapshot = alpaistr_get_notification_item_snapshot_payload( $event, $subjects );
 	$json     = wp_json_encode( $snapshot );
 
 	return is_string( $json ) ? $json : '';
@@ -123,7 +123,7 @@ function alpaca_encode_notification_item_snapshot_payload( $event, $subjects = [
  * @param string[]             $subjects Matched recipient subjects.
  * @return bool True when the write succeeded.
  */
-function alpaca_create_notification_inbox_item( $user_id, $event, $subjects = [] ) {
+function alpaistr_create_notification_inbox_item( $user_id, $event, $subjects = [] ) {
 	global $wpdb;
 
 	$user_id      = absint( $user_id );
@@ -143,8 +143,8 @@ function alpaca_create_notification_inbox_item( $user_id, $event, $subjects = []
 		return false;
 	}
 
-	$table_name       = alpaca_get_notification_inbox_table_name();
-	$snapshot_payload = alpaca_encode_notification_item_snapshot_payload( $event, $subjects );
+	$table_name       = alpaistr_get_notification_inbox_table_name();
+	$snapshot_payload = alpaistr_encode_notification_item_snapshot_payload( $event, $subjects );
 
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- This insert intentionally writes one inbox row per recipient event.
 	$result = $wpdb->query(
@@ -170,7 +170,7 @@ function alpaca_create_notification_inbox_item( $user_id, $event, $subjects = []
  * @param array<string, mixed> $event     Notification event payload.
  * @return bool True when the item was written successfully.
  */
-function alpaca_capture_notification_item_for_recipient( $recipient, $event ) {
+function alpaistr_capture_notification_item_for_recipient( $recipient, $event ) {
 	$user_id  = isset( $recipient['user_id'] ) ? absint( $recipient['user_id'] ) : 0;
 	$subjects = isset( $recipient['subjects'] ) && is_array( $recipient['subjects'] ) ? $recipient['subjects'] : [];
 
@@ -178,7 +178,7 @@ function alpaca_capture_notification_item_for_recipient( $recipient, $event ) {
 		return false;
 	}
 
-	return alpaca_create_notification_inbox_item( $user_id, $event, $subjects );
+	return alpaistr_create_notification_inbox_item( $user_id, $event, $subjects );
 }
 
 /**
@@ -187,7 +187,7 @@ function alpaca_capture_notification_item_for_recipient( $recipient, $event ) {
  * @param array<string, mixed> $row Inbox row.
  * @return array<string, mixed> Snapshot payload.
  */
-function alpaca_get_notification_item_snapshot_from_row( $row ) {
+function alpaistr_get_notification_item_snapshot_from_row( $row ) {
 	$snapshot_payload = isset( $row['snapshot_payload'] ) ? (string) $row['snapshot_payload'] : '';
 	if ( '' === $snapshot_payload ) {
 		return [];
@@ -204,7 +204,7 @@ function alpaca_get_notification_item_snapshot_from_row( $row ) {
  * @param int $user_id User ID.
  * @return int Unread count.
  */
-function alpaca_get_notification_inbox_unread_count( $user_id ) {
+function alpaistr_get_notification_inbox_unread_count( $user_id ) {
 	global $wpdb;
 
 	$user_id = absint( $user_id );
@@ -212,7 +212,7 @@ function alpaca_get_notification_inbox_unread_count( $user_id ) {
 		return 0;
 	}
 
-	$table_name = alpaca_get_notification_inbox_table_name();
+	$table_name = alpaistr_get_notification_inbox_table_name();
 
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- This count query is intentionally uncached because it tracks per-user unread state.
 	$count = $wpdb->get_var(
@@ -233,7 +233,7 @@ function alpaca_get_notification_inbox_unread_count( $user_id ) {
  * @param array<string, mixed> $args    Query args.
  * @return array<string, mixed> Rows and pagination data.
  */
-function alpaca_get_notification_inbox_rows_for_user( $user_id, $args = [] ) {
+function alpaistr_get_notification_inbox_rows_for_user( $user_id, $args = [] ) {
 	global $wpdb;
 
 	$user_id = absint( $user_id );
@@ -252,7 +252,7 @@ function alpaca_get_notification_inbox_rows_for_user( $user_id, $args = [] ) {
 	$filter   = isset( $args['filter'] ) ? sanitize_key( (string) $args['filter'] ) : 'unread';
 	$offset   = ( $page - 1 ) * $per_page;
 
-	$table_name = alpaca_get_notification_inbox_table_name();
+	$table_name = alpaistr_get_notification_inbox_table_name();
 
 	if ( 'unread' === $filter ) {
 		// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- This count query is intentionally uncached because it tracks per-user unread state.
@@ -318,7 +318,7 @@ function alpaca_get_notification_inbox_rows_for_user( $user_id, $args = [] ) {
  * @param array<string, mixed> $event Notification event.
  * @return string Preview text.
  */
-function alpaca_get_notification_inbox_preview_text( $event ) {
+function alpaistr_get_notification_inbox_preview_text( $event ) {
 	$raw = isset( $event['comment']['raw'] ) ? (string) $event['comment']['raw'] : '';
 	if ( '' === trim( $raw ) ) {
 		$raw = isset( $event['event_label'] ) ? (string) $event['event_label'] : '';
@@ -337,7 +337,7 @@ function alpaca_get_notification_inbox_preview_text( $event ) {
  * @param WP_Comment           $comment Comment object.
  * @return array<string, mixed>|null Item payload or null when the source data is invalid.
  */
-function alpaca_prepare_notification_inbox_item_payload_from_comment( $row, $comment ) {
+function alpaistr_prepare_notification_inbox_item_payload_from_comment( $row, $comment ) {
 	if ( ! ( $comment instanceof WP_Comment ) ) {
 		return null;
 	}
@@ -349,13 +349,13 @@ function alpaca_prepare_notification_inbox_item_payload_from_comment( $row, $com
 
 	$event_family = isset( $row['event_family'] ) ? sanitize_key( (string) $row['event_family'] ) : '';
 	if ( '' === $event_family ) {
-		$event_family = alpaca_get_notification_event_family_for_comment( $comment );
+		$event_family = alpaistr_get_notification_event_family_for_comment( $comment );
 	}
 
 	$tags        = get_comment_meta( $comment->comment_ID, 'alpacaCommentTags', true );
 	$attachments = get_comment_meta( $comment->comment_ID, 'alpacaCommentAttachments', true );
 	$mentions    = get_comment_meta( $comment->comment_ID, 'alpacaMentionedUsers', true );
-	$context     = alpaca_get_comment_notification_context( $comment->comment_ID );
+	$context     = alpaistr_get_comment_notification_context( $comment->comment_ID );
 	$actor_id    = (int) $comment->user_id;
 	$actor       = $actor_id > 0 ? get_user_by( 'id', $actor_id ) : null;
 	$read_at_gmt = isset( $row['read_at_gmt'] ) ? (string) $row['read_at_gmt'] : '';
@@ -372,7 +372,7 @@ function alpaca_prepare_notification_inbox_item_payload_from_comment( $row, $com
 			'mentions' => $mentions,
 		],
 		'event_family' => $event_family,
-		'event_label'  => alpaca_get_notification_event_label(
+		'event_label'  => alpaistr_get_notification_event_label(
 			$event_family,
 			[
 				'tags'    => is_array( $tags ) ? $tags : [],
@@ -383,11 +383,11 @@ function alpaca_prepare_notification_inbox_item_payload_from_comment( $row, $com
 			'id'    => (int) $issue->ID,
 			'slug'  => (string) $issue->post_name,
 			'title' => (string) $issue->post_title,
-			'url'   => alpaca_get_notification_issue_url( $issue ),
+			'url'   => alpaistr_get_notification_issue_url( $issue ),
 		],
 		'actor'        => [
 			'id'           => $actor instanceof WP_User ? (int) $actor->ID : 0,
-			'display_name' => $actor instanceof WP_User ? (string) $actor->display_name : esc_html__( 'Unknown user', 'alpaca' ),
+			'display_name' => $actor instanceof WP_User ? (string) $actor->display_name : esc_html__( 'Unknown user', 'alpaca-issue-tracker' ),
 		],
 	];
 
@@ -397,7 +397,7 @@ function alpaca_prepare_notification_inbox_item_payload_from_comment( $row, $com
 		'issue_id'            => (int) $issue->ID,
 		'event_family'        => $event_family,
 		'event_label'         => (string) $event['event_label'],
-		'preview'             => alpaca_get_notification_inbox_preview_text( $event ),
+		'preview'             => alpaistr_get_notification_inbox_preview_text( $event ),
 		'comment_raw'         => (string) $comment->comment_content,
 		'comment_mentions'    => $mentions,
 		'comment_attachments' => $attachments,
@@ -408,11 +408,11 @@ function alpaca_prepare_notification_inbox_item_payload_from_comment( $row, $com
 			'id'    => (int) $issue->ID,
 			'slug'  => (string) $issue->post_name,
 			'title' => (string) $issue->post_title,
-			'url'   => alpaca_get_notification_issue_url( $issue ),
+			'url'   => alpaistr_get_notification_issue_url( $issue ),
 		],
 		'actor'               => [
 			'id'           => $actor instanceof WP_User ? (int) $actor->ID : 0,
-			'display_name' => $actor instanceof WP_User ? (string) $actor->display_name : esc_html__( 'Unknown user', 'alpaca' ),
+			'display_name' => $actor instanceof WP_User ? (string) $actor->display_name : esc_html__( 'Unknown user', 'alpaca-issue-tracker' ),
 			'avatar_url'   => $actor instanceof WP_User ? get_avatar_url( $actor->ID, [ 'size' => 48 ] ) : '',
 		],
 	];
@@ -425,8 +425,8 @@ function alpaca_prepare_notification_inbox_item_payload_from_comment( $row, $com
  * @param array<string, mixed> $args    Query args.
  * @return array<string, mixed> Inbox payload.
  */
-function alpaca_get_notification_inbox_items_for_user( $user_id, $args = [] ) {
-	$results = alpaca_get_notification_inbox_rows_for_user( $user_id, $args );
+function alpaistr_get_notification_inbox_items_for_user( $user_id, $args = [] ) {
+	$results = alpaistr_get_notification_inbox_rows_for_user( $user_id, $args );
 	$rows    = isset( $results['rows'] ) && is_array( $results['rows'] ) ? $results['rows'] : [];
 	$items   = [];
 
@@ -452,7 +452,7 @@ function alpaca_get_notification_inbox_items_for_user( $user_id, $args = [] ) {
 			}
 
 			try {
-				$item = alpaca_prepare_notification_inbox_item_payload_from_comment( $row, $comment_map[ $comment_id ] );
+				$item = alpaistr_prepare_notification_inbox_item_payload_from_comment( $row, $comment_map[ $comment_id ] );
 			} catch ( Throwable $throwable ) {
 				continue;
 			}
@@ -469,7 +469,7 @@ function alpaca_get_notification_inbox_items_for_user( $user_id, $args = [] ) {
 		'per_page'     => isset( $results['per_page'] ) ? absint( $results['per_page'] ) : 20,
 		'total_items'  => isset( $results['total_items'] ) ? absint( $results['total_items'] ) : count( $items ),
 		'total_pages'  => isset( $results['total_pages'] ) ? absint( $results['total_pages'] ) : 1,
-		'unread_count' => alpaca_get_notification_inbox_unread_count( $user_id ),
+		'unread_count' => alpaistr_get_notification_inbox_unread_count( $user_id ),
 	];
 }
 
@@ -479,7 +479,7 @@ function alpaca_get_notification_inbox_items_for_user( $user_id, $args = [] ) {
  * @param mixed $item_ids Raw item IDs.
  * @return int[] Item IDs.
  */
-function alpaca_get_valid_notification_inbox_item_ids( $item_ids ) {
+function alpaistr_get_valid_notification_inbox_item_ids( $item_ids ) {
 	if ( ! is_array( $item_ids ) ) {
 		return [];
 	}
@@ -494,16 +494,16 @@ function alpaca_get_valid_notification_inbox_item_ids( $item_ids ) {
  * @param int[] $item_ids Inbox item IDs.
  * @return int Number of rows changed.
  */
-function alpaca_mark_notification_inbox_items_read( $user_id, $item_ids ) {
+function alpaistr_mark_notification_inbox_items_read( $user_id, $item_ids ) {
 	global $wpdb;
 
 	$user_id  = absint( $user_id );
-	$item_ids = alpaca_get_valid_notification_inbox_item_ids( $item_ids );
+	$item_ids = alpaistr_get_valid_notification_inbox_item_ids( $item_ids );
 	if ( $user_id <= 0 || empty( $item_ids ) ) {
 		return 0;
 	}
 
-	$table_name  = alpaca_get_notification_inbox_table_name();
+	$table_name  = alpaistr_get_notification_inbox_table_name();
 	$read_at_gmt = current_time( 'mysql', true );
 	$updated     = 0;
 
@@ -542,16 +542,16 @@ function alpaca_mark_notification_inbox_items_read( $user_id, $item_ids ) {
  * @param int[] $item_ids Inbox item IDs.
  * @return int Number of rows changed.
  */
-function alpaca_mark_notification_inbox_items_unread( $user_id, $item_ids ) {
+function alpaistr_mark_notification_inbox_items_unread( $user_id, $item_ids ) {
 	global $wpdb;
 
 	$user_id  = absint( $user_id );
-	$item_ids = alpaca_get_valid_notification_inbox_item_ids( $item_ids );
+	$item_ids = alpaistr_get_valid_notification_inbox_item_ids( $item_ids );
 	if ( $user_id <= 0 || empty( $item_ids ) ) {
 		return 0;
 	}
 
-	$table_name = alpaca_get_notification_inbox_table_name();
+	$table_name = alpaistr_get_notification_inbox_table_name();
 	$updated    = 0;
 
 	foreach ( $item_ids as $item_id ) {
@@ -588,7 +588,7 @@ function alpaca_mark_notification_inbox_items_unread( $user_id, $item_ids ) {
  * @param int $user_id User ID.
  * @return int Number of rows changed.
  */
-function alpaca_mark_all_notification_inbox_items_read( $user_id ) {
+function alpaistr_mark_all_notification_inbox_items_read( $user_id ) {
 	global $wpdb;
 
 	$user_id = absint( $user_id );
@@ -596,7 +596,7 @@ function alpaca_mark_all_notification_inbox_items_read( $user_id ) {
 		return 0;
 	}
 
-	$table_name = alpaca_get_notification_inbox_table_name();
+	$table_name = alpaistr_get_notification_inbox_table_name();
 
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- This mutation intentionally updates all unread inbox rows for the current user.
 	$result = $wpdb->query(

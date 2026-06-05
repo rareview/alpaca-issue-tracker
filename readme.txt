@@ -2,7 +2,7 @@
 Contributors: rareview, s1m0nd, pratikbarvaliya, tahireu
 Tags: issue tracker, bug tracker, project management, kanban, development
 Requires at least: 6.8
-Tested up to: 6.9
+Tested up to: 7.0
 Requires PHP: 7.4
 Stable tag: 1.0.0
 License: GPLv2 or later
@@ -82,7 +82,7 @@ Yes! You can choose which metadata points are shown on cards in the Board view, 
 
 Alpaca Issue Tracker works on multisite installations, with each site having its own independent project board. An aggregation view across sites is planned for a future release.
 
-= What kinds of notifications can Alpaca send? =
+= What kinds of notifications can Alpaca Issue Tracker send? =
 
 Alpaca Issue Tracker ships with a highly configurable email notification system. You can choose to receive instant notifications of activity relevant to you and your issues; or a daily digest of all activity. You can even design the email templates using a block-based editor.
 
@@ -96,9 +96,14 @@ All data is stored in your WordPress database's core tables using custom post ty
 
 == Screenshots ==
 
-1. to follow
-2. to follow
-3. to follow
+1. Project Board organizes issues by status with labels, assignees, deadlines, watchlist state, and priority indicators.
+2. Issue details keep priority, due dates, assignees, labels, checklist items, attachments, and the comment timeline in one place.
+3. Project Activity shows a chronological feed of issue comments and updates across the board.
+4. Context Capture lets users report an issue from wp-admin with an optional high-priority flag and technical context.
+5. Notification preferences let each user control instant and daily digest updates for issue activity.
+6. Configure keeps board statuses, labels, deleted items, cards, and global settings inside WordPress.
+7. Frontend issue capture lets logged-in users report problems from public pages without opening wp-admin.
+8. Email Templates let admins edit instant and daily digest email content with a live preview.
 
 == Third-Party Libraries ==
 

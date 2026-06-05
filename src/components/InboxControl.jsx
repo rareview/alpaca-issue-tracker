@@ -81,7 +81,8 @@ const shouldShowInboxEventLabel = (eventFamily, eventLabel) => {
   }
 
   return (
-    eventLabel.toLowerCase() !== __('Comment added', 'alpaca').toLowerCase()
+    eventLabel.toLowerCase() !==
+    __('Comment added', 'alpaca-issue-tracker').toLowerCase()
   );
 };
 
@@ -161,7 +162,8 @@ const buildTimelineCommentFromInboxItem = (item) => {
 
   // eslint-disable-next-line camelcase
   timelineComment.author_details = {
-    name: item?.actor?.display_name || __('Unknown user', 'alpaca'),
+    name:
+      item?.actor?.display_name || __('Unknown user', 'alpaca-issue-tracker'),
     avatar: item?.actor?.avatar_url || '',
   };
 
@@ -299,7 +301,8 @@ function InboxControl({ selector }) {
         })
         .catch((loadError) => {
           setError(
-            loadError?.message || __('Could not load inbox updates.', 'alpaca'),
+            loadError?.message ||
+              __('Could not load inbox updates.', 'alpaca-issue-tracker'),
           );
         })
         .finally(() => {
@@ -406,7 +409,7 @@ function InboxControl({ selector }) {
         .catch((mutationError) => {
           setError(
             mutationError?.message ||
-              __('Could not update inbox state.', 'alpaca'),
+              __('Could not update inbox state.', 'alpaca-issue-tracker'),
           );
         })
         .finally(() => {
@@ -447,7 +450,7 @@ function InboxControl({ selector }) {
         .catch((mutationError) => {
           setError(
             mutationError?.message ||
-              __('Could not update inbox state.', 'alpaca'),
+              __('Could not update inbox state.', 'alpaca-issue-tracker'),
           );
         })
         .finally(() => {
@@ -478,7 +481,7 @@ function InboxControl({ selector }) {
       .catch((mutationError) => {
         setError(
           mutationError?.message ||
-            __('Could not mark inbox items as read.', 'alpaca'),
+            __('Could not mark inbox items as read.', 'alpaca-issue-tracker'),
         );
       })
       .finally(() => {
@@ -498,8 +501,8 @@ function InboxControl({ selector }) {
     <div className="alpaca-inbox-empty-state">
       <p>
         {'unread' === filter
-          ? __('No unread updates right now.', 'alpaca')
-          : __('No inbox updates yet.', 'alpaca')}
+          ? __('No unread updates right now.', 'alpaca-issue-tracker')
+          : __('No inbox updates yet.', 'alpaca-issue-tracker')}
       </p>
     </div>
   );
@@ -516,11 +519,11 @@ function InboxControl({ selector }) {
         {items.map((item) => {
           const timelineComment = buildTimelineCommentFromInboxItem(item);
           const issueTitle =
-            item?.issue?.title || __('Untitled issue', 'alpaca');
+            item?.issue?.title || __('Untitled issue', 'alpaca-issue-tracker');
           const isUnread = Boolean(item[IS_UNREAD_KEY]);
           const readToggleLabel = isUnread
-            ? __('Mark Read', 'alpaca')
-            : __('Mark Unread', 'alpaca');
+            ? __('Mark Read', 'alpaca-issue-tracker')
+            : __('Mark Unread', 'alpaca-issue-tracker');
           const readToggleAction = (
             <Tooltip text={readToggleLabel}>
               <button
@@ -599,7 +602,7 @@ function InboxControl({ selector }) {
     <>
       {createPortal(
         <div className="alpaca-inbox-control">
-          <Tooltip text={__('Inbox', 'alpaca')}>
+          <Tooltip text={__('Inbox', 'alpaca-issue-tracker')}>
             <button
               type="button"
               className={`alpaca-inbox-trigger alpaca-board-control ${isPanelVisible ? 'is-open' : ''}`}
@@ -621,7 +624,7 @@ function InboxControl({ selector }) {
                 className="alpaca-inbox-icon"
                 aria-hidden="true"
               />
-              {__('Inbox', 'alpaca')}
+              {__('Inbox', 'alpaca-issue-tracker')}
               <UnreadCountBadge count={unreadCount} variant="inbox-trigger" />
             </button>
           </Tooltip>
@@ -636,11 +639,11 @@ function InboxControl({ selector }) {
               id="alpaca-inbox-panel"
               className={`alpaca-inbox-panel alpaca-side-panel ${isClosing ? 'is-closing' : ''}`}
               ref={panelRef}
-              aria-label={__('Inbox', 'alpaca')}
+              aria-label={__('Inbox', 'alpaca-issue-tracker')}
             >
               <div className="alpaca-inbox-panel-header">
                 <div>
-                  <h2>{__('Inbox', 'alpaca')}</h2>
+                  <h2>{__('Inbox', 'alpaca-issue-tracker')}</h2>
                 </div>
                 <button
                   type="button"
@@ -648,7 +651,7 @@ function InboxControl({ selector }) {
                   onClick={closePanel}
                 >
                   <span className="screen-reader-text">
-                    {__('Close inbox', 'alpaca')}
+                    {__('Close inbox', 'alpaca-issue-tracker')}
                   </span>
                   <span
                     className="dashicons dashicons-no-alt"
@@ -672,16 +675,16 @@ function InboxControl({ selector }) {
                       setFilter(nextFilter);
                     }}
                     disabled={isLoading || isMutating}
-                    label={__('Inbox filter', 'alpaca')}
+                    label={__('Inbox filter', 'alpaca-issue-tracker')}
                     hideLabelFromVision
                   >
                     <ToggleGroupControlOption
                       value="unread"
-                      label={__('Unread', 'alpaca')}
+                      label={__('Unread', 'alpaca-issue-tracker')}
                     />
                     <ToggleGroupControlOption
                       value="all"
-                      label={__('All', 'alpaca')}
+                      label={__('All', 'alpaca-issue-tracker')}
                     />
                   </ToggleGroupControl>
                 </div>
@@ -691,7 +694,7 @@ function InboxControl({ selector }) {
                   onClick={handleMarkAllRead}
                   disabled={isMutating || unreadCount <= 0}
                 >
-                  {__('Mark All Read', 'alpaca')}
+                  {__('Mark All Read', 'alpaca-issue-tracker')}
                 </Button>
               </div>
 
@@ -711,8 +714,8 @@ function InboxControl({ selector }) {
                     disabled={isLoadingMore}
                   >
                     {isLoadingMore
-                      ? __('Loading…', 'alpaca')
-                      : __('Load More', 'alpaca')}
+                      ? __('Loading…', 'alpaca-issue-tracker')
+                      : __('Load More', 'alpaca-issue-tracker')}
                   </Button>
                 </div>
               )}

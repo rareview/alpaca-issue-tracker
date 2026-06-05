@@ -281,7 +281,7 @@ const MentionsTextarea = ({
             {isLoadingUsers && <Spinner />}
             {!isLoadingUsers && !suggestions.length && (
               <p className="alpaca-mentions-empty">
-                {__('No matching users found.', 'alpaca')}
+                {__('No matching users found.', 'alpaca-issue-tracker')}
               </p>
             )}
             {!isLoadingUsers &&

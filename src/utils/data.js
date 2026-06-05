@@ -3,7 +3,7 @@ import { buildBoardOrderPayload } from './boardFiltering';
 
 /**
  * Transform server data into array format for board state.
- * @param {Array} data The data from `alpaca_get_board_data`.
+ * @param {Array} data The data from `alpaistr_get_board_data`.
  */
 const transformDataForBoard = (data) => {
   if (!data || !Array.isArray(data)) return [];

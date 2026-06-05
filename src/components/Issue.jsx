@@ -61,11 +61,11 @@ const PriorityRow = memo(
   ({ isHighPriority, onChange, isLoading }) => (
     <div id="priority" className="alpaca-details-grid__item">
       <div className="alpaca-details-grid__label">
-        {__('Priority', 'alpaca')}
+        {__('Priority', 'alpaca-issue-tracker')}
       </div>
       <div className="alpaca-details-grid__value alpaca-flex-align">
         <ToggleControl
-          label={__('High Priority', 'alpaca')}
+          label={__('High Priority', 'alpaca-issue-tracker')}
           checked={isHighPriority}
           onChange={onChange}
           disabled={isLoading}
@@ -84,7 +84,7 @@ const AssigneeRow = memo(
   ({ assignees, allUsers, allUserObjects, onChange, isLoading }) => (
     <div id="assignees" className="alpaca-details-grid__item">
       <div className="alpaca-details-grid__label">
-        {__('Assignees', 'alpaca')}
+        {__('Assignees', 'alpaca-issue-tracker')}
       </div>
       <div className="alpaca-details-grid__value alpaca-flex-align alpaca-issue-assignees-cell">
         <AssigneeSelector
@@ -107,7 +107,9 @@ const AssigneeRow = memo(
 const LabelsRow = memo(
   ({ labels, selectedIds, onChange, isLoading }) => (
     <div id="labels" className="alpaca-details-grid__item">
-      <div className="alpaca-details-grid__label">{__('Labels', 'alpaca')}</div>
+      <div className="alpaca-details-grid__label">
+        {__('Labels', 'alpaca-issue-tracker')}
+      </div>
       <div className="alpaca-details-grid__value alpaca-flex-align alpaca-issue-labels-cell">
         <LabelsSelector
           labels={labels}
@@ -128,7 +130,7 @@ const DeadlineRow = memo(
   ({ deadline, onChange, onClear, isLoading }) => (
     <div id="deadline" className="alpaca-details-grid__item">
       <div className="alpaca-details-grid__label">
-        {__('Due Date', 'alpaca')}
+        {__('Due Date', 'alpaca-issue-tracker')}
       </div>
       <div className="alpaca-details-grid__value alpaca-flex-align">
         <DeadlineControl
@@ -375,7 +377,7 @@ const SubissueAssigneeControl = memo(
             type="button"
             className="alpaca-subissues-assignee-preview"
             title={assigneeText}
-            aria-label={__('Edit assignees', 'alpaca')}
+            aria-label={__('Edit assignees', 'alpaca-issue-tracker')}
             onMouseDown={(event) => event.preventDefault()}
             onClick={openPopover}
           >
@@ -394,7 +396,7 @@ const SubissueAssigneeControl = memo(
         ) : (
           <Button
             icon={<span className="alpaca-icon-assign"></span>}
-            label={__('Assign', 'alpaca')}
+            label={__('Assign', 'alpaca-issue-tracker')}
             showTooltip
             tooltipPosition="top"
             onMouseDown={(event) => event.preventDefault()}
@@ -573,6 +575,7 @@ const cleanupUploadedIssueAttachments = async (attachments, issueId) => {
 const AlpacaIssue = ({
   issueId,
   isCreating,
+  initialStatusId = null,
   isOpen,
   activeSearchQuery = '',
   onClose,
@@ -685,7 +688,10 @@ const AlpacaIssue = ({
     fetchStatuses()
       .then(setAllStatuses)
       .catch(() =>
-        showNotification(__('Failed to load statuses.', 'alpaca'), 'error'),
+        showNotification(
+          __('Failed to load statuses.', 'alpaca-issue-tracker'),
+          'error',
+        ),
       );
   }, [showNotification]);
 
@@ -693,7 +699,10 @@ const AlpacaIssue = ({
     fetchLabels()
       .then((labels) => setAllLabels(Array.isArray(labels) ? labels : []))
       .catch(() =>
-        showNotification(__('Failed to load labels.', 'alpaca'), 'error'),
+        showNotification(
+          __('Failed to load labels.', 'alpaca-issue-tracker'),
+          'error',
+        ),
       );
   }, [showNotification]);
 
@@ -858,7 +867,10 @@ const AlpacaIssue = ({
         });
       } catch (err) {
         console.error(err);
-        showNotification(__('Failed to update assignees.', 'alpaca'), 'error');
+        showNotification(
+          __('Failed to update assignees.', 'alpaca-issue-tracker'),
+          'error',
+        );
       } finally {
         setLoading('assignees', false);
       }
@@ -898,7 +910,10 @@ const AlpacaIssue = ({
         });
       } catch (err) {
         console.error(err);
-        showNotification(__('Failed to update priority.', 'alpaca'), 'error');
+        showNotification(
+          __('Failed to update priority.', 'alpaca-issue-tracker'),
+          'error',
+        );
         setIsHighPriority(!newValue);
       } finally {
         setLoading('priority', false);
@@ -953,7 +968,10 @@ const AlpacaIssue = ({
       } catch (err) {
         // eslint-disable-next-line no-console
         console.error(err);
-        showNotification(__('Failed to update labels.', 'alpaca'), 'error');
+        showNotification(
+          __('Failed to update labels.', 'alpaca-issue-tracker'),
+          'error',
+        );
       } finally {
         setLoading('labels', false);
       }
@@ -1040,7 +1058,7 @@ const AlpacaIssue = ({
       onStatusChange?.(issueId, nextStatus, currentStatus, issueDetails);
     } catch (err) {
       showNotification(
-        __('Failed to progress issue status.', 'alpaca'),
+        __('Failed to progress issue status.', 'alpaca-issue-tracker'),
         'error',
       );
     } finally {
@@ -1082,7 +1100,10 @@ const AlpacaIssue = ({
       }));
       onIssueTitleChange?.(issueId, editedTitle);
     } catch {
-      showNotification(__('Failed to update issue title.', 'alpaca'), 'error');
+      showNotification(
+        __('Failed to update issue title.', 'alpaca-issue-tracker'),
+        'error',
+      );
     } finally {
       setLoading('title', false);
       setIsEditingTitle(false);
@@ -1157,9 +1178,9 @@ const AlpacaIssue = ({
           createdIssueIsHighPriority = Boolean(retryIssue.isHighPriority);
         } else {
           const server = {};
-          if (typeof alpacaDataDump !== 'undefined' && alpacaDataDump.env) {
+          if (typeof alpaistrDataDump !== 'undefined' && alpaistrDataDump.env) {
             try {
-              const loadedServer = JSON.parse(atob(alpacaDataDump.env));
+              const loadedServer = JSON.parse(atob(alpaistrDataDump.env));
               Object.assign(server, loadedServer);
             } catch (e) {
               // Ignore parse errors.
@@ -1173,8 +1194,8 @@ const AlpacaIssue = ({
               isHighPriority,
             },
             client:
-              typeof alpacaDataDump !== 'undefined'
-                ? alpacaDataDump.device
+              typeof alpaistrDataDump !== 'undefined'
+                ? alpaistrDataDump.device
                 : {},
             errors: [],
             screenshot: '',
@@ -1200,6 +1221,24 @@ const AlpacaIssue = ({
           createdIssueDeadline = deadline || null;
           createdIssueIsHighPriority = isHighPriority;
 
+          // If an initial status was requested, move the issue to it now.
+          if (
+            initialStatusId &&
+            String(initialStatusId) !== String(response.statusId)
+          ) {
+            try {
+              await updateIssue(newIssueId, {
+                taxonomies: {
+                  // eslint-disable-next-line camelcase
+                  alpaca_status: [Number(initialStatusId)],
+                },
+              });
+              response = { ...response, statusId: Number(initialStatusId) };
+            } catch (err) {
+              console.error('Failed to set initial column status:', err);
+            }
+          }
+
           if (deadline) {
             try {
               await updateIssue(newIssueId, { meta: { deadline } });
@@ -1220,7 +1259,10 @@ const AlpacaIssue = ({
               // eslint-disable-next-line no-console
               console.error('Failed to set labels:', err);
               showNotification(
-                __('Issue created, but labels could not be saved.', 'alpaca'),
+                __(
+                  'Issue created, but labels could not be saved.',
+                  'alpaca-issue-tracker',
+                ),
                 'error',
               );
             }
@@ -1285,7 +1327,9 @@ const AlpacaIssue = ({
             );
 
             if (!createdComment) {
-              throw new Error(__('Failed to create issue comment.', 'alpaca'));
+              throw new Error(
+                __('Failed to create issue comment.', 'alpaca-issue-tracker'),
+              );
             }
 
             commentAlreadyCreated = true;
@@ -1320,10 +1364,13 @@ const AlpacaIssue = ({
             console.error('Failed to create issue comment:', err);
             showNotification(
               retryIssue
-                ? __('Comment could not be saved. Please try again.', 'alpaca')
+                ? __(
+                    'Comment could not be saved. Please try again.',
+                    'alpaca-issue-tracker',
+                  )
                 : __(
                     'Issue created, but comment could not be saved.',
-                    'alpaca',
+                    'alpaca-issue-tracker',
                   ),
               'error',
             );
@@ -1356,6 +1403,7 @@ const AlpacaIssue = ({
           labels: createdIssueLabels,
           deadline: createdIssueDeadline,
           isHighPriority: createdIssueIsHighPriority,
+          statusId: response.statusId,
         };
         const createdIssueHook = {
           ...(response.issue && typeof response.issue === 'object'
@@ -1415,8 +1463,8 @@ const AlpacaIssue = ({
         console.error(err);
         showNotification(
           retryIssue
-            ? __('Failed to retry comment.', 'alpaca')
-            : __('Failed to create issue.', 'alpaca'),
+            ? __('Failed to retry comment.', 'alpaca-issue-tracker')
+            : __('Failed to create issue.', 'alpaca-issue-tracker'),
           'error',
         );
         return false;
@@ -1426,6 +1474,7 @@ const AlpacaIssue = ({
     },
     [
       isCreating,
+      initialStatusId,
       editedTitle,
       isHighPriority,
       createdIssueRetry,
@@ -1494,7 +1543,10 @@ const AlpacaIssue = ({
       } catch (err) {
         // eslint-disable-next-line no-console
         console.error('Error creating subissue:', err);
-        showNotification(__('Failed to create subissue.', 'alpaca'), 'error');
+        showNotification(
+          __('Failed to create subissue.', 'alpaca-issue-tracker'),
+          'error',
+        );
         return null;
       } finally {
         setLoading(`subissue-${subissueId}`, false);
@@ -1611,7 +1663,7 @@ const AlpacaIssue = ({
         // eslint-disable-next-line no-console
         console.error('Error updating subissue title:', err);
         showNotification(
-          __('Failed to update subissue title.', 'alpaca'),
+          __('Failed to update subissue title.', 'alpaca-issue-tracker'),
           'error',
         );
       } finally {
@@ -1685,7 +1737,7 @@ const AlpacaIssue = ({
           ),
         );
         showNotification(
-          __('Failed to update subissue completion.', 'alpaca'),
+          __('Failed to update subissue completion.', 'alpaca-issue-tracker'),
           'error',
         );
       } finally {
@@ -1770,7 +1822,7 @@ const AlpacaIssue = ({
           ),
         );
         showNotification(
-          __('Failed to update subissue assignees.', 'alpaca'),
+          __('Failed to update subissue assignees.', 'alpaca-issue-tracker'),
           'error',
         );
       } finally {
@@ -1875,7 +1927,7 @@ const AlpacaIssue = ({
             title:
               issueDetails?.post_data?.post_title ||
               issueDetails?.post_data?.post_content ||
-              __('Unknown issue', 'alpaca'),
+              __('Unknown issue', 'alpaca-issue-tracker'),
           },
           promotedIssue: {
             id: subissue.id,
@@ -1888,7 +1940,10 @@ const AlpacaIssue = ({
         wp.hooks.doAction('alpaca.issueDeleted', subissue.id);
         // eslint-disable-next-line no-console
         console.error('Error promoting subissue:', err);
-        showNotification(__('Failed to promote subissue.', 'alpaca'), 'error');
+        showNotification(
+          __('Failed to promote subissue.', 'alpaca-issue-tracker'),
+          'error',
+        );
       } finally {
         setLoading(`subissue-promote-${subissueId}`, false);
       }
@@ -1915,7 +1970,10 @@ const AlpacaIssue = ({
       }
       if (!canDeleteIssues) {
         showNotification(
-          __('You do not have permission to delete issues.', 'alpaca'),
+          __(
+            'You do not have permission to delete issues.',
+            'alpaca-issue-tracker',
+          ),
           'error',
         );
         return;
@@ -1929,7 +1987,10 @@ const AlpacaIssue = ({
       } catch (err) {
         // eslint-disable-next-line no-console
         console.error('Error deleting subissue:', err);
-        showNotification(__('Failed to delete subissue.', 'alpaca'), 'error');
+        showNotification(
+          __('Failed to delete subissue.', 'alpaca-issue-tracker'),
+          'error',
+        );
       } finally {
         setLoading(`subissue-delete-${subissueId}`, false);
       }
@@ -1989,13 +2050,13 @@ const AlpacaIssue = ({
 
   const statusLabel = isCreating
     ? (() => {
-        if (!allStatuses.length) return __('Unknown', 'alpaca');
+        if (!allStatuses.length) return __('Unknown', 'alpaca-issue-tracker');
         const sorted = [...allStatuses].sort(
           (a, b) => (a.term_score || 0) - (b.term_score || 0),
         );
-        return sorted[0]?.name || __('Unknown', 'alpaca');
+        return sorted[0]?.name || __('Unknown', 'alpaca-issue-tracker');
       })()
-    : currentStatus?.name || __('Unknown', 'alpaca');
+    : currentStatus?.name || __('Unknown', 'alpaca-issue-tracker');
 
   useEffect(() => {
     if (!isOpen || typeof document === 'undefined') {
@@ -2022,7 +2083,7 @@ const AlpacaIssue = ({
             <Dropdown
               popoverProps={{ placement: 'bottom-end' }}
               renderToggle={({ onToggle }) => (
-                <Tooltip text={__('Options', 'alpaca')}>
+                <Tooltip text={__('Options', 'alpaca-issue-tracker')}>
                   <Button
                     className="alpaca-modal-options-button components-button has-icon"
                     onClick={onToggle}
@@ -2058,7 +2119,7 @@ const AlpacaIssue = ({
                       }
                     }}
                   >
-                    {__('Copy Issue ID', 'alpaca')}{' '}
+                    {__('Copy Issue ID', 'alpaca-issue-tracker')}{' '}
                     <code className="alpaca-menu-code">
                       {issueDetails?.slug || issueDetails?.post_data?.post_name}
                     </code>
@@ -2071,7 +2132,7 @@ const AlpacaIssue = ({
                       disabled={loadingStates.status}
                     >
                       <>
-                        {__('Progress Issue to', 'alpaca')}
+                        {__('Progress Issue to', 'alpaca-issue-tracker')}
                         {'\u00A0'}
                         <strong>{nextStatusName}</strong>
                       </>
@@ -2084,7 +2145,7 @@ const AlpacaIssue = ({
                       isDestructive
                       onClick={() => setShowDeleteConfirm(true)}
                     >
-                      {__('Trash Issue', 'alpaca')}
+                      {__('Trash Issue', 'alpaca-issue-tracker')}
                     </MenuItem>
                   )}
                 </MenuGroup>
@@ -2096,11 +2157,15 @@ const AlpacaIssue = ({
         {error && (
           <div className="notice notice-error">
             <p>{error}</p>
-            <Button onClick={refetchData}>{__('Retry', 'alpaca')}</Button>
+            <Button onClick={refetchData}>
+              {__('Retry', 'alpaca-issue-tracker')}
+            </Button>
           </div>
         )}
 
-        {isLoadingDetails && !isCreating && <p>{__('Loading…', 'alpaca')}</p>}
+        {isLoadingDetails && !isCreating && (
+          <p>{__('Loading…', 'alpaca-issue-tracker')}</p>
+        )}
         {((!isLoadingDetails && issueDetails && issueDetails.success) ||
           isCreating) && (
           <div className="alpaca-issue-details">
@@ -2116,7 +2181,10 @@ const AlpacaIssue = ({
                   onCancel={handleTitleCancel}
                   placeholder={
                     isCreating
-                      ? __('Enter a title to create issue…', 'alpaca')
+                      ? __(
+                          'Enter a title to create issue…',
+                          'alpaca-issue-tracker',
+                        )
                       : ''
                   }
                 />
@@ -2134,7 +2202,7 @@ const AlpacaIssue = ({
                 <div className="alpaca-issue-meta alpaca-flex-align">
                   <span className="alpaca-issue-meta-group">
                     <span className="alpaca-issue-meta-prefix">
-                      {__('Created by', 'alpaca')}
+                      {__('Created by', 'alpaca-issue-tracker')}
                     </span>
                     <User user={issueDetails.post_data.post_author} />
                   </span>
@@ -2190,14 +2258,17 @@ const AlpacaIssue = ({
                     value={issueComment}
                     onChange={setIssueComment}
                     textareaRef={issueCommentRef}
-                    placeholder={__('Add a comment to the issue…', 'alpaca')}
+                    placeholder={__(
+                      'Add a comment to the issue…',
+                      'alpaca-issue-tracker',
+                    )}
                     issueId={null}
                     showNotification={showNotification}
                     onSubmit={handleCreateIssue}
                     dataSource="create"
                     submitButtonText={
                       createdIssueRetry
-                        ? __('Retry Comment', 'alpaca')
+                        ? __('Retry Comment', 'alpaca-issue-tracker')
                         : undefined
                     }
                     submitButtonDisabled={
@@ -2214,7 +2285,7 @@ const AlpacaIssue = ({
                 <div id="subissues" className="alpaca-subissues-block">
                   <div className="alpaca-details-grid__label alpaca-subissues-header">
                     <span className="alpaca-subissues-title">
-                      {__('Checklist', 'alpaca')}
+                      {__('Checklist', 'alpaca-issue-tracker')}
                     </span>
                     <Button
                       size="small"
@@ -2226,7 +2297,7 @@ const AlpacaIssue = ({
                       onClick={handleAddSubissueDraft}
                       disabled={isSubissueAddDisabled}
                     >
-                      {__('Add', 'alpaca')}
+                      {__('Add', 'alpaca-issue-tracker')}
                     </Button>
                   </div>
                   <div>
@@ -2274,7 +2345,10 @@ const AlpacaIssue = ({
                                 />
                                 <SubissueTitleField
                                   value={subissue.title}
-                                  placeholder={__('Enter title…', 'alpaca')}
+                                  placeholder={__(
+                                    'Enter title…',
+                                    'alpaca-issue-tracker',
+                                  )}
                                   autoFocusOnMount={
                                     subissue.isDraft && subissue.isEditing
                                   }
@@ -2325,7 +2399,7 @@ const AlpacaIssue = ({
                                   icon={
                                     <span className="alpaca-icon-promote"></span>
                                   }
-                                  label={__('Promote', 'alpaca')}
+                                  label={__('Promote', 'alpaca-issue-tracker')}
                                   showTooltip
                                   tooltipPosition="top"
                                   onMouseDown={(event) =>
@@ -2342,7 +2416,7 @@ const AlpacaIssue = ({
                                   <Button
                                     className="alpaca-subissues-delete"
                                     icon="trash"
-                                    label={__('Delete', 'alpaca')}
+                                    label={__('Delete', 'alpaca-issue-tracker')}
                                     showTooltip
                                     tooltipPosition="top"
                                     isDestructive
@@ -2409,7 +2483,7 @@ const AlpacaIssue = ({
           (!issueDetails || !issueDetails.success) && (
             <p>
               {issueDetails?.message ||
-                __('Could not load issue details.', 'alpaca')}
+                __('Could not load issue details.', 'alpaca-issue-tracker')}
             </p>
           )}
 
@@ -2435,8 +2509,13 @@ const AlpacaIssue = ({
       {canDeleteIssues && showDeleteConfirm && (
         <div className="alpaca-confirm-overlay">
           <div className="alpaca-confirm-box">
-            <h2>{__('Delete Issue?', 'alpaca')}</h2>
-            <p>{__('Are you sure you want to trash this issue?', 'alpaca')}</p>
+            <h2>{__('Delete Issue?', 'alpaca-issue-tracker')}</h2>
+            <p>
+              {__(
+                'Are you sure you want to trash this issue?',
+                'alpaca-issue-tracker',
+              )}
+            </p>
 
             <div>
               <Button
@@ -2447,11 +2526,11 @@ const AlpacaIssue = ({
                   setShowDeleteConfirm(false);
                 }}
               >
-                {__('Delete', 'alpaca')}
+                {__('Delete', 'alpaca-issue-tracker')}
               </Button>
 
               <Button onClick={() => setShowDeleteConfirm(false)}>
-                {__('Cancel', 'alpaca')}
+                {__('Cancel', 'alpaca-issue-tracker')}
               </Button>
             </div>
           </div>
@@ -2481,6 +2560,7 @@ AlpacaIssue.propTypes = {
   onIssueTitleChange: PropTypes.func.isRequired,
   onLabelsChange: PropTypes.func,
   isCreating: PropTypes.bool,
+  initialStatusId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   onIssueCreated: PropTypes.func,
   activeSearchQuery: PropTypes.string,
 };

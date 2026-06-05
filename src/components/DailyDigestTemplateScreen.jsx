@@ -13,38 +13,41 @@ const { __ } = wp.i18n;
 const dailyDigestTemplateBlockDefinitions = [
   {
     name: 'alpaca/digest-site-icon',
-    title: __('Site Icon', 'alpaca'),
-    description: __('Insert the current site icon.', 'alpaca'),
+    title: __('Site Icon', 'alpaca-issue-tracker'),
+    description: __('Insert the current site icon.', 'alpaca-issue-tracker'),
     multiple: true,
   },
   {
     name: 'alpaca/digest-deadline-watch',
-    title: __('Issues Falling Due', 'alpaca'),
+    title: __('Issues Falling Due', 'alpaca-issue-tracker'),
     description: __(
       'Render the locked deadline-watch digest section.',
-      'alpaca',
+      'alpaca-issue-tracker',
     ),
     multiple: false,
   },
   {
     name: 'alpaca/digest-issue-activity',
-    title: __('My Issues', 'alpaca'),
+    title: __('My Issues', 'alpaca-issue-tracker'),
     description: __(
       'Render the locked followed-issues digest section.',
-      'alpaca',
+      'alpaca-issue-tracker',
     ),
     multiple: false,
   },
   {
     name: 'alpaca/digest-new-items',
-    title: __('New Items', 'alpaca'),
-    description: __('Render the locked new-items digest section.', 'alpaca'),
+    title: __('New Items', 'alpaca-issue-tracker'),
+    description: __(
+      'Render the locked new-items digest section.',
+      'alpaca-issue-tracker',
+    ),
     multiple: false,
   },
 ];
 
 /**
- * Register Alpaca digest template placeholder blocks.
+ * Register Alpaca Issue Tracker digest template placeholder blocks.
  *
  * @return {void}
  */
@@ -67,28 +70,43 @@ const DailyDigestTemplateScreen = () => (
     registerBlocks={registerNotificationDigestBlocks}
     subjectHelp={__(
       'Available placeholders include {{site_title}}, {{site_tagline}}, {{digest_day}}, {{issue_count}}, {{activity_count}}, and {{new_item_count}}.',
-      'alpaca',
+      'alpaca-issue-tracker',
     )}
-    loadErrorMessage={__('Could not load the daily digest template.', 'alpaca')}
+    loadErrorMessage={__(
+      'Could not load the daily digest template.',
+      'alpaca-issue-tracker',
+    )}
     previewErrorMessage={__(
       'Could not refresh the daily digest preview.',
-      'alpaca',
+      'alpaca-issue-tracker',
     )}
-    saveErrorMessage={__('Could not save the daily digest template.', 'alpaca')}
+    saveErrorMessage={__(
+      'Could not save the daily digest template.',
+      'alpaca-issue-tracker',
+    )}
     resetErrorMessage={__(
       'Could not reset the daily digest template.',
-      'alpaca',
+      'alpaca-issue-tracker',
     )}
-    testErrorMessage={__('Could not send the test digest email.', 'alpaca')}
-    saveSuccessMessage={__('Daily digest template saved.', 'alpaca')}
+    testErrorMessage={__(
+      'Could not send the test digest email.',
+      'alpaca-issue-tracker',
+    )}
+    saveSuccessMessage={__(
+      'Daily digest template saved.',
+      'alpaca-issue-tracker',
+    )}
     resetSuccessMessage={__(
       'Daily digest template reset to default.',
-      'alpaca',
+      'alpaca-issue-tracker',
     )}
-    testSuccessMessage={__('Test digest email sent successfully.', 'alpaca')}
+    testSuccessMessage={__(
+      'Test digest email sent successfully.',
+      'alpaca-issue-tracker',
+    )}
     previewEmptyMessage={__(
       'Preview will appear here once the template loads.',
-      'alpaca',
+      'alpaca-issue-tracker',
     )}
   />
 );

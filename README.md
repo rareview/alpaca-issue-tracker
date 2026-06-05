@@ -12,6 +12,14 @@
 
 Alpaca Issue Tracker provides a full-featured kanban experience inside wp-admin, using WordPress core components and approaches, for a familiar user _and_ developer experience.
 
+## Try it in WordPress Playground
+
+[Open Alpaca Issue Tracker in WordPress Playground](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/rareview/alpaca/main/.github/blueprint.json)
+
+[Download the latest Alpaca Issue Tracker ZIP](https://github.com/rareview/alpaca/releases/latest/download/alpaca-issue-tracker.zip)
+
+For local branch testing, run `npm run playground:start`. That builds the current branch ZIP and opens a local Playground instance using the same seeded content as the public demo.
+
 ## Key features
 
 - **Kanban Board Interface** - Drag-and-drop issues between and within fully customizable status columns

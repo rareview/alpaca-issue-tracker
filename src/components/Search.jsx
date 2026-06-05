@@ -4,6 +4,7 @@ const { __ } = wp.i18n;
 const { applyFilters } = wp.hooks;
 import PropTypes from 'prop-types';
 
+import { isTestLoggingEnabled } from '../utils/testLogSetting.js';
 import {
   getCommentAgentTypeFromComment,
   normalizeCommentAgentTypes,
@@ -102,7 +103,7 @@ function SearchContainer({
 }) {
   const [value, setValue] = useState('');
   const [isSearching, setIsSearching] = useState(false);
-  const [enableTestLogs, setEnableTestLogs] = useState(false);
+  const [enableTestLogs, setEnableTestLogs] = useState(isTestLoggingEnabled);
   const [searchRefreshToken, setSearchRefreshToken] = useState(0);
   const debounceRef = useRef(null);
   const requestIdRef = useRef(0);
@@ -122,16 +123,8 @@ function SearchContainer({
   searchScopeIssueIdsSetRef.current = searchScopeIssueIdsSet;
 
   useEffect(() => {
-    wp.apiFetch({ path: '/wp/v2/settings' })
-      .then((settings) => {
-        setEnableTestLogs(settings.alpaca_enable_test_logs === '1');
-      })
-      .catch(() => {
-        setEnableTestLogs(false);
-      });
-
     const handleTestLogSettingChange = (newVal) => {
-      setEnableTestLogs(newVal);
+      setEnableTestLogs(Boolean(newVal));
     };
 
     wp.hooks.addAction(
@@ -275,7 +268,7 @@ function SearchContainer({
 
           if (enableTestLogs) {
             // eslint-disable-next-line no-console
-            console.log('Alpaca search raw responses', {
+            console.log('Alpaca Issue Tracker search raw responses', {
               query: q,
               comments,
               directIssues,
@@ -528,10 +521,10 @@ function SearchContainer({
   return (
     <div className="alpaca-board-search alpaca-board-control">
       <SearchControl
-        label={__('Search', 'alpaca')}
+        label={__('Search', 'alpaca-issue-tracker')}
         value={value}
         onChange={(val) => setValue(val)}
-        placeholder={__('Search', 'alpaca')}
+        placeholder={__('Search', 'alpaca-issue-tracker')}
         isBusy={isSearching}
         __nextHasNoMarginBottom
       />

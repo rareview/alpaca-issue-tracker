@@ -89,6 +89,44 @@
     }
   }
 
+  .project-board-link {
+    gap: $space-sm;
+  }
+
+  .alpaca-toolbar-project-board-badge {
+    display: inline-flex;
+    align-items: center;
+    line-height: $line-height-reset;
+
+    .alpaca-inline-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: $size-icon-lg;
+      height: $size-icon-lg;
+      padding: 0 $space-xs;
+      border-radius: $radius-round;
+      background: $color-danger;
+      color: $color-white;
+      box-sizing: border-box;
+      font-size: $font-size-xs;
+      font-weight: $font-weight-bold;
+      line-height: $line-height-reset;
+    }
+
+    .screen-reader-text {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: calc(-1 * 1px);
+      border: 0;
+      padding: 0;
+      clip: rect(1px, 1px, 1px, 1px);
+      overflow: hidden;
+      word-wrap: normal !important;
+    }
+  }
+
   .toggle-button {
     margin-inline-start: auto;
     background: none;

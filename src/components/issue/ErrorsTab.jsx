@@ -27,7 +27,10 @@ const ErrorsTab = ({ errorsJson }) => {
   if (errors.length === 0) {
     return (
       <p>
-        {__('No JavaScript errors were recorded for this issue.', 'alpaca')}
+        {__(
+          'No JavaScript errors were recorded for this issue.',
+          'alpaca-issue-tracker',
+        )}
       </p>
     );
   }
@@ -83,7 +86,7 @@ const ErrorItem = ({ index, error, message, stack }) => {
       <DataTable data={error} showSyntaxHighlighting={true} />
       {stack && (
         <div ref={stackRef} className="alpaca-error-stack">
-          <h5>{__('Stack Trace', 'alpaca')}</h5>
+          <h5>{__('Stack Trace', 'alpaca-issue-tracker')}</h5>
           <pre>
             <code className="language-javascript">{decodeEntities(stack)}</code>
           </pre>

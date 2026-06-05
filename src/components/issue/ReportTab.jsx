@@ -28,8 +28,12 @@ const formatDateTimeWithUtcOffset = (value) => {
     offset = '+00:00';
   }
 
-  /* translators: 1: formatted date/time. 2: UTC offset, e.g. +02:00. */
-  return sprintf(__('%1$s (UTC%2$s)', 'alpaca'), formattedDate, offset);
+  return sprintf(
+    /* translators: 1: formatted date/time. 2: UTC offset, e.g. +02:00. */
+    __('%1$s (UTC%2$s)', 'alpaca-issue-tracker'),
+    formattedDate,
+    offset,
+  );
 };
 
 /**
@@ -111,29 +115,29 @@ const ReportTab = memo(({ issueDetails }) => {
       <table ref={tableRef} className="alpaca-data-table">
         <tbody>
           <tr>
-            <th scope="row">{__('Reported', 'alpaca')}</th>
+            <th scope="row">{__('Reported', 'alpaca-issue-tracker')}</th>
             <td>
               {reportedDate
                 ? formatDateTimeWithUtcOffset(reportedDate)
-                : __('N/A', 'alpaca')}
+                : __('N/A', 'alpaca-issue-tracker')}
             </td>
           </tr>
           <tr>
-            <th scope="row">{__('Last edit', 'alpaca')}</th>
+            <th scope="row">{__('Last edit', 'alpaca-issue-tracker')}</th>
             <td>
               {lastEditedDate
                 ? formatDateTimeWithUtcOffset(lastEditedDate)
-                : __('N/A', 'alpaca')}
+                : __('N/A', 'alpaca-issue-tracker')}
             </td>
           </tr>
           <tr>
-            <th scope="row">{__('URL', 'alpaca')}</th>
+            <th scope="row">{__('URL', 'alpaca-issue-tracker')}</th>
             <td ref={urlCellRef} className="alpaca-highlight-allowed">
-              {urlValue ? urlValue : __('N/A', 'alpaca')}
+              {urlValue ? urlValue : __('N/A', 'alpaca-issue-tracker')}
             </td>
           </tr>
           <tr>
-            <th scope="row">{__('Viewport', 'alpaca')}</th>
+            <th scope="row">{__('Viewport', 'alpaca-issue-tracker')}</th>
             <td>
               {(issueDetails.meta.alpaca_screenwidth ||
                 issueDetails.meta.screenwidth) &&
@@ -146,7 +150,7 @@ const ReportTab = memo(({ issueDetails }) => {
                     issueDetails.meta.alpaca_screenheight ||
                     issueDetails.meta.screenheight
                   }`
-                : __('N/A', 'alpaca')}
+                : __('N/A', 'alpaca-issue-tracker')}
             </td>
           </tr>
           {Object.entries(issueDetails.taxonomies)

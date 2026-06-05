@@ -2,10 +2,10 @@
 /**
  * Register class.
  *
- * @package Alpaca
+ * @package AlpacaIssueTracker
  */
 
-namespace Alpaca;
+namespace AlpacaIssueTracker;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -38,7 +38,7 @@ class Register {
 	}
 
 	/**
-	 * Get the base script dependencies shared across Alpaca screens.
+	 * Get the base script dependencies shared across Alpaca Issue Tracker screens.
 	 *
 	 * @return string[] Script dependency handles.
 	 */
@@ -118,18 +118,18 @@ class Register {
 		$locale = determine_locale();
 
 		/**
-		 * Filters the locale used to load Alpaca script translations.
+		 * Filters the locale used to load Alpaca Issue Tracker script translations.
 		 *
 		 * @param string $locale The locale to load.
 		 */
 		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- This uses the core WordPress plugin locale filter.
-		$locale = apply_filters( 'plugin_locale', $locale, 'alpaca' );
+		$locale = apply_filters( 'plugin_locale', $locale, 'alpaca-issue-tracker' );
 
 		$locale_short = strtolower( substr( $locale, 0, 2 ) );
 		$paths        = [
-			ALPACA_PLUGIN_DIR . 'languages/' . $locale,
-			ALPACA_PLUGIN_DIR . 'languages/' . $locale_short,
-			ALPACA_PLUGIN_DIR . 'languages',
+			ALPAISTR_PLUGIN_DIR . 'languages/' . $locale,
+			ALPAISTR_PLUGIN_DIR . 'languages/' . $locale_short,
+			ALPAISTR_PLUGIN_DIR . 'languages',
 		];
 
 		foreach ( $paths as $path ) {
@@ -138,7 +138,7 @@ class Register {
 			}
 		}
 
-		return ALPACA_PLUGIN_DIR . 'languages';
+		return ALPAISTR_PLUGIN_DIR . 'languages';
 	}
 
 	/**
@@ -150,7 +150,7 @@ class Register {
 		return esc_url_raw(
 			rest_url(
 				'alpaca/v1/proxy?proxy_token=' .
-				rawurlencode( function_exists( 'alpaca_get_proxy_auth_token' ) ? alpaca_get_proxy_auth_token() : '' ) .
+				rawurlencode( function_exists( 'alpaistr_get_proxy_auth_token' ) ? alpaistr_get_proxy_auth_token() : '' ) .
 				'&url='
 			)
 		);
@@ -162,7 +162,7 @@ class Register {
 	 * @return array<string, bool> Visibility map keyed by datapoint slug.
 	 */
 	private function get_item_datapoint_visibility_setting() {
-		$raw_visibility = get_option( 'alpaca_item_datapoint_visibility', [] );
+		$raw_visibility = get_option( 'alpaistr_item_datapoint_visibility', [] );
 
 		if ( ! is_array( $raw_visibility ) ) {
 			return [];
@@ -193,13 +193,13 @@ class Register {
 	 * @return bool True when contextual capture should be active.
 	 */
 	private function is_contextual_capture_enabled() {
-		return function_exists( 'alpaca_is_contextual_capture_enabled' )
-			? alpaca_is_contextual_capture_enabled()
-			: '1' === (string) get_option( 'alpaca_enable_context_capture', '1' );
+		return function_exists( 'alpaistr_is_contextual_capture_enabled' )
+			? alpaistr_is_contextual_capture_enabled()
+			: '1' === (string) get_option( 'alpaistr_enable_context_capture', '1' );
 	}
 
 	/**
-	 * Determine whether the current admin page needs the full Alpaca app bundle.
+	 * Determine whether the current admin page needs the full Alpaca Issue Tracker bundle.
 	 *
 	 * @param string $hook_suffix Current admin page hook suffix.
 	 * @return bool True when the full bundle should load.
@@ -220,17 +220,17 @@ class Register {
 	}
 
 	/**
-	 * Determine whether the current admin page should skip Alpaca admin assets.
+	 * Determine whether the current admin page should skip Alpaca Issue Tracker admin assets.
 	 *
 	 * Page/post editor screens are already asset-heavy. The matching admin-bar
 	 * report UI is omitted on those screens as well.
 	 *
 	 * @param string $hook_suffix Current admin page hook suffix.
-	 * @return bool True when Alpaca admin assets should not load.
+	 * @return bool True when Alpaca Issue Tracker admin assets should not load.
 	 */
 	private function is_skipped_admin_bundle_screen( $hook_suffix ) {
-		if ( function_exists( 'alpaca_should_skip_admin_report_screen' ) ) {
-			return alpaca_should_skip_admin_report_screen( $hook_suffix );
+		if ( function_exists( 'alpaistr_should_skip_admin_report_screen' ) ) {
+			return alpaistr_should_skip_admin_report_screen( $hook_suffix );
 		}
 
 		return false;
@@ -254,7 +254,7 @@ class Register {
 	}
 
 	/**
-	 * Enqueue shared third-party assets used by Alpaca bundles.
+	 * Enqueue shared third-party assets used by Alpaca Issue Tracker bundles.
 	 *
 	 * @return void
 	 */
@@ -277,7 +277,7 @@ class Register {
 	}
 
 	/**
-	 * Enqueue the shared font used by the full Alpaca interface.
+	 * Enqueue the shared font used by the full Alpaca Issue Tracker interface.
 	 *
 	 * @return void
 	 */
@@ -291,7 +291,7 @@ class Register {
 	}
 
 	/**
-	 * Localize shared client settings for an Alpaca script bundle.
+	 * Localize shared client settings for an Alpaca Issue Tracker script bundle.
 	 *
 	 * @param string $script_handle      Script handle.
 	 * @param bool   $include_admin_url  Whether to expose the wp-admin URL.
@@ -302,8 +302,10 @@ class Register {
 		$settings = [
 			'canManageOptions'         => current_user_can( 'manage_options' ),
 			'canDeleteIssues'          => Helpers::user_can( 'delete_issue' ),
+			'canViewNotificationInbox' => Helpers::user_can( 'notification_inbox' ),
 			'contextualCaptureEnabled' => $this->is_contextual_capture_enabled(),
 			'defaultLabelColor'        => Helpers::DEFAULT_LABEL_COLOR,
+			'enableTestLogs'           => '1' === (string) get_option( 'alpaistr_enable_test_logs', '0' ),
 			'snapdomProxy'             => $this->get_snapdom_proxy_setting(),
 			'itemDatapointVisibility'  => $this->get_item_datapoint_visibility_setting(),
 		];
@@ -316,11 +318,11 @@ class Register {
 			$settings = array_merge( $settings, $extra_settings );
 		}
 
-		wp_localize_script( $script_handle, 'alpacaSettings', $settings );
+		wp_localize_script( $script_handle, 'alpaistrSettings', $settings );
 	}
 
 	/**
-	 * Enqueue the full Alpaca application bundle.
+	 * Enqueue the full Alpaca Issue Tracker application bundle.
 	 *
 	 * @param string[] $script_dependencies Script dependencies for the main bundle.
 	 * @param bool     $include_admin_url   Whether to expose the wp-admin URL.
@@ -330,7 +332,7 @@ class Register {
 	 */
 	private function enqueue_shared_assets( $script_dependencies, $include_admin_url = false, $localize_datadump = false, $extra_settings = [] ) {
 
-		// Only load Alpaca for logged-in users.
+		// Only load Alpaca Issue Tracker for logged-in users.
 		if ( ! is_user_logged_in() ) {
 			return;
 		}
@@ -351,7 +353,7 @@ class Register {
 
 		wp_set_script_translations(
 			self::PREFIX . '-script',
-			'alpaca',
+			'alpaca-issue-tracker',
 			$this->get_script_translation_path()
 		);
 
@@ -362,9 +364,9 @@ class Register {
 			$style_version
 		);
 
-		if ( $localize_datadump && function_exists( 'alpaca_prepare_datadump' ) ) {
+		if ( $localize_datadump && function_exists( 'alpaistr_prepare_datadump' ) ) {
 			if ( $this->is_contextual_capture_enabled() ) {
-				wp_localize_script( self::PREFIX . '-script', 'alpacaDataDump', alpaca_prepare_datadump() );
+				wp_localize_script( self::PREFIX . '-script', 'alpaistrDataDump', alpaistr_prepare_datadump() );
 			}
 		}
 
@@ -378,7 +380,7 @@ class Register {
 	 */
 	private function enqueue_global_admin_bundle_assets() {
 
-		// Only load Alpaca for logged-in users.
+		// Only load Alpaca Issue Tracker for logged-in users.
 		if ( ! is_user_logged_in() ) {
 			return;
 		}
@@ -400,7 +402,7 @@ class Register {
 
 		wp_set_script_translations(
 			$script_handle,
-			'alpaca',
+			'alpaca-issue-tracker',
 			$this->get_script_translation_path()
 		);
 
@@ -424,6 +426,10 @@ class Register {
 			return;
 		}
 
+		if ( ! Helpers::user_can( 'create_issue' ) ) {
+			return;
+		}
+
 		$this->enqueue_shared_assets( $this->get_base_script_dependencies(), false, true, [] );
 	}
 
@@ -434,6 +440,10 @@ class Register {
 	 */
 	public function enqueue_admin_assets( $hook_suffix ) {
 		if ( $this->is_skipped_admin_bundle_screen( $hook_suffix ) ) {
+			return;
+		}
+
+		if ( ! Helpers::user_can( 'view_board' ) && ! Helpers::user_can( 'create_issue' ) ) {
 			return;
 		}
 
@@ -469,13 +479,13 @@ class Register {
 				// Pass board data.
 				wp_localize_script(
 					self::PREFIX . '-script',
-					'alpacaBoardData',
-					alpaca_get_board_data()
+					'alpaistrBoardData',
+					alpaistr_get_board_data()
 				);
 
 				wp_localize_script(
 					self::PREFIX . '-script',
-					'alpacaUserData',
+					'alpaistrUserData',
 					[
 						'currentUserId' => get_current_user_id(),
 					]

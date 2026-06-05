@@ -39,7 +39,8 @@ const deleteCommentAttachment = async (url, issueId, commentId = null) => {
 
   if (!response || response.success === false) {
     throw new Error(
-      response?.message || __('Failed to delete attachment.', 'alpaca'),
+      response?.message ||
+        __('Failed to delete attachment.', 'alpaca-issue-tracker'),
     );
   }
 };
@@ -89,11 +90,11 @@ const AttachmentControls = ({
           __nextHasNoMarginBottom
         >
           {isProcessing
-            ? __('Uploading…', 'alpaca')
-            : __('Attach Files', 'alpaca')}
+            ? __('Uploading…', 'alpaca-issue-tracker')
+            : __('Attach Files', 'alpaca-issue-tracker')}
         </FormFileUpload>
 
-        <Tooltip text={__('Commenting Tips', 'alpaca')}>
+        <Tooltip text={__('Commenting Tips', 'alpaca-issue-tracker')}>
           <Button
             variant="tertiary"
             icon="info-outline"
@@ -107,7 +108,7 @@ const AttachmentControls = ({
 
       {showHelp && (
         <Modal
-          title={__('Commenting Tips', 'alpaca')}
+          title={__('Commenting Tips', 'alpaca-issue-tracker')}
           onRequestClose={() => setShowHelp(false)}
           className="alpaca-modal"
         >
@@ -117,21 +118,21 @@ const AttachmentControls = ({
                 {
                   text: __(
                     'Type <kbd>@</kbd> and select a user to notify.',
-                    'alpaca',
+                    'alpaca-issue-tracker',
                   ),
                   placeholders: { kbd: <kbd /> },
                 },
                 {
                   text: __(
                     'Basic Markdown is supported: <code>**bold**</code>, <code>*italic*</code>, <code>`code`</code>, <code>- lists</code>, etc.',
-                    'alpaca',
+                    'alpaca-issue-tracker',
                   ),
                   placeholders: { code: <code /> },
                 },
                 {
                   text: __(
                     'You can click <strong>Attach Files</strong> to upload an attachment, or simply drag and drop files into the comment area.',
-                    'alpaca',
+                    'alpaca-issue-tracker',
                   ),
                   placeholders: { strong: <strong /> },
                 },
@@ -188,7 +189,7 @@ const CommentForm = memo(
   ({
     value,
     onChange,
-    placeholder = __('Add a comment…', 'alpaca'),
+    placeholder = __('Add a comment…', 'alpaca-issue-tracker'),
     textareaRef,
     disabled = false,
     isSubmitting = false,
@@ -309,7 +310,10 @@ const CommentForm = memo(
 
           if (failedCount > 0) {
             showNotification(
-              __('Failed to upload one or more attachments.', 'alpaca'),
+              __(
+                'Failed to upload one or more attachments.',
+                'alpaca-issue-tracker',
+              ),
               'error',
             );
           }
@@ -323,7 +327,10 @@ const CommentForm = memo(
         } catch (uploadError) {
           console.error('Failed to upload attachments', uploadError);
           showNotification(
-            __('Failed to upload one or more attachments.', 'alpaca'),
+            __(
+              'Failed to upload one or more attachments.',
+              'alpaca-issue-tracker',
+            ),
             'error',
           );
         } finally {
@@ -394,7 +401,7 @@ const CommentForm = memo(
           } catch (deleteError) {
             console.error('Failed to delete attachment', deleteError);
             showNotification(
-              __('Failed to delete attachment.', 'alpaca'),
+              __('Failed to delete attachment.', 'alpaca-issue-tracker'),
               'error',
             );
             return;
@@ -443,13 +450,13 @@ const CommentForm = memo(
 
     let buttonText;
     if (isSubmitting) {
-      buttonText = __('Submitting…', 'alpaca');
+      buttonText = __('Submitting…', 'alpaca-issue-tracker');
     } else if (submitButtonText) {
       buttonText = submitButtonText;
     } else if (issueId === null) {
-      buttonText = __('Create Issue', 'alpaca');
+      buttonText = __('Create Issue', 'alpaca-issue-tracker');
     } else {
-      buttonText = __('Submit Comment', 'alpaca');
+      buttonText = __('Submit Comment', 'alpaca-issue-tracker');
     }
 
     return (
@@ -463,7 +470,10 @@ const CommentForm = memo(
             onClick={() => {}}
             isSubmitting={isSubmitting}
             isProcessing={isProcessingAttachments}
-            pendingAltText={__('Pending comment attachment', 'alpaca')}
+            pendingAltText={__(
+              'Pending comment attachment',
+              'alpaca-issue-tracker',
+            )}
             actions={
               <>
                 <Button
@@ -486,7 +496,7 @@ const CommentForm = memo(
                     }}
                     disabled={isSubmitting || isProcessingAttachments}
                   >
-                    {__('Cancel', 'alpaca')}
+                    {__('Cancel', 'alpaca-issue-tracker')}
                   </Button>
                 )}
               </>

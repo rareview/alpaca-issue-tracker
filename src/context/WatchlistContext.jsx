@@ -1,6 +1,7 @@
 const { createContext, useState, useEffect, useContext, useCallback, useRef } =
   wp.element;
 import PropTypes from 'prop-types';
+import { isTestLoggingEnabled } from '../utils/testLogSetting.js';
 
 export const WatchlistContext = createContext();
 const WATCHLIST_UPDATED_ACTION = 'alpaca.watchlistUpdated';
@@ -63,7 +64,7 @@ function areWatchlistsEqual(a, b) {
 export const WatchlistProvider = ({ children }) => {
   const [watchlist, setWatchlist] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [enableTestLogs, setEnableTestLogs] = useState(false);
+  const [enableTestLogs, setEnableTestLogs] = useState(isTestLoggingEnabled);
   const watchlistRef = useRef([]);
   const instanceIdRef = useRef(
     `watchlist-${Date.now()}-${Math.random().toString(36).slice(2)}`,
@@ -121,14 +122,6 @@ export const WatchlistProvider = ({ children }) => {
   useEffect(() => {
     const instanceId = instanceIdRef.current;
     const actionNamespace = `alpaca/watchlist-logs/${instanceId}`;
-
-    wp.apiFetch({ path: '/wp/v2/settings' })
-      .then((settings) => {
-        setEnableTestLogs(settings.alpaca_enable_test_logs === '1');
-      })
-      .catch(() => {
-        setEnableTestLogs(false);
-      });
 
     const handleTestLogSettingChange = (newValue) => {
       setEnableTestLogs(!!newValue);

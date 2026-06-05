@@ -2,7 +2,7 @@
 /**
  * Daily digest schedule and storage helpers.
  *
- * @package Alpaca
+ * @package AlpacaIssueTracker
  */
 
 // Exit if accessed directly.
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @return string Schema version.
  */
-function alpaca_get_notification_digest_schema_version() {
+function alpaistr_get_notification_digest_schema_version() {
 	return '1';
 }
 
@@ -24,7 +24,7 @@ function alpaca_get_notification_digest_schema_version() {
  *
  * @return string Table name.
  */
-function alpaca_get_notification_digest_schedule_table_name() {
+function alpaistr_get_notification_digest_schedule_table_name() {
 	global $wpdb;
 
 	return $wpdb->prefix . 'alpaca_notification_digest_schedule';
@@ -35,7 +35,7 @@ function alpaca_get_notification_digest_schedule_table_name() {
  *
  * @return string Table name.
  */
-function alpaca_get_notification_digest_delivery_log_table_name() {
+function alpaistr_get_notification_digest_delivery_log_table_name() {
 	global $wpdb;
 
 	return $wpdb->prefix . 'alpaca_notification_digest_delivery';
@@ -46,11 +46,11 @@ function alpaca_get_notification_digest_delivery_log_table_name() {
  *
  * @return void
  */
-function alpaca_install_notification_digest_tables() {
+function alpaistr_install_notification_digest_tables() {
 	global $wpdb;
 
-	$schedule_table  = alpaca_get_notification_digest_schedule_table_name();
-	$delivery_table  = alpaca_get_notification_digest_delivery_log_table_name();
+	$schedule_table  = alpaistr_get_notification_digest_schedule_table_name();
+	$delivery_table  = alpaistr_get_notification_digest_delivery_log_table_name();
 	$charset_collate = $wpdb->get_charset_collate();
 
 	require_once ABSPATH . 'wp-admin/includes/upgrade.php';
@@ -84,7 +84,7 @@ function alpaca_install_notification_digest_tables() {
 	dbDelta( $schedule_sql );
 	dbDelta( $delivery_sql );
 
-	update_option( 'alpaca_notification_digest_schema_version', alpaca_get_notification_digest_schema_version() );
+	update_option( 'alpaistr_notification_digest_schema_version', alpaistr_get_notification_digest_schema_version() );
 }
 
 /**
@@ -92,22 +92,22 @@ function alpaca_install_notification_digest_tables() {
  *
  * @return void
  */
-function alpaca_maybe_install_notification_digest_tables() {
-	$installed_version = (string) get_option( 'alpaca_notification_digest_schema_version', '' );
-	if ( alpaca_get_notification_digest_schema_version() === $installed_version ) {
+function alpaistr_maybe_install_notification_digest_tables() {
+	$installed_version = (string) get_option( 'alpaistr_notification_digest_schema_version', '' );
+	if ( alpaistr_get_notification_digest_schema_version() === $installed_version ) {
 		return;
 	}
 
-	alpaca_install_notification_digest_tables();
+	alpaistr_install_notification_digest_tables();
 }
-add_action( 'init', 'alpaca_maybe_install_notification_digest_tables', 5 );
+add_action( 'init', 'alpaistr_maybe_install_notification_digest_tables', 5 );
 
 /**
  * Return the daily digest key.
  *
  * @return string Digest key.
  */
-function alpaca_get_notification_daily_digest_key() {
+function alpaistr_get_notification_daily_digest_key() {
 	return 'daily';
 }
 
@@ -118,7 +118,7 @@ function alpaca_get_notification_daily_digest_key() {
  * @param string            $send_time Normalized send time.
  * @return DateTimeImmutable Datetime at the target send time.
  */
-function alpaca_get_notification_daily_digest_datetime_with_time( DateTimeImmutable $datetime, $send_time ) {
+function alpaistr_get_notification_daily_digest_datetime_with_time( DateTimeImmutable $datetime, $send_time ) {
 	$parts = explode( ':', (string) $send_time );
 	$hour  = isset( $parts[0] ) ? absint( $parts[0] ) : 17;
 	$min   = isset( $parts[1] ) ? absint( $parts[1] ) : 0;
@@ -133,8 +133,8 @@ function alpaca_get_notification_daily_digest_datetime_with_time( DateTimeImmuta
  * @param string|null          $base_gmt          Optional GMT base datetime.
  * @return string GMT datetime string.
  */
-function alpaca_get_notification_daily_digest_next_run_gmt( $daily_preferences, $base_gmt = null ) {
-	$daily_preferences = alpaca_sanitize_notification_daily_digest_preferences( $daily_preferences );
+function alpaistr_get_notification_daily_digest_next_run_gmt( $daily_preferences, $base_gmt = null ) {
+	$daily_preferences = alpaistr_sanitize_notification_daily_digest_preferences( $daily_preferences );
 	$timezone          = wp_timezone();
 	$base_datetime     = null;
 
@@ -152,12 +152,12 @@ function alpaca_get_notification_daily_digest_next_run_gmt( $daily_preferences, 
 	}
 
 	$send_time          = isset( $daily_preferences['send_time'] ) ? (string) $daily_preferences['send_time'] : '17:00';
-	$candidate_datetime = alpaca_get_notification_daily_digest_datetime_with_time( $base_datetime, $send_time );
+	$candidate_datetime = alpaistr_get_notification_daily_digest_datetime_with_time( $base_datetime, $send_time );
 
 	if ( $candidate_datetime <= $base_datetime ) {
 		$next_day = $base_datetime->modify( '+1 day' );
 		if ( $next_day instanceof DateTimeImmutable ) {
-			$candidate_datetime = alpaca_get_notification_daily_digest_datetime_with_time( $next_day, $send_time );
+			$candidate_datetime = alpaistr_get_notification_daily_digest_datetime_with_time( $next_day, $send_time );
 		}
 	}
 
@@ -170,12 +170,12 @@ function alpaca_get_notification_daily_digest_next_run_gmt( $daily_preferences, 
  * @param int $user_id User ID.
  * @return void
  */
-function alpaca_delete_notification_daily_digest_schedule( $user_id ) {
+function alpaistr_delete_notification_daily_digest_schedule( $user_id ) {
 	global $wpdb;
 
 	$user_id    = absint( $user_id );
-	$digest_key = alpaca_get_notification_daily_digest_key();
-	$table_name = alpaca_get_notification_digest_schedule_table_name();
+	$digest_key = alpaistr_get_notification_daily_digest_key();
+	$table_name = alpaistr_get_notification_digest_schedule_table_name();
 
 	if ( $user_id <= 0 ) {
 		return;
@@ -199,7 +199,7 @@ function alpaca_delete_notification_daily_digest_schedule( $user_id ) {
  * @param array<string, mixed> $preferences Notification preferences.
  * @return void
  */
-function alpaca_sync_notification_daily_digest_schedule( $user_id, $preferences ) {
+function alpaistr_sync_notification_daily_digest_schedule( $user_id, $preferences ) {
 	global $wpdb;
 
 	$user_id = absint( $user_id );
@@ -207,16 +207,16 @@ function alpaca_sync_notification_daily_digest_schedule( $user_id, $preferences 
 		return;
 	}
 
-	$table_name = alpaca_get_notification_digest_schedule_table_name();
-	$digest_key = alpaca_get_notification_daily_digest_key();
-	$daily      = isset( $preferences['digests']['daily'] ) && is_array( $preferences['digests']['daily'] ) ? $preferences['digests']['daily'] : alpaca_get_notification_daily_digest_defaults();
+	$table_name = alpaistr_get_notification_digest_schedule_table_name();
+	$digest_key = alpaistr_get_notification_daily_digest_key();
+	$daily      = isset( $preferences['digests']['daily'] ) && is_array( $preferences['digests']['daily'] ) ? $preferences['digests']['daily'] : alpaistr_get_notification_daily_digest_defaults();
 
-	if ( ! alpaca_notification_preferences_have_enabled_digest_channels( $preferences ) || empty( $daily['enabled'] ) ) {
-		alpaca_delete_notification_daily_digest_schedule( $user_id );
+	if ( ! alpaistr_notification_preferences_have_enabled_digest_channels( $preferences ) || empty( $daily['enabled'] ) ) {
+		alpaistr_delete_notification_daily_digest_schedule( $user_id );
 		return;
 	}
 
-	$next_run_gmt = alpaca_get_notification_daily_digest_next_run_gmt( $daily );
+	$next_run_gmt = alpaistr_get_notification_daily_digest_next_run_gmt( $daily );
 	$updated_gmt  = current_time( 'mysql', true );
 
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Schedule rows are small, user-specific, and updated on preference save.
@@ -238,24 +238,24 @@ function alpaca_sync_notification_daily_digest_schedule( $user_id, $preferences 
  * @param array<string, array<string, mixed>> $schedules Cron schedules.
  * @return array<string, array<string, mixed>> Cron schedules.
  */
-function alpaca_register_notification_digest_cron_schedule( $schedules ) {
+function alpaistr_register_notification_digest_cron_schedule( $schedules ) {
 	if ( ! isset( $schedules['alpaca_every_fifteen_minutes'] ) ) {
 		$schedules['alpaca_every_fifteen_minutes'] = [
 			'interval' => 15 * MINUTE_IN_SECONDS,
-			'display'  => esc_html__( 'Every fifteen minutes', 'alpaca' ),
+			'display'  => esc_html__( 'Every fifteen minutes', 'alpaca-issue-tracker' ),
 		];
 	}
 
 	return $schedules;
 }
-add_filter( 'cron_schedules', 'alpaca_register_notification_digest_cron_schedule' );
+add_filter( 'cron_schedules', 'alpaistr_register_notification_digest_cron_schedule' );
 
 /**
  * Ensure the daily digest cron event is scheduled.
  *
  * @return void
  */
-function alpaca_ensure_notification_digest_cron() {
+function alpaistr_ensure_notification_digest_cron() {
 	$scheduled_event = wp_get_scheduled_event( 'alpaca_process_notification_daily_digests' );
 
 	if ( is_object( $scheduled_event ) && 'alpaca_every_fifteen_minutes' !== $scheduled_event->schedule ) {
@@ -267,14 +267,14 @@ function alpaca_ensure_notification_digest_cron() {
 		wp_schedule_event( time() + MINUTE_IN_SECONDS, 'alpaca_every_fifteen_minutes', 'alpaca_process_notification_daily_digests' );
 	}
 }
-add_action( 'init', 'alpaca_ensure_notification_digest_cron', 20 );
+add_action( 'init', 'alpaistr_ensure_notification_digest_cron', 20 );
 
 /**
  * Attempt to acquire the digest worker lock.
  *
  * @return bool True when the lock was acquired.
  */
-function alpaca_acquire_notification_digest_lock() {
+function alpaistr_acquire_notification_digest_lock() {
 	if ( get_transient( 'alpaca_notification_digest_lock' ) ) {
 		return false;
 	}
@@ -289,7 +289,7 @@ function alpaca_acquire_notification_digest_lock() {
  *
  * @return void
  */
-function alpaca_release_notification_digest_lock() {
+function alpaistr_release_notification_digest_lock() {
 	delete_transient( 'alpaca_notification_digest_lock' );
 }
 
@@ -299,10 +299,10 @@ function alpaca_release_notification_digest_lock() {
  * @param string|null $now_gmt Optional GMT datetime.
  * @return array<int, array<string, mixed>> Due rows.
  */
-function alpaca_get_due_notification_digest_schedules( $now_gmt = null ) {
+function alpaistr_get_due_notification_digest_schedules( $now_gmt = null ) {
 	global $wpdb;
 
-	$table_name = alpaca_get_notification_digest_schedule_table_name();
+	$table_name = alpaistr_get_notification_digest_schedule_table_name();
 	$now_gmt    = is_string( $now_gmt ) && '' !== $now_gmt ? $now_gmt : current_time( 'mysql', true );
 
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Due schedule resolution must query the current table state on each cron tick.
@@ -328,10 +328,10 @@ function alpaca_get_due_notification_digest_schedules( $now_gmt = null ) {
  * @param string $window_end_gmt   Window end in GMT.
  * @return bool True when the reservation succeeded.
  */
-function alpaca_reserve_notification_digest_delivery( $user_id, $digest_key, $channel, $window_start_gmt, $window_end_gmt ) {
+function alpaistr_reserve_notification_digest_delivery( $user_id, $digest_key, $channel, $window_start_gmt, $window_end_gmt ) {
 	global $wpdb;
 
-	$table_name = alpaca_get_notification_digest_delivery_log_table_name();
+	$table_name = alpaistr_get_notification_digest_delivery_log_table_name();
 
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Delivery reservations must be atomic to prevent duplicate sends.
 	$result = $wpdb->query(
@@ -361,10 +361,10 @@ function alpaca_reserve_notification_digest_delivery( $user_id, $digest_key, $ch
  * @param string $window_end_gmt   Window end in GMT.
  * @return void
  */
-function alpaca_mark_notification_digest_delivery_sent( $user_id, $digest_key, $channel, $window_start_gmt, $window_end_gmt ) {
+function alpaistr_mark_notification_digest_delivery_sent( $user_id, $digest_key, $channel, $window_start_gmt, $window_end_gmt ) {
 	global $wpdb;
 
-	$table_name = alpaca_get_notification_digest_delivery_log_table_name();
+	$table_name = alpaistr_get_notification_digest_delivery_log_table_name();
 
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Delivery log rows are updated once after the send succeeds.
 	$wpdb->update(
@@ -395,10 +395,10 @@ function alpaca_mark_notification_digest_delivery_sent( $user_id, $digest_key, $
  * @param string $window_end_gmt   Window end in GMT.
  * @return void
  */
-function alpaca_release_notification_digest_delivery( $user_id, $digest_key, $channel, $window_start_gmt, $window_end_gmt ) {
+function alpaistr_release_notification_digest_delivery( $user_id, $digest_key, $channel, $window_start_gmt, $window_end_gmt ) {
 	global $wpdb;
 
-	$table_name = alpaca_get_notification_digest_delivery_log_table_name();
+	$table_name = alpaistr_get_notification_digest_delivery_log_table_name();
 
 	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery,WordPress.DB.DirectDatabaseQuery.NoCaching -- Failed delivery reservations are removed so the next cron tick can retry.
 	$wpdb->delete(

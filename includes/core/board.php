@@ -3,10 +3,10 @@
 /**
  * Board page and data functions for Alpaca.
  *
- * @package Alpaca
+ * @package AlpacaIssueTracker
  */
 
-use Alpaca\Helpers;
+use AlpacaIssueTracker\Helpers;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -16,11 +16,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Render the project board admin page.
  */
-function alpaca_project_board_page() {
+function alpaistr_project_board_page() {
 	?>
 	<div class="wrap">
-        <h1 class="wp-heading-inline"><?php echo esc_html__( 'Project Board', 'alpaca' ); ?></h1>
-        <a id="alpaca-add-issue" href="#" class="page-title-action aria-button-if-js" role="button" aria-expanded="false"><?php echo esc_html__( 'Add Issue', 'alpaca' ); ?></a>
+        <h1 class="wp-heading-inline"><?php echo esc_html__( 'Project Board', 'alpaca-issue-tracker' ); ?></h1>
+        <a id="alpaca-add-issue" href="#" class="page-title-action aria-button-if-js" role="button" aria-expanded="false"><?php echo esc_html__( 'Add Issue', 'alpaca-issue-tracker' ); ?></a>
         
         <hr class="wp-header-end">
 
@@ -39,8 +39,8 @@ function alpaca_project_board_page() {
  *
  * @return int Cache version.
  */
-function alpaca_get_board_cache_version() {
-	$version = (int) get_option( 'alpaca_board_cache_version', 1 );
+function alpaistr_get_board_cache_version() {
+	$version = (int) get_option( 'alpaistr_board_cache_version', 1 );
 
 	if ( $version < 1 ) {
 		$version = 1;
@@ -54,16 +54,16 @@ function alpaca_get_board_cache_version() {
  *
  * @return void
  */
-function alpaca_bump_board_cache_version() {
-	$next_version = alpaca_get_board_cache_version() + 1;
-	update_option( 'alpaca_board_cache_version', $next_version, false );
+function alpaistr_bump_board_cache_version() {
+	$next_version = alpaistr_get_board_cache_version() + 1;
+	update_option( 'alpaistr_board_cache_version', $next_version, false );
 }
 
 /**
  * Clear board cache when relevant posts or terms change.
  */
-function alpaca_clear_board_cache() {
-	alpaca_bump_board_cache_version();
+function alpaistr_clear_board_cache() {
+	alpaistr_bump_board_cache_version();
 
 	global $wp_object_cache;
 	if ( isset( $wp_object_cache->cache['alpaca'] ) ) {
@@ -84,7 +84,7 @@ function alpaca_clear_board_cache() {
  * @param mixed     $meta_value Meta value.
  * @return void
  */
-function alpaca_clear_board_cache_on_term_meta_change( $meta_ids, $object_id, $meta_key, $meta_value ) {
+function alpaistr_clear_board_cache_on_term_meta_change( $meta_ids, $object_id, $meta_key, $meta_value ) {
 	unset( $meta_ids, $object_id, $meta_value );
 
 	$meta_keys_that_affect_board = [
@@ -95,22 +95,22 @@ function alpaca_clear_board_cache_on_term_meta_change( $meta_ids, $object_id, $m
 	];
 
 	if ( in_array( $meta_key, $meta_keys_that_affect_board, true ) ) {
-		alpaca_clear_board_cache();
+		alpaistr_clear_board_cache();
 	}
 }
 
-add_action( 'save_post_alpaca_issue', 'alpaca_clear_board_cache' );
-add_action( 'deleted_post', 'alpaca_clear_board_cache' );
-add_action( 'set_object_terms', 'alpaca_clear_board_cache' );
-add_action( 'created_term', 'alpaca_clear_board_cache' );
-add_action( 'edited_term', 'alpaca_clear_board_cache' );
-add_action( 'delete_term', 'alpaca_clear_board_cache' );
-add_action( 'comment_post', 'alpaca_clear_board_cache' );
-add_action( 'edit_comment', 'alpaca_clear_board_cache' );
-add_action( 'delete_comment', 'alpaca_clear_board_cache' );
-add_action( 'added_term_meta', 'alpaca_clear_board_cache_on_term_meta_change', 10, 4 );
-add_action( 'updated_term_meta', 'alpaca_clear_board_cache_on_term_meta_change', 10, 4 );
-add_action( 'deleted_term_meta', 'alpaca_clear_board_cache_on_term_meta_change', 10, 4 );
+add_action( 'save_post_alpaca_issue', 'alpaistr_clear_board_cache' );
+add_action( 'deleted_post', 'alpaistr_clear_board_cache' );
+add_action( 'set_object_terms', 'alpaistr_clear_board_cache' );
+add_action( 'created_term', 'alpaistr_clear_board_cache' );
+add_action( 'edited_term', 'alpaistr_clear_board_cache' );
+add_action( 'delete_term', 'alpaistr_clear_board_cache' );
+add_action( 'comment_post', 'alpaistr_clear_board_cache' );
+add_action( 'edit_comment', 'alpaistr_clear_board_cache' );
+add_action( 'delete_comment', 'alpaistr_clear_board_cache' );
+add_action( 'added_term_meta', 'alpaistr_clear_board_cache_on_term_meta_change', 10, 4 );
+add_action( 'updated_term_meta', 'alpaistr_clear_board_cache_on_term_meta_change', 10, 4 );
+add_action( 'deleted_term_meta', 'alpaistr_clear_board_cache_on_term_meta_change', 10, 4 );
 
 /**
  * Get checklist progress grouped by parent issue IDs.
@@ -118,7 +118,7 @@ add_action( 'deleted_term_meta', 'alpaca_clear_board_cache_on_term_meta_change',
  * @param array $parent_issue_ids Parent issue post IDs.
  * @return array<int, array<string, int>> Progress keyed by parent ID.
  */
-function alpaca_get_subissue_progress_by_parent( $parent_issue_ids ) {
+function alpaistr_get_subissue_progress_by_parent( $parent_issue_ids ) {
 	$parent_issue_ids = array_map( 'intval', (array) $parent_issue_ids );
 	$parent_issue_ids = array_filter(
 		$parent_issue_ids,
@@ -181,7 +181,7 @@ function alpaca_get_subissue_progress_by_parent( $parent_issue_ids ) {
  *                                                    per-agent counts keyed by
  *                                                    post ID.
  */
-function alpaca_get_issue_comment_counts( $post_ids ) {
+function alpaistr_get_issue_comment_counts( $post_ids ) {
 	global $wpdb;
 
 	$post_ids = array_map( 'intval', (array) $post_ids );
@@ -306,9 +306,9 @@ function alpaca_get_issue_comment_counts( $post_ids ) {
  *
  * @return array Board data with statuses and issues.
  */
-function alpaca_get_board_data() {
+function alpaistr_get_board_data() {
 	// Get statuses we want to display.
-	$statuses         = alpaca_get_statuses();
+	$statuses         = alpaistr_get_statuses();
 	$desired_statuses = apply_filters( 'alpaca_board_statuses', $statuses );
 	$status_ids       = wp_list_pluck( $desired_statuses, 'term_id' );
 
@@ -318,7 +318,7 @@ function alpaca_get_board_data() {
 
 	// Build a cache key based on status IDs (stable regardless of order).
 	sort( $status_ids );
-	$cache_seed  = implode( '-', $status_ids ) . '|' . alpaca_get_board_cache_version();
+	$cache_seed  = implode( '-', $status_ids ) . '|' . alpaistr_get_board_cache_version();
 	$cache_key   = 'alpaca_board_data_' . md5( $cache_seed );
 	$cache_group = 'alpaca';
 
@@ -348,7 +348,7 @@ function alpaca_get_board_data() {
 	);
 
 	$post_ids = wp_list_pluck( $posts, 'ID' );
-	$subissue_progress_by_parent = alpaca_get_subissue_progress_by_parent( $post_ids );
+	$subissue_progress_by_parent = alpaistr_get_subissue_progress_by_parent( $post_ids );
 
 	// Group posts by status term.
 	$posts_by_status = [];
@@ -364,7 +364,7 @@ function alpaca_get_board_data() {
 		$issue_orders[ $status->term_id ] = is_array( $order ) ? $order : [];
 	}
 
-	$comment_count_data     = alpaca_get_issue_comment_counts( $post_ids );
+	$comment_count_data     = alpaistr_get_issue_comment_counts( $post_ids );
 	$comment_counts         = isset( $comment_count_data['totals'] ) ? $comment_count_data['totals'] : [];
 	$comment_counts_by_agent = isset( $comment_count_data['by_agent'] ) ? $comment_count_data['by_agent'] : [];
 
@@ -444,7 +444,7 @@ function alpaca_get_board_data() {
 							'id'           => $user->ID,
 							'slug'         => $slug,
 							'display_name' => $user->display_name,
-							'avatar'       => alpaca_avatar( $user->ID, 32 ),
+							'avatar'       => alpaistr_avatar( $user->ID, 32 ),
 						];
 					}
 				}

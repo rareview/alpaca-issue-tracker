@@ -160,7 +160,7 @@ const LabelsSelector = memo(
       <div className="alpaca-labels-selector" ref={selectorRef}>
         <FormTokenField
           label=""
-          placeholder={__('Edit labels', 'alpaca')}
+          placeholder={__('Edit labels', 'alpaca-issue-tracker')}
           value={selectedTokens}
           suggestions={suggestions}
           onChange={handleChange}

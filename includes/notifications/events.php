@@ -1,8 +1,8 @@
 <?php
 /**
- * Notification event helpers for Alpaca issue activity emails.
+ * Notification event helpers for Alpaca Issue Tracker issue activity emails.
  *
- * @package Alpaca
+ * @package AlpacaIssueTracker
  */
 
 // Exit if accessed directly.
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @param mixed $user User row from get_users().
  * @return int Normalized user ID, or 0 when unavailable.
  */
-function alpaca_get_normalized_user_id( $user ) {
+function alpaistr_get_normalized_user_id( $user ) {
 	if ( is_object( $user ) && isset( $user->ID ) ) {
 		return absint( $user->ID );
 	}
@@ -34,7 +34,7 @@ function alpaca_get_normalized_user_id( $user ) {
  * @param int $issue_id Issue ID.
  * @return int[] Assignee user IDs.
  */
-function alpaca_get_issue_assignee_ids( $issue_id ) {
+function alpaistr_get_issue_assignee_ids( $issue_id ) {
 	$terms = wp_get_post_terms( (int) $issue_id, 'alpaca_assignee', [ 'fields' => 'all' ] );
 	if ( is_wp_error( $terms ) || empty( $terms ) ) {
 		return [];
@@ -58,7 +58,7 @@ function alpaca_get_issue_assignee_ids( $issue_id ) {
 
 	$ids = [];
 	foreach ( $users as $user ) {
-		$ids[] = alpaca_get_normalized_user_id( $user );
+		$ids[] = alpaistr_get_normalized_user_id( $user );
 	}
 
 	return array_values( array_unique( array_filter( $ids ) ) );
@@ -70,7 +70,7 @@ function alpaca_get_issue_assignee_ids( $issue_id ) {
  * @param int $issue_id Issue ID.
  * @return int[] Watcher user IDs.
  */
-function alpaca_get_issue_watcher_ids( $issue_id ) {
+function alpaistr_get_issue_watcher_ids( $issue_id ) {
 	$terms = wp_get_post_terms( (int) $issue_id, 'alpaca_watching', [ 'fields' => 'all' ] );
 	if ( is_wp_error( $terms ) || empty( $terms ) ) {
 		return [];
@@ -94,7 +94,7 @@ function alpaca_get_issue_watcher_ids( $issue_id ) {
 
 	$ids = [];
 	foreach ( $users as $user ) {
-		$ids[] = alpaca_get_normalized_user_id( $user );
+		$ids[] = alpaistr_get_normalized_user_id( $user );
 	}
 
 	return array_values( array_unique( array_filter( $ids ) ) );
@@ -106,7 +106,7 @@ function alpaca_get_issue_watcher_ids( $issue_id ) {
  * @param int $issue_id Issue ID.
  * @return int[] Label term IDs.
  */
-function alpaca_get_issue_label_ids( $issue_id ) {
+function alpaistr_get_issue_label_ids( $issue_id ) {
 	$terms = wp_get_post_terms(
 		(int) $issue_id,
 		'alpaca_label',
@@ -128,7 +128,7 @@ function alpaca_get_issue_label_ids( $issue_id ) {
  * @param int $issue_id Issue ID.
  * @return bool True when the issue is currently high priority.
  */
-function alpaca_is_issue_high_priority( $issue_id ) {
+function alpaistr_is_issue_high_priority( $issue_id ) {
 	$raw_value = get_post_meta( (int) $issue_id, 'alpaca_high_priority', true );
 
 	return ! empty( $raw_value );
@@ -140,7 +140,7 @@ function alpaca_is_issue_high_priority( $issue_id ) {
  * @param WP_Post $issue Issue post object.
  * @return string URL.
  */
-function alpaca_get_notification_issue_url( $issue ) {
+function alpaistr_get_notification_issue_url( $issue ) {
 	return admin_url( 'admin.php?page=project-board&issue=' . rawurlencode( (string) $issue->post_name ) );
 }
 
@@ -150,7 +150,7 @@ function alpaca_get_notification_issue_url( $issue ) {
  * @param WP_Comment $comment Comment object.
  * @return string Event family slug.
  */
-function alpaca_get_notification_event_family_for_comment( $comment ) {
+function alpaistr_get_notification_event_family_for_comment( $comment ) {
 	$tags  = get_comment_meta( $comment->comment_ID, 'alpacaCommentTags', true );
 	$tags  = is_array( $tags ) ? $tags : [];
 	$agent = (string) $comment->comment_agent;
@@ -201,7 +201,7 @@ function alpaca_get_notification_event_family_for_comment( $comment ) {
  * @param array<string, mixed> $comment      Comment payload.
  * @return string Event label.
  */
-function alpaca_get_notification_event_label( $event_family, $comment = [] ) {
+function alpaistr_get_notification_event_label( $event_family, $comment = [] ) {
 	$context = isset( $comment['context'] ) && is_array( $comment['context'] ) ? $comment['context'] : [];
 	$tags    = isset( $comment['tags'] ) && is_array( $comment['tags'] ) ? $comment['tags'] : [];
 	$action  = isset( $context['action'] ) ? sanitize_key( (string) $context['action'] ) : '';
@@ -209,85 +209,85 @@ function alpaca_get_notification_event_label( $event_family, $comment = [] ) {
 	switch ( $event_family ) {
 		case 'human_comments':
 			if ( in_array( 'issue-created', $tags, true ) ) {
-				return esc_html__( 'Issue added', 'alpaca' );
+				return esc_html__( 'Issue added', 'alpaca-issue-tracker' );
 			}
 
-			return esc_html__( 'Comment added', 'alpaca' );
+			return esc_html__( 'Comment added', 'alpaca-issue-tracker' );
 
 		case 'status_changes':
-			return esc_html__( 'Status changed', 'alpaca' );
+			return esc_html__( 'Status changed', 'alpaca-issue-tracker' );
 
 		case 'issue_assignment_changes':
 			if ( 'assign' === $action ) {
-				return esc_html__( 'Issue assigned', 'alpaca' );
+				return esc_html__( 'Issue assigned', 'alpaca-issue-tracker' );
 			}
 
 			if ( 'unassign' === $action ) {
-				return esc_html__( 'Issue unassigned', 'alpaca' );
+				return esc_html__( 'Issue unassigned', 'alpaca-issue-tracker' );
 			}
 
-			return esc_html__( 'Issue assignment changed', 'alpaca' );
+			return esc_html__( 'Issue assignment changed', 'alpaca-issue-tracker' );
 
 		case 'due_date_changes':
 			if ( 'added' === $action ) {
-				return esc_html__( 'Due date set', 'alpaca' );
+				return esc_html__( 'Due date set', 'alpaca-issue-tracker' );
 			}
 
 			if ( 'deleted' === $action ) {
-				return esc_html__( 'Due date removed', 'alpaca' );
+				return esc_html__( 'Due date removed', 'alpaca-issue-tracker' );
 			}
 
-			return esc_html__( 'Due date changed', 'alpaca' );
+			return esc_html__( 'Due date changed', 'alpaca-issue-tracker' );
 
 		case 'checklist_created_deleted':
 			if ( 'create' === $action ) {
-				return esc_html__( 'Checklist item created', 'alpaca' );
+				return esc_html__( 'Checklist item created', 'alpaca-issue-tracker' );
 			}
 
 			if ( 'delete' === $action ) {
-				return esc_html__( 'Checklist item deleted', 'alpaca' );
+				return esc_html__( 'Checklist item deleted', 'alpaca-issue-tracker' );
 			}
 
-			return esc_html__( 'Checklist updated', 'alpaca' );
+			return esc_html__( 'Checklist updated', 'alpaca-issue-tracker' );
 
 		case 'checklist_assignment_changes':
 			if ( 'assign' === $action ) {
-				return esc_html__( 'Checklist item assigned', 'alpaca' );
+				return esc_html__( 'Checklist item assigned', 'alpaca-issue-tracker' );
 			}
 
 			if ( 'unassign' === $action ) {
-				return esc_html__( 'Checklist item unassigned', 'alpaca' );
+				return esc_html__( 'Checklist item unassigned', 'alpaca-issue-tracker' );
 			}
 
-			return esc_html__( 'Checklist assignment changed', 'alpaca' );
+			return esc_html__( 'Checklist assignment changed', 'alpaca-issue-tracker' );
 
 		case 'checklist_completion_changes':
 			if ( 'complete' === $action ) {
-				return esc_html__( 'Checklist item completed', 'alpaca' );
+				return esc_html__( 'Checklist item completed', 'alpaca-issue-tracker' );
 			}
 
 			if ( 'reopen' === $action ) {
-				return esc_html__( 'Checklist item reopened', 'alpaca' );
+				return esc_html__( 'Checklist item reopened', 'alpaca-issue-tracker' );
 			}
 
-			return esc_html__( 'Checklist completion changed', 'alpaca' );
+			return esc_html__( 'Checklist completion changed', 'alpaca-issue-tracker' );
 
 		case 'checklist_promotions':
-			return esc_html__( 'Checklist item promoted', 'alpaca' );
+			return esc_html__( 'Checklist item promoted', 'alpaca-issue-tracker' );
 
 		case 'priority_changes':
 			if ( 'enable' === $action ) {
-				return esc_html__( 'High priority enabled', 'alpaca' );
+				return esc_html__( 'High priority enabled', 'alpaca-issue-tracker' );
 			}
 
 			if ( 'disable' === $action ) {
-				return esc_html__( 'High priority removed', 'alpaca' );
+				return esc_html__( 'High priority removed', 'alpaca-issue-tracker' );
 			}
 
-			return esc_html__( 'Priority changed', 'alpaca' );
+			return esc_html__( 'Priority changed', 'alpaca-issue-tracker' );
 	}
 
-	return esc_html__( 'Issue activity updated', 'alpaca' );
+	return esc_html__( 'Issue activity updated', 'alpaca-issue-tracker' );
 }
 
 /**
@@ -296,7 +296,7 @@ function alpaca_get_notification_event_label( $event_family, $comment = [] ) {
  * @param int $comment_id Comment ID.
  * @return array<string, mixed> Structured context data.
  */
-function alpaca_get_comment_notification_context( $comment_id ) {
+function alpaistr_get_comment_notification_context( $comment_id ) {
 	$context = get_comment_meta( (int) $comment_id, 'alpacaNotificationContext', true );
 
 	if ( ! is_array( $context ) ) {
@@ -312,7 +312,7 @@ function alpaca_get_comment_notification_context( $comment_id ) {
  * @param array<string, mixed> $event Notification event.
  * @return bool True when the event is a new task event.
  */
-function alpaca_is_notification_new_task_event( $event ) {
+function alpaistr_is_notification_new_task_event( $event ) {
 	$event_family = isset( $event['event_family'] ) ? (string) $event['event_family'] : '';
 	$tags         = isset( $event['comment']['tags'] ) && is_array( $event['comment']['tags'] ) ? $event['comment']['tags'] : [];
 	$context      = isset( $event['comment']['context'] ) && is_array( $event['comment']['context'] ) ? $event['comment']['context'] : [];
@@ -335,7 +335,7 @@ function alpaca_is_notification_new_task_event( $event ) {
  * @param WP_Comment $comment Comment object.
  * @return array<string, mixed>|null Normalized event or null when invalid.
  */
-function alpaca_get_notification_event_from_comment( $comment ) {
+function alpaistr_get_notification_event_from_comment( $comment ) {
 	if ( ! ( $comment instanceof WP_Comment ) ) {
 		return null;
 	}
@@ -349,17 +349,17 @@ function alpaca_get_notification_event_from_comment( $comment ) {
 		return null;
 	}
 
-	$family               = alpaca_get_notification_event_family_for_comment( $comment );
+	$family               = alpaistr_get_notification_event_family_for_comment( $comment );
 	$tags                 = get_comment_meta( $comment->comment_ID, 'alpacaCommentTags', true );
 	$attachments          = get_comment_meta( $comment->comment_ID, 'alpacaCommentAttachments', true );
 	$mentioned_users      = get_comment_meta( $comment->comment_ID, 'alpacaMentionedUsers', true );
-	$notification_context = alpaca_get_comment_notification_context( $comment->comment_ID );
+	$notification_context = alpaistr_get_comment_notification_context( $comment->comment_ID );
 	$actor_id             = (int) $comment->user_id;
 	$actor                = $actor_id > 0 ? get_user_by( 'id', $actor_id ) : null;
-	$assignee_ids         = alpaca_get_issue_assignee_ids( $issue->ID );
-	$watcher_ids          = alpaca_get_issue_watcher_ids( $issue->ID );
-	$label_ids            = alpaca_get_issue_label_ids( $issue->ID );
-	$is_high_priority     = alpaca_is_issue_high_priority( $issue->ID );
+	$assignee_ids         = alpaistr_get_issue_assignee_ids( $issue->ID );
+	$watcher_ids          = alpaistr_get_issue_watcher_ids( $issue->ID );
+	$label_ids            = alpaistr_get_issue_label_ids( $issue->ID );
+	$is_high_priority     = alpaistr_is_issue_high_priority( $issue->ID );
 
 	return [
 		'comment_id'   => (int) $comment->comment_ID,
@@ -374,11 +374,11 @@ function alpaca_get_notification_event_from_comment( $comment ) {
 		],
 		'actor'        => [
 			'id'           => $actor instanceof WP_User ? (int) $actor->ID : 0,
-			'display_name' => $actor instanceof WP_User ? (string) $actor->display_name : esc_html__( 'Unknown user', 'alpaca' ),
+			'display_name' => $actor instanceof WP_User ? (string) $actor->display_name : esc_html__( 'Unknown user', 'alpaca-issue-tracker' ),
 			'email'        => $actor instanceof WP_User ? (string) $actor->user_email : '',
 		],
 		'event_family' => $family,
-		'event_label'  => alpaca_get_notification_event_label(
+		'event_label'  => alpaistr_get_notification_event_label(
 			$family,
 			[
 				'tags'    => is_array( $tags ) ? $tags : [],
@@ -389,7 +389,7 @@ function alpaca_get_notification_event_from_comment( $comment ) {
 			'id'               => (int) $issue->ID,
 			'title'            => (string) $issue->post_title,
 			'slug'             => (string) $issue->post_name,
-			'url'              => alpaca_get_notification_issue_url( $issue ),
+			'url'              => alpaistr_get_notification_issue_url( $issue ),
 			'creator_id'       => (int) $issue->post_author,
 			'assignee_ids'     => $assignee_ids,
 			'watcher_ids'      => $watcher_ids,
@@ -410,15 +410,15 @@ function alpaca_get_notification_event_from_comment( $comment ) {
  *
  * @return array<string, mixed> Sample event data.
  */
-function alpaca_get_notification_sample_event() {
+function alpaistr_get_notification_sample_event() {
 	$current_user = wp_get_current_user();
-	$actor_name   = $current_user instanceof WP_User && $current_user->exists() ? (string) $current_user->display_name : esc_html__( 'Alpaca User', 'alpaca' );
+	$actor_name   = $current_user instanceof WP_User && $current_user->exists() ? (string) $current_user->display_name : esc_html__( 'Alpaca Issue Tracker User', 'alpaca-issue-tracker' );
 
 	return [
 		'comment_id'   => 0,
 		'comment'      => [
 			'id'           => 0,
-			'raw'          => esc_html__( 'This is a sample notification comment. It includes the full comment content exactly as the email will render it.', 'alpaca' ),
+			'raw'          => esc_html__( 'This is a sample notification comment. It includes the full comment content exactly as the email will render it.', 'alpaca-issue-tracker' ),
 			'tags'         => [ 'sample' ],
 			'attachments'  => [],
 			'mentions'     => [],
@@ -431,10 +431,10 @@ function alpaca_get_notification_sample_event() {
 			'email'        => $current_user instanceof WP_User ? (string) $current_user->user_email : '',
 		],
 		'event_family' => 'human_comments',
-		'event_label'  => esc_html__( 'Comment added', 'alpaca' ),
+		'event_label'  => esc_html__( 'Comment added', 'alpaca-issue-tracker' ),
 		'issue'        => [
 			'id'               => 0,
-			'title'            => esc_html__( 'Sample issue title', 'alpaca' ),
+			'title'            => esc_html__( 'Sample issue title', 'alpaca-issue-tracker' ),
 			'slug'             => 'sample-issue-title',
 			'url'              => admin_url( 'admin.php?page=project-board&issue=sample-issue-title' ),
 			'creator_id'       => $current_user instanceof WP_User ? (int) $current_user->ID : 0,

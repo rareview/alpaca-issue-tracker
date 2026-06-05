@@ -64,7 +64,7 @@ function renderLabelTriggerLabel(activeLabelFilter) {
           className="alpaca-filter-control-icon"
           aria-hidden="true"
         />
-        <span>{__('Label', 'alpaca')}</span>
+        <span>{__('Label', 'alpaca-issue-tracker')}</span>
       </>
     );
   }
@@ -77,7 +77,7 @@ function renderLabelTriggerLabel(activeLabelFilter) {
         color: '#fff',
       }}
     >
-      {activeLabelFilter.name || __('Label', 'alpaca')}
+      {activeLabelFilter.name || __('Label', 'alpaca-issue-tracker')}
     </span>
   );
 }
@@ -97,7 +97,7 @@ function renderAssigneeTriggerLabel(activeAssigneeFilter) {
           className="alpaca-filter-control-icon"
           aria-hidden="true"
         />
-        <span>{__('Assignee', 'alpaca')}</span>
+        <span>{__('Assignee', 'alpaca-issue-tracker')}</span>
       </>
     );
   }
@@ -119,7 +119,8 @@ function renderAssigneeTriggerLabel(activeAssigneeFilter) {
         />
       )}
       <span className="alpaca-filter-control-current-text">
-        {activeAssigneeFilter.displayName || __('Assignee', 'alpaca')}
+        {activeAssigneeFilter.displayName ||
+          __('Assignee', 'alpaca-issue-tracker')}
       </span>
     </span>
   );
@@ -222,7 +223,7 @@ function BoardFilterControl({
   const currentDeadlineLabel = activeDeadlineFilter?.state
     ? activeDeadlineFilter.state.charAt(0).toUpperCase() +
       activeDeadlineFilter.state.slice(1)
-    : __('Due Date', 'alpaca');
+    : __('Due Date', 'alpaca-issue-tracker');
 
   /**
    * Render a filter control with trigger, clear, and popover content.
@@ -278,7 +279,7 @@ function BoardFilterControl({
               onClearFilter(filterType);
               setOpenPopoverType('');
             }}
-            aria-label={__('Clear filter', 'alpaca')}
+            aria-label={__('Clear filter', 'alpaca-issue-tracker')}
           >
             <span className="dashicons dashicons-no-alt" aria-hidden="true" />
           </button>
@@ -298,7 +299,10 @@ function BoardFilterControl({
             <div className="alpaca-filter-control-popover-content">
               {!hasOptionItems ? (
                 <p className="alpaca-filter-control-empty">
-                  {__('No options found on board cards.', 'alpaca')}
+                  {__(
+                    'No options found on board cards.',
+                    'alpaca-issue-tracker',
+                  )}
                 </p>
               ) : null}
               {hasOptionItems ? renderPopover() : null}
@@ -313,7 +317,7 @@ function BoardFilterControl({
     <>
       {renderFilterControl({
         filterType: 'label',
-        tooltipLabel: __('Label', 'alpaca'),
+        tooltipLabel: __('Label', 'alpaca-issue-tracker'),
         activeValue: activeLabelFilter,
         hasOptionItems: hasLabelOptions,
         triggerRef: labelTriggerRef,
@@ -321,7 +325,7 @@ function BoardFilterControl({
         renderPopover: () => (
           <section className="alpaca-filter-control-section">
             <h3 className="alpaca-filter-control-section-title">
-              {__('Labels', 'alpaca')}
+              {__('Labels', 'alpaca-issue-tracker')}
             </h3>
             <div className="alpaca-filter-control-inline-list">
               {labels.map((label) => (
@@ -362,7 +366,7 @@ function BoardFilterControl({
 
       {renderFilterControl({
         filterType: 'assignee',
-        tooltipLabel: __('Assignee', 'alpaca'),
+        tooltipLabel: __('Assignee', 'alpaca-issue-tracker'),
         activeValue: activeAssigneeFilter,
         hasOptionItems: hasAssigneeOptions,
         triggerRef: assigneeTriggerRef,
@@ -370,7 +374,7 @@ function BoardFilterControl({
         renderPopover: () => (
           <section className="alpaca-filter-control-section">
             <h3 className="alpaca-filter-control-section-title">
-              {__('Assignees', 'alpaca')}
+              {__('Assignees', 'alpaca-issue-tracker')}
             </h3>
             <div className="alpaca-filter-control-inline-list">
               {assignees.map((assignee) => (
@@ -396,7 +400,7 @@ function BoardFilterControl({
                     ) : null}
                     <span className="alpaca-user-name">
                       {getAssigneeDisplayName(assignee) ||
-                        __('Assignee', 'alpaca')}
+                        __('Assignee', 'alpaca-issue-tracker')}
                     </span>
                   </span>
                 </button>
@@ -410,7 +414,7 @@ function BoardFilterControl({
         <div
           className={`alpaca-board-filter-control alpaca-deadline-filter-control ${showActiveDeadlineChrome ? 'is-active-filter alpaca-board-control' : ''}`}
         >
-          <Tooltip text={__('Due Date', 'alpaca')}>
+          <Tooltip text={__('Due Date', 'alpaca-issue-tracker')}>
             <button
               type="button"
               className={`alpaca-filter-control-trigger alpaca-board-control ${isDeadlineOpen ? 'is-open' : ''}`}
@@ -433,7 +437,7 @@ function BoardFilterControl({
                     className="dashicons dashicons-calendar-alt alpaca-filter-control-icon"
                     aria-hidden="true"
                   />
-                  <span>{__('Due Date', 'alpaca')}</span>
+                  <span>{__('Due Date', 'alpaca-issue-tracker')}</span>
                 </span>
               )}
             </button>
@@ -448,7 +452,7 @@ function BoardFilterControl({
                 onClearFilter('deadline');
                 setOpenPopoverType('');
               }}
-              aria-label={__('Reset deadline filter', 'alpaca')}
+              aria-label={__('Reset deadline filter', 'alpaca-issue-tracker')}
             >
               <span className="dashicons dashicons-no-alt" aria-hidden="true" />
             </button>
@@ -468,10 +472,10 @@ function BoardFilterControl({
               <div className="alpaca-filter-control-popover-content">
                 <section className="alpaca-filter-control-section">
                   <h3 className="alpaca-filter-control-section-title">
-                    {__('Deadline state', 'alpaca')}
+                    {__('Deadline state', 'alpaca-issue-tracker')}
                   </h3>
                   <ToggleGroupControl
-                    label={__('Show cards that are', 'alpaca')}
+                    label={__('Show cards that are', 'alpaca-issue-tracker')}
                     value={
                       activeDeadlineFilter ? activeDeadlineFilter.state : ''
                     }
@@ -489,15 +493,15 @@ function BoardFilterControl({
                   >
                     <ToggleGroupControlOption
                       value="soon"
-                      label={__('Soon', 'alpaca')}
+                      label={__('Soon', 'alpaca-issue-tracker')}
                     />
                     <ToggleGroupControlOption
                       value="today"
-                      label={__('Today', 'alpaca')}
+                      label={__('Today', 'alpaca-issue-tracker')}
                     />
                     <ToggleGroupControlOption
                       value="late"
-                      label={__('Late', 'alpaca')}
+                      label={__('Late', 'alpaca-issue-tracker')}
                     />
                   </ToggleGroupControl>
                 </section>

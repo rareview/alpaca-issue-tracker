@@ -18,19 +18,28 @@ const parseUrl = (value, base) => {
   }
 };
 
+const getConfiguredApiSettings = () => {
+  if (typeof window === 'undefined') {
+    return {};
+  }
+
+  return window.alpaistrApiSettings || {};
+};
+
 const getConfiguredRestRoot = () => {
-  if (typeof wpApiSettings !== 'undefined' && wpApiSettings?.root) {
-    return wpApiSettings.root;
+  const settings = getConfiguredApiSettings();
+
+  if (settings?.root) {
+    return settings.root;
   }
 
   return DEFAULT_REST_ROOT;
 };
 
 const hasExplicitRestRoot = () =>
-  Boolean(
-    typeof wpApiSettings !== 'undefined' &&
-      wpApiSettings?.alpacaHasCustomRoot === true,
-  );
+  getConfiguredApiSettings()?.hasCustomRoot === true;
+
+export const getAlpacaRestNonce = () => getConfiguredApiSettings()?.nonce || '';
 
 const maybeAlignWithCurrentOrigin = (root) => {
   if (typeof window === 'undefined' || hasExplicitRestRoot()) {
@@ -146,13 +155,10 @@ export const installAlpacaApiRootMiddleware = () => {
     const request =
       options && typeof options === 'object' ? { ...options } : options;
     const root = getAlpacaRestRoot();
+    const settings = getConfiguredApiSettings();
 
-    if (
-      typeof wpApiSettings !== 'undefined' &&
-      wpApiSettings &&
-      wpApiSettings.root !== root
-    ) {
-      wpApiSettings.root = root;
+    if (settings.root && settings.root !== root) {
+      settings.root = root;
     }
 
     if (request && typeof request === 'object') {

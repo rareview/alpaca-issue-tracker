@@ -20,7 +20,7 @@ function UnreadCountBadge({ count, variant }) {
   if ('admin-menu' === variant) {
     const adminMenuScreenReaderLabel = sprintf(
       /* translators: %d is the current user's unread inbox notification count. */
-      __('Project Board has %d unread notifications', 'alpaca'),
+      __('Project Board has %d unread notifications', 'alpaca-issue-tracker'),
       normalizedCount,
     );
 
@@ -39,9 +39,22 @@ function UnreadCountBadge({ count, variant }) {
 
   const srLabel = sprintf(
     /* translators: %d is the number of unread inbox notifications. */
-    __('%d unread notifications', 'alpaca'),
+    __('%d unread notifications', 'alpaca-issue-tracker'),
     normalizedCount,
   );
+
+  if ('inline' === variant) {
+    return (
+      <span
+        className="alpaca-inline-badge"
+        aria-live="polite"
+        aria-atomic="true"
+      >
+        <span aria-hidden="true">{normalizedCount}</span>
+        <span className="screen-reader-text">{srLabel}</span>
+      </span>
+    );
+  }
 
   return (
     <span
@@ -57,7 +70,7 @@ function UnreadCountBadge({ count, variant }) {
 
 UnreadCountBadge.propTypes = {
   count: PropTypes.number,
-  variant: PropTypes.oneOf(['inbox-trigger', 'admin-menu']),
+  variant: PropTypes.oneOf(['inbox-trigger', 'admin-menu', 'inline']),
 };
 
 UnreadCountBadge.defaultProps = {
