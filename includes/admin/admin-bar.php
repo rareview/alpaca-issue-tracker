@@ -5,6 +5,8 @@
  * @package AlpacaIssueTracker
  */
 
+use AlpacaIssueTracker\Helpers;
+
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
@@ -49,6 +51,10 @@ function alpaistr_should_skip_admin_report_screen( $hook_suffix = '' ) {
  */
 function alpaistr_add_admin_bar_menu( $admin_bar ) {
 	if ( ! is_admin() ) {
+		return;
+	}
+
+	if ( ! Helpers::user_can( 'create_issue' ) ) {
 		return;
 	}
 

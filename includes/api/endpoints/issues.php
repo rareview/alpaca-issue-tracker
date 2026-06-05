@@ -884,7 +884,7 @@ function alpaistr_register_deleted_items_endpoint() {
 			'methods'             => 'GET',
 			'callback'            => 'alpaistr_get_deleted_items_callback',
 			'permission_callback' => function () {
-				return Helpers::user_can( 'comment_count' );
+				return Helpers::user_can( 'manage_options' );
 			},
 			'args'                => [
 				'search'   => [

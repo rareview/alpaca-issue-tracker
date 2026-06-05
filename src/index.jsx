@@ -66,6 +66,11 @@ const contextualCaptureEnabled =
     window.alpaistrSettings?.contextualCaptureEnabled === 1 ||
     window.alpaistrSettings?.contextualCaptureEnabled === '1' ||
     typeof window.alpaistrSettings?.contextualCaptureEnabled === 'undefined');
+const canViewNotificationInbox =
+  typeof window !== 'undefined' &&
+  (window.alpaistrSettings?.canViewNotificationInbox === true ||
+    window.alpaistrSettings?.canViewNotificationInbox === 1 ||
+    window.alpaistrSettings?.canViewNotificationInbox === '1');
 const mountReactTree = createMountReactTree({
   createRoot,
   legacyRender,
@@ -85,7 +90,19 @@ if (!isAdmin && contextualCaptureEnabled) {
   const toolbarContainer = document.createElement('div');
   toolbarContainer.id = 'alpaca-toolbar-mount';
   document.body.appendChild(toolbarContainer);
-  mountReactTree(<AlpacaToolbar />, toolbarContainer);
+
+  const toolbar = (
+    <AlpacaToolbar showUnreadBadge={canViewNotificationInbox} />
+  );
+
+  mountReactTree(
+    canViewNotificationInbox ? (
+      <NotificationProvider>{toolbar}</NotificationProvider>
+    ) : (
+      toolbar
+    ),
+    toolbarContainer,
+  );
 }
 
 if (document.querySelector('#alpaca-settings-internal')) {
