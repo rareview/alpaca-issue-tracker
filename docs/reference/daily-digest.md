@@ -16,8 +16,6 @@
 | `$user_id`               | `int`   | The user receiving the digest.                              |
 | `$preferences`           | `array` | The user's notification preferences.                        |
 
-**Source:** `includes/notifications/digest/payload.php:527-532`.
-
 ### `alpaca_daily_digest_payload`
 
 **Type:** Filter.
@@ -34,8 +32,6 @@
 | `$window_start_gmt` | `string` | The beginning of the digest window in GMT. |
 | `$window_end_gmt`   | `string` | The end of the digest window in GMT.       |
 
-**Source:** `includes/notifications/digest/payload.php:811`.
-
 ### `alpaca_should_send_daily_digest_payload`
 
 **Type:** Filter.
@@ -50,8 +46,6 @@
 | `$payload`     | `array` | The structured digest payload.                            |
 | `$user_id`     | `int`   | The user receiving the digest.                            |
 | `$preferences` | `array` | The user's notification preferences.                      |
-
-**Source:** `includes/notifications/digest/worker.php:36`.
 
 **Example**
 
@@ -86,8 +80,6 @@ add_filter(
 | `$payload`      | `array`  | The structured digest payload.         |
 | `$template`     | `array`  | The digest template values.            |
 
-**Source:** `includes/notifications/digest/render.php:534`.
-
 ### `alpaca_daily_digest_pre_sections_html`
 
 **Type:** Filter.
@@ -102,8 +94,6 @@ add_filter(
 | `$payload`     | `array`  | The structured digest payload.            |
 | `$template`    | `array`  | The digest template values.               |
 
-**Source:** `includes/notifications/digest/render.php:535`.
-
 ### `alpaca_daily_digest_post_sections_html`
 
 **Type:** Filter.
@@ -117,8 +107,6 @@ add_filter(
 | `$after_html` | `string` | HTML appended after the digest sections. |
 | `$payload`    | `array`  | The structured digest payload.           |
 | `$template`   | `array`  | The digest template values.              |
-
-**Source:** `includes/notifications/digest/render.php:562`.
 
 ## Channel Dispatch
 
@@ -138,8 +126,6 @@ add_filter(
 | `$preferences` | `array`  | The user's notification preferences.    |
 | `$payload`     | `array`  | The structured digest payload.          |
 
-**Source:** `includes/notifications/digest/render.php:722`.
-
 ### `alpaca_daily_digest_channel_dispatch`
 
 **Type:** Filter.
@@ -156,5 +142,3 @@ add_filter(
 | `$preferences` | `array`      | The user's notification preferences.                            |
 | `$payload`     | `array`      | The structured digest payload.                                  |
 | `$message`     | `array`      | The channel-specific digest message.                            |
-
-**Source:** `includes/notifications/digest/render.php:728`.

@@ -14,8 +14,6 @@
 | ----------- | ------- | -------------------------------------------- |
 | `$channels` | `array` | Raw channel definitions keyed by channel ID. |
 
-**Source:** `includes/notifications/preferences.php:40`.
-
 **Example**
 
 ```php
@@ -43,8 +41,6 @@ add_filter(
 | ---------- | ------ | --------------------------------- |
 | `$enabled` | `bool` | Whether inbox capture is enabled. |
 
-**Source:** `includes/notifications/preferences.php:353`.
-
 ## Recipient Resolution And Routing
 
 ### `alpaca_notification_recipient_routes`
@@ -62,8 +58,6 @@ add_filter(
 | `$event`     | `array` | The notification event payload.                |
 | `$channels`  | `array` | The normalized channel registry.               |
 
-**Source:** `includes/notifications/dispatch.php:86`.
-
 ### `alpaca_notification_transport_requires_message`
 
 **Type:** Filter.
@@ -76,8 +70,6 @@ add_filter(
 | ------------ | -------- | ------------------------------------------------- |
 | `$required`  | `bool`   | Whether the transport requires a message payload. |
 | `$transport` | `string` | The transport key being evaluated.                |
-
-**Source:** `includes/notifications/dispatch.php:105`.
 
 ### `alpaca_notification_route_message`
 
@@ -93,8 +85,6 @@ add_filter(
 | `$route`     | `array` | The route that will receive the message.       |
 | `$recipient` | `array` | The current recipient.                         |
 | `$event`     | `array` | The notification event payload.                |
-
-**Source:** `includes/notifications/dispatch.php:131`.
 
 ### `alpaca_notification_route_dispatch`
 
@@ -112,8 +102,6 @@ add_filter(
 | `$event`     | `array`      | The notification event payload.                                          |
 | `$message`   | `array`      | The route-specific message payload.                                      |
 
-**Source:** `includes/notifications/dispatch.php:147`.
-
 ## Event Processing
 
 ### `alpaca_notifications_event`
@@ -128,8 +116,6 @@ add_filter(
 | --------- | ------- | ------------------------------------------------ |
 | `$event`  | `array` | The event payload derived from comment activity. |
 
-**Source:** `includes/notifications/dispatch.php:167`.
-
 ### `alpaca_notifications_recipients`
 
 **Type:** Filter.
@@ -142,8 +128,6 @@ add_filter(
 | ------------- | ------- | ---------------------------------- |
 | `$recipients` | `array` | The recipients resolved by Alpaca. |
 | `$event`      | `array` | The notification event payload.    |
-
-**Source:** `includes/notifications/dispatch.php:173`.
 
 **Example**
 
@@ -180,8 +164,6 @@ add_filter(
 | `$recipients` | `array` | The resolved recipients.                             |
 | `$context`    | `array` | An empty array reserved for future context.          |
 
-**Source:** `includes/notifications/dispatch.php:179`.
-
 ### `alpaca_notifications_message`
 
 **Type:** Filter.
@@ -195,8 +177,6 @@ add_filter(
 | `$message`    | `array` | The rendered message payload with subject and HTML. |
 | `$event`      | `array` | The notification event payload.                     |
 | `$recipients` | `array` | The recipient list for the event.                   |
-
-**Source:** `includes/notifications/dispatch.php:204`.
 
 ## Delivery Result Actions
 
@@ -214,8 +194,6 @@ add_filter(
 | `$event`         | `array` | The notification event payload.    |
 | `$route_message` | `array` | The message payload that was sent. |
 
-**Source:** `includes/notifications/dispatch.php:220`.
-
 ### `alpaca_notifications_failed`
 
 **Type:** Action.
@@ -229,8 +207,6 @@ add_filter(
 | `$recipient`     | `array` | The recipient that failed delivery.           |
 | `$event`         | `array` | The notification event payload.               |
 | `$route_message` | `array` | The message payload Alpaca attempted to send. |
-
-**Source:** `includes/notifications/dispatch.php:222`.
 
 ## Core WordPress Filters Used During Mail Delivery
 
@@ -248,8 +224,6 @@ The hooks below are WordPress core filters. Alpaca invokes them when preparing n
 | ------------------ | -------- | -------------------------------------------------------------------- |
 | `$default_address` | `string` | The sender address Alpaca derived from the site host or admin email. |
 
-**Source:** `includes/notifications/render.php:472`.
-
 ### `wp_mail_from_name`
 
 **Type:** Filter.
@@ -261,5 +235,3 @@ The hooks below are WordPress core filters. Alpaca invokes them when preparing n
 | Parameter       | Type     | Description                                        |
 | --------------- | -------- | -------------------------------------------------- |
 | `$default_name` | `string` | The sender name Alpaca will use if not overridden. |
-
-**Source:** `includes/notifications/render.php:474`.

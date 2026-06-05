@@ -14,8 +14,6 @@
 | ----------------- | -------- | ------------------------------------------------- |
 | `$override_param` | `string` | The request parameter name Alpaca should inspect. |
 
-**Source:** `lib/private-comments.php:78`.
-
 ## Per-Type Visibility Decisions
 
 ### `alpaca_private_comments_user_can_view_type`
@@ -30,5 +28,3 @@
 | ----------- | -------- | ---------------------------------------- |
 | `$can_view` | `bool`   | Alpaca's current visibility decision.    |
 | `$type`     | `string` | The hidden comment type being evaluated. |
-
-**Source:** `lib/private-comments.php:225`.

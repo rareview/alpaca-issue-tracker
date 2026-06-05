@@ -10,8 +10,6 @@
 
 **Parameters:** This action does not pass any parameters.
 
-**Source:** `includes/class-alpaca.php:316`.
-
 **Example**
 
 ```php
@@ -38,8 +36,6 @@ add_action(
 | `$allowed` | `bool`   | The permission decision calculated by Alpaca before the filter runs. |
 | `$action`  | `string` | The Alpaca permission action being evaluated.                        |
 | `$args`    | `array`  | Context for the permission check, such as `post_id`.                 |
-
-**Source:** `includes/class-helpers.php:121`.
 
 **Example**
 
@@ -72,8 +68,6 @@ add_filter(
 | ----------- | ------- | ------------------------------------------------------------ |
 | `$statuses` | `array` | The status term objects returned by `alpaca_get_statuses()`. |
 
-**Source:** `includes/core/board.php:312`.
-
 **Example**
 
 ```php
@@ -105,8 +99,6 @@ add_filter(
 | `$status_term` | `object\|null` | The status term Alpaca selected as the default.         |
 | `$statuses`    | `array`        | All available status terms considered during selection. |
 
-**Source:** `includes/api/endpoints/issues.php:123`.
-
 **Example**
 
 ```php
@@ -135,8 +127,6 @@ add_filter(
 **Purpose:** Renders extra server-side content inside the Configure screen below the React-managed settings interface.
 
 **Parameters:** This action does not pass any parameters.
-
-**Source:** `includes/admin/admin-screens.php:81`.
 
 **Example**
 
@@ -168,8 +158,6 @@ add_action(
 | ----------------- | ------ | ---------------------------------------- |
 | `$should_migrate` | `bool` | Whether the legacy migration should run. |
 
-**Source:** `includes/utilities/functions.php:721`.
-
 ## Core WordPress Filters Used By Alpaca
 
 The hooks below are not defined by Alpaca, but Alpaca explicitly calls them and they directly affect plugin behavior.
@@ -186,8 +174,3 @@ The hooks below are not defined by Alpaca, but Alpaca explicitly calls them and 
 | ---------- | -------- | ----------------------------------- |
 | `$locale`  | `string` | The locale Alpaca is about to load. |
 | `'alpaca'` | `string` | The Alpaca text domain.             |
-
-**Sources**
-
-- `includes/class-alpaca.php:174`
-- `includes/class-register.php:126`

@@ -15,9 +15,6 @@ Each PHP or JavaScript hook entry includes:
 - The hook type (`action` or `filter`).
 - A purpose statement focused on runtime behavior.
 - The parameter list in call order.
-- A source reference with the current file path and line number or line range.
-
-To refresh the PHP and JavaScript source file line references after code moves, run `npm run docs:refresh-hook-lines` from the plugin root.
 
 Use the pages below when you need exact signatures, examples, source locations, or subsystem-level navigation.
 

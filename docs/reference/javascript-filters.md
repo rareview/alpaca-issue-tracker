@@ -19,8 +19,6 @@ Use `wp.hooks.addFilter()` from code that runs in the same WordPress admin conte
 | `$tabs`    | `Array<Object>` | Current tab definitions for the Configure screen.       |
 | `$context` | `Object`        | Context object containing the current `statuses` array. |
 
-**Source:** `src/Settings.jsx:83`.
-
 ### `alpaca.settings.tabContent`
 
 **Type:** Filter.
@@ -34,8 +32,6 @@ Use `wp.hooks.addFilter()` from code that runs in the same WordPress admin conte
 | `$content` | `ReactNode\|null` | Existing tab content. Alpaca passes `null` before custom filters run. |
 | `$tab`     | `Object`          | Active tab definition with `name`, `title`, and `className`.          |
 | `$context` | `Object`          | Context object containing the current `statuses` array.               |
-
-**Source:** `src/Settings.jsx:164`.
 
 **Example**
 
@@ -83,8 +79,6 @@ addFilter(
 | `$rows`    | `ReactNode\|null` | Existing row markup. Alpaca passes `null` before third-party filters run. |
 | `$context` | `Object`          | Context object containing the current `statuses` array.                   |
 
-**Source:** `src/Settings.jsx:107-109`.
-
 ### `alpaca.settings.afterTable`
 
 **Type:** Filter.
@@ -97,8 +91,6 @@ addFilter(
 | ---------- | ----------------- | ---------------------------------------------------------------------- |
 | `$content` | `ReactNode\|null` | Existing content. Alpaca passes `null` before third-party filters run. |
 | `$context` | `Object`          | Context object containing the current `statuses` array.                |
-
-**Source:** `src/Settings.jsx:116-118`.
 
 ## Notification Preferences
 
@@ -115,11 +107,6 @@ addFilter(
 | `$tabs`    | `Array<Object>` | Current notification preference tab definitions.    |
 | `$context` | `Object`        | Context object containing the available `channels`. |
 
-**Sources**
-
-- `src/components/NotificationPreferences.jsx:216`
-- `src/components/NotificationPreferences.jsx:402-424`
-
 ### `alpaca.notificationPreferences.tabContent`
 
 **Type:** Filter.
@@ -133,11 +120,6 @@ addFilter(
 | `$content` | `ReactNode\|null` | Existing tab content. Alpaca passes `null` before custom filters run.                   |
 | `$tab`     | `Object`          | Active tab definition.                                                                  |
 | `$context` | `Object`          | Context object containing `channels`, `preferences`, `channelStatus`, and save helpers. |
-
-**Sources**
-
-- `src/components/NotificationPreferences.jsx:426-436`
-- `src/components/NotificationPreferences.jsx:1118-1123`
 
 ## Board And Issue UI Filters
 
@@ -153,8 +135,6 @@ addFilter(
 | ----------- | --------------- | ------------------------------------------------------------------------ |
 | `$controls` | `Array<Object>` | Default board control descriptors.                                       |
 | `$context`  | `Object`        | Context with selector, containers, active filters, and setter callbacks. |
-
-**Source:** `src/components/BoardControls.jsx:82-92`.
 
 **Example**
 
@@ -203,8 +183,6 @@ addFilter(
 | `$menuControls` | `Array<Object>` | Current container menu control descriptors.                                  |
 | `$context`      | `Object`        | Context including container state, visible items, and bulk action callbacks. |
 
-**Source:** `src/components/Container.jsx:243-271`.
-
 ### `alpaca.item.controls`
 
 **Type:** Filter.
@@ -217,11 +195,6 @@ addFilter(
 | ------------ | --------------- | ----------------------------------------------------------------------- |
 | `$controls`  | `Array<Object>` | Current card control descriptors or renderable elements.                |
 | `$itemProps` | `Object`        | Card state including item fields, watchlist state, and `onWatchToggle`. |
-
-**Sources**
-
-- `src/components/Item.jsx:85-101`
-- `src/utils/itemControls.js:36-40`
 
 **Example**
 
@@ -260,11 +233,6 @@ addFilter(
 | `$content`   | `ReactNode\|null` | Current datapoint markup.                                               |
 | `$itemProps` | `Object`          | Item fields including IDs, meta, assignees, labels, and comment counts. |
 
-**Sources**
-
-- `src/components/Item.jsx:158-168`
-- `src/utils/itemDatapoints.js:224`
-
 **Example**
 
 ```jsx
@@ -296,11 +264,6 @@ addFilter('alpaca.item.datapoints', 'my-plugin/item-marker', (content, item) =>
 | `$attributes` | `Object` | Existing attribute map.                                      |
 | `$item`       | `Object` | Card data including assignees, labels, counts, and metadata. |
 
-**Sources**
-
-- `src/components/Item.jsx:60-74`
-- `src/datapoints/assigneesDatapoint.js:56-70`
-
 ### `alpaca.item.commentCount.agentType`
 
 **Type:** Filter.
@@ -313,11 +276,6 @@ addFilter('alpaca.item.datapoints', 'my-plugin/item-marker', (content, item) =>
 | ------------- | --------------------- | -------------------------------------------------------------------------------- |
 | `$agentTypes` | `Array<string>\|null` | Requested comment agent types. Returning `null` leaves the base count unchanged. |
 | `$itemProps`  | `Object`              | Item fields passed to the datapoint resolver.                                    |
-
-**Sources**
-
-- `src/datapoints/commentCountDatapoint.js:86-90`
-- `src/datapoints/commentCountDatapoint.js:156-160`
 
 ### `alpaca.item.commentCount`
 
@@ -332,8 +290,6 @@ addFilter('alpaca.item.datapoints', 'my-plugin/item-marker', (content, item) =>
 | `$count`   | `number` | Comment count after Alpaca resolves any requested agent type filtering.        |
 | `$context` | `Object` | Item fields plus `requestedCommentAgentType` and `requestedCommentAgentTypes`. |
 
-**Source:** `src/datapoints/commentCountDatapoint.js:106-111`.
-
 ### `alpaca.label_color_options`
 
 **Type:** Filter.
@@ -345,8 +301,6 @@ addFilter('alpaca.item.datapoints', 'my-plugin/item-marker', (content, item) =>
 | Parameter | Type            | Description               |
 | --------- | --------------- | ------------------------- |
 | `$colors` | `Array<string>` | Current label color list. |
-
-**Source:** `src/components/LabelsManager.jsx:394-397`.
 
 ### `alpaca.issue.abovetabs`
 
@@ -361,8 +315,6 @@ addFilter('alpaca.item.datapoints', 'my-plugin/item-marker', (content, item) =>
 | `$content` | `ReactNode\|null` | Existing content. Alpaca passes `null` before custom filters run. |
 | `$context` | `Object`          | Context with the current `issueId` and `meta` payload.            |
 
-**Source:** `src/components/Issue.jsx:2368-2371`.
-
 ## Comments, Search, And Reporting
 
 ### `alpaca.commentingTips`
@@ -376,11 +328,6 @@ addFilter('alpaca.item.datapoints', 'my-plugin/item-marker', (content, item) =>
 | Parameter | Type            | Description                                          |
 | --------- | --------------- | ---------------------------------------------------- |
 | `$tips`   | `Array<Object>` | Tip entries with `text` and optional `placeholders`. |
-
-**Sources**
-
-- `src/components/Comment.jsx:157-160`
-- `src/components/CommentForm.jsx:140-143`
 
 **Example**
 
@@ -410,8 +357,6 @@ addFilter('alpaca.commentingTips', 'my-plugin/comment-tip', (tips) => [
 | `$comment`              | `Object`        | Comment payload.                       |
 | `$defaultEditableTypes` | `Array<string>` | Default editable agent types.          |
 
-**Source:** `src/components/Comment.jsx:263-268`.
-
 ### `alpaca.commentObject`
 
 **Type:** Filter.
@@ -423,12 +368,6 @@ addFilter('alpaca.commentingTips', 'my-plugin/comment-tip', (tips) => [
 | Parameter  | Type     | Description                            |
 | ---------- | -------- | -------------------------------------- |
 | `$comment` | `Object` | Comment payload about to be broadcast. |
-
-**Sources**
-
-- `src/components/Comment.jsx:610`
-- `src/utils/issueCommentHandler.js:134-139`
-- `src/utils/issueCommentHandler.js:201`
 
 ### `alpaca.search.commentAgentTypes`
 
@@ -442,11 +381,6 @@ addFilter('alpaca.commentingTips', 'my-plugin/comment-tip', (tips) => [
 | ------------- | --------------------- | ------------------------------------------------------------------------ |
 | `$agentTypes` | `Array<string>\|null` | Requested comment agent types. Alpaca defaults to `['human', 'create']`. |
 | `$context`    | `Object`              | Search context containing the current `query` and fetched `comments`.    |
-
-**Sources**
-
-- `src/components/Search.jsx:286-289`
-- `src/components/Search.jsx:611-615`
 
 **Example**
 
@@ -472,8 +406,6 @@ addFilter(
 | ------------- | --------------- | --------------------------------------------------------- |
 | `$taxonomies` | `Array<string>` | Taxonomy slugs that Alpaca will hide from the report tab. |
 
-**Source:** `src/components/issue/ReportTab.jsx:81-84`.
-
 ### `alpaca.api.root`
 
 **Type:** Filter.
@@ -486,8 +418,6 @@ addFilter(
 | ---------- | -------- | -------------------------------------------------------------------- |
 | `$root`    | `string` | Current resolved REST root.                                          |
 | `$context` | `Object` | Context with `configuredRoot`, `hasCustomRoot`, and `currentOrigin`. |
-
-**Source:** `src/utils/restApiRoot.js:66`.
 
 ## Item Datapoint Browser API
 
@@ -504,8 +434,6 @@ The public registration API is available at `window.alpaca.itemDatapoints`.
 | Parameter       | Type     | Description                                    |
 | --------------- | -------- | ---------------------------------------------- |
 | `$registration` | `Object` | Datapoint registration object described below. |
-
-**Source:** `src/utils/itemDatapoints.js:253`.
 
 Registration fields:
 
@@ -562,8 +490,6 @@ window.alpaca.itemDatapoints.register({
 
 **Parameters:** This method does not accept any parameters.
 
-**Source:** `src/utils/itemDatapoints.js:254`.
-
 ### `window.alpaca.itemDatapoints.getVisibility()`
 
 **Type:** Browser API.
@@ -572,8 +498,6 @@ window.alpaca.itemDatapoints.register({
 
 **Parameters:** This method does not accept any parameters.
 
-**Source:** `src/utils/itemDatapoints.js:255`.
-
 ### `window.alpaca.itemDatapoints.fetchVisibility()`
 
 **Type:** Browser API.
@@ -581,8 +505,6 @@ window.alpaca.itemDatapoints.register({
 **Purpose:** Refreshes datapoint visibility from `wp/v2/settings`.
 
 **Parameters:** This method does not accept any parameters.
-
-**Source:** `src/utils/itemDatapoints.js:256`.
 
 ### `window.alpaca.itemDatapoints.saveVisibility()`
 
@@ -595,5 +517,3 @@ window.alpaca.itemDatapoints.register({
 | Parameter     | Type     | Description                             |
 | ------------- | -------- | --------------------------------------- |
 | `$visibility` | `Object` | Visibility map keyed by datapoint slug. |
-
-**Source:** `src/utils/itemDatapoints.js:257`.

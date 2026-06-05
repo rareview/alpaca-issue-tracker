@@ -26,7 +26,7 @@ Any time you introduce a new PHP `do_action()` or `apply_filters()` call, or a n
 - JavaScript filter hooks → `docs/reference/javascript-filters.md`.
 - JavaScript action hooks → `docs/reference/javascript-actions.md`.
 
-Follow the style of existing entries in the target file. After adding the entry, update the entry count for that file in `docs/reference/README.md`, and update the `expectedHeadingCount` value for that file in `scripts/refresh-hook-reference-lines.js`. Then run `npm run docs:refresh-hook-lines` to populate the correct source line references.
+Follow the style of existing entries in the target file and update the entry count for that file in `docs/reference/README.md`.
 
 ## Translation workflow notes
 
