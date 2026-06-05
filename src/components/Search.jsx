@@ -4,6 +4,7 @@ const { __ } = wp.i18n;
 const { applyFilters } = wp.hooks;
 import PropTypes from 'prop-types';
 
+import { isTestLoggingEnabled } from '../utils/testLogSetting.js';
 import {
   getCommentAgentTypeFromComment,
   normalizeCommentAgentTypes,
@@ -102,7 +103,7 @@ function SearchContainer({
 }) {
   const [value, setValue] = useState('');
   const [isSearching, setIsSearching] = useState(false);
-  const [enableTestLogs, setEnableTestLogs] = useState(false);
+  const [enableTestLogs, setEnableTestLogs] = useState(isTestLoggingEnabled);
   const [searchRefreshToken, setSearchRefreshToken] = useState(0);
   const debounceRef = useRef(null);
   const requestIdRef = useRef(0);
@@ -122,16 +123,8 @@ function SearchContainer({
   searchScopeIssueIdsSetRef.current = searchScopeIssueIdsSet;
 
   useEffect(() => {
-    wp.apiFetch({ path: '/wp/v2/settings' })
-      .then((settings) => {
-        setEnableTestLogs(settings.alpaistr_enable_test_logs === '1');
-      })
-      .catch(() => {
-        setEnableTestLogs(false);
-      });
-
     const handleTestLogSettingChange = (newVal) => {
-      setEnableTestLogs(newVal);
+      setEnableTestLogs(Boolean(newVal));
     };
 
     wp.hooks.addAction(

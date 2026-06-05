@@ -1,7 +1,11 @@
+import PropTypes from 'prop-types';
 import handleSnapdomCapture from './snapdomHandler.js';
 import { dataUrlToFile, uploadIssueAttachment } from './utils/attachmentUpload';
 import { useTestLogger } from './utils/testLogger.js';
+import { isTestLoggingEnabled } from './utils/testLogSetting.js';
 import Icon from './components/icons/Icon';
+import UnreadCountBadge from './components/notifications/UnreadCountBadge.jsx';
+import { useNotification } from './context/NotificationContext.jsx';
 import {
   buildAlpacaRestUrl,
   getAlpacaRestNonce,
@@ -20,12 +24,33 @@ const { useState, useRef, useEffect, useCallback } = wp.element;
 const FORM_CLOSE_RESET_DELAY_MS = 300;
 
 /**
+ * Render the Project Board toolbar unread badge.
+ *
+ * @return {JSX.Element|null} Badge markup.
+ */
+const ProjectBoardUnreadBadge = () => {
+  const { unreadCount } = useNotification();
+
+  if (unreadCount <= 0) {
+    return null;
+  }
+
+  return (
+    <span className="alpaca-toolbar-project-board-badge">
+      <UnreadCountBadge count={unreadCount} variant="inline" />
+    </span>
+  );
+};
+
+/**
  * Bottom Toolbar component for Alpaca Issue Tracker issue reporting.
  * Dark admin bar theme with WP Components form.
  *
+ * @param {Object}  props                 Component props.
+ * @param {boolean} props.showUnreadBadge Whether to show the unread badge.
  * @return {JSX.Element} Toolbar component
  */
-const AlpacaToolbar = () => {
+const AlpacaToolbar = ({ showUnreadBadge }) => {
   const [isExpanded, setIsExpanded] = useState(true); // Open by default
   const [isFormVisible, setFormVisible] = useState(false);
   const [status, setStatus] = useState('idle');
@@ -37,15 +62,11 @@ const AlpacaToolbar = () => {
   const formRef = useRef(null);
   const reportButtonRef = useRef(null);
   const closeResetTimeoutRef = useRef(null);
-  const [enableTestLogs, setEnableTestLogs] = useState(false);
+  const [enableTestLogs, setEnableTestLogs] = useState(isTestLoggingEnabled);
 
   useEffect(() => {
-    wp.apiFetch({ path: '/wp/v2/settings' }).then((settings) => {
-      setEnableTestLogs(settings.alpaistr_enable_test_logs === '1');
-    });
-
     const handleTestLogSettingChange = (value) => {
-      setEnableTestLogs(value);
+      setEnableTestLogs(Boolean(value));
     };
 
     wp.hooks.addAction(
@@ -267,6 +288,7 @@ const AlpacaToolbar = () => {
         <a href={projectBoardUrl} className="project-board-link">
           <Icon name="board" />
           {__('Project Board', 'alpaca-issue-tracker')}
+          {showUnreadBadge && <ProjectBoardUnreadBadge />}
         </a>
         <button className="toggle-button" onClick={toggleExpand}>
           <span className="toggle-pointer">►</span>
@@ -341,6 +363,14 @@ const AlpacaToolbar = () => {
       </div>
     </>
   );
+};
+
+AlpacaToolbar.propTypes = {
+  showUnreadBadge: PropTypes.bool,
+};
+
+AlpacaToolbar.defaultProps = {
+  showUnreadBadge: false,
 };
 
 export default AlpacaToolbar;
