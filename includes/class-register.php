@@ -302,6 +302,7 @@ class Register {
 		$settings = [
 			'canManageOptions'         => current_user_can( 'manage_options' ),
 			'canDeleteIssues'          => Helpers::user_can( 'delete_issue' ),
+			'canViewNotificationInbox' => Helpers::user_can( 'notification_inbox' ),
 			'contextualCaptureEnabled' => $this->is_contextual_capture_enabled(),
 			'defaultLabelColor'        => Helpers::DEFAULT_LABEL_COLOR,
 			'snapdomProxy'             => $this->get_snapdom_proxy_setting(),
