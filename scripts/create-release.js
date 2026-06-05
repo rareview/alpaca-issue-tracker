@@ -28,6 +28,27 @@ const versionFiles = [
       content.replace(/^(Stable tag:\s+).+$/m, `$1${version}`),
   },
   {
+    path: 'package.json',
+    replace: (content, version) =>
+      content.replace(/^(\s*"version":\s+")([^"]+)(",)$/m, `$1${version}$3`),
+  },
+  {
+    path: 'package-lock.json',
+    replace: (content, version) => {
+      const rootPackageVersionPattern =
+        /("":\s*{\r?\n\s+"name":\s+"[^"]+",\r?\n\s+"version":\s+")([^"]+)(")/;
+
+      if (rootPackageVersionPattern.test(content)) {
+        return content.replace(rootPackageVersionPattern, `$1${version}$3`);
+      }
+
+      return content.replace(
+        /("":\s*{\r?\n\s+"name":\s+"[^"]+",)/,
+        `$1\n      "version": "${version}",`,
+      );
+    },
+  },
+  {
     path: 'languages/alpaca-issue-tracker.pot',
     replace: (content, version) =>
       content.replace(
