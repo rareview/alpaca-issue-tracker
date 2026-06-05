@@ -122,6 +122,10 @@ Alpaca Issue Tracker uses user images throughout its interface, for extra humani
 
 == Changelog ==
 
+= 1.0.3 =
+* Removed hidden files from the release archive.
+* Updated plugin repository metadata.
+
 = 1.0.2 =
 * Updated the plugin readme changelog and release metadata.
 
