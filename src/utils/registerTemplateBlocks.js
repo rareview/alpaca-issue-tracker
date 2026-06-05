@@ -9,7 +9,7 @@ const getBlockProps =
     : (props = {}) => props;
 
 /**
- * Render a placeholder preview for an Alpaca template block.
+ * Render a placeholder preview for an Alpaca Issue Tracker template block.
  *
  * @param {Object} props             Preview props.
  * @param {string} props.title       Block title.
@@ -48,7 +48,7 @@ const ensureCoreTemplateBlocks = () => {
 };
 
 /**
- * Register Alpaca template placeholder blocks from a shared definition list.
+ * Register Alpaca Issue Tracker template placeholder blocks from a shared definition list.
  *
  * @param {Object[]} definitions Block definitions.
  * @param {string}   icon        Dashicon slug.

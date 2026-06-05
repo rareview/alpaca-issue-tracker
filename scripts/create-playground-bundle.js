@@ -10,10 +10,10 @@ const seedSourcePath = path.join(
   'playground',
   'seed-demo-content.php',
 );
-const zipPath = path.join(rootDir, 'alpaca.zip');
+const zipPath = path.join(rootDir, 'alpaca-issue-tracker.zip');
 const outputDir = path.join(rootDir, 'playground', '.generated', 'bundle');
 const outputBlueprintPath = path.join(outputDir, 'blueprint.json');
-const outputZipPath = path.join(outputDir, 'alpaca.zip');
+const outputZipPath = path.join(outputDir, 'alpaca-issue-tracker.zip');
 const outputSeedPath = path.join(outputDir, 'seed-demo-content.php');
 
 /**
@@ -74,7 +74,7 @@ function buildBundledBlueprint(publicBlueprint) {
 
   installPluginStep.pluginData = {
     resource: 'bundled',
-    path: '/alpaca.zip',
+    path: '/alpaca-issue-tracker.zip',
   };
 
   writeFileStep.data = {

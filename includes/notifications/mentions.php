@@ -1,8 +1,8 @@
 <?php
 /**
- * Notification mention helpers for Alpaca issue activity emails.
+ * Notification mention helpers for Alpaca Issue Tracker issue activity emails.
  *
- * @package Alpaca
+ * @package AlpacaIssueTracker
  */
 
 // Exit if accessed directly.
@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @param string $content Raw comment content.
  * @return string[] Mention slugs.
  */
-function alpaca_extract_mention_slugs_from_content( $content ) {
+function alpaistr_extract_mention_slugs_from_content( $content ) {
 	$content = is_string( $content ) ? $content : '';
 	if ( '' === $content ) {
 		return [];
@@ -44,7 +44,7 @@ function alpaca_extract_mention_slugs_from_content( $content ) {
  * @param string[] $slugs Mention slugs.
  * @return array<int, array<string, mixed>> Mention user records.
  */
-function alpaca_resolve_mention_users( $slugs ) {
+function alpaistr_resolve_mention_users( $slugs ) {
 	$slugs = array_values( array_unique( array_filter( array_map( 'sanitize_user', (array) $slugs ) ) ) );
 	if ( empty( $slugs ) ) {
 		return [];
@@ -86,14 +86,14 @@ function alpaca_resolve_mention_users( $slugs ) {
  * @param int $comment_id Comment ID.
  * @return array<int, array<string, mixed>> Mention records.
  */
-function alpaca_sync_comment_mentions( $comment_id ) {
+function alpaistr_sync_comment_mentions( $comment_id ) {
 	$comment = get_comment( (int) $comment_id );
 	if ( ! ( $comment instanceof WP_Comment ) ) {
 		return [];
 	}
 
-	$slugs    = alpaca_extract_mention_slugs_from_content( $comment->comment_content );
-	$mentions = alpaca_resolve_mention_users( $slugs );
+	$slugs    = alpaistr_extract_mention_slugs_from_content( $comment->comment_content );
+	$mentions = alpaistr_resolve_mention_users( $slugs );
 
 	if ( empty( $mentions ) ) {
 		delete_comment_meta( $comment->comment_ID, 'alpacaMentionedUsers' );
@@ -111,7 +111,7 @@ function alpaca_sync_comment_mentions( $comment_id ) {
  * @param int $comment_id Comment ID.
  * @return void
  */
-function alpaca_handle_comment_mentions_after_edit( $comment_id ) {
+function alpaistr_handle_comment_mentions_after_edit( $comment_id ) {
 	$comment = get_comment( (int) $comment_id );
 	if ( ! ( $comment instanceof WP_Comment ) ) {
 		return;
@@ -121,6 +121,6 @@ function alpaca_handle_comment_mentions_after_edit( $comment_id ) {
 		return;
 	}
 
-	alpaca_sync_comment_mentions( $comment_id );
+	alpaistr_sync_comment_mentions( $comment_id );
 }
-add_action( 'edit_comment', 'alpaca_handle_comment_mentions_after_edit' );
+add_action( 'edit_comment', 'alpaistr_handle_comment_mentions_after_edit' );

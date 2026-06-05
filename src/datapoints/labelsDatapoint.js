@@ -20,7 +20,7 @@ export const addLabelsDatapoint = (originalContent, itemProps) => {
   return (
     <>
       {originalContent}
-      <Tooltip text={__('Labels', 'alpaca')}>
+      <Tooltip text={__('Labels', 'alpaca-issue-tracker')}>
         <div className="alpaca-item-labels">
           {labels.map((label) => (
             <span
@@ -43,7 +43,7 @@ export const addLabelsDatapoint = (originalContent, itemProps) => {
 
 export const labelsDatapointRegistration = {
   slug: 'labels',
-  label: __('Labels', 'alpaca'),
+  label: __('Labels', 'alpaca-issue-tracker'),
   namespace: 'alpaca/item/addLabelsDatapoint',
   callback: addLabelsDatapoint,
   defaultEnabled: true,

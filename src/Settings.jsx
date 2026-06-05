@@ -44,29 +44,29 @@ const SETTINGS_TAB_CONTENT_FILTER = 'alpaca.settings.tabContent';
 const SETTINGS_BASE_TABS = [
   {
     name: 'statuses',
-    title: __('Statuses', 'alpaca'),
+    title: __('Statuses', 'alpaca-issue-tracker'),
     className: 'alpaca-settings-tab--statuses',
   },
   {
     name: 'item-datapoints',
-    title: __('Cards', 'alpaca'),
+    title: __('Cards', 'alpaca-issue-tracker'),
     className: 'alpaca-settings-tab--item-datapoints',
   },
   {
     name: 'labels',
-    title: __('Labels', 'alpaca'),
+    title: __('Labels', 'alpaca-issue-tracker'),
     className: 'alpaca-settings-tab--labels',
   },
   {
     name: 'deleted-items',
-    title: __('Deleted Items', 'alpaca'),
+    title: __('Deleted Items', 'alpaca-issue-tracker'),
     className: 'alpaca-settings-tab--deleted-items',
   },
 ];
 
 const SETTINGS_TAB = {
   name: 'settings',
-  title: __('Settings', 'alpaca'),
+  title: __('Settings', 'alpaca-issue-tracker'),
   className: 'alpaca-settings-tab--settings',
 };
 

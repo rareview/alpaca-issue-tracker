@@ -124,7 +124,7 @@ function SearchContainer({
   useEffect(() => {
     wp.apiFetch({ path: '/wp/v2/settings' })
       .then((settings) => {
-        setEnableTestLogs(settings.alpaca_enable_test_logs === '1');
+        setEnableTestLogs(settings.alpaistr_enable_test_logs === '1');
       })
       .catch(() => {
         setEnableTestLogs(false);
@@ -275,7 +275,7 @@ function SearchContainer({
 
           if (enableTestLogs) {
             // eslint-disable-next-line no-console
-            console.log('Alpaca search raw responses', {
+            console.log('Alpaca Issue Tracker search raw responses', {
               query: q,
               comments,
               directIssues,
@@ -528,10 +528,10 @@ function SearchContainer({
   return (
     <div className="alpaca-board-search alpaca-board-control">
       <SearchControl
-        label={__('Search', 'alpaca')}
+        label={__('Search', 'alpaca-issue-tracker')}
         value={value}
         onChange={(val) => setValue(val)}
-        placeholder={__('Search', 'alpaca')}
+        placeholder={__('Search', 'alpaca-issue-tracker')}
         isBusy={isSearching}
         __nextHasNoMarginBottom
       />

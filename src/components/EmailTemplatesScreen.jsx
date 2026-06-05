@@ -7,12 +7,12 @@ const { TabPanel } = wp.components;
 const EMAIL_TEMPLATE_TABS = [
   {
     name: 'instant-emails',
-    title: __('Instant Emails', 'alpaca'),
+    title: __('Instant Emails', 'alpaca-issue-tracker'),
     className: 'alpaca-email-templates-tab--instant',
   },
   {
     name: 'daily-digest',
-    title: __('Daily Digest', 'alpaca'),
+    title: __('Daily Digest', 'alpaca-issue-tracker'),
     className: 'alpaca-email-templates-tab--digest',
   },
 ];
@@ -29,7 +29,7 @@ const EmailTemplatesScreen = () => {
         <p>
           {__(
             'Manage the templates used for outbound emails in the block editor areas below. Locked blocks are essential for the correct functioning of the templates. They can be moved, but should not be removed.',
-            'alpaca',
+            'alpaca-issue-tracker',
           )}
         </p>
       </div>

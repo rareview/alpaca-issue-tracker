@@ -10,10 +10,10 @@ installAlpacaApiRootMiddleware();
 
 const contextualCaptureEnabled =
   typeof window !== 'undefined' &&
-  (window.alpacaSettings?.contextualCaptureEnabled === true ||
-    window.alpacaSettings?.contextualCaptureEnabled === 1 ||
-    window.alpacaSettings?.contextualCaptureEnabled === '1' ||
-    typeof window.alpacaSettings?.contextualCaptureEnabled === 'undefined');
+  (window.alpaistrSettings?.contextualCaptureEnabled === true ||
+    window.alpaistrSettings?.contextualCaptureEnabled === 1 ||
+    window.alpaistrSettings?.contextualCaptureEnabled === '1' ||
+    typeof window.alpaistrSettings?.contextualCaptureEnabled === 'undefined');
 
 if (contextualCaptureEnabled) {
   initializeAlpacaDataDump();

@@ -87,7 +87,7 @@ const LabelsManager = () => {
       .catch((error) => {
         // eslint-disable-next-line no-console
         console.error('Failed to fetch labels.', error);
-        setSaveError(__('Failed to load labels.', 'alpaca'));
+        setSaveError(__('Failed to load labels.', 'alpaca-issue-tracker'));
       })
       .finally(() => setIsFetching(false));
   }, []);
@@ -329,7 +329,7 @@ const LabelsManager = () => {
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Failed to save label.', error);
-        setSaveError(__('Failed to save label.', 'alpaca'));
+        setSaveError(__('Failed to save label.', 'alpaca-issue-tracker'));
       } finally {
         setSavingKeys((previousKeys) =>
           previousKeys.filter((existingKey) => existingKey !== key),
@@ -378,7 +378,7 @@ const LabelsManager = () => {
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Failed to delete label.', error);
-        setSaveError(__('Failed to delete label.', 'alpaca'));
+        setSaveError(__('Failed to delete label.', 'alpaca-issue-tracker'));
       } finally {
         setSavingKeys((previousKeys) =>
           previousKeys.filter((existingKey) => existingKey !== key),
@@ -436,7 +436,7 @@ const LabelsManager = () => {
                 onChange={(value) => onColorChange(normalizeLabelColor(value))}
               />
             ) : (
-              <p>{__('Color picker unavailable.', 'alpaca')}</p>
+              <p>{__('Color picker unavailable.', 'alpaca-issue-tracker')}</p>
             )}
           </div>
         )}
@@ -446,11 +446,13 @@ const LabelsManager = () => {
 
   return (
     <div className="alpaca-labels-manager">
-      <h2 className="screen-reader-text">{__('Labels', 'alpaca')}</h2>
+      <h2 className="screen-reader-text">
+        {__('Labels', 'alpaca-issue-tracker')}
+      </h2>
       <p className="alpaca-settings-manager-intro">
         {__(
           'Create and maintain labels to categorize and filter your issues.',
-          'alpaca',
+          'alpaca-issue-tracker',
         )}
       </p>
 
@@ -470,11 +472,13 @@ const LabelsManager = () => {
                   __next40pxDefaultSize
                   __nextHasNoMarginBottom
                   label={
-                    index < INITIAL_LABEL_SLOT_COUNT ? '' : __('Name', 'alpaca')
+                    index < INITIAL_LABEL_SLOT_COUNT
+                      ? ''
+                      : __('Name', 'alpaca-issue-tracker')
                   }
                   hideLabelFromVision={index < INITIAL_LABEL_SLOT_COUNT}
                   value={label.name}
-                  placeholder={__('Label name', 'alpaca')}
+                  placeholder={__('Label name', 'alpaca-issue-tracker')}
                   onChange={(value) => updateSlotRow(index, 'name', value)}
                   onBlur={() => saveLabelDraft(label)}
                   disabled={isFetching || isSaving}
@@ -494,7 +498,7 @@ const LabelsManager = () => {
                   <Button
                     icon="trash"
                     className="alpaca-settings-table-delete"
-                    label={__('Delete label', 'alpaca')}
+                    label={__('Delete label', 'alpaca-issue-tracker')}
                     showTooltip
                     isDestructive
                     onClick={() => removeLabelRow(label, index)}
@@ -519,7 +523,7 @@ const LabelsManager = () => {
                   __nextHasNoMarginBottom
                   label=""
                   value={label.name}
-                  placeholder={__('Label name', 'alpaca')}
+                  placeholder={__('Label name', 'alpaca-issue-tracker')}
                   onChange={(value) => updateLabelRow(label.key, 'name', value)}
                   onBlur={() => saveLabelDraft(label)}
                   disabled={isFetching || isSaving}
@@ -538,7 +542,7 @@ const LabelsManager = () => {
                 <Button
                   icon="trash"
                   className="alpaca-settings-table-delete"
-                  label={__('Delete label', 'alpaca')}
+                  label={__('Delete label', 'alpaca-issue-tracker')}
                   showTooltip
                   isDestructive
                   onClick={() => removeLabelRow(label)}
@@ -556,7 +560,7 @@ const LabelsManager = () => {
           onClick={addNewLabel}
           disabled={isFetching || isSaving}
         >
-          {__('New Label', 'alpaca')}
+          {__('New Label', 'alpaca-issue-tracker')}
         </Button>
 
         {(isFetching || isSaving) && <Spinner />}

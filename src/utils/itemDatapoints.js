@@ -1,6 +1,6 @@
 import { datapointRegistrations } from '../datapoints';
 
-const DATAPOINT_VISIBILITY_OPTION_KEY = 'alpaca_item_datapoint_visibility';
+const DATAPOINT_VISIBILITY_OPTION_KEY = 'alpaistr_item_datapoint_visibility';
 
 const registeredDatapoints = [];
 const registeredDatapointsBySlug = {};
@@ -43,13 +43,15 @@ const normalizeVisibilityMap = (maybeVisibility) => {
 const getBootstrappedDatapointVisibility = () => {
   if (
     typeof window === 'undefined' ||
-    !window.alpacaSettings ||
-    typeof window.alpacaSettings !== 'object'
+    !window.alpaistrSettings ||
+    typeof window.alpaistrSettings !== 'object'
   ) {
     return {};
   }
 
-  return normalizeVisibilityMap(window.alpacaSettings.itemDatapointVisibility);
+  return normalizeVisibilityMap(
+    window.alpaistrSettings.itemDatapointVisibility,
+  );
 };
 
 let datapointVisibility = getBootstrappedDatapointVisibility();

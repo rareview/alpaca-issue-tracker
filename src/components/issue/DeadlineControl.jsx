@@ -44,7 +44,7 @@ const DeadlineControl = memo(({ deadline, onChange, onClear, isLoading }) => {
         >
           {deadline
             ? date.format(datesettings.formats.date, deadline)
-            : __('Click to select a deadline', 'alpaca')}
+            : __('Click to select a deadline', 'alpaca-issue-tracker')}
         </div>
 
         {isEditingDeadline && (
@@ -70,7 +70,7 @@ const DeadlineControl = memo(({ deadline, onChange, onClear, isLoading }) => {
         {deadline && (
           <Button
             icon="trash"
-            label={__('Clear deadline', 'alpaca')}
+            label={__('Clear deadline', 'alpaca-issue-tracker')}
             onClick={onClear}
             disabled={isLoading}
             className="is-small"

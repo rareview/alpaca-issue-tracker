@@ -132,7 +132,7 @@ export const addCommentCountDatapoint = (originalContent, itemProps) => {
     return (
       <>
         {originalContent}
-        <Tooltip text={__('Comments', 'alpaca')}>
+        <Tooltip text={__('Comments', 'alpaca-issue-tracker')}>
           <div className="alpaca-item-icon alpaca-item-comment-count">
             <Icon name="comment" />
             {commentCount}
@@ -147,7 +147,7 @@ export const addCommentCountDatapoint = (originalContent, itemProps) => {
 
 export const commentCountDatapointRegistration = {
   slug: 'comment_count',
-  label: __('Comments', 'alpaca'),
+  label: __('Comments', 'alpaca-issue-tracker'),
   namespace: 'alpaca/item/addCommentCountDatapoint',
   callback: addCommentCountDatapoint,
   defaultEnabled: true,

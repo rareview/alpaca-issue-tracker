@@ -8,7 +8,7 @@ const rootDir = path.resolve(__dirname, '..');
 
 const versionFiles = [
   {
-    path: 'alpaca.php',
+    path: 'alpacaissuetracker.php',
     replace: (content, version) =>
       content.replace(/^(\s*\*\s+Version:\s+).+$/m, `$1${version}`),
   },
@@ -18,7 +18,7 @@ const versionFiles = [
       content.replace(/(return\s+')([^']+)(';)/, `$1${version}$3`),
   },
   {
-    path: 'includes/class-alpaca.php',
+    path: 'includes/class-alpacaissuetracker.php',
     replace: (content, version) =>
       content.replace(/(const VERSION = ')([^']+)(';)/, `$1${version}$3`),
   },
@@ -28,10 +28,10 @@ const versionFiles = [
       content.replace(/^(Stable tag:\s+).+$/m, `$1${version}`),
   },
   {
-    path: 'languages/alpaca.pot',
+    path: 'languages/alpaca-issue-tracker.pot',
     replace: (content, version) =>
       content.replace(
-        /(Project-Id-Version: Alpaca )([^\\]+)(\\n")/,
+        /(Project-Id-Version: Alpaca Issue Tracker )([^\\]+)(\\n")/,
         `$1${version}$3`,
       ),
   },
@@ -227,7 +227,7 @@ function updateVersionFiles(version, apply = true) {
  */
 function createRelease(version, notesFile) {
   const tagName = `v${version}`;
-  const releaseTitle = `Alpaca ${tagName}`;
+  const releaseTitle = `Alpaca Issue Tracker ${tagName}`;
   const releaseArgs = [
     'release',
     'create',

@@ -2,7 +2,7 @@
 /**
  * Dashboard widget data for Alpaca.
  *
- * @package Alpaca
+ * @package AlpacaIssueTracker
  */
 
 // Exit if accessed directly.
@@ -16,11 +16,11 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @param WP_Post[] $posts Issue post objects.
  * @return array<int, array<string, mixed>>
  */
-function alpaca_prepare_dashboard_widget_issue_list( $posts ) {
+function alpaistr_prepare_dashboard_widget_issue_list( $posts ) {
 	$prepared_posts = [];
 
 	foreach ( $posts as $post ) {
-		$prepared_post = alpaca_prepare_issue_data( $post );
+		$prepared_post = alpaistr_prepare_issue_data( $post );
 		if ( ! empty( $prepared_post ) ) {
 			$prepared_posts[] = $prepared_post;
 		}
@@ -34,13 +34,13 @@ function alpaca_prepare_dashboard_widget_issue_list( $posts ) {
  *
  * @return array
  */
-function alpaca_get_dashboard_widget_data() {
+function alpaistr_get_dashboard_widget_data() {
 
 	$data = [
-		'assignedToMe' => alpaca_get_assigned_to_me_issues(),
-		'newlyCreated' => alpaca_get_newly_created_issues(),
-		'overdue'      => alpaca_get_overdue_issues(),
-		'watchlist'    => alpaca_get_watchlist_issues(),
+		'assignedToMe' => alpaistr_get_assigned_to_me_issues(),
+		'newlyCreated' => alpaistr_get_newly_created_issues(),
+		'overdue'      => alpaistr_get_overdue_issues(),
+		'watchlist'    => alpaistr_get_watchlist_issues(),
 	];
 
 	return $data;
@@ -50,7 +50,7 @@ function alpaca_get_dashboard_widget_data() {
  *
  * @return array
  */
-function alpaca_get_assigned_to_me_issues() {
+function alpaistr_get_assigned_to_me_issues() {
 	$current_user = wp_get_current_user();
 	if ( ! $current_user || ! $current_user->ID ) {
 		return [];
@@ -72,7 +72,7 @@ function alpaca_get_assigned_to_me_issues() {
 	);
 	// phpcs:enable WordPress.DB.SlowDBQuery
 
-	return alpaca_prepare_dashboard_widget_issue_list( $posts );
+	return alpaistr_prepare_dashboard_widget_issue_list( $posts );
 }
 
 /**
@@ -80,7 +80,7 @@ function alpaca_get_assigned_to_me_issues() {
  *
  * @return array
  */
-function alpaca_get_newly_created_issues() {
+function alpaistr_get_newly_created_issues() {
 	$posts = get_posts(
 		[
 			'post_type'      => 'alpaca_issue',
@@ -94,7 +94,7 @@ function alpaca_get_newly_created_issues() {
 		]
 	);
 
-	return alpaca_prepare_dashboard_widget_issue_list( $posts );
+	return alpaistr_prepare_dashboard_widget_issue_list( $posts );
 }
 
 /**
@@ -102,9 +102,9 @@ function alpaca_get_newly_created_issues() {
  *
  * @return array
  */
-function alpaca_get_overdue_issues() {
+function alpaistr_get_overdue_issues() {
 
-	$done_status    = alpaca_get_statuses( 'DESC' );
+	$done_status    = alpaistr_get_statuses( 'DESC' );
 	$done_status_id = ! empty( $done_status ) ? $done_status[0]->term_id : 0;
 
 	// phpcs:disable WordPress.DB.SlowDBQuery
@@ -132,7 +132,7 @@ function alpaca_get_overdue_issues() {
 	);
 	// phpcs:enable WordPress.DB.SlowDBQuery
 
-	return alpaca_prepare_dashboard_widget_issue_list( $posts );
+	return alpaistr_prepare_dashboard_widget_issue_list( $posts );
 }
 
 /**
@@ -140,14 +140,14 @@ function alpaca_get_overdue_issues() {
  *
  * @return array
  */
-function alpaca_get_watchlist_issues() {
+function alpaistr_get_watchlist_issues() {
 
 	$user_id = get_current_user_id();
 	if ( ! $user_id ) {
 		return [];
 	}
 
-	$watchlist = alpaca_get_watched_issue_ids_for_user( $user_id );
+	$watchlist = alpaistr_get_watched_issue_ids_for_user( $user_id );
 
 	if ( empty( $watchlist ) ) {
 		return [];
@@ -162,7 +162,7 @@ function alpaca_get_watchlist_issues() {
 		]
 	);
 
-	return alpaca_prepare_dashboard_widget_issue_list( $posts );
+	return alpaistr_prepare_dashboard_widget_issue_list( $posts );
 }
 /**
  * Prepare issue data for the widget.
@@ -170,7 +170,7 @@ function alpaca_get_watchlist_issues() {
  * @param WP_Post $post Post object.
  * @return array
  */
-function alpaca_prepare_issue_data( $post ) {
+function alpaistr_prepare_issue_data( $post ) {
 	if ( ! ( $post instanceof WP_Post ) ) {
 		return [];
 	}

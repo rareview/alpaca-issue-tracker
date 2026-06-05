@@ -2,10 +2,10 @@
 /**
  * Plugin activation handler.
  *
- * @package Alpaca
+ * @package AlpacaIssueTracker
  */
 
-namespace Alpaca;
+namespace AlpacaIssueTracker;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -45,32 +45,32 @@ class Activator {
 	 */
 	private static function check_requirements() {
 		// Check PHP version.
-		if ( version_compare( PHP_VERSION, Alpaca::MIN_PHP_VERSION, '<' ) ) {
-			deactivate_plugins( plugin_basename( ALPACA_PLUGIN_FILE ) );
+		if ( version_compare( PHP_VERSION, AlpacaIssueTracker::MIN_PHP_VERSION, '<' ) ) {
+			deactivate_plugins( plugin_basename( ALPAISTR_PLUGIN_FILE ) );
 			wp_die(
 				sprintf(
 					/* translators: 1: Required PHP version, 2: Current PHP version */
-					esc_html__( 'Alpaca Issue Tracker requires PHP version %1$s or higher. You are running version %2$s.', 'alpaca' ),
-					esc_html( Alpaca::MIN_PHP_VERSION ),
+					esc_html__( 'Alpaca Issue Tracker requires PHP version %1$s or higher. You are running version %2$s.', 'alpaca-issue-tracker' ),
+					esc_html( AlpacaIssueTracker::MIN_PHP_VERSION ),
 					esc_html( PHP_VERSION )
 				),
-				esc_html__( 'Plugin Activation Error', 'alpaca' ),
+				esc_html__( 'Plugin Activation Error', 'alpaca-issue-tracker' ),
 				[ 'back_link' => true ]
 			);
 		}
 
 		// Check WordPress version.
 		global $wp_version;
-		if ( version_compare( $wp_version, Alpaca::MIN_WP_VERSION, '<' ) ) {
-			deactivate_plugins( plugin_basename( ALPACA_PLUGIN_FILE ) );
+		if ( version_compare( $wp_version, AlpacaIssueTracker::MIN_WP_VERSION, '<' ) ) {
+			deactivate_plugins( plugin_basename( ALPAISTR_PLUGIN_FILE ) );
 			wp_die(
 				sprintf(
 					/* translators: 1: Required WP version, 2: Current WP version */
-					esc_html__( 'Alpaca Issue Tracker requires WordPress version %1$s or higher. You are running version %2$s.', 'alpaca' ),
-					esc_html( Alpaca::MIN_WP_VERSION ),
+					esc_html__( 'Alpaca Issue Tracker requires WordPress version %1$s or higher. You are running version %2$s.', 'alpaca-issue-tracker' ),
+					esc_html( AlpacaIssueTracker::MIN_WP_VERSION ),
 					esc_html( $wp_version )
 				),
-				esc_html__( 'Plugin Activation Error', 'alpaca' ),
+				esc_html__( 'Plugin Activation Error', 'alpaca-issue-tracker' ),
 				[ 'back_link' => true ]
 			);
 		}
@@ -86,7 +86,7 @@ class Activator {
 	 * - Done (score: 3)
 	 */
 	private static function setup_default_statuses() {
-		alpaca_setup_default_statuses();
+		alpaistr_setup_default_statuses();
 	}
 
 	/**
@@ -95,9 +95,9 @@ class Activator {
 	 * @return void
 	 */
 	private static function setup_notification_inbox() {
-		require_once ALPACA_PLUGIN_DIR . 'includes/notifications/inbox.php';
+		require_once ALPAISTR_PLUGIN_DIR . 'includes/notifications/inbox.php';
 
-		alpaca_install_notification_inbox_table();
+		alpaistr_install_notification_inbox_table();
 	}
 
 	/**
@@ -106,9 +106,9 @@ class Activator {
 	 * @return void
 	 */
 	private static function setup_notification_digests() {
-		require_once ALPACA_PLUGIN_DIR . 'includes/notifications/digest/index.php';
+		require_once ALPAISTR_PLUGIN_DIR . 'includes/notifications/digest/index.php';
 
-		alpaca_install_notification_digest_tables();
+		alpaistr_install_notification_digest_tables();
 	}
 
 	/**

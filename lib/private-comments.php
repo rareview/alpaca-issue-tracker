@@ -2,10 +2,10 @@
 /**
  * Functionality to hide and manage private comment types.
  *
- * @package Alpaca
+ * @package AlpacaIssueTracker
  */
 
-namespace Alpaca;
+namespace AlpacaIssueTracker;
 
 use WP_Comment_Query;
 

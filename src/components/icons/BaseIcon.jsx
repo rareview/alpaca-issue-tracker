@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 
 /**
- * Shared SVG wrapper for Alpaca icons.
+ * Shared SVG wrapper for Alpaca Issue Tracker icons.
  *
  * @param {Object}   root0           Component props.
  * @param {JSX.Node} root0.children  Icon SVG paths or shapes.

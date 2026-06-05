@@ -12,11 +12,11 @@ export const getAlpacaReportContext = () => {
     return {};
   }
 
-  if (!window.alpacaDataDump) {
-    window.alpacaDataDump = {};
+  if (!window.alpaistrDataDump) {
+    window.alpaistrDataDump = {};
   }
 
-  return window.alpacaDataDump;
+  return window.alpaistrDataDump;
 };
 
 /**
