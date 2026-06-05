@@ -21,7 +21,7 @@ msgstr ""
 
 #. Plugin URI of the plugin
 #: alpacaissuetracker.php
-msgid "https://github.com/rareview/alpaca"
+msgid "https://github.com/rareview/alpaca-issue-tracker"
 msgstr ""
 
 #. Description of the plugin

@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name:       Alpaca Issue Tracker
- * Plugin URI:        https://github.com/rareview/alpaca
+ * Plugin URI:        https://github.com/rareview/alpaca-issue-tracker
  * Description:       A lightweight issue tracker built entirely inside WordPress, designed for developers and agencies managing client projects.
  * Version:           1.0.2
  * Requires at least: 6.8
