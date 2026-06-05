@@ -1,14 +1,14 @@
 # REST API Hooks
 
-See [../developer/rest-api.md](../developer/rest-api.md) for endpoint behavior. This page focuses only on PHP action and filter hooks exposed by Alpaca's REST response helpers.
+See [../developer/rest-api.md](../developer/rest-api.md) for endpoint behavior. This page focuses only on PHP action and filter hooks exposed by Alpaca Issue Tracker's REST response helpers.
 
 ## Shared Response Hook
 
-### `alpaca_rest_response`
+### `alpaistr_rest_response`
 
 **Type:** Action.
 
-**Purpose:** Fires for every response created through `alpaca_rest_response()`, regardless of whether the result is successful or an error.
+**Purpose:** Fires for every response created through `alpaistr_rest_response()`, regardless of whether the result is successful or an error.
 
 **Parameters**
 
@@ -22,7 +22,7 @@ See [../developer/rest-api.md](../developer/rest-api.md) for endpoint behavior. 
 
 **Type:** Action.
 
-**Purpose:** Fires for successful REST responses created through `alpaca_rest_response()` when the HTTP status code is in the `2xx` range.
+**Purpose:** Fires for successful REST responses created through `alpaistr_rest_response()` when the HTTP status code is in the `2xx` range.
 
 **Parameters**
 
@@ -31,13 +31,13 @@ See [../developer/rest-api.md](../developer/rest-api.md) for endpoint behavior. 
 | `$data`   | `mixed` | The response payload. |
 | `$status` | `int`   | The HTTP status code. |
 
-**Notes:** The final action name depends on the `$action_type` string passed into `alpaca_rest_response()`. For example, an action type of `submit` produces `alpaca_rest_submit`.
+**Notes:** The final action name depends on the `$action_type` string passed into `alpaistr_rest_response()`. For example, an action type of `submit` produces `alpaca_rest_submit`.
 
 ### `alpaca_rest_error_{$action_type}`
 
 **Type:** Action.
 
-**Purpose:** Fires for non-`2xx` REST responses created through `alpaca_rest_response()`.
+**Purpose:** Fires for non-`2xx` REST responses created through `alpaistr_rest_response()`.
 
 **Parameters**
 
@@ -46,7 +46,7 @@ See [../developer/rest-api.md](../developer/rest-api.md) for endpoint behavior. 
 | `$data`   | `mixed` | The error payload.    |
 | `$status` | `int`   | The HTTP status code. |
 
-**Notes:** The final action name depends on the `$action_type` string passed into `alpaca_rest_response()`. For example, an action type of `submit` can produce `alpaca_rest_error_submit` for an error response.
+**Notes:** The final action name depends on the `$action_type` string passed into `alpaistr_rest_response()`. For example, an action type of `submit` can produce `alpaca_rest_error_submit` for an error response.
 
 ## Response Object Filter
 
@@ -54,7 +54,7 @@ See [../developer/rest-api.md](../developer/rest-api.md) for endpoint behavior. 
 
 **Type:** Filter.
 
-**Purpose:** Replaces or adjusts the final `WP_REST_Response` object after Alpaca has created it.
+**Purpose:** Replaces or adjusts the final `WP_REST_Response` object after Alpaca Issue Tracker has created it.
 
 **Parameters**
 
@@ -71,7 +71,7 @@ See [../developer/rest-api.md](../developer/rest-api.md) for endpoint behavior. 
 
 **Type:** Filter.
 
-**Purpose:** Overrides the REST API root URL Alpaca injects into localized front-end settings.
+**Purpose:** Overrides the REST API root URL Alpaca Issue Tracker injects into localized front-end settings.
 
 **Parameters**
 

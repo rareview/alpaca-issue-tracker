@@ -38,6 +38,8 @@ Event categories include:
 
 The notification inbox stores Alpaca Issue Tracker notifications inside WordPress. Users can review unread activity and mark notifications read or unread.
 
+Unread counts appear in the admin menu and in the front-end toolbar when contextual capture is enabled and the current user has access to the notification inbox.
+
 ## Email Notifications
 
 Email delivery can be enabled and configured from the user's notification settings.

@@ -2,6 +2,14 @@
 
 ## Payload Selection
 
+### `alpaca_process_notification_daily_digests`
+
+**Type:** Action.
+
+**Purpose:** Runs the scheduled daily-digest worker. Alpaca schedules this action through WordPress cron and processes due digest deliveries from the digest schedule table.
+
+**Parameters:** This action does not pass any parameters.
+
 ### `alpaca_filter_deadlines_by_user_preferences`
 
 **Type:** Filter.
@@ -20,7 +28,7 @@
 
 **Type:** Filter.
 
-**Purpose:** Rewrites the structured daily digest payload after Alpaca has assembled counts, issue activity, deadline data, and optional new-item rows.
+**Purpose:** Rewrites the structured daily digest payload after Alpaca Issue Tracker has assembled counts, issue activity, deadline data, and optional new-item rows.
 
 **Parameters**
 
@@ -42,7 +50,7 @@
 
 | Parameter      | Type    | Description                                               |
 | -------------- | ------- | --------------------------------------------------------- |
-| `$should_send` | `bool`  | Alpaca's default decision based on digest content counts. |
+| `$should_send` | `bool`  | Alpaca Issue Tracker's default decision based on digest content counts. |
 | `$payload`     | `array` | The structured digest payload.                            |
 | `$user_id`     | `int`   | The user receiving the digest.                            |
 | `$preferences` | `array` | The user's notification preferences.                      |
@@ -130,7 +138,7 @@ add_filter(
 
 **Type:** Filter.
 
-**Purpose:** Short-circuits or replaces Alpaca's built-in digest delivery for a specific channel. Return a boolean to mark the channel as handled.
+**Purpose:** Short-circuits or replaces Alpaca Issue Tracker's built-in digest delivery for a specific channel. Return a boolean to mark the channel as handled.
 
 **Parameters**
 

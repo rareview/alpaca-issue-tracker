@@ -26,6 +26,19 @@ Issues can be created from the board with Add Issue. A new issue can include:
 
 When an issue is created as High Priority, the timeline includes priority activity so there is visible history that the issue started that way.
 
+Issues can also be created from a column menu. Creating from a specific column preselects that column's status instead of using the default board status.
+
+## Column Controls
+
+Each board column has a menu for column-level actions. Available actions depend on permissions and the column state, and can include:
+
+- Add an issue directly to that column.
+- Focus or clear focus for the column.
+- Collapse or expand the column.
+- Lift high-priority issues.
+- Move all issues to the next status.
+- Delete all issues in the column when permitted.
+
 ## Editing Issues
 
 Opening a card shows the issue modal. Depending on permission and issue state, users can:

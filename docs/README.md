@@ -26,7 +26,7 @@ This documentation is for site owners, project teams, and developers working wit
 
 ## Developer Guides
 
-- [Hook And Filter Reference](reference/README.md): detailed descriptions of Alpaca's action hooks and filters.
+- [Hook And Filter Reference](reference/README.md): detailed descriptions of Alpaca Issue Tracker action hooks and filters.
 - [Development](developer/development.md): local tooling, lint, build, and translation commands.
 - [Architecture](developer/architecture.md): runtime structure, data model, and React entrypoints.
 - [Data Model](developer/data-model.md): post types, taxonomies, meta, comments, options, and notification tables.

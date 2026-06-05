@@ -29,11 +29,11 @@ add_filter(
 );
 ```
 
-### `alpaca_notification_builtin_inbox_is_enabled`
+### `alpaistr_notification_builtin_inbox_is_enabled`
 
 **Type:** Filter.
 
-**Purpose:** Enables or disables Alpaca's built-in inbox capture when notifications are processed.
+**Purpose:** Enables or disables Alpaca Issue Tracker's built-in inbox capture when notifications are processed.
 
 **Parameters**
 
@@ -47,7 +47,7 @@ add_filter(
 
 **Type:** Filter.
 
-**Purpose:** Rewrites the resolved delivery routes for a recipient after Alpaca has matched the user's enabled channels and transport details.
+**Purpose:** Rewrites the resolved delivery routes for a recipient after Alpaca Issue Tracker has matched the user's enabled channels and transport details.
 
 **Parameters**
 
@@ -58,7 +58,7 @@ add_filter(
 | `$event`     | `array` | The notification event payload.                |
 | `$channels`  | `array` | The normalized channel registry.               |
 
-### `alpaca_notification_transport_requires_message`
+### `alpaistr_notification_transport_requires_message`
 
 **Type:** Filter.
 
@@ -96,7 +96,7 @@ add_filter(
 
 | Parameter    | Type         | Description                                                              |
 | ------------ | ------------ | ------------------------------------------------------------------------ |
-| `$handled`   | `bool\|null` | Return `true` or `false` to override Alpaca's default dispatch behavior. |
+| `$handled`   | `bool\|null` | Return `true` or `false` to override Alpaca Issue Tracker's default dispatch behavior. |
 | `$route`     | `array`      | The route being dispatched.                                              |
 | `$recipient` | `array`      | The current recipient.                                                   |
 | `$event`     | `array`      | The notification event payload.                                          |

@@ -30,7 +30,7 @@ Follow the style of existing entries in the target file and update the entry cou
 
 ## Translation workflow notes
 
-Wrap all user-facing strings in translation functions with the `alpaca` text domain.
+Wrap all user-facing strings in translation functions with the `alpaca-issue-tracker` text domain.
 
 - For PHP, use context-appropriate translation and escaping functions for HTML content, attributes, and URLs.
 - For JavaScript and JSX, use functions from `wp.i18n` for all user-facing strings.

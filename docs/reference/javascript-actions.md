@@ -1,6 +1,6 @@
 # JavaScript Actions
 
-Alpaca emits JavaScript actions through WordPress `wp.hooks.doAction()` so integrations can react to UI changes, issue lifecycle events, and browser-side synchronization.
+Alpaca Issue Tracker emits JavaScript actions through WordPress `wp.hooks.doAction()` so integrations can react to UI changes, issue lifecycle events, and browser-side synchronization.
 
 Use `wp.hooks.addAction()` from code that runs in the same WordPress admin context as Alpaca.
 
@@ -36,7 +36,7 @@ Use `wp.hooks.addAction()` from code that runs in the same WordPress admin conte
 
 **Type:** Action.
 
-**Purpose:** Fires after Alpaca creates a new issue through the UI.
+**Purpose:** Fires after Alpaca Issue Tracker creates a new issue through the UI.
 
 **Parameters**
 

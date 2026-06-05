@@ -1,6 +1,6 @@
 # JavaScript Filters And Browser API
 
-Alpaca exposes JavaScript filters through WordPress `wp.hooks.applyFilters()` and `wp.hooks.addFilter()`. These filters allow integrations to extend the React UI without patching Alpaca internals.
+Alpaca Issue Tracker exposes JavaScript filters through WordPress `wp.hooks.applyFilters()` and `wp.hooks.addFilter()`. These filters allow integrations to extend the React UI without patching plugin internals.
 
 Use `wp.hooks.addFilter()` from code that runs in the same WordPress admin context as Alpaca.
 
@@ -353,7 +353,7 @@ addFilter('alpaca.commentingTips', 'my-plugin/comment-tip', (tips) => [
 
 | Parameter               | Type            | Description                            |
 | ----------------------- | --------------- | -------------------------------------- |
-| `$isEditable`           | `boolean`       | Alpaca's default editability decision. |
+| `$isEditable`           | `boolean`       | Alpaca Issue Tracker's default editability decision. |
 | `$comment`              | `Object`        | Comment payload.                       |
 | `$defaultEditableTypes` | `Array<string>` | Default editable agent types.          |
 
@@ -410,7 +410,7 @@ addFilter(
 
 **Type:** Filter.
 
-**Purpose:** Rewrites the REST root used by Alpaca's browser-side API helper before requests are sent.
+**Purpose:** Rewrites the REST root used by Alpaca Issue Tracker's browser-side API helper before requests are sent.
 
 **Parameters**
 
@@ -510,7 +510,7 @@ window.alpaca.itemDatapoints.register({
 
 **Type:** Browser API.
 
-**Purpose:** Persists datapoint visibility to the `alpaca_item_datapoint_visibility` setting.
+**Purpose:** Persists datapoint visibility to the `alpaistr_item_datapoint_visibility` setting.
 
 **Parameters**
 

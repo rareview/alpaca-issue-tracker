@@ -42,4 +42,8 @@ After activation:
 - My Notifications: current user's notification preferences.
 - Email Templates: site-wide notification email template editor.
 
+## Dashboard Widget
+
+Alpaca Issue Tracker adds a Project Issues widget to the WordPress Dashboard. It summarizes issue activity that is relevant to the current user, such as assigned issues, watched issues, latest issues, and overdue work.
+
 For capability details, see [Roles And Permissions](../admin/roles-and-permissions.md).

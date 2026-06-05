@@ -21,7 +21,7 @@ Issue and comment attachments are uploaded to an `alpaca` folder within the Word
 
 Attachment behavior is intentionally tied to the issue/comment context so files are not deleted from the wrong issue or comment.
 
-Alpaca uses the site's list of accepted file types.
+Alpaca Issue Tracker uses the site's list of accepted file types.
 
 ## Mentions
 

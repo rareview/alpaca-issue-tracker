@@ -87,10 +87,10 @@ Template values are stored as WordPress options:
 
 | Option                                       | Purpose                                         |
 | -------------------------------------------- | ----------------------------------------------- |
-| `alpaca_notification_email_subject_template` | Immediate notification email subject.           |
-| `alpaca_notification_email_body_template`    | Immediate notification email body block markup. |
-| `alpaca_daily_digest_subject_template`       | Daily digest email subject.                     |
-| `alpaca_daily_digest_body_template`          | Daily digest email body block markup.           |
+| `alpaistr_notification_email_subject_template` | Immediate notification email subject.           |
+| `alpaistr_notification_email_body_template`    | Immediate notification email body block markup. |
+| `alpaistr_daily_digest_subject_template`       | Daily digest email subject.                     |
+| `alpaistr_daily_digest_body_template`          | Daily digest email body block markup.           |
 
 Legacy daily digest preamble and postscript options are read during migration, then normalized into the body template.
 

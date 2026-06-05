@@ -15,7 +15,7 @@ This reference uses plain HTTP method names. In code, some endpoints use WordPre
 
 ## Permissions
 
-Permissions are checked through `Alpaca\Helpers::user_can()` and `Alpaca\Helpers::validate_rest_nonce_permission()`.
+Permissions are checked through `AlpacaIssueTracker\Helpers::user_can()` and `AlpacaIssueTracker\Helpers::validate_rest_nonce_permission()`.
 
 Common permission actions:
 
@@ -53,7 +53,7 @@ Custom permission behavior should use the `alpaca_user_can` filter documented in
 | `POST`   | `/wp-json/alpaca/v1/subissues`          | `create_issue` + nonce   | Create a subissue under a parent issue.                      |
 | `GET`    | `/wp-json/alpaca/v1/get/{id}`           | `comment_count`          | Get full issue details.                                      |
 | `GET`    | `/wp-json/alpaca/v1/comment-count/{id}` | `list_users`             | Get issue comment counts and last activity.                  |
-| `GET`    | `/wp-json/alpaca/v1/deleted-items`      | `comment_count`          | List trashed issues for the Deleted Items screen.            |
+| `GET`    | `/wp-json/alpaca/v1/deleted-items`      | `manage_options`         | List trashed issues for the Deleted Items screen.            |
 | `POST`   | `/wp-json/alpaca/v1/restore/{id}`       | `manage_options` + nonce | Restore a trashed issue.                                     |
 | `DELETE` | `/wp-json/alpaca/v1/delete/{id}`        | `delete_issue` + nonce   | Trash an issue.                                              |
 
@@ -416,6 +416,6 @@ add_filter(
 
 ### REST Lifecycle Actions
 
-- `alpaca_rest_response` fires for every wrapped Alpaca Issue Tracker REST response.
+- `alpaistr_rest_response` fires for every wrapped Alpaca Issue Tracker REST response.
 - `alpaca_rest_{action_type}` fires for successful responses with an action type.
 - `alpaca_rest_error_{action_type}` fires for error responses with an action type.

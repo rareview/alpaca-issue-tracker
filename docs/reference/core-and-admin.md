@@ -2,11 +2,11 @@
 
 ## Initialization
 
-### `alpaca_init`
+### `alpaistr_init`
 
 **Type:** Action.
 
-**Purpose:** Runs when Alpaca finishes its own initialization so integrations can register follow-up behavior after the plugin is loaded.
+**Purpose:** Runs when Alpaca Issue Tracker finishes its own initialization so integrations can register follow-up behavior after the plugin is loaded.
 
 **Parameters:** This action does not pass any parameters.
 
@@ -14,7 +14,7 @@
 
 ```php
 add_action(
-	'alpaca_init',
+	'alpaistr_init',
 	static function () {
 		// Register integration setup here.
 	}
@@ -27,7 +27,7 @@ add_action(
 
 **Type:** Filter.
 
-**Purpose:** Overrides Alpaca's internal permission decisions for plugin actions such as issue deletion, board updates, notification settings access, or REST endpoint permissions.
+**Purpose:** Overrides Alpaca Issue Tracker's internal permission decisions for plugin actions such as issue deletion, board updates, notification settings access, or REST endpoint permissions.
 
 **Parameters**
 
@@ -66,7 +66,7 @@ add_filter(
 
 | Parameter   | Type    | Description                                                  |
 | ----------- | ------- | ------------------------------------------------------------ |
-| `$statuses` | `array` | The status term objects returned by `alpaca_get_statuses()`. |
+| `$statuses` | `array` | The status term objects returned by `alpaistr_get_statuses()`. |
 
 **Example**
 
@@ -146,7 +146,7 @@ add_action(
 
 ## Migration And Feature Flags
 
-### `alpaca_should_migrate_legacy_watchlist`
+### `alpaistr_should_migrate_legacy_watchlist`
 
 **Type:** Filter.
 
@@ -166,11 +166,11 @@ The hooks below are not defined by Alpaca, but Alpaca explicitly calls them and 
 
 **Type:** Filter.
 
-**Purpose:** Lets WordPress or another plugin override the locale Alpaca uses when loading PHP and JavaScript translation files.
+**Purpose:** Lets WordPress or another plugin override the locale Alpaca Issue Tracker uses when loading PHP and JavaScript translation files.
 
 **Parameters**
 
 | Parameter  | Type     | Description                         |
 | ---------- | -------- | ----------------------------------- |
 | `$locale`  | `string` | The locale Alpaca is about to load. |
-| `'alpaca'` | `string` | The Alpaca text domain.             |
+| `'alpaca-issue-tracker'` | `string` | The Alpaca Issue Tracker text domain. |

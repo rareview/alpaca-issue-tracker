@@ -12,9 +12,9 @@ Use it to:
 - Rename or delete existing statuses.
 - Manage the order of columns shown on the board.
 
-Alpaca creates a set of default statuses on activation. You can add, rename or remove these to create your desired column structure. There is no limit on the number of statuses you can have on a board.
+Alpaca Issue Tracker creates a set of default statuses on activation. You can add, rename or remove these to create your desired column structure. There is no limit on the number of statuses you can have on a board.
 
-Alpaca cannot function without statuses. If you lose or delete all statuses, you will be prompted to restore the default set.
+Alpaca Issue Tracker cannot function without statuses. If you lose or delete all statuses, you will be prompted to restore the default set.
 
 ## Cards
 

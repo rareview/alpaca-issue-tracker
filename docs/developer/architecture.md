@@ -4,13 +4,16 @@ This page summarizes how Alpaca Issue Tracker is organized.
 
 ## Bootstrap
 
-The plugin starts from `alpaca.php`.
+The plugin starts from `alpacaissuetracker.php`.
 
 The bootstrap loads the core plugin classes, registers activation and deactivation hooks, and starts the main plugin registration flow.
 
+PHP classes use the `AlpacaIssueTracker` namespace. The public REST namespace remains `alpaca/v1`, so existing API URLs do not change with the plugin display-name update.
+
 ## Main PHP Areas
 
-- `includes/class-register.php`: registers assets, admin screens, settings, API routes, and WordPress hooks.
+- `includes/class-alpacaissuetracker.php`: main plugin lifecycle, settings registration, activation hooks, and initialization.
+- `includes/class-register.php`: registers assets, admin screens, API routes, and WordPress hooks.
 - `includes/class-helpers.php`: shared helper methods and shared constants.
 - `includes/api/`: API endpoint and filter registration.
 - `includes/core/`: custom post types, taxonomies, and shared core behavior.
@@ -29,6 +32,8 @@ Core screens include:
 - Email Templates.
 - Daily Digest Template.
 - My Notifications.
+
+The plugin also adds a WordPress Dashboard widget that summarizes relevant project issues for the current user.
 
 ## React Entrypoints
 

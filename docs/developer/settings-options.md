@@ -8,9 +8,9 @@ These options are registered with WordPress settings and exposed through `wp/v2/
 
 | Option | Type | Default | Purpose |
 | --- | --- | --- | --- |
-| `alpaca_enable_test_logs` | string | `0` | Enables test/debug console messages. |
-| `alpaca_enable_context_capture` | string | `1` | Enables contextual capture behavior. |
-| `alpaca_item_datapoint_visibility` | object | `{}` | Stores enabled/disabled card datapoints by datapoint slug. |
+| `alpaistr_enable_test_logs` | string | `0` | Enables test/debug console messages. |
+| `alpaistr_enable_context_capture` | string | `1` | Enables contextual capture behavior. |
+| `alpaistr_item_datapoint_visibility` | object | `{}` | Stores enabled/disabled card datapoints by datapoint slug. |
 
 ## Template Options
 
@@ -18,12 +18,12 @@ These options store shared email template settings.
 
 | Option | Purpose |
 | --- | --- |
-| `alpaca_notification_email_subject_template` | Immediate notification email subject template. |
-| `alpaca_notification_email_body_template` | Immediate notification email body block markup. |
-| `alpaca_daily_digest_subject_template` | Daily digest email subject template. |
-| `alpaca_daily_digest_body_template` | Daily digest email body block markup. |
-| `alpaca_daily_digest_preamble_template` | Legacy daily digest preamble read during template migration. |
-| `alpaca_daily_digest_postscript_template` | Legacy daily digest postscript read during template migration. |
+| `alpaistr_notification_email_subject_template` | Immediate notification email subject template. |
+| `alpaistr_notification_email_body_template` | Immediate notification email body block markup. |
+| `alpaistr_daily_digest_subject_template` | Daily digest email subject template. |
+| `alpaistr_daily_digest_body_template` | Daily digest email body block markup. |
+| `alpaistr_daily_digest_preamble_template` | Legacy daily digest preamble read during template migration. |
+| `alpaistr_daily_digest_postscript_template` | Legacy daily digest postscript read during template migration. |
 
 Template behavior is documented in [Email Templates](../admin/email-templates.md).
 
@@ -33,10 +33,10 @@ These options support plugin internals and should not be edited manually unless 
 
 | Option | Purpose |
 | --- | --- |
-| `alpaca_default_status_id` | Stores the default board status term ID after default status creation. |
-| `alpaca_board_cache_version` | Cache-busting version for board cache keys. |
-| `alpaca_notification_inbox_schema_version` | Installed schema version for the notification inbox table. |
-| `alpaca_notification_digest_schema_version` | Installed schema version for digest schedule/delivery tables. |
+| `alpaistr_default_status_id` | Stores the default board status term ID after default status creation. |
+| `alpaistr_board_cache_version` | Cache-busting version for board cache keys. |
+| `alpaistr_notification_inbox_schema_version` | Installed schema version for the notification inbox table. |
+| `alpaistr_notification_digest_schema_version` | Installed schema version for digest schedule/delivery tables. |
 
 ## User Meta
 
@@ -59,7 +59,7 @@ Notification preferences are normalized before saving. The current structure inc
 
 ## Card Datapoint Visibility
 
-Card datapoint visibility is stored in `alpaca_item_datapoint_visibility` as a boolean map keyed by datapoint slug.
+Card datapoint visibility is stored in `alpaistr_item_datapoint_visibility` as a boolean map keyed by datapoint slug.
 
 Example:
 

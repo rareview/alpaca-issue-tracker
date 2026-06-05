@@ -20,11 +20,11 @@
 
 **Type:** Filter.
 
-**Purpose:** Overrides whether the current user can view a specific hidden comment type after Alpaca's default `moderate_comments` capability check.
+**Purpose:** Overrides whether the current user can view a specific hidden comment type after Alpaca Issue Tracker's default `moderate_comments` capability check.
 
 **Parameters**
 
 | Parameter   | Type     | Description                              |
 | ----------- | -------- | ---------------------------------------- |
-| `$can_view` | `bool`   | Alpaca's current visibility decision.    |
+| `$can_view` | `bool`   | Alpaca Issue Tracker's current visibility decision. |
 | `$type`     | `string` | The hidden comment type being evaluated. |
