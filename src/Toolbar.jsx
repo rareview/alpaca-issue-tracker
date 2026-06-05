@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import handleSnapdomCapture from './snapdomHandler.js';
 import { dataUrlToFile, uploadIssueAttachment } from './utils/attachmentUpload';
 import { useTestLogger } from './utils/testLogger.js';
+import { isTestLoggingEnabled } from './utils/testLogSetting.js';
 import Icon from './components/icons/Icon';
 import UnreadCountBadge from './components/notifications/UnreadCountBadge.jsx';
 import { useNotification } from './context/NotificationContext.jsx';
@@ -61,15 +62,11 @@ const AlpacaToolbar = ({ showUnreadBadge }) => {
   const formRef = useRef(null);
   const reportButtonRef = useRef(null);
   const closeResetTimeoutRef = useRef(null);
-  const [enableTestLogs, setEnableTestLogs] = useState(false);
+  const [enableTestLogs, setEnableTestLogs] = useState(isTestLoggingEnabled);
 
   useEffect(() => {
-    wp.apiFetch({ path: '/wp/v2/settings' }).then((settings) => {
-      setEnableTestLogs(settings.alpaistr_enable_test_logs === '1');
-    });
-
     const handleTestLogSettingChange = (value) => {
-      setEnableTestLogs(value);
+      setEnableTestLogs(Boolean(value));
     };
 
     wp.hooks.addAction(

@@ -68,7 +68,9 @@ const contextualCaptureEnabled =
     typeof window.alpaistrSettings?.contextualCaptureEnabled === 'undefined');
 const canViewNotificationInbox =
   typeof window !== 'undefined' &&
-  window.alpaistrSettings?.canViewNotificationInbox === true;
+  (window.alpaistrSettings?.canViewNotificationInbox === true ||
+    window.alpaistrSettings?.canViewNotificationInbox === 1 ||
+    window.alpaistrSettings?.canViewNotificationInbox === '1');
 const mountReactTree = createMountReactTree({
   createRoot,
   legacyRender,
