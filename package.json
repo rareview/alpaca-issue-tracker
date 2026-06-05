@@ -5,13 +5,13 @@
   "private": true,
   "license": "GPL-2.0-or-later",
   "author": "Rareview®",
-  "homepage": "https://github.com/rareview/alpaca",
+  "homepage": "https://github.com/rareview/alpaca-issue-tracker",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rareview/alpaca.git"
+    "url": "git+https://github.com/rareview/alpaca-issue-tracker.git"
   },
   "bugs": {
-    "url": "https://github.com/rareview/alpaca/issues"
+    "url": "https://github.com/rareview/alpaca-issue-tracker/issues"
   },
   "scripts": {
     "icons:generate": "node scripts/generate-icons.js",
