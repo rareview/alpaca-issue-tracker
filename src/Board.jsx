@@ -1402,6 +1402,7 @@ export function AlpacaBoard() {
       return updatedContainers;
     });
 
+    setNeedsSave(true);
     closeModal();
   };
 
