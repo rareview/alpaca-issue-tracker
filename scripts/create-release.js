@@ -227,7 +227,7 @@ function updateVersionFiles(version, apply = true) {
  */
 function createRelease(version, notesFile) {
   const tagName = `v${version}`;
-  const releaseTitle = `Alpaca Issue Tracker ${tagName}`;
+  const releaseTitle = tagName;
   const releaseArgs = [
     'release',
     'create',
