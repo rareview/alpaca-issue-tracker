@@ -57,6 +57,19 @@ add_action(
 			'alpaca-email-templates',
 			'alpaistr_email_templates_page'
 		);
+
+		$alpaca_docs_hook = add_submenu_page(
+			'project-board',
+			esc_html__( 'Documentation', 'alpaca-issue-tracker' ),
+			esc_html__( 'Documentation', 'alpaca-issue-tracker' ) . ' <span class="dashicons dashicons-external" style="font-size: 13px; width: 13px; height: 13px; vertical-align: middle; margin-inline-start: 4px;"></span>',
+			'manage_options',
+			'alpaca-docs',
+			'alpaistr_docs_redirect'
+		);
+
+		if ( $alpaca_docs_hook ) {
+			add_action( 'load-' . $alpaca_docs_hook, 'alpaistr_docs_redirect' );
+		}
 	}
 );
 
@@ -123,4 +136,21 @@ function alpaistr_email_templates_page() {
 		<div id="alpaca-email-templates-page"></div>
 	</div>
 	<?php
+}
+
+/**
+ * Redirects to the external documentation URL.
+ *
+ * @return void
+ */
+function alpaistr_docs_redirect() {
+	add_filter(
+		'allowed_redirect_hosts',
+		function ( $hosts ) {
+			$hosts[] = 'docs.alpacaissuetracker.com';
+			return $hosts;
+		}
+	);
+	wp_safe_redirect( 'https://docs.alpacaissuetracker.com' );
+	exit;
 }
