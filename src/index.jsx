@@ -91,9 +91,7 @@ if (!isAdmin && contextualCaptureEnabled) {
   toolbarContainer.id = 'alpaca-toolbar-mount';
   document.body.appendChild(toolbarContainer);
 
-  const toolbar = (
-    <AlpacaToolbar showUnreadBadge={canViewNotificationInbox} />
-  );
+  const toolbar = <AlpacaToolbar showUnreadBadge={canViewNotificationInbox} />;
 
   mountReactTree(
     canViewNotificationInbox ? (
