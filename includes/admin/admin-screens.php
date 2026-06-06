@@ -61,7 +61,7 @@ add_action(
 		$alpaca_docs_hook = add_submenu_page(
 			'project-board',
 			esc_html__( 'Documentation', 'alpaca-issue-tracker' ),
-			esc_html__( 'Documentation', 'alpaca-issue-tracker' ) . ' <span class="dashicons dashicons-external" style="font-size: 13px; width: 13px; height: 13px; vertical-align: middle; margin-inline-start: 4px;"></span>',
+			esc_html__( 'Documentation', 'alpaca-issue-tracker' ) . ' <span class="dashicons dashicons-external" aria-hidden="true"></span>',
 			'manage_options',
 			'alpaca-docs',
 			'alpaistr_docs_redirect'
