@@ -4,7 +4,7 @@ Tags: issue tracker, bug tracker, project management, kanban, development
 Requires at least: 6.8
 Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 1.0.0
+Stable tag: 1.0.3
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -122,15 +122,24 @@ Alpaca Issue Tracker uses user images throughout its interface, for extra humani
 
 == Changelog ==
 
-= 1.0: May 2026 =
-* First public release
+= 1.0.3 =
+* Removed hidden files from the release archive.
+* Updated plugin repository metadata.
+
+= 1.0.2 =
+* Updated the plugin readme changelog and release metadata.
+
+= 1.0.1 =
+* Added unread notification counts to the front-end toolbar.
+* Added a board column action for creating issues directly in a selected status.
+
+= 1.0.0 =
+* First public release.
 
 == Development ==
 
-Alpaca Issue Tracker is currently in active development.
-
 Source code and build configuration are available at:
-https://github.com/rareview/alpaca
+https://github.com/rareview/alpaca-issue-tracker
 
 = Building from Source =
 

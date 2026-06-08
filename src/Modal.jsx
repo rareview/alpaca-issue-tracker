@@ -1,6 +1,7 @@
 import handleSnapdomCapture from './snapdomHandler.js';
 import { dataUrlToFile, uploadIssueAttachment } from './utils/attachmentUpload';
 import { useTestLogger } from './utils/testLogger.js';
+import { isTestLoggingEnabled } from './utils/testLogSetting.js';
 import { buildAlpacaRestUrl, getAlpacaRestNonce } from './utils/restApiRoot.js';
 import {
   ensureAlpacaReportContext,
@@ -23,15 +24,11 @@ const AlpacaModal = () => {
   const textareaRef = useRef(null);
   const closeBtnRef = useRef(null);
 
-  const [enableTestLogs, setEnableTestLogs] = useState(false);
+  const [enableTestLogs, setEnableTestLogs] = useState(isTestLoggingEnabled);
 
   useEffect(() => {
-    wp.apiFetch({ path: '/wp/v2/settings' }).then((settings) => {
-      setEnableTestLogs(settings.alpaistr_enable_test_logs === '1');
-    });
-
     const handleTestLogSettingChange = (value) => {
-      setEnableTestLogs(value);
+      setEnableTestLogs(Boolean(value));
     };
 
     wp.hooks.addAction(

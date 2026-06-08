@@ -41,6 +41,7 @@ import PropTypes from 'prop-types';
  * @param {Function} root0.onRename           - Callback to rename container
  * @param {Function} root0.onItemDrop         - Callback for drag-and-drop moves
  * @param {Function} root0.onBulkItemReorder  - Callback for bulk item reordering
+ * @param {Function} root0.onAddIssue         - Callback to add a new issue in this column
  * @return {JSX.Element} Container component
  */
 function Container({
@@ -62,6 +63,7 @@ function Container({
   onRename,
   onItemDrop,
   onBulkItemReorder,
+  onAddIssue,
 }) {
   const [isRenaming, setIsRenaming] = useState(false);
   const [newTitle, setNewTitle] = useState(title);
@@ -137,11 +139,12 @@ function Container({
 
   const menuControls = [
     {
-      icon: 'edit',
-      title: __('Rename', 'alpaca-issue-tracker'),
+      icon: 'plus',
+      title: __('Add Issue In This Column', 'alpaca-issue-tracker'),
       onClick: () => {
-        setNewTitle(title);
-        setIsRenaming(true);
+        if (onAddIssue) {
+          onAddIssue(id);
+        }
       },
     },
     {
@@ -794,6 +797,7 @@ Container.propTypes = {
   onRename: PropTypes.func.isRequired,
   onItemDrop: PropTypes.func,
   onBulkItemReorder: PropTypes.func,
+  onAddIssue: PropTypes.func,
 };
 
 Container.defaultProps = {

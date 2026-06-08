@@ -575,6 +575,7 @@ const cleanupUploadedIssueAttachments = async (attachments, issueId) => {
 const AlpacaIssue = ({
   issueId,
   isCreating,
+  initialStatusId = null,
   isOpen,
   activeSearchQuery = '',
   onClose,
@@ -1220,6 +1221,24 @@ const AlpacaIssue = ({
           createdIssueDeadline = deadline || null;
           createdIssueIsHighPriority = isHighPriority;
 
+          // If an initial status was requested, move the issue to it now.
+          if (
+            initialStatusId &&
+            String(initialStatusId) !== String(response.statusId)
+          ) {
+            try {
+              await updateIssue(newIssueId, {
+                taxonomies: {
+                  // eslint-disable-next-line camelcase
+                  alpaca_status: [Number(initialStatusId)],
+                },
+              });
+              response = { ...response, statusId: Number(initialStatusId) };
+            } catch (err) {
+              console.error('Failed to set initial column status:', err);
+            }
+          }
+
           if (deadline) {
             try {
               await updateIssue(newIssueId, { meta: { deadline } });
@@ -1384,6 +1403,7 @@ const AlpacaIssue = ({
           labels: createdIssueLabels,
           deadline: createdIssueDeadline,
           isHighPriority: createdIssueIsHighPriority,
+          statusId: response.statusId,
         };
         const createdIssueHook = {
           ...(response.issue && typeof response.issue === 'object'
@@ -1454,6 +1474,7 @@ const AlpacaIssue = ({
     },
     [
       isCreating,
+      initialStatusId,
       editedTitle,
       isHighPriority,
       createdIssueRetry,
@@ -2539,6 +2560,7 @@ AlpacaIssue.propTypes = {
   onIssueTitleChange: PropTypes.func.isRequired,
   onLabelsChange: PropTypes.func,
   isCreating: PropTypes.bool,
+  initialStatusId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   onIssueCreated: PropTypes.func,
   activeSearchQuery: PropTypes.string,
 };
