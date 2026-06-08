@@ -226,34 +226,39 @@ function alpaistr_send_notifications_for_event( $event, $template = null ) {
 }
 
 /**
- * Handle a newly inserted REST comment for notification processing.
+ * Sync attachment meta when a comment is inserted or updated via REST.
  *
- * @param WP_Comment      $comment  Inserted comment object.
- * @param WP_REST_Request $request  REST request.
- * @param bool            $creating Whether this is a create request.
+ * @param WP_Comment $comment Inserted comment object.
  * @return void
  */
-function alpaistr_handle_rest_insert_comment_notifications( $comment, $request, $creating ) {
+function alpaistr_handle_rest_insert_comment_notifications( $comment ) {
 	if ( ! ( $comment instanceof WP_Comment ) ) {
 		return;
 	}
 
 	alpaistr_sync_comment_attachments_meta( $comment->comment_ID );
+}
+add_action( 'rest_after_insert_comment', 'alpaistr_handle_rest_insert_comment_notifications', 20, 1 );
 
-	if ( ! $creating ) {
-		alpaistr_sync_comment_mentions( $comment->comment_ID );
-		return;
-	}
-
+/**
+ * Sync mentions and dispatch notifications for any newly inserted issuecomment,
+ * regardless of the code path that created it (REST, Abilities API, WP-CLI, etc.).
+ *
+ * @param int        $comment_id Comment ID.
+ * @param WP_Comment $comment    Comment object.
+ * @return void
+ */
+function alpaistr_handle_new_comment_notifications( $comment_id, $comment ) {
 	if ( 'issuecomment' !== $comment->comment_type ) {
 		return;
 	}
+
+	alpaistr_sync_comment_mentions( $comment_id );
 
 	if ( '1' !== (string) $comment->comment_approved && 1 !== (int) $comment->comment_approved ) {
 		return;
 	}
 
-	alpaistr_sync_comment_mentions( $comment->comment_ID );
 	$event = alpaistr_get_notification_event_from_comment( $comment );
 	if ( ! is_array( $event ) ) {
 		return;
@@ -261,4 +266,4 @@ function alpaistr_handle_rest_insert_comment_notifications( $comment, $request, 
 
 	alpaistr_send_notifications_for_event( $event );
 }
-add_action( 'rest_after_insert_comment', 'alpaistr_handle_rest_insert_comment_notifications', 20, 3 );
+add_action( 'wp_insert_comment', 'alpaistr_handle_new_comment_notifications', 20, 2 );

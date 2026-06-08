@@ -797,12 +797,6 @@ function alpaistr_ability_add_comment( $input ) {
 
 	$comment = get_comment( $comment_id );
 
-	// Fire mention sync and notifications — rest_after_insert_comment doesn't run
-	// outside the REST API, so we dispatch manually here.
-	alpaistr_sync_comment_mentions( $comment_id );
-	$event = alpaistr_get_notification_event_from_comment( $comment );
-	alpaistr_send_notifications_for_event( $event );
-
 	return [
 		'success'    => true,
 		'comment_id' => (int) $comment_id,
