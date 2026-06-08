@@ -142,6 +142,13 @@ const AttachmentControls = ({
                 },
                 {
                   text: __(
+                    'Type <kbd>#</kbd> and select an issue to link.',
+                    'alpaca-issue-tracker',
+                  ),
+                  placeholders: { kbd: <kbd /> },
+                },
+                {
+                  text: __(
                     'Basic Markdown is supported: <code>**bold**</code>, <code>*italic*</code>, <code>`code`</code>, <code>- lists</code>, etc.',
                     'alpaca-issue-tracker',
                   ),
