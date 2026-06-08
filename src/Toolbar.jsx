@@ -6,11 +6,8 @@ import { isTestLoggingEnabled } from './utils/testLogSetting.js';
 import Icon from './components/icons/Icon';
 import UnreadCountBadge from './components/notifications/UnreadCountBadge.jsx';
 import { useNotification } from './context/NotificationContext.jsx';
-import {
-  buildAlpacaRestUrl,
-  getAlpacaRestNonce,
-  getAlpacaRestRoot,
-} from './utils/restApiRoot.js';
+import { buildAlpacaRestUrl, getAlpacaRestNonce } from './utils/restApiRoot.js';
+import { getProjectBoardUrl } from './utils/projectBoardUrl.js';
 import {
   ensureAlpacaReportContext,
   getAlpacaReportContext,
@@ -258,21 +255,7 @@ const AlpacaToolbar = ({ showUnreadBadge }) => {
     }
   }, [feedback, isHighPriority, closeForm]);
 
-  const projectBoardUrl = (() => {
-    if (
-      window.alpaistrSettings?.adminUrl &&
-      typeof window.alpaistrSettings.adminUrl === 'string'
-    ) {
-      return `${window.alpaistrSettings.adminUrl}?page=project-board`;
-    }
-
-    const restRoot = getAlpacaRestRoot();
-    if (typeof restRoot === 'string' && restRoot.includes('/wp-json/')) {
-      return `${restRoot.replace('/wp-json/', '/wp-admin/')}admin.php?page=project-board`;
-    }
-
-    return `${window.location.origin}/wp-admin/admin.php?page=project-board`;
-  })();
+  const projectBoardUrl = getProjectBoardUrl();
 
   return (
     <>
