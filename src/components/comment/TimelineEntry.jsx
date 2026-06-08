@@ -6,9 +6,10 @@ import { Attachment } from '../issue/AttachmentRow';
 import { generateAssigneeSpan } from '../../hooks/useUser';
 import { highlightHtmlContent } from '../../utils/searchHighlight';
 import { sanitizeHtml, isValidHttpUrl } from '../../utils/sanitize';
+import { renderIssueLinkMarkup } from '../../utils/issueLinks';
 
 const { __, sprintf } = wp.i18n;
-const { useMemo, memo } = wp.element;
+const { useMemo, memo, useCallback, useEffect, useRef } = wp.element;
 
 /**
  * Convert supported user identifier shapes to a positive integer.
@@ -169,9 +170,13 @@ export const getProcessedCommentContent = (comment) => {
   let content = '';
 
   if (comment.content.raw) {
-    content = sanitizeHtml(marked(mentionMarkup(comment.content.raw)));
+    content = sanitizeHtml(
+      marked(renderIssueLinkMarkup(mentionMarkup(comment.content.raw))),
+    );
   } else if (comment.content.rendered) {
-    content = sanitizeHtml(mentionMarkup(comment.content.rendered));
+    content = sanitizeHtml(
+      renderIssueLinkMarkup(mentionMarkup(comment.content.rendered)),
+    );
   }
 
   return injectAvatarStyles(content);
@@ -291,6 +296,44 @@ const TimelineEntry = ({
 
     return html;
   }, [comment, stripInteractive, dataSource, highlightQuery]);
+  const auditContentRef = useRef(null);
+  const commentContentRef = useRef(null);
+  const handleIssueLinkClick = useCallback((event) => {
+    const issueLink = event.target?.closest?.('a.alpaca-issue-link');
+
+    if (!issueLink) {
+      return;
+    }
+
+    const issueSlug = issueLink.getAttribute('data-issue-slug');
+    if (!issueSlug) {
+      return;
+    }
+
+    event.preventDefault();
+    wp.hooks.doAction('alpaca.openIssue', { slug: issueSlug });
+  }, []);
+
+  useEffect(() => {
+    const contentNodes = [
+      auditContentRef.current,
+      commentContentRef.current,
+    ].filter(Boolean);
+
+    if (contentNodes.length < 1) {
+      return undefined;
+    }
+
+    contentNodes.forEach((node) => {
+      node.addEventListener('click', handleIssueLinkClick);
+    });
+
+    return () => {
+      contentNodes.forEach((node) => {
+        node.removeEventListener('click', handleIssueLinkClick);
+      });
+    };
+  }, [handleIssueLinkClick, processedContent]);
 
   if (isAudit) {
     return (
@@ -318,6 +361,7 @@ const TimelineEntry = ({
           )}
           <div className="alpaca-audit-inline-row">
             <div
+              ref={auditContentRef}
               className="alpaca-timeline-msg-content with-avatar-meta"
               dangerouslySetInnerHTML={{ __html: processedContent }}
             />
@@ -408,6 +452,7 @@ const TimelineEntry = ({
             editBody
           ) : (
             <div
+              ref={commentContentRef}
               className="alpaca-comment-content with-avatar-meta"
               dangerouslySetInnerHTML={{ __html: processedContent }}
             />

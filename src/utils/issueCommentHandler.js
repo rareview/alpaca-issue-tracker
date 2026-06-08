@@ -1,6 +1,8 @@
 import { getUser, generateAssigneeSpan } from '../hooks/useUser.js';
 import { fetchIssueCommentCount } from '../services/issueApi.js';
+import { fetchIssueBySlug } from '../services/issueSearch';
 import { formatWpDateValue } from './date';
+import { buildIssueLinkToken, extractIssueLinks } from './issueLinks';
 
 /**
  * Handles automatic commenting on issues, such as when an issue is created.
@@ -25,6 +27,9 @@ const stripHtmlAndMarkdown = (input) => {
 
   // Strip HTML tags
   output = output.replace(/<[^>]*>?/gm, '');
+
+  // Strip custom issue links, keeping the text label.
+  output = output.replace(/#\[([^\]]+)\]\(([^)\s]+)\)/g, '$1');
 
   // Strip Markdown links, keeping the text
   output = output.replace(/\[(.*?)\]\(.*?\)/g, '$1');
@@ -105,30 +110,19 @@ const buildNotificationContext = (context = {}) => {
   return notificationContext;
 };
 
-/**
- * Build an issue link using the current board URL when possible.
- *
- * @param {Object} issueData     Issue data (slug).
- * @param {string} fallbackLabel Text to display when URL cannot be built.
- * @return {string} Markdown link or plain fallback label.
- */
-const getIssueLinkLabel = (issueData, fallbackLabel) => {
-  const issueSlug = issueData?.slug || '';
-  if (!issueSlug) {
-    return fallbackLabel;
-  }
+const getUniqueIssueLinks = (content) => {
+  const seen = new Set();
 
-  try {
-    if (typeof window !== 'undefined' && window.location) {
-      const issueUrl = new URL(window.location.href);
-      issueUrl.searchParams.set('issue', issueSlug);
-      return `[${fallbackLabel}](${issueUrl.toString()})`;
+  return extractIssueLinks(content).filter((link) => {
+    const slug = String(link?.slug || '').trim();
+
+    if (!slug || seen.has(slug)) {
+      return false;
     }
-  } catch (error) {
-    // Fall through to plain text label.
-  }
 
-  return fallbackLabel;
+    seen.add(slug);
+    return true;
+  });
 };
 
 addFilter('alpaca.commentObject', 'alpaca/addPlainText', (comment) => {
@@ -228,6 +222,79 @@ export const postComment = async (
   } catch (error) {
     console.error('issueCommentHandler.js: Error adding comment:', error);
     return null;
+  }
+};
+
+/**
+ * Post audit comments on linked issues for newly added issue references.
+ *
+ * @param {Object} options                 Audit options.
+ * @param {string} options.content         Current comment content.
+ * @param {string} options.previousContent Previous comment content.
+ * @param {Object} options.currentUser     Current user object.
+ * @param {Object} options.sourceIssue     Linking issue context.
+ * @return {Promise<void>} Resolves when audit comments are posted.
+ */
+export const postIssueMentionAuditComments = async ({
+  content,
+  previousContent = '',
+  currentUser,
+  sourceIssue,
+}) => {
+  const sourceIssueId = Number(sourceIssue?.post_id || sourceIssue?.id || 0);
+  const sourceIssueSlug = String(
+    sourceIssue?.slug || sourceIssue?.post_name || '',
+  ).trim();
+
+  if (!sourceIssueId || !sourceIssueSlug || !content) {
+    return;
+  }
+
+  const previousSlugs = new Set(
+    getUniqueIssueLinks(previousContent).map((link) => link.slug),
+  );
+  const sourceIssueLabel =
+    stripHtmlAndMarkdown(
+      sourceIssue?.title ||
+        sourceIssue?.post_title ||
+        sourceIssue?.content ||
+        '',
+    ).trim() || __('Unknown issue', 'alpaca-issue-tracker');
+  const sourceIssueLink =
+    buildIssueLinkToken({
+      slug: sourceIssueSlug,
+      title: sourceIssueLabel,
+    }) || sourceIssueLabel;
+  const resolvedCurrentUser = currentUser || (await getUser());
+  const authorLabel = getAuditCommentUserLabel(
+    resolvedCurrentUser,
+    resolvedCurrentUser?.display_name || resolvedCurrentUser?.name || '',
+  );
+  const issueLinks = getUniqueIssueLinks(content).filter(
+    (link) => link.slug !== sourceIssueSlug && !previousSlugs.has(link.slug),
+  );
+
+  for (const link of issueLinks) {
+    // eslint-disable-next-line no-await-in-loop
+    const linkedIssue = await fetchIssueBySlug(link.slug);
+
+    if (!linkedIssue || Number(linkedIssue.id) === sourceIssueId) {
+      continue;
+    }
+
+    const commentContent = `${authorLabel} ${__(
+      'mentioned this issue on',
+      'alpaca-issue-tracker',
+    )} ${sourceIssueLink}`;
+
+    // eslint-disable-next-line no-await-in-loop
+    await postComment(linkedIssue.id, commentContent, ['issue-mentioned'], {
+      meta: {
+        alpacaNotificationContext: buildNotificationContext({
+          action: 'mention',
+        }),
+      },
+    });
   }
 };
 
@@ -506,19 +573,18 @@ addAction(
     const parentTitle = stripHtmlAndMarkdown(parentIssue?.title || '').trim();
     const parentLabel =
       parentTitle || __('Unknown issue', 'alpaca-issue-tracker');
-    const parentIssueLink = getIssueLinkLabel(parentIssue, parentLabel);
+    const parentIssueLink = buildIssueLinkToken(parentIssue) || parentLabel;
 
     const promotedId = promotedIssue?.id || subissue?.id;
     const promotedTitle = stripHtmlAndMarkdown(
       promotedIssue?.title || '',
     ).trim();
     const promotedLabel = promotedTitle || __('Issue', 'alpaca-issue-tracker');
-    const promotedIssueLink = getIssueLinkLabel(
-      {
+    const promotedIssueLink =
+      buildIssueLinkToken({
         slug: promotedIssue?.slug || subissue?.slug || '',
-      },
-      promotedLabel,
-    );
+        title: promotedLabel,
+      }) || promotedLabel;
 
     const parentComment = `${__('Checklist item', 'alpaca-issue-tracker')} **${subissueLabel}** ${__(
       'was promoted to issue',

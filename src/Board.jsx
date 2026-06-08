@@ -1822,6 +1822,7 @@ export function AlpacaBoard() {
             ? activeSearchFilter.query
             : ''
         }
+        searchScopeIssueIds={searchScopeIssueIds}
         onClose={closeModal}
         onDelete={handleDeleteIssue}
         canDeleteIssues={canDeleteIssues}
