@@ -28,7 +28,8 @@ function alpaistr_register_abilities_category() {
 		wp_register_ability_category(
 			'alpaca',
 			[
-				'label' => __( 'Alpaca Issue Tracker', 'alpaca-issue-tracker' ),
+				'label'       => __( 'Alpaca Issue Tracker', 'alpaca-issue-tracker' ),
+				'description' => __( 'Abilities for managing issues, comments, and the project board in the Alpaca Issue Tracker.', 'alpaca-issue-tracker' ),
 			]
 		);
 	}
