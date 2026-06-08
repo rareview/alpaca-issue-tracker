@@ -1,9 +1,17 @@
 import PropTypes from 'prop-types';
 import { fetchUsers } from '../../services/issueApi';
+import { searchIssues } from '../../services/issueSearch';
+import {
+  buildIssueLinkToken,
+  getIssueLinkLabel,
+  getIssueLinkSlug,
+  ISSUE_LINK_MIN_QUERY_LENGTH,
+} from '../../utils/issueLinks';
 
 const { useCallback, useEffect, useMemo, useRef, useState } = wp.element;
 const { __ } = wp.i18n;
-const { Button, Popover, Spinner, TextareaControl } = wp.components;
+const { Button, Popover, SearchControl, Spinner, TextareaControl } =
+  wp.components;
 
 /**
  * Safely assign a value to an external React ref.
@@ -51,14 +59,37 @@ const getMentionMatch = (value, caretPosition) => {
 };
 
 /**
+ * Derive the current #issue trigger from a textarea value and caret position.
+ *
+ * @param {string} value         Current textarea value.
+ * @param {number} caretPosition Current caret position.
+ * @return {Object|null} Trigger match data.
+ */
+const getIssueTriggerMatch = (value, caretPosition) => {
+  const text = typeof value === 'string' ? value : '';
+  const beforeCaret = text.slice(0, caretPosition);
+  const match = beforeCaret.match(/(^|\s)#$/);
+
+  if (!match) {
+    return null;
+  }
+
+  return {
+    start: caretPosition - 1,
+    end: caretPosition,
+  };
+};
+
+/**
  * Textarea control with @mention suggestions.
  *
- * @param {Object}   props             Component props.
- * @param {string}   props.value       Current textarea value.
- * @param {Function} props.onChange    Change handler.
- * @param {Object}   props.textareaRef Forwarded textarea ref.
- * @param {boolean}  props.disabled    Disable state.
- * @param {string}   props.placeholder Placeholder text.
+ * @param {Object}   props                     Component props.
+ * @param {string}   props.value               Current textarea value.
+ * @param {Function} props.onChange            Change handler.
+ * @param {Object}   props.textareaRef         Forwarded textarea ref.
+ * @param {boolean}  props.disabled            Disable state.
+ * @param {string}   props.placeholder         Placeholder text.
+ * @param {Array}    props.searchScopeIssueIds Search-scoped issue IDs.
  * @return {JSX.Element} Mention-enabled textarea.
  */
 const MentionsTextarea = ({
@@ -67,13 +98,20 @@ const MentionsTextarea = ({
   textareaRef,
   disabled,
   placeholder,
+  searchScopeIssueIds,
 }) => {
   const [users, setUsers] = useState([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
   const [mentionState, setMentionState] = useState(null);
+  const [issueTriggerState, setIssueTriggerState] = useState(null);
+  const [issueSearchQuery, setIssueSearchQuery] = useState('');
+  const [isLoadingIssues, setIsLoadingIssues] = useState(false);
+  const [issueResults, setIssueResults] = useState([]);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const wrapperRef = useRef(null);
   const inputRef = useRef(null);
+  const issueSearchInputRef = useRef(null);
+  const issueSearchRequestIdRef = useRef(0);
 
   useEffect(() => {
     let isMounted = true;
@@ -125,6 +163,29 @@ const MentionsTextarea = ({
     setHighlightedIndex(0);
   }, []);
 
+  const updateIssueTrigger = useCallback((nextValue, caretOverride) => {
+    const textarea = inputRef.current;
+    let caretPosition = 0;
+
+    if (typeof caretOverride === 'number') {
+      caretPosition = caretOverride;
+    } else if (textarea && typeof textarea.selectionStart === 'number') {
+      caretPosition = textarea.selectionStart;
+    }
+
+    const nextIssueTriggerState = getIssueTriggerMatch(
+      nextValue,
+      caretPosition,
+    );
+    setIssueTriggerState(nextIssueTriggerState);
+    setHighlightedIndex(0);
+
+    if (!nextIssueTriggerState) {
+      setIssueSearchQuery('');
+      setIssueResults([]);
+    }
+  }, []);
+
   const suggestions = useMemo(() => {
     if (!mentionState) {
       return [];
@@ -157,8 +218,75 @@ const MentionsTextarea = ({
     }
   }, [highlightedIndex, suggestions]);
 
+  useEffect(() => {
+    if (!issueTriggerState || typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const requestId = window.requestAnimationFrame(() => {
+      issueSearchInputRef.current?.focus?.();
+    });
+
+    return () => {
+      window.cancelAnimationFrame(requestId);
+    };
+  }, [issueTriggerState]);
+
+  useEffect(() => {
+    if (!issueTriggerState) {
+      return undefined;
+    }
+
+    const normalizedQuery = issueSearchQuery.trim();
+    const nextRequestId = issueSearchRequestIdRef.current + 1;
+    issueSearchRequestIdRef.current = nextRequestId;
+
+    if (normalizedQuery.length < ISSUE_LINK_MIN_QUERY_LENGTH) {
+      setIsLoadingIssues(false);
+      setIssueResults([]);
+      return undefined;
+    }
+
+    setIsLoadingIssues(true);
+
+    const timeoutId = window.setTimeout(() => {
+      searchIssues(normalizedQuery, {
+        scopeIssueIds: searchScopeIssueIds,
+        commentAgentTypes: ['human', 'create'],
+      })
+        .then((results) => {
+          if (nextRequestId !== issueSearchRequestIdRef.current) {
+            return;
+          }
+
+          setIssueResults(Array.isArray(results) ? results : []);
+        })
+        .catch((error) => {
+          if (nextRequestId !== issueSearchRequestIdRef.current) {
+            return;
+          }
+
+          // eslint-disable-next-line no-console
+          console.error('Could not load issue link suggestions.', error);
+          setIssueResults([]);
+        })
+        .finally(() => {
+          if (nextRequestId === issueSearchRequestIdRef.current) {
+            setIsLoadingIssues(false);
+          }
+        });
+    }, 300);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [issueSearchQuery, issueTriggerState, searchScopeIssueIds]);
+
   const closeSuggestions = useCallback(() => {
     setMentionState(null);
+    setIssueTriggerState(null);
+    setIssueSearchQuery('');
+    setIssueResults([]);
     setHighlightedIndex(0);
   }, []);
 
@@ -193,12 +321,53 @@ const MentionsTextarea = ({
     (nextValue) => {
       onChange(nextValue);
       updateMentionQuery(nextValue);
+      updateIssueTrigger(nextValue);
     },
-    [onChange, updateMentionQuery],
+    [onChange, updateMentionQuery, updateIssueTrigger],
+  );
+
+  const selectIssueSuggestion = useCallback(
+    (issue) => {
+      if (!issueTriggerState) {
+        return;
+      }
+
+      const inserted = `${buildIssueLinkToken(issue)} `;
+      if (!inserted.trim()) {
+        return;
+      }
+
+      const currentValue = typeof value === 'string' ? value : '';
+      const prefix = currentValue.slice(0, issueTriggerState.start);
+      const suffix = currentValue.slice(issueTriggerState.end);
+      const nextValue = `${prefix}${inserted}${suffix}`;
+      const nextCaretPosition = prefix.length + inserted.length;
+
+      onChange(nextValue);
+      closeSuggestions();
+
+      window.requestAnimationFrame(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+          inputRef.current.selectionStart = nextCaretPosition;
+          inputRef.current.selectionEnd = nextCaretPosition;
+        }
+      });
+    },
+    [closeSuggestions, issueTriggerState, onChange, value],
   );
 
   const handleKeyDown = useCallback(
     (event) => {
+      if (issueTriggerState) {
+        if ('Escape' === event.key) {
+          event.preventDefault();
+          closeSuggestions();
+        }
+
+        return;
+      }
+
       if (!mentionState || !suggestions.length) {
         return;
       }
@@ -233,6 +402,7 @@ const MentionsTextarea = ({
     [
       closeSuggestions,
       highlightedIndex,
+      issueTriggerState,
       mentionState,
       selectSuggestion,
       suggestions,
@@ -252,8 +422,9 @@ const MentionsTextarea = ({
       }
 
       updateMentionQuery(value);
+      updateIssueTrigger(value);
     },
-    [updateMentionQuery, value],
+    [updateIssueTrigger, updateMentionQuery, value],
   );
 
   return (
@@ -269,6 +440,61 @@ const MentionsTextarea = ({
         onClick={handleCaretUpdate}
         __nextHasNoMarginBottom
       />
+      {issueTriggerState && (
+        <Popover
+          anchor={wrapperRef.current}
+          placement="bottom-start"
+          className="alpaca-mentions-popover alpaca-issue-links-popover"
+          onClose={closeSuggestions}
+          focusOnMount={false}
+        >
+          <div className="alpaca-mentions-popover-content alpaca-issue-links-popover-content">
+            <SearchControl
+              label={__('Search issues', 'alpaca-issue-tracker')}
+              value={issueSearchQuery}
+              onChange={setIssueSearchQuery}
+              placeholder={__('Search issues', 'alpaca-issue-tracker')}
+              ref={issueSearchInputRef}
+              __nextHasNoMarginBottom
+            />
+            {issueSearchQuery.trim().length < ISSUE_LINK_MIN_QUERY_LENGTH && (
+              <p className="alpaca-mentions-empty">
+                {__(
+                  'Type at least 3 characters to search issues.',
+                  'alpaca-issue-tracker',
+                )}
+              </p>
+            )}
+            {isLoadingIssues && <Spinner />}
+            {!isLoadingIssues &&
+              issueSearchQuery.trim().length >= ISSUE_LINK_MIN_QUERY_LENGTH &&
+              !issueResults.length && (
+                <p className="alpaca-mentions-empty">
+                  {__('No matching issues found.', 'alpaca-issue-tracker')}
+                </p>
+              )}
+            {!isLoadingIssues &&
+              issueResults.map((issue) => {
+                const issueLabel = getIssueLinkLabel(issue);
+                const issueSlug = getIssueLinkSlug(issue);
+
+                return (
+                  <Button
+                    key={issue.id || issueSlug}
+                    className="alpaca-mentions-option alpaca-issue-link-option"
+                    onClick={() => selectIssueSuggestion(issue)}
+                  >
+                    <span className="alpaca-issue-link-option-icon dashicons dashicons-admin-links" />
+                    <span className="alpaca-mentions-option-labels">
+                      <strong>{issueLabel}</strong>
+                      <span>#{getIssueLinkSlug(issue)}</span>
+                    </span>
+                  </Button>
+                );
+              })}
+          </div>
+        </Popover>
+      )}
       {mentionState && (
         <Popover
           anchor={wrapperRef.current}
@@ -337,10 +563,14 @@ MentionsTextarea.propTypes = {
   ]),
   disabled: PropTypes.bool,
   placeholder: PropTypes.string,
+  searchScopeIssueIds: PropTypes.arrayOf(
+    PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  ),
 };
 
 MentionsTextarea.defaultProps = {
   textareaRef: null,
   disabled: false,
   placeholder: '',
+  searchScopeIssueIds: [],
 };

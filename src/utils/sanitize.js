@@ -12,7 +12,7 @@ import DOMPurify from 'dompurify';
 export const sanitizeHtml = (html) => {
   if (!html) return '';
   return DOMPurify.sanitize(html, {
-    ADD_ATTR: ['data-avatar', 'data-userid'],
+    ADD_ATTR: ['data-avatar', 'data-userid', 'data-issue-slug'],
   });
 };
 

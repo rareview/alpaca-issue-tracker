@@ -204,6 +204,7 @@ const CommentForm = memo(
     className = 'alpaca-comment-form',
     dataSource = 'human',
     onCancel,
+    searchScopeIssueIds = [],
   }) => {
     const [pendingAttachments, setPendingAttachments] = useState([]);
     const [isProcessingAttachments, setIsProcessingAttachments] =
@@ -508,6 +509,7 @@ const CommentForm = memo(
               onChange={onChange}
               textareaRef={textareaRefToUse}
               disabled={disabled}
+              searchScopeIssueIds={searchScopeIssueIds}
             />
           </AttachmentControls>
         </div>
@@ -533,6 +535,9 @@ CommentForm.propTypes = {
   dataSource: PropTypes.string,
   onCancel: PropTypes.func,
   commentId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  searchScopeIssueIds: PropTypes.arrayOf(
+    PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  ),
   initialAttachments: PropTypes.arrayOf(
     PropTypes.oneOfType([
       PropTypes.string,
