@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 
 const { __ } = wp.i18n;
 import { getTabsConfig } from '../utils/tabsConfig';
+import { getProjectBoardUrl } from '../utils/projectBoardUrl';
 import useIssueData from '../hooks/useIssueData';
 import useUserManagement from '../hooks/useUserManagement';
 import useLoadingStates from '../hooks/useLoadingStates';
@@ -673,6 +674,44 @@ const AlpacaIssue = ({
       );
     },
     [dismissSnackbar],
+  );
+
+  const copyTextToClipboard = useCallback(
+    async (text, successMessage, errorMessage) => {
+      if (!text) {
+        return false;
+      }
+
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          const textarea = document.createElement('textarea');
+          textarea.value = text;
+          textarea.setAttribute('readonly', '');
+          textarea.style.position = 'fixed';
+          textarea.style.top = '-9999px';
+          document.body.appendChild(textarea);
+          textarea.select();
+
+          const copied = document.execCommand('copy');
+          document.body.removeChild(textarea);
+
+          if (!copied) {
+            throw new Error('Copy command failed');
+          }
+        }
+
+        showNotification(successMessage, 'success');
+        return true;
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Clipboard copy failed:', err);
+        showNotification(errorMessage, 'error');
+        return false;
+      }
+    },
+    [showNotification],
   );
 
   useEffect(
@@ -2102,70 +2141,56 @@ const AlpacaIssue = ({
                         issueDetails?.slug ||
                         issueDetails?.post_data?.post_name ||
                         '';
-                      if (!slug) {
-                        return;
-                      }
 
-                      const showCopiedSnackbar = () => {
-                        showNotification(
-                          __(
-                            'Issue ID copied to clipboard.',
-                            'alpaca-issue-tracker',
-                          ),
-                          'success',
-                        );
-                      };
-
-                      const showCopyErrorSnackbar = () => {
-                        showNotification(
-                          __(
-                            'Failed to copy issue ID to clipboard.',
-                            'alpaca-issue-tracker',
-                          ),
-                          'error',
-                        );
-                      };
-
-                      if (
-                        navigator.clipboard &&
-                        navigator.clipboard.writeText
-                      ) {
-                        navigator.clipboard
-                          .writeText(slug)
-                          .then(showCopiedSnackbar)
-                          .catch((err) => {
-                            // eslint-disable-next-line no-console
-                            console.error('Clipboard write failed:', err);
-                            showCopyErrorSnackbar();
-                          });
-                        return;
-                      }
-
-                      const ta = document.createElement('textarea');
-                      ta.value = slug;
-                      document.body.appendChild(ta);
-                      ta.select();
-
-                      let copied = false;
-                      try {
-                        copied = document.execCommand('copy');
-                      } catch (err) {
-                        // eslint-disable-next-line no-console
-                        console.error('Clipboard copy failed:', err);
-                      }
-                      ta.remove();
-
-                      if (copied) {
-                        showCopiedSnackbar();
-                      } else {
-                        showCopyErrorSnackbar();
-                      }
+                      copyTextToClipboard(
+                        slug,
+                        __(
+                          'Issue ID copied to clipboard.',
+                          'alpaca-issue-tracker',
+                        ),
+                        __(
+                          'Failed to copy issue ID to clipboard.',
+                          'alpaca-issue-tracker',
+                        ),
+                      );
                     }}
                   >
                     {__('Copy Issue ID', 'alpaca-issue-tracker')}{' '}
                     <code className="alpaca-menu-code">
                       {issueDetails?.slug || issueDetails?.post_data?.post_name}
                     </code>
+                  </MenuItem>
+                  <MenuItem
+                    icon="admin-links"
+                    iconPosition="left"
+                    onClick={() => {
+                      const slug =
+                        issueDetails?.slug ||
+                        issueDetails?.post_data?.post_name ||
+                        '';
+                      const permalink = slug
+                        ? `${getProjectBoardUrl()}&issue=${encodeURIComponent(
+                            slug,
+                          )}`
+                        : '';
+
+                      copyTextToClipboard(
+                        permalink,
+                        __(
+                          'Issue permalink copied to clipboard.',
+                          'alpaca-issue-tracker',
+                        ),
+                        __(
+                          'Failed to copy issue permalink to clipboard.',
+                          'alpaca-issue-tracker',
+                        ),
+                      );
+                    }}
+                    disabled={
+                      !issueDetails?.slug && !issueDetails?.post_data?.post_name
+                    }
+                  >
+                    {__('Copy Issue Permalink', 'alpaca-issue-tracker')}
                   </MenuItem>
                   {!isLastStatus && (
                     <MenuItem
