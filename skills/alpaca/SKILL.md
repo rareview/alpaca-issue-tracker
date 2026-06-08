@@ -60,7 +60,7 @@ All abilities are exposed under the standard WordPress Abilities API endpoint na
 ```
 
 - **List All Abilities**: `GET /wp-json/wp-abilities/v1/abilities`
-- **Execute an Ability**: `POST /wp-json/wp-abilities/v1/abilities/<ability-name>/run`
+- **Execute an Ability**: `POST /wp-json/wp-abilities/v1/abilities/<ability-name>/run` with body `{"input": {...}}`
 
 ---
 
@@ -107,8 +107,10 @@ Creates a new issue in the tracker.
 - **Example Request**:
   ```json
   {
-    "feedback": "Database query timeout on dashboard",
-    "is_high_priority": true
+    "input": {
+      "feedback": "Database query timeout on dashboard",
+      "is_high_priority": true
+    }
   }
   ```
 - **Example Response**:
@@ -139,7 +141,9 @@ Retrieves detailed information for a specific issue.
 - **Example Request**:
   ```json
   {
-    "id": 146
+    "input": {
+      "id": 146
+    }
   }
   ```
 - **Example Response**:
@@ -186,9 +190,11 @@ Updates specified fields of a given issue.
 - **Example Request**:
   ```json
   {
-    "id": 146,
-    "status_id": 13,
-    "assignees": ["john_doe"]
+    "input": {
+      "id": 146,
+      "status_id": 13,
+      "assignees": ["john_doe"]
+    }
   }
   ```
 - **Example Response**:
@@ -213,7 +219,9 @@ Moves a specific issue to the trash.
 - **Example Request**:
   ```json
   {
-    "id": 146
+    "input": {
+      "id": 146
+    }
   }
   ```
 - **Example Response**:
@@ -236,8 +244,10 @@ Posts a comment (of hidden comment type `issuecomment`) on an issue.
 - **Example Request**:
   ```json
   {
-    "issue_id": 146,
-    "content": "This seems to be resolved after optimizing the index."
+    "input": {
+      "issue_id": 146,
+      "content": "This seems to be resolved after optimizing the index."
+    }
   }
   ```
 - **Example Response**:
@@ -264,7 +274,9 @@ Retrieves comments posted on an issue.
 - **Example Request**:
   ```json
   {
-    "issue_id": 146
+    "input": {
+      "issue_id": 146
+    }
   }
   ```
 - **Example Response**:
