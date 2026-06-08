@@ -35,7 +35,10 @@ import {
   deleteIssueAttachment,
   uploadIssueAttachment,
 } from '../utils/attachmentUpload';
-import { postComment } from '../utils/issueCommentHandler';
+import {
+  postComment,
+  postIssueMentionAuditComments,
+} from '../utils/issueCommentHandler';
 
 /* THEN access WordPress globals */
 const { useState, useEffect, useRef, useMemo, useCallback, memo } = wp.element;
@@ -579,6 +582,7 @@ const AlpacaIssue = ({
   initialStatusId = null,
   isOpen,
   activeSearchQuery = '',
+  searchScopeIssueIds = [],
   onClose,
   onDelete,
   canDeleteIssues = false,
@@ -1373,6 +1377,22 @@ const AlpacaIssue = ({
             if (!createdComment) {
               throw new Error(
                 __('Failed to create issue comment.', 'alpaca-issue-tracker'),
+              );
+            }
+
+            try {
+              await postIssueMentionAuditComments({
+                content: normalizedCommentText || createdIssueTitle.trim(),
+                sourceIssue: {
+                  id: newIssueId,
+                  slug: response.issue?.slug || response.issue?.post_name || '',
+                  title: createdIssueTitle,
+                },
+              });
+            } catch (auditError) {
+              console.error(
+                'Failed to create issue mention audit comments:',
+                auditError,
               );
             }
 
@@ -2339,6 +2359,7 @@ const AlpacaIssue = ({
                     showNotification={showNotification}
                     onSubmit={handleCreateIssue}
                     dataSource="create"
+                    searchScopeIssueIds={searchScopeIssueIds}
                     submitButtonText={
                       createdIssueRetry
                         ? __('Retry Comment', 'alpaca-issue-tracker')
@@ -2539,6 +2560,7 @@ const AlpacaIssue = ({
                         tab={tab}
                         issueDetails={issueDetails}
                         issueId={issueId}
+                        searchScopeIssueIds={searchScopeIssueIds}
                         activeSearchQuery={activeSearchQuery}
                         commentRefreshKey={commentRefreshKey}
                         showNotification={showNotification}
@@ -2636,6 +2658,9 @@ AlpacaIssue.propTypes = {
   initialStatusId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   onIssueCreated: PropTypes.func,
   activeSearchQuery: PropTypes.string,
+  searchScopeIssueIds: PropTypes.arrayOf(
+    PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  ),
 };
 
 export default AlpacaIssue;

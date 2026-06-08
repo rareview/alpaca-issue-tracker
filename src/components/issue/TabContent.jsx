@@ -9,6 +9,7 @@ const TabContent = memo(
     tab,
     issueDetails,
     issueId,
+    searchScopeIssueIds,
     activeSearchQuery,
     commentRefreshKey,
     showNotification,
@@ -18,8 +19,17 @@ const TabContent = memo(
         return (
           <Commenting
             issueId={issueId}
+            issueTitle={
+              issueDetails?.post_data?.post_title ||
+              issueDetails?.post_data?.post_content ||
+              ''
+            }
+            issueSlug={
+              issueDetails?.slug || issueDetails?.post_data?.post_name || ''
+            }
             activeSearchQuery={activeSearchQuery}
             commentRefreshKey={commentRefreshKey}
+            searchScopeIssueIds={searchScopeIssueIds}
             showNotification={showNotification}
           />
         );

@@ -29,6 +29,8 @@ import { sanitizeHtml } from '../utils/sanitize';
 import Lightbox from './issue/Lightbox';
 import { Attachment } from './issue/AttachmentRow';
 import { uploadIssueAttachment } from '../utils/attachmentUpload';
+import { renderIssueLinkMarkup } from '../utils/issueLinks';
+import { postIssueMentionAuditComments } from '../utils/issueCommentHandler';
 import MentionsTextarea from './notifications/MentionsTextarea';
 
 const deleteCommentAttachment = async (url, issueId, commentId = null) => {
@@ -140,6 +142,13 @@ const AttachmentControls = ({
                 },
                 {
                   text: __(
+                    'Type <kbd>#</kbd> and select an issue to link.',
+                    'alpaca-issue-tracker',
+                  ),
+                  placeholders: { kbd: <kbd /> },
+                },
+                {
+                  text: __(
                     'Basic Markdown is supported: <code>**bold**</code>, <code>*italic*</code>, <code>`code`</code>, <code>- lists</code>, etc.',
                     'alpaca-issue-tracker',
                   ),
@@ -230,6 +239,7 @@ const Comment = memo(
   ({
     comment,
     activeSearchQuery,
+    searchScopeIssueIds,
     startEditing,
     confirmDeleteComment,
     editingCommentId,
@@ -372,6 +382,7 @@ const Comment = memo(
               textareaRef={editingRef}
               placeholder={__('Edit comment…', 'alpaca-issue-tracker')}
               disabled={isSubmitting}
+              searchScopeIssueIds={searchScopeIssueIds}
             />
           </AttachmentControls>
         }
@@ -393,6 +404,9 @@ const Comment = memo(
 Comment.propTypes = {
   comment: PropTypes.object.isRequired,
   activeSearchQuery: PropTypes.string,
+  searchScopeIssueIds: PropTypes.arrayOf(
+    PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  ),
   startEditing: PropTypes.func.isRequired,
   confirmDeleteComment: PropTypes.func.isRequired,
   editingCommentId: PropTypes.number,
@@ -422,8 +436,11 @@ Comment.propTypes = {
 // --- Commenting Component ---
 const Commenting = ({
   issueId,
+  issueTitle,
+  issueSlug,
   activeSearchQuery,
   commentRefreshKey,
+  searchScopeIssueIds,
   showNotification,
 }) => {
   const [comments, setComments] = useState([]);
@@ -552,7 +569,7 @@ const Commenting = ({
     setIsSubmitting(true);
 
     const processedOptimisticContent = injectAvatarStyles(
-      sanitizeHtml(marked(newComment)),
+      sanitizeHtml(marked(renderIssueLinkMarkup(newComment))),
     );
     const attachmentUrls = pendingAttachments.map(
       (attachment) => attachment.url,
@@ -595,7 +612,7 @@ const Commenting = ({
         meta: createMeta,
       },
     })
-      .then((created) => {
+      .then(async (created) => {
         const createdComment =
           created && created.meta
             ? created
@@ -633,6 +650,25 @@ const Commenting = ({
             });
           }
         });
+
+        try {
+          await postIssueMentionAuditComments({
+            content: newComment,
+            currentUser,
+            sourceIssue: {
+              id: issueId,
+              slug: issueSlug,
+              title: issueTitle,
+            },
+          });
+        } catch (auditError) {
+          // eslint-disable-next-line no-console
+          console.error(
+            'Failed to create issue mention audit comments.',
+            auditError,
+          );
+        }
+
         setNewComment('');
         setPendingAttachments([]);
       })
@@ -646,7 +682,15 @@ const Commenting = ({
         );
       })
       .finally(() => setIsSubmitting(false));
-  }, [newComment, currentUser, issueId, showNotification, pendingAttachments]);
+  }, [
+    newComment,
+    currentUser,
+    issueId,
+    issueSlug,
+    issueTitle,
+    showNotification,
+    pendingAttachments,
+  ]);
 
   const startEditing = useCallback((comment) => {
     setEditingCommentId(comment.id);
@@ -677,6 +721,8 @@ const Commenting = ({
       setIsSubmitting(true);
 
       const comment = comments.find((c) => c.id === commentId);
+      const previousContent =
+        comment?.content?.raw || comment?.content?.rendered || '';
       const agent = comment?.author_user_agent || 'human';
       const currentTimestamp = new Date().toISOString();
       const lastEditedMeta = {
@@ -737,7 +783,7 @@ const Commenting = ({
 
           return performSave();
         })
-        .then((updated) => {
+        .then(async (updated) => {
           const updatedComment = {
             ...(updated || {}),
             meta: {
@@ -755,6 +801,25 @@ const Commenting = ({
           setEditingAttachments([]);
           setEditingOriginalAttachmentIds([]);
           setEditingRemovedAttachmentUrls([]);
+
+          try {
+            await postIssueMentionAuditComments({
+              content: editingContent,
+              previousContent,
+              currentUser,
+              sourceIssue: {
+                id: issueId,
+                slug: issueSlug,
+                title: issueTitle,
+              },
+            });
+          } catch (auditError) {
+            // eslint-disable-next-line no-console
+            console.error(
+              'Failed to update issue mention audit comments.',
+              auditError,
+            );
+          }
 
           wp.hooks.doAction('alpaca.commentUpdated', updatedComment);
         })
@@ -778,6 +843,8 @@ const Commenting = ({
       editingRemovedAttachmentUrls,
       currentUser,
       issueId,
+      issueSlug,
+      issueTitle,
     ],
   );
 
@@ -1054,6 +1121,7 @@ const Commenting = ({
                 onChange={setNewComment}
                 textareaRef={newCommentRef}
                 disabled={isSubmitting}
+                searchScopeIssueIds={searchScopeIssueIds}
               />
             </AttachmentControls>
           </div>
@@ -1071,6 +1139,7 @@ const Commenting = ({
               key={comment.clientId || comment.id}
               comment={comment}
               activeSearchQuery={activeSearchQuery}
+              searchScopeIssueIds={searchScopeIssueIds}
               startEditing={startEditing}
               confirmDeleteComment={confirmDeleteComment}
               editingCommentId={editingCommentId}
@@ -1166,13 +1235,21 @@ const Commenting = ({
 
 Commenting.propTypes = {
   issueId: PropTypes.number.isRequired,
+  issueTitle: PropTypes.string,
+  issueSlug: PropTypes.string,
   activeSearchQuery: PropTypes.string,
   commentRefreshKey: PropTypes.number.isRequired,
+  searchScopeIssueIds: PropTypes.arrayOf(
+    PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  ),
   showNotification: PropTypes.func.isRequired,
 };
 
 Commenting.defaultProps = {
+  issueTitle: '',
+  issueSlug: '',
   activeSearchQuery: '',
+  searchScopeIssueIds: [],
 };
 
 export default memo(Commenting);

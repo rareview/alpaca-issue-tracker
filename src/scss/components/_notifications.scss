@@ -146,11 +146,6 @@
   gap: $space-md;
 }
 
-.alpaca-notifications-label-grid {
-  display: grid;
-  gap: $space-md;
-}
-
 .alpaca-notifications-actions {
   display: flex;
   flex-wrap: wrap;
@@ -370,6 +365,10 @@
   gap: $space-2xs;
 }
 
+.alpaca-issue-links-popover-content {
+  min-width: 20rem;
+}
+
 .alpaca-mentions-empty {
   margin: 0;
   color: $color-text-muted;
@@ -418,6 +417,13 @@
     color: $color-text-subtle;
     font-size: $font-size-xs;
   }
+}
+
+.alpaca-issue-link-option-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: $color-link-emphasis;
 }
 
 .alpaca-notification-mention {
@@ -614,6 +620,7 @@
   .alpaca-notification-digest-deadline-table {
     width: 100%;
     border-collapse: collapse;
+
     // table-layout: fixed;
 
     th {
@@ -633,6 +640,7 @@
 
   .alpaca-notification-digest-deadline-row {
     background: $color-white;
+
     &:nth-child(even) {
       background: $color-surface-subtle;
     }
@@ -748,7 +756,7 @@
       inset-inline-start: 0;
       width: $space-sm;
       height: $space-sm;
-      border: 0.09375rem solid $color-text-subtle;
+      border: 0.0938rem solid $color-text-subtle;
       border-radius: $radius-round;
       background: $color-white;
     }

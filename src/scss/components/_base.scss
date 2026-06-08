@@ -171,4 +171,38 @@
       vertical-align: middle;
     }
   }
+
+  .alpaca-issue-link {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0;
+    color: inherit;
+    font-weight: $font-weight-semibold;
+    text-decoration: none;
+
+    &::before {
+      content: '\f103';
+      font-family: dashicons, sans-serif;
+      font-size: $font-size-sm;
+      line-height: 1;
+      font-weight: $font-weight-semibold;
+      margin-inline-end: $space-2xs;
+    }
+
+    text-decoration: none;
+
+    .alpaca-issue-link-label {
+      text-decoration: none;
+    }
+
+    &:hover,
+    &:focus {
+      text-decoration: none;
+    }
+
+    &:hover .alpaca-issue-link-label,
+    &:focus .alpaca-issue-link-label {
+      text-decoration: underline;
+    }
+  }
 }
