@@ -2102,20 +2102,63 @@ const AlpacaIssue = ({
                         issueDetails?.slug ||
                         issueDetails?.post_data?.post_name ||
                         '';
-                      if (slug) {
-                        if (
-                          navigator.clipboard &&
-                          navigator.clipboard.writeText
-                        ) {
-                          navigator.clipboard.writeText(slug);
-                        } else {
-                          const ta = document.createElement('textarea');
-                          ta.value = slug;
-                          document.body.appendChild(ta);
-                          ta.select();
-                          document.execCommand('copy');
-                          ta.remove();
-                        }
+                      if (!slug) {
+                        return;
+                      }
+
+                      const showCopiedSnackbar = () => {
+                        showNotification(
+                          __(
+                            'Issue ID copied to clipboard.',
+                            'alpaca-issue-tracker',
+                          ),
+                          'success',
+                        );
+                      };
+
+                      const showCopyErrorSnackbar = () => {
+                        showNotification(
+                          __(
+                            'Failed to copy issue ID to clipboard.',
+                            'alpaca-issue-tracker',
+                          ),
+                          'error',
+                        );
+                      };
+
+                      if (
+                        navigator.clipboard &&
+                        navigator.clipboard.writeText
+                      ) {
+                        navigator.clipboard
+                          .writeText(slug)
+                          .then(showCopiedSnackbar)
+                          .catch((err) => {
+                            // eslint-disable-next-line no-console
+                            console.error('Clipboard write failed:', err);
+                            showCopyErrorSnackbar();
+                          });
+                        return;
+                      }
+
+                      const ta = document.createElement('textarea');
+                      ta.value = slug;
+                      document.body.appendChild(ta);
+                      ta.select();
+
+                      let copied = false;
+                      try {
+                        copied = document.execCommand('copy');
+                      } catch (err) {
+                        // eslint-disable-next-line no-console
+                        console.error('Clipboard copy failed:', err);
+                      }
+                      ta.remove();
+
+                      if (copied) {
+                        showCopiedSnackbar();
+                      } else {
+                        showCopyErrorSnackbar();
                       }
                     }}
                   >
