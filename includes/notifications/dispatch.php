@@ -226,6 +226,35 @@ function alpaistr_send_notifications_for_event( $event, $template = null ) {
 }
 
 /**
+ * Sync mentions and dispatch notifications for a newly inserted issuecomment.
+ *
+ * Callers are responsible for ensuring this runs only after all comment meta
+ * has been saved (e.g. do not call from inside wp_insert_comment for REST paths).
+ *
+ * @param int        $comment_id Comment ID.
+ * @param WP_Comment $comment    Comment object.
+ * @return void
+ */
+function alpaistr_dispatch_new_comment_notifications( $comment_id, $comment ) {
+	if ( 'issuecomment' !== $comment->comment_type ) {
+		return;
+	}
+
+	alpaistr_sync_comment_mentions( $comment_id );
+
+	if ( '1' !== (string) $comment->comment_approved && 1 !== (int) $comment->comment_approved ) {
+		return;
+	}
+
+	$event = alpaistr_get_notification_event_from_comment( $comment );
+	if ( ! is_array( $event ) ) {
+		return;
+	}
+
+	alpaistr_send_notifications_for_event( $event );
+}
+
+/**
  * Sync attachment meta, mentions, and dispatch notifications after a comment
  * is fully processed by the REST controller (meta already saved at this point).
  *
@@ -245,33 +274,18 @@ function alpaistr_handle_rest_insert_comment_notifications( $comment, $request, 
 		return;
 	}
 
-	if ( 'issuecomment' !== $comment->comment_type ) {
-		return;
-	}
-
-	alpaistr_sync_comment_mentions( $comment->comment_ID );
-
-	if ( '1' !== (string) $comment->comment_approved && 1 !== (int) $comment->comment_approved ) {
-		return;
-	}
-
-	$event = alpaistr_get_notification_event_from_comment( $comment );
-	if ( ! is_array( $event ) ) {
-		return;
-	}
-
-	alpaistr_send_notifications_for_event( $event );
+	alpaistr_dispatch_new_comment_notifications( $comment->comment_ID, $comment );
 }
 add_action( 'rest_after_insert_comment', 'alpaistr_handle_rest_insert_comment_notifications', 20, 3 );
 
 /**
  * Sync mentions and dispatch notifications for issuecomments inserted outside
- * the REST API (Abilities API, WP-CLI, direct PHP, etc.).
+ * any REST request (WP-CLI, direct PHP, etc.).
  *
- * REST-created comments are handled by alpaistr_handle_rest_insert_comment_notifications
- * via rest_after_insert_comment, which fires after comment meta is fully saved.
- * wp_insert_comment fires before that meta is written, so we skip REST requests
- * here to avoid sending notifications with incomplete data.
+ * REST-created comments — including those created via the Abilities API, which
+ * runs inside a REST request — are excluded here because wp_insert_comment fires
+ * before the REST controller saves comment meta. REST paths must call
+ * alpaistr_dispatch_new_comment_notifications() explicitly once meta is ready.
  *
  * @param int        $comment_id Comment ID.
  * @param WP_Comment $comment    Comment object.
@@ -282,21 +296,6 @@ function alpaistr_handle_new_comment_notifications( $comment_id, $comment ) {
 		return;
 	}
 
-	if ( 'issuecomment' !== $comment->comment_type ) {
-		return;
-	}
-
-	alpaistr_sync_comment_mentions( $comment_id );
-
-	if ( '1' !== (string) $comment->comment_approved && 1 !== (int) $comment->comment_approved ) {
-		return;
-	}
-
-	$event = alpaistr_get_notification_event_from_comment( $comment );
-	if ( ! is_array( $event ) ) {
-		return;
-	}
-
-	alpaistr_send_notifications_for_event( $event );
+	alpaistr_dispatch_new_comment_notifications( $comment_id, $comment );
 }
 add_action( 'wp_insert_comment', 'alpaistr_handle_new_comment_notifications', 20, 2 );

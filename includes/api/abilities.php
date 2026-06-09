@@ -797,6 +797,11 @@ function alpaistr_ability_add_comment( $input ) {
 
 	$comment = get_comment( $comment_id );
 
+	// wp_insert_comment fires before REST meta is saved, so the universal hook
+	// skips REST requests. Abilities API has no post-insert meta writes, so it's
+	// safe to dispatch immediately here.
+	alpaistr_dispatch_new_comment_notifications( $comment_id, $comment );
+
 	return [
 		'success'    => true,
 		'comment_id' => (int) $comment_id,
