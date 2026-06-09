@@ -57,6 +57,26 @@ npm run format:php
 
 Follow WordPress Coding Standards for PHP changes. Public functions, classes, methods, filters, and actions should include complete PHPDoc.
 
+## PHP Tests
+
+The plugin ships a PHPUnit test suite for unit-testable PHP logic. The suite uses [Brain\Monkey](https://brain-wp.github.io/BrainMonkey/) to mock WordPress and plugin functions without requiring a full WordPress environment.
+
+Run the suite with:
+
+```bash
+vendor/bin/phpunit
+```
+
+Or via the Composer script:
+
+```bash
+composer test
+```
+
+Test files live under `tests/unit/`. The bootstrap at `tests/bootstrap.php` defines the minimal WordPress stubs needed to load plugin files in isolation.
+
+Add new test files under `tests/unit/` with filenames ending in `Test.php`. Each test class should extend `\PHPUnit\Framework\TestCase`.
+
 ## Translations
 
 User-facing strings should use the `alpaca-issue-tracker` text domain.

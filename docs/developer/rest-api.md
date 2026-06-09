@@ -2,6 +2,8 @@
 
 Alpaca Issue Tracker registers custom REST routes under the `alpaca/v1` namespace and also filters selected WordPress core comment routes for issue comments.
 
+The plugin also exposes abilities through the WordPress Abilities API (`wp-abilities/v1`), which allows MCP clients and AI agents to interact with the tracker programmatically. See `skills/alpaca/SKILL.md` for the full ability reference and authentication flow.
+
 Most write routes require a valid WordPress REST nonce. Same-origin JavaScript requests normally send the nonce with the `X-WP-Nonce` header through `wp.apiFetch`. Some endpoints also accept a `nonce` request parameter where the code explicitly supports it.
 
 ## Method Names

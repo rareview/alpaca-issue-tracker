@@ -15,7 +15,7 @@ PHP classes use the `AlpacaIssueTracker` namespace. The public REST namespace re
 - `includes/class-alpacaissuetracker.php`: main plugin lifecycle, settings registration, activation hooks, and initialization.
 - `includes/class-register.php`: registers assets, admin screens, API routes, and WordPress hooks.
 - `includes/class-helpers.php`: shared helper methods and shared constants.
-- `includes/api/`: API endpoint and filter registration.
+- `includes/api/`: API endpoint and filter registration, including `abilities.php` which registers the plugin's [WordPress Abilities API](https://developer.wordpress.org/apis/abilities-api/) category and abilities for MCP and agent access.
 - `includes/core/`: custom post types, taxonomies, and shared core behavior.
 - `includes/notifications/`: notification events, routing, channels, templates, and digest behavior.
 - `includes/utilities/`: utility functions used across PHP features.
@@ -62,3 +62,11 @@ Site options and user preferences are documented in [Settings and Options](setti
 Notifications are built from issue and comment events, routed through notification recipients, and delivered through configured channels such as the in-app inbox and email.
 
 Daily digest behavior is handled separately from immediate notifications.
+
+`alpaistr_dispatch_new_comment_notifications()` in `includes/notifications/dispatch.php` is the shared helper that syncs `@mention` metadata and sends notifications for a newly inserted `issuecomment`. It is called by three paths:
+
+- `rest_after_insert_comment` — for comments created via `/wp/v2/comments`, after the REST controller has saved all comment meta.
+- Explicitly from `alpaistr_ability_add_comment()` — for comments created through the Abilities API, which runs inside a REST request but does not go through the comments REST controller.
+- `wp_insert_comment` (skipped during REST requests) — for comments inserted directly, such as via WP-CLI or custom PHP.
+
+This split ensures notifications always fire with complete data regardless of the creation path.
