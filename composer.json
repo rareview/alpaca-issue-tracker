@@ -19,11 +19,11 @@
     "wp-coding-standards/wpcs": "^3.0",
     "phpcompatibility/phpcompatibility-wp": "^2.1",
     "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
-    "phpunit/phpunit": "^13.2",
+    "phpunit/phpunit": "^9.5",
     "brain/monkey": "^2.7"
   },
   "scripts": {
-    "test": "phpunit"
+    "test": "vendor/bin/phpunit"
   },
   "config": {
     "allow-plugins": {
