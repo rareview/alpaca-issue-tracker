@@ -51,6 +51,8 @@ The plugin uses WordPress-provided packages from the global `wp` object instead 
 
 The endpoint reference lives in [REST API](rest-api.md).
 
+The WordPress Abilities API reference for MCP and agent access lives in [Abilities API](abilities-api.md).
+
 ## Data Model
 
 The data model reference lives in [Data Model](data-model.md).
@@ -66,7 +68,7 @@ Daily digest behavior is handled separately from immediate notifications.
 `alpaistr_dispatch_new_comment_notifications()` in `includes/notifications/dispatch.php` is the shared helper that syncs `@mention` metadata and sends notifications for a newly inserted `issuecomment`. It is called by three paths:
 
 - `rest_after_insert_comment` — for comments created via `/wp/v2/comments`, after the REST controller has saved all comment meta.
-- Explicitly from `alpaistr_ability_add_comment()` — for comments created through the Abilities API, which runs inside a REST request but does not go through the comments REST controller.
+- Explicitly from Abilities API callbacks — `alpaistr_ability_add_comment()` and `alpaistr_ability_insert_activity_comment()` call the helper after insert because Abilities requests run inside a REST request but do not use the core comments REST controller.
 - `wp_insert_comment` (skipped during REST requests) — for comments inserted directly, such as via WP-CLI or custom PHP.
 
 This split ensures notifications always fire with complete data regardless of the creation path.

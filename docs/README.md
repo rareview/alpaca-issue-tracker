@@ -32,4 +32,6 @@ This documentation is for site owners, project teams, and developers working wit
 - [Data Model](developer/data-model.md): post types, taxonomies, meta, comments, options, and notification tables.
 - [Settings And Options](developer/settings-options.md): site options, REST settings, user preferences, and internal options.
 - [REST API](developer/rest-api.md): endpoint reference, permissions, payloads, and REST hooks.
+- [Abilities API](developer/abilities-api.md): WordPress Abilities API tools for MCP clients and local agents.
+- [Agent skill](../skills/alpaca/SKILL.md): Cursor and local-agent skill for the Abilities API (repo checkout only; not shipped in the release ZIP).
 - [Icon System](developer/icon-system.md): source SVGs, generated icon registries, and SVG sanitization.

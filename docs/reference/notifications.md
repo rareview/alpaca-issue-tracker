@@ -7,7 +7,7 @@ Immediate issue-comment notifications use `alpaistr_dispatch_new_comment_notific
 The helper is reached through three creation paths:
 
 - REST comments created through `/wp/v2/comments`: `rest_after_insert_comment` calls `alpaistr_handle_rest_insert_comment_notifications()` after the REST controller has saved comment meta. This path also normalizes attachment meta before dispatching, and only dispatches on comment creation.
-- Abilities API comments created through `alpaca/add-comment`: `alpaistr_ability_add_comment()` calls `alpaistr_dispatch_new_comment_notifications()` directly after inserting the comment. This is needed because Abilities requests run inside REST, but they do not use the core comments REST controller.
+- Abilities API comments: `alpaistr_ability_add_comment()` and `alpaistr_ability_insert_activity_comment()` call `alpaistr_dispatch_new_comment_notifications()` directly after inserting the comment and saving comment meta. This covers `alpaca/add-comment` and audit activity from other issue abilities. It is needed because Abilities requests run inside REST, but they do not use the core comments REST controller.
 - Non-REST comments inserted with `wp_insert_comment()`: `wp_insert_comment` calls `alpaistr_handle_new_comment_notifications()` for direct PHP, WP-CLI, or similar inserts. The handler intentionally returns during REST requests so REST comments are not dispatched before their meta is saved.
 
 ## Channel Registration And Preferences

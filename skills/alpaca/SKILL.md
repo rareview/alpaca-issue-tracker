@@ -7,6 +7,8 @@ description: Interact with the Alpaca Issue Tracker on a WordPress site using th
 
 This skill allows a local agent to interact with the Alpaca Issue Tracker plugin installed on a WordPress site. It leverages the WordPress Abilities API (introduced in WordPress 6.9) to list, create, update, delete, and comment on issues programmatically.
 
+For developer-oriented reference (permissions, payloads, and REST vs Abilities boundaries), see `docs/developer/abilities-api.md` in the plugin repository.
+
 ## Authentication: "Authorize Application" Flow
 
 To access the Abilities API endpoints, the agent must authenticate using **WordPress Application Passwords**. The recommended approach is the interactive **Authorize Application** flow.
@@ -318,9 +320,10 @@ The current Abilities API integration exposes the core issue, board, and comment
 
 Agents should treat the following as unsupported through abilities for now:
 
-- Creating, updating, or deleting labels. Label data may appear in board or issue responses, but label management still uses the plugin's REST/UI flow.
+- Creating, updating, deleting, or assigning labels. Label data may appear in board or issue responses, but label management still uses the plugin's REST/UI flow.
+- Creating, updating, completing, deleting, or restoring subissues (checklist items). `alpaca/get-issue` may return existing subissues, but subissue management still uses the plugin's REST/UI flow.
 - Setting or clearing issue deadlines. Deadline values may appear in issue/card metadata, but deadline writes still use the plugin's REST/UI flow.
-- Reordering board columns or cards. Ability status changes can move an issue between statuses, but they do not expose full board-order management.
+- Reordering board columns or cards beyond status changes. Ability status changes can move an issue between statuses and update that issue's column order, but they do not expose full board drag-and-drop ordering.
 - Uploading, deleting, or attaching files to comments. Attachment metadata may appear in comment responses, but file operations still use the plugin's REST/UI flow.
 - Capturing browser context, screenshots, or page data during issue creation. `alpaca/create-issue` only accepts issue feedback and high-priority state.
 - Restoring trashed issues. `alpaca/delete-issue` can move an issue to trash, but undelete/restore still uses the plugin's REST/UI flow.
