@@ -637,13 +637,21 @@ function alpaistr_ability_create_issue( $input ) {
 		);
 	}
 
+	$slug_source = wp_json_encode( [ 'input' => $input ] );
+	if ( ! is_string( $slug_source ) ) {
+		return new WP_Error(
+			'invalid_create_input',
+			__( 'Issue input could not be encoded.', 'alpaca-issue-tracker' )
+		);
+	}
+
 	$user_id   = get_current_user_id();
 	$post_args = [
 		'post_type'      => 'alpaca_issue',
 		'post_status'    => 'publish',
 		'post_author'    => $user_id,
 		'post_title'     => wp_kses_post( wp_trim_words( $feedback_raw, 10 ) ),
-		'post_name'      => hash( 'adler32', $feedback_raw ),
+		'post_name'      => hash( 'adler32', $slug_source ),
 		'post_content'   => wp_kses_post( $feedback_raw ),
 		'comment_status' => 'open',
 	];

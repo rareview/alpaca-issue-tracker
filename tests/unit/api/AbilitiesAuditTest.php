@@ -86,9 +86,21 @@ class AbilitiesAuditTest extends \PHPUnit\Framework\TestCase {
 	 * Create ability creates an issue-created comment and matching priority audit.
 	 */
 	public function test_create_issue_creates_issue_and_priority_activity_comments(): void {
+		$inserted_post_args = null;
+		$input              = [
+			'feedback'         => 'Important broken checkout flow',
+			'is_high_priority' => true,
+		];
+
 		Functions\when( 'get_current_user_id' )->justReturn( 7 );
 		Functions\when( 'wp_get_current_user' )->justReturn( $this->makeUser( 7, 'Pratik', 'pratik' ) );
-		Functions\when( 'wp_insert_post' )->justReturn( 101 );
+		Functions\when( 'wp_insert_post' )->alias(
+			static function ( array $post_args ) use ( &$inserted_post_args ): int {
+				$inserted_post_args = $post_args;
+
+				return 101;
+			}
+		);
 		Functions\when( 'alpaistr_get_statuses' )->justReturn( [] );
 
 		Functions\expect( 'update_post_meta' )->once()->with( 101, 'alpaca_high_priority', 1 );
@@ -97,14 +109,11 @@ class AbilitiesAuditTest extends \PHPUnit\Framework\TestCase {
 		Functions\expect( 'alpaistr_clear_board_cache' )->once();
 		Functions\when( 'alpaistr_get_issue_response_data' )->justReturn( [ 'post_id' => 101 ] );
 
-		$result = alpaistr_ability_create_issue(
-			[
-				'feedback'         => 'Important broken checkout flow',
-				'is_high_priority' => true,
-			]
-		);
+		$result = alpaistr_ability_create_issue( $input );
 
 		$this->assertSame( [ 'post_id' => 101 ], $result );
+		$this->assertIsArray( $inserted_post_args );
+		$this->assertSame( hash( 'adler32', wp_json_encode( [ 'input' => $input ] ) ), $inserted_post_args['post_name'] );
 		$this->assertCount( 2, $this->inserted_comments );
 
 		$comments = array_values( $this->inserted_comments );
@@ -493,6 +502,11 @@ class AbilitiesAuditTest extends \PHPUnit\Framework\TestCase {
 		Functions\when( 'wp_trim_words' )->alias(
 			static function ( string $text ): string {
 				return $text;
+			}
+		);
+		Functions\when( 'wp_json_encode' )->alias(
+			static function ( $value ) {
+				return json_encode( $value );
 			}
 		);
 		Functions\when( 'wp_slash' )->alias(
