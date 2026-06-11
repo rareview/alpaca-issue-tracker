@@ -312,6 +312,22 @@ Retrieves comments posted on an issue.
 
 ---
 
+## Current Ability Surface Limitations
+
+The current Abilities API integration exposes the core issue, board, and comment actions listed above. Some Alpaca Issue Tracker features remain available through the WordPress admin UI or existing REST endpoints, but are not currently supported as ability actions.
+
+Agents should treat the following as unsupported through abilities for now:
+
+- Creating, updating, or deleting labels. Label data may appear in board or issue responses, but label management still uses the plugin's REST/UI flow.
+- Setting or clearing issue deadlines. Deadline values may appear in issue/card metadata, but deadline writes still use the plugin's REST/UI flow.
+- Reordering board columns or cards. Ability status changes can move an issue between statuses, but they do not expose full board-order management.
+- Uploading, deleting, or attaching files to comments. Attachment metadata may appear in comment responses, but file operations still use the plugin's REST/UI flow.
+- Capturing browser context, screenshots, or page data during issue creation. `alpaca/create-issue` only accepts issue feedback and high-priority state.
+- Restoring trashed issues. `alpaca/delete-issue` can move an issue to trash, but undelete/restore still uses the plugin's REST/UI flow.
+- Reading or updating notification preferences. Notification settings still use the plugin's REST/UI flow.
+
+---
+
 ## Model Context Protocol (MCP) Adapter Support
 
 If the WordPress site has the [WordPress MCP Adapter](https://github.com/WordPress/mcp-adapter) installed, these registered abilities are automatically exposed to MCP clients as native MCP tools.
