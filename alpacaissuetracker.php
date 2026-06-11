@@ -5,7 +5,7 @@
  * Description:       A lightweight issue tracker built entirely inside WordPress, designed for developers and agencies managing client projects.
  * Version:           1.0.3
  * Requires at least: 6.9
- * Requires PHP:      7.4
+ * Requires PHP:      8.0
  * Author:            Rareview®
  * Author URI:        https://rareview.com/
  * Text Domain:       alpaca-issue-tracker

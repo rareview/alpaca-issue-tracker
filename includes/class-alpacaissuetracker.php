@@ -29,7 +29,7 @@ final class AlpacaIssueTracker {
 	 *
 	 * @var string
 	 */
-	const MIN_PHP_VERSION = '7.4';
+	const MIN_PHP_VERSION = '8.0';
 
 	/**
 	 * Minimum WordPress version.

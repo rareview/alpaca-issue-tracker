@@ -12,6 +12,9 @@
   <exclude-pattern>/vendor/</exclude-pattern>
   <exclude-pattern>/node_modules/</exclude-pattern>
   <exclude-pattern>/dist/</exclude-pattern>
+  <exclude-pattern>/tests/</exclude-pattern>
+
+  <config name="testVersion" value="8.0-"/>
 
   <!-- Use WordPress standard -->
   <rule ref="WordPress">
@@ -21,9 +24,11 @@
     <exclude name="WordPress.WP.AlternativeFunctions"/>
     <!-- Allow commented out code in uninstall.php -->
     <exclude name="Squiz.PHP.CommentedOutCode"/>
-    <!-- Project targets PHP 7.4+, so use modern short array syntax. -->
+    <!-- Project targets PHP 8.0+, so use modern short array syntax. -->
     <exclude name="Universal.Arrays.DisallowShortArraySyntax"/>
   </rule>
+
+  <rule ref="PHPCompatibilityWP"/>
 
   <!-- Custom naming prefix requirement -->
   <rule ref="WordPress.NamingConventions.PrefixAllGlobals">

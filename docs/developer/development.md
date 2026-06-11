@@ -6,6 +6,7 @@ This page covers repository setup and development commands for Alpaca Issue Trac
 
 - Node.js and npm are used for React, Sass, linting, and asset builds.
 - Composer is used for PHP tooling.
+- PHP 8.0 or newer is required for development and runtime.
 - A local WordPress site is needed to activate and test the plugin.
 
 ## Source Checkout Setup

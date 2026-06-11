@@ -47,5 +47,11 @@ jobs:
       - name: Lint PHP files
         run: npm run lint:php
 
+      - name: Lint Markdown files
+        run: npm run lint:md
+
+      - name: Run PHPUnit tests
+        run: composer test
+
       - name: Success
         run: echo "✅ All code quality checks passed!"
