@@ -48,6 +48,8 @@ class Register {
 			'wp-element',
 			'wp-api-fetch',
 			'wp-i18n',
+			'wp-date',
+			'wp-html-entities',
 			'wp-components',
 			'wp-dom-ready',
 			'wp-data',
@@ -94,12 +96,29 @@ class Register {
 	}
 
 	/**
+	 * Get the stable admin page slug currently being routed by WordPress.
+	 *
+	 * @return string Current plugin page slug.
+	 */
+	private function get_current_admin_page_slug() {
+		global $plugin_page;
+
+		return is_string( $plugin_page ) ? sanitize_key( $plugin_page ) : '';
+	}
+
+	/**
 	 * Determine whether the current admin page is a notification template screen.
 	 *
 	 * @param string $hook_suffix Current admin page hook suffix.
 	 * @return bool True when the page is a notification template screen.
 	 */
 	private function is_notification_template_admin_page( $hook_suffix ) {
+		$page_slug = $this->get_current_admin_page_slug();
+
+		if ( 'alpaca-email-templates' === $page_slug ) {
+			return true;
+		}
+
 		return in_array(
 			$hook_suffix,
 			[
@@ -205,6 +224,24 @@ class Register {
 	 * @return bool True when the full bundle should load.
 	 */
 	private function is_full_admin_bundle_screen( $hook_suffix ) {
+		$page_slug = $this->get_current_admin_page_slug();
+
+		if (
+			in_array(
+				$page_slug,
+				[
+					'project-board',
+					'project-activity',
+					'alpaca-settings',
+					'alpaca-notifications',
+					'alpaca-email-templates',
+				],
+				true
+			)
+		) {
+			return true;
+		}
+
 		return in_array(
 			$hook_suffix,
 			[
@@ -446,8 +483,10 @@ class Register {
 				);
 			}
 
-			$extra = [];
-			if ( 'project-board_page_alpaca-settings' === $hook_suffix ) {
+			$extra     = [];
+			$page_slug = $this->get_current_admin_page_slug();
+
+			if ( 'project-board_page_alpaca-settings' === $hook_suffix || 'alpaca-settings' === $page_slug ) {
 				$extra['emptyTrashDays'] = defined( 'EMPTY_TRASH_DAYS' ) ? (int) EMPTY_TRASH_DAYS : null;
 			}
 
