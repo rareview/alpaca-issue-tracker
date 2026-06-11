@@ -36,7 +36,7 @@ final class AlpacaIssueTracker {
 	 *
 	 * @var string
 	 */
-	const MIN_WP_VERSION = '5.8';
+	const MIN_WP_VERSION = '6.9';
 
 	/**
 	 * Maximum term score for board visibility.
