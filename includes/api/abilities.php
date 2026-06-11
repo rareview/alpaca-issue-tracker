@@ -392,6 +392,191 @@ function alpaistr_ability_permission_delete() {
 }
 
 /**
+ * Get the current user's markdown display label for ability audit comments.
+ *
+ * @return string Current user display label wrapped in bold markdown.
+ */
+function alpaistr_ability_get_current_user_label() {
+	$user = wp_get_current_user();
+
+	if ( $user instanceof WP_User && $user->exists() ) {
+		return '**' . (string) $user->display_name . '**';
+	}
+
+	return '**' . __( 'Unknown user', 'alpaca-issue-tracker' ) . '**';
+}
+
+/**
+ * Get the current user's comment author data for ability comments.
+ *
+ * @return array<string, mixed> Comment author data.
+ */
+function alpaistr_ability_get_current_comment_author_data() {
+	$user = wp_get_current_user();
+
+	if ( $user instanceof WP_User && $user->exists() ) {
+		return [
+			'user_id'              => (int) $user->ID,
+			'comment_author'       => (string) $user->display_name,
+			'comment_author_email' => (string) $user->user_email,
+		];
+	}
+
+	return [
+		'user_id'              => 0,
+		'comment_author'       => __( 'Unknown user', 'alpaca-issue-tracker' ),
+		'comment_author_email' => '',
+	];
+}
+
+/**
+ * Sanitize notification context data for ability audit comments.
+ *
+ * @param array<string, mixed> $context Raw notification context.
+ * @return array<string, mixed> Sanitized notification context.
+ */
+function alpaistr_ability_sanitize_notification_context( $context ) {
+	$sanitized = [];
+
+	if ( isset( $context['action'] ) ) {
+		$action = sanitize_key( (string) $context['action'] );
+		if ( '' !== $action ) {
+			$sanitized['action'] = $action;
+		}
+	}
+
+	if ( isset( $context['affected_user_ids'] ) && is_array( $context['affected_user_ids'] ) ) {
+		$user_ids = array_values( array_filter( array_map( 'absint', $context['affected_user_ids'] ) ) );
+		if ( ! empty( $user_ids ) ) {
+			$sanitized['affected_user_ids'] = $user_ids;
+		}
+	}
+
+	return $sanitized;
+}
+
+/**
+ * Insert a tagged issue activity comment for an ability action.
+ *
+ * @param int                  $issue_id      Issue ID.
+ * @param string               $content       Comment content.
+ * @param string[]             $tags          Activity tags.
+ * @param array<string, mixed> $context       Notification context.
+ * @param string               $comment_agent Comment agent value.
+ * @return int Inserted comment ID, or 0 on failure.
+ */
+function alpaistr_ability_insert_activity_comment( $issue_id, $content, $tags = [], $context = [], $comment_agent = 'audit' ) {
+	$issue_id = absint( $issue_id );
+	$content  = trim( (string) $content );
+
+	if ( $issue_id <= 0 || '' === $content ) {
+		return 0;
+	}
+
+	$commentdata = array_merge(
+		alpaistr_ability_get_current_comment_author_data(),
+		[
+			'comment_post_ID'  => $issue_id,
+			'comment_content'  => $content,
+			'comment_type'     => 'issuecomment',
+			'comment_agent'    => sanitize_text_field( $comment_agent ),
+			'comment_approved' => 1,
+		]
+	);
+	$comment_id  = wp_insert_comment( wp_filter_comment( wp_slash( $commentdata ) ) );
+
+	if ( ! $comment_id ) {
+		return 0;
+	}
+
+	$tags = array_values( array_unique( array_filter( array_map( 'sanitize_key', (array) $tags ) ) ) );
+	if ( ! empty( $tags ) ) {
+		update_comment_meta( $comment_id, 'alpacaCommentTags', $tags );
+	}
+
+	$context = alpaistr_ability_sanitize_notification_context( (array) $context );
+	if ( ! empty( $context ) ) {
+		update_comment_meta( $comment_id, 'alpacaNotificationContext', $context );
+	}
+
+	$comment = get_comment( $comment_id );
+	if ( $comment instanceof WP_Comment ) {
+		alpaistr_dispatch_new_comment_notifications( $comment_id, $comment );
+	}
+
+	return (int) $comment_id;
+}
+
+/**
+ * Get the current status term for an issue.
+ *
+ * @param int $issue_id Issue ID.
+ * @return WP_Term|null Status term, or null when unavailable.
+ */
+function alpaistr_ability_get_issue_status_term( $issue_id ) {
+	$terms = wp_get_post_terms( (int) $issue_id, 'alpaca_status', [ 'fields' => 'all' ] );
+
+	if ( is_wp_error( $terms ) || empty( $terms ) ) {
+		return null;
+	}
+
+	$term = reset( $terms );
+
+	return $term instanceof WP_Term ? $term : null;
+}
+
+/**
+ * Get the current assignee slugs for an issue.
+ *
+ * @param int $issue_id Issue ID.
+ * @return string[] Assignee slugs.
+ */
+function alpaistr_ability_get_issue_assignee_slugs( $issue_id ) {
+	$terms = wp_get_post_terms( (int) $issue_id, 'alpaca_assignee', [ 'fields' => 'all' ] );
+
+	if ( is_wp_error( $terms ) || empty( $terms ) ) {
+		return [];
+	}
+
+	$slugs = [];
+	foreach ( $terms as $term ) {
+		if ( $term instanceof WP_Term && '' !== (string) $term->slug ) {
+			$slugs[] = (string) $term->slug;
+		}
+	}
+
+	return array_values( array_unique( $slugs ) );
+}
+
+/**
+ * Get a user markdown display label from a user slug.
+ *
+ * @param string $user_slug User slug.
+ * @return string User display label wrapped in bold markdown.
+ */
+function alpaistr_ability_get_user_label_from_slug( $user_slug ) {
+	$user = get_user_by( 'slug', sanitize_user( (string) $user_slug ) );
+
+	if ( $user instanceof WP_User ) {
+		return '**' . (string) $user->display_name . '**';
+	}
+
+	return '**' . sanitize_text_field( (string) $user_slug ) . '**';
+}
+
+/**
+ * Get a user ID from a user slug.
+ *
+ * @param string $user_slug User slug.
+ * @return int User ID, or 0 when unavailable.
+ */
+function alpaistr_ability_get_user_id_from_slug( $user_slug ) {
+	$user = get_user_by( 'slug', sanitize_user( (string) $user_slug ) );
+
+	return $user instanceof WP_User ? (int) $user->ID : 0;
+}
+
+/**
  * Ability callback: Get board data.
  *
  * @param array $input Input parameters.
@@ -486,6 +671,31 @@ function alpaistr_ability_create_issue( $input ) {
 	} else {
 		delete_post_meta( $post_id, 'alpaca_high_priority' );
 	}
+
+	$creation_tags = [ 'issue-created' ];
+	if ( ! empty( $input['is_high_priority'] ) ) {
+		$creation_tags[] = 'high-priority';
+	}
+
+	alpaistr_ability_insert_activity_comment( $post_id, wp_kses_post( $feedback_raw ), $creation_tags, [], 'create' );
+
+	if ( ! empty( $input['is_high_priority'] ) ) {
+		$actor_label = alpaistr_ability_get_current_user_label();
+
+		alpaistr_ability_insert_activity_comment(
+			$post_id,
+			sprintf(
+				/* translators: %s: Current user display name. */
+				__( 'Priority set to **High** by %s', 'alpaca-issue-tracker' ),
+				$actor_label
+			),
+			[ 'priority-changed', 'action-add' ],
+			[ 'action' => 'enable' ]
+		);
+	}
+
+	alpaistr_update_last_activity( $post_id );
+	alpaistr_clear_board_cache();
 
 	return alpaistr_get_issue_response_data( $post_id );
 }
@@ -607,6 +817,48 @@ function alpaistr_ability_update_issue( $input ) {
 		);
 	}
 
+	$previous_status_term    = alpaistr_ability_get_issue_status_term( $issue_id );
+	$previous_assignee_slugs = alpaistr_ability_get_issue_assignee_slugs( $issue_id );
+	$previous_high_priority  = ! empty( get_post_meta( $issue_id, 'alpaca_high_priority', true ) );
+	$actor_label             = alpaistr_ability_get_current_user_label();
+	$status_id               = null;
+	$assignee_users          = null;
+
+	if ( isset( $input['status_id'] ) ) {
+		$status_id = (int) $input['status_id'];
+		if ( ! term_exists( $status_id, 'alpaca_status' ) ) {
+			return new WP_Error(
+				'invalid_status_id',
+				__( 'Status term not found.', 'alpaca-issue-tracker' )
+			);
+		}
+	}
+
+	if ( isset( $input['assignees'] ) && is_array( $input['assignees'] ) ) {
+		$assignee_users = [];
+
+		foreach ( $input['assignees'] as $user_slug ) {
+			$user_slug = sanitize_user( (string) $user_slug );
+			if ( '' === $user_slug ) {
+				continue;
+			}
+
+			$user = get_user_by( 'slug', $user_slug );
+			if ( ! $user ) {
+				return new WP_Error(
+					'invalid_assignee',
+					sprintf(
+						/* translators: %s: User slug. */
+						__( 'Assignee not found: %s', 'alpaca-issue-tracker' ),
+						$user_slug
+					)
+				);
+			}
+
+			$assignee_users[] = $user;
+		}
+	}
+
 	$post_args = [
 		'ID'                => $issue_id,
 		'post_modified'     => current_time( 'mysql' ),
@@ -667,31 +919,13 @@ function alpaistr_ability_update_issue( $input ) {
 		);
 	}
 
-	if ( isset( $input['status_id'] ) ) {
-		$status_id = (int) $input['status_id'];
-		if ( term_exists( $status_id, 'alpaca_status' ) ) {
-			wp_set_post_terms( $issue_id, [ $status_id ], 'alpaca_status', false );
-		} else {
-			return new WP_Error(
-				'invalid_status_id',
-				__( 'Status term not found.', 'alpaca-issue-tracker' )
-			);
-		}
+	if ( null !== $status_id ) {
+		wp_set_post_terms( $issue_id, [ $status_id ], 'alpaca_status', false );
 	}
 
-	if ( isset( $input['assignees'] ) && is_array( $input['assignees'] ) ) {
+	if ( is_array( $assignee_users ) ) {
 		$term_ids = [];
-		foreach ( $input['assignees'] as $user_slug ) {
-			$user_slug = sanitize_user( (string) $user_slug );
-			if ( '' === $user_slug ) {
-				continue;
-			}
-
-			$user = get_user_by( 'slug', $user_slug );
-			if ( ! $user ) {
-				continue;
-			}
-
+		foreach ( $assignee_users as $user ) {
 			$term_id = alpaistr_get_or_create_user_taxonomy_term( $user, 'alpaca_assignee' );
 			if ( $term_id > 0 ) {
 				$term_ids[] = $term_id;
@@ -705,6 +939,106 @@ function alpaistr_ability_update_issue( $input ) {
 			update_post_meta( $issue_id, 'alpaca_high_priority', 1 );
 		} else {
 			delete_post_meta( $issue_id, 'alpaca_high_priority' );
+		}
+	}
+
+	if ( isset( $input['status_id'] ) ) {
+		$current_status_term = alpaistr_ability_get_issue_status_term( $issue_id );
+		$previous_status_id  = $previous_status_term instanceof WP_Term ? (int) $previous_status_term->term_id : 0;
+		$current_status_id   = $current_status_term instanceof WP_Term ? (int) $current_status_term->term_id : 0;
+
+		if ( $current_status_id > 0 && $previous_status_id !== $current_status_id ) {
+			$previous_status_name = $previous_status_term instanceof WP_Term ? (string) $previous_status_term->name : __( 'Unknown status', 'alpaca-issue-tracker' );
+			$current_status_name  = $current_status_term instanceof WP_Term ? (string) $current_status_term->name : __( 'Unknown status', 'alpaca-issue-tracker' );
+
+			alpaistr_ability_insert_activity_comment(
+				$issue_id,
+				sprintf(
+					/* translators: 1: Previous status name, 2: Current status name, 3: Current user display name. */
+					__( 'Status changed from **%1$s** to **%2$s** by %3$s', 'alpaca-issue-tracker' ),
+					$previous_status_name,
+					$current_status_name,
+					$actor_label
+				),
+				[ 'status-changed' ],
+				[ 'action' => 'changed' ]
+			);
+		}
+	}
+
+	if ( isset( $input['assignees'] ) && is_array( $input['assignees'] ) ) {
+		$current_assignee_slugs = alpaistr_ability_get_issue_assignee_slugs( $issue_id );
+		$added_assignees        = array_values( array_diff( $current_assignee_slugs, $previous_assignee_slugs ) );
+		$removed_assignees      = array_values( array_diff( $previous_assignee_slugs, $current_assignee_slugs ) );
+
+		foreach ( $added_assignees as $user_slug ) {
+			$user_label = alpaistr_ability_get_user_label_from_slug( $user_slug );
+			$user_id    = alpaistr_ability_get_user_id_from_slug( $user_slug );
+
+			alpaistr_ability_insert_activity_comment(
+				$issue_id,
+				sprintf(
+					/* translators: 1: Assigned user display name, 2: Current user display name. */
+					__( '%1$s was assigned to this issue by %2$s', 'alpaca-issue-tracker' ),
+					$user_label,
+					$actor_label
+				),
+				[ 'assignee-changed', 'action-add' ],
+				[
+					'action'            => 'assign',
+					'affected_user_ids' => [ $user_id ],
+				]
+			);
+		}
+
+		foreach ( $removed_assignees as $user_slug ) {
+			$user_label = alpaistr_ability_get_user_label_from_slug( $user_slug );
+			$user_id    = alpaistr_ability_get_user_id_from_slug( $user_slug );
+
+			alpaistr_ability_insert_activity_comment(
+				$issue_id,
+				sprintf(
+					/* translators: 1: Unassigned user display name, 2: Current user display name. */
+					__( '%1$s was unassigned from this issue by %2$s', 'alpaca-issue-tracker' ),
+					$user_label,
+					$actor_label
+				),
+				[ 'assignee-changed', 'action-remove' ],
+				[
+					'action'            => 'unassign',
+					'affected_user_ids' => [ $user_id ],
+				]
+			);
+		}
+	}
+
+	if ( isset( $input['is_high_priority'] ) ) {
+		$current_high_priority = ! empty( get_post_meta( $issue_id, 'alpaca_high_priority', true ) );
+
+		if ( $previous_high_priority !== $current_high_priority ) {
+			if ( $current_high_priority ) {
+				alpaistr_ability_insert_activity_comment(
+					$issue_id,
+					sprintf(
+						/* translators: %s: Current user display name. */
+						__( 'Priority set to **High** by %s', 'alpaca-issue-tracker' ),
+						$actor_label
+					),
+					[ 'priority-changed', 'action-add' ],
+					[ 'action' => 'enable' ]
+				);
+			} else {
+				alpaistr_ability_insert_activity_comment(
+					$issue_id,
+					sprintf(
+						/* translators: %s: Current user display name. */
+						__( 'High priority removed by %s', 'alpaca-issue-tracker' ),
+						$actor_label
+					),
+					[ 'priority-changed', 'action-remove' ],
+					[ 'action' => 'disable' ]
+				);
+			}
 		}
 	}
 
@@ -739,6 +1073,19 @@ function alpaistr_ability_delete_issue( $input ) {
 		);
 	}
 
+	$actor_label = alpaistr_ability_get_current_user_label();
+	alpaistr_ability_insert_activity_comment(
+		$issue_id,
+		sprintf(
+			/* translators: %s: Current user display name. */
+			__( 'Issue **deleted** by %s', 'alpaca-issue-tracker' ),
+			$actor_label
+		),
+		[ 'issue-deleted' ],
+		[ 'action' => 'delete' ]
+	);
+
+	alpaistr_update_last_activity( $issue_id );
 	alpaistr_clear_board_cache();
 
 	return [
