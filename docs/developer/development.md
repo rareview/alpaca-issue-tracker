@@ -87,7 +87,7 @@ Generate the PHP translation catalog with:
 npm run make-pot
 ```
 
-This writes to `languages/alpaca-issue-tracker.pot`.
+This writes to `languages/alpaca-issue-tracker.pot`. The script uses a global `wp` binary when available; otherwise it downloads WP-CLI to `.cache/wp-cli.phar` and runs it with PHP. You can also install WP-CLI globally: https://wp-cli.org/#installing
 
 For JavaScript and JSX strings, use `wp.i18n` functions. When generating JavaScript translation catalogs, include JSX extensions so React strings are exported:
 

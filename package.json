@@ -42,7 +42,7 @@
     "fix:php": "vendor/bin/phpcbf --ignore=src/*",
     "clear": "rm -rf ./.parcel-cache/ ./dist/",
     "clb": "npm run clear && npm run lint && npm run build",
-    "make-pot": "wp i18n make-pot . languages/alpaca-issue-tracker.pot --domain=alpaca-issue-tracker --exclude=node_modules,vendor,dist,build,.git"
+    "make-pot": "node scripts/make-pot.js"
   },
   "devDependencies": {
     "@parcel/transformer-inline-string": "^2.15.4",
