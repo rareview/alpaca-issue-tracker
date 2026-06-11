@@ -119,4 +119,4 @@ Create an installable ZIP with:
 npm run zip
 ```
 
-The ZIP should include runtime plugin files only. Repo-only files such as `docs/`, source tooling, and local configuration should stay out of the package.
+The ZIP should include runtime plugin files only. Repo-only files such as `docs/`, `tests/`, `skills/`, `phpunit.xml.dist`, Composer dev `vendor/` packages, source tooling, and local configuration should stay out of the package. Exclusions are defined in `.distignore` and mirrored in the `npm run zip` script.
