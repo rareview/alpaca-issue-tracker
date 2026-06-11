@@ -20,6 +20,7 @@ These options store shared email template settings.
 | --- | --- |
 | `alpaistr_notification_email_subject_template` | Immediate notification email subject template. |
 | `alpaistr_notification_email_body_template` | Immediate notification email body block markup. |
+| `alpaistr_notification_email_template_context` | Temporary notification template editing context; deleted after the template is saved. |
 | `alpaistr_daily_digest_subject_template` | Daily digest email subject template. |
 | `alpaistr_daily_digest_body_template` | Daily digest email body block markup. |
 | `alpaistr_daily_digest_preamble_template` | Legacy daily digest preamble read during template migration. |
@@ -34,6 +35,7 @@ These options support plugin internals and should not be edited manually unless 
 | Option | Purpose |
 | --- | --- |
 | `alpaistr_default_status_id` | Stores the default board status term ID after default status creation. |
+| `alpaistr_needs_term_setup` | Internal setup flag used during install/update flows for default terms. |
 | `alpaistr_board_cache_version` | Cache-busting version for board cache keys. |
 | `alpaistr_notification_inbox_schema_version` | Installed schema version for the notification inbox table. |
 | `alpaistr_notification_digest_schema_version` | Installed schema version for digest schedule/delivery tables. |

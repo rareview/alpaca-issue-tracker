@@ -29,14 +29,14 @@ final class AlpacaIssueTracker {
 	 *
 	 * @var string
 	 */
-	const MIN_PHP_VERSION = '7.4';
+	const MIN_PHP_VERSION = '8.0';
 
 	/**
 	 * Minimum WordPress version.
 	 *
 	 * @var string
 	 */
-	const MIN_WP_VERSION = '5.8';
+	const MIN_WP_VERSION = '6.9';
 
 	/**
 	 * Maximum term score for board visibility.

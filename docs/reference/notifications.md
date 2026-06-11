@@ -1,5 +1,15 @@
 # Notification Hooks
 
+## Comment Notification Dispatch Paths
+
+Immediate issue-comment notifications use `alpaistr_dispatch_new_comment_notifications()` as the shared dispatch helper. The helper syncs mention metadata, skips non-`issuecomment` comments, skips unapproved comments, builds the notification event from the saved comment, and passes that event into the notification delivery pipeline.
+
+The helper is reached through three creation paths:
+
+- REST comments created through `/wp/v2/comments`: `rest_after_insert_comment` calls `alpaistr_handle_rest_insert_comment_notifications()` after the REST controller has saved comment meta. This path also normalizes attachment meta before dispatching, and only dispatches on comment creation.
+- Abilities API comments: `alpaistr_ability_add_comment()` and `alpaistr_ability_insert_activity_comment()` call `alpaistr_dispatch_new_comment_notifications()` directly after inserting the comment and saving comment meta. This covers `alpaca/add-comment` and audit activity from other issue abilities. It is needed because Abilities requests run inside REST, but they do not use the core comments REST controller.
+- Non-REST comments inserted with `wp_insert_comment()`: `wp_insert_comment` calls `alpaistr_handle_new_comment_notifications()` for direct PHP, WP-CLI, or similar inserts. The handler intentionally returns during REST requests so REST comments are not dispatched before their meta is saved.
+
 ## Channel Registration And Preferences
 
 ### `alpaca_notification_channels`
@@ -94,13 +104,13 @@ add_filter(
 
 **Parameters**
 
-| Parameter    | Type         | Description                                                              |
-| ------------ | ------------ | ------------------------------------------------------------------------ |
+| Parameter    | Type         | Description                                                                            |
+| ------------ | ------------ | -------------------------------------------------------------------------------------- |
 | `$handled`   | `bool\|null` | Return `true` or `false` to override Alpaca Issue Tracker's default dispatch behavior. |
-| `$route`     | `array`      | The route being dispatched.                                              |
-| `$recipient` | `array`      | The current recipient.                                                   |
-| `$event`     | `array`      | The notification event payload.                                          |
-| `$message`   | `array`      | The route-specific message payload.                                      |
+| `$route`     | `array`      | The route being dispatched.                                                            |
+| `$recipient` | `array`      | The current recipient.                                                                 |
+| `$event`     | `array`      | The notification event payload.                                                        |
+| `$message`   | `array`      | The route-specific message payload.                                                    |
 
 ## Event Processing
 

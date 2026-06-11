@@ -113,6 +113,35 @@ add_action( 'updated_term_meta', 'alpaistr_clear_board_cache_on_term_meta_change
 add_action( 'deleted_term_meta', 'alpaistr_clear_board_cache_on_term_meta_change', 10, 4 );
 
 /**
+ * Keep issue order term meta in sync when an issue enters a status column.
+ *
+ * @param int $issue_id           Issue post ID.
+ * @param int $status_term_id     Target status term ID.
+ * @param int $previous_status_id Previous status term ID.
+ * @return void
+ */
+function alpaistr_update_issue_order_for_status_change( int $issue_id, int $status_term_id, int $previous_status_id = 0 ) {
+	if ( $issue_id <= 0 || $status_term_id <= 0 ) {
+		return;
+	}
+
+	if ( $previous_status_id > 0 && $previous_status_id !== $status_term_id ) {
+		$previous_order = get_term_meta( $previous_status_id, 'issue_order', true );
+		$previous_order = is_array( $previous_order ) ? $previous_order : [];
+		$previous_order = array_values( array_diff( $previous_order, [ $issue_id ] ) );
+
+		update_term_meta( $previous_status_id, 'issue_order', $previous_order );
+	}
+
+	$current_order = get_term_meta( $status_term_id, 'issue_order', true );
+	$current_order = is_array( $current_order ) ? $current_order : [];
+	$current_order = array_values( array_diff( $current_order, [ $issue_id ] ) );
+	array_unshift( $current_order, $issue_id );
+
+	update_term_meta( $status_term_id, 'issue_order', $current_order );
+}
+
+/**
  * Get checklist progress grouped by parent issue IDs.
  *
  * @param array $parent_issue_ids Parent issue post IDs.

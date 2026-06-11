@@ -4,8 +4,8 @@
 
 Alpaca Issue Tracker requires:
 
-- WordPress 6.8 or newer.
-- PHP 7.4 or newer.
+- WordPress 6.9 or newer.
+- PHP 8.0 or newer.
 - A logged-in WordPress user account with access to the Project Board.
 
 ## Recommendations
