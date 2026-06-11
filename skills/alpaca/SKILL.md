@@ -287,6 +287,23 @@ Retrieves comments posted on an issue.
       "content": "This seems to be resolved after optimizing the index.",
       "author_name": "Admin",
       "author_id": 1,
+      "author_user_agent": "human",
+      "author_details": {
+        "id": 1,
+        "name": "Admin",
+        "display_name": "Admin",
+        "avatar": "https://example.com/avatar-48.png",
+        "avatar_urls": {
+          "24": "https://example.com/avatar-24.png",
+          "48": "https://example.com/avatar-48.png",
+          "96": "https://example.com/avatar-96.png"
+        }
+      },
+      "meta": {
+        "alpacaCommentTags": [],
+        "alpacaNotificationContext": {},
+        "alpacaCommentAttachments": []
+      },
       "date": "2026-06-04 14:15:00",
       "date_gmt": "2026-06-04 18:15:00"
     }

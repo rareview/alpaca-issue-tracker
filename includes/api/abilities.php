@@ -327,12 +327,38 @@ function alpaistr_register_abilities() {
 				'items' => [
 					'type'       => 'object',
 					'properties' => [
-						'id'          => [ 'type' => 'integer' ],
-						'content'     => [ 'type' => 'string' ],
-						'author_name' => [ 'type' => 'string' ],
-						'author_id'   => [ 'type' => 'integer' ],
-						'date'        => [ 'type' => 'string' ],
-						'date_gmt'    => [ 'type' => 'string' ],
+						'id'                => [ 'type' => 'integer' ],
+						'content'           => [ 'type' => 'string' ],
+						'author_name'       => [ 'type' => 'string' ],
+						'author_id'         => [ 'type' => 'integer' ],
+						'author_user_agent' => [ 'type' => 'string' ],
+						'author_details'    => [
+							'type'       => 'object',
+							'properties' => [
+								'id'           => [ 'type' => 'integer' ],
+								'name'         => [ 'type' => 'string' ],
+								'display_name' => [ 'type' => 'string' ],
+								'avatar'       => [ 'type' => 'string' ],
+								'avatar_urls'  => [
+									'type'       => 'object',
+									'properties' => [
+										'24' => [ 'type' => 'string' ],
+										'48' => [ 'type' => 'string' ],
+										'96' => [ 'type' => 'string' ],
+									],
+								],
+							],
+						],
+						'meta'              => [
+							'type'       => 'object',
+							'properties' => [
+								'alpacaCommentTags'        => [ 'type' => 'array' ],
+								'alpacaNotificationContext' => [ 'type' => 'object' ],
+								'alpacaCommentAttachments' => [ 'type' => 'array' ],
+							],
+						],
+						'date'              => [ 'type' => 'string' ],
+						'date_gmt'          => [ 'type' => 'string' ],
 					],
 				],
 			],
@@ -1195,13 +1221,52 @@ function alpaistr_ability_get_comments( $input ) {
 	$formatted = [];
 
 	foreach ( $comments as $comment ) {
+		$author_id    = (int) $comment->user_id;
+		$author_name  = (string) $comment->comment_author;
+		$display_name = $author_name;
+		$avatar_24    = '';
+		$avatar_48    = '';
+		$avatar_96    = '';
+
+		if ( $author_id > 0 ) {
+			$author_display_name = (string) get_the_author_meta( 'display_name', $author_id );
+			if ( '' !== $author_display_name ) {
+				$display_name = $author_display_name;
+			}
+
+			$avatar_24 = alpaistr_avatar( $author_id, 24 );
+			$avatar_48 = alpaistr_avatar( $author_id, 48 );
+			$avatar_96 = alpaistr_avatar( $author_id, 96 );
+		}
+
+		$comment_tags         = get_comment_meta( (int) $comment->comment_ID, 'alpacaCommentTags', true );
+		$notification_context = get_comment_meta( (int) $comment->comment_ID, 'alpacaNotificationContext', true );
+		$attachments          = get_comment_meta( (int) $comment->comment_ID, 'alpacaCommentAttachments', true );
+
 		$formatted[] = [
-			'id'          => (int) $comment->comment_ID,
-			'content'     => $comment->comment_content,
-			'author_name' => $comment->comment_author,
-			'author_id'   => (int) $comment->user_id,
-			'date'        => $comment->comment_date,
-			'date_gmt'    => $comment->comment_date_gmt,
+			'id'                => (int) $comment->comment_ID,
+			'content'           => $comment->comment_content,
+			'author_name'       => $author_name,
+			'author_id'         => $author_id,
+			'author_user_agent' => isset( $comment->comment_agent ) ? (string) $comment->comment_agent : '',
+			'author_details'    => [
+				'id'           => $author_id,
+				'name'         => $display_name,
+				'display_name' => $display_name,
+				'avatar'       => $avatar_48,
+				'avatar_urls'  => [
+					'24' => $avatar_24,
+					'48' => $avatar_48,
+					'96' => $avatar_96,
+				],
+			],
+			'meta'              => [
+				'alpacaCommentTags'         => is_array( $comment_tags ) ? $comment_tags : [],
+				'alpacaNotificationContext' => is_array( $notification_context ) ? $notification_context : [],
+				'alpacaCommentAttachments'  => is_array( $attachments ) ? $attachments : [],
+			],
+			'date'              => $comment->comment_date,
+			'date_gmt'          => $comment->comment_date_gmt,
 		];
 	}
 

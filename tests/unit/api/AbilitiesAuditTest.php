@@ -63,6 +63,7 @@ class AbilitiesAuditTest extends \PHPUnit\Framework\TestCase {
 
 		Functions\stubs( [ 'add_action' => null ] );
 
+		require_once dirname( __DIR__, 3 ) . '/includes/api/utilities/helpers.php';
 		require_once dirname( __DIR__, 3 ) . '/includes/notifications/dispatch.php';
 		require_once dirname( __DIR__, 3 ) . '/includes/core/board.php';
 		require_once dirname( __DIR__, 3 ) . '/includes/api/abilities.php';
@@ -374,6 +375,79 @@ class AbilitiesAuditTest extends \PHPUnit\Framework\TestCase {
 		$this->assertSame( 1, $this->filter_comment_calls );
 		$this->assertSame( 'Filtered comment content', $this->inserted_comments[201]['comment_content'] ?? null );
 		$this->assertSame( 'Filtered comment content', $result['comment']['content'] );
+	}
+
+	/**
+	 * Get comments ability returns timeline metadata and author avatars.
+	 */
+	public function test_get_comments_returns_timeline_metadata_and_author_details(): void {
+		$comment = (object) [
+			'comment_ID'       => 301,
+			'comment_content'  => 'Status changed from Backlog to Next.',
+			'comment_author'   => 'Pratik',
+			'user_id'          => 7,
+			'comment_agent'    => 'audit',
+			'comment_date'     => '2026-06-11 10:00:00',
+			'comment_date_gmt' => '2026-06-11 14:00:00',
+		];
+
+		Functions\when( 'alpaistr_assert_issue_exists' )->justReturn( (object) [ 'ID' => 101 ] );
+		Functions\when( 'get_comments' )->justReturn( [ $comment ] );
+		Functions\when( 'get_comment_meta' )->alias(
+			static function ( int $comment_id, string $key ) {
+				if ( 301 !== $comment_id ) {
+					return '';
+				}
+
+				if ( 'alpacaCommentTags' === $key ) {
+					return [ 'status-changed' ];
+				}
+
+				if ( 'alpacaNotificationContext' === $key ) {
+					return [ 'action' => 'changed' ];
+				}
+
+				if ( 'alpacaCommentAttachments' === $key ) {
+					return [ 'https://example.test/uploads/screenshot.png' ];
+				}
+
+				return '';
+			}
+		);
+		Functions\when( 'get_the_author_meta' )->alias(
+			static function ( string $field, int $user_id ): string {
+				if ( 7 !== $user_id ) {
+					return '';
+				}
+
+				return 'display_name' === $field ? 'Pratik Barvaliya' : '';
+			}
+		);
+		Functions\when( 'get_avatar_url' )->alias(
+			static function ( int $user_id, array $args ): string {
+				return 'https://example.test/avatar-' . $user_id . '-' . (int) $args['size'] . '.png';
+			}
+		);
+
+		$result = alpaistr_ability_get_comments( [ 'issue_id' => 101 ] );
+
+		$this->assertSame( 301, $result[0]['id'] );
+		$this->assertArrayHasKey( 'author_user_agent', $result[0] );
+		$this->assertArrayHasKey( 'meta', $result[0] );
+		$this->assertArrayHasKey( 'author_details', $result[0] );
+		$this->assertSame( 'audit', $result[0]['author_user_agent'] );
+		$this->assertSame(
+			[
+				'alpacaCommentTags'         => [ 'status-changed' ],
+				'alpacaNotificationContext' => [ 'action' => 'changed' ],
+				'alpacaCommentAttachments'  => [ 'https://example.test/uploads/screenshot.png' ],
+			],
+			$result[0]['meta']
+		);
+		$this->assertSame( 'Pratik Barvaliya', $result[0]['author_details']['display_name'] );
+		$this->assertSame( 'https://example.test/avatar-7-48.png', $result[0]['author_details']['avatar'] );
+		$this->assertSame( 'https://example.test/avatar-7-24.png', $result[0]['author_details']['avatar_urls']['24'] );
+		$this->assertSame( 'https://example.test/avatar-7-96.png', $result[0]['author_details']['avatar_urls']['96'] );
 	}
 
 	/**
