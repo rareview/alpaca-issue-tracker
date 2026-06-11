@@ -1129,10 +1129,13 @@ function alpaistr_ability_add_comment( $input ) {
 		'user_id'              => $user->ID,
 		'comment_author'       => $user->display_name,
 		'comment_author_email' => $user->user_email,
+		'comment_author_url'   => '',
+		'comment_author_IP'    => '',
+		'comment_agent'        => '',
 		'comment_approved'     => 1,
 	];
 
-	$comment_id = wp_insert_comment( $commentdata );
+	$comment_id = wp_insert_comment( wp_filter_comment( wp_slash( $commentdata ) ) );
 	if ( ! $comment_id ) {
 		return new WP_Error(
 			'comment_failed',

@@ -35,6 +35,20 @@ class AbilitiesAuditTest extends \PHPUnit\Framework\TestCase {
 	private array $term_meta = [];
 
 	/**
+	 * Number of wp_filter_comment calls captured by the sanitizer stub.
+	 *
+	 * @var int
+	 */
+	private int $filter_comment_calls = 0;
+
+	/**
+	 * Optional content returned by the wp_filter_comment sanitizer stub.
+	 *
+	 * @var string|null
+	 */
+	private ?string $filter_comment_content = null;
+
+	/**
 	 * Set up Brain Monkey and load ability callbacks.
 	 */
 	protected function setUp(): void {
@@ -44,6 +58,8 @@ class AbilitiesAuditTest extends \PHPUnit\Framework\TestCase {
 		$this->inserted_comments = [];
 		$this->comment_meta      = [];
 		$this->term_meta         = [];
+		$this->filter_comment_calls   = 0;
+		$this->filter_comment_content = null;
 
 		Functions\stubs( [ 'add_action' => null ] );
 
@@ -324,6 +340,43 @@ class AbilitiesAuditTest extends \PHPUnit\Framework\TestCase {
 	}
 
 	/**
+	 * Add comment ability filters comment data before inserting.
+	 */
+	public function test_add_comment_filters_comment_data_before_insert(): void {
+		$this->filter_comment_content = 'Filtered comment content';
+
+		Functions\when( 'alpaistr_assert_issue_exists' )->justReturn( (object) [ 'ID' => 101 ] );
+		Functions\when( 'wp_get_current_user' )->justReturn( $this->makeUser( 7, 'Pratik', 'pratik' ) );
+		Functions\expect( 'alpaistr_update_last_activity' )->once()->with( 101 );
+		Functions\expect( 'alpaistr_clear_board_cache' )->once();
+		Functions\when( 'get_comment' )->alias(
+			static function ( int $comment_id ): object {
+				return (object) [
+					'comment_ID'       => $comment_id,
+					'comment_type'     => 'issuecomment',
+					'comment_approved' => 1,
+					'comment_content'  => 'Filtered comment content',
+					'comment_author'   => 'Pratik',
+					'comment_date'     => '2026-06-11 10:00:00',
+					'comment_date_gmt' => '2026-06-11 14:00:00',
+				];
+			}
+		);
+
+		$result = alpaistr_ability_add_comment(
+			[
+				'issue_id' => 101,
+				'content'  => '<strong>Raw comment content</strong>',
+			]
+		);
+
+		$this->assertSame( 201, $result['comment_id'] );
+		$this->assertSame( 1, $this->filter_comment_calls );
+		$this->assertSame( 'Filtered comment content', $this->inserted_comments[201]['comment_content'] ?? null );
+		$this->assertSame( 'Filtered comment content', $result['comment']['content'] );
+	}
+
+	/**
 	 * Stub translation functions.
 	 */
 	private function stubTranslationFunctions(): void {
@@ -374,7 +427,13 @@ class AbilitiesAuditTest extends \PHPUnit\Framework\TestCase {
 			}
 		);
 		Functions\when( 'wp_filter_comment' )->alias(
-			static function ( array $value ): array {
+			function ( array $value ): array {
+				++$this->filter_comment_calls;
+
+				if ( null !== $this->filter_comment_content ) {
+					$value['comment_content'] = $this->filter_comment_content;
+				}
+
 				return $value;
 			}
 		);
