@@ -656,12 +656,7 @@ function alpaistr_ability_create_issue( $input ) {
 			wp_set_post_terms( $post_id, [ (int) $status_term->term_id ], 'alpaca_status' );
 			$status_term_id = (int) $status_term->term_id;
 
-			$current_order = get_term_meta( $status_term_id, 'issue_order', true );
-			$current_order = is_array( $current_order ) ? $current_order : [];
-			$current_order = array_values( array_diff( $current_order, [ $post_id ] ) );
-			array_unshift( $current_order, $post_id );
-
-			update_term_meta( $status_term_id, 'issue_order', $current_order );
+			alpaistr_update_issue_order_for_status_change( $post_id, $status_term_id );
 			alpaistr_clear_board_cache();
 		}
 	}
@@ -920,7 +915,13 @@ function alpaistr_ability_update_issue( $input ) {
 	}
 
 	if ( null !== $status_id ) {
+		$previous_status_id = $previous_status_term instanceof WP_Term ? (int) $previous_status_term->term_id : 0;
+
 		wp_set_post_terms( $issue_id, [ $status_id ], 'alpaca_status', false );
+
+		if ( $status_id !== $previous_status_id ) {
+			alpaistr_update_issue_order_for_status_change( $issue_id, $status_id, $previous_status_id );
+		}
 	}
 
 	if ( is_array( $assignee_users ) ) {

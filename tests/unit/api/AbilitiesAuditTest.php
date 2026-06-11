@@ -28,6 +28,13 @@ class AbilitiesAuditTest extends \PHPUnit\Framework\TestCase {
 	private array $comment_meta = [];
 
 	/**
+	 * Captured term meta writes keyed by term ID.
+	 *
+	 * @var array<int, array<string, mixed>>
+	 */
+	private array $term_meta = [];
+
+	/**
 	 * Set up Brain Monkey and load ability callbacks.
 	 */
 	protected function setUp(): void {
@@ -36,10 +43,12 @@ class AbilitiesAuditTest extends \PHPUnit\Framework\TestCase {
 
 		$this->inserted_comments = [];
 		$this->comment_meta      = [];
+		$this->term_meta         = [];
 
 		Functions\stubs( [ 'add_action' => null ] );
 
 		require_once dirname( __DIR__, 3 ) . '/includes/notifications/dispatch.php';
+		require_once dirname( __DIR__, 3 ) . '/includes/core/board.php';
 		require_once dirname( __DIR__, 3 ) . '/includes/api/abilities.php';
 
 		$this->stubTranslationFunctions();
@@ -113,6 +122,8 @@ class AbilitiesAuditTest extends \PHPUnit\Framework\TestCase {
 			}
 		);
 		Functions\when( 'alpaistr_get_issue_response_data' )->justReturn( [ 'post_id' => 101 ] );
+		Functions\when( 'get_term_meta' )->justReturn( [] );
+		Functions\when( 'update_term_meta' )->justReturn( true );
 
 		Functions\when( 'get_user_by' )->alias(
 			function ( string $field, string $value ) {
@@ -183,6 +194,75 @@ class AbilitiesAuditTest extends \PHPUnit\Framework\TestCase {
 
 		$this->assertSame( [ 'priority-changed', 'action-add' ], $this->comment_meta[203]['alpacaCommentTags'] );
 		$this->assertSame( [ 'action' => 'enable' ], $this->comment_meta[203]['alpacaNotificationContext'] );
+	}
+
+	/**
+	 * Update ability keeps issue_order term meta in sync after status changes.
+	 */
+	public function test_update_issue_status_updates_issue_order_meta(): void {
+		$status_calls = 0;
+
+		Functions\when( 'alpaistr_assert_issue_exists' )->justReturn( (object) [ 'ID' => 101 ] );
+		Functions\when( 'wp_get_current_user' )->justReturn( $this->makeUser( 7, 'Pratik', 'pratik' ) );
+		Functions\when( 'term_exists' )->justReturn( true );
+		Functions\when( 'current_time' )->justReturn( '2026-06-10 10:00:00' );
+		Functions\when( 'wp_update_post' )->justReturn( 101 );
+		Functions\when( 'get_post_meta' )->justReturn( '' );
+		Functions\when( 'alpaistr_get_issue_response_data' )->justReturn( [ 'post_id' => 101 ] );
+
+		Functions\when( 'wp_get_post_terms' )->alias(
+			function ( int $issue_id, string $taxonomy ) use ( &$status_calls ): array {
+				$this->assertSame( 101, $issue_id );
+
+				if ( 'alpaca_status' === $taxonomy ) {
+					++$status_calls;
+					return 1 === $status_calls ? [ $this->makeTerm( 4, 'Backlog', 'backlog' ) ] : [ $this->makeTerm( 8, 'In Progress', 'in-progress' ) ];
+				}
+
+				return [];
+			}
+		);
+
+		Functions\when( 'get_term_meta' )->alias(
+			static function ( int $term_id, string $key ) {
+				if ( 'issue_order' !== $key ) {
+					return [];
+				}
+
+				if ( 4 === $term_id ) {
+					return [ 101, 200 ];
+				}
+
+				if ( 8 === $term_id ) {
+					return [ 300, 400 ];
+				}
+
+				return [];
+			}
+		);
+
+		Functions\when( 'update_term_meta' )->alias(
+			function ( int $term_id, string $key, $value ): bool {
+				$this->term_meta[ $term_id ][ $key ] = $value;
+
+				return true;
+			}
+		);
+
+		Functions\expect( 'wp_set_post_terms' )->once()->with( 101, [ 8 ], 'alpaca_status', false );
+		Functions\expect( 'alpaistr_update_last_activity' )->once()->with( 101 );
+		Functions\expect( 'alpaistr_clear_board_cache' )->once();
+
+		$result = alpaistr_ability_update_issue(
+			[
+				'id'        => 101,
+				'status_id' => 8,
+			]
+		);
+
+		$this->assertSame( [ 'post_id' => 101 ], $result );
+		$this->assertSame( [ 200 ], $this->term_meta[4]['issue_order'] ?? null );
+		$this->assertSame( [ 101, 300, 400 ], $this->term_meta[8]['issue_order'] ?? null );
 	}
 
 	/**
