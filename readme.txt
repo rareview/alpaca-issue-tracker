@@ -4,7 +4,7 @@ Tags: issue tracker, bug tracker, project management, kanban, development
 Requires at least: 6.9
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -121,6 +121,13 @@ Alpaca Issue Tracker includes runtime copies or bundled output from the followin
 Alpaca Issue Tracker uses user images throughout its interface, for extra humanity. We recommend **Simple Local Avatars** as a reliable solution for processing and hosting photos of your users without using an external service.
 
 == Changelog ==
+
+= 1.0.4 =
+* Added WordPress Abilities API support for agent and MCP integrations.
+* Added issue-to-issue links within comments.
+* Added a Copy Issue Permalink action in the issue menu.
+* Added a documentation link to the admin sidebar.
+* Raised minimum requirements to WordPress 6.9 and PHP 8.0.
 
 = 1.0.3 =
 * Removed hidden files from the release archive.
