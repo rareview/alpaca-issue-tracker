@@ -83,9 +83,9 @@ class AbilitiesAuditTest extends \PHPUnit\Framework\TestCase {
 	}
 
 	/**
-	 * Create ability creates an issue-created comment and matching priority audit.
+	 * Create ability records high priority on the issue-created comment only.
 	 */
-	public function test_create_issue_creates_issue_and_priority_activity_comments(): void {
+	public function test_create_issue_records_high_priority_on_issue_created_comment_only(): void {
 		$inserted_post_args = null;
 		$input              = [
 			'feedback'         => 'Important broken checkout flow',
@@ -93,7 +93,7 @@ class AbilitiesAuditTest extends \PHPUnit\Framework\TestCase {
 		];
 
 		Functions\when( 'get_current_user_id' )->justReturn( 7 );
-		Functions\when( 'wp_get_current_user' )->justReturn( $this->makeUser( 7, 'Pratik', 'pratik' ) );
+		Functions\when( 'wp_get_current_user' )->justReturn( $this->makeUser( 7, 'Example User', 'exampleuser' ) );
 		Functions\when( 'wp_insert_post' )->alias(
 			static function ( array $post_args ) use ( &$inserted_post_args ): int {
 				$inserted_post_args = $post_args;
@@ -114,18 +114,13 @@ class AbilitiesAuditTest extends \PHPUnit\Framework\TestCase {
 		$this->assertSame( [ 'post_id' => 101 ], $result );
 		$this->assertIsArray( $inserted_post_args );
 		$this->assertSame( hash( 'adler32', wp_json_encode( [ 'input' => $input ] ) ), $inserted_post_args['post_name'] );
-		$this->assertCount( 2, $this->inserted_comments );
+		$this->assertCount( 1, $this->inserted_comments );
 
 		$comments = array_values( $this->inserted_comments );
 		$this->assertSame( 'create', $comments[0]['comment_agent'] );
 		$this->assertSame( 'issuecomment', $comments[0]['comment_type'] );
 		$this->assertSame( 'Important broken checkout flow', $comments[0]['comment_content'] );
 		$this->assertSame( [ 'issue-created', 'high-priority' ], $this->comment_meta[201]['alpacaCommentTags'] );
-
-		$this->assertSame( 'audit', $comments[1]['comment_agent'] );
-		$this->assertStringContainsString( 'Priority set to **High** by **Pratik**', $comments[1]['comment_content'] );
-		$this->assertSame( [ 'priority-changed', 'action-add' ], $this->comment_meta[202]['alpacaCommentTags'] );
-		$this->assertSame( [ 'action' => 'enable' ], $this->comment_meta[202]['alpacaNotificationContext'] );
 	}
 
 	/**
@@ -137,7 +132,7 @@ class AbilitiesAuditTest extends \PHPUnit\Framework\TestCase {
 		$priority_calls = 0;
 
 		Functions\when( 'alpaistr_assert_issue_exists' )->justReturn( (object) [ 'ID' => 101 ] );
-		Functions\when( 'wp_get_current_user' )->justReturn( $this->makeUser( 7, 'Pratik', 'pratik' ) );
+		Functions\when( 'wp_get_current_user' )->justReturn( $this->makeUser( 7, 'Example User', 'exampleuser' ) );
 		Functions\when( 'term_exists' )->justReturn( true );
 		Functions\when( 'current_time' )->justReturn( '2026-06-10 10:00:00' );
 		Functions\when( 'wp_update_post' )->justReturn( 101 );
@@ -229,7 +224,7 @@ class AbilitiesAuditTest extends \PHPUnit\Framework\TestCase {
 		$status_calls = 0;
 
 		Functions\when( 'alpaistr_assert_issue_exists' )->justReturn( (object) [ 'ID' => 101 ] );
-		Functions\when( 'wp_get_current_user' )->justReturn( $this->makeUser( 7, 'Pratik', 'pratik' ) );
+		Functions\when( 'wp_get_current_user' )->justReturn( $this->makeUser( 7, 'Example User', 'exampleuser' ) );
 		Functions\when( 'term_exists' )->justReturn( true );
 		Functions\when( 'current_time' )->justReturn( '2026-06-10 10:00:00' );
 		Functions\when( 'wp_update_post' )->justReturn( 101 );
@@ -296,7 +291,7 @@ class AbilitiesAuditTest extends \PHPUnit\Framework\TestCase {
 	 */
 	public function test_update_issue_rejects_unknown_assignee_before_writes(): void {
 		Functions\when( 'alpaistr_assert_issue_exists' )->justReturn( (object) [ 'ID' => 101 ] );
-		Functions\when( 'wp_get_current_user' )->justReturn( $this->makeUser( 7, 'Pratik', 'pratik' ) );
+		Functions\when( 'wp_get_current_user' )->justReturn( $this->makeUser( 7, 'Example User', 'exampleuser' ) );
 		Functions\when( 'wp_get_post_terms' )->justReturn( [] );
 		Functions\when( 'get_post_meta' )->justReturn( '' );
 		Functions\when( 'get_user_by' )->justReturn( false );
@@ -316,6 +311,7 @@ class AbilitiesAuditTest extends \PHPUnit\Framework\TestCase {
 
 		$this->assertInstanceOf( WP_Error::class, $result );
 		$this->assertSame( 'invalid_assignee', $result->get_error_code() );
+		$this->assertSame( [ 'status' => 400 ], $result->get_error_data() );
 		$this->assertSame( [], $this->inserted_comments );
 	}
 
@@ -324,7 +320,7 @@ class AbilitiesAuditTest extends \PHPUnit\Framework\TestCase {
 	 */
 	public function test_delete_issue_creates_issue_deleted_activity_comment(): void {
 		Functions\when( 'alpaistr_assert_issue_exists' )->justReturn( (object) [ 'ID' => 101 ] );
-		Functions\when( 'wp_get_current_user' )->justReturn( $this->makeUser( 7, 'Pratik', 'pratik' ) );
+		Functions\when( 'wp_get_current_user' )->justReturn( $this->makeUser( 7, 'Example User', 'exampleuser' ) );
 		Functions\when( 'wp_trash_post' )->justReturn( (object) [ 'ID' => 101 ] );
 
 		Functions\expect( 'alpaistr_update_last_activity' )->once()->with( 101 );
@@ -344,7 +340,7 @@ class AbilitiesAuditTest extends \PHPUnit\Framework\TestCase {
 
 		$comments = array_values( $this->inserted_comments );
 		$this->assertSame( 'audit', $comments[0]['comment_agent'] );
-		$this->assertStringContainsString( 'Issue **deleted** by **Pratik**', $comments[0]['comment_content'] );
+		$this->assertStringContainsString( 'Issue **deleted** by **Example User**', $comments[0]['comment_content'] );
 		$this->assertSame( [ 'issue-deleted' ], $this->comment_meta[201]['alpacaCommentTags'] );
 		$this->assertSame( [ 'action' => 'delete' ], $this->comment_meta[201]['alpacaNotificationContext'] );
 	}
@@ -356,7 +352,7 @@ class AbilitiesAuditTest extends \PHPUnit\Framework\TestCase {
 		$this->filter_comment_content = 'Filtered comment content';
 
 		Functions\when( 'alpaistr_assert_issue_exists' )->justReturn( (object) [ 'ID' => 101 ] );
-		Functions\when( 'wp_get_current_user' )->justReturn( $this->makeUser( 7, 'Pratik', 'pratik' ) );
+		Functions\when( 'wp_get_current_user' )->justReturn( $this->makeUser( 7, 'Example User', 'exampleuser' ) );
 		Functions\expect( 'alpaistr_update_last_activity' )->once()->with( 101 );
 		Functions\expect( 'alpaistr_clear_board_cache' )->once();
 		Functions\when( 'get_comment' )->alias(
@@ -366,7 +362,7 @@ class AbilitiesAuditTest extends \PHPUnit\Framework\TestCase {
 					'comment_type'     => 'issuecomment',
 					'comment_approved' => 1,
 					'comment_content'  => 'Filtered comment content',
-					'comment_author'   => 'Pratik',
+					'comment_author'   => 'Example User',
 					'comment_date'     => '2026-06-11 10:00:00',
 					'comment_date_gmt' => '2026-06-11 14:00:00',
 				];
@@ -393,15 +389,24 @@ class AbilitiesAuditTest extends \PHPUnit\Framework\TestCase {
 		$comment = (object) [
 			'comment_ID'       => 301,
 			'comment_content'  => 'Status changed from Backlog to Next.',
-			'comment_author'   => 'Pratik',
+			'comment_author'   => 'Example User',
 			'user_id'          => 7,
 			'comment_agent'    => 'audit',
 			'comment_date'     => '2026-06-11 10:00:00',
 			'comment_date_gmt' => '2026-06-11 14:00:00',
 		];
+		$comment_without_edit_meta = (object) [
+			'comment_ID'       => 302,
+			'comment_content'  => 'Plain comment.',
+			'comment_author'   => 'Alex',
+			'user_id'          => 8,
+			'comment_agent'    => '',
+			'comment_date'     => '2026-06-11 10:05:00',
+			'comment_date_gmt' => '2026-06-11 14:05:00',
+		];
 
 		Functions\when( 'alpaistr_assert_issue_exists' )->justReturn( (object) [ 'ID' => 101 ] );
-		Functions\when( 'get_comments' )->justReturn( [ $comment ] );
+		Functions\when( 'get_comments' )->justReturn( [ $comment, $comment_without_edit_meta ] );
 		Functions\when( 'get_comment_meta' )->alias(
 			static function ( int $comment_id, string $key ) {
 				if ( 301 !== $comment_id ) {
@@ -420,6 +425,23 @@ class AbilitiesAuditTest extends \PHPUnit\Framework\TestCase {
 					return [ 'https://example.test/uploads/screenshot.png' ];
 				}
 
+				if ( 'alpacaMentionedUsers' === $key ) {
+					return [
+						[
+							'id'           => 8,
+							'display_name' => 'Alex',
+						],
+					];
+				}
+
+				if ( 'alpacaCommentLastEdit' === $key ) {
+					return [
+						'userId'   => 7,
+						'userName' => 'Example User',
+						'date'     => '2026-06-11T14:30:00+00:00',
+					];
+				}
+
 				return '';
 			}
 		);
@@ -429,7 +451,7 @@ class AbilitiesAuditTest extends \PHPUnit\Framework\TestCase {
 					return '';
 				}
 
-				return 'display_name' === $field ? 'Pratik Barvaliya' : '';
+				return 'display_name' === $field ? 'Example User' : '';
 			}
 		);
 		Functions\when( 'get_avatar_url' )->alias(
@@ -450,13 +472,26 @@ class AbilitiesAuditTest extends \PHPUnit\Framework\TestCase {
 				'alpacaCommentTags'         => [ 'status-changed' ],
 				'alpacaNotificationContext' => [ 'action' => 'changed' ],
 				'alpacaCommentAttachments'  => [ 'https://example.test/uploads/screenshot.png' ],
+				'alpacaMentionedUsers'      => [
+					[
+						'id'           => 8,
+						'display_name' => 'Alex',
+					],
+				],
+				'alpacaCommentLastEdit'     => [
+					'userId'   => 7,
+					'userName' => 'Example User',
+					'date'     => '2026-06-11T14:30:00+00:00',
+				],
 			],
 			$result[0]['meta']
 		);
-		$this->assertSame( 'Pratik Barvaliya', $result[0]['author_details']['display_name'] );
+		$this->assertSame( 'Example User', $result[0]['author_details']['display_name'] );
 		$this->assertSame( 'https://example.test/avatar-7-48.png', $result[0]['author_details']['avatar'] );
 		$this->assertSame( 'https://example.test/avatar-7-24.png', $result[0]['author_details']['avatar_urls']['24'] );
 		$this->assertSame( 'https://example.test/avatar-7-96.png', $result[0]['author_details']['avatar_urls']['96'] );
+		$this->assertSame( [], $result[1]['meta']['alpacaMentionedUsers'] );
+		$this->assertInstanceOf( stdClass::class, $result[1]['meta']['alpacaCommentLastEdit'] );
 	}
 
 	/**
