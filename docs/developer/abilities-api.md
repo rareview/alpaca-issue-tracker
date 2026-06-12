@@ -52,6 +52,8 @@ Run requests use an `input` object:
 
 Permission behavior maps to the same `AlpacaIssueTracker\Helpers::user_can()` checks documented in [REST API](rest-api.md).
 
+Failed ability runs return a `WP_Error` with HTTP status data: `400` for invalid input, `404` for missing issues or parents, and `500` for server-side failures.
+
 ## Ability Inputs
 
 ### `alpaca/create-issue`
@@ -67,7 +69,7 @@ Permission behavior maps to the same `AlpacaIssueTracker\Helpers::user_can()` ch
 
 `feedback` is required. `is_high_priority` is optional.
 
-Creating an issue also creates an activity comment with the `issue-created` tag. If the issue is created as high priority, it also records a high-priority activity entry.
+Creating an issue also creates an activity comment with the `issue-created` tag. If the issue is created as high priority, the activity comment also includes the `high-priority` tag.
 
 ### `alpaca/update-issue`
 
@@ -129,6 +131,8 @@ Status, assignee, and priority changes create the same type of activity/audit co
 - `alpacaCommentTags`
 - `alpacaNotificationContext`
 - `alpacaCommentAttachments`
+- `alpacaMentionedUsers`
+- `alpacaCommentLastEdit`
 
 ## Current Surface Limitations
 

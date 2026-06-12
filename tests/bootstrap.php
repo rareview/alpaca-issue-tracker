@@ -73,14 +73,23 @@ if ( ! class_exists( 'WP_Error' ) ) {
 		public $message;
 
 		/**
+		 * Error data.
+		 *
+		 * @var mixed
+		 */
+		public $data;
+
+		/**
 		 * Create an error stub.
 		 *
 		 * @param string $code    Error code.
 		 * @param string $message Error message.
+		 * @param mixed  $data    Error data.
 		 */
-		public function __construct( string $code = '', string $message = '' ) {
+		public function __construct( string $code = '', string $message = '', $data = '' ) {
 			$this->code    = $code;
 			$this->message = $message;
+			$this->data    = $data;
 		}
 
 		/**
@@ -99,6 +108,15 @@ if ( ! class_exists( 'WP_Error' ) ) {
 		 */
 		public function get_error_message(): string {
 			return $this->message;
+		}
+
+		/**
+		 * Get the error data.
+		 *
+		 * @return mixed Error data.
+		 */
+		public function get_error_data() {
+			return $this->data;
 		}
 	}
 }

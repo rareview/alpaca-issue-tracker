@@ -19,6 +19,18 @@ add_action( 'wp_abilities_api_categories_init', 'alpaistr_register_abilities_cat
 add_action( 'wp_abilities_api_init', 'alpaistr_register_abilities' );
 
 /**
+ * Build a WP_Error with an HTTP status for Abilities API callbacks.
+ *
+ * @param string $code    Error code.
+ * @param string $message Error message.
+ * @param int    $status  HTTP status code.
+ * @return WP_Error
+ */
+function alpaistr_ability_wp_error( $code, $message, $status ) {
+	return new WP_Error( $code, $message, [ 'status' => $status ] );
+}
+
+/**
  * Register Alpaca abilities category.
  *
  * @return void
@@ -355,6 +367,8 @@ function alpaistr_register_abilities() {
 								'alpacaCommentTags'        => [ 'type' => 'array' ],
 								'alpacaNotificationContext' => [ 'type' => 'object' ],
 								'alpacaCommentAttachments' => [ 'type' => 'array' ],
+								'alpacaMentionedUsers'     => [ 'type' => 'array' ],
+								'alpacaCommentLastEdit'    => [ 'type' => 'object' ],
 							],
 						],
 						'date'              => [ 'type' => 'string' ],
@@ -612,9 +626,10 @@ function alpaistr_ability_get_board( $input ) {
 	unset( $input );
 
 	if ( ! function_exists( 'alpaistr_get_board_data' ) ) {
-		return new WP_Error(
+		return alpaistr_ability_wp_error(
 			'missing_function',
-			__( 'Alpaca Issue Tracker core board functions are missing.', 'alpaca-issue-tracker' )
+			__( 'Alpaca Issue Tracker core board functions are missing.', 'alpaca-issue-tracker' ),
+			500
 		);
 	}
 
@@ -631,17 +646,19 @@ function alpaistr_ability_create_issue( $input ) {
 	$feedback_raw = isset( $input['feedback'] ) ? trim( (string) $input['feedback'] ) : '';
 
 	if ( '' === $feedback_raw ) {
-		return new WP_Error(
+		return alpaistr_ability_wp_error(
 			'missing_feedback',
-			__( 'Feedback is required.', 'alpaca-issue-tracker' )
+			__( 'Feedback is required.', 'alpaca-issue-tracker' ),
+			400
 		);
 	}
 
 	$slug_source = wp_json_encode( [ 'input' => $input ] );
 	if ( ! is_string( $slug_source ) ) {
-		return new WP_Error(
+		return alpaistr_ability_wp_error(
 			'invalid_create_input',
-			__( 'Issue input could not be encoded.', 'alpaca-issue-tracker' )
+			__( 'Issue input could not be encoded.', 'alpaca-issue-tracker' ),
+			400
 		);
 	}
 
@@ -659,9 +676,10 @@ function alpaistr_ability_create_issue( $input ) {
 	$post_id = wp_insert_post( $post_args, true );
 
 	if ( is_wp_error( $post_id ) || 0 === (int) $post_id ) {
-		return new WP_Error(
+		return alpaistr_ability_wp_error(
 			'create_failed',
-			__( 'Failed to create issue.', 'alpaca-issue-tracker' )
+			__( 'Failed to create issue.', 'alpaca-issue-tracker' ),
+			500
 		);
 	}
 
@@ -708,21 +726,6 @@ function alpaistr_ability_create_issue( $input ) {
 
 	alpaistr_ability_insert_activity_comment( $post_id, wp_kses_post( $feedback_raw ), $creation_tags, [], 'create' );
 
-	if ( ! empty( $input['is_high_priority'] ) ) {
-		$actor_label = alpaistr_ability_get_current_user_label();
-
-		alpaistr_ability_insert_activity_comment(
-			$post_id,
-			sprintf(
-				/* translators: %s: Current user display name. */
-				__( 'Priority set to **High** by %s', 'alpaca-issue-tracker' ),
-				$actor_label
-			),
-			[ 'priority-changed', 'action-add' ],
-			[ 'action' => 'enable' ]
-		);
-	}
-
 	alpaistr_update_last_activity( $post_id );
 	alpaistr_clear_board_cache();
 
@@ -740,9 +743,10 @@ function alpaistr_ability_get_issue( $input ) {
 	$post     = alpaistr_assert_issue_exists( $issue_id );
 
 	if ( ! $post ) {
-		return new WP_Error(
+		return alpaistr_ability_wp_error(
 			'issue_not_found',
-			__( 'Issue not found.', 'alpaca-issue-tracker' )
+			__( 'Issue not found.', 'alpaca-issue-tracker' ),
+			404
 		);
 	}
 
@@ -840,9 +844,10 @@ function alpaistr_ability_update_issue( $input ) {
 	$post     = alpaistr_assert_issue_exists( $issue_id );
 
 	if ( ! $post ) {
-		return new WP_Error(
+		return alpaistr_ability_wp_error(
 			'issue_not_found',
-			__( 'Issue not found.', 'alpaca-issue-tracker' )
+			__( 'Issue not found.', 'alpaca-issue-tracker' ),
+			404
 		);
 	}
 
@@ -856,9 +861,10 @@ function alpaistr_ability_update_issue( $input ) {
 	if ( isset( $input['status_id'] ) ) {
 		$status_id = (int) $input['status_id'];
 		if ( ! term_exists( $status_id, 'alpaca_status' ) ) {
-			return new WP_Error(
+			return alpaistr_ability_wp_error(
 				'invalid_status_id',
-				__( 'Status term not found.', 'alpaca-issue-tracker' )
+				__( 'Status term not found.', 'alpaca-issue-tracker' ),
+				400
 			);
 		}
 	}
@@ -874,13 +880,14 @@ function alpaistr_ability_update_issue( $input ) {
 
 			$user = get_user_by( 'slug', $user_slug );
 			if ( ! $user ) {
-				return new WP_Error(
+				return alpaistr_ability_wp_error(
 					'invalid_assignee',
 					sprintf(
 						/* translators: %s: User slug. */
 						__( 'Assignee not found: %s', 'alpaca-issue-tracker' ),
 						$user_slug
-					)
+					),
+					400
 				);
 			}
 
@@ -906,33 +913,37 @@ function alpaistr_ability_update_issue( $input ) {
 		$parent_id = (int) $input['parent_id'];
 
 		if ( $parent_id < 0 ) {
-			return new WP_Error(
+			return alpaistr_ability_wp_error(
 				'invalid_parent',
-				__( 'Invalid parent issue.', 'alpaca-issue-tracker' )
+				__( 'Invalid parent issue.', 'alpaca-issue-tracker' ),
+				400
 			);
 		}
 
 		if ( $parent_id === $issue_id ) {
-			return new WP_Error(
+			return alpaistr_ability_wp_error(
 				'invalid_parent_self',
-				__( 'An issue cannot be its own parent.', 'alpaca-issue-tracker' )
+				__( 'An issue cannot be its own parent.', 'alpaca-issue-tracker' ),
+				400
 			);
 		}
 
 		if ( $parent_id > 0 ) {
 			$parent_post = alpaistr_assert_issue_exists( $parent_id );
 			if ( ! $parent_post ) {
-				return new WP_Error(
+				return alpaistr_ability_wp_error(
 					'parent_not_found',
-					__( 'Parent issue not found.', 'alpaca-issue-tracker' )
+					__( 'Parent issue not found.', 'alpaca-issue-tracker' ),
+					404
 				);
 			}
 
 			$parent_ancestors = array_map( 'intval', (array) get_post_ancestors( $parent_post ) );
 			if ( in_array( $issue_id, $parent_ancestors, true ) ) {
-				return new WP_Error(
+				return alpaistr_ability_wp_error(
 					'invalid_parent_hierarchy',
-					__( 'Invalid parent hierarchy.', 'alpaca-issue-tracker' )
+					__( 'Invalid parent hierarchy.', 'alpaca-issue-tracker' ),
+					400
 				);
 			}
 		}
@@ -942,9 +953,10 @@ function alpaistr_ability_update_issue( $input ) {
 
 	$update_result = wp_update_post( $post_args, true );
 	if ( is_wp_error( $update_result ) ) {
-		return new WP_Error(
+		return alpaistr_ability_wp_error(
 			'update_failed',
-			__( 'Failed to update the issue.', 'alpaca-issue-tracker' )
+			__( 'Failed to update the issue.', 'alpaca-issue-tracker' ),
+			500
 		);
 	}
 
@@ -1094,17 +1106,19 @@ function alpaistr_ability_delete_issue( $input ) {
 	$post     = alpaistr_assert_issue_exists( $issue_id );
 
 	if ( ! $post ) {
-		return new WP_Error(
+		return alpaistr_ability_wp_error(
 			'issue_not_found',
-			__( 'Issue not found.', 'alpaca-issue-tracker' )
+			__( 'Issue not found.', 'alpaca-issue-tracker' ),
+			404
 		);
 	}
 
 	$result = wp_trash_post( $issue_id );
 	if ( ! $result ) {
-		return new WP_Error(
+		return alpaistr_ability_wp_error(
 			'delete_failed',
-			__( 'Failed to delete the issue.', 'alpaca-issue-tracker' )
+			__( 'Failed to delete the issue.', 'alpaca-issue-tracker' ),
+			500
 		);
 	}
 
@@ -1142,16 +1156,18 @@ function alpaistr_ability_add_comment( $input ) {
 
 	$post = alpaistr_assert_issue_exists( $issue_id );
 	if ( ! $post ) {
-		return new WP_Error(
+		return alpaistr_ability_wp_error(
 			'issue_not_found',
-			__( 'Issue not found.', 'alpaca-issue-tracker' )
+			__( 'Issue not found.', 'alpaca-issue-tracker' ),
+			404
 		);
 	}
 
 	if ( '' === $content ) {
-		return new WP_Error(
+		return alpaistr_ability_wp_error(
 			'missing_content',
-			__( 'Comment content is required.', 'alpaca-issue-tracker' )
+			__( 'Comment content is required.', 'alpaca-issue-tracker' ),
+			400
 		);
 	}
 
@@ -1171,9 +1187,10 @@ function alpaistr_ability_add_comment( $input ) {
 
 	$comment_id = wp_insert_comment( wp_filter_comment( wp_slash( $commentdata ) ) );
 	if ( ! $comment_id ) {
-		return new WP_Error(
+		return alpaistr_ability_wp_error(
 			'comment_failed',
-			__( 'Failed to post comment.', 'alpaca-issue-tracker' )
+			__( 'Failed to post comment.', 'alpaca-issue-tracker' ),
+			500
 		);
 	}
 
@@ -1211,9 +1228,10 @@ function alpaistr_ability_get_comments( $input ) {
 	$post     = alpaistr_assert_issue_exists( $issue_id );
 
 	if ( ! $post ) {
-		return new WP_Error(
+		return alpaistr_ability_wp_error(
 			'issue_not_found',
-			__( 'Issue not found.', 'alpaca-issue-tracker' )
+			__( 'Issue not found.', 'alpaca-issue-tracker' ),
+			404
 		);
 	}
 
@@ -1250,6 +1268,9 @@ function alpaistr_ability_get_comments( $input ) {
 		$comment_tags         = get_comment_meta( (int) $comment->comment_ID, 'alpacaCommentTags', true );
 		$notification_context = get_comment_meta( (int) $comment->comment_ID, 'alpacaNotificationContext', true );
 		$attachments          = get_comment_meta( (int) $comment->comment_ID, 'alpacaCommentAttachments', true );
+		$mentioned_users      = get_comment_meta( (int) $comment->comment_ID, 'alpacaMentionedUsers', true );
+		$last_edit            = get_comment_meta( (int) $comment->comment_ID, 'alpacaCommentLastEdit', true );
+		$last_edit_data       = is_array( $last_edit ) && [] !== $last_edit ? $last_edit : new stdClass();
 
 		$formatted[] = [
 			'id'                => (int) $comment->comment_ID,
@@ -1272,6 +1293,8 @@ function alpaistr_ability_get_comments( $input ) {
 				'alpacaCommentTags'         => is_array( $comment_tags ) ? $comment_tags : [],
 				'alpacaNotificationContext' => is_array( $notification_context ) ? $notification_context : [],
 				'alpacaCommentAttachments'  => is_array( $attachments ) ? $attachments : [],
+				'alpacaMentionedUsers'      => is_array( $mentioned_users ) ? $mentioned_users : [],
+				'alpacaCommentLastEdit'     => $last_edit_data,
 			],
 			'date'              => $comment->comment_date,
 			'date_gmt'          => $comment->comment_date_gmt,

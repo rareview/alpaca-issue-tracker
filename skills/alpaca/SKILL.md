@@ -304,7 +304,9 @@ Retrieves comments posted on an issue.
       "meta": {
         "alpacaCommentTags": [],
         "alpacaNotificationContext": {},
-        "alpacaCommentAttachments": []
+        "alpacaCommentAttachments": [],
+        "alpacaMentionedUsers": [],
+        "alpacaCommentLastEdit": {}
       },
       "date": "2026-06-04 14:15:00",
       "date_gmt": "2026-06-04 18:15:00"
