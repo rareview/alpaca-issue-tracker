@@ -1,9 +1,9 @@
 {
   "$schema": "https://playground.wordpress.net/blueprint-schema.json",
   "meta": {
-    "title": "Alpaca Issue Tracker Playground",
-    "author": "rareview",
-    "description": "Install and activate Alpaca Issue Tracker in WordPress Playground, seed a realistic sample board, and open the Project Board."
+    "title": "Alpaca Issue Tracker",
+    "author": "Rareview",
+    "description": "Install Alpaca Issue Tracker from WordPress.org, seed demo issues, and open the Project Board."
   },
   "landingPage": "/wp-admin/admin.php?page=project-board",
   "preferredVersions": {
@@ -14,9 +14,9 @@
   "steps": [
     {
       "step": "installPlugin",
-      "pluginData": {
-        "resource": "url",
-        "url": "https://github.com/rareview/alpaca-issue-tracker/releases/latest/download/alpaca-issue-tracker.zip"
+      "pluginZipFile": {
+        "resource": "wordpress.org/plugins",
+        "slug": "alpaca-issue-tracker"
       },
       "options": {
         "activate": true
