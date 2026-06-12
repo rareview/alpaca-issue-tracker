@@ -116,7 +116,7 @@ The Playground flow builds the installable ZIP, creates a generated Playground b
 
 The plugin directory **Live Preview** button uses a Playground blueprint committed to SVN at `assets/blueprints/blueprint.json`. In this repository, that file is `.wordpress-org/blueprints/blueprint.json`.
 
-After merging asset changes to `main`, the `dot-org-assets-deploy` workflow can sync readme and `.wordpress-org` files to the plugin SVN repository. A committer must then enable Live Preview on the plugin **Advanced** screen on wordpress.org.
+The `.wordpress-org/` directory is copied to plugin SVN `assets/` when you publish a GitHub release (`dot-org-deploy` workflow). A committer must then enable Live Preview on the plugin **Advanced** screen on wordpress.org. To update assets without a release, commit to SVN manually (see `.wordpress-org/README.md`).
 
 See `.wordpress-org/README.md` and [Previews and Blueprints](https://developer.wordpress.org/plugins/wordpress-org/previews-and-blueprints/).
 

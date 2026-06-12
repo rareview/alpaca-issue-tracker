@@ -11,7 +11,9 @@ WordPress.org shows a **Live Preview** button beside **Download** when:
 
 Official documentation: [Previews and Blueprints](https://developer.wordpress.org/plugins/wordpress-org/previews-and-blueprints/).
 
-After merging asset changes to `main`, the `dot-org-assets-deploy` workflow pushes updates to SVN when only readme and `.wordpress-org` files changed on that branch.
+Asset files (including the blueprint) are deployed to SVN when you publish a GitHub release. The `dot-org-deploy` workflow uses [10up/action-wordpress-plugin-deploy](https://github.com/10up/action-wordpress-plugin-deploy), which copies `.wordpress-org/` into the plugin SVN `assets/` folder on each release.
+
+To ship the Live Preview blueprint without a plugin release, commit to SVN manually (below) or wait until the next release.
 
 ### Manual SVN deploy
 
