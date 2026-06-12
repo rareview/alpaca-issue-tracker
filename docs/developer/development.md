@@ -112,6 +112,14 @@ npm run playground:run-blueprint
 
 The Playground flow builds the installable ZIP, creates a generated Playground bundle, installs the plugin in a fresh Playground site, and seeds demo issue data.
 
+### WordPress.org Live Preview
+
+The plugin directory **Live Preview** button uses a Playground blueprint committed to SVN at `assets/blueprints/blueprint.json`. In this repository, that file is `.wordpress-org/blueprints/blueprint.json`.
+
+After merging asset changes to `main`, the `dot-org-assets-deploy` workflow can sync readme and `.wordpress-org` files to the plugin SVN repository. A committer must then enable Live Preview on the plugin **Advanced** screen on wordpress.org.
+
+See `.wordpress-org/README.md` and [Previews and Blueprints](https://developer.wordpress.org/plugins/wordpress-org/previews-and-blueprints/).
+
 ## Packaging
 
 Create an installable ZIP with:
