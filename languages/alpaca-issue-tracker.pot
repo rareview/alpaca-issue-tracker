@@ -2,21 +2,21 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Alpaca Issue Tracker 1.0.4\n"
+"Project-Id-Version: Alpaca Issue Tracker 1.0.5\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/alpaca-issue-tracker\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-06-11T18:36:18+00:00\n"
+"POT-Creation-Date: 2026-06-12T00:38:16+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: alpaca-issue-tracker\n"
 
 #. Plugin Name of the plugin
 #: alpacaissuetracker.php
-#: includes/api/abilities.php:31
+#: includes/api/abilities.php:43
 msgid "Alpaca Issue Tracker"
 msgstr ""
 
@@ -94,119 +94,119 @@ msgstr ""
 msgid "Project Issues"
 msgstr ""
 
-#: includes/api/abilities.php:32
+#: includes/api/abilities.php:44
 msgid "Abilities for managing issues, comments, and the project board in the Alpaca Issue Tracker."
 msgstr ""
 
-#: includes/api/abilities.php:52
+#: includes/api/abilities.php:64
 msgid "Get Board"
 msgstr ""
 
-#: includes/api/abilities.php:53
+#: includes/api/abilities.php:65
 msgid "Retrieves the backlog and board columns with their issues."
 msgstr ""
 
-#: includes/api/abilities.php:87
+#: includes/api/abilities.php:99
 #: src/components/CommentForm.jsx:458
 msgid "Create Issue"
 msgstr ""
 
-#: includes/api/abilities.php:88
+#: includes/api/abilities.php:100
 msgid "Creates a new issue in the tracker."
 msgstr ""
 
-#: includes/api/abilities.php:97
+#: includes/api/abilities.php:109
 msgid "The title or feedback content of the issue."
 msgstr ""
 
-#: includes/api/abilities.php:101
+#: includes/api/abilities.php:113
 msgid "Whether the issue is high priority."
 msgstr ""
 
-#: includes/api/abilities.php:128
+#: includes/api/abilities.php:140
 msgid "Get Issue Details"
 msgstr ""
 
-#: includes/api/abilities.php:129
+#: includes/api/abilities.php:141
 msgid "Retrieves detailed data for a specific issue by its ID."
 msgstr ""
 
-#: includes/api/abilities.php:138
-#: includes/api/abilities.php:279
-#: includes/api/abilities.php:320
+#: includes/api/abilities.php:150
+#: includes/api/abilities.php:291
+#: includes/api/abilities.php:332
 msgid "The ID of the issue."
 msgstr ""
 
-#: includes/api/abilities.php:170
+#: includes/api/abilities.php:182
 msgid "Update Issue"
 msgstr ""
 
-#: includes/api/abilities.php:171
+#: includes/api/abilities.php:183
 msgid "Updates specified fields of a given issue."
 msgstr ""
 
-#: includes/api/abilities.php:180
+#: includes/api/abilities.php:192
 msgid "The ID of the issue to update."
 msgstr ""
 
-#: includes/api/abilities.php:184
+#: includes/api/abilities.php:196
 msgid "The new title for the issue."
 msgstr ""
 
-#: includes/api/abilities.php:188
+#: includes/api/abilities.php:200
 msgid "The new description content for the issue."
 msgstr ""
 
-#: includes/api/abilities.php:192
+#: includes/api/abilities.php:204
 msgid "The ID of the status term to assign."
 msgstr ""
 
-#: includes/api/abilities.php:196
+#: includes/api/abilities.php:208
 msgid "Set to true to mark the issue as high priority, or false to clear."
 msgstr ""
 
-#: includes/api/abilities.php:200
+#: includes/api/abilities.php:212
 msgid "The parent issue ID (0 to remove parent)."
 msgstr ""
 
-#: includes/api/abilities.php:205
+#: includes/api/abilities.php:217
 msgid "An array of user slugs to assign to the issue."
 msgstr ""
 
-#: includes/api/abilities.php:232
+#: includes/api/abilities.php:244
 msgid "Delete Issue"
 msgstr ""
 
-#: includes/api/abilities.php:233
+#: includes/api/abilities.php:245
 msgid "Moves a specific issue to the trash."
 msgstr ""
 
-#: includes/api/abilities.php:242
+#: includes/api/abilities.php:254
 msgid "The ID of the issue to move to trash."
 msgstr ""
 
-#: includes/api/abilities.php:269
+#: includes/api/abilities.php:281
 msgid "Add Comment"
 msgstr ""
 
-#: includes/api/abilities.php:270
+#: includes/api/abilities.php:282
 msgid "Posts a new comment on a specific issue."
 msgstr ""
 
-#: includes/api/abilities.php:283
+#: includes/api/abilities.php:295
 msgid "The comment content."
 msgstr ""
 
-#: includes/api/abilities.php:310
+#: includes/api/abilities.php:322
 msgid "Get Comments"
 msgstr ""
 
-#: includes/api/abilities.php:311
+#: includes/api/abilities.php:323
 msgid "Retrieves comments for a specific issue."
 msgstr ""
 
-#: includes/api/abilities.php:432
-#: includes/api/abilities.php:453
+#: includes/api/abilities.php:446
+#: includes/api/abilities.php:467
 #: includes/notifications/events.php:377
 #: includes/notifications/inbox.php:390
 #: includes/notifications/inbox.php:415
@@ -215,37 +215,30 @@ msgstr ""
 msgid "Unknown user"
 msgstr ""
 
-#: includes/api/abilities.php:617
+#: includes/api/abilities.php:631
 msgid "Alpaca Issue Tracker core board functions are missing."
 msgstr ""
 
-#: includes/api/abilities.php:636
+#: includes/api/abilities.php:651
 #: includes/api/endpoints/issues.php:67
 msgid "Feedback is required."
 msgstr ""
 
-#: includes/api/abilities.php:644
+#: includes/api/abilities.php:660
 msgid "Issue input could not be encoded."
 msgstr ""
 
-#: includes/api/abilities.php:664
+#: includes/api/abilities.php:681
 #: includes/api/endpoints/issues.php:91
 #: src/components/Issue.jsx:1531
 msgid "Failed to create issue."
 msgstr ""
 
-#. translators: %s: Current user display name.
-#: includes/api/abilities.php:718
-#: includes/api/abilities.php:1059
-#, php-format
-msgid "Priority set to **High** by %s"
-msgstr ""
-
-#: includes/api/abilities.php:745
-#: includes/api/abilities.php:845
-#: includes/api/abilities.php:1099
-#: includes/api/abilities.php:1147
-#: includes/api/abilities.php:1216
+#: includes/api/abilities.php:748
+#: includes/api/abilities.php:849
+#: includes/api/abilities.php:1111
+#: includes/api/abilities.php:1161
+#: includes/api/abilities.php:1233
 #: includes/api/endpoints/issues.php:290
 #: includes/api/endpoints/issues.php:723
 #: includes/api/endpoints/issues.php:1249
@@ -255,90 +248,96 @@ msgstr ""
 msgid "Issue not found."
 msgstr ""
 
-#: includes/api/abilities.php:861
+#: includes/api/abilities.php:866
 msgid "Status term not found."
 msgstr ""
 
 #. translators: %s: User slug.
-#: includes/api/abilities.php:881
+#: includes/api/abilities.php:887
 #, php-format
 msgid "Assignee not found: %s"
 msgstr ""
 
-#: includes/api/abilities.php:911
+#: includes/api/abilities.php:918
 #: includes/api/endpoints/issues.php:311
 msgid "Invalid parent issue."
 msgstr ""
 
-#: includes/api/abilities.php:918
+#: includes/api/abilities.php:926
 #: includes/api/endpoints/issues.php:322
 msgid "An issue cannot be its own parent."
 msgstr ""
 
-#: includes/api/abilities.php:927
+#: includes/api/abilities.php:936
 #: includes/api/endpoints/issues.php:335
 #: includes/api/endpoints/issues.php:622
 msgid "Parent issue not found."
 msgstr ""
 
-#: includes/api/abilities.php:935
+#: includes/api/abilities.php:945
 #: includes/api/endpoints/issues.php:347
 msgid "Invalid parent hierarchy."
 msgstr ""
 
-#: includes/api/abilities.php:947
+#: includes/api/abilities.php:958
 #: includes/api/endpoints/issues.php:363
 msgid "Failed to update the issue."
 msgstr ""
 
-#: includes/api/abilities.php:986
-#: includes/api/abilities.php:987
+#: includes/api/abilities.php:998
+#: includes/api/abilities.php:999
 msgid "Unknown status"
 msgstr ""
 
 #. translators: 1: Previous status name, 2: Current status name, 3: Current user display name.
-#: includes/api/abilities.php:993
+#: includes/api/abilities.php:1005
 #, php-format
 msgid "Status changed from **%1$s** to **%2$s** by %3$s"
 msgstr ""
 
 #. translators: 1: Assigned user display name, 2: Current user display name.
-#: includes/api/abilities.php:1017
+#: includes/api/abilities.php:1029
 #, php-format
 msgid "%1$s was assigned to this issue by %2$s"
 msgstr ""
 
 #. translators: 1: Unassigned user display name, 2: Current user display name.
-#: includes/api/abilities.php:1037
+#: includes/api/abilities.php:1049
 #, php-format
 msgid "%1$s was unassigned from this issue by %2$s"
 msgstr ""
 
 #. translators: %s: Current user display name.
-#: includes/api/abilities.php:1070
+#: includes/api/abilities.php:1071
+#, php-format
+msgid "Priority set to **High** by %s"
+msgstr ""
+
+#. translators: %s: Current user display name.
+#: includes/api/abilities.php:1082
 #, php-format
 msgid "High priority removed by %s"
 msgstr ""
 
-#: includes/api/abilities.php:1107
+#: includes/api/abilities.php:1120
 msgid "Failed to delete the issue."
 msgstr ""
 
 #. translators: %s: Current user display name.
-#: includes/api/abilities.php:1116
+#: includes/api/abilities.php:1130
 #, php-format
 msgid "Issue **deleted** by %s"
 msgstr ""
 
-#: includes/api/abilities.php:1128
+#: includes/api/abilities.php:1142
 msgid "Issue moved to trash successfully."
 msgstr ""
 
-#: includes/api/abilities.php:1154
+#: includes/api/abilities.php:1169
 msgid "Comment content is required."
 msgstr ""
 
-#: includes/api/abilities.php:1176
+#: includes/api/abilities.php:1192
 msgid "Failed to post comment."
 msgstr ""
 
