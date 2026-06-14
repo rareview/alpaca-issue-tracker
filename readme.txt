@@ -122,6 +122,9 @@ Alpaca Issue Tracker uses user images throughout its interface, for extra humani
 
 == Changelog ==
 
+= 1.0.6 =
+* Fixed collapsed board columns becoming inaccessible after column reordering.
+
 = 1.0.5 =
 * Improved Abilities API parity with the admin UI and REST comment metadata.
 * Added a WordPress Playground blueprint for the plugin directory.
