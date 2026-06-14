@@ -1,6 +1,6 @@
 {
   "name": "alpaca-issue-tracker",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "A lightweight issue tracker built entirely inside WordPress, designed for developers and agencies managing client projects.",
   "private": true,
   "license": "GPL-2.0-or-later",
