@@ -91,11 +91,13 @@
 
     &.is-collapsed {
       opacity: 0.5;
-      flex: 0 !important;
-      min-width: auto !important;
 
       .alpaca-items {
         display: none;
+      }
+
+      .alpaca-container-controls button {
+        opacity: 1;
       }
     }
   }

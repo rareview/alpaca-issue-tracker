@@ -33,7 +33,9 @@
         flex-direction: column;
 
         &.is-collapsed {
-          width: auto;
+          flex: 0 0 $size-control-xl !important;
+          inline-size: $size-control-xl;
+          min-inline-size: $size-control-xl !important;
 
           .alpaca-container-header {
             height: 100%;
