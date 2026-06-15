@@ -339,8 +339,10 @@ class Register {
 		$settings = [
 			'canManageOptions'         => current_user_can( 'manage_options' ),
 			'canDeleteIssues'          => Helpers::user_can( 'delete_issue' ),
+			'canViewNotificationInbox' => Helpers::user_can( 'notification_inbox' ),
 			'contextualCaptureEnabled' => $this->is_contextual_capture_enabled(),
 			'defaultLabelColor'        => Helpers::DEFAULT_LABEL_COLOR,
+			'enableTestLogs'           => '1' === (string) get_option( 'alpaistr_enable_test_logs', '0' ),
 			'snapdomProxy'             => $this->get_snapdom_proxy_setting(),
 			'itemDatapointVisibility'  => $this->get_item_datapoint_visibility_setting(),
 		];
@@ -461,6 +463,10 @@ class Register {
 			return;
 		}
 
+		if ( ! Helpers::user_can( 'create_issue' ) ) {
+			return;
+		}
+
 		$this->enqueue_shared_assets( $this->get_base_script_dependencies(), false, true, [] );
 	}
 
@@ -471,6 +477,10 @@ class Register {
 	 */
 	public function enqueue_admin_assets( $hook_suffix ) {
 		if ( $this->is_skipped_admin_bundle_screen( $hook_suffix ) ) {
+			return;
+		}
+
+		if ( ! Helpers::user_can( 'view_board' ) && ! Helpers::user_can( 'create_issue' ) ) {
 			return;
 		}
 

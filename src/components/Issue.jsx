@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 
 const { __ } = wp.i18n;
 import { getTabsConfig } from '../utils/tabsConfig';
+import { getProjectBoardUrl } from '../utils/projectBoardUrl';
 import useIssueData from '../hooks/useIssueData';
 import useUserManagement from '../hooks/useUserManagement';
 import useLoadingStates from '../hooks/useLoadingStates';
@@ -34,7 +35,10 @@ import {
   deleteIssueAttachment,
   uploadIssueAttachment,
 } from '../utils/attachmentUpload';
-import { postComment } from '../utils/issueCommentHandler';
+import {
+  postComment,
+  postIssueMentionAuditComments,
+} from '../utils/issueCommentHandler';
 
 /* THEN access WordPress globals */
 const { useState, useEffect, useRef, useMemo, useCallback, memo } = wp.element;
@@ -575,8 +579,10 @@ const cleanupUploadedIssueAttachments = async (attachments, issueId) => {
 const AlpacaIssue = ({
   issueId,
   isCreating,
+  initialStatusId = null,
   isOpen,
   activeSearchQuery = '',
+  searchScopeIssueIds = [],
   onClose,
   onDelete,
   canDeleteIssues = false,
@@ -672,6 +678,49 @@ const AlpacaIssue = ({
       );
     },
     [dismissSnackbar],
+  );
+
+  const copyTextToClipboard = useCallback(
+    async (text, successMessage, errorMessage) => {
+      if (!text) {
+        return false;
+      }
+
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(text);
+        } else {
+          const textarea = document.createElement('textarea');
+          textarea.value = text;
+          textarea.setAttribute('readonly', '');
+          textarea.style.position = 'fixed';
+          textarea.style.top = '-9999px';
+          document.body.appendChild(textarea);
+          textarea.select();
+
+          let copied = false;
+
+          try {
+            copied = document.execCommand('copy');
+          } finally {
+            document.body.removeChild(textarea);
+          }
+
+          if (!copied) {
+            throw new Error('Copy command failed');
+          }
+        }
+
+        showNotification(successMessage, 'success');
+        return true;
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error('Clipboard copy failed:', err);
+        showNotification(errorMessage, 'error');
+        return false;
+      }
+    },
+    [showNotification],
   );
 
   useEffect(
@@ -1176,29 +1225,15 @@ const AlpacaIssue = ({
           createdIssueDeadline = retryIssue.deadline || null;
           createdIssueIsHighPriority = Boolean(retryIssue.isHighPriority);
         } else {
-          const server = {};
-          if (typeof alpaistrDataDump !== 'undefined' && alpaistrDataDump.env) {
-            try {
-              const loadedServer = JSON.parse(atob(alpaistrDataDump.env));
-              Object.assign(server, loadedServer);
-            } catch (e) {
-              // Ignore parse errors.
-            }
-          }
-
           const payload = {
             userinput: {
               feedback: editedTitle,
               includeContext: false, // Board issues don't need browser context
               isHighPriority,
             },
-            client:
-              typeof alpaistrDataDump !== 'undefined'
-                ? alpaistrDataDump.device
-                : {},
+            client: {},
             errors: [],
             screenshot: '',
-            ...server,
           };
 
           response = await createIssue(payload);
@@ -1219,6 +1254,24 @@ const AlpacaIssue = ({
           createdIssueTitle = editedTitle;
           createdIssueDeadline = deadline || null;
           createdIssueIsHighPriority = isHighPriority;
+
+          // If an initial status was requested, move the issue to it now.
+          if (
+            initialStatusId &&
+            String(initialStatusId) !== String(response.statusId)
+          ) {
+            try {
+              await updateIssue(newIssueId, {
+                taxonomies: {
+                  // eslint-disable-next-line camelcase
+                  alpaca_status: [Number(initialStatusId)],
+                },
+              });
+              response = { ...response, statusId: Number(initialStatusId) };
+            } catch (err) {
+              console.error('Failed to set initial column status:', err);
+            }
+          }
 
           if (deadline) {
             try {
@@ -1313,6 +1366,22 @@ const AlpacaIssue = ({
               );
             }
 
+            try {
+              await postIssueMentionAuditComments({
+                content: normalizedCommentText || createdIssueTitle.trim(),
+                sourceIssue: {
+                  id: newIssueId,
+                  slug: response.issue?.slug || response.issue?.post_name || '',
+                  title: createdIssueTitle,
+                },
+              });
+            } catch (auditError) {
+              console.error(
+                'Failed to create issue mention audit comments:',
+                auditError,
+              );
+            }
+
             commentAlreadyCreated = true;
 
             try {
@@ -1384,6 +1453,7 @@ const AlpacaIssue = ({
           labels: createdIssueLabels,
           deadline: createdIssueDeadline,
           isHighPriority: createdIssueIsHighPriority,
+          statusId: response.statusId,
         };
         const createdIssueHook = {
           ...(response.issue && typeof response.issue === 'object'
@@ -1454,6 +1524,7 @@ const AlpacaIssue = ({
     },
     [
       isCreating,
+      initialStatusId,
       editedTitle,
       isHighPriority,
       createdIssueRetry,
@@ -2081,27 +2152,56 @@ const AlpacaIssue = ({
                         issueDetails?.slug ||
                         issueDetails?.post_data?.post_name ||
                         '';
-                      if (slug) {
-                        if (
-                          navigator.clipboard &&
-                          navigator.clipboard.writeText
-                        ) {
-                          navigator.clipboard.writeText(slug);
-                        } else {
-                          const ta = document.createElement('textarea');
-                          ta.value = slug;
-                          document.body.appendChild(ta);
-                          ta.select();
-                          document.execCommand('copy');
-                          ta.remove();
-                        }
-                      }
+
+                      copyTextToClipboard(
+                        slug,
+                        __(
+                          'Issue ID copied to clipboard.',
+                          'alpaca-issue-tracker',
+                        ),
+                        __(
+                          'Failed to copy issue ID to clipboard.',
+                          'alpaca-issue-tracker',
+                        ),
+                      );
                     }}
                   >
                     {__('Copy Issue ID', 'alpaca-issue-tracker')}{' '}
                     <code className="alpaca-menu-code">
                       {issueDetails?.slug || issueDetails?.post_data?.post_name}
                     </code>
+                  </MenuItem>
+                  <MenuItem
+                    icon="admin-links"
+                    iconPosition="left"
+                    onClick={() => {
+                      const slug =
+                        issueDetails?.slug ||
+                        issueDetails?.post_data?.post_name ||
+                        '';
+                      const permalink = slug
+                        ? `${getProjectBoardUrl()}&issue=${encodeURIComponent(
+                            slug,
+                          )}`
+                        : '';
+
+                      copyTextToClipboard(
+                        permalink,
+                        __(
+                          'Issue permalink copied to clipboard.',
+                          'alpaca-issue-tracker',
+                        ),
+                        __(
+                          'Failed to copy issue permalink to clipboard.',
+                          'alpaca-issue-tracker',
+                        ),
+                      );
+                    }}
+                    disabled={
+                      !issueDetails?.slug && !issueDetails?.post_data?.post_name
+                    }
+                  >
+                    {__('Copy Issue Permalink', 'alpaca-issue-tracker')}
                   </MenuItem>
                   {!isLastStatus && (
                     <MenuItem
@@ -2245,6 +2345,7 @@ const AlpacaIssue = ({
                     showNotification={showNotification}
                     onSubmit={handleCreateIssue}
                     dataSource="create"
+                    searchScopeIssueIds={searchScopeIssueIds}
                     submitButtonText={
                       createdIssueRetry
                         ? __('Retry Comment', 'alpaca-issue-tracker')
@@ -2445,6 +2546,7 @@ const AlpacaIssue = ({
                         tab={tab}
                         issueDetails={issueDetails}
                         issueId={issueId}
+                        searchScopeIssueIds={searchScopeIssueIds}
                         activeSearchQuery={activeSearchQuery}
                         commentRefreshKey={commentRefreshKey}
                         showNotification={showNotification}
@@ -2539,8 +2641,12 @@ AlpacaIssue.propTypes = {
   onIssueTitleChange: PropTypes.func.isRequired,
   onLabelsChange: PropTypes.func,
   isCreating: PropTypes.bool,
+  initialStatusId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   onIssueCreated: PropTypes.func,
   activeSearchQuery: PropTypes.string,
+  searchScopeIssueIds: PropTypes.arrayOf(
+    PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  ),
 };
 
 export default AlpacaIssue;

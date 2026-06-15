@@ -46,6 +46,10 @@ function alpaistr_get_all_users_callback() {
 
 	$response_data = [];
 	foreach ( $users as $user ) {
+		if ( ! user_can( $user->ID, 'edit_posts' ) ) {
+			continue;
+		}
+
 		$response_data[] = [
 			'id'          => (int) $user->ID,
 			'name'        => $user->display_name,

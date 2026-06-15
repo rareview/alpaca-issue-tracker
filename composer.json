@@ -1,9 +1,9 @@
 {
-  "name": "rareview/alpaca",
+  "name": "rareview/alpaca-issue-tracker",
   "type": "wordpress-plugin",
   "description": "A lightweight issue tracker built entirely inside WordPress, designed for developers and agencies managing client projects.",
   "license": "GPL-2.0-or-later",
-  "homepage": "https://github.com/rareview/alpaca",
+  "homepage": "https://github.com/rareview/alpaca-issue-tracker",
   "authors": [
     {
       "name": "Rareview®",
@@ -11,18 +11,26 @@
     }
   ],
   "support": {
-    "issues": "https://github.com/rareview/alpaca/issues",
-    "source": "https://github.com/rareview/alpaca"
+    "issues": "https://github.com/rareview/alpaca-issue-tracker/issues",
+    "source": "https://github.com/rareview/alpaca-issue-tracker"
   },
   "require-dev": {
-    "php": ">=7.4",
+    "php": ">=8.0",
     "wp-coding-standards/wpcs": "^3.0",
     "phpcompatibility/phpcompatibility-wp": "^2.1",
-    "dealerdirect/phpcodesniffer-composer-installer": "^1.0"
+    "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+    "phpunit/phpunit": "^9.5",
+    "brain/monkey": "^2.7"
+  },
+  "scripts": {
+    "test": "vendor/bin/phpunit"
   },
   "config": {
     "allow-plugins": {
       "dealerdirect/phpcodesniffer-composer-installer": true
+    },
+    "platform": {
+      "php": "8.0.0"
     }
   }
 }

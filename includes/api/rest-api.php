@@ -24,6 +24,7 @@ $alpaca_rest_api_modules = [
 	'filters/comment-filters.php',
 	'endpoints/presence.php',
 	'filters/comment-response.php',
+	'abilities.php',
 ];
 
 foreach ( $alpaca_rest_api_modules as $alpaca_rest_api_module ) {

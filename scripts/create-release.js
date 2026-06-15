@@ -28,6 +28,35 @@ const versionFiles = [
       content.replace(/^(Stable tag:\s+).+$/m, `$1${version}`),
   },
   {
+    path: 'package.json',
+    replace: (content, version) =>
+      content.replace(/^(\s*"version":\s+")([^"]+)(",)$/m, `$1${version}$3`),
+  },
+  {
+    path: 'package-lock.json',
+    replace: (content, version) => {
+      const updatedContent = content.replace(
+        /^(\s*"version":\s+")([^"]+)(",)$/m,
+        `$1${version}$3`,
+      );
+
+      const rootPackageVersionPattern =
+        /("":\s*{\r?\n\s+"name":\s+"[^"]+",\r?\n\s+"version":\s+")([^"]+)(")/;
+
+      if (rootPackageVersionPattern.test(updatedContent)) {
+        return updatedContent.replace(
+          rootPackageVersionPattern,
+          `$1${version}$3`,
+        );
+      }
+
+      return updatedContent.replace(
+        /("":\s*{\r?\n\s+"name":\s+"[^"]+",)/,
+        `$1\n      "version": "${version}",`,
+      );
+    },
+  },
+  {
     path: 'languages/alpaca-issue-tracker.pot',
     replace: (content, version) =>
       content.replace(
@@ -227,7 +256,7 @@ function updateVersionFiles(version, apply = true) {
  */
 function createRelease(version, notesFile) {
   const tagName = `v${version}`;
-  const releaseTitle = `Alpaca Issue Tracker ${tagName}`;
+  const releaseTitle = tagName;
   const releaseArgs = [
     'release',
     'create',

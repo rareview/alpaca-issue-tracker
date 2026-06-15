@@ -126,15 +126,7 @@ function alpaistr_issue_callback( WP_REST_Request $req ) {
 			wp_set_post_terms( $post_id, [ (int) $status_term->term_id ], 'alpaca_status' );
 			$status_term_id = (int) $status_term->term_id;
 
-			// Add new issue to the top of the issue_order for this status.
-			$current_order = get_term_meta( $status_term_id, 'issue_order', true );
-			$current_order = is_array( $current_order ) ? $current_order : [];
-			// Remove the new issue ID if it already exists.
-			$current_order = array_values( array_diff( $current_order, [ $post_id ] ) );
-			// Add new issue to the beginning of the array.
-			array_unshift( $current_order, $post_id );
-			// Update the term meta with the new order.
-			update_term_meta( $status_term_id, 'issue_order', $current_order );
+			alpaistr_update_issue_order_for_status_change( $post_id, $status_term_id );
 			// Clear board cache so the new order is reflected immediately.
 			alpaistr_clear_board_cache();
 		}
@@ -403,6 +395,24 @@ function alpaistr_update_issue_callback( WP_REST_Request $request ) {
 					}
 				}
 				$set_terms_result = wp_set_post_terms( $issue_id, alpaistr_to_int_ids( $term_ids ), 'alpaca_assignee', false );
+			} elseif ( 'alpaca_status' === $taxonomy ) {
+				$previous_status_ids = wp_get_post_terms( $issue_id, 'alpaca_status', [ 'fields' => 'ids' ] );
+				$previous_status_id  = 0;
+
+				if ( ! is_wp_error( $previous_status_ids ) && ! empty( $previous_status_ids ) ) {
+					$previous_status_id = (int) $previous_status_ids[0];
+				}
+
+				$term_ids         = alpaistr_to_int_ids( $terms );
+				$set_terms_result = wp_set_post_terms( $issue_id, $term_ids, $taxonomy, false );
+
+				if ( ! is_wp_error( $set_terms_result ) && ! empty( $term_ids ) ) {
+					$new_status_id = (int) $term_ids[0];
+
+					if ( $new_status_id > 0 && $new_status_id !== $previous_status_id ) {
+						alpaistr_update_issue_order_for_status_change( $issue_id, $new_status_id, $previous_status_id );
+					}
+				}
 			} else {
 				$term_ids         = alpaistr_to_int_ids( $terms );
 				$set_terms_result = wp_set_post_terms( $issue_id, $term_ids, $taxonomy, false );
@@ -884,7 +894,7 @@ function alpaistr_register_deleted_items_endpoint() {
 			'methods'             => 'GET',
 			'callback'            => 'alpaistr_get_deleted_items_callback',
 			'permission_callback' => function () {
-				return Helpers::user_can( 'comment_count' );
+				return Helpers::user_can( 'manage_options' );
 			},
 			'args'                => [
 				'search'   => [

@@ -1,10 +1,10 @@
 === Alpaca Issue Tracker ===
-Contributors: rareview, s1m0nd, pratikbarvaliya, tahireu
+Contributors: rareview, s1m0nd, pratikbarvaliya, tahireu, georgestephanis
 Tags: issue tracker, bug tracker, project management, kanban, development
-Requires at least: 6.8
+Requires at least: 6.9
 Tested up to: 7.0
-Requires PHP: 7.4
-Stable tag: 1.0.0
+Requires PHP: 8.0
+Stable tag: 1.0.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -122,15 +122,42 @@ Alpaca Issue Tracker uses user images throughout its interface, for extra humani
 
 == Changelog ==
 
-= 1.0: May 2026 =
-* First public release
+= 1.0.7 =
+* Fixed REST API authentication for Application Passwords and other non-cookie authentication methods.
+* Redacted sensitive server and request header data from contextual bug capture.
+
+= 1.0.6 =
+* Fixed collapsed board columns becoming inaccessible after column reordering.
+
+= 1.0.5 =
+* Improved Abilities API parity with the admin UI and REST comment metadata.
+* Added a WordPress Playground blueprint for the plugin directory.
+
+= 1.0.4 =
+* Added WordPress Abilities API support for agent and MCP integrations.
+* Added issue-to-issue links within comments.
+* Added a Copy Issue Permalink action in the issue menu.
+* Added a documentation link to the admin sidebar.
+* Raised minimum requirements to WordPress 6.9 and PHP 8.0.
+
+= 1.0.3 =
+* Removed hidden files from the release archive.
+* Updated plugin repository metadata.
+
+= 1.0.2 =
+* Updated the plugin readme changelog and release metadata.
+
+= 1.0.1 =
+* Added unread notification counts to the front-end toolbar.
+* Added a board column action for creating issues directly in a selected status.
+
+= 1.0.0 =
+* First public release.
 
 == Development ==
 
-Alpaca Issue Tracker is currently in active development.
-
 Source code and build configuration are available at:
-https://github.com/rareview/alpaca
+https://github.com/rareview/alpaca-issue-tracker
 
 = Building from Source =
 

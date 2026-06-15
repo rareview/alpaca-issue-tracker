@@ -2,6 +2,8 @@ import AlpacaModal from './Modal.jsx';
 import { NotificationProvider } from './context/NotificationContext.jsx';
 import AdminSidebarInboxBadge from './components/notifications/AdminSidebarInboxBadge.jsx';
 
+const DOCUMENTATION_URL = 'https://docs.alpacaissuetracker.com';
+
 /**
  * Mount the Alpaca Issue Tracker UI that should be available across wp-admin screens.
  *
@@ -37,28 +39,44 @@ export const mountAdminGlobalUi = (
     mountReactTree(<AlpacaModal />, adminBarModalContainer);
   }
 
-  const projectBoardSubmenuLink = document.querySelector(
-    '#toplevel_page_project-board .wp-submenu li.wp-first-item > a',
+  const projectBoardSubmenu = document.querySelector(
+    '#toplevel_page_project-board .wp-submenu',
   );
 
-  if (!projectBoardSubmenuLink) {
+  if (!projectBoardSubmenu) {
     return;
   }
 
-  let menuBadgeMount = projectBoardSubmenuLink.querySelector(
-    '.alpaca-admin-menu-badge-mount',
+  const documentationLink = projectBoardSubmenu.querySelector(
+    'a[href$="page=alpaca-docs"]',
   );
 
-  if (!menuBadgeMount) {
-    menuBadgeMount = document.createElement('span');
-    menuBadgeMount.className = 'alpaca-admin-menu-badge-mount';
-    projectBoardSubmenuLink.appendChild(menuBadgeMount);
+  if (documentationLink) {
+    documentationLink.href = DOCUMENTATION_URL;
+    documentationLink.target = '_blank';
+    documentationLink.rel = 'noopener noreferrer';
   }
 
-  mountReactTree(
-    <NotificationProvider>
-      <AdminSidebarInboxBadge />
-    </NotificationProvider>,
-    menuBadgeMount,
+  const projectBoardSubmenuLink = projectBoardSubmenu.querySelector(
+    'li.wp-first-item > a',
   );
+
+  if (projectBoardSubmenuLink) {
+    let menuBadgeMount = projectBoardSubmenuLink.querySelector(
+      '.alpaca-admin-menu-badge-mount',
+    );
+
+    if (!menuBadgeMount) {
+      menuBadgeMount = document.createElement('span');
+      menuBadgeMount.className = 'alpaca-admin-menu-badge-mount';
+      projectBoardSubmenuLink.appendChild(menuBadgeMount);
+    }
+
+    mountReactTree(
+      <NotificationProvider>
+        <AdminSidebarInboxBadge />
+      </NotificationProvider>,
+      menuBadgeMount,
+    );
+  }
 };
