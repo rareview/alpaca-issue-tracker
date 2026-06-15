@@ -4,7 +4,7 @@ Tags: issue tracker, bug tracker, project management, kanban, development
 Requires at least: 6.9
 Tested up to: 7.0
 Requires PHP: 8.0
-Stable tag: 1.0.6
+Stable tag: 1.0.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -121,6 +121,10 @@ Alpaca Issue Tracker includes runtime copies or bundled output from the followin
 Alpaca Issue Tracker uses user images throughout its interface, for extra humanity. We recommend **Simple Local Avatars** as a reliable solution for processing and hosting photos of your users without using an external service.
 
 == Changelog ==
+
+= 1.0.7 =
+* Fixed REST API authentication for Application Passwords and other non-cookie authentication methods.
+* Redacted sensitive server and request header data from contextual bug capture.
 
 = 1.0.6 =
 * Fixed collapsed board columns becoming inaccessible after column reordering.
