@@ -1225,29 +1225,15 @@ const AlpacaIssue = ({
           createdIssueDeadline = retryIssue.deadline || null;
           createdIssueIsHighPriority = Boolean(retryIssue.isHighPriority);
         } else {
-          const server = {};
-          if (typeof alpaistrDataDump !== 'undefined' && alpaistrDataDump.env) {
-            try {
-              const loadedServer = JSON.parse(atob(alpaistrDataDump.env));
-              Object.assign(server, loadedServer);
-            } catch (e) {
-              // Ignore parse errors.
-            }
-          }
-
           const payload = {
             userinput: {
               feedback: editedTitle,
               includeContext: false, // Board issues don't need browser context
               isHighPriority,
             },
-            client:
-              typeof alpaistrDataDump !== 'undefined'
-                ? alpaistrDataDump.device
-                : {},
+            client: {},
             errors: [],
             screenshot: '',
-            ...server,
           };
 
           response = await createIssue(payload);
