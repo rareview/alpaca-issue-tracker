@@ -124,6 +124,10 @@ class Helpers {
 	/**
 	 * Validate a REST request against an optional Alpaca Issue Tracker capability and WP REST nonce.
 	 *
+	 * The `wp_rest` nonce is enforced only for cookie-authenticated requests, matching
+	 * WordPress Core's `rest_cookie_check_errors()` behavior. Application Passwords,
+	 * OAuth, JWT, and other non-cookie authentication methods do not send a nonce.
+	 *
 	 * @param WP_REST_Request $request           REST request object.
 	 * @param string          $capability_action Optional. Action name passed to user_can().
 	 * @param array           $capability_args   Optional. Context passed to user_can().
@@ -141,19 +145,36 @@ class Helpers {
 			);
 		}
 
-		$nonce = (string) $request->get_param( 'nonce' );
-		if ( '' === $nonce ) {
-			$nonce = (string) $request->get_header( 'X-WP-Nonce' );
-		}
+		if ( self::rest_request_used_cookie_auth() ) {
+			$nonce = (string) $request->get_param( 'nonce' );
+			if ( '' === $nonce ) {
+				$nonce = (string) $request->get_header( 'X-WP-Nonce' );
+			}
 
-		if ( '' === $nonce || ! wp_verify_nonce( $nonce, 'wp_rest' ) ) {
-			return new WP_Error(
-				'rest_forbidden',
-				esc_html__( 'Invalid nonce.', 'alpaca-issue-tracker' ),
-				[ 'status' => 401 ]
-			);
+			if ( '' === $nonce || ! wp_verify_nonce( $nonce, 'wp_rest' ) ) {
+				return new WP_Error(
+					'rest_forbidden',
+					esc_html__( 'Invalid nonce.', 'alpaca-issue-tracker' ),
+					[ 'status' => 401 ]
+				);
+			}
 		}
 
 		return true;
+	}
+
+	/**
+	 * Determine whether the current REST request was authenticated via a login cookie.
+	 *
+	 * When REST cookie authentication succeeds, Core sets the `$wp_rest_auth_cookie`
+	 * global to `true` in `rest_cookie_collect_status()`. Application Passwords, OAuth,
+	 * JWT, and unauthenticated requests leave the global unset or set to a `WP_Error`.
+	 *
+	 * @return bool True when the request authenticated via a login cookie.
+	 */
+	private static function rest_request_used_cookie_auth() {
+		global $wp_rest_auth_cookie;
+
+		return true === $wp_rest_auth_cookie;
 	}
 }
