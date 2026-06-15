@@ -219,3 +219,53 @@ if ( ! class_exists( 'WP_Term' ) ) {
 		}
 	}
 }
+
+// Minimal WP_REST_Request stub for REST permission tests.
+if ( ! class_exists( 'WP_REST_Request' ) ) {
+	class WP_REST_Request { // phpcs:ignore
+		/**
+		 * Request parameters.
+		 *
+		 * @var array<string, mixed>
+		 */
+		private $params;
+
+		/**
+		 * Request headers.
+		 *
+		 * @var array<string, string>
+		 */
+		private $headers;
+
+		/**
+		 * Create a REST request stub.
+		 *
+		 * @param array<string, mixed> $params  Request parameters.
+		 * @param array<string, string> $headers Request headers.
+		 */
+		public function __construct( array $params = [], array $headers = [] ) {
+			$this->params  = $params;
+			$this->headers = $headers;
+		}
+
+		/**
+		 * Get a request parameter.
+		 *
+		 * @param string $key Parameter key.
+		 * @return mixed Parameter value.
+		 */
+		public function get_param( $key ) {
+			return $this->params[ $key ] ?? null;
+		}
+
+		/**
+		 * Get a request header.
+		 *
+		 * @param string $key Header name.
+		 * @return string|null Header value.
+		 */
+		public function get_header( $key ) {
+			return $this->headers[ $key ] ?? null;
+		}
+	}
+}
