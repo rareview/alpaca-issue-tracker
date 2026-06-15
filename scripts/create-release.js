@@ -35,14 +35,19 @@ const versionFiles = [
   {
     path: 'package-lock.json',
     replace: (content, version) => {
+      let updatedContent = content.replace(
+        /^(\s*"version":\s+")([^"]+)(",)$/m,
+        `$1${version}$3`,
+      );
+
       const rootPackageVersionPattern =
         /("":\s*{\r?\n\s+"name":\s+"[^"]+",\r?\n\s+"version":\s+")([^"]+)(")/;
 
-      if (rootPackageVersionPattern.test(content)) {
-        return content.replace(rootPackageVersionPattern, `$1${version}$3`);
+      if (rootPackageVersionPattern.test(updatedContent)) {
+        return updatedContent.replace(rootPackageVersionPattern, `$1${version}$3`);
       }
 
-      return content.replace(
+      return updatedContent.replace(
         /("":\s*{\r?\n\s+"name":\s+"[^"]+",)/,
         `$1\n      "version": "${version}",`,
       );
