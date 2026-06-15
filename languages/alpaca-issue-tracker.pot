@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-06-12T00:38:16+00:00\n"
+"POT-Creation-Date: 2026-06-15T22:14:40+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: alpaca-issue-tracker\n"
@@ -230,7 +230,7 @@ msgstr ""
 
 #: includes/api/abilities.php:681
 #: includes/api/endpoints/issues.php:91
-#: src/components/Issue.jsx:1531
+#: src/components/Issue.jsx:1517
 msgid "Failed to create issue."
 msgstr ""
 
@@ -438,7 +438,7 @@ msgid "Subissue title is required."
 msgstr ""
 
 #: includes/api/endpoints/issues.php:656
-#: src/components/Issue.jsx:1611
+#: src/components/Issue.jsx:1597
 msgid "Failed to create subissue."
 msgstr ""
 
@@ -632,11 +632,11 @@ msgstr ""
 msgid "Visibility map for item datapoints on issue cards."
 msgstr ""
 
-#: includes/class-helpers.php:139
+#: includes/class-helpers.php:143
 msgid "You are not allowed to access this endpoint."
 msgstr ""
 
-#: includes/class-helpers.php:152
+#: includes/class-helpers.php:157
 msgid "Invalid nonce."
 msgstr ""
 
@@ -1238,7 +1238,7 @@ msgstr ""
 
 #: src/components/Comment.jsx:315
 #: src/components/Container.jsx:526
-#: src/components/Issue.jsx:2150
+#: src/components/Issue.jsx:2136
 msgid "Options"
 msgstr ""
 
@@ -1248,8 +1248,8 @@ msgstr ""
 
 #: src/components/Comment.jsx:343
 #: src/components/Comment.jsx:1220
-#: src/components/Issue.jsx:2513
-#: src/components/Issue.jsx:2624
+#: src/components/Issue.jsx:2499
+#: src/components/Issue.jsx:2610
 #: src/components/issue/AttachmentRow.jsx:166
 #: src/components/StatusManager.jsx:557
 #: src/components/StatusManager.jsx:672
@@ -1265,7 +1265,7 @@ msgstr ""
 #: src/components/Comment.jsx:367
 #: src/components/Comment.jsx:1223
 #: src/components/CommentForm.jsx:500
-#: src/components/Issue.jsx:2628
+#: src/components/Issue.jsx:2614
 #: src/components/issue/AttachmentRow.jsx:169
 #: src/components/StatusManager.jsx:560
 #: src/Modal.jsx:259
@@ -1301,9 +1301,9 @@ msgstr ""
 
 #: src/components/Comment.jsx:734
 #: src/components/comment/TimelineEntry.jsx:227
-#: src/components/Issue.jsx:2117
-#: src/components/Issue.jsx:2121
-#: src/components/Issue.jsx:2123
+#: src/components/Issue.jsx:2103
+#: src/components/Issue.jsx:2107
+#: src/components/Issue.jsx:2109
 #: src/hooks/useUser.js:74
 #: src/utils/statusChange.js:89
 msgid "Unknown"
@@ -1591,7 +1591,7 @@ msgid "Mark All Read"
 msgstr ""
 
 #: src/components/InboxControl.jsx:717
-#: src/components/Issue.jsx:2260
+#: src/components/Issue.jsx:2246
 #: src/components/User.jsx:30
 #: src/DashboardWidget.jsx:41
 msgid "Loading…"
@@ -1644,133 +1644,133 @@ msgstr ""
 msgid "Failed to update issue title."
 msgstr ""
 
-#: src/components/Issue.jsx:1310
+#: src/components/Issue.jsx:1296
 msgid "Issue created, but labels could not be saved."
 msgstr ""
 
-#: src/components/Issue.jsx:1379
+#: src/components/Issue.jsx:1365
 msgid "Failed to create issue comment."
 msgstr ""
 
-#: src/components/Issue.jsx:1431
+#: src/components/Issue.jsx:1417
 msgid "Comment could not be saved. Please try again."
 msgstr ""
 
-#: src/components/Issue.jsx:1435
+#: src/components/Issue.jsx:1421
 msgid "Issue created, but comment could not be saved."
 msgstr ""
 
-#: src/components/Issue.jsx:1530
+#: src/components/Issue.jsx:1516
 msgid "Failed to retry comment."
 msgstr ""
 
-#: src/components/Issue.jsx:1730
+#: src/components/Issue.jsx:1716
 msgid "Failed to update subissue title."
 msgstr ""
 
-#: src/components/Issue.jsx:1804
+#: src/components/Issue.jsx:1790
 msgid "Failed to update subissue completion."
 msgstr ""
 
-#: src/components/Issue.jsx:1889
+#: src/components/Issue.jsx:1875
 msgid "Failed to update subissue assignees."
 msgstr ""
 
-#: src/components/Issue.jsx:1994
+#: src/components/Issue.jsx:1980
 #: src/utils/issueCommentHandler.js:262
 #: src/utils/issueCommentHandler.js:575
 msgid "Unknown issue"
 msgstr ""
 
-#: src/components/Issue.jsx:2008
+#: src/components/Issue.jsx:1994
 msgid "Failed to promote subissue."
 msgstr ""
 
-#: src/components/Issue.jsx:2037
+#: src/components/Issue.jsx:2023
 msgid "You do not have permission to delete issues."
 msgstr ""
 
-#: src/components/Issue.jsx:2055
+#: src/components/Issue.jsx:2041
 msgid "Failed to delete subissue."
 msgstr ""
 
-#: src/components/Issue.jsx:2172
+#: src/components/Issue.jsx:2158
 msgid "Issue ID copied to clipboard."
 msgstr ""
 
-#: src/components/Issue.jsx:2176
+#: src/components/Issue.jsx:2162
 msgid "Failed to copy issue ID to clipboard."
 msgstr ""
 
-#: src/components/Issue.jsx:2183
+#: src/components/Issue.jsx:2169
 msgid "Copy Issue ID"
 msgstr ""
 
-#: src/components/Issue.jsx:2204
+#: src/components/Issue.jsx:2190
 msgid "Issue permalink copied to clipboard."
 msgstr ""
 
-#: src/components/Issue.jsx:2208
+#: src/components/Issue.jsx:2194
 msgid "Failed to copy issue permalink to clipboard."
 msgstr ""
 
-#: src/components/Issue.jsx:2218
+#: src/components/Issue.jsx:2204
 msgid "Copy Issue Permalink"
 msgstr ""
 
-#: src/components/Issue.jsx:2228
+#: src/components/Issue.jsx:2214
 msgid "Progress Issue to"
 msgstr ""
 
-#: src/components/Issue.jsx:2241
+#: src/components/Issue.jsx:2227
 msgid "Trash Issue"
 msgstr ""
 
-#: src/components/Issue.jsx:2254
+#: src/components/Issue.jsx:2240
 msgid "Retry"
 msgstr ""
 
-#: src/components/Issue.jsx:2277
+#: src/components/Issue.jsx:2263
 msgid "Enter a title to create issue…"
 msgstr ""
 
-#: src/components/Issue.jsx:2298
+#: src/components/Issue.jsx:2284
 msgid "Created by"
 msgstr ""
 
-#: src/components/Issue.jsx:2354
+#: src/components/Issue.jsx:2340
 msgid "Add a comment to the issue…"
 msgstr ""
 
-#: src/components/Issue.jsx:2365
+#: src/components/Issue.jsx:2351
 msgid "Retry Comment"
 msgstr ""
 
-#: src/components/Issue.jsx:2382
+#: src/components/Issue.jsx:2368
 msgid "Checklist"
 msgstr ""
 
-#: src/components/Issue.jsx:2394
+#: src/components/Issue.jsx:2380
 msgid "Add"
 msgstr ""
 
-#: src/components/Issue.jsx:2442
+#: src/components/Issue.jsx:2428
 msgid "Enter title…"
 msgstr ""
 
-#: src/components/Issue.jsx:2496
+#: src/components/Issue.jsx:2482
 msgid "Promote"
 msgstr ""
 
-#: src/components/Issue.jsx:2581
+#: src/components/Issue.jsx:2567
 msgid "Could not load issue details."
 msgstr ""
 
-#: src/components/Issue.jsx:2607
+#: src/components/Issue.jsx:2593
 msgid "Delete Issue?"
 msgstr ""
 
-#: src/components/Issue.jsx:2609
+#: src/components/Issue.jsx:2595
 msgid "Are you sure you want to trash this issue?"
 msgstr ""
 
