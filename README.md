@@ -20,6 +20,10 @@ Alpaca Issue Tracker provides a full-featured kanban experience inside wp-admin,
 
 For local branch testing, run `npm run playground:start`. That builds the current branch ZIP and opens a local Playground instance using the same seeded content as the public demo.
 
+## Contributing
+
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, coding standards, and pull request guidelines.
+
 ## Key features
 
 - **Kanban Board Interface** - Drag-and-drop issues between and within fully customizable status columns
