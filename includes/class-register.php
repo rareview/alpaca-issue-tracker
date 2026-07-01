@@ -222,7 +222,7 @@ class Register {
 	/**
 	 * Determine whether the current admin page should skip Alpaca Issue Tracker admin assets.
 	 *
-	 * Page/post editor screens are already asset-heavy. The matching admin-bar
+	 * Post editor screens are already asset-heavy. The matching admin-bar
 	 * report UI is omitted on those screens as well.
 	 *
 	 * @param string $hook_suffix Current admin page hook suffix.
