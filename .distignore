@@ -11,11 +11,13 @@
 /.stylelintrc.json
 /.wordpress-org
 /AGENTS.md
+/CONTRIBUTING.md
+/SECURITY.md
 /README.md
 /alpaca-issue-tracker.zip
 /composer.json
 /composer.lock
-/documentation
+/docs
 /node_modules
 /package-lock.json
 /package.json

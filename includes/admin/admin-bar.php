@@ -16,7 +16,7 @@ add_action( 'admin_bar_menu', 'alpaistr_add_admin_bar_menu', 500 );
 /**
  * Determine whether the current admin screen should omit global report UI.
  *
- * The report bundle is intentionally not loaded on WordPress page/post editor
+ * The report bundle is intentionally not loaded on WordPress post editor
  * screens because those screens are already asset-heavy.
  *
  * @param string $hook_suffix Optional admin page hook suffix.
@@ -32,12 +32,7 @@ function alpaistr_should_skip_admin_report_screen( $hook_suffix = '' ) {
 		return false;
 	}
 
-	$post_type   = isset( $current_screen->post_type ) ? $current_screen->post_type : '';
 	$screen_base = isset( $current_screen->base ) ? $current_screen->base : '';
-
-	if ( ! in_array( $post_type, [ 'page', 'post' ], true ) ) {
-		return false;
-	}
 
 	return 'post' === $screen_base
 		|| in_array( $hook_suffix, [ 'post-new.php', 'post.php' ], true );
