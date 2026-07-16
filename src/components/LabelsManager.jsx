@@ -616,7 +616,10 @@ const LabelsManager = () => {
           className="alpaca-modal"
         >
           <p>
-            {__('Are you sure you want to delete the label', 'alpaca-issue-tracker')}{' '}
+            {__(
+              'Are you sure you want to delete the label',
+              'alpaca-issue-tracker',
+            )}{' '}
             &quot;
             <strong>{labelToDelete.label.name}</strong>&quot;?{' '}
             {__('This cannot be undone.', 'alpaca-issue-tracker')}
