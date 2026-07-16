@@ -1,6 +1,6 @@
 const { useState, useEffect, useCallback, useMemo } = wp.element;
 const { __ } = wp.i18n;
-const { Button, Spinner, TextControl, Dropdown, Notice } = wp.components;
+const { Button, Spinner, TextControl, Dropdown, Notice, Modal } = wp.components;
 const ColorPalette = wp.components.ColorPalette || wp.blockEditor?.ColorPalette;
 const ColorIndicator = wp.components.ColorIndicator;
 import {
@@ -53,6 +53,7 @@ const LabelsManager = () => {
   const [isFetching, setIsFetching] = useState(true);
   const [savingKeys, setSavingKeys] = useState([]);
   const [saveError, setSaveError] = useState('');
+  const [labelToDelete, setLabelToDelete] = useState(null);
   const isSaving = savingKeys.length > 0;
   const isInitialFetch = isFetching && labels.length === 0;
 
@@ -390,6 +391,24 @@ const LabelsManager = () => {
     [deleteLabelTerm, savingKeys, fetchLabels],
   );
 
+  const handleDeleteLabel = useCallback((label, slotIndex = null) => {
+    setLabelToDelete({ label, slotIndex });
+  }, []);
+
+  const cancelDeleteLabel = useCallback(() => {
+    setLabelToDelete(null);
+  }, []);
+
+  const performDeleteLabel = useCallback(async () => {
+    if (!labelToDelete) {
+      return;
+    }
+
+    const { label, slotIndex } = labelToDelete;
+    setLabelToDelete(null);
+    await removeLabelRow(label, slotIndex);
+  }, [labelToDelete, removeLabelRow]);
+
   const palette = useMemo(() => {
     const labelColorOptions =
       wp && wp.hooks && typeof wp.hooks.applyFilters === 'function'
@@ -525,7 +544,7 @@ const LabelsManager = () => {
                       label={__('Delete label', 'alpaca-issue-tracker')}
                       showTooltip
                       isDestructive
-                      onClick={() => removeLabelRow(label, index)}
+                      onClick={() => handleDeleteLabel(label, index)}
                       disabled={isFetching || isSaving}
                     />
                   ) : (
@@ -566,7 +585,7 @@ const LabelsManager = () => {
                     label={__('Delete label', 'alpaca-issue-tracker')}
                     showTooltip
                     isDestructive
-                    onClick={() => removeLabelRow(label)}
+                    onClick={() => handleDeleteLabel(label)}
                     disabled={isFetching || isSaving}
                   />
                 </SettingsListActionsCell>
@@ -588,6 +607,33 @@ const LabelsManager = () => {
 
           {(isFetching || isSaving) && <Spinner />}
         </div>
+      )}
+
+      {labelToDelete && (
+        <Modal
+          title={__('Delete Label?', 'alpaca-issue-tracker')}
+          onRequestClose={cancelDeleteLabel}
+          className="alpaca-modal"
+        >
+          <p>
+            {__('Are you sure you want to delete the label', 'alpaca-issue-tracker')}{' '}
+            &quot;
+            <strong>{labelToDelete.label.name}</strong>&quot;?{' '}
+            {__('This cannot be undone.', 'alpaca-issue-tracker')}
+          </p>
+          <div className="alpaca-actions alpaca-flex-align">
+            <Button
+              variant="primary"
+              isDestructive
+              onClick={performDeleteLabel}
+            >
+              {__('Delete', 'alpaca-issue-tracker')}
+            </Button>
+            <Button isSecondary onClick={cancelDeleteLabel}>
+              {__('Cancel', 'alpaca-issue-tracker')}
+            </Button>
+          </div>
+        </Modal>
       )}
     </div>
   );
