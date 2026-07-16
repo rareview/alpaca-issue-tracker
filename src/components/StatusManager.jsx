@@ -1,6 +1,6 @@
 const { useState, useEffect, useRef } = wp.element;
 const { __ } = wp.i18n;
-const { Button, Spinner, Modal, TextControl } = wp.components;
+const { Button, Spinner, TextControl } = wp.components;
 import PropTypes from 'prop-types';
 
 // Using native HTML5 drag/drop instead of Atlaskit
@@ -11,8 +11,10 @@ import {
   SettingsListBody,
   SettingsListRow,
   SettingsListNameCell,
-  SettingsListEditableName,
+  SettingsListEditableRow,
   SettingsListActionsCell,
+  SettingsListDeleteModal,
+  useSettingsListDeleteConfirmation,
 } from './settings/SettingsList';
 
 const StatusManager = ({
@@ -22,7 +24,11 @@ const StatusManager = ({
   error,
   onStatusesChange,
 }) => {
-  const [statusToDelete, setStatusToDelete] = useState(null);
+  const {
+    itemToDelete: statusToDelete,
+    requestDelete,
+    cancelDelete,
+  } = useSettingsListDeleteConfirmation();
   const [localStatuses, setLocalStatuses] = useState(statuses);
   const [creatingStatusKey, setCreatingStatusKey] = useState(null);
 
@@ -289,19 +295,15 @@ const StatusManager = ({
   const handleDelete = (id) => {
     const status = localStatuses.find((s) => s.term_id === id);
     if (status) {
-      setStatusToDelete(status);
+      requestDelete(status);
     }
-  };
-
-  const cancelDelete = () => {
-    setStatusToDelete(null);
   };
 
   const performDelete = async () => {
     if (!statusToDelete) return;
 
     const { term_id: id, name: oldStatusName } = statusToDelete;
-    setStatusToDelete(null); // Close modal immediately
+    cancelDelete();
 
     try {
       // The localStatuses are already sorted by term_score
@@ -586,29 +588,16 @@ const StatusManager = ({
         </p>
 
         {statusToDelete && (
-          <Modal
+          <SettingsListDeleteModal
             title={__('Delete Status?', 'alpaca-issue-tracker')}
-            onRequestClose={cancelDelete}
-            className="alpaca-modal"
-          >
-            <p>
-              {__(
-                'Are you sure you want to delete the status',
-                'alpaca-issue-tracker',
-              )}{' '}
-              &quot;
-              <strong>{statusToDelete.name}</strong>&quot;?{' '}
-              {__('This cannot be undone.', 'alpaca-issue-tracker')}
-            </p>
-            <div className="alpaca-actions alpaca-flex-align">
-              <Button variant="primary" isDestructive onClick={performDelete}>
-                {__('Delete', 'alpaca-issue-tracker')}
-              </Button>
-              <Button isSecondary onClick={cancelDelete}>
-                {__('Cancel', 'alpaca-issue-tracker')}
-              </Button>
-            </div>
-          </Modal>
+            message={__(
+              'Are you sure you want to delete the status',
+              'alpaca-issue-tracker',
+            )}
+            name={statusToDelete.name}
+            onConfirm={performDelete}
+            onCancel={cancelDelete}
+          />
         )}
       </div>
     </>
@@ -680,6 +669,34 @@ const StatusRow = wp.element.forwardRef(
       }
     };
 
+    if (!isNew) {
+      return (
+        <SettingsListEditableRow
+          ref={ref}
+          {...props}
+          className={`status-grid-row ${isDragging ? 'is-dragging' : ''}`}
+          style={{ opacity: isDragging ? 0.35 : 1 }}
+          value={status.name}
+          onSave={(newStatusName) => onRename(status.term_id, newStatusName)}
+          deleteLabel={__('Delete', 'alpaca-issue-tracker')}
+          onDelete={() => onDelete(status.term_id)}
+          disabled={isDragging}
+          nameCellClassName="status-grid-cell"
+          nameContentClassName="status-row-content alpaca-flex-align"
+          namePrefix={
+            <div
+              {...handleProps}
+              className="drag-handle alpaca-flex-align"
+              title={__('Drag to reorder', 'alpaca-issue-tracker')}
+            >
+              <Icon name="drag-handle" style={{ verticalAlign: 'middle' }} />
+            </div>
+          }
+          actionsCellClassName="status-grid-cell actions-cell"
+        />
+      );
+    }
+
     return (
       <SettingsListRow
         ref={ref}
@@ -689,52 +706,23 @@ const StatusRow = wp.element.forwardRef(
       >
         <SettingsListNameCell className="status-grid-cell">
           <div className="status-row-content alpaca-flex-align">
-            {!isNew && (
-              <div
-                {...handleProps}
-                className="drag-handle alpaca-flex-align"
-                title={__('Drag to reorder', 'alpaca-issue-tracker')}
-              >
-                <Icon name="drag-handle" style={{ verticalAlign: 'middle' }} />
-              </div>
-            )}
-            {isNew ? (
-              <TextControl
-                ref={newNameInputRef}
-                className="alpaca-settings-list-name-editor"
-                __next40pxDefaultSize
-                __nextHasNoMarginBottom
-                label={__('Name', 'alpaca-issue-tracker')}
-                hideLabelFromVision
-                placeholder={__('Status name', 'alpaca-issue-tracker')}
-                value={newName}
-                onChange={setNewName}
-                onBlur={submitNewStatus}
-                onKeyDown={handleNewStatusKeyDown}
-                disabled={isSaving}
-              />
-            ) : (
-              <SettingsListEditableName
-                value={status.name}
-                onSave={(newStatusName) =>
-                  onRename(status.term_id, newStatusName)
-                }
-                disabled={isDragging}
-              />
-            )}
+            <TextControl
+              ref={newNameInputRef}
+              className="alpaca-settings-list-name-editor"
+              __next40pxDefaultSize
+              __nextHasNoMarginBottom
+              label={__('Name', 'alpaca-issue-tracker')}
+              hideLabelFromVision
+              placeholder={__('Status name', 'alpaca-issue-tracker')}
+              value={newName}
+              onChange={setNewName}
+              onBlur={submitNewStatus}
+              onKeyDown={handleNewStatusKeyDown}
+              disabled={isSaving}
+            />
           </div>
         </SettingsListNameCell>
-        <SettingsListActionsCell className="status-grid-cell actions-cell">
-          {!isNew && (
-            <Button
-              icon="trash"
-              className="alpaca-settings-table-delete"
-              label={__('Delete', 'alpaca-issue-tracker')}
-              isDestructive
-              onClick={() => onDelete(status.term_id)}
-            />
-          )}
-        </SettingsListActionsCell>
+        <SettingsListActionsCell className="status-grid-cell actions-cell" />
       </SettingsListRow>
     );
   },
