@@ -32,17 +32,38 @@
       display: grid;
       gap: $space-md;
       grid-template-columns: minmax(0, 1fr) auto;
-      padding: $space-sm $space-lg;
+      padding: $space-xs $space-lg;
       transition: background $duration-base;
 
       &:not(:last-child) {
         border-bottom: 1px solid $color-border;
+      }
+
+      .components-button,
+      .components-text-control__input {
+        height: $size-control-md;
+        min-height: $size-control-md;
       }
     }
 
     .alpaca-settings-list-name {
       min-width: 0;
       width: 100%;
+    }
+
+    .alpaca-settings-list-name-editor {
+      max-width: 100%;
+      width: 100%;
+
+      &.components-button {
+        justify-content: space-between;
+        overflow: hidden;
+        text-align: start;
+      }
+
+      .components-text-control__input {
+        border-color: $color-border-subtle;
+      }
     }
 
     .alpaca-settings-list-actions,
@@ -86,7 +107,16 @@
 
       .components-input-control__container {
         max-width: none;
+        min-height: $size-control-md;
         width: 100%;
+      }
+
+      .components-input-control__backdrop {
+        border-color: $color-border-subtle;
+      }
+
+      .components-text-control__input {
+        border-color: $color-border-subtle;
       }
     }
 
@@ -94,6 +124,8 @@
       align-items: center;
       display: inline-flex;
       gap: $space-xs;
+      min-height: $size-control-md;
+      padding-block: 0;
     }
 
     .alpaca-label-color-cell {

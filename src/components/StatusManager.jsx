@@ -11,6 +11,7 @@ import {
   SettingsListBody,
   SettingsListRow,
   SettingsListNameCell,
+  SettingsListEditableName,
   SettingsListActionsCell,
 } from './settings/SettingsList';
 
@@ -23,6 +24,7 @@ const StatusManager = ({
 }) => {
   const [statusToDelete, setStatusToDelete] = useState(null);
   const [localStatuses, setLocalStatuses] = useState(statuses);
+  const [creatingStatusKey, setCreatingStatusKey] = useState(null);
 
   useEffect(() => {
     setLocalStatuses(statuses);
@@ -266,6 +268,12 @@ const StatusManager = ({
   };
 
   const handleRename = (id, newName) => {
+    setLocalStatuses((previousStatuses) =>
+      previousStatuses.map((status) =>
+        status.term_id === id ? { ...status, name: newName } : status,
+      ),
+    );
+
     wp.apiFetch({
       path: `/alpaca/v1/status/${id}`,
       method: 'POST',
@@ -365,29 +373,57 @@ const StatusManager = ({
   };
 
   const handleAddStatus = () => {
-    // eslint-disable-next-line no-alert
-    const newName = window.prompt(
-      __('Enter the name for the new status:', 'alpaca-issue-tracker'),
-    );
-    if (!newName || !newName.trim()) {
+    if (localStatuses.some((status) => status.isNew)) {
       return;
     }
 
+    const newStatus = {
+      term_id: null,
+      name: '',
+      key: `new-${Date.now()}`,
+      isNew: true,
+    };
+
+    setLocalStatuses((previousStatuses) => [...previousStatuses, newStatus]);
+  };
+
+  const handleCreateStatus = (key, newName) => {
+    if (creatingStatusKey === key) {
+      return Promise.resolve();
+    }
+
+    setCreatingStatusKey(key);
     const maxScore = localStatuses.reduce(
-      (max, s) => Math.max(max, parseInt(s.term_score, 10) || 0),
+      (max, status) => Math.max(max, parseInt(status.term_score, 10) || 0),
       0,
     );
 
-    wp.apiFetch({
-      path: `/wp/v2/alpaca_status`,
-      method: 'POST',
-      data: { name: newName, meta: { term_score: maxScore + 10 } },
-    })
-      .then(() => fetchStatusesCallback())
+    return wp
+      .apiFetch({
+        path: `/wp/v2/alpaca_status`,
+        method: 'POST',
+        data: { name: newName, meta: { term_score: maxScore + 10 } },
+      })
+      .then(() => {
+        setLocalStatuses((previousStatuses) =>
+          previousStatuses.filter((status) => status.key !== key),
+        );
+        fetchStatusesCallback();
+      })
       .catch((err) => {
         // eslint-disable-next-line no-console
         console.error('Error adding status:', err);
+        throw err;
+      })
+      .finally(() => {
+        setCreatingStatusKey(null);
       });
+  };
+
+  const handleCancelNewStatus = (key) => {
+    setLocalStatuses((previousStatuses) =>
+      previousStatuses.filter((status) => status.key !== key),
+    );
   };
 
   if (isLoading) return <Spinner />;
@@ -453,14 +489,18 @@ const StatusManager = ({
 
                       return (
                         <StatusRow
-                          key={status.term_id.toString()}
+                          key={status.key || status.term_id.toString()}
                           ref={null}
                           status={status}
                           onRename={handleRename}
                           onDelete={handleDelete}
+                          onCreate={handleCreateStatus}
+                          onCancel={handleCancelNewStatus}
+                          isNew={status.isNew}
+                          isSaving={creatingStatusKey === status.key}
                           isDragging={false}
                           dragHandleProps={dh}
-                          draggable={true}
+                          draggable={!status.isNew}
                           onDragStart={(e) => handleRowDragStart(e, idx)}
                           onDragEnd={handleRowDragEnd}
                         />
@@ -492,14 +532,18 @@ const StatusManager = ({
 
                       return (
                         <StatusRow
-                          key={status.term_id.toString()}
+                          key={status.key || status.term_id.toString()}
                           ref={null}
                           status={status}
                           onRename={handleRename}
                           onDelete={handleDelete}
+                          onCreate={handleCreateStatus}
+                          onCancel={handleCancelNewStatus}
+                          isNew={status.isNew}
+                          isSaving={creatingStatusKey === status.key}
                           isDragging={false}
                           dragHandleProps={dh}
-                          draggable={true}
+                          draggable={!status.isNew}
                           onDragStart={(e) => handleRowDragStart(e, idx)}
                           onDragEnd={handleRowDragEnd}
                         />
@@ -511,18 +555,22 @@ const StatusManager = ({
 
               return localStatuses.map((status, index) => (
                 <StatusRow
-                  key={status.term_id.toString()}
+                  key={status.key || status.term_id.toString()}
                   ref={null}
                   status={status}
                   onRename={handleRename}
                   onDelete={handleDelete}
+                  onCreate={handleCreateStatus}
+                  onCancel={handleCancelNewStatus}
+                  isNew={status.isNew}
+                  isSaving={creatingStatusKey === status.key}
                   isDragging={draggingIndex === index}
                   dragHandleProps={{
                     draggable: true,
                     onDragStart: (e) => handleRowDragStart(e, index),
                     onDragEnd: handleRowDragEnd,
                   }}
-                  draggable={true}
+                  draggable={!status.isNew}
                   onDragStart={(e) => handleRowDragStart(e, index)}
                   onDragEnd={handleRowDragEnd}
                 />
@@ -584,47 +632,53 @@ StatusManager.defaultProps = {
 // StatusRow using grid cell display
 const StatusRow = wp.element.forwardRef(
   (
-    { status, onRename, onDelete, isDragging, dragHandleProps, ...props },
+    {
+      status,
+      onRename,
+      onDelete,
+      onCreate,
+      onCancel,
+      isNew,
+      isSaving,
+      isDragging,
+      dragHandleProps,
+      ...props
+    },
     ref,
   ) => {
-    const [isRenaming, setIsRenaming] = useState(false);
-    const [name, setName] = useState(status.name);
-    const inputRef = useRef(null);
+    const [newName, setNewName] = useState(status.name);
+    const submittedRef = useRef(false);
+    const newNameInputRef = useRef(null);
+    const handleProps = dragHandleProps || {};
 
     useEffect(() => {
-      if (isRenaming && inputRef.current) {
-        inputRef.current.focus();
-        inputRef.current.select();
+      if (isNew && newNameInputRef.current) {
+        newNameInputRef.current.focus();
       }
-    }, [isRenaming]);
+    }, [isNew]);
 
-    const handleStartRename = () => {
-      setIsRenaming(true);
-    };
+    const submitNewStatus = () => {
+      const trimmedName = newName.trim();
 
-    const handleCancelRename = () => {
-      setIsRenaming(false);
-      setName(status.name);
-    };
-
-    const handleSaveRename = () => {
-      setIsRenaming(false);
-      if (name.trim() && name !== status.name) {
-        onRename(status.term_id, name);
-      } else {
-        setName(status.name);
+      if (!isNew || !trimmedName || submittedRef.current) {
+        return;
       }
+
+      submittedRef.current = true;
+      Promise.resolve(onCreate(status.key, trimmedName)).catch(() => {
+        submittedRef.current = false;
+      });
     };
 
-    const handleKeyDown = (event) => {
+    const handleNewStatusKeyDown = (event) => {
       if (event.key === 'Enter') {
-        handleSaveRename();
+        event.preventDefault();
+        submitNewStatus();
       } else if (event.key === 'Escape') {
-        handleCancelRename();
+        event.preventDefault();
+        onCancel(status.key);
       }
     };
-
-    const handleProps = dragHandleProps || {};
 
     return (
       <SettingsListRow
@@ -635,44 +689,51 @@ const StatusRow = wp.element.forwardRef(
       >
         <SettingsListNameCell className="status-grid-cell">
           <div className="status-row-content alpaca-flex-align">
-            <div
-              {...handleProps}
-              className="drag-handle alpaca-flex-align"
-              title={__('Drag to reorder', 'alpaca-issue-tracker')}
-            >
-              <Icon name="drag-handle" style={{ verticalAlign: 'middle' }} />
-            </div>
-            {isRenaming ? (
+            {!isNew && (
+              <div
+                {...handleProps}
+                className="drag-handle alpaca-flex-align"
+                title={__('Drag to reorder', 'alpaca-issue-tracker')}
+              >
+                <Icon name="drag-handle" style={{ verticalAlign: 'middle' }} />
+              </div>
+            )}
+            {isNew ? (
               <TextControl
-                ref={inputRef}
+                ref={newNameInputRef}
+                className="alpaca-settings-list-name-editor"
                 __next40pxDefaultSize
                 __nextHasNoMarginBottom
-                value={name}
-                onChange={setName}
-                onBlur={handleSaveRename}
-                onKeyDown={handleKeyDown}
+                label={__('Name', 'alpaca-issue-tracker')}
+                hideLabelFromVision
+                placeholder={__('Status name', 'alpaca-issue-tracker')}
+                value={newName}
+                onChange={setNewName}
+                onBlur={submitNewStatus}
+                onKeyDown={handleNewStatusKeyDown}
+                disabled={isSaving}
               />
             ) : (
-              <Button
-                isTertiary
-                icon="edit"
-                iconPosition="right"
-                className=""
-                onClick={handleStartRename}
-              >
-                {status.name}
-              </Button>
+              <SettingsListEditableName
+                value={status.name}
+                onSave={(newStatusName) =>
+                  onRename(status.term_id, newStatusName)
+                }
+                disabled={isDragging}
+              />
             )}
           </div>
         </SettingsListNameCell>
         <SettingsListActionsCell className="status-grid-cell actions-cell">
-          <Button
-            icon="trash"
-            className="alpaca-settings-table-delete"
-            label={__('Delete', 'alpaca-issue-tracker')}
-            isDestructive
-            onClick={() => onDelete(status.term_id)}
-          />
+          {!isNew && (
+            <Button
+              icon="trash"
+              className="alpaca-settings-table-delete"
+              label={__('Delete', 'alpaca-issue-tracker')}
+              isDestructive
+              onClick={() => onDelete(status.term_id)}
+            />
+          )}
         </SettingsListActionsCell>
       </SettingsListRow>
     );
@@ -683,11 +744,17 @@ StatusRow.displayName = 'StatusRow';
 
 StatusRow.propTypes = {
   status: PropTypes.shape({
-    term_id: PropTypes.number.isRequired,
+    term_id: PropTypes.number,
     name: PropTypes.string.isRequired,
+    key: PropTypes.string,
+    isNew: PropTypes.bool,
   }).isRequired,
   onRename: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
+  onCreate: PropTypes.func.isRequired,
+  onCancel: PropTypes.func.isRequired,
+  isNew: PropTypes.bool,
+  isSaving: PropTypes.bool,
   isDragging: PropTypes.bool,
   dragHandleProps: PropTypes.object,
 };

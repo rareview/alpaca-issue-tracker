@@ -8,6 +8,7 @@ import {
   SettingsListBody,
   SettingsListRow,
   SettingsListNameCell,
+  SettingsListEditableName,
   SettingsListActionsCell,
 } from './settings/SettingsList';
 import { getDefaultLabelColor, normalizeLabelColor } from '../utils/labelColor';
@@ -53,6 +54,7 @@ const LabelsManager = () => {
   const [savingKeys, setSavingKeys] = useState([]);
   const [saveError, setSaveError] = useState('');
   const isSaving = savingKeys.length > 0;
+  const isInitialFetch = isFetching && labels.length === 0;
 
   const fetchLabels = useCallback(() => {
     setIsFetching(true);
@@ -444,6 +446,13 @@ const LabelsManager = () => {
     );
   };
 
+  const handleNewLabelKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      event.currentTarget.blur();
+    }
+  };
+
   return (
     <div className="alpaca-labels-manager">
       <h2 className="screen-reader-text">
@@ -462,109 +471,124 @@ const LabelsManager = () => {
         </Notice>
       )}
 
-      <SettingsList className="alpaca-labels-list">
-        <SettingsListBody>
-          {slotLabels.map((label, index) => (
-            <SettingsListRow key={label.key}>
-              <SettingsListNameCell>
-                <TextControl
-                  className="alpaca-label-name-input"
-                  __next40pxDefaultSize
-                  __nextHasNoMarginBottom
-                  label={
-                    index < INITIAL_LABEL_SLOT_COUNT
-                      ? ''
-                      : __('Name', 'alpaca-issue-tracker')
-                  }
-                  hideLabelFromVision={index < INITIAL_LABEL_SLOT_COUNT}
-                  value={label.name}
-                  placeholder={__('Label name', 'alpaca-issue-tracker')}
-                  onChange={(value) => updateSlotRow(index, 'name', value)}
-                  onBlur={() => saveLabelDraft(label)}
-                  disabled={isFetching || isSaving}
-                />
-              </SettingsListNameCell>
-              <SettingsListActionsCell className="alpaca-label-color-cell">
-                {renderColorControl(label, (value) => {
-                  updateSlotRow(index, 'color', value);
-                  saveLabelDraft({
-                    ...label,
-                    color: value,
-                  });
-                })}
-              </SettingsListActionsCell>
-              <SettingsListActionsCell className="alpaca-label-delete-cell">
-                {label.term_id ? (
+      {isInitialFetch ? (
+        <Spinner />
+      ) : (
+        <SettingsList className="alpaca-labels-list">
+          <SettingsListBody>
+            {slotLabels.map((label, index) => (
+              <SettingsListRow key={label.key}>
+                <SettingsListNameCell>
+                  {label.term_id ? (
+                    <SettingsListEditableName
+                      value={label.name}
+                      onSave={(value) => {
+                        updateSlotRow(index, 'name', value);
+                        saveLabelDraft({ ...label, name: value });
+                      }}
+                      disabled={isFetching || isSaving}
+                    />
+                  ) : (
+                    <TextControl
+                      className="alpaca-label-name-input"
+                      __next40pxDefaultSize
+                      __nextHasNoMarginBottom
+                      label={
+                        index < INITIAL_LABEL_SLOT_COUNT
+                          ? ''
+                          : __('Name', 'alpaca-issue-tracker')
+                      }
+                      hideLabelFromVision={index < INITIAL_LABEL_SLOT_COUNT}
+                      value={label.name}
+                      placeholder={__('Label name', 'alpaca-issue-tracker')}
+                      onChange={(value) => updateSlotRow(index, 'name', value)}
+                      onBlur={() => saveLabelDraft(label)}
+                      onKeyDown={handleNewLabelKeyDown}
+                      disabled={isFetching || isSaving}
+                    />
+                  )}
+                </SettingsListNameCell>
+                <SettingsListActionsCell className="alpaca-label-color-cell">
+                  {renderColorControl(label, (value) => {
+                    updateSlotRow(index, 'color', value);
+                    saveLabelDraft({
+                      ...label,
+                      color: value,
+                    });
+                  })}
+                </SettingsListActionsCell>
+                <SettingsListActionsCell className="alpaca-label-delete-cell">
+                  {label.term_id ? (
+                    <Button
+                      icon="trash"
+                      className="alpaca-settings-table-delete"
+                      label={__('Delete label', 'alpaca-issue-tracker')}
+                      showTooltip
+                      isDestructive
+                      onClick={() => removeLabelRow(label, index)}
+                      disabled={isFetching || isSaving}
+                    />
+                  ) : (
+                    <span
+                      className="alpaca-label-delete-slot"
+                      aria-hidden="true"
+                    />
+                  )}
+                </SettingsListActionsCell>
+              </SettingsListRow>
+            ))}
+
+            {extraLabels.map((label) => (
+              <SettingsListRow key={label.key}>
+                <SettingsListNameCell>
+                  <SettingsListEditableName
+                    value={label.name}
+                    onSave={(value) => {
+                      updateLabelRow(label.key, 'name', value);
+                      saveLabelDraft({ ...label, name: value });
+                    }}
+                    disabled={isFetching || isSaving}
+                  />
+                </SettingsListNameCell>
+                <SettingsListActionsCell className="alpaca-label-color-cell">
+                  {renderColorControl(label, (value) => {
+                    updateLabelRow(label.key, 'color', value);
+                    saveLabelDraft({
+                      ...label,
+                      color: value,
+                    });
+                  })}
+                </SettingsListActionsCell>
+                <SettingsListActionsCell className="alpaca-label-delete-cell">
                   <Button
                     icon="trash"
                     className="alpaca-settings-table-delete"
                     label={__('Delete label', 'alpaca-issue-tracker')}
                     showTooltip
                     isDestructive
-                    onClick={() => removeLabelRow(label, index)}
+                    onClick={() => removeLabelRow(label)}
                     disabled={isFetching || isSaving}
                   />
-                ) : (
-                  <span
-                    className="alpaca-label-delete-slot"
-                    aria-hidden="true"
-                  />
-                )}
-              </SettingsListActionsCell>
-            </SettingsListRow>
-          ))}
+                </SettingsListActionsCell>
+              </SettingsListRow>
+            ))}
+          </SettingsListBody>
+        </SettingsList>
+      )}
 
-          {extraLabels.map((label) => (
-            <SettingsListRow key={label.key}>
-              <SettingsListNameCell>
-                <TextControl
-                  className="alpaca-label-name-input"
-                  __next40pxDefaultSize
-                  __nextHasNoMarginBottom
-                  label=""
-                  value={label.name}
-                  placeholder={__('Label name', 'alpaca-issue-tracker')}
-                  onChange={(value) => updateLabelRow(label.key, 'name', value)}
-                  onBlur={() => saveLabelDraft(label)}
-                  disabled={isFetching || isSaving}
-                />
-              </SettingsListNameCell>
-              <SettingsListActionsCell className="alpaca-label-color-cell">
-                {renderColorControl(label, (value) => {
-                  updateLabelRow(label.key, 'color', value);
-                  saveLabelDraft({
-                    ...label,
-                    color: value,
-                  });
-                })}
-              </SettingsListActionsCell>
-              <SettingsListActionsCell className="alpaca-label-delete-cell">
-                <Button
-                  icon="trash"
-                  className="alpaca-settings-table-delete"
-                  label={__('Delete label', 'alpaca-issue-tracker')}
-                  showTooltip
-                  isDestructive
-                  onClick={() => removeLabelRow(label)}
-                  disabled={isFetching || isSaving}
-                />
-              </SettingsListActionsCell>
-            </SettingsListRow>
-          ))}
-        </SettingsListBody>
-      </SettingsList>
+      {!isInitialFetch && (
+        <div className="alpaca-labels-actions">
+          <Button
+            variant="primary"
+            onClick={addNewLabel}
+            disabled={isFetching || isSaving}
+          >
+            {__('New Label', 'alpaca-issue-tracker')}
+          </Button>
 
-      <div className="alpaca-labels-actions">
-        <Button
-          variant="primary"
-          onClick={addNewLabel}
-          disabled={isFetching || isSaving}
-        >
-          {__('New Label', 'alpaca-issue-tracker')}
-        </Button>
-
-        {(isFetching || isSaving) && <Spinner />}
-      </div>
+          {(isFetching || isSaving) && <Spinner />}
+        </div>
+      )}
     </div>
   );
 };

@@ -4,13 +4,14 @@ import EnableContextCaptureControl from './components/EnableContextCaptureContro
 import LabelsManager from './components/LabelsManager';
 import RestoreManager from './components/RestoreManager';
 import ItemDatapointsManager from './components/ItemDatapointsManager';
-const { useState, useEffect, useCallback, useMemo } = wp.element;
+const { useState, useEffect, useCallback, useMemo, useRef } = wp.element;
 const { __ } = wp.i18n;
 const { applyFilters } = wp.hooks;
 const { TabPanel } = wp.components;
 
 const SETTINGS_TABS_FILTER = 'alpaca.settings.tabs';
 const SETTINGS_TAB_CONTENT_FILTER = 'alpaca.settings.tabContent';
+const SETTINGS_TAB_RENDER_DELAY_MS = 100;
 
 /*
  * Third-party tab extension example:
@@ -169,6 +170,48 @@ const AlpacaSettings = () => {
   const [currentStatuses, setCurrentStatuses] = useState([]); // Track current order
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const settingsTabsRef = useRef(null);
+
+  useEffect(() => {
+    const tabsElement = settingsTabsRef.current;
+
+    if (!tabsElement || typeof document.startViewTransition !== 'function') {
+      return undefined;
+    }
+
+    const handleTabClick = (event) => {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        return;
+      }
+
+      const target = event.target;
+      const tab =
+        target instanceof Element
+          ? target.closest('.components-tab-panel__tabs-item')
+          : null;
+
+      if (!tab || tab.classList.contains('is-active')) {
+        return;
+      }
+
+      try {
+        document.startViewTransition(
+          () =>
+            new Promise((resolve) => {
+              window.setTimeout(resolve, SETTINGS_TAB_RENDER_DELAY_MS);
+            }),
+        );
+      } catch (transitionError) {
+        void transitionError;
+      }
+    };
+
+    tabsElement.addEventListener('click', handleTabClick, true);
+
+    return () => {
+      tabsElement.removeEventListener('click', handleTabClick, true);
+    };
+  }, []);
 
   const fetchStatuses = useCallback((options = {}) => {
     const { silent = false } = options;
@@ -212,6 +255,7 @@ const AlpacaSettings = () => {
   return (
     <div className="alpaca-settings-wrap">
       <TabPanel
+        ref={settingsTabsRef}
         className="alpaca-notifications-tabs alpaca-settings-tabs"
         activeClass="is-active"
         tabs={settingsTabs}
