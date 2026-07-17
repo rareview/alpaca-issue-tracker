@@ -10,7 +10,7 @@ import Time from '../components/Time';
  * @param {Object}           itemProps       Props passed to the Item component.
  * @return {JSX.Element|null} Last activity markup or original content.
  */
-export const addLastCommentActivityDatapoint = (originalContent, itemProps) => {
+const addLastCommentActivityDatapoint = (originalContent, itemProps) => {
   const { meta } = itemProps;
   const lastActivityDateString = meta?.lastActivity;
 

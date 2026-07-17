@@ -37,8 +37,6 @@ export function serializeElementAttributes(el) {
   };
 }
 
-export default serializeElementAttributes;
-
 /**
  * Combine descriptor classes with base classes and return a space-separated
  * class string suitable for `className`.

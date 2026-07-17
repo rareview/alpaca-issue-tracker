@@ -517,3 +517,70 @@ window.alpaca.itemDatapoints.register({
 | Parameter     | Type     | Description                             |
 | ------------- | -------- | --------------------------------------- |
 | `$visibility` | `Object` | Visibility map keyed by datapoint slug. |
+
+## Browser Services API
+
+The board application exposes selected REST helpers on `window.alpaca.services` for third-party admin scripts running on the same page. These helpers use Alpaca's REST root middleware and the current user's WordPress session (including REST nonce handling when applicable).
+
+### `window.alpaca.services.userApi.fetchAllAssignees()`
+
+**Type:** Browser API.
+
+**Purpose:** Returns assignable users formatted for board UI consumption (id, displayName, slug, avatar).
+
+**Parameters:** This method does not accept any parameters.
+
+**Returns:** `Promise<Array<Object>>` User summaries.
+
+### `window.alpaca.services.issueApi.fetchIssue()`
+
+**Type:** Browser API.
+
+**Purpose:** Loads full issue details from `GET /alpaca/v1/get/{id}`.
+
+**Parameters**
+
+| Parameter | Type               | Description |
+| --------- | ------------------ | ----------- |
+| `$id`     | `number`\|`string` | Issue ID.   |
+
+### `window.alpaca.services.issueApi.updateIssue()`
+
+**Type:** Browser API.
+
+**Purpose:** Updates an issue via `POST /alpaca/v1/update/{id}`.
+
+**Parameters**
+
+| Parameter | Type               | Description        |
+| --------- | ------------------ | ------------------ |
+| `$id`     | `number`\|`string` | Issue ID.          |
+| `$data`   | `Object`           | Update payload.    |
+
+### `window.alpaca.services.issueApi.fetchStatuses()`
+
+**Type:** Browser API.
+
+**Purpose:** Loads board status terms from `GET /alpaca/v1/statuses`.
+
+**Parameters:** This method does not accept any parameters.
+
+### `window.alpaca.services.issueApi.fetchUsers()`
+
+**Type:** Browser API.
+
+**Purpose:** Loads assignable users from `GET /alpaca/v1/users`.
+
+**Parameters:** This method does not accept any parameters.
+
+### `window.alpaca.services.issueApi.fetchIssueCommentCount()`
+
+**Type:** Browser API.
+
+**Purpose:** Loads comment count and last activity metadata from `GET /alpaca/v1/comment-count/{id}`.
+
+**Parameters**
+
+| Parameter | Type               | Description |
+| --------- | ------------------ | ----------- |
+| `$id`     | `number`\|`string` | Issue ID.   |

@@ -10,7 +10,7 @@ import { parseWpDateValue } from '../utils/date';
  * @param {Object}           itemProps       Props passed to the Item component.
  * @return {JSX.Element|null} Deadline markup or original content.
  */
-export const addDeadlineDatapoint = (originalContent, itemProps) => {
+const addDeadlineDatapoint = (originalContent, itemProps) => {
   const { meta } = itemProps;
   let deadline = null;
 

@@ -417,13 +417,4 @@ final class AlpacaIssueTracker {
 
 		return $sanitized;
 	}
-
-	/**
-	 * Get plugin version.
-	 *
-	 * @return string
-	 */
-	public function get_version() {
-		return self::VERSION;
-	}
 }

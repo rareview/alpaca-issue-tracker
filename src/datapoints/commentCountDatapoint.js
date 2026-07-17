@@ -125,7 +125,7 @@ const getCommentCountForDatapoint = (itemProps) => {
  * @param {Object}           itemProps       Props passed to the Item component.
  * @return {JSX.Element|null} Comment count markup or original content.
  */
-export const addCommentCountDatapoint = (originalContent, itemProps) => {
+const addCommentCountDatapoint = (originalContent, itemProps) => {
   const commentCount = getCommentCountForDatapoint(itemProps);
 
   if (typeof commentCount !== 'undefined' && commentCount > 0) {

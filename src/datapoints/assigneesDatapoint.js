@@ -9,7 +9,7 @@ import User from '../components/User';
  * @param {Object}           itemProps       Props passed to the Item component.
  * @return {JSX.Element|null} Assignees markup or original content.
  */
-export const addAssigneesDatapoint = (originalContent, itemProps) => {
+const addAssigneesDatapoint = (originalContent, itemProps) => {
   const { assignees } = itemProps;
 
   if (assignees && assignees.length > 0) {
