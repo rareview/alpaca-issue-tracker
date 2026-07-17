@@ -9,7 +9,7 @@ import Icon from '../components/icons/Icon';
  * @param {Object}           itemProps       Props passed to the Item component.
  * @return {JSX.Element|null} Priority badge markup or original content.
  */
-export const addPriorityDatapoint = (originalContent, itemProps) => {
+const addPriorityDatapoint = (originalContent, itemProps) => {
   const { meta } = itemProps;
 
   if (

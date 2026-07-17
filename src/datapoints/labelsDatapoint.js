@@ -10,7 +10,7 @@ import { normalizeLabelColor } from '../utils/labelColor';
  * @param {Object}           itemProps       Props passed to the Item component.
  * @return {JSX.Element|null} Labels markup or original content.
  */
-export const addLabelsDatapoint = (originalContent, itemProps) => {
+const addLabelsDatapoint = (originalContent, itemProps) => {
   const { labels } = itemProps;
 
   if (!Array.isArray(labels) || labels.length < 1) {

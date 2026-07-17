@@ -9,7 +9,7 @@ import Icon from '../components/icons/Icon';
  * @param {Object}           itemProps       Props passed to the Item component.
  * @return {JSX.Element|null} Checklist progress markup or original content.
  */
-export const addChecklistProgressDatapoint = (originalContent, itemProps) => {
+const addChecklistProgressDatapoint = (originalContent, itemProps) => {
   const subissueProgress = itemProps?.meta?.subissue_progress;
   const subissueTotal = Number(subissueProgress?.total);
   const subissueCompleted = Number(subissueProgress?.completed);

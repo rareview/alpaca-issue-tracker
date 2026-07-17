@@ -14,11 +14,6 @@ export async function getUser(id = 'me') {
   return user;
 }
 
-export async function getUsers(ids) {
-  const users = await Promise.all(ids.map(getUser));
-  return users;
-}
-
 export const useUser = (user) => {
   const [userData, setUserData] = useState(
     typeof user === 'object' ? user : null,

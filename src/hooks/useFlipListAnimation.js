@@ -15,7 +15,7 @@ import {
  * @param {string}        easing     Transition easing value.
  * @return {Object} Hook API.
  */
-export function useFlipListAnimation(
+function useFlipListAnimation(
   items,
   durationMs = 300,
   easing = 'ease-out',

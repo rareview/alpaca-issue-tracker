@@ -226,5 +226,4 @@ Icon.propTypes = {
   name: PropTypes.oneOf(iconNames).isRequired,
 };
 
-export { iconNames };
 export default Icon;
