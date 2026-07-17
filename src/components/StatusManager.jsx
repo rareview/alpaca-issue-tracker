@@ -54,8 +54,12 @@ const StatusManager = ({
   // Scores are sequential starting from 0 for the first status
   const recalculateScores = async (statusesArray) => {
     try {
+      const persistedStatuses = statusesArray.filter(
+        (status) => Number.isInteger(status.term_id) && status.term_id > 0,
+      );
+
       // Calculate scores based on position: first = 0, second = 1, etc.
-      const scoreUpdates = statusesArray.map((status, index) => ({
+      const scoreUpdates = persistedStatuses.map((status, index) => ({
         id: status.term_id,
         score: index,
       }));
@@ -274,6 +278,16 @@ const StatusManager = ({
   };
 
   const handleRename = (id, newName) => {
+    const previousStatus = localStatuses.find(
+      (status) => status.term_id === id,
+    );
+
+    if (!previousStatus) {
+      return;
+    }
+
+    const previousName = previousStatus.name;
+
     setLocalStatuses((previousStatuses) =>
       previousStatuses.map((status) =>
         status.term_id === id ? { ...status, name: newName } : status,
@@ -289,6 +303,13 @@ const StatusManager = ({
       .catch((err) => {
         // eslint-disable-next-line no-console
         console.error('Error renaming status:', err);
+        setLocalStatuses((previousStatuses) =>
+          previousStatuses.map((status) =>
+            status.term_id === id && status.name === newName
+              ? { ...status, name: previousName }
+              : status,
+          ),
+        );
       });
   };
 

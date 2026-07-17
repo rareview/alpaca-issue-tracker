@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-06-15T22:14:40+00:00\n"
+"POT-Creation-Date: 2026-07-17T13:50:18+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: alpaca-issue-tracker\n"
@@ -40,7 +40,7 @@ msgstr ""
 msgid "https://rareview.com/"
 msgstr ""
 
-#: includes/admin/admin-bar.php:83
+#: includes/admin/admin-bar.php:78
 #: src/Toolbar.jsx:269
 #: src/Toolbar.jsx:286
 msgid "Report An Issue"
@@ -557,7 +557,7 @@ msgid "Failed to load updated label."
 msgstr ""
 
 #: includes/api/endpoints/users-labels-watchlist.php:384
-#: src/components/LabelsManager.jsx:381
+#: src/components/LabelsManager.jsx:390
 msgid "Failed to delete label."
 msgstr ""
 
@@ -704,11 +704,11 @@ msgstr ""
 #: includes/core/posttypes-and-taxonomies.php:106
 #: src/components/BoardFilterControl.jsx:328
 #: src/components/Issue.jsx:115
-#: src/components/LabelsManager.jsx:450
+#: src/components/LabelsManager.jsx:483
 #: src/components/RestoreManager.jsx:319
 #: src/datapoints/labelsDatapoint.js:23
 #: src/datapoints/labelsDatapoint.js:46
-#: src/Settings.jsx:57
+#: src/Settings.jsx:58
 msgid "Labels"
 msgstr ""
 
@@ -1251,8 +1251,8 @@ msgstr ""
 #: src/components/Issue.jsx:2499
 #: src/components/Issue.jsx:2610
 #: src/components/issue/AttachmentRow.jsx:166
-#: src/components/StatusManager.jsx:557
-#: src/components/StatusManager.jsx:672
+#: src/components/settings/SettingsList.jsx:329
+#: src/components/StatusManager.jsx:681
 msgid "Delete"
 msgstr ""
 
@@ -1267,7 +1267,7 @@ msgstr ""
 #: src/components/CommentForm.jsx:500
 #: src/components/Issue.jsx:2614
 #: src/components/issue/AttachmentRow.jsx:169
-#: src/components/StatusManager.jsx:560
+#: src/components/settings/SettingsList.jsx:332
 #: src/Modal.jsx:259
 #: src/Toolbar.jsx:341
 msgid "Cancel"
@@ -1620,7 +1620,7 @@ msgid "Failed to load statuses."
 msgstr ""
 
 #: src/components/Issue.jsx:751
-#: src/components/LabelsManager.jsx:90
+#: src/components/LabelsManager.jsx:99
 msgid "Failed to load labels."
 msgstr ""
 
@@ -1877,34 +1877,42 @@ msgstr ""
 msgid "No item datapoints are currently registered."
 msgstr ""
 
-#: src/components/LabelsManager.jsx:332
+#: src/components/LabelsManager.jsx:341
 msgid "Failed to save label."
 msgstr ""
 
-#: src/components/LabelsManager.jsx:439
+#: src/components/LabelsManager.jsx:465
 msgid "Color picker unavailable."
 msgstr ""
 
-#: src/components/LabelsManager.jsx:453
+#: src/components/LabelsManager.jsx:486
 msgid "Create and maintain labels to categorize and filter your issues."
 msgstr ""
 
-#: src/components/LabelsManager.jsx:477
-msgid "Name"
-msgstr ""
-
-#: src/components/LabelsManager.jsx:481
-#: src/components/LabelsManager.jsx:526
-msgid "Label name"
-msgstr ""
-
-#: src/components/LabelsManager.jsx:501
-#: src/components/LabelsManager.jsx:545
+#: src/components/LabelsManager.jsx:512
+#: src/components/LabelsManager.jsx:574
 msgid "Delete label"
 msgstr ""
 
-#: src/components/LabelsManager.jsx:563
+#: src/components/LabelsManager.jsx:536
+#: src/components/StatusManager.jsx:714
+msgid "Name"
+msgstr ""
+
+#: src/components/LabelsManager.jsx:540
+msgid "Label name"
+msgstr ""
+
+#: src/components/LabelsManager.jsx:600
 msgid "New Label"
+msgstr ""
+
+#: src/components/LabelsManager.jsx:609
+msgid "Delete Label?"
+msgstr ""
+
+#: src/components/LabelsManager.jsx:610
+msgid "Are you sure you want to delete the label"
 msgstr ""
 
 #: src/components/NotificationPreferences.jsx:42
@@ -2308,6 +2316,14 @@ msgstr ""
 msgid "Last"
 msgstr ""
 
+#: src/components/settings/SettingsList.jsx:186
+msgid "Edit name"
+msgstr ""
+
+#: src/components/settings/SettingsList.jsx:325
+msgid "This cannot be undone."
+msgstr ""
+
 #: src/components/StarControl.jsx:32
 #: src/components/StarControl.jsx:37
 msgid "Remove from Watchlist"
@@ -2318,40 +2334,36 @@ msgstr ""
 msgid "Add to Watchlist"
 msgstr ""
 
-#: src/components/StatusManager.jsx:370
-msgid "Enter the name for the new status:"
-msgstr ""
-
-#: src/components/StatusManager.jsx:397
+#: src/components/StatusManager.jsx:435
 msgid "Error:"
 msgstr ""
 
-#: src/components/StatusManager.jsx:404
+#: src/components/StatusManager.jsx:442
 msgid "Status Manager"
 msgstr ""
 
-#: src/components/StatusManager.jsx:407
+#: src/components/StatusManager.jsx:445
 msgid "Create and organize statuses. Drag rows to control their order across the board."
 msgstr ""
 
-#: src/components/StatusManager.jsx:536
+#: src/components/StatusManager.jsx:586
 msgid "New Status"
 msgstr ""
 
-#: src/components/StatusManager.jsx:542
+#: src/components/StatusManager.jsx:592
 msgid "Delete Status?"
 msgstr ""
 
-#: src/components/StatusManager.jsx:547
+#: src/components/StatusManager.jsx:593
 msgid "Are you sure you want to delete the status"
 msgstr ""
 
-#: src/components/StatusManager.jsx:553
-msgid "This cannot be undone."
+#: src/components/StatusManager.jsx:690
+msgid "Drag to reorder"
 msgstr ""
 
-#: src/components/StatusManager.jsx:641
-msgid "Drag to reorder"
+#: src/components/StatusManager.jsx:716
+msgid "Status name"
 msgstr ""
 
 #: src/components/Time.jsx:56
@@ -2432,19 +2444,19 @@ msgstr ""
 msgid "Submit"
 msgstr ""
 
-#: src/Settings.jsx:47
+#: src/Settings.jsx:48
 msgid "Statuses"
 msgstr ""
 
-#: src/Settings.jsx:52
+#: src/Settings.jsx:53
 msgid "Cards"
 msgstr ""
 
-#: src/Settings.jsx:62
+#: src/Settings.jsx:63
 msgid "Deleted Items"
 msgstr ""
 
-#: src/Settings.jsx:69
+#: src/Settings.jsx:70
 msgid "Settings"
 msgstr ""
 
