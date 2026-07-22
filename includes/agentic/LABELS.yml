@@ -1,0 +1,36 @@
+- color: 0E8A16
+  description: Issue is properly scoped for AI agent execution
+  name: agent-ready
+- color: 1D76DB
+  description: PR was created by an AI agent
+  name: agent-generated
+- color: 7057FF
+  description: Issue has been evaluated as an agent candidate by the screener
+  name: agent-candidate
+- color: FBCA04
+  description: Requires agent planning phase before execution
+  name: needs-planning
+- color: C5DEF5
+  description: Single file change, clear pattern to follow
+  name: 'complexity:low'
+- color: BFD4F2
+  description: Multiple files, follows established patterns
+  name: 'complexity:medium'
+- color: 0052CC
+  description: Architectural decisions required, needs planning
+  name: 'complexity:high'
+- color: D93F0B
+  description: Something isn't working
+  name: bug
+- color: 0075CA
+  description: New feature or request
+  name: enhancement
+- color: E4E669
+  description: Needs more information before actioning
+  name: 'status:needs-info'
+- color: EDEDED
+  description: This will not be worked on
+  name: wontfix
+- color: F9D0C4
+  description: Blocked by another issue or external dependency
+  name: blocked
