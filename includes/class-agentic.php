@@ -141,8 +141,8 @@ class Agentic {
 	}
 
 	/**
-	 * Whether the current user may use the AI Issue Fixer: 
-     * 1. administrators always can,
+	 * Whether the current user may use the AI Issue Fixer:
+	 * 1. administrators always can,
 	 * 2. plus anyone explicitly added to the engineers allowlist.
 	 */
 	public static function current_user_can_use(): bool {
