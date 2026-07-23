@@ -37,7 +37,8 @@
 
   // ── Config ──────────────────────────────────────────────────────────────────
 
-  const { restBase, nonce, setupCompleted } = window.agenticConfig || {};
+  const { restBase, nonce, setupCompleted, isAuthorized } =
+    window.agenticConfig || {};
 
   const ALLOWED_LABELS = [
     { value: 'bug', label: __('bug', 'alpaca-issue-tracker') },
@@ -454,7 +455,9 @@
     'alpaca.issue.abovetabs',
     'alpaca-issue-tracker/agentic-issue-button',
     (_current, { issueId }) => {
-      if (!setupCompleted) {
+      // Setup must be complete, and the current user must be an admin or an
+      // approved engineer — everyone else never sees this button.
+      if (!setupCompleted || !isAuthorized) {
         return _current;
       }
 

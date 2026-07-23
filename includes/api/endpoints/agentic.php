@@ -29,7 +29,7 @@ function alpaistr_register_agentic_endpoints(): void {
 		[
 			'methods'             => WP_REST_Server::CREATABLE, // Method: post.
 			'callback'            => 'alpaistr_agentic_draft_callback',
-			'permission_callback' => 'alpaistr_agentic_manage_options_permission_check',
+			'permission_callback' => 'alpaistr_agentic_can_use_permission_check',
 			'args'                => [
 				'issue_id' => [
 					'required'          => true,
@@ -47,7 +47,7 @@ function alpaistr_register_agentic_endpoints(): void {
 		[
 			'methods'             => WP_REST_Server::CREATABLE, // Method: post.
 			'callback'            => 'alpaistr_agentic_create_callback',
-			'permission_callback' => 'alpaistr_agentic_manage_options_permission_check',
+			'permission_callback' => 'alpaistr_agentic_can_use_permission_check',
 			'args'                => [
 				'issue_id' => [
 					'required'          => true,
@@ -112,7 +112,8 @@ function alpaistr_register_agentic_endpoints(): void {
 			[
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ Agentic::class, 'get_wizard_settings' ],
-				'permission_callback' => 'alpaistr_agentic_manage_options_permission_check',
+				// Engineers can view settings status (read-only); only admins can save (see below).
+				'permission_callback' => 'alpaistr_agentic_can_use_permission_check',
 			],
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
@@ -124,7 +125,8 @@ function alpaistr_register_agentic_endpoints(): void {
 }
 
 /**
- * Only allow logged-in users who can manage options (engineers).
+ * Only allow logged-in administrators. Used for anything that changes settings
+ * or exposes/rotates credentials (save settings, test connection, install workflow).
  */
 function alpaistr_agentic_manage_options_permission_check(): bool|WP_Error {
 	if ( ! is_user_logged_in() ) {
@@ -132,6 +134,20 @@ function alpaistr_agentic_manage_options_permission_check(): bool|WP_Error {
 	}
 	if ( ! current_user_can( 'manage_options' ) ) {
 		return new WP_Error( 'rest_forbidden', esc_html__( 'Insufficient permissions.', 'alpaca-issue-tracker' ), [ 'status' => 403 ] );
+	}
+	return true;
+}
+
+/**
+ * Allow logged-in administrators and users on the engineers allowlist to use the
+ * AI Issue Fixer (draft/create a GitHub issue, view setup status).
+ */
+function alpaistr_agentic_can_use_permission_check(): bool|WP_Error {
+	if ( ! is_user_logged_in() ) {
+		return new WP_Error( 'rest_forbidden', esc_html__( 'Authentication required.', 'alpaca-issue-tracker' ), [ 'status' => 401 ] );
+	}
+	if ( ! Agentic::current_user_can_use() ) {
+		return new WP_Error( 'rest_forbidden', esc_html__( 'The AI Issue Fixer is only available to administrators and users granted engineer access.', 'alpaca-issue-tracker' ), [ 'status' => 403 ] );
 	}
 	return true;
 }

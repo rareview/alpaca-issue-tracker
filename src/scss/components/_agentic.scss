@@ -300,9 +300,20 @@
   margin-block-end: 4px;
 }
 
-.agentic-wizard-subtitle {
+.agentic-wizard-tagline {
+  margin: 0 0 24px;
   color: #757575;
-  margin-block-end: 24px;
+}
+
+.agentic-wizard-footnote {
+  margin: 16px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #757575;
+}
+
+.agentic-wizard-footnote sup {
+  margin-inline-end: 2px;
 }
 
 .agentic-help-tip {

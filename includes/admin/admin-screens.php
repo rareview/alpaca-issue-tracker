@@ -62,7 +62,8 @@ add_action(
 			'project-board',
 			esc_html__( 'AI Issue Resolver', 'alpaca-issue-tracker' ),
 			esc_html__( 'AI Issue Resolver', 'alpaca-issue-tracker' ),
-			'manage_options',
+			// Visible to all staff, but the React screen renders a locked/read-only view for users who are not admins or on the engineers allowlist.
+			'edit_posts',
 			'alpaca-ai-issue-resolver',
 			'alpaistr_ai_issue_resolver_page'
 		);

@@ -113,7 +113,40 @@ class Agentic {
 					array_map( 'absint', (array) ( $raw['setup_checklist'] ?? [] ) )
 				)
 			),
+			// User IDs allowed to use the AI Issue Fixer besides administrators (who always have access).
+			'engineers'       => array_key_exists( 'engineers', $raw )
+				? array_values( array_unique( array_map( 'absint', (array) $raw['engineers'] ) ) )
+				: array_values( array_unique( array_map( 'absint', (array) ( $current_settings['engineers'] ?? [] ) ) ) ),
 		];
+	}
+
+	/**
+	 * Get the IDs of users explicitly granted AI Issue Fixer access (besides administrators).
+	 *
+	 * @return int[] User IDs.
+	 */
+	public static function get_engineer_ids(): array {
+		$options = get_option( self::OPTION_KEY, [] );
+		if ( ! is_array( $options ) ) {
+			return [];
+		}
+		return array_map( 'absint', (array) ( $options['engineers'] ?? [] ) );
+	}
+
+	/**
+	 * Whether the current user is on the engineers allowlist (regardless of role).
+	 */
+	public static function is_current_user_engineer(): bool {
+		return in_array( get_current_user_id(), self::get_engineer_ids(), true );
+	}
+
+	/**
+	 * Whether the current user may use the AI Issue Fixer: 
+     * 1. administrators always can,
+	 * 2. plus anyone explicitly added to the engineers allowlist.
+	 */
+	public static function current_user_can_use(): bool {
+		return current_user_can( 'manage_options' ) || self::is_current_user_engineer();
 	}
 
 	/**
@@ -140,6 +173,7 @@ class Agentic {
 		$github_repo                = $options['github_repo'] ?? '';
 		$pr_url                     = (string) get_option( 'alpaistr_agentic_workflow_pr_url', '' );
 		$workflow_installed         = ! empty( $pr_url ) || (bool) get_transient( 'alpaistr_agentic_workflow_installed' );
+		$is_admin                   = current_user_can( 'manage_options' );
 
 		return [
 			'enabled'                    => ! empty( $options['enabled'] ),
@@ -156,6 +190,11 @@ class Agentic {
 			'workflow_installed'         => (bool) $workflow_installed,
 			'repo_actions_url'           => $github_repo ? 'https://github.com/' . $github_repo . '/actions' : '',
 			'repo_secrets_url'           => $github_repo ? 'https://github.com/' . $github_repo . '/settings/secrets/actions' : '',
+			// Access control: administrators can always edit; engineers get a read-only view.
+			'engineers'                  => self::get_engineer_ids(),
+			'is_admin'                   => $is_admin,
+			'is_engineer'                => self::is_current_user_engineer(),
+			'can_edit'                   => $is_admin, // only admins can edit settings.
 		];
 	}
 
@@ -184,6 +223,8 @@ class Agentic {
 				'restBase'       => esc_url_raw( rest_url( 'alpaca/v1/agentic' ) ),
 				'nonce'          => wp_create_nonce( 'wp_rest' ),
 				'setupCompleted' => $this->is_setup_completed(),
+				// Only administrators and users on the engineers allowlist may send issues to the AI agent.
+				'isAuthorized'   => self::current_user_can_use(),
 			]
 		);
 	}

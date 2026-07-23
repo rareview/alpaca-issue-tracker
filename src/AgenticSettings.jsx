@@ -4,17 +4,19 @@
  * Mounted on #alpaca-ai-issue-resolver-page.
  */
 import PropTypes from 'prop-types';
+import useUserManagement from './hooks/useUserManagement';
 
 const { useState, useEffect, useCallback, useMemo } = wp.element;
 const { __ } = wp.i18n;
-const { Spinner } = wp.components;
+const { Spinner, Notice, FormTokenField } = wp.components;
 
 const REST_PATH = '/alpaca/v1/agentic';
 
 const STEP_LABELS = {
   1: __('Enable', 'alpaca-issue-tracker'),
-  2: __('Setup GitHub', 'alpaca-issue-tracker'),
-  3: __('Finish Setup', 'alpaca-issue-tracker'),
+  2: __('Add Users', 'alpaca-issue-tracker'),
+  3: __('Setup GitHub', 'alpaca-issue-tracker'),
+  4: __('Finish Setup', 'alpaca-issue-tracker'),
 };
 
 const emptyForm = () => ({
@@ -24,6 +26,7 @@ const emptyForm = () => ({
   githubRepo: '',
   githubToken: '',
   setupChecklist: [],
+  engineers: [],
 });
 
 /**
@@ -71,11 +74,13 @@ const getStepStates = (data) => {
 
   return {
     1: { done: enabled, locked: false },
-    2: {
+    // Optional step: unlocked once enabled; does not block later setup steps.
+    2: { done: enabled, locked: !enabled },
+    3: {
       done: enabled && githubConfigured && workflowInstalled,
       locked: !enabled,
     },
-    3: {
+    4: {
       done:
         enabled && githubConfigured && workflowInstalled && checklistCount >= 2,
       locked: !(enabled && githubConfigured && workflowInstalled),
@@ -88,12 +93,12 @@ const getStepStates = (data) => {
  * @return {number} First incomplete unlocked step.
  */
 const getActiveStep = (stepStates) => {
-  for (const step of [1, 2, 3]) {
+  for (const step of [1, 2, 3, 4]) {
     if (!stepStates[step].done && !stepStates[step].locked) {
       return step;
     }
   }
-  return 3;
+  return 4;
 };
 
 /**
@@ -122,6 +127,66 @@ RepoInstallMessage.propTypes = {
 };
 
 /**
+ * @param {Object}   props                Component props.
+ * @param {number[]} props.engineerIds    Currently selected user IDs.
+ * @param {Object[]} props.allUserObjects Available users (id, name, slug, avatar).
+ * @param {Function} props.onChange       Called with the new array of user IDs.
+ * @return {JSX.Element} Autosuggest control for the engineers allowlist.
+ */
+const EngineersField = ({ engineerIds, allUserObjects, onChange }) => {
+  const usersById = useMemo(() => {
+    const map = new Map();
+    (allUserObjects || []).forEach((userObject) => map.set(userObject.id, userObject));
+    return map;
+  }, [allUserObjects]);
+
+  const usersByToken = useMemo(() => {
+    const map = new Map();
+    (allUserObjects || []).forEach((userObject) => {
+      map.set(userObject.name, userObject);
+      map.set(userObject.slug, userObject);
+    });
+    return map;
+  }, [allUserObjects]);
+
+  const tokens = useMemo(
+    () =>
+      engineerIds
+        .map((id) => usersById.get(id)?.name)
+        .filter((name) => !!name),
+    [engineerIds, usersById],
+  );
+
+  const handleChange = useCallback(
+    (newTokens) => {
+      const ids = newTokens
+        .map((token) => usersByToken.get(token)?.id)
+        .filter((id) => !!id);
+      onChange([...new Set(ids)]);
+    },
+    [usersByToken, onChange],
+  );
+
+  return (
+    <FormTokenField
+      label=""
+      placeholder={__('Start typing a username…', 'alpaca-issue-tracker')}
+      value={tokens}
+      suggestions={(allUserObjects || []).map((userObject) => userObject.name)}
+      onChange={handleChange}
+      __nextHasNoMarginBottom
+      __next40pxDefaultSize
+    />
+  );
+};
+
+EngineersField.propTypes = {
+  engineerIds: PropTypes.arrayOf(PropTypes.number).isRequired,
+  allUserObjects: PropTypes.array.isRequired,
+  onChange: PropTypes.func.isRequired,
+};
+
+/**
  * AI Issue Resolver admin screen.
  *
  * @return {JSX.Element} Wizard screen.
@@ -131,12 +196,14 @@ const AgenticSettings = () => {
   const [form, setForm] = useState(emptyForm);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [noAccess, setNoAccess] = useState(false);
   const [saving, setSaving] = useState(false);
   const [focusedStep, setFocusedStep] = useState(1);
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState(null);
   const [installing, setInstalling] = useState(false);
   const [installError, setInstallError] = useState('');
+  const { allUserObjects } = useUserManagement();
 
   const applySettings = useCallback((payload, advanceToActive = false) => {
     setData(payload);
@@ -149,9 +216,14 @@ const AgenticSettings = () => {
       setupChecklist: Array.isArray(payload.setup_checklist)
         ? payload.setup_checklist.map(Number)
         : [],
+      engineers: Array.isArray(payload.engineers)
+        ? payload.engineers.map(Number)
+        : [],
     });
-    if (advanceToActive) {
+    if (true === advanceToActive) {
       setFocusedStep(getActiveStep(getStepStates(payload)));
+    } else if ('number' === typeof advanceToActive) {
+      setFocusedStep(advanceToActive);
     }
   }, []);
 
@@ -166,10 +238,14 @@ const AgenticSettings = () => {
       })
       .catch((err) => {
         if (!cancelled) {
-          setError(
-            err?.message ||
-              __('Failed to load settings.', 'alpaca-issue-tracker'),
-          );
+          if (403 === err?.data?.status) {
+            setNoAccess(true);
+          } else {
+            setError(
+              err?.message ||
+                __('Failed to load settings.', 'alpaca-issue-tracker'),
+            );
+          }
         }
       })
       .finally(() => {
@@ -190,13 +266,17 @@ const AgenticSettings = () => {
             1: { done: false, locked: false },
             2: { done: false, locked: true },
             3: { done: false, locked: true },
+            4: { done: false, locked: true },
           },
     [data],
   );
 
   // !! to make sure it's a boolean, and avoid undefined values.
   const allDone =
-    !!stepStates[1]?.done && !!stepStates[2]?.done && !!stepStates[3]?.done;
+    !!stepStates[1]?.done &&
+    !!stepStates[2]?.done &&
+    !!stepStates[3]?.done &&
+    !!stepStates[4]?.done;
 
   const updateForm = useCallback((patch) => {
     setForm((existing) => ({ ...existing, ...patch }));
@@ -210,6 +290,7 @@ const AgenticSettings = () => {
       ai_provider: form.aiProvider || 'claude',
       github_repo: form.githubRepo || '',
       setup_checklist: form.setupChecklist,
+      engineers: form.engineers,
       // Incomplete: preserve existing value on save; no wizard field to edit project_context yet.
       project_context: data?.project_context || '',
     };
@@ -289,7 +370,7 @@ const AgenticSettings = () => {
       if (result?.pr_url || result?.already_installed) {
         const payload = await wp.apiFetch({ path: `${REST_PATH}/settings` });
         applySettings(payload, false);
-        setFocusedStep(3);
+        setFocusedStep(4);
         return;
       }
       setInstallError(
@@ -318,10 +399,30 @@ const AgenticSettings = () => {
     });
   }, []);
 
+  const handleEngineersChange = useCallback((ids) => {
+    updateForm({ engineers: ids });
+  }, [updateForm]);
+
   if (loading) {
     return (
       <div className="agentic-wizard-loading">
         <Spinner />
+      </div>
+    );
+  }
+
+  if (noAccess) {
+    return (
+      <div className="agentic-wizard-inner">
+        <h1 className="agentic-wizard-title">
+          {__('AI Issue Resolver', 'alpaca-issue-tracker')}
+        </h1>
+        <Notice status="warning" isDismissible={false}>
+          {__(
+            'The AI Issue Fixer is only available to administrators and users granted engineer access. Contact your site administrator if you need access.',
+            'alpaca-issue-tracker',
+          )}
+        </Notice>
       </div>
     );
   }
@@ -334,6 +435,7 @@ const AgenticSettings = () => {
     );
   }
 
+  const canEdit = !!data.can_edit;
   const panelLocked = !allDone && !!stepStates[focusedStep]?.locked;
   const githubConfigured =
     !!data.github_repo && !!data.github_token_set && !!data.ai_api_key_set;
@@ -426,19 +528,22 @@ const AgenticSettings = () => {
       <h1 className="agentic-wizard-title">
         {__('AI Issue Resolver', 'alpaca-issue-tracker')}
       </h1>
-      <p className="agentic-wizard-subtitle">
+      <p className="agentic-wizard-tagline">
         {__(
-          'Let the AI agents automatically solve your Alpaca issues',
+          'Let the AI agents automatically solve your Alpaca issues on Github',
           'alpaca-issue-tracker',
-        )}{' '}
-        <HelpTip
-          label={__('More information', 'alpaca-issue-tracker')}
-          tooltip={__(
-            'Connect Alpaca to GitHub and let AI agents automatically create pull requests to resolve your Alpaca issues.',
+        )}
+        <sup aria-hidden="true">*</sup>
+      </p>
+
+      {!canEdit && data.is_engineer ? (
+        <Notice status="info" isDismissible={false}>
+          {__(
+            'You have AI Issue Fixer access and can view setup status below. Only administrators can change these settings.',
             'alpaca-issue-tracker',
           )}
-        />
-      </p>
+        </Notice>
+      ) : null}
 
       {error ? (
         <div className="notice notice-error inline">
@@ -469,7 +574,7 @@ const AgenticSettings = () => {
         className={`agentic-step-indicators${allDone ? ' agentic-indicators-all-done' : ''}`}
         role="tablist"
       >
-        {[1, 2, 3].map((num) => {
+        {[1, 2, 3, 4].map((num) => {
           const state = stepStates[num] || { done: false, locked: true };
           const isDone = allDone || state.done;
           const isActive = num === focusedStep;
@@ -510,8 +615,10 @@ const AgenticSettings = () => {
       >
         {1 === focusedStep ? (
           <fieldset
-            disabled={panelLocked}
-            className={panelLocked ? 'agentic-fieldset-disabled' : undefined}
+            disabled={panelLocked || !canEdit}
+            className={
+              panelLocked || !canEdit ? 'agentic-fieldset-disabled' : undefined
+            }
           >
             <h2 className="agentic-panel-title">
               {__('Enable', 'alpaca-issue-tracker')}
@@ -657,8 +764,8 @@ const AgenticSettings = () => {
               <button
                 type="button"
                 className="button button-primary"
-                disabled={saving || panelLocked}
-                onClick={() => saveSettings(true)}
+                disabled={saving || panelLocked || !canEdit}
+                onClick={() => saveSettings(2)}
               >
                 {saving
                   ? __('Saving…', 'alpaca-issue-tracker')
@@ -670,8 +777,84 @@ const AgenticSettings = () => {
 
         {2 === focusedStep ? (
           <fieldset
-            disabled={panelLocked}
-            className={panelLocked ? 'agentic-fieldset-disabled' : undefined}
+            disabled={panelLocked || !canEdit}
+            className={
+              panelLocked || !canEdit ? 'agentic-fieldset-disabled' : undefined
+            }
+          >
+            <h2 className="agentic-panel-title">
+              {__('Add Users', 'alpaca-issue-tracker')}
+            </h2>
+            {panelLocked ? (
+              <p className="agentic-locked-notice">
+                {__(
+                  'Complete Step 1 to unlock this step.',
+                  'alpaca-issue-tracker',
+                )}
+              </p>
+            ) : null}
+
+            {data.is_admin ? (
+              <>
+                <p className="description">
+                  {__(
+                    'Users added here can send Alpaca issues to the AI agent for resolving on GitHub (see disclaimer below).',
+                    'alpaca-issue-tracker',
+                  )}
+                </p>
+                <EngineersField
+                  engineerIds={form.engineers}
+                  allUserObjects={allUserObjects}
+                  onChange={handleEngineersChange}
+                />
+              </>
+            ) : (
+              <p>
+                {__(
+                  'Only administrators can manage who has access to the AI Issue Fixer.',
+                  'alpaca-issue-tracker',
+                )}
+              </p>
+            )}
+
+            <div className="agentic-step-actions">
+              <button
+                type="button"
+                className="button button-secondary"
+                onClick={() => setFocusedStep(1)}
+              >
+                {__('Back', 'alpaca-issue-tracker')}
+              </button>
+              {data.is_admin ? (
+                <button
+                  type="button"
+                  className="button button-primary"
+                  disabled={saving || panelLocked || !canEdit}
+                  onClick={() => saveSettings(3)}
+                >
+                  {saving
+                    ? __('Saving…', 'alpaca-issue-tracker')
+                    : __('Save & continue', 'alpaca-issue-tracker')}
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="button button-primary"
+                  onClick={() => setFocusedStep(3)}
+                >
+                  {__('Continue', 'alpaca-issue-tracker')}
+                </button>
+              )}
+            </div>
+          </fieldset>
+        ) : null}
+
+        {3 === focusedStep ? (
+          <fieldset
+            disabled={panelLocked || !canEdit}
+            className={
+              panelLocked || !canEdit ? 'agentic-fieldset-disabled' : undefined
+            }
           >
             <h2 className="agentic-panel-title">
               {__('Setup GitHub', 'alpaca-issue-tracker')}
@@ -802,7 +985,7 @@ const AgenticSettings = () => {
               <button
                 type="button"
                 className="button button-secondary"
-                onClick={() => setFocusedStep(1)}
+                onClick={() => setFocusedStep(2)}
               >
                 {__('Back', 'alpaca-issue-tracker')}
               </button>
@@ -938,7 +1121,7 @@ const AgenticSettings = () => {
                       </div>
                       <p className="description">
                         {__(
-                          'GitHub Actions files are already in your repository. Continue to Step 3 to finish setup.',
+                          'GitHub Actions files are already in your repository. Continue to last step to complete setup.',
                           'alpaca-issue-tracker',
                         )}
                       </p>
@@ -948,9 +1131,9 @@ const AgenticSettings = () => {
                     <button
                       type="button"
                       className="button button-primary"
-                      onClick={() => setFocusedStep(3)}
+                      onClick={() => setFocusedStep(4)}
                     >
-                      {__('Continue to Step 3', 'alpaca-issue-tracker')}
+                      {__('Continue to Finish Setup', 'alpaca-issue-tracker')}
                     </button>
                   </div>
                 </>
@@ -985,10 +1168,12 @@ const AgenticSettings = () => {
           </fieldset>
         ) : null}
 
-        {3 === focusedStep ? (
+        {4 === focusedStep ? (
           <fieldset
-            disabled={panelLocked}
-            className={panelLocked ? 'agentic-fieldset-disabled' : undefined}
+            disabled={panelLocked || !canEdit}
+            className={
+              panelLocked || !canEdit ? 'agentic-fieldset-disabled' : undefined
+            }
           >
             <h2 className="agentic-panel-title">
               {__('Finish Setup', 'alpaca-issue-tracker')}
@@ -1035,7 +1220,7 @@ const AgenticSettings = () => {
               <button
                 type="button"
                 className="button button-secondary"
-                onClick={() => setFocusedStep(2)}
+                onClick={() => setFocusedStep(3)}
               >
                 {__('Back', 'alpaca-issue-tracker')}
               </button>
@@ -1068,6 +1253,14 @@ define( 'ALPAISTR_AGENTIC_AI_API_KEY', '...' );`}</pre>
           </fieldset>
         ) : null}
       </div>
+
+      <p className="agentic-wizard-footnote">
+        <sup aria-hidden="true">*</sup>
+        {__(
+          'Only intended for skilled engineers with GitHub access who can review the AI-generated pull requests.',
+          'alpaca-issue-tracker',
+        )}
+      </p>
     </div>
   );
 };
