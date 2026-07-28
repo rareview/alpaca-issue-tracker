@@ -8,7 +8,7 @@ import useUserManagement from './hooks/useUserManagement';
 
 const { useState, useEffect, useCallback, useMemo } = wp.element;
 const { __ } = wp.i18n;
-const { Spinner, Notice, FormTokenField } = wp.components;
+const { Spinner, Notice, FormTokenField, ComboboxControl } = wp.components;
 
 const REST_PATH = '/alpaca/v1/agentic';
 
@@ -27,7 +27,52 @@ const emptyForm = () => ({
   githubToken: '',
   setupChecklist: [],
   engineers: [],
+  // Empty string = None (not mapped to a GitHub branch).
+  branches: {
+    staging: '',
+    production: '',
+  },
 });
+
+const BRANCH_ROLES = [
+  {
+    key: 'staging',
+    label: __('Staging environment', 'alpaca-issue-tracker'),
+  },
+  {
+    key: 'production',
+    label: __('Production environment', 'alpaca-issue-tracker'),
+  },
+];
+
+/**
+ * Build ComboboxControl options: placeholder + repo branch names.
+ *
+ * @param {string[]} repoBranches Branch names from GitHub.
+ * @param {string}   selected     Currently saved value (kept in options even if not in list).
+ * @return {Array<{value: string, label: string}>} Options.
+ */
+const buildBranchOptions = (repoBranches, selected) => {
+  const names = new Set(repoBranches);
+  if (selected) {
+    names.add(selected);
+  }
+
+  const options = [
+    {
+      value: '',
+      label: __('Select a branch…', 'alpaca-issue-tracker'),
+    },
+  ];
+  [...names]
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b))
+    .forEach((name) => {
+      options.push({ value: name, label: name });
+    });
+
+  return options;
+};
 
 /**
  * @param {Object}  props         Component props.
@@ -201,12 +246,16 @@ const AgenticSettings = () => {
   const [focusedStep, setFocusedStep] = useState(1);
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState(null);
+  const [branchSaveStatus, setBranchSaveStatus] = useState('idle'); // Save in progress.
+  const [setupCompletedStatus, setSetupCompletedStatus] = useState('idle'); // Saved.
   const [installing, setInstalling] = useState(false);
   const [installError, setInstallError] = useState('');
+  const [repoBranches, setRepoBranches] = useState([]);
   const { allUserObjects } = useUserManagement();
 
   const applySettings = useCallback((payload, advanceToActive = false) => {
     setData(payload);
+    const savedBranches = payload.branches || {};
     setForm({
       enabled: !!payload.enabled,
       aiProvider: payload.ai_provider || 'claude',
@@ -219,6 +268,10 @@ const AgenticSettings = () => {
       engineers: Array.isArray(payload.engineers)
         ? payload.engineers.map(Number)
         : [],
+      branches: {
+        staging: savedBranches.staging || '',
+        production: savedBranches.production || '',
+      },
     });
     if (true === advanceToActive) {
       setFocusedStep(getActiveStep(getStepStates(payload)));
@@ -278,6 +331,10 @@ const AgenticSettings = () => {
     !!stepStates[3]?.done &&
     !!stepStates[4]?.done;
 
+  // Branch fields unlock only after a successful connection test + branch fetch.
+  const canManageBranches =
+    'agentic-result-success' === testResult?.className;
+
   const updateForm = useCallback((patch) => {
     setForm((existing) => ({ ...existing, ...patch }));
   }, []);
@@ -291,6 +348,10 @@ const AgenticSettings = () => {
       github_repo: form.githubRepo || '',
       setup_checklist: form.setupChecklist,
       engineers: form.engineers,
+      branches: {
+        staging: form.branches?.staging || '',
+        production: form.branches?.production || '',
+      },
       // Incomplete: preserve existing value on save; no wizard field to edit project_context yet.
       project_context: data?.project_context || '',
     };
@@ -303,6 +364,17 @@ const AgenticSettings = () => {
     /* eslint-enable camelcase */
     return payload;
   }, [form, data]);
+
+  const updateBranchRole = useCallback((role, value) => {
+    setBranchSaveStatus('idle');
+    setForm((existing) => ({
+      ...existing,
+      branches: {
+        ...existing.branches,
+        [role]: value || '',
+      },
+    }));
+  }, []);
 
   const saveSettings = useCallback(
     async (advance = false) => {
@@ -329,24 +401,52 @@ const AgenticSettings = () => {
     [applySettings, buildSavePayload],
   );
 
-  const handleTest = useCallback(async () => {
+  const saveBranchMapping = useCallback(async () => {
+    setBranchSaveStatus('saving');
+    try {
+      await saveSettings(false);
+      setBranchSaveStatus('saved');
+    } catch (_err) {
+      setBranchSaveStatus('error');
+    }
+  }, [saveSettings]);
+
+  const saveFinishSetup = useCallback(async () => {
+    setSetupCompletedStatus('saving');
+    try {
+      await saveSettings(true);
+      setSetupCompletedStatus('saved');
+    } catch (_err) {
+      setSetupCompletedStatus('error');
+    }
+  }, [saveSettings]);
+
+  const testGithubConnectionAndFetchBranches = useCallback(async () => {
     setTesting(true);
     setTestResult({
-      message: __('Testing…', 'alpaca-issue-tracker'),
+      message: __(
+        'Connecting to GitHub and fetching branches…',
+        'alpaca-issue-tracker',
+      ),
       className: 'agentic-result-pending',
     });
     try {
       await saveSettings(false);
+      // Also returns up to 100 branch names for the selectors below.
       const result = await wp.apiFetch({
         path: `${REST_PATH}/test-github`,
         method: 'POST',
         data: {},
       });
+      setRepoBranches(
+        Array.isArray(result?.branches) ? result.branches : [],
+      );
       setTestResult({
         message: result?.message || __('Connected.', 'alpaca-issue-tracker'),
         className: 'agentic-result-success',
       });
     } catch (err) {
+      setRepoBranches([]);
       setTestResult({
         message:
           err?.message || __('Connection failed.', 'alpaca-issue-tracker'),
@@ -390,6 +490,7 @@ const AgenticSettings = () => {
   }, [applySettings, saveSettings]);
 
   const toggleChecklist = useCallback((key) => {
+    setSetupCompletedStatus('idle');
     setForm((prev) => {
       const current = prev.setupChecklist;
       const next = current.includes(key)
@@ -984,6 +1085,88 @@ const AgenticSettings = () => {
             <div className="agentic-step-actions">
               <button
                 type="button"
+                className="button button-primary"
+                disabled={saving || testing || panelLocked}
+                onClick={testGithubConnectionAndFetchBranches}
+              >
+                {testing
+                  ? __('Connecting…', 'alpaca-issue-tracker')
+                  : __('Test connection & fetch branches', 'alpaca-issue-tracker')}
+              </button>
+              {testResult ? (
+                <span
+                  className={`agentic-connection-result ${testResult.className}`}
+                >
+                  {testResult.message}
+                </span>
+              ) : null}
+            </div>
+
+            <p className="agentic-branch-intro">
+              {__(
+                'Select remote branches for each environment.',
+                'alpaca-issue-tracker',
+              )}{' '}
+              <HelpTip
+                label={__('Branch mapping guidance', 'alpaca-issue-tracker')}
+                wide
+                tooltip={__(
+                  'At least one environment must have a branch assigned so the AI has a target for creating pull requests.',
+                  'alpaca-issue-tracker',
+                )}
+              />
+            </p>
+
+            <fieldset
+              className={`agentic-branch-section${canManageBranches ? '' : ' agentic-fieldset-disabled'}`}
+              disabled={!canManageBranches}
+            >
+              <table className="form-table" role="presentation">
+                <tbody>
+                  {BRANCH_ROLES.map(({ key, label }, index) => (
+                    <tr key={key}>
+                      <th scope="row">
+                        <label htmlFor={`agentic-branch-${key}`}>
+                          {label}
+                        </label>
+                      </th>
+                      <td>
+                        <div className="agentic-branch-field">
+                          <ComboboxControl
+                            id={`agentic-branch-${key}`}
+                            hideLabelFromVision
+                            label={label}
+                            value={form.branches?.[key] || ''}
+                            options={buildBranchOptions(
+                              repoBranches,
+                              form.branches?.[key] || '',
+                            )}
+                            onChange={(value) => updateBranchRole(key, value)}
+                            allowReset={false}
+                            __nextHasNoMarginBottom
+                            __next40pxDefaultSize
+                          />
+                        </div>
+                        {canManageBranches &&
+                        BRANCH_ROLES.length - 1 === index &&
+                        0 === repoBranches.length ? (
+                          <p className="description">
+                            {__(
+                              'Click “Test connection & fetch branches” above to load branch options from the repository.',
+                              'alpaca-issue-tracker',
+                            )}
+                          </p>
+                        ) : null}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </fieldset>
+
+            <div className="agentic-step-actions">
+              <button
+                type="button"
                 className="button button-secondary"
                 onClick={() => setFocusedStep(2)}
               >
@@ -993,25 +1176,31 @@ const AgenticSettings = () => {
                 type="button"
                 className="button button-primary"
                 disabled={saving || panelLocked}
-                onClick={() => saveSettings(false)}
+                onClick={saveBranchMapping}
               >
                 {saving
                   ? __('Saving…', 'alpaca-issue-tracker')
                   : __('Save', 'alpaca-issue-tracker')}
               </button>
-              <button
-                type="button"
-                className="button button-secondary"
-                disabled={testing || panelLocked}
-                onClick={handleTest}
-              >
-                {__('Test connection', 'alpaca-issue-tracker')}
-              </button>
-              {testResult ? (
-                <span
-                  className={`agentic-connection-result ${testResult.className}`}
-                >
-                  {testResult.message}
+              {'saving' === branchSaveStatus ? (
+                <span className="agentic-branch-save-status agentic-result-pending">
+                  {__(
+                    'Saving branch mapping…',
+                    'alpaca-issue-tracker',
+                  )}
+                </span>
+              ) : null}
+              {'saved' === branchSaveStatus ? (
+                <span className="agentic-branch-save-status agentic-result-success">
+                  {__('Branch mapping saved.', 'alpaca-issue-tracker')}
+                </span>
+              ) : null}
+              {'error' === branchSaveStatus ? (
+                <span className="agentic-branch-save-status agentic-result-error">
+                  {__(
+                    'Could not save branch mapping.',
+                    'alpaca-issue-tracker',
+                  )}
                 </span>
               ) : null}
             </div>
@@ -1228,12 +1417,27 @@ const AgenticSettings = () => {
                 type="button"
                 className="button button-primary"
                 disabled={saving || panelLocked}
-                onClick={() => saveSettings(true)}
+                onClick={saveFinishSetup}
               >
                 {saving
                   ? __('Saving…', 'alpaca-issue-tracker')
                   : __('Save', 'alpaca-issue-tracker')}
               </button>
+              {'saving' === setupCompletedStatus ? (
+                <span className="agentic-branch-save-status agentic-result-pending">
+                  {__('Saving final setup…', 'alpaca-issue-tracker')}
+                </span>
+              ) : null}
+              {'saved' === setupCompletedStatus ? (
+                <span className="agentic-branch-save-status agentic-result-success">
+                  {__('Final setup saved.', 'alpaca-issue-tracker')}
+                </span>
+              ) : null}
+              {'error' === setupCompletedStatus ? (
+                <span className="agentic-branch-save-status agentic-result-error">
+                  {__('Could not save final setup.', 'alpaca-issue-tracker')}
+                </span>
+              ) : null}
             </div>
 
             <details

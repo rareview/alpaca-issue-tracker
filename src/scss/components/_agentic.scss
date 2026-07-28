@@ -84,6 +84,13 @@
   background: var(--agentic-gradient-soft);
 }
 
+.agentic-branches-required-notice {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #50575e;
+}
+
 /* ── Primary AI magic button ─────────────────────────────────────────────────── */
 
 .components-button.agentic-agent-btn {
@@ -520,6 +527,32 @@
   font-style: italic;
 }
 
+.agentic-branch-section {
+  border: 0;
+  margin: 16px 0 0;
+  padding: 0;
+  transition: opacity 0.2s ease;
+}
+
+.agentic-branch-section .form-table {
+  margin-block-start: 8px;
+}
+
+.agentic-branch-field {
+  max-width: 25em; /* Match wp-admin .regular-text (Repo / PAT). */
+}
+
+.agentic-branch-field .components-combobox-control,
+.agentic-branch-field .components-base-control {
+  max-width: 100%;
+}
+
+.agentic-branch-field .components-combobox-control__input,
+.agentic-branch-field input.components-combobox-control__input {
+  width: 100%;
+  max-width: 100%;
+}
+
 .agentic-step-actions {
   display: flex;
   align-items: center;
@@ -530,6 +563,10 @@
 
 .agentic-step-actions .button {
   margin: 0 !important;
+}
+
+.agentic-branch-intro {
+  margin-block-start: 22px;
 }
 
 /* Toggle switch (Step 1) */
@@ -639,6 +676,10 @@
 
 .agentic-result-pending {
   color: #757575;
+}
+
+.agentic-branch-save-status {
+  font-size: 13px;
 }
 
 /* Install workflow button */

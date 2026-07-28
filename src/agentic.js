@@ -37,8 +37,32 @@
 
   // ── Config ──────────────────────────────────────────────────────────────────
 
-  const { restBase, nonce, setupCompleted, isAuthorized } =
+  const { restBase, nonce, setupCompleted, isAuthorized, branches } =
     window.agenticConfig || {};
+
+  const BRANCH_ROLE_LABELS = {
+    staging: __('Staging', 'alpaca-issue-tracker'),
+    production: __('Production', 'alpaca-issue-tracker'),
+  };
+
+  /**
+   * Roles that have a real GitHub branch mapped (not None).
+   *
+   * @return {Array<{role: string, branch: string, label: string}>} Configured role options.
+   */
+  function getConfiguredBranchOptions() {
+    const map = branches && 'object' === typeof branches ? branches : {};
+    return ['staging', 'production']
+      .filter((role) => map[role])
+      .map((role) => ({
+        role,
+        branch: map[role],
+        label: `${BRANCH_ROLE_LABELS[role]} (${map[role]})`,
+      }));
+  }
+
+  const configuredBranches = getConfiguredBranchOptions();
+  const hasConfiguredBranches = configuredBranches.length > 0;
 
   const ALLOWED_LABELS = [
     { value: 'bug', label: __('bug', 'alpaca-issue-tracker') },
@@ -105,6 +129,10 @@
     const [body, setBody] = useState('');
     const [complexity, setComplexity] = useState('medium');
     const [selectedLabels, setSelectedLabels] = useState([]);
+    // Required: GitHub branch name for the agent PR base.
+    const [targetBranch, setTargetBranch] = useState(
+      configuredBranches[0]?.branch || '',
+    );
 
     // ── Fetch AI draft on mount ─────────────────────────────────────────────
 
@@ -140,12 +168,26 @@
     // ── Create GitHub issue ─────────────────────────────────────────────────
 
     const createGithubIssue = useCallback(async () => {
+      if (!targetBranch) {
+        setErrorMsg(
+          __(
+            'Select a target branch for the pull request.',
+            'alpaca-issue-tracker',
+          ),
+        );
+        return;
+      }
+
       setPhase('creating');
       setErrorMsg('');
 
-      // Add the complexity label to the selected labels.
+      // Complexity + target-branch labels are read by the GitHub Actions agent.
       const labels = [
-        ...new Set([...selectedLabels, 'complexity:' + complexity]),
+        ...new Set([
+          ...selectedLabels,
+          'complexity:' + complexity,
+          'target-branch:' + targetBranch,
+        ]),
       ];
 
       try {
@@ -161,7 +203,7 @@
         setErrorMsg(err.message);
         setPhase('preview');
       }
-    }, [issueId, title, body, complexity, selectedLabels]);
+    }, [issueId, title, body, complexity, selectedLabels, targetBranch]);
 
     // ── Toggle label ───────────────────────────────────────────────────────
 
@@ -272,6 +314,13 @@
         },
       ];
 
+      const targetBranchOptions = configuredBranches.map(
+        ({ branch, label }) => ({
+          value: branch,
+          label,
+        }),
+      );
+
       return el(
         Fragment,
         null,
@@ -306,6 +355,18 @@
           el(
             'div',
             { className: 'agentic-modal-meta' },
+            el(SelectControl, {
+              label: __('Target branch', 'alpaca-issue-tracker'),
+              value: targetBranch,
+              options: targetBranchOptions,
+              onChange: setTargetBranch,
+              disabled: isCreating,
+              className: 'agentic-field-target-branch',
+              help: __(
+                'PR base branch for the AI agent fix.',
+                'alpaca-issue-tracker',
+              ),
+            }),
             el(SelectControl, {
               label: __('Complexity', 'alpaca-issue-tracker'),
               value: complexity,
@@ -352,7 +413,7 @@
                     variant: 'primary',
                     className: 'agentic-agent-btn',
                     onClick: createGithubIssue,
-                    disabled: !title.trim() || !body.trim(),
+                    disabled: !title.trim() || !body.trim() || !targetBranch,
                   },
                   __('Create agent issue on GitHub', 'alpaca-issue-tracker'),
                 ),
@@ -459,6 +520,22 @@
       // approved engineer — everyone else never sees this button.
       if (!setupCompleted || !isAuthorized) {
         return _current;
+      }
+
+      // At least one Staging / Production branch must be mapped.
+      if (!hasConfiguredBranches) {
+        return el(
+          'div',
+          { className: 'agentic-abovetabs-bar agentic-abovetabs-bar--notice' },
+          el(
+            'p',
+            { className: 'agentic-branches-required-notice' },
+            __(
+              'To send this issue to the AI agent, map at least one Staging or Production branch under Project Board → AI Issue Resolver → Setup GitHub.',
+              'alpaca-issue-tracker',
+            ),
+          ),
+        );
       }
 
       return el(

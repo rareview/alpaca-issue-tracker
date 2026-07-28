@@ -37,8 +37,29 @@ jobs:
       id-token: write
 
     steps:
+      - name: Determine target branch
+        id: target-branch
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const labels = (context.payload.issue?.labels || []).map(l => l.name);
+            const prefix = 'target-branch:';
+            const match = labels.find(name => name.startsWith(prefix));
+            let branch = match ? match.slice(prefix.length).trim() : '';
+            if (!branch) {
+              const { data: repo } = await github.rest.repos.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+              });
+              branch = repo.default_branch;
+            }
+            console.log('Target branch:', branch);
+            core.setOutput('branch', branch);
+
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.target-branch.outputs.branch }}
 
       - name: Check commenter permissions
         id: permission-check
@@ -120,6 +141,8 @@ jobs:
 
             Issue title: ${{ github.event.issue.title }}
 
+            Target branch for the PR: `${{ steps.target-branch.outputs.branch }}`
+
             A human has approved the plan for this issue. Your job is to implement it.
 
             Instructions:
@@ -128,6 +151,8 @@ jobs:
             2. Read AGENTS.md for project-specific coding standards and file conventions
             3. Implement the feature per the approved plan
             4. Open a PR using the template at .github/PULL_REQUEST_TEMPLATE/agent-generated.md
+               - Branch off of `${{ steps.target-branch.outputs.branch }}`
+               - PR base must be `${{ steps.target-branch.outputs.branch }}` (use `gh pr create --base ${{ steps.target-branch.outputs.branch }}`)
             5. Reference "Closes #${{ github.event.issue.number }}" in the PR body
             6. Add the 'agent-generated' label to the PR
 
@@ -155,8 +180,29 @@ jobs:
       actions: read
 
     steps:
+      - name: Determine target branch
+        id: target-branch
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const labels = (context.payload.issue?.labels || []).map(l => l.name);
+            const prefix = 'target-branch:';
+            const match = labels.find(name => name.startsWith(prefix));
+            let branch = match ? match.slice(prefix.length).trim() : '';
+            if (!branch) {
+              const { data: repo } = await github.rest.repos.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+              });
+              branch = repo.default_branch;
+            }
+            console.log('Target branch:', branch);
+            core.setOutput('branch', branch);
+
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.target-branch.outputs.branch }}
 
       - name: Check commenter permissions
         id: permission-check
@@ -234,6 +280,7 @@ jobs:
                approach, and test scenarios)
             5. Commit the plan file to a new branch named:
                plan/issue-${{ github.event.issue.number }}
+               Branch off of `${{ steps.target-branch.outputs.branch }}` (the PR target branch).
             6. After committing, post a comment on the issue with:
                - A link to the plan file (GitHub URL)
                - "Implementation plan is ready for review. Reply /approve-plan to begin
@@ -257,6 +304,8 @@ jobs:
 
             Issue title: ${{ github.event.issue.title }}
 
+            Target branch for the PR: `${{ steps.target-branch.outputs.branch }}`
+
             Instructions:
             1. Read the full issue body carefully using the GitHub CLI:
                gh issue view ${{ github.event.issue.number }} --repo ${{ github.repository }}
@@ -265,8 +314,10 @@ jobs:
             4. Stay within the defined scope — "Out of scope" is a hard boundary
             5. Follow the patterns referenced in Technical Notes (read the key files listed there)
             6. Create a branch, commit your changes, and open a PR:
+               - Branch off of `${{ steps.target-branch.outputs.branch }}`
                - Branch name: agent/issue-${{ github.event.issue.number }}
                - PR title should match the issue title
+               - PR base must be `${{ steps.target-branch.outputs.branch }}` (use `gh pr create --base ${{ steps.target-branch.outputs.branch }}`)
                - PR body: reference "Closes #${{ github.event.issue.number }}" and summarize what you did
                - Use the template at .github/PULL_REQUEST_TEMPLATE/agent-generated.md
             7. Add the 'agent-generated' label to the PR

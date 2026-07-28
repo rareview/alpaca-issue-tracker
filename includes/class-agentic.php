@@ -98,6 +98,21 @@ class Agentic {
 			$ai_api_key = $current_settings['ai_api_key'] ?? '';
 		}
 
+		// Environment names → GitHub branch names. Empty string = None.
+		$environment_roles  = [ 'staging', 'production' ];
+		$saved_branches     = is_array( $current_settings['branches'] ?? null ) ? $current_settings['branches'] : [];
+		$submitted_branches = is_array( $raw['branches'] ?? null ) ? $raw['branches'] : null;
+		$environments       = [];
+		foreach ( $environment_roles as $role ) {
+			if ( null !== $submitted_branches && array_key_exists( $role, $submitted_branches ) ) {
+				// First try to read the submitted branch for this role.
+				$environments[ $role ] = sanitize_text_field( (string) $submitted_branches[ $role ] );
+			} else {
+				// If not, use the saved branch.
+				$environments[ $role ] = sanitize_text_field( (string) ( $saved_branches[ $role ] ?? '' ) );
+			}
+		}
+
 		return [
 			'enabled'         => ! empty( $raw['enabled'] ),
 			'github_token'    => $github_token,
@@ -117,6 +132,30 @@ class Agentic {
 			'engineers'       => array_key_exists( 'engineers', $raw )
 				? array_values( array_unique( array_map( 'absint', (array) $raw['engineers'] ) ) )
 				: array_values( array_unique( array_map( 'absint', (array) ( $current_settings['engineers'] ?? [] ) ) ) ),
+			'branches'        => $environments,
+		];
+	}
+
+	/**
+	 * Normalize the saved Staging / Production branch map.
+	 * Empty string means "None" (not configured).
+	 *
+	 * @param array $options Raw option array.
+	 * @return array{staging: string, production: string}
+	 */
+	public static function get_branches( array $options = [] ): array {
+		if ( empty( $options ) ) {
+			$options = get_option( self::OPTION_KEY, [] );
+			if ( ! is_array( $options ) ) {
+				$options = [];
+			}
+		}
+
+		$saved = is_array( $options['branches'] ?? null ) ? $options['branches'] : [];
+
+		return [
+			'staging'    => (string) ( $saved['staging'] ?? '' ),
+			'production' => (string) ( $saved['production'] ?? '' ),
 		];
 	}
 
@@ -195,6 +234,8 @@ class Agentic {
 			'is_admin'                   => $is_admin,
 			'is_engineer'                => self::is_current_user_engineer(),
 			'can_edit'                   => $is_admin, // only admins can edit settings.
+			// PR target branches (empty string = None). At least one must be set to send issues.
+			'branches'                   => self::get_branches( $options ),
 		];
 	}
 
@@ -223,8 +264,8 @@ class Agentic {
 				'restBase'       => esc_url_raw( rest_url( 'alpaca/v1/agentic' ) ),
 				'nonce'          => wp_create_nonce( 'wp_rest' ),
 				'setupCompleted' => $this->is_setup_completed(),
-				// Only administrators and users on the engineers allowlist may send issues to the AI agent.
-				'isAuthorized'   => self::current_user_can_use(),
+				'isAuthorized'   => self::current_user_can_use(), // Only administrators and users on the engineers allowlist may send issues to the AI agent.
+				'branches'       => self::get_branches(), // Staging / Production branch names (empty = None).
 			]
 		);
 	}

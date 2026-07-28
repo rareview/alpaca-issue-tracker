@@ -80,7 +80,7 @@ function alpaistr_register_agentic_endpoints(): void {
 		'/agentic/test-github',
 		[
 			'methods'             => WP_REST_Server::CREATABLE,
-			'callback'            => 'alpaistr_agentic_test_github_callback',
+			'callback'            => 'alpaistr_agentic_touch_github_callback',
 			'permission_callback' => 'alpaistr_agentic_manage_options_permission_check',
 		]
 	);
@@ -516,11 +516,16 @@ function alpaistr_agentic_parse_ai_response( array|WP_Error $response, string $p
 }
 
 /**
- * Verify the configured GitHub token can access the configured repository.
+ * This function does two things:
+ * 1. Tests the connection with saved GitHub credentials,
+ * 2. Returns the list of branches.
+ *
+ * It verifies the access token can reach the repo, checks its permissions,
+ * and returns up to 100 branch names for the Staging / Production selectors.
  *
  * @return WP_REST_Response|WP_Error
  */
-function alpaistr_agentic_test_github_callback(): WP_REST_Response|WP_Error {
+function alpaistr_agentic_touch_github_callback(): WP_REST_Response|WP_Error {
 	$settings = alpaistr_agentic_get_settings();
 	$token    = $settings['github_token'];
 	$repo     = $settings['github_repo'];
@@ -616,6 +621,12 @@ function alpaistr_agentic_test_github_callback(): WP_REST_Response|WP_Error {
 		}
 	}
 
+	$branches = alpaistr_agentic_fetch_github_branches( $token, $repo_parts );
+	if ( is_wp_error( $branches ) ) {
+		// Connection succeeded; branch list is optional for the test message.
+		$branches = [];
+	}
+
 	return rest_ensure_response(
 		[
 			'success'         => true,
@@ -626,8 +637,56 @@ function alpaistr_agentic_test_github_callback(): WP_REST_Response|WP_Error {
 			'message'         => $message,
 			'private'         => (bool) ( $gh_data['private'] ?? false ),
 			'html_url'        => esc_url_raw( $gh_data['html_url'] ?? '' ),
+			'branches'        => $branches,
 		]
 	);
+}
+
+/**
+ * Fetch up to 100 branch names from a GitHub repository.
+ *
+ * @param string                             $token      GitHub personal access token.
+ * @param array{owner: string, name: string} $repo_parts Parsed repository.
+ * @return string[]|WP_Error Branch names, or error on failure.
+ */
+function alpaistr_agentic_fetch_github_branches( string $token, array $repo_parts ): array|WP_Error {
+	$api_url = sprintf(
+		'https://api.github.com/repos/%s/%s/branches?per_page=100',
+		rawurlencode( $repo_parts['owner'] ),
+		rawurlencode( $repo_parts['name'] )
+	);
+
+	$response = wp_remote_get(
+		$api_url,
+		[
+			'timeout' => 20,
+			'headers' => alpaistr_agentic_github_api_headers( $token ),
+		]
+	);
+
+	if ( is_wp_error( $response ) ) {
+		return $response;
+	}
+
+	$code = wp_remote_retrieve_response_code( $response );
+	$data = json_decode( wp_remote_retrieve_body( $response ), true );
+
+	if ( $code >= 400 || ! is_array( $data ) ) {
+		return new WP_Error(
+			'github_api_error',
+			alpaistr_agentic_format_github_error_message( $code, is_array( $data ) ? $data : [], $repo_parts ),
+			[ 'status' => 502 ]
+		);
+	}
+
+	$names = [];
+	foreach ( $data as $branch ) {
+		if ( is_array( $branch ) && ! empty( $branch['name'] ) ) {
+			$names[] = (string) $branch['name'];
+		}
+	}
+
+	return $names;
 }
 
 /**
@@ -1063,6 +1122,13 @@ function alpaistr_agentic_create_callback( WP_REST_Request $request ): WP_REST_R
 		return $repo_parts;
 	}
 
+	// target-branch:* labels are per-repo and not in LABELS.yml — create if missing.
+	foreach ( $create_labels as $label_name ) {
+		if ( str_starts_with( $label_name, 'target-branch:' ) ) {
+			alpaistr_agentic_ensure_github_label( $token, $repo_parts, $label_name );
+		}
+	}
+
 	$api_url = sprintf(
 		'https://api.github.com/repos/%s/%s/issues',
 		rawurlencode( $repo_parts['owner'] ),
@@ -1151,6 +1217,38 @@ function alpaistr_agentic_github_api_headers( string $token ): array {
 		'X-GitHub-Api-Version' => '2022-11-28',
 		'User-Agent'           => 'AlpacaIssueTracker-Agentic/' . ALPAISTR_VERSION,
 	];
+}
+
+/**
+ * Create a GitHub label if it does not already exist.
+ *
+ * Used for dynamic labels like target-branch:develop that are not in LABELS.yml.
+ * Failures are ignored — the subsequent issue create will surface a clear error.
+ *
+ * @param string                             $token      GitHub personal access token.
+ * @param array{owner: string, name: string} $repo_parts Parsed repository.
+ * @param string                             $name       Label name.
+ * @return void
+ */
+function alpaistr_agentic_ensure_github_label( string $token, array $repo_parts, string $name ): void {
+	wp_remote_post(
+		sprintf(
+			'https://api.github.com/repos/%s/%s/labels',
+			rawurlencode( $repo_parts['owner'] ),
+			rawurlencode( $repo_parts['name'] )
+		),
+		[
+			'timeout' => 15,
+			'headers' => alpaistr_agentic_github_api_headers( $token ),
+			'body'    => wp_json_encode(
+				[
+					'name'        => $name,
+					'color'       => '0E8A16',
+					'description' => 'PR base branch for the AI agent',
+				]
+			),
+		]
+	);
 }
 
 /**
