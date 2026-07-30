@@ -45,6 +45,14 @@ The output must follow this exact Markdown template:
 
 - [any required packages, tokens, or environment variables]
 
+**Captured environment / third-party code:**
+
+- Include WordPress version, PHP version, active theme, and active plugins / must-use plugins from Captured Context
+- Include browser/OS, screen size, reported URL, PHP template, and page types when present
+- If JavaScript errors are present, include them verbatim
+- If screenshot URL(s) are present, mention that a screenshot is attached and list the URL(s)
+- Do not invent environment details that were not provided
+
 **Testing approach:**
 
 - Run `npm run lint` to verify coding standards
@@ -73,7 +81,9 @@ Rules:
 - The Summary must be exactly one sentence (≤ 25 words).
 - Every Acceptance Criterion must be a specific, testable checkbox.
 - Do NOT use vague language ("improve", "enhance", "make better"). Be concrete and technical.
+- Always copy useful details from the "Captured Context" section into Technical Notes (especially environment, plugins, errors, and screenshots).
 - If JavaScript errors are present, include them verbatim in Technical Notes.
+- List third-party code (active plugins, must-use plugins, active theme) so the coding agent knows what else is installed.
 - Suggest complexity based on scope: low = single file; medium = multiple files, known patterns; high = architectural changes.
 - Output ONLY a valid JSON object — no markdown fences, no explanation. JSON shape:
   {

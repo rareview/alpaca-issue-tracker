@@ -235,6 +235,14 @@ function alpaistr_agentic_collect_issue_data( WP_Post $post ): array {
 	$browser_terms = wp_get_post_terms( $post->ID, 'alpaca_browser', [ 'fields' => 'names' ] );
 	$browser       = is_wp_error( $browser_terms ) ? [] : $browser_terms;
 
+	// PHP template used when the issue was reported (e.g. single.php).
+	$template_terms = wp_get_post_terms( $post->ID, 'alpaca_phptemplate', [ 'fields' => 'names' ] );
+	$templates      = is_wp_error( $template_terms ) ? [] : $template_terms;
+
+	// Page/request type tags (front_page, singular, archive, etc.).
+	$type_terms = wp_get_post_terms( $post->ID, 'alpaca_type', [ 'fields' => 'names' ] );
+	$page_types = is_wp_error( $type_terms ) ? [] : $type_terms;
+
 	// Subissues (checklist items).
 	$subissues_raw = get_posts(
 		[
@@ -249,7 +257,7 @@ function alpaistr_agentic_collect_issue_data( WP_Post $post ): array {
 	$subissues     = array_map( fn( $s ) => $s->post_title, $subissues_raw );
 
 	// Recent comments (activity thread).
-	$comments      = get_comments(
+	$comments = get_comments(
 		[
 			'post_id' => $post->ID,
 			'type'    => 'issuecomment',
@@ -263,21 +271,61 @@ function alpaistr_agentic_collect_issue_data( WP_Post $post ): array {
 		$comments
 	);
 
-	// JS errors.
+	// Screenshot URLs live on comment meta (uploaded after submit), not on the issue itself.
+	$screenshot_urls = [];
+	foreach ( $comments as $comment ) {
+		$attachments = get_comment_meta( (int) $comment->comment_ID, 'alpacaCommentAttachments', true );
+		if ( ! is_array( $attachments ) ) {
+			continue;
+		}
+		foreach ( $attachments as $url ) {
+			if ( is_string( $url ) && '' !== $url ) {
+				$screenshot_urls[] = esc_url_raw( $url );
+			}
+		}
+	}
+	$screenshot_urls = array_values( array_unique( $screenshot_urls ) );
+
+	// JS errors (stored as a JSON string).
 	$errors_raw = isset( $flat_meta['alpaca_errors'] ) ? json_decode( $flat_meta['alpaca_errors'], true ) : [];
-	$errors     = is_array( $errors_raw ) ? $errors_raw : [];
+	$errors     = is_array( $errors_raw ) ? array_slice( $errors_raw, 0, 10 ) : [];
+
+	// Headers / queried object — keep small so the AI prompt stays readable.
+	$headers = is_array( $flat_meta['alpaca_headers'] ?? null ) ? $flat_meta['alpaca_headers'] : [];
+	$headers = array_slice( $headers, 0, 15, true );
+
+	$queried_object = is_array( $flat_meta['alpaca_queried_object'] ?? null ) ? $flat_meta['alpaca_queried_object'] : [];
+	// Drop heavy keys that are rarely useful for drafting a fix.
+	unset( $queried_object['post_content'], $queried_object['guid'] );
+
+	// Site environment is gathered live at draft time (AI feature only — not stored on every report).
+	$wp_version  = (string) get_bloginfo( 'version' );
+	$php_version = (string) PHP_VERSION;
+	$theme       = function_exists( 'alpaistr_get_environment_theme_snapshot' ) ? alpaistr_get_environment_theme_snapshot() : [];
+	$plugins     = function_exists( 'alpaistr_get_environment_plugins_snapshot' ) ? alpaistr_get_environment_plugins_snapshot() : [];
+	$mu_plugins  = function_exists( 'alpaistr_get_environment_mu_plugins_snapshot' ) ? alpaistr_get_environment_mu_plugins_snapshot() : [];
 
 	return [
-		'id'        => $post->ID,
-		'title'     => $post->post_title,
-		'content'   => wp_strip_all_tags( $post->post_content ),
-		'url'       => $flat_meta['alpaca_url'] ?? '',
-		'labels'    => $labels,
-		'browser'   => implode( ', ', $browser ),
-		'screen'    => ( $flat_meta['alpaca_screenwidth'] ?? '' ) . 'x' . ( $flat_meta['alpaca_screenheight'] ?? '' ),
-		'subissues' => $subissues,
-		'comments'  => $comment_texts,
-		'errors'    => $errors,
+		'id'              => $post->ID,
+		'title'           => $post->post_title,
+		'content'         => wp_strip_all_tags( $post->post_content ),
+		'url'             => $flat_meta['alpaca_url'] ?? '',
+		'labels'          => $labels,
+		'browser'         => implode( ', ', $browser ),
+		'screen'          => ( $flat_meta['alpaca_screenwidth'] ?? '' ) . 'x' . ( $flat_meta['alpaca_screenheight'] ?? '' ),
+		'template'        => implode( ', ', $templates ),
+		'page_types'      => $page_types,
+		'subissues'       => $subissues,
+		'comments'        => $comment_texts,
+		'errors'          => $errors,
+		'headers'         => $headers,
+		'queried_object'  => $queried_object,
+		'screenshot_urls' => $screenshot_urls,
+		'wp_version'      => $wp_version,
+		'php_version'     => $php_version,
+		'theme'           => $theme,
+		'plugins'         => $plugins,
+		'mu_plugins'      => $mu_plugins,
 	];
 }
 
@@ -319,6 +367,27 @@ function alpaistr_agentic_build_system_prompt( string $extra_context = '' ): str
 }
 
 /**
+ * Format a plugin/mu-plugin snapshot row as "Name version".
+ *
+ * @param mixed $item Plugin snapshot row.
+ * @return string
+ */
+function alpaistr_agentic_format_plugin_line( $item ): string {
+	if ( ! is_array( $item ) ) {
+		return '';
+	}
+
+	$name    = (string) ( $item['name'] ?? '' );
+	$version = (string) ( $item['version'] ?? '' );
+
+	if ( '' === $name ) {
+		return '';
+	}
+
+	return '' !== $version ? $name . ' ' . $version : $name;
+}
+
+/**
  * Build the user message containing the Alpaca issue data.
  *
  * @param array $issue_data Structured issue data from collect_issue_data().
@@ -330,15 +399,6 @@ function alpaistr_agentic_build_user_message( array $issue_data ): string {
 		'Title: ' . $issue_data['title'],
 	];
 
-	if ( ! empty( $issue_data['url'] ) ) {
-		$lines[] = 'Reported on URL: ' . $issue_data['url'];
-	}
-	if ( ! empty( $issue_data['browser'] ) ) {
-		$lines[] = 'Browser / OS: ' . $issue_data['browser'];
-	}
-	if ( ! empty( $issue_data['screen'] ) && 'x' !== $issue_data['screen'] ) {
-		$lines[] = 'Screen: ' . $issue_data['screen'];
-	}
 	if ( ! empty( $issue_data['labels'] ) ) {
 		$lines[] = 'Alpaca labels: ' . implode( ', ', $issue_data['labels'] );
 	}
@@ -363,6 +423,75 @@ function alpaistr_agentic_build_user_message( array $issue_data ): string {
 		}
 	}
 
+	// --- Captured Context -------------------------------------------------
+	// Everything below is meant to be copied into the GitHub issue Technical Notes
+	// so the coding agent has reproduction / environment details.
+	$lines[] = '';
+	$lines[] = '## Captured Context';
+	$lines[] = '(Use this block in Technical Notes of the GitHub issue draft.)';
+	$lines[] = '(URL / browser / errors / headers come from the Alpaca report; WP/PHP/theme/plugins are the current site state at draft time.)';
+
+	if ( ! empty( $issue_data['url'] ) ) {
+		$lines[] = 'Reported on URL: ' . $issue_data['url'];
+	}
+	if ( ! empty( $issue_data['browser'] ) ) {
+		$lines[] = 'Browser / OS: ' . $issue_data['browser'];
+	}
+	if ( ! empty( $issue_data['screen'] ) && 'x' !== $issue_data['screen'] ) {
+		$lines[] = 'Screen: ' . $issue_data['screen'];
+	}
+	if ( ! empty( $issue_data['template'] ) ) {
+		$lines[] = 'PHP template: ' . $issue_data['template'];
+	}
+	if ( ! empty( $issue_data['page_types'] ) ) {
+		$lines[] = 'Page types: ' . implode( ', ', $issue_data['page_types'] );
+	}
+	if ( ! empty( $issue_data['wp_version'] ) ) {
+		$lines[] = 'WordPress version: ' . $issue_data['wp_version'];
+	}
+	if ( ! empty( $issue_data['php_version'] ) ) {
+		$lines[] = 'PHP version: ' . $issue_data['php_version'];
+	}
+
+	// Active theme (+ parent theme when this is a child theme).
+	$theme = is_array( $issue_data['theme'] ?? null ) ? $issue_data['theme'] : [];
+	if ( ! empty( $theme['name'] ) ) {
+		$theme_line = $theme['name'];
+		if ( ! empty( $theme['version'] ) ) {
+			$theme_line .= ' ' . $theme['version'];
+		}
+		if ( ! empty( $theme['stylesheet'] ) ) {
+			$theme_line .= ' (' . $theme['stylesheet'] . ')';
+		}
+		$lines[] = 'Active theme: ' . $theme_line;
+		if ( ! empty( $theme['parent'] ) ) {
+			$lines[] = 'Parent theme: ' . $theme['parent'];
+		}
+	}
+
+	// Third-party / site plugins — important for the agent to know what else is running.
+	if ( ! empty( $issue_data['plugins'] ) && is_array( $issue_data['plugins'] ) ) {
+		$lines[] = '';
+		$lines[] = 'Active plugins:';
+		foreach ( $issue_data['plugins'] as $plugin ) {
+			$line = alpaistr_agentic_format_plugin_line( $plugin );
+			if ( '' !== $line ) {
+				$lines[] = '- ' . $line;
+			}
+		}
+	}
+
+	if ( ! empty( $issue_data['mu_plugins'] ) && is_array( $issue_data['mu_plugins'] ) ) {
+		$lines[] = '';
+		$lines[] = 'Must-use plugins:';
+		foreach ( $issue_data['mu_plugins'] as $plugin ) {
+			$line = alpaistr_agentic_format_plugin_line( $plugin );
+			if ( '' !== $line ) {
+				$lines[] = '- ' . $line;
+			}
+		}
+	}
+
 	if ( ! empty( $issue_data['errors'] ) ) {
 		$lines[] = '';
 		$lines[] = 'JavaScript errors captured:';
@@ -370,10 +499,44 @@ function alpaistr_agentic_build_user_message( array $issue_data ): string {
 			if ( is_array( $err ) ) {
 				$lines[] = '- ' . ( $err['message'] ?? '' ) . ' (' . ( $err['filename'] ?? '' ) . ':' . ( $err['lineno'] ?? '' ) . ')';
 				if ( ! empty( $err['stack'] ) ) {
-					$lines[] = '  Stack: ' . $err['stack'];
+					// Keep stacks short so the prompt does not explode.
+					$stack   = (string) $err['stack'];
+					$lines[] = '  Stack: ' . ( strlen( $stack ) > 500 ? substr( $stack, 0, 500 ) . '…' : $stack );
 				}
 			}
 		}
+	}
+
+	if ( ! empty( $issue_data['headers'] ) && is_array( $issue_data['headers'] ) ) {
+		$lines[] = '';
+		$lines[] = 'Request headers (subset):';
+		foreach ( $issue_data['headers'] as $header_name => $header_value ) {
+			if ( is_scalar( $header_value ) ) {
+				$lines[] = '- ' . $header_name . ': ' . $header_value;
+			}
+		}
+	}
+
+	if ( ! empty( $issue_data['queried_object'] ) && is_array( $issue_data['queried_object'] ) ) {
+		$lines[] = '';
+		$lines[] = 'Queried object (summary):';
+		// Only show a few high-signal fields instead of dumping the whole object.
+		foreach ( [ 'ID', 'post_type', 'post_title', 'post_name', 'taxonomy', 'slug', 'name' ] as $key ) {
+			if ( isset( $issue_data['queried_object'][ $key ] ) && is_scalar( $issue_data['queried_object'][ $key ] ) ) {
+				$lines[] = '- ' . $key . ': ' . $issue_data['queried_object'][ $key ];
+			}
+		}
+	}
+
+	if ( ! empty( $issue_data['screenshot_urls'] ) ) {
+		$lines[] = '';
+		$lines[] = 'Screenshot(s) available on the Alpaca issue:';
+		foreach ( $issue_data['screenshot_urls'] as $url ) {
+			$lines[] = '- ' . $url;
+		}
+	} else {
+		$lines[] = '';
+		$lines[] = 'Screenshot: none attached';
 	}
 
 	return implode( "\n", $lines );
