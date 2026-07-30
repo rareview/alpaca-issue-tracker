@@ -181,7 +181,9 @@ RepoInstallMessage.propTypes = {
 const EngineersField = ({ engineerIds, allUserObjects, onChange }) => {
   const usersById = useMemo(() => {
     const map = new Map();
-    (allUserObjects || []).forEach((userObject) => map.set(userObject.id, userObject));
+    (allUserObjects || []).forEach((userObject) =>
+      map.set(userObject.id, userObject),
+    );
     return map;
   }, [allUserObjects]);
 
@@ -196,9 +198,7 @@ const EngineersField = ({ engineerIds, allUserObjects, onChange }) => {
 
   const tokens = useMemo(
     () =>
-      engineerIds
-        .map((id) => usersById.get(id)?.name)
-        .filter((name) => !!name),
+      engineerIds.map((id) => usersById.get(id)?.name).filter((name) => !!name),
     [engineerIds, usersById],
   );
 
@@ -332,8 +332,7 @@ const AgenticSettings = () => {
     !!stepStates[4]?.done;
 
   // Branch fields unlock only after a successful connection test + branch fetch.
-  const canManageBranches =
-    'agentic-result-success' === testResult?.className;
+  const canManageBranches = 'agentic-result-success' === testResult?.className;
 
   const updateForm = useCallback((patch) => {
     setForm((existing) => ({ ...existing, ...patch }));
@@ -438,9 +437,7 @@ const AgenticSettings = () => {
         method: 'POST',
         data: {},
       });
-      setRepoBranches(
-        Array.isArray(result?.branches) ? result.branches : [],
-      );
+      setRepoBranches(Array.isArray(result?.branches) ? result.branches : []);
       setTestResult({
         message: result?.message || __('Connected.', 'alpaca-issue-tracker'),
         className: 'agentic-result-success',
@@ -500,9 +497,12 @@ const AgenticSettings = () => {
     });
   }, []);
 
-  const handleEngineersChange = useCallback((ids) => {
-    updateForm({ engineers: ids });
-  }, [updateForm]);
+  const handleEngineersChange = useCallback(
+    (ids) => {
+      updateForm({ engineers: ids });
+    },
+    [updateForm],
+  );
 
   if (loading) {
     return (
@@ -1091,7 +1091,10 @@ const AgenticSettings = () => {
               >
                 {testing
                   ? __('Connecting…', 'alpaca-issue-tracker')
-                  : __('Test connection & fetch branches', 'alpaca-issue-tracker')}
+                  : __(
+                      'Test connection & fetch branches',
+                      'alpaca-issue-tracker',
+                    )}
               </button>
               {testResult ? (
                 <span
@@ -1126,9 +1129,7 @@ const AgenticSettings = () => {
                   {BRANCH_ROLES.map(({ key, label }, index) => (
                     <tr key={key}>
                       <th scope="row">
-                        <label htmlFor={`agentic-branch-${key}`}>
-                          {label}
-                        </label>
+                        <label htmlFor={`agentic-branch-${key}`}>{label}</label>
                       </th>
                       <td>
                         <div className="agentic-branch-field">
@@ -1184,10 +1185,7 @@ const AgenticSettings = () => {
               </button>
               {'saving' === branchSaveStatus ? (
                 <span className="agentic-branch-save-status agentic-result-pending">
-                  {__(
-                    'Saving branch mapping…',
-                    'alpaca-issue-tracker',
-                  )}
+                  {__('Saving branch mapping…', 'alpaca-issue-tracker')}
                 </span>
               ) : null}
               {'saved' === branchSaveStatus ? (
@@ -1197,10 +1195,7 @@ const AgenticSettings = () => {
               ) : null}
               {'error' === branchSaveStatus ? (
                 <span className="agentic-branch-save-status agentic-result-error">
-                  {__(
-                    'Could not save branch mapping.',
-                    'alpaca-issue-tracker',
-                  )}
+                  {__('Could not save branch mapping.', 'alpaca-issue-tracker')}
                 </span>
               ) : null}
             </div>

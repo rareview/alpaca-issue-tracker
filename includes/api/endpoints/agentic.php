@@ -254,7 +254,8 @@ function alpaistr_agentic_collect_issue_data( WP_Post $post ): array {
 			'order'          => 'ASC',
 		]
 	);
-	$subissues     = array_map( fn( $s ) => $s->post_title, $subissues_raw );
+
+	$subissues = array_map( fn( $s ) => $s->post_title, $subissues_raw );
 
 	// Recent comments (activity thread).
 	$comments = get_comments(
@@ -266,6 +267,7 @@ function alpaistr_agentic_collect_issue_data( WP_Post $post ): array {
 			'status'  => 'approve',
 		]
 	);
+
 	$comment_texts = array_map(
 		fn( $c ) => wp_strip_all_tags( $c->comment_content ),
 		$comments
