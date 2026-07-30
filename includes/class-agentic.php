@@ -113,26 +113,40 @@ class Agentic {
 			}
 		}
 
+		$github_repo = sanitize_text_field( $raw['github_repo'] ?? ( $current_settings['github_repo'] ?? '' ) );
+
+		// Confirmation that this WP site matches the chosen GitHub repo (warn-only gate in the wizard).
+		$repo_changed = (string) ( $current_settings['github_repo'] ?? '' ) !== $github_repo;
+		if ( $repo_changed ) {
+			// Changing the repo clears the confirmation so the admin must re-check.
+			$repo_match_confirmed = false;
+		} elseif ( array_key_exists( 'repo_match_confirmed', $raw ) ) {
+			$repo_match_confirmed = ! empty( $raw['repo_match_confirmed'] );
+		} else {
+			$repo_match_confirmed = ! empty( $current_settings['repo_match_confirmed'] );
+		}
+
 		return [
-			'enabled'         => ! empty( $raw['enabled'] ),
-			'github_token'    => $github_token,
-			'github_repo'     => sanitize_text_field( $raw['github_repo'] ?? ( $current_settings['github_repo'] ?? '' ) ),
-			'ai_provider'     => in_array( $raw['ai_provider'] ?? '', $providers, true )
+			'enabled'              => ! empty( $raw['enabled'] ),
+			'github_token'         => $github_token,
+			'github_repo'          => $github_repo,
+			'ai_provider'          => in_array( $raw['ai_provider'] ?? '', $providers, true )
 				? $raw['ai_provider']
 				: ( $current_settings['ai_provider'] ?? 'claude' ),
-			'ai_api_key'      => $ai_api_key,
+			'ai_api_key'           => $ai_api_key,
 			// Incomplete: optional per-site notes for the drafting AI. Stored/sanitized here but no wizard field yet.
-			'project_context' => sanitize_textarea_field( $raw['project_context'] ?? ( $current_settings['project_context'] ?? '' ) ),
-			'setup_checklist' => array_values(
+			'project_context'      => sanitize_textarea_field( $raw['project_context'] ?? ( $current_settings['project_context'] ?? '' ) ),
+			'setup_checklist'      => array_values(
 				array_unique(
 					array_map( 'absint', (array) ( $raw['setup_checklist'] ?? [] ) )
 				)
 			),
+			'repo_match_confirmed' => $repo_match_confirmed,
 			// User IDs allowed to use the AI Issue Fixer besides administrators (who always have access).
-			'engineers'       => array_key_exists( 'engineers', $raw )
+			'engineers'            => array_key_exists( 'engineers', $raw )
 				? array_values( array_unique( array_map( 'absint', (array) $raw['engineers'] ) ) )
 				: array_values( array_unique( array_map( 'absint', (array) ( $current_settings['engineers'] ?? [] ) ) ) ),
-			'branches'        => $environments,
+			'branches'             => $environments,
 		];
 	}
 
@@ -221,6 +235,7 @@ class Agentic {
 			// Incomplete: exposed for future wizard UI; usually empty until an admin field is added.
 			'project_context'            => $options['project_context'] ?? '',
 			'setup_checklist'            => array_map( 'absint', (array) ( $options['setup_checklist'] ?? [] ) ),
+			'repo_match_confirmed'       => ! empty( $options['repo_match_confirmed'] ),
 			'github_token_set'           => '' !== (string) $github_token,
 			'github_token_from_constant' => $github_token_from_constant,
 			'ai_api_key_set'             => '' !== (string) $ai_api_key,

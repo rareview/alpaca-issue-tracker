@@ -120,7 +120,6 @@
    */
   function ExportModal({ issueId, onClose }) {
     const [phase, setPhase] = useState('loading'); // loading | preview | creating | done | error
-    const [draft, setDraft] = useState(null);
     const [errorMsg, setErrorMsg] = useState('');
     const [githubUrl, setGithubUrl] = useState('');
 
@@ -142,7 +141,6 @@
 
       try {
         const data = await restPost('/draft', { issue_id: issueId });
-        setDraft(data);
         setTitle(data.title || '');
         setBody(data.body || '');
         setComplexity(data.complexity || 'medium');

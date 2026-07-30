@@ -26,6 +26,8 @@ const emptyForm = () => ({
   githubRepo: '',
   githubToken: '',
   setupChecklist: [],
+  // Admin confirmed WP site + theme match the chosen GitHub repo.
+  repoMatchConfirmed: false,
   engineers: [],
   // Empty string = None (not mapped to a GitHub branch).
   branches: {
@@ -116,6 +118,7 @@ const getStepStates = (data) => {
   const checklistCount = Array.isArray(data.setup_checklist)
     ? data.setup_checklist.length
     : 0;
+  const repoMatchConfirmed = !!data.repo_match_confirmed;
 
   return {
     1: { done: enabled, locked: false },
@@ -127,7 +130,11 @@ const getStepStates = (data) => {
     },
     4: {
       done:
-        enabled && githubConfigured && workflowInstalled && checklistCount >= 2,
+        enabled &&
+        githubConfigured &&
+        workflowInstalled &&
+        checklistCount >= 2 &&
+        repoMatchConfirmed,
       locked: !(enabled && githubConfigured && workflowInstalled),
     },
   };
@@ -265,6 +272,7 @@ const AgenticSettings = () => {
       setupChecklist: Array.isArray(payload.setup_checklist)
         ? payload.setup_checklist.map(Number)
         : [],
+      repoMatchConfirmed: !!payload.repo_match_confirmed,
       engineers: Array.isArray(payload.engineers)
         ? payload.engineers.map(Number)
         : [],
@@ -346,6 +354,7 @@ const AgenticSettings = () => {
       ai_provider: form.aiProvider || 'claude',
       github_repo: form.githubRepo || '',
       setup_checklist: form.setupChecklist,
+      repo_match_confirmed: !!form.repoMatchConfirmed,
       engineers: form.engineers,
       branches: {
         staging: form.branches?.staging || '',
@@ -1025,9 +1034,14 @@ const AgenticSettings = () => {
                       className="regular-text"
                       placeholder="owner/repo"
                       value={form.githubRepo}
-                      onChange={(event) =>
-                        updateForm({ githubRepo: event.target.value })
-                      }
+                      onChange={(event) => {
+                        const nextRepo = event.target.value;
+                        // Changing repo clears the site↔repo confirmation.
+                        updateForm({
+                          githubRepo: nextRepo,
+                          repoMatchConfirmed: false,
+                        });
+                      }}
                     />
                   </td>
                 </tr>
@@ -1082,11 +1096,37 @@ const AgenticSettings = () => {
               </tbody>
             </table>
 
+            <p className="agentic-repo-match">
+              <label htmlFor="agentic-repo-match-confirm">
+                <input
+                  id="agentic-repo-match-confirm"
+                  type="checkbox"
+                  checked={!!form.repoMatchConfirmed}
+                  onChange={(event) =>
+                    updateForm({
+                      repoMatchConfirmed: event.target.checked,
+                    })
+                  }
+                />
+                <span>
+                  {__(
+                    'Confirm this WordPress site matches the GitHub repository.',
+                    'alpaca-issue-tracker',
+                  )}
+                </span>
+              </label>
+            </p>
+
             <div className="agentic-step-actions">
               <button
                 type="button"
                 className="button button-primary"
-                disabled={saving || testing || panelLocked}
+                disabled={
+                  saving ||
+                  testing ||
+                  panelLocked ||
+                  !form.repoMatchConfirmed
+                }
                 onClick={testGithubConnectionAndFetchBranches}
               >
                 {testing
@@ -1315,6 +1355,7 @@ const AgenticSettings = () => {
                     <button
                       type="button"
                       className="button button-primary"
+                      disabled={!form.repoMatchConfirmed}
                       onClick={() => setFocusedStep(4)}
                     >
                       {__('Continue to Finish Setup', 'alpaca-issue-tracker')}
@@ -1329,7 +1370,7 @@ const AgenticSettings = () => {
                     <button
                       type="button"
                       className="button agentic-install-btn"
-                      disabled={installing}
+                      disabled={installing || !form.repoMatchConfirmed}
                       onClick={handleInstall}
                     >
                       {installing
@@ -1377,6 +1418,15 @@ const AgenticSettings = () => {
               )}
             </p>
 
+            {!form.repoMatchConfirmed ? (
+              <p className="notice notice-warning inline">
+                {__(
+                  'Confirm that this WordPress site matches the GitHub repository in Setup GitHub before finishing.',
+                  'alpaca-issue-tracker',
+                )}
+              </p>
+            ) : null}
+
             <ul className="agentic-checklist">
               {checklistItems.map((item) => {
                 const checked = form.setupChecklist.includes(item.key);
@@ -1411,7 +1461,7 @@ const AgenticSettings = () => {
               <button
                 type="button"
                 className="button button-primary"
-                disabled={saving || panelLocked}
+                disabled={saving || panelLocked || !form.repoMatchConfirmed}
                 onClick={saveFinishSetup}
               >
                 {saving
