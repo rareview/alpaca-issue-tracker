@@ -529,7 +529,7 @@
             'p',
             { className: 'agentic-branches-required-notice' },
             __(
-              'To send this issue to the AI agent, map at least one Staging or Production branch under Project Board → AI Issue Resolver → Setup GitHub.',
+              'To send this issue to the AI agent, map at least one Staging or Production branch under Project Board → AI Issue Resolver → GitHub Setup.',
               'alpaca-issue-tracker',
             ),
           ),

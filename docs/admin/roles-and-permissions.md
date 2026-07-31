@@ -42,7 +42,7 @@ Issue deletion is restricted to `manage_options` by default.
 The AI Issue Fixer (AI Issue Resolver) is meant only for engineers with GitHub access who will review each auto-generated pull request, so access is more restricted than the rest of the board:
 
 - Administrators (`manage_options`) always have full access: they can configure the feature and use it.
-- Administrators can grant additional users AI Issue Fixer access from the Add Users step on the AI Issue Resolver screen. Those users can use the feature (send issues to the AI agent) and view setup status, but cannot change settings or credentials.
+- Administrators can grant additional users AI Issue Fixer access from the WP Setup step on the AI Issue Resolver screen. Those users can use the feature (send issues to the AI agent) and view setup status, but cannot change settings or credentials.
 - Everyone else can see the AI Issue Resolver menu item, but the screen shows a message that access is limited to administrators and granted users, and the "Send to AI agent on GitHub" action never appears for them.
 
 ## Configuration Workflows

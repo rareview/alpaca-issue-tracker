@@ -339,21 +339,52 @@ function alpaistr_agentic_collect_issue_data( WP_Post $post ): array {
  * @return array|WP_Error Draft array or error.
  */
 function alpaistr_agentic_call_ai( array $issue_data, array $settings ): array|WP_Error {
-	// Incomplete: project_context is appended to the system prompt when set; no admin UI to edit it yet.
 	$system_prompt = alpaistr_agentic_build_system_prompt( $settings['project_context'] ?? '' );
 	$user_message  = alpaistr_agentic_build_user_message( $issue_data );
 
 	if ( 'openai' === $settings['ai_provider'] ) {
-		return alpaistr_agentic_call_openai( $system_prompt, $user_message, $settings['ai_api_key'] );
+		$draft = alpaistr_agentic_call_openai( $system_prompt, $user_message, $settings['ai_api_key'] );
+	} else {
+		$draft = alpaistr_agentic_call_claude( $system_prompt, $user_message, $settings['ai_api_key'] );
 	}
 
-	return alpaistr_agentic_call_claude( $system_prompt, $user_message, $settings['ai_api_key'] );
+	if ( is_wp_error( $draft ) ) {
+		return $draft;
+	}
+
+	return alpaistr_agentic_append_project_context( $draft, $settings['project_context'] ?? '' );
+}
+
+/**
+ * Append the current project context to a draft body so every GitHub issue
+ * carries the latest site-wide notes (re-read from settings on each draft).
+ *
+ * @param array  $draft           Parsed AI draft.
+ * @param string $project_context Site-wide project context from settings.
+ * @return array Draft with project context appended when non-empty.
+ */
+function alpaistr_agentic_append_project_context( array $draft, string $project_context ): array {
+	$project_context = trim( sanitize_textarea_field( $project_context ) );
+	if ( '' === $project_context ) {
+		return $draft;
+	}
+
+	$body = rtrim( (string) ( $draft['body'] ?? '' ) );
+
+	// Avoid duplicating if the AI already included an identical section.
+	if ( str_contains( $body, "## Project Context\n\n" . $project_context ) ) {
+		return $draft;
+	}
+
+	$draft['body'] = $body . "\n\n## Project Context\n\n" . $project_context;
+
+	return $draft;
 }
 
 /**
  * Build the system prompt that instructs the AI how to format the output.
  *
- * @param string $extra_context Optional project-specific context (from settings; incomplete — no admin UI yet).
+ * @param string $extra_context Optional project-specific context from settings.
  * @return string System prompt text.
  */
 function alpaistr_agentic_build_system_prompt( string $extra_context = '' ): string {
@@ -362,7 +393,7 @@ function alpaistr_agentic_build_system_prompt( string $extra_context = '' ): str
 	$prompt = is_readable( $path ) ? (string) file_get_contents( $path ) : '';
 
 	if ( ! empty( $extra_context ) ) {
-		$prompt .= "\n\nAdditional project context:\n" . $extra_context;
+		$prompt .= "\n\nAdditional project context (use to inform Context and Technical Notes; do not paste this block verbatim — it is appended to the issue automatically):\n" . $extra_context;
 	}
 
 	return $prompt;
@@ -1928,7 +1959,6 @@ function alpaistr_agentic_get_settings(): array {
 		'github_repo'     => $options['github_repo'] ?? '',
 		'ai_provider'     => $options['ai_provider'] ?? 'claude',
 		'ai_api_key'      => defined( 'ALPAISTR_AGENTIC_AI_API_KEY' ) ? ALPAISTR_AGENTIC_AI_API_KEY : ( $options['ai_api_key'] ?? '' ),
-		// Incomplete: per-site drafting notes; usually empty until wizard exposes project_context.
 		'project_context' => $options['project_context'] ?? '',
 	];
 }

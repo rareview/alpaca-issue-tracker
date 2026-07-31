@@ -77,7 +77,8 @@ The output must follow this exact Markdown template:
 - [ ] Complexity is appropriate for agent execution
 
 Rules:
-- Use ONLY information from the provided Alpaca issue. Mark anything unknown as "TBD — needs clarification."
+- Use ONLY information from the provided Alpaca issue and any Additional project context in the system prompt. Mark anything unknown as "TBD — needs clarification."
+- When Additional project context is provided, use it to inform the Context and Technical Notes sections (stack, conventions, constraints). Do not paste that block verbatim — a Project Context section is appended to the issue automatically.
 - The Summary must be exactly one sentence (≤ 25 words).
 - Every Acceptance Criterion must be a specific, testable checkbox.
 - Do NOT use vague language ("improve", "enhance", "make better"). Be concrete and technical.

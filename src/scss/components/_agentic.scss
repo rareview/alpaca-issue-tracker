@@ -506,6 +506,34 @@
   padding: 0;
 }
 
+.agentic-panel-subtitle {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 20px 0 8px;
+  padding: 0;
+}
+
+.agentic-panel-subtitle:first-of-type {
+  margin-block-start: 0;
+}
+
+.agentic-project-context {
+  margin-block-start: 28px;
+}
+
+.agentic-project-context .agentic-panel-subtitle {
+  margin-block-start: 0;
+}
+
+.agentic-project-context__textarea {
+  width: 100%;
+  max-width: 40rem;
+  min-height: 10rem;
+  font-family: Consolas, Monaco, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 /* Locked fieldset: show content grayed out but non-interactive */
 
 .agentic-fieldset-disabled {

@@ -134,7 +134,7 @@ class Agentic {
 				? $raw['ai_provider']
 				: ( $current_settings['ai_provider'] ?? 'claude' ),
 			'ai_api_key'           => $ai_api_key,
-			// Incomplete: optional per-site notes for the drafting AI. Stored/sanitized here but no wizard field yet.
+			// Optional per-site notes appended to every AI-drafted GitHub issue.
 			'project_context'      => sanitize_textarea_field( $raw['project_context'] ?? ( $current_settings['project_context'] ?? '' ) ),
 			'setup_checklist'      => array_values(
 				array_unique(
@@ -232,7 +232,6 @@ class Agentic {
 			'enabled'                    => ! empty( $options['enabled'] ),
 			'github_repo'                => $github_repo,
 			'ai_provider'                => $options['ai_provider'] ?? 'claude',
-			// Incomplete: exposed for future wizard UI; usually empty until an admin field is added.
 			'project_context'            => $options['project_context'] ?? '',
 			'setup_checklist'            => array_map( 'absint', (array) ( $options['setup_checklist'] ?? [] ) ),
 			'repo_match_confirmed'       => ! empty( $options['repo_match_confirmed'] ),
