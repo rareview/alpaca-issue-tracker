@@ -356,6 +356,8 @@ function alpaistr_agentic_collect_issue_data( WP_Post $post ): array {
 /**
  * Call the configured AI provider and return a structured draft.
  *
+ * If is_wp_ai_configured() is true, use WP Connectors API; otherwise, use the AI provider from the plugin settings.
+ *
  * @param array $issue_data Structured Alpaca issue data.
  * @param array $settings   Plugin settings.
  * @return array|WP_Error Draft array or error.
@@ -364,10 +366,20 @@ function alpaistr_agentic_call_ai( array $issue_data, array $settings ): array|W
 	$system_prompt = alpaistr_agentic_build_system_prompt( $settings['project_context'] ?? '' );
 	$user_message  = alpaistr_agentic_build_user_message( $issue_data );
 
-	if ( 'openai' === $settings['ai_provider'] ) {
-		$draft = alpaistr_agentic_call_openai( $system_prompt, $user_message, $settings['ai_api_key'] );
+	if ( Agentic::is_wp_ai_configured() ) {
+		$draft = alpaistr_agentic_call_wp_ai( $system_prompt, $user_message );
+	} elseif ( ! empty( $settings['ai_api_key'] ) ) {
+		if ( 'openai' === $settings['ai_provider'] ) {
+			$draft = alpaistr_agentic_call_openai( $system_prompt, $user_message, $settings['ai_api_key'] );
+		} else {
+			$draft = alpaistr_agentic_call_claude( $system_prompt, $user_message, $settings['ai_api_key'] );
+		}
 	} else {
-		$draft = alpaistr_agentic_call_claude( $system_prompt, $user_message, $settings['ai_api_key'] );
+		return new WP_Error(
+			'ai_not_configured',
+			esc_html__( 'No AI provider is configured. Set up an AI provider in Settings → Connectors, or add a custom API key in the AI Issue Fixer settings.', 'alpaca-issue-tracker' ),
+			[ 'status' => 400 ]
+		);
 	}
 
 	if ( is_wp_error( $draft ) ) {
@@ -598,6 +610,34 @@ function alpaistr_agentic_build_user_message( array $issue_data ): string {
 }
 
 /**
+ * Call the WordPress AI Client (Connectors-backed provider) and return a structured draft.
+ *
+ * WP picks the configured provider from Settings → Connectors; the system
+ * prompt instructs the model to return JSON so no structured-output API is
+ * required, keeping this compatible with all registered providers.
+ *
+ * @param string $system_prompt System instructions for the AI.
+ * @param string $user_message  User message containing issue data.
+ * @return array|WP_Error Parsed draft or error.
+ */
+function alpaistr_agentic_call_wp_ai( string $system_prompt, string $user_message ): array|WP_Error {
+	$text = wp_ai_client_prompt( $user_message )
+		->using_system_instruction( $system_prompt )
+		->generate_text();
+
+	if ( is_wp_error( $text ) ) {
+		return new WP_Error(
+			'ai_request_failed',
+			/* translators: %s: error message */
+			sprintf( esc_html__( 'AI request failed: %s', 'alpaca-issue-tracker' ), $text->get_error_message() ),
+			[ 'status' => 502 ]
+		);
+	}
+
+	return alpaistr_agentic_parse_draft_text( (string) $text );
+}
+
+/**
  * Call the Anthropic Claude API.
  *
  * @param string $system_prompt System instructions for the AI.
@@ -675,6 +715,41 @@ function alpaistr_agentic_call_openai( string $system_prompt, string $user_messa
 }
 
 /**
+ * Parse a raw AI text response (expected JSON) into a structured draft array.
+ *
+ * Strips markdown code fences in case the AI wrapped its output, then
+ * decodes JSON and validates the required fields.
+ *
+ * @param string $text Raw AI text output.
+ * @return array|WP_Error Parsed draft or error.
+ */
+function alpaistr_agentic_parse_draft_text( string $text ): array|WP_Error {
+	// Strip markdown code fences if the AI ignored instructions.
+	$text = preg_replace( '/^```(?:json)?\s*/m', '', $text );
+	$text = preg_replace( '/\s*```$/m', '', $text );
+	$text = trim( $text );
+
+	$draft = json_decode( $text, true );
+
+	if ( ! is_array( $draft ) || empty( $draft['title'] ) || empty( $draft['body'] ) ) {
+		return new WP_Error(
+			'ai_parse_error',
+			esc_html__( 'AI returned an unexpected format. Please try again.', 'alpaca-issue-tracker' ),
+			[ 'status' => 502 ]
+		);
+	}
+
+	return [
+		'title'      => sanitize_text_field( $draft['title'] ),
+		'body'       => wp_kses_post( $draft['body'] ),
+		'complexity' => in_array( $draft['complexity'] ?? '', [ 'low', 'medium', 'high' ], true )
+			? $draft['complexity']
+			: 'medium',
+		'labels'     => array_map( 'sanitize_text_field', (array) ( $draft['labels'] ?? [] ) ),
+	];
+}
+
+/**
  * Parse the raw HTTP response from an AI provider into a draft array.
  *
  * @param array|WP_Error $response The wp_remote_post response.
@@ -708,29 +783,7 @@ function alpaistr_agentic_parse_ai_response( array|WP_Error $response, string $p
 		$text = $data['choices'][0]['message']['content'] ?? '';
 	}
 
-	// Strip markdown code fences if the AI ignored instructions.
-	$text = preg_replace( '/^```(?:json)?\s*/m', '', $text );
-	$text = preg_replace( '/\s*```$/m', '', $text );
-	$text = trim( $text );
-
-	$draft = json_decode( $text, true );
-
-	if ( ! is_array( $draft ) || empty( $draft['title'] ) || empty( $draft['body'] ) ) {
-		return new WP_Error(
-			'ai_parse_error',
-			esc_html__( 'AI returned an unexpected format. Please try again.', 'alpaca-issue-tracker' ),
-			[ 'status' => 502 ]
-		);
-	}
-
-	return [
-		'title'      => sanitize_text_field( $draft['title'] ),
-		'body'       => wp_kses_post( $draft['body'] ),
-		'complexity' => in_array( $draft['complexity'] ?? '', [ 'low', 'medium', 'high' ], true )
-			? $draft['complexity']
-			: 'medium',
-		'labels'     => array_map( 'sanitize_text_field', (array) ( $draft['labels'] ?? [] ) ),
-	];
+	return alpaistr_agentic_parse_draft_text( (string) $text );
 }
 
 /**

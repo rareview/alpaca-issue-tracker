@@ -21,9 +21,18 @@ const STEP_LABELS = {
 
 const PROJECT_CONTEXT_PLACEHOLDER = [
   __('Examples of what to include:', 'alpaca-issue-tracker'),
-  __('• What this site is built with (custom theme, WooCommerce, etc.)', 'alpaca-issue-tracker'),
-  __('• Where the main code lives (e.g. wp-content/themes/my-theme)', 'alpaca-issue-tracker'),
-  __('• Important plugins or tools the AI should know about', 'alpaca-issue-tracker'),
+  __(
+    '• What this site is built with (custom theme, WooCommerce, etc.)',
+    'alpaca-issue-tracker',
+  ),
+  __(
+    '• Where the main code lives (e.g. wp-content/themes/my-theme)',
+    'alpaca-issue-tracker',
+  ),
+  __(
+    '• Important plugins or tools the AI should know about',
+    'alpaca-issue-tracker',
+  ),
   __('• Anything unusual about staging vs production', 'alpaca-issue-tracker'),
   __('• Team conventions or “don’t touch” areas', 'alpaca-issue-tracker'),
 ].join('\n');
@@ -124,7 +133,7 @@ HelpTip.propTypes = {
 const getStepStates = (data) => {
   const enabled = !!data.enabled;
   const githubConfigured =
-    !!data.github_repo && !!data.github_token_set && !!data.ai_api_key_set;
+    !!data.github_repo && !!data.github_token_set && !!data.ai_ready;
   const workflowInstalled = !!data.workflow_installed;
   const checklistCount = Array.isArray(data.setup_checklist)
     ? data.setup_checklist.length
@@ -562,7 +571,7 @@ const AgenticSettings = () => {
   const canEdit = !!data.can_edit;
   const panelLocked = !allDone && !!stepStates[focusedStep]?.locked;
   const githubConfigured =
-    !!data.github_repo && !!data.github_token_set && !!data.ai_api_key_set;
+    !!data.github_repo && !!data.github_token_set && !!data.ai_ready;
   const workflowInstalled = !!data.workflow_installed;
   const prUrl = data.workflow_pr_url || '';
   const secretsUrl = data.repo_secrets_url || '';
@@ -783,106 +792,150 @@ const AgenticSettings = () => {
               </span>
             </label>
 
-            <p>
-              {__(
-                'Set up the AI provider used by the plugin for preparing human-written Alpaca issues to be sent to GitHub.',
-                'alpaca-issue-tracker',
-              )}{' '}
-              <HelpTip
-                label={__('More information', 'alpaca-issue-tracker')}
-                tooltip={__(
-                  'This is different from the AI used on GitHub to resolve issues and create pull requests, though you can use the same key for both.',
-                  'alpaca-issue-tracker',
-                )}
-              />
-            </p>
-
-            <fieldset
-              className={`agentic-ai-provider-fields${form.enabled ? '' : ' agentic-fieldset-disabled'}`}
-              disabled={!form.enabled}
-            >
-              <legend className="screen-reader-text">
-                {__('AI provider settings', 'alpaca-issue-tracker')}
-              </legend>
-              <table className="form-table" role="presentation">
-                <tbody>
-                  <tr>
-                    <th scope="row">
-                      <label htmlFor="agentic-ai-provider">
-                        {__('AI Provider', 'alpaca-issue-tracker')}
-                      </label>
-                    </th>
-                    <td>
-                      <select
-                        id="agentic-ai-provider"
-                        value={form.aiProvider || 'claude'}
-                        disabled={!form.enabled}
-                        onChange={(event) =>
-                          updateForm({ aiProvider: event.target.value })
-                        }
-                      >
-                        <option value="claude">Claude (Anthropic)</option>
-                        <option value="openai">OpenAI / GPT-4o</option>
-                      </select>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">
-                      <label htmlFor="agentic-ai-api-key">
-                        {__('AI API Key', 'alpaca-issue-tracker')}
-                      </label>
-                    </th>
-                    <td>
-                      {data.ai_api_key_from_constant ? (
-                        <>
-                          <input
-                            type="password"
-                            id="agentic-ai-api-key"
-                            value=""
-                            className="regular-text"
-                            disabled
-                          />
-                          <p className="description">
-                            {__(
-                              'Defined via ALPAISTR_AGENTIC_AI_API_KEY constant.',
-                              'alpaca-issue-tracker',
-                            )}
-                          </p>
-                        </>
-                      ) : (
-                        <>
-                          <input
-                            type="password"
-                            id="agentic-ai-api-key"
-                            value={form.aiApiKey}
-                            className="regular-text"
-                            autoComplete="off"
-                            disabled={!form.enabled}
-                            placeholder={
-                              data.ai_api_key_set
-                                ? __(
-                                    '•••••••• (saved — leave blank to keep)',
-                                    'alpaca-issue-tracker',
-                                  )
-                                : ''
-                            }
-                            onChange={(event) =>
-                              updateForm({ aiApiKey: event.target.value })
-                            }
-                          />
-                          <p className="description">
-                            {__(
-                              'Used to draft agent-ready issues from Alpaca cards.',
-                              'alpaca-issue-tracker',
-                            )}
-                          </p>
-                        </>
+            {data.wp_ai_available ? (
+              <div
+                className={`agentic-connectors-status${form.enabled ? '' : ' agentic-fieldset-disabled'}`}
+              >
+                {data.wp_ai_configured ? (
+                  <p className="agentic-connectors-connected">
+                    <span
+                      className="agentic-connectors-connected__icon"
+                      aria-hidden="true"
+                    >
+                      ✓
+                    </span>{' '}
+                    {__(
+                      'AI provider configured via WordPress Connectors.',
+                      'alpaca-issue-tracker',
+                    )}{' '}
+                    <a
+                      href={data.connectors_admin_url}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                    >
+                      {__('Manage Connectors', 'alpaca-issue-tracker')}
+                    </a>
+                  </p>
+                ) : (
+                  <p className="agentic-connectors-unconfigured">
+                    {__('No AI provider configured.', 'alpaca-issue-tracker')}{' '}
+                    <a
+                      href={data.connectors_admin_url}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                    >
+                      {__(
+                        'Set up in Settings → Connectors',
+                        'alpaca-issue-tracker',
                       )}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </fieldset>
+                    </a>
+                    {__(' to continue.', 'alpaca-issue-tracker')}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <>
+                <p>
+                  {__(
+                    'Select the AI provider used to draft Alpaca issues for GitHub.',
+                    'alpaca-issue-tracker',
+                  )}{' '}
+                  <HelpTip
+                    label={__('More information', 'alpaca-issue-tracker')}
+                    tooltip={__(
+                      'This is separate from the AI that resolves issues on GitHub — you can use the same key for both.',
+                      'alpaca-issue-tracker',
+                    )}
+                  />
+                </p>
+                <fieldset
+                  className={`agentic-ai-provider-fields${form.enabled ? '' : ' agentic-fieldset-disabled'}`}
+                  disabled={!form.enabled}
+                >
+                  <legend className="screen-reader-text">
+                    {__('AI provider settings', 'alpaca-issue-tracker')}
+                  </legend>
+                  <table className="form-table" role="presentation">
+                    <tbody>
+                      <tr>
+                        <th scope="row">
+                          <label htmlFor="agentic-ai-provider">
+                            {__('AI Provider', 'alpaca-issue-tracker')}
+                          </label>
+                        </th>
+                        <td>
+                          <select
+                            id="agentic-ai-provider"
+                            value={form.aiProvider || 'claude'}
+                            disabled={!form.enabled}
+                            onChange={(event) =>
+                              updateForm({ aiProvider: event.target.value })
+                            }
+                          >
+                            <option value="claude">Claude (Anthropic)</option>
+                            <option value="openai">OpenAI / GPT-4o</option>
+                          </select>
+                        </td>
+                      </tr>
+                      <tr>
+                        <th scope="row">
+                          <label htmlFor="agentic-ai-api-key">
+                            {__('AI API Key', 'alpaca-issue-tracker')}
+                          </label>
+                        </th>
+                        <td>
+                          {data.ai_api_key_from_constant ? (
+                            <>
+                              <input
+                                type="password"
+                                id="agentic-ai-api-key"
+                                value=""
+                                className="regular-text"
+                                disabled
+                              />
+                              <p className="description">
+                                {__(
+                                  'Defined via ALPAISTR_AGENTIC_AI_API_KEY constant.',
+                                  'alpaca-issue-tracker',
+                                )}
+                              </p>
+                            </>
+                          ) : (
+                            <>
+                              <input
+                                type="password"
+                                id="agentic-ai-api-key"
+                                value={form.aiApiKey}
+                                className="regular-text"
+                                autoComplete="off"
+                                disabled={!form.enabled}
+                                placeholder={
+                                  data.ai_api_key_set
+                                    ? __(
+                                        '•••••••• (saved — leave blank to keep)',
+                                        'alpaca-issue-tracker',
+                                      )
+                                    : ''
+                                }
+                                onChange={(event) =>
+                                  updateForm({ aiApiKey: event.target.value })
+                                }
+                              />
+                              <p className="description">
+                                {__(
+                                  'Used to draft agent-ready issues from Alpaca cards.',
+                                  'alpaca-issue-tracker',
+                                )}
+                              </p>
+                            </>
+                          )}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </fieldset>
+              </>
+            )}
 
             <div className="agentic-step-actions">
               <button
@@ -1062,10 +1115,7 @@ const AgenticSettings = () => {
                 type="button"
                 className="button button-primary"
                 disabled={
-                  saving ||
-                  testing ||
-                  panelLocked ||
-                  !form.repoMatchConfirmed
+                  saving || testing || panelLocked || !form.repoMatchConfirmed
                 }
                 onClick={testGithubConnectionAndFetchBranches}
               >

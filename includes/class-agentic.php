@@ -203,6 +203,47 @@ class Agentic {
 	}
 
 	/**
+	 * Whether the WordPress AI Client infrastructure is present and AI support is on.
+	 */
+	public static function is_wp_ai_available(): bool {
+		return function_exists( 'wp_ai_client_prompt' )
+			&& wp_supports_ai()
+			&& class_exists( 'WordPress\\AiClient\\AiClient' );
+	}
+
+	/**
+	 * Whether at least one WP Connectors AI provider is registered and configured.
+	 *
+	 * Checks anthropic and openai first (the fallback direct-HTTP providers), then
+	 * any other registered provider so any Connectors setup is accepted.
+	 */
+	public static function is_wp_ai_configured(): bool {
+		if ( ! self::is_wp_ai_available() ) {
+			return false;
+		}
+
+		try {
+			$registry = \WordPress\AiClient\AiClient::defaultRegistry();
+
+			foreach ( [ 'anthropic', 'openai' ] as $provider_id ) {
+				if ( $registry->hasProvider( $provider_id ) && $registry->isProviderConfigured( $provider_id ) ) {
+					return true;
+				}
+			}
+
+			foreach ( $registry->getRegisteredProviderIds() as $provider_id ) {
+				if ( $registry->isProviderConfigured( $provider_id ) ) {
+					return true;
+				}
+			}
+		} catch ( \Throwable $e ) {
+			return false;
+		}
+
+		return false;
+	}
+
+	/**
 	 * Build a client-safe settings payload for the React wizard.
 	 *
 	 * Secrets are never sent. Empty token fields on save keep existing values.
@@ -250,6 +291,14 @@ class Agentic {
 			'can_edit'                   => $is_admin, // only admins can edit settings.
 			// PR target branches (empty string = None). At least one must be set to send issues.
 			'branches'                   => self::get_branches( $options ),
+			// WP Connectors / AI Client status.
+			'wp_ai_available'            => self::is_wp_ai_available(),
+			'wp_ai_configured'           => self::is_wp_ai_configured(),
+			'connectors_admin_url'       => admin_url( 'options-connectors.php' ),
+			// AI is ready: on WP 7.0+ only Connectors counts; on older WP a custom key is required.
+			'ai_ready'                   => self::is_wp_ai_available()
+				? self::is_wp_ai_configured()
+				: '' !== (string) $ai_api_key,
 		];
 	}
 
@@ -297,7 +346,10 @@ class Agentic {
 		$github_repo  = $options['github_repo'] ?? '';
 		$ai_key       = defined( 'ALPAISTR_AGENTIC_AI_API_KEY' ) ? ALPAISTR_AGENTIC_AI_API_KEY : ( $options['ai_api_key'] ?? '' );
 
-		if ( empty( $github_token ) || empty( $github_repo ) || empty( $ai_key ) ) {
+		$ai_ready = self::is_wp_ai_available()
+			? self::is_wp_ai_configured()
+			: ! empty( $ai_key );
+		if ( empty( $github_token ) || empty( $github_repo ) || ! $ai_ready ) {
 			return false;
 		}
 

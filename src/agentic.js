@@ -21,8 +21,13 @@
     return;
   }
 
-  const { createElement: el, useState, useCallback, useEffect, Fragment } =
-    wp.element;
+  const {
+    createElement: el,
+    useState,
+    useCallback,
+    useEffect,
+    Fragment,
+  } = wp.element;
   const {
     Modal,
     Button,

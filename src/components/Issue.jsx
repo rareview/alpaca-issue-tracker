@@ -2102,10 +2102,7 @@ const AlpacaIssue = ({
   // React key. After sending to AI, AI Log is added while the modal stays open; changing
   // the key forces the tab bar to rebuild so the new tab appears. Without it, WordPress
   // TabPanel can keep the old tab list and ignore the new tab.
-  const issueTabs = useMemo(
-    () => getTabsConfig(issueDetails),
-    [issueDetails],
-  );
+  const issueTabs = useMemo(() => getTabsConfig(issueDetails), [issueDetails]);
   const issueTabsKey = useMemo(
     () => issueTabs.map((tab) => tab.name).join('|'),
     [issueTabs],
