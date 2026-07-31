@@ -17,6 +17,28 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 const ALPAISTR_AGENTIC_GITHUB_ISSUE_URL_META = 'alpaca_github_issue_url';
 
+/**
+ * Post meta key that stores the linked GitHub issue number.
+ */
+const ALPAISTR_AGENTIC_GITHUB_ISSUE_NUMBER_META = 'alpaca_github_issue_number';
+
+/**
+ * Post meta key that stores AI Issue Resolver progress status (e.g. sent).
+ */
+const ALPAISTR_AGENTIC_STATUS_META = 'alpaca_agentic_status';
+
+/**
+ * Post meta key that stores the PR target branch selected at send time.
+ */
+const ALPAISTR_AGENTIC_TARGET_BRANCH_META = 'alpaca_agentic_target_branch';
+
+/**
+ * Post meta key that stores the chronological AI Issue Resolver send history.
+ *
+ * Each entry: url, github_number, target_branch, status, sent_at (GMT ISO-8601).
+ */
+const ALPAISTR_AGENTIC_SEND_HISTORY_META = 'alpaca_agentic_send_history';
+
 add_action( 'rest_api_init', 'alpaistr_register_agentic_endpoints' );
 
 /**
@@ -1386,17 +1408,206 @@ function alpaistr_agentic_create_callback( WP_REST_Request $request ): WP_REST_R
 		}
 	}
 
-	$github_url = esc_url_raw( $gh_data['html_url'] );
+	$github_url    = esc_url_raw( $gh_data['html_url'] );
+	$github_number = (int) ( $gh_data['number'] ?? 0 );
+	$target_branch = alpaistr_agentic_extract_target_branch_from_labels( $labels );
 
-	// Save the GitHub issue URL back to the Alpaca post so it's visible in the admin.
-	update_post_meta( $issue_id, ALPAISTR_AGENTIC_GITHUB_ISSUE_URL_META, $github_url );
+	$send_history = alpaistr_agentic_store_send_progress( $issue_id, $github_url, $github_number, $target_branch );
+	alpaistr_agentic_insert_sent_activity_comment( $issue_id, $github_url, $target_branch );
+	alpaistr_agentic_assign_sent_to_ai_label( $issue_id );
 
 	return rest_ensure_response(
 		[
 			'url'           => $github_url,
-			'github_number' => (int) ( $gh_data['number'] ?? 0 ),
+			'github_number' => $github_number,
+			'status'        => 'sent',
+			'target_branch' => $target_branch,
+			'send_history'  => $send_history,
 		]
 	);
+}
+
+/**
+ * Pull the GitHub PR base branch from target-branch:* labels.
+ *
+ * @param string[] $labels Label names sent with the GitHub issue.
+ * @return string Branch name, or empty string when absent.
+ */
+function alpaistr_agentic_extract_target_branch_from_labels( array $labels ): string {
+	foreach ( $labels as $label_name ) {
+		if ( ! is_string( $label_name ) || ! str_starts_with( $label_name, 'target-branch:' ) ) {
+			continue;
+		}
+
+		return sanitize_text_field( substr( $label_name, strlen( 'target-branch:' ) ) );
+	}
+
+	return '';
+}
+
+/**
+ * Persist AI Issue Resolver send progress on the Alpaca issue.
+ *
+ * Appends to the chronological send history and keeps latest-* meta in sync.
+ *
+ * @param int    $issue_id      Alpaca issue post ID.
+ * @param string $github_url    GitHub issue HTML URL.
+ * @param int    $github_number GitHub issue number.
+ * @param string $target_branch PR target branch name.
+ * @return array<int, array<string, mixed>> Full send history after append (oldest first).
+ */
+function alpaistr_agentic_store_send_progress( int $issue_id, string $github_url, int $github_number, string $target_branch ): array {
+	$send_history = alpaistr_agentic_get_send_history( $issue_id );
+
+	$send_history[] = [
+		'url'           => $github_url,
+		'github_number' => $github_number,
+		'target_branch' => $target_branch,
+		'status'        => 'sent',
+		'sent_at'       => gmdate( 'c' ),
+	];
+
+	update_post_meta( $issue_id, ALPAISTR_AGENTIC_SEND_HISTORY_META, $send_history );
+	update_post_meta( $issue_id, ALPAISTR_AGENTIC_GITHUB_ISSUE_URL_META, $github_url );
+	update_post_meta( $issue_id, ALPAISTR_AGENTIC_GITHUB_ISSUE_NUMBER_META, $github_number );
+	update_post_meta( $issue_id, ALPAISTR_AGENTIC_STATUS_META, 'sent' );
+
+	if ( '' !== $target_branch ) {
+		update_post_meta( $issue_id, ALPAISTR_AGENTIC_TARGET_BRANCH_META, $target_branch );
+	} else {
+		delete_post_meta( $issue_id, ALPAISTR_AGENTIC_TARGET_BRANCH_META );
+	}
+
+	return $send_history;
+}
+
+/**
+ * Load the chronological AI Issue Resolver send history for an issue.
+ *
+ * @param int $issue_id Alpaca issue post ID.
+ * @return array<int, array<string, mixed>> Oldest-first list of send entries.
+ */
+function alpaistr_agentic_get_send_history( int $issue_id ): array {
+	$records = get_post_meta( $issue_id, ALPAISTR_AGENTIC_SEND_HISTORY_META, true );
+	if ( ! is_array( $records ) || empty( $records ) ) {
+		return [];
+	}
+
+	return array_values(
+		array_filter(
+			$records,
+			static function ( $entry ): bool {
+				return is_array( $entry ) && ! empty( $entry['url'] );
+			}
+		)
+	);
+}
+
+/**
+ * Ensure the "Sent to AI" Alpaca label exists and append it to the issue.
+ *
+ * @param int $issue_id Alpaca issue post ID.
+ * @return void
+ */
+function alpaistr_agentic_assign_sent_to_ai_label( int $issue_id ): void {
+	if ( $issue_id <= 0 || ! taxonomy_exists( 'alpaca_label' ) ) {
+		return;
+	}
+
+	$label_name = 'Sent to AI';
+	$existing   = term_exists( $label_name, 'alpaca_label' );
+
+	if ( $existing ) {
+		$term_id = (int) ( is_array( $existing ) ? ( $existing['term_id'] ?? 0 ) : $existing );
+	} else {
+		$created = wp_insert_term( $label_name, 'alpaca_label' );
+		if ( is_wp_error( $created ) || empty( $created['term_id'] ) ) {
+			return;
+		}
+		$term_id = (int) $created['term_id'];
+		// Violet accent aligned with the AI Issue Resolver UI.
+		update_term_meta( $term_id, 'alpaca_label_color', '#7c3aed' );
+	}
+
+	if ( $term_id <= 0 ) {
+		return;
+	}
+
+	wp_set_object_terms( $issue_id, [ $term_id ], 'alpaca_label', true );
+
+	if ( function_exists( 'alpaistr_clear_board_cache' ) ) {
+		alpaistr_clear_board_cache();
+	}
+}
+
+/**
+ * Insert a system activity comment recording that the issue was sent to GitHub.
+ *
+ * Skips notification dispatch so watchers are not spammed for automated progress notes.
+ *
+ * @param int    $issue_id      Alpaca issue post ID.
+ * @param string $github_url    GitHub issue HTML URL.
+ * @param string $target_branch PR target branch name.
+ * @return int Inserted comment ID, or 0 on failure.
+ */
+function alpaistr_agentic_insert_sent_activity_comment( int $issue_id, string $github_url, string $target_branch ): int {
+	if ( $issue_id <= 0 || '' === $github_url ) {
+		return 0;
+	}
+
+	if ( '' !== $target_branch ) {
+		$content = sprintf(
+			/* translators: 1: GitHub issue URL, 2: target branch name. */
+			__( 'AI Issue Resolver: GitHub issue created — [%1$s](%1$s). Target branch: **%2$s**.', 'alpaca-issue-tracker' ),
+			$github_url,
+			$target_branch
+		);
+	} else {
+		$content = sprintf(
+			/* translators: %s: GitHub issue URL. */
+			__( 'AI Issue Resolver: GitHub issue created — [%1$s](%1$s).', 'alpaca-issue-tracker' ), // phpcs:ignore WordPress.WP.I18n.UnorderedPlaceholdersText -- URL repeated for markdown link.
+			$github_url
+		);
+	}
+
+	if ( function_exists( 'alpaistr_ability_get_current_comment_author_data' ) ) {
+		$author = alpaistr_ability_get_current_comment_author_data();
+	} else {
+		$user   = wp_get_current_user();
+		$author = [
+			'user_id'              => (int) $user->ID,
+			'comment_author'       => (string) $user->display_name,
+			'comment_author_email' => (string) $user->user_email,
+		];
+	}
+
+	$commentdata = array_merge(
+		$author,
+		[
+			'comment_post_ID'  => $issue_id,
+			'comment_content'  => $content,
+			'comment_type'     => 'issuecomment',
+			'comment_agent'    => 'audit',
+			'comment_approved' => 1,
+		]
+	);
+
+	$comment_id = wp_insert_comment( wp_filter_comment( wp_slash( $commentdata ) ) );
+	if ( ! $comment_id ) {
+		return 0;
+	}
+
+	update_comment_meta( (int) $comment_id, 'alpacaCommentTags', [ 'agentic-sent' ] );
+
+	if ( function_exists( 'alpaistr_update_last_activity_from_issuecomments' ) ) {
+		alpaistr_update_last_activity_from_issuecomments( $issue_id );
+	}
+
+	if ( function_exists( 'alpaistr_clear_board_cache' ) ) {
+		alpaistr_clear_board_cache();
+	}
+
+	return (int) $comment_id;
 }
 
 /**

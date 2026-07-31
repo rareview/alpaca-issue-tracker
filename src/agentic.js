@@ -21,7 +21,8 @@
     return;
   }
 
-  const { createElement: el, useState, useCallback, Fragment } = wp.element;
+  const { createElement: el, useState, useCallback, useEffect, Fragment } =
+    wp.element;
   const {
     Modal,
     Button,
@@ -159,7 +160,7 @@
     }, [issueId]);
 
     // Trigger on first render.
-    wp.element.useEffect(() => {
+    useEffect(() => {
       fetchDraftData();
     }, [fetchDraftData]);
 
@@ -197,6 +198,14 @@
         });
         setGithubUrl(data.url || '');
         setPhase('done');
+
+        // Tell the rest of Alpaca that this issue was sent to GitHub AI:
+        // - commentCountChanged → reload the activity/comments timeline
+        // - agentic.sent → refetch issue details (history tab, "Sent to AI" label)
+        if (wp.hooks && 'function' === typeof wp.hooks.doAction) {
+          wp.hooks.doAction('alpaca.commentCountChanged', { issueId });
+          wp.hooks.doAction('alpaca.agentic.sent', { issueId });
+        }
       } catch (err) {
         setErrorMsg(err.message);
         setPhase('preview');

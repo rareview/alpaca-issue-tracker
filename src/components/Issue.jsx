@@ -11,6 +11,7 @@ import useAutoExpandTextarea from '../hooks/useAutoExpandTextarea';
 import { processAssigneeChanges } from '../utils/assigneeUtils';
 import { splitTextForHighlight } from '../utils/searchHighlight';
 import {
+  fetchIssue,
   fetchStatuses,
   fetchLabels,
   fetchIssueCommentCount,
@@ -753,6 +754,49 @@ const AlpacaIssue = ({
         ),
       );
   }, [showNotification]);
+
+  // After AI Issue Resolver sends an issue, refresh details so the AI tab,
+  // history meta, and "Sent to AI" label appear without reopening the modal.
+  useEffect(() => {
+    if (!issueId || isCreating) {
+      return undefined;
+    }
+
+    const refreshAfterAgenticSend = async ({ issueId: changedId }) => {
+      if (String(changedId) !== String(issueId)) {
+        return;
+      }
+
+      try {
+        const [issueData, labels] = await Promise.all([
+          fetchIssue(issueId),
+          fetchLabels(),
+        ]);
+        setIssueDetails(issueData);
+        if (Array.isArray(labels)) {
+          setAllLabels(labels);
+        }
+        if (
+          typeof onLabelsChange === 'function' &&
+          Array.isArray(issueData?.taxonomies?.alpaca_label)
+        ) {
+          onLabelsChange(issueId, issueData.taxonomies.alpaca_label);
+        }
+      } catch (err) {
+        refetchData();
+      }
+    };
+
+    wp.hooks.addAction(
+      'alpaca.agentic.sent',
+      'alpaca/agentic-history',
+      refreshAfterAgenticSend,
+    );
+
+    return () => {
+      wp.hooks.removeAction('alpaca.agentic.sent', 'alpaca/agentic-history');
+    };
+  }, [issueId, isCreating, onLabelsChange, refetchData, setIssueDetails]);
 
   const getAssigneeNamesFromIssue = useCallback(
     (details) => {
@@ -2052,6 +2096,20 @@ const AlpacaIssue = ({
   const stableUsers = useMemo(() => allUsers, [allUsers]);
   const stableAssignees = useMemo(() => assignees, [assignees]);
   const stableLabels = useMemo(() => allLabels, [allLabels]);
+
+  // issueTabs = which tabs to show for this issue.
+  // issueTabsKey = fingerprint of that set (e.g. "comments|agentic"), used as TabPanel's
+  // React key. After sending to AI, AI Log is added while the modal stays open; changing
+  // the key forces the tab bar to rebuild so the new tab appears. Without it, WordPress
+  // TabPanel can keep the old tab list and ignore the new tab.
+  const issueTabs = useMemo(
+    () => getTabsConfig(issueDetails),
+    [issueDetails],
+  );
+  const issueTabsKey = useMemo(
+    () => issueTabs.map((tab) => tab.name).join('|'),
+    [issueTabs],
+  );
   const stableSelectedLabelIds = useMemo(
     () => selectedLabelIds,
     [selectedLabelIds],
@@ -2526,9 +2584,10 @@ const AlpacaIssue = ({
 
               {!isCreating && (
                 <TabPanel
+                  key={issueTabsKey}
                   className="alpaca-issue-tabs"
                   initialTabName="comments"
-                  tabs={getTabsConfig(issueDetails)}
+                  tabs={issueTabs}
                 >
                   {(tab) => {
                     if (tab.name === 'errors') {

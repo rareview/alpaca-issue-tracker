@@ -242,6 +242,18 @@ addAction(
 | ---------- | -------- | ---------------------------------------------------------------- |
 | `$payload` | `Object` | Payload containing `issueId`, `newCount`, and `newCountByAgent`. |
 
+### `alpaca.agentic.sent`
+
+**Type:** Action.
+
+**Purpose:** Fires after an Alpaca issue is successfully sent to the GitHub AI Issue Resolver, so the UI can refetch issue details (send history, labels).
+
+**Parameters**
+
+| Parameter  | Type     | Description                                      |
+| ---------- | -------- | ------------------------------------------------ |
+| `$payload` | `Object` | Payload containing `issueId` of the sent issue. |
+
 ### `alpaca.lastActivityChanged`
 
 **Type:** Action.

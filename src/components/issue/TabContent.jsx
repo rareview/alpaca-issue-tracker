@@ -3,6 +3,7 @@ import Commenting from '../Comment';
 import JsonTable from './JsonTable';
 import ReportTab from './ReportTab';
 import ErrorsTab from './ErrorsTab';
+import AgenticHistoryTab from './AgenticHistoryTab';
 
 const TabContent = memo(
   ({
@@ -58,6 +59,8 @@ const TabContent = memo(
             }
           />
         );
+      case 'agentic':
+        return <AgenticHistoryTab issueDetails={issueDetails} />;
       default:
         return null;
     }

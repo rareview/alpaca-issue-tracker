@@ -1,4 +1,5 @@
 const { __ } = wp.i18n;
+import { hasAgenticHistory } from './agenticHistory';
 
 export const getTabsConfig = (issueDetails) => {
   const hasBrowserContext =
@@ -53,6 +54,16 @@ export const getTabsConfig = (issueDetails) => {
             name: 'errors',
             title: __('Errors', 'alpaca-issue-tracker'),
             className: 'errors',
+          },
+        ]
+      : []),
+    // Only when the issue has been sent to the AI Issue Resolver at least once.
+    ...(hasAgenticHistory(issueDetails?.meta)
+      ? [
+          {
+            name: 'agentic',
+            title: __('AI Log', 'alpaca-issue-tracker'),
+            className: 'agentic',
           },
         ]
       : []),

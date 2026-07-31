@@ -91,6 +91,13 @@
       }
     }
 
+    &.agentic-sent {
+      .alpaca-timeline-icon::before {
+        mask-image: url('../components/icons/svg/stars.svg');
+        background-color: $color-text-muted;
+      }
+    }
+
     &.deadline-changed {
       .alpaca-timeline-icon::before {
         mask-image: url('../components/icons/svg/calendar2-week.svg');
