@@ -369,6 +369,18 @@
   margin-block-end: 4px;
 }
 
+.agentic-advisory-notice {
+  margin-block: 16px 24px;
+}
+
+.agentic-advisory-notice p {
+  margin: 0;
+}
+
+.agentic-advisory-notice p + p {
+  margin-block-start: 8px;
+}
+
 .agentic-wizard-tagline {
   margin: 0 0 24px;
   color: #757575;
@@ -432,6 +444,8 @@
 
 .agentic-help-tip__tooltip--wide {
   width: 320px;
+  inset-inline-start: 0;
+  transform: none;
 }
 
 .agentic-help-tip__tooltip::after {
@@ -442,6 +456,11 @@
   transform: translateX(-50%);
   border: 5px solid transparent;
   border-block-start-color: #1d2327;
+}
+
+.agentic-help-tip__tooltip--wide::after {
+  inset-inline-start: 8px;
+  transform: none;
 }
 
 .agentic-help-tip:hover .agentic-help-tip__tooltip,
@@ -556,6 +575,10 @@
   border-radius: 0 0 6px 6px;
   padding: 24px;
   background: #fff;
+}
+
+.agentic-wizard-panel .form-table th {
+  width: 275px;
 }
 
 .agentic-wizard-panel.agentic-step-locked {
