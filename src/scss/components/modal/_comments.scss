@@ -75,6 +75,112 @@
       box-shadow: none !important;
     }
 
+    .alpaca-markdown-textarea {
+      position: relative;
+    }
+
+    .alpaca-markdown-textarea .components-textarea-control__input {
+      position: relative;
+      z-index: 1;
+      color: transparent;
+      caret-color: transparent;
+      background: transparent;
+      line-height: $line-height-code;
+
+      &::selection {
+        color: transparent;
+        background: transparent;
+      }
+    }
+
+    .alpaca-markdown-textarea__preview {
+      position: absolute;
+      z-index: 2;
+      inset: 0;
+      overflow: auto;
+      padding: 0;
+      color: $color-black;
+      font: inherit;
+      line-height: $line-height-code;
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+      pointer-events: auto;
+      scrollbar-width: none;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
+
+    .alpaca-markdown-caret {
+      display: inline-block;
+      width: 0;
+      height: 1em;
+      margin-inline-end: -2px;
+      vertical-align: middle;
+      position: relative;
+      top: -2px;
+      border-inline-start: 2px solid $color-black;
+      animation: alpaca-markdown-caret-blink 1s step-end infinite;
+    }
+
+    .alpaca-markdown-selection {
+      background-color: rgba($color-brand-blue, 0.25);
+    }
+
+    .alpaca-markdown-paragraph-break {
+      display: block;
+      width: 100%;
+      height: $space-2xl;
+      line-height: $space-2xl;
+      font-size: 0;
+      white-space: pre;
+
+      .alpaca-markdown-caret {
+        height: $space-2xl;
+        top: 0;
+        vertical-align: middle;
+      }
+    }
+
+    .alpaca-markdown-link {
+      color: $color-brand-blue;
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 2px;
+    }
+
+    .alpaca-markdown-link-popover {
+      z-index: 100001;
+    }
+
+    .alpaca-markdown-link-editor {
+      width: 280px;
+      padding: $space-md;
+
+      .components-base-control {
+        margin-bottom: $space-md;
+      }
+    }
+
+    .alpaca-markdown-link-editor__actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: $space-xs;
+    }
+
+    @keyframes alpaca-markdown-caret-blink {
+      0%,
+      50% {
+        opacity: 1;
+      }
+
+      50.01%,
+      100% {
+        opacity: 0;
+      }
+    }
+
     .alpaca-mentions-textarea,
     .alpaca-mentions-textarea:focus-within,
     .components-base-control,
@@ -132,6 +238,12 @@
   }
 
   .alpaca-timeline-item .alpaca-comment-body {
+    .alpaca-comment-form,
+    .alpaca-comment-form .alpaca-comment-form__content {
+      border: none;
+      border-radius: 0;
+    }
+
     textarea {
       border: none !important;
       outline: none !important;
@@ -401,6 +513,23 @@
     padding: 0;
     border: none;
     margin-bottom: $space-2xl;
+  }
+}
+
+.wp-admin .alpaca-markdown-link-popover {
+  .alpaca-markdown-link-editor {
+    width: 280px;
+    padding: $space-md;
+
+    .components-base-control {
+      margin-bottom: $space-md;
+    }
+  }
+
+  .alpaca-markdown-link-editor__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: $space-xs;
   }
 }
 
