@@ -3,6 +3,7 @@ import { Attachment } from './issue/AttachmentRow';
 import { uploadIssueAttachment } from '../utils/attachmentUpload';
 import MentionsTextarea from './notifications/MentionsTextarea';
 import useAutoExpandTextarea from '../hooks/useAutoExpandTextarea';
+import useMarkdownShortcuts from '../hooks/useMarkdownShortcuts';
 
 const {
   useState,
@@ -213,6 +214,11 @@ const CommentForm = memo(
     const textareaRefToUse = textareaRef || innerTextareaRef;
 
     useAutoExpandTextarea(textareaRefToUse, value, !disabled);
+    const { handleMarkdownShortcut, handlePaste } = useMarkdownShortcuts(
+      textareaRefToUse,
+      value,
+      onChange,
+    );
 
     useEffect(() => {
       if (
@@ -510,6 +516,8 @@ const CommentForm = memo(
               textareaRef={textareaRefToUse}
               disabled={disabled}
               searchScopeIssueIds={searchScopeIssueIds}
+              onMarkdownShortcut={handleMarkdownShortcut}
+              onPaste={handlePaste}
             />
           </AttachmentControls>
         </div>
