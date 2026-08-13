@@ -2,6 +2,11 @@ import PropTypes from 'prop-types';
 import useMarkdownShortcuts from '../hooks/useMarkdownShortcuts';
 
 const { useCallback, useEffect, useRef, useState } = wp.element;
+const { Button, Popover, TextControl } = wp.components;
+const { __ } = wp.i18n;
+
+const createMarkdownPattern = () =>
+  /\[([^\]\n]+)\]\((https?:\/\/[^)\s]+|(?![A-Za-z][A-Za-z0-9+.-]*:)[^)\s]+)\)|`([^`\n]+)`|\*\*([^*\n]+)\*\*|\*([^*\n]+)\*/g;
 
 const escapeHtml = (value) =>
   String(value || '')
@@ -29,12 +34,15 @@ const renderTextWithCaret = (
       html += '<span class="alpaca-markdown-caret" aria-hidden="true"></span>';
     }
 
-    if (index < text.length) {
-      html += escapeHtml(text[index]);
+    if (index === selectionEnd && selectionEnd > selectionStart) {
+      html += '</span>';
     }
 
-    if (index === selectionEnd) {
-      html += '</span>';
+    if (index < text.length) {
+      const isParagraphBreak = text[index] === '\n' && text[index - 1] === '\n';
+      html += isParagraphBreak
+        ? '<span class="alpaca-markdown-paragraph-break">\n</span>'
+        : escapeHtml(text[index]);
     }
   }
 
@@ -43,26 +51,32 @@ const renderTextWithCaret = (
 
 const getSourceOffset = (value, previewOffset) => {
   const text = String(value || '');
-  const markdownPattern = /`([^`\n]+)`|\*\*([^*\n]+)\*\*|\*([^*\n]+)\*/g;
+  const markdownPattern = createMarkdownPattern();
   let sourcePosition = 0;
   let renderedPosition = 0;
   let match;
 
   while ((match = markdownPattern.exec(text)) !== null) {
     const plainLength = match.index - sourcePosition;
-    if (previewOffset <= renderedPosition + plainLength) {
+    if (previewOffset < renderedPosition + plainLength) {
       return sourcePosition + previewOffset - renderedPosition;
     }
 
     renderedPosition += plainLength;
     let markerLength = 1;
-    if (match[2]) {
+    if (match[4]) {
       markerLength = 2;
     }
-    const content = match[1] || match[2] || match[3];
+    const content = match[1] || match[3] || match[4] || match[5];
     const contentLength = content.length;
+    if (previewOffset <= renderedPosition) {
+      return match.index + markerLength;
+    }
     if (previewOffset < renderedPosition + contentLength) {
       return match.index + markerLength + previewOffset - renderedPosition;
+    }
+    if (previewOffset === renderedPosition + contentLength) {
+      return match.index + markerLength + contentLength;
     }
 
     renderedPosition += contentLength;
@@ -74,7 +88,7 @@ const getSourceOffset = (value, previewOffset) => {
 
 const getRenderedOffset = (value, sourceOffset) => {
   const text = String(value || '');
-  const markdownPattern = /`([^`\n]+)`|\*\*([^*\n]+)\*\*|\*([^*\n]+)\*/g;
+  const markdownPattern = createMarkdownPattern();
   let sourcePosition = 0;
   let renderedPosition = 0;
   let match;
@@ -87,10 +101,10 @@ const getRenderedOffset = (value, sourceOffset) => {
 
     renderedPosition += plainLength;
     let markerLength = 1;
-    if (match[2]) {
+    if (match[4]) {
       markerLength = 2;
     }
-    const content = match[1] || match[2] || match[3];
+    const content = match[1] || match[3] || match[4] || match[5];
     const contentStart = match.index + markerLength;
     const contentEnd = contentStart + content.length;
 
@@ -113,8 +127,8 @@ const getRenderedOffset = (value, sourceOffset) => {
 
 const getVisibleWordBoundary = (value, sourceOffset, direction) => {
   const visibleText = String(value || '').replace(
-    /`([^`\n]+)`|\*\*([^*\n]+)\*\*|\*([^*\n]+)\*/g,
-    (match, code, bold, italic) => code || bold || italic,
+    createMarkdownPattern(),
+    (match, link, url, code, bold, italic) => link || code || bold || italic,
   );
   let visibleOffset = getRenderedOffset(value, sourceOffset);
 
@@ -143,6 +157,43 @@ const getVisibleWordBoundary = (value, sourceOffset, direction) => {
   return getSourceOffset(value, visibleOffset);
 };
 
+const getVisibleWordSelection = (value, sourceOffset) => {
+  const visibleText = String(value || '').replace(
+    createMarkdownPattern(),
+    (match, link, url, code, bold, italic) => link || code || bold || italic,
+  );
+  let visibleOffset = getRenderedOffset(value, sourceOffset);
+
+  if (
+    visibleOffset >= visibleText.length ||
+    /\s/.test(visibleText[visibleOffset])
+  ) {
+    visibleOffset -= 1;
+  }
+
+  if (visibleOffset < 0 || /\s/.test(visibleText[visibleOffset])) {
+    return null;
+  }
+
+  let selectionStart = visibleOffset;
+  let selectionEnd = visibleOffset + 1;
+
+  while (selectionStart > 0 && !/\s/.test(visibleText[selectionStart - 1])) {
+    selectionStart -= 1;
+  }
+  while (
+    selectionEnd < visibleText.length &&
+    !/\s/.test(visibleText[selectionEnd])
+  ) {
+    selectionEnd += 1;
+  }
+
+  return {
+    start: getSourceOffset(value, selectionStart),
+    end: getSourceOffset(value, selectionEnd),
+  };
+};
+
 const getPreviewOffsetAtPoint = (element, clientX, clientY) => {
   const documentObject = element.ownerDocument;
   const range = documentObject.caretRangeFromPoint?.(clientX, clientY);
@@ -150,32 +201,23 @@ const getPreviewOffsetAtPoint = (element, clientX, clientY) => {
     return null;
   }
 
-  const textWalker = documentObject.createTreeWalker(element, 4);
-  let renderedOffset = 0;
-  let textNode;
-
-  while ((textNode = textWalker.nextNode())) {
-    if (textNode === range.startContainer) {
-      return renderedOffset + range.startOffset;
-    }
-
-    renderedOffset += textNode.textContent.length;
-  }
-
-  return renderedOffset;
+  const prefixRange = documentObject.createRange();
+  prefixRange.selectNodeContents(element);
+  prefixRange.setEnd(range.startContainer, range.startOffset);
+  return prefixRange.toString().length;
 };
 
 const getFormattedWordSelection = (value, caretPosition) => {
   const text = String(value || '');
-  const markdownPattern = /`([^`\n]+)`|\*\*([^*\n]+)\*\*|\*([^*\n]+)\*/g;
+  const markdownPattern = createMarkdownPattern();
   let match;
 
   while ((match = markdownPattern.exec(text)) !== null) {
     let markerLength = 1;
-    if (match[2]) {
+    if (match[4]) {
       markerLength = 2;
     }
-    const content = match[1] || match[2] || match[3];
+    const content = match[1] || match[3] || match[4] || match[5];
     const contentStart = match.index + markerLength;
     const contentEnd = contentStart + content.length;
     const matchEnd = markdownPattern.lastIndex;
@@ -208,7 +250,7 @@ const renderMarkdownPreview = (
   selectionEnd = null,
 ) => {
   const text = String(value || '');
-  const markdownPattern = /`([^`\n]+)`|\*\*([^*\n]+)\*\*|\*([^*\n]+)\*/g;
+  const markdownPattern = createMarkdownPattern();
   let html = '';
   let sourcePosition = 0;
   let match;
@@ -217,12 +259,18 @@ const renderMarkdownPreview = (
     const matchStart = match.index;
     const matchEnd = markdownPattern.lastIndex;
     let markerLength = 1;
-    let content = match[1] || match[3];
-    let tagName = match[1] ? 'code' : 'em';
+    let content = match[1] || match[3] || match[5];
+    let tagName = 'em';
 
-    if (match[2]) {
+    if (match[1]) {
+      tagName = 'a';
+    } else if (match[3]) {
+      tagName = 'code';
+    }
+
+    if (match[4]) {
       markerLength = 2;
-      content = match[2];
+      content = match[4];
       tagName = 'strong';
     }
 
@@ -297,7 +345,10 @@ const renderMarkdownPreview = (
     html += caretBeforeFormattedText
       ? '<span class="alpaca-markdown-caret" aria-hidden="true"></span>'
       : '';
-    html += `<${tagName}>${formattedContent}</${tagName}>`;
+    const linkAttributes = match[1]
+      ? ` class="alpaca-markdown-link" href="${escapeHtml(match[2])}" data-alpaca-markdown-link="true" data-markdown-link-start="${matchStart}" data-markdown-link-end="${matchEnd}"`
+      : '';
+    html += `<${tagName}${linkAttributes}>${formattedContent}</${tagName}>`;
     html += caretAfterFormattedText
       ? '<span class="alpaca-markdown-caret" aria-hidden="true"></span>'
       : '';
@@ -343,7 +394,9 @@ const MarkdownTextarea = ({
   const previewRef = useRef(null);
   const [previewCaretPosition, setPreviewCaretPosition] = useState(null);
   const [previewSelection, setPreviewSelection] = useState(null);
+  const [activeLink, setActiveLink] = useState(null);
   const [isPreviewFocused, setIsPreviewFocused] = useState(false);
+  const linkUndoStack = useRef([]);
   const { handleMarkdownShortcut, handlePaste } = useMarkdownShortcuts(
     textareaRef,
     value,
@@ -408,9 +461,157 @@ const MarkdownTextarea = ({
     }
   }, []);
 
+  const handleCreateLinkShortcut = useCallback(
+    (event) => {
+      if (
+        disabled ||
+        event.key?.toLowerCase() !== 'k' ||
+        (!event.metaKey && !event.ctrlKey)
+      ) {
+        return;
+      }
+
+      const textarea = textareaRef.current;
+      if (!textarea) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      setActiveLink({
+        anchor: wrapperRef.current,
+        end: textarea.selectionEnd,
+        label: value.slice(textarea.selectionStart, textarea.selectionEnd),
+        start: textarea.selectionStart,
+        url: '',
+      });
+    },
+    [disabled, textareaRef, value],
+  );
+
   const handlePreviewMouseDown = useCallback(
     (event) => {
       if (disabled || event.button !== 0) {
+        return;
+      }
+
+      const linkElement = event.target.closest?.(
+        '[data-alpaca-markdown-link="true"]',
+      );
+      if (linkElement) {
+        event.preventDefault();
+        setActiveLink({
+          anchor: wrapperRef.current,
+          end: Number(linkElement.dataset.markdownLinkEnd),
+          label: linkElement.textContent || '',
+          start: Number(linkElement.dataset.markdownLinkStart),
+          url: linkElement.getAttribute('href') || '',
+        });
+        return;
+      }
+
+      const previewElement = event.currentTarget;
+      const textarea = textareaRef.current;
+      if (!textarea) {
+        return;
+      }
+
+      const startPreviewOffset = getPreviewOffsetAtPoint(
+        previewElement,
+        event.clientX,
+        event.clientY,
+      );
+      if (startPreviewOffset === null) {
+        return;
+      }
+
+      const startSourceOffset = getSourceOffset(value, startPreviewOffset);
+      if (event.detail === 2) {
+        const wordSelection = getVisibleWordSelection(value, startSourceOffset);
+        if (wordSelection) {
+          event.preventDefault();
+          textarea.focus();
+          textarea.setSelectionRange(wordSelection.start, wordSelection.end);
+          updateCaret();
+          globalThis.requestAnimationFrame(() => {
+            if (!textareaRef.current) {
+              return;
+            }
+
+            textareaRef.current.setSelectionRange(
+              wordSelection.start,
+              wordSelection.end,
+            );
+            updateCaret();
+          });
+          globalThis.setTimeout(() => {
+            if (!textareaRef.current) {
+              return;
+            }
+
+            textareaRef.current.setSelectionRange(
+              wordSelection.start,
+              wordSelection.end,
+            );
+            updateCaret();
+          }, 0);
+          return;
+        }
+      }
+
+      const updateSelection = (moveEvent) => {
+        const previewOffset = getPreviewOffsetAtPoint(
+          previewElement,
+          moveEvent.clientX,
+          moveEvent.clientY,
+        );
+        if (previewOffset === null) {
+          return;
+        }
+
+        const sourceOffset = getSourceOffset(value, previewOffset);
+        const selectionStart = Math.min(startSourceOffset, sourceOffset);
+        const selectionEnd = Math.max(startSourceOffset, sourceOffset);
+        textarea.setSelectionRange(
+          selectionStart,
+          selectionEnd,
+          sourceOffset < startSourceOffset ? 'backward' : 'forward',
+        );
+        updateCaret();
+      };
+      const finishSelection = () => {
+        previewElement.ownerDocument.removeEventListener(
+          'mousemove',
+          updateSelection,
+        );
+        previewElement.ownerDocument.removeEventListener(
+          'mouseup',
+          finishSelection,
+        );
+      };
+
+      event.preventDefault();
+      textarea.focus();
+      textarea.setSelectionRange(startSourceOffset, startSourceOffset);
+      updateCaret();
+      previewElement.ownerDocument.addEventListener(
+        'mousemove',
+        updateSelection,
+      );
+      previewElement.ownerDocument.addEventListener('mouseup', finishSelection);
+    },
+    [disabled, textareaRef, updateCaret, value],
+  );
+
+  const handlePreviewClick = useCallback(
+    (event) => {
+      if (event.target.closest?.('[data-alpaca-markdown-link="true"]')) {
+        event.preventDefault();
+        event.stopPropagation();
+        return;
+      }
+
+      if (event.detail !== 2) {
         return;
       }
 
@@ -423,18 +624,115 @@ const MarkdownTextarea = ({
         return;
       }
 
-      event.preventDefault();
+      const selection = getVisibleWordSelection(
+        value,
+        getSourceOffset(value, previewOffset),
+      );
       const textarea = textareaRef.current;
-      if (!textarea) {
+      if (!selection || !textarea) {
         return;
       }
 
-      const sourceOffset = getSourceOffset(value, previewOffset);
+      event.preventDefault();
+      event.stopPropagation();
       textarea.focus();
-      textarea.setSelectionRange(sourceOffset, sourceOffset);
+      textarea.setSelectionRange(selection.start, selection.end);
       updateCaret();
+      globalThis.requestAnimationFrame(() => {
+        if (!textareaRef.current) {
+          return;
+        }
+
+        textareaRef.current.setSelectionRange(selection.start, selection.end);
+        updateCaret();
+      });
     },
-    [disabled, textareaRef, updateCaret, value],
+    [textareaRef, updateCaret, value],
+  );
+
+  const updateActiveLink = useCallback((field, nextValue) => {
+    setActiveLink((currentLink) =>
+      currentLink ? { ...currentLink, [field]: nextValue } : currentLink,
+    );
+  }, []);
+
+  const applyActiveLink = useCallback(() => {
+    if (!activeLink) {
+      return;
+    }
+
+    const replacement = activeLink.url.trim()
+      ? `[${activeLink.label}](${activeLink.url})`
+      : activeLink.label;
+    const nextValue = `${value.slice(0, activeLink.start)}${replacement}${value.slice(activeLink.end)}`;
+    const nextCaretPosition = activeLink.start + replacement.length;
+
+    linkUndoStack.current.push({
+      nextValue,
+      previousValue: value,
+      previousSelectionStart: activeLink.start,
+      previousSelectionEnd: activeLink.end,
+    });
+
+    onChange(nextValue);
+    setActiveLink(null);
+    globalThis.requestAnimationFrame(() => {
+      if (!textareaRef.current) {
+        return;
+      }
+
+      textareaRef.current.focus();
+      textareaRef.current.setSelectionRange(
+        nextCaretPosition,
+        nextCaretPosition,
+      );
+    });
+  }, [activeLink, onChange, textareaRef, value]);
+
+  const handleLinkUndoShortcut = useCallback(
+    (event) => {
+      if (
+        event.defaultPrevented ||
+        (!event.metaKey && !event.ctrlKey) ||
+        event.key?.toLowerCase() !== 'z'
+      ) {
+        return;
+      }
+
+      const lastChange =
+        linkUndoStack.current[linkUndoStack.current.length - 1];
+      if (!lastChange || lastChange.nextValue !== value) {
+        return;
+      }
+
+      event.preventDefault();
+      linkUndoStack.current.pop();
+      onChange(lastChange.previousValue);
+      globalThis.requestAnimationFrame(() => {
+        if (!textareaRef.current) {
+          return;
+        }
+
+        textareaRef.current.focus();
+        textareaRef.current.setSelectionRange(
+          lastChange.previousSelectionStart,
+          lastChange.previousSelectionEnd,
+        );
+      });
+    },
+    [onChange, textareaRef, value],
+  );
+
+  const handleLinkEditorKeyDown = useCallback(
+    (event) => {
+      if (event.key !== 'Enter') {
+        return;
+      }
+
+      event.preventDefault();
+      applyActiveLink();
+    },
+    [applyActiveLink],
   );
 
   const handleWordBoundarySelection = useCallback(
@@ -506,6 +804,8 @@ const MarkdownTextarea = ({
       ref={wrapperRef}
       onKeyDownCapture={(event) => {
         handleMarkdownShortcut(event);
+        handleLinkUndoShortcut(event);
+        handleCreateLinkShortcut(event);
         handleWordBoundarySelection(event);
       }}
       onPasteCapture={handlePaste}
@@ -516,6 +816,7 @@ const MarkdownTextarea = ({
         ref={previewRef}
         aria-hidden="true"
         onMouseDown={handlePreviewMouseDown}
+        onClick={handlePreviewClick}
         dangerouslySetInnerHTML={{
           __html: renderMarkdownPreview(
             value,
@@ -525,6 +826,44 @@ const MarkdownTextarea = ({
           ),
         }}
       />
+      {activeLink?.anchor?.isConnected ? (
+        <Popover
+          anchor={activeLink.anchor}
+          position="bottom center"
+          className="alpaca-markdown-link-popover"
+          onClose={() => setActiveLink(null)}
+          onFocusOutside={() => setActiveLink(null)}
+          onEscape={() => setActiveLink(null)}
+          focusOnMount={false}
+          animate={false}
+        >
+          <div className="alpaca-markdown-link-editor">
+            <TextControl
+              __next40pxDefaultSize
+              label={__('Text', 'alpaca-issue-tracker')}
+              value={activeLink.label}
+              onKeyDown={handleLinkEditorKeyDown}
+              onChange={(nextValue) => updateActiveLink('label', nextValue)}
+            />
+            <TextControl
+              __next40pxDefaultSize
+              label={__('URL', 'alpaca-issue-tracker')}
+              type="url"
+              value={activeLink.url}
+              onKeyDown={handleLinkEditorKeyDown}
+              onChange={(nextValue) => updateActiveLink('url', nextValue)}
+            />
+            <div className="alpaca-markdown-link-editor__actions">
+              <Button variant="tertiary" onClick={() => setActiveLink(null)}>
+                {__('Cancel', 'alpaca-issue-tracker')}
+              </Button>
+              <Button variant="primary" onClick={applyActiveLink}>
+                {__('Apply', 'alpaca-issue-tracker')}
+              </Button>
+            </div>
+          </div>
+        </Popover>
+      ) : null}
       <div onScroll={handleScroll}>{children}</div>
     </div>
   );
