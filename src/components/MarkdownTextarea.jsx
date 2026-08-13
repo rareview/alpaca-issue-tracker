@@ -383,6 +383,15 @@ const renderMarkdownPreview = (
   )}`;
 };
 
+const createPopoverAnchor = (element) => {
+  const rect = element.getBoundingClientRect();
+
+  return {
+    getBoundingClientRect: () =>
+      element.isConnected ? element.getBoundingClientRect() : rect,
+  };
+};
+
 const MarkdownTextarea = ({
   children,
   value,
@@ -479,7 +488,7 @@ const MarkdownTextarea = ({
       event.preventDefault();
       event.stopPropagation();
       setActiveLink({
-        anchor: wrapperRef.current,
+        anchor: createPopoverAnchor(wrapperRef.current),
         end: textarea.selectionEnd,
         label: value.slice(textarea.selectionStart, textarea.selectionEnd),
         start: textarea.selectionStart,
@@ -501,7 +510,7 @@ const MarkdownTextarea = ({
       if (linkElement) {
         event.preventDefault();
         setActiveLink({
-          anchor: wrapperRef.current,
+          anchor: createPopoverAnchor(linkElement),
           end: Number(linkElement.dataset.markdownLinkEnd),
           label: linkElement.textContent || '',
           start: Number(linkElement.dataset.markdownLinkStart),
@@ -826,7 +835,7 @@ const MarkdownTextarea = ({
           ),
         }}
       />
-      {activeLink?.anchor?.isConnected ? (
+      {activeLink?.anchor ? (
         <Popover
           anchor={activeLink.anchor}
           position="bottom center"
