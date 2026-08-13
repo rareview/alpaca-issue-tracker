@@ -121,7 +121,7 @@
       position: relative;
       top: -2px;
       border-inline-start: 2px solid $color-black;
-      animation: alpaca-markdown-caret-blink 1.2s step-end infinite;
+      animation: alpaca-markdown-caret-blink 1s step-end infinite;
     }
 
     .alpaca-markdown-selection {
@@ -135,6 +135,12 @@
       line-height: $space-2xl;
       font-size: 0;
       white-space: pre;
+
+      .alpaca-markdown-caret {
+        height: $space-2xl;
+        top: 0;
+        vertical-align: middle;
+      }
     }
 
     .alpaca-markdown-link {
@@ -165,14 +171,11 @@
 
     @keyframes alpaca-markdown-caret-blink {
       0%,
-      74% {
+      50% {
         opacity: 1;
       }
 
-      75% {
-        opacity: 0;
-      }
-
+      50.01%,
       100% {
         opacity: 0;
       }

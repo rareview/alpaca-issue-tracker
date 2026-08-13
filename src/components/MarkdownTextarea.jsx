@@ -26,11 +26,14 @@ const renderTextWithCaret = (
   let html = '';
 
   for (let index = 0; index <= text.length; index += 1) {
+    const isParagraphBreak =
+      index < text.length && text[index] === '\n' && text[index - 1] === '\n';
+
     if (index === selectionStart) {
       html += '<span class="alpaca-markdown-selection">';
     }
 
-    if (index === caretOffset) {
+    if (index === caretOffset && !isParagraphBreak) {
       html += '<span class="alpaca-markdown-caret" aria-hidden="true"></span>';
     }
 
@@ -39,10 +42,15 @@ const renderTextWithCaret = (
     }
 
     if (index < text.length) {
-      const isParagraphBreak = text[index] === '\n' && text[index - 1] === '\n';
-      html += isParagraphBreak
-        ? '<span class="alpaca-markdown-paragraph-break">\n</span>'
-        : escapeHtml(text[index]);
+      if (isParagraphBreak) {
+        const paragraphCaret =
+          index === caretOffset
+            ? '<span class="alpaca-markdown-caret" aria-hidden="true"></span>'
+            : '';
+        html += `<span class="alpaca-markdown-paragraph-break">${paragraphCaret}\n</span>`;
+      } else {
+        html += escapeHtml(text[index]);
+      }
     }
   }
 
