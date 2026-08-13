@@ -75,6 +75,73 @@
       box-shadow: none !important;
     }
 
+    .alpaca-markdown-textarea {
+      position: relative;
+    }
+
+    .alpaca-markdown-textarea .components-textarea-control__input {
+      position: relative;
+      z-index: 1;
+      color: transparent;
+      caret-color: transparent;
+      background: transparent;
+
+      &::selection {
+        color: transparent;
+        background: transparent;
+      }
+    }
+
+    .alpaca-markdown-textarea__preview {
+      position: absolute;
+      z-index: 2;
+      inset: 0;
+      overflow: auto;
+      padding: 0;
+      color: $color-black;
+      font: inherit;
+      line-height: 24px;
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+      pointer-events: auto;
+      scrollbar-width: none;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
+
+    .alpaca-markdown-caret {
+      display: inline-block;
+      width: 0;
+      height: 1em;
+      margin-inline-end: -2px;
+      vertical-align: middle;
+      position: relative;
+      top: -2px;
+      border-inline-start: 2px solid $color-black;
+      animation: alpaca-markdown-caret-blink 1.2s step-end infinite;
+    }
+
+    .alpaca-markdown-selection {
+      background-color: rgba($color-brand-blue, 0.25);
+    }
+
+    @keyframes alpaca-markdown-caret-blink {
+      0%,
+      74% {
+        opacity: 1;
+      }
+
+      75% {
+        opacity: 0;
+      }
+
+      100% {
+        opacity: 0;
+      }
+    }
+
     .alpaca-mentions-textarea,
     .alpaca-mentions-textarea:focus-within,
     .components-base-control,

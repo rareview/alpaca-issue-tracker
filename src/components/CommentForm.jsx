@@ -2,8 +2,8 @@ import PropTypes from 'prop-types';
 import { Attachment } from './issue/AttachmentRow';
 import { uploadIssueAttachment } from '../utils/attachmentUpload';
 import MentionsTextarea from './notifications/MentionsTextarea';
+import MarkdownTextarea from './MarkdownTextarea';
 import useAutoExpandTextarea from '../hooks/useAutoExpandTextarea';
-import useMarkdownShortcuts from '../hooks/useMarkdownShortcuts';
 
 const {
   useState,
@@ -214,11 +214,6 @@ const CommentForm = memo(
     const textareaRefToUse = textareaRef || innerTextareaRef;
 
     useAutoExpandTextarea(textareaRefToUse, value, !disabled);
-    const { handleMarkdownShortcut, handlePaste } = useMarkdownShortcuts(
-      textareaRefToUse,
-      value,
-      onChange,
-    );
 
     useEffect(() => {
       if (
@@ -509,16 +504,21 @@ const CommentForm = memo(
               </>
             }
           >
-            <MentionsTextarea
-              placeholder={placeholder}
+            <MarkdownTextarea
               value={value}
-              onChange={onChange}
               textareaRef={textareaRefToUse}
+              onChange={onChange}
               disabled={disabled}
-              searchScopeIssueIds={searchScopeIssueIds}
-              onMarkdownShortcut={handleMarkdownShortcut}
-              onPaste={handlePaste}
-            />
+            >
+              <MentionsTextarea
+                placeholder={placeholder}
+                value={value}
+                onChange={onChange}
+                textareaRef={textareaRefToUse}
+                disabled={disabled}
+                searchScopeIssueIds={searchScopeIssueIds}
+              />
+            </MarkdownTextarea>
           </AttachmentControls>
         </div>
       </div>

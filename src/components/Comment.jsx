@@ -32,7 +32,7 @@ import { uploadIssueAttachment } from '../utils/attachmentUpload';
 import { renderIssueLinkMarkup } from '../utils/issueLinks';
 import { postIssueMentionAuditComments } from '../utils/issueCommentHandler';
 import MentionsTextarea from './notifications/MentionsTextarea';
-import useMarkdownShortcuts from '../hooks/useMarkdownShortcuts';
+import MarkdownTextarea from './MarkdownTextarea';
 
 const deleteCommentAttachment = async (url, issueId, commentId = null) => {
   if (!url || !issueId) {
@@ -299,11 +299,6 @@ const Comment = memo(
       (userCanManageOptions || (isCommentAuthor && !isLockedByDifferentEditor));
     const canDeleteComment = userCanManageOptions;
     const canManageComment = canEditComment || canDeleteComment;
-    const { handleMarkdownShortcut, handlePaste } = useMarkdownShortcuts(
-      editingRef,
-      editingContent,
-      setEditingContent,
-    );
 
     return (
       <TimelineEntry
@@ -382,16 +377,21 @@ const Comment = memo(
               </>
             }
           >
-            <MentionsTextarea
+            <MarkdownTextarea
               value={editingContent}
-              onChange={setEditingContent}
               textareaRef={editingRef}
-              placeholder={__('Edit comment…', 'alpaca-issue-tracker')}
+              onChange={setEditingContent}
               disabled={isSubmitting}
-              searchScopeIssueIds={searchScopeIssueIds}
-              onMarkdownShortcut={handleMarkdownShortcut}
-              onPaste={handlePaste}
-            />
+            >
+              <MentionsTextarea
+                value={editingContent}
+                onChange={setEditingContent}
+                textareaRef={editingRef}
+                placeholder={__('Edit comment…', 'alpaca-issue-tracker')}
+                disabled={isSubmitting}
+                searchScopeIssueIds={searchScopeIssueIds}
+              />
+            </MarkdownTextarea>
           </AttachmentControls>
         }
       />
@@ -469,11 +469,6 @@ const Commenting = ({
   const [lightboxSrc, setLightboxSrc] = useState(null);
   const editingRef = useRef(null);
   const newCommentRef = useRef(null);
-  const { handleMarkdownShortcut, handlePaste } = useMarkdownShortcuts(
-    newCommentRef,
-    newComment,
-    setNewComment,
-  );
   const localizedCanManageOptions =
     typeof window !== 'undefined'
       ? window.alpaistrSettings?.canManageOptions
@@ -1128,16 +1123,21 @@ const Commenting = ({
                 </Button>
               }
             >
-              <MentionsTextarea
-                placeholder={__('Add a comment…', 'alpaca-issue-tracker')}
+              <MarkdownTextarea
                 value={newComment}
-                onChange={setNewComment}
                 textareaRef={newCommentRef}
+                onChange={setNewComment}
                 disabled={isSubmitting}
-                searchScopeIssueIds={searchScopeIssueIds}
-                onMarkdownShortcut={handleMarkdownShortcut}
-                onPaste={handlePaste}
-              />
+              >
+                <MentionsTextarea
+                  placeholder={__('Add a comment…', 'alpaca-issue-tracker')}
+                  value={newComment}
+                  onChange={setNewComment}
+                  textareaRef={newCommentRef}
+                  disabled={isSubmitting}
+                  searchScopeIssueIds={searchScopeIssueIds}
+                />
+              </MarkdownTextarea>
             </AttachmentControls>
           </div>
         </div>

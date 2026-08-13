@@ -90,8 +90,6 @@ const getIssueTriggerMatch = (value, caretPosition) => {
  * @param {boolean}  props.disabled            Disable state.
  * @param {string}   props.placeholder         Placeholder text.
  * @param {Array}    props.searchScopeIssueIds Search-scoped issue IDs.
- * @param {Function} props.onMarkdownShortcut  Markdown keyboard shortcut handler.
- * @param {Function} props.onPaste             Paste handler.
  * @return {JSX.Element} Mention-enabled textarea.
  */
 const MentionsTextarea = ({
@@ -101,8 +99,6 @@ const MentionsTextarea = ({
   disabled,
   placeholder,
   searchScopeIssueIds,
-  onMarkdownShortcut,
-  onPaste,
 }) => {
   const [users, setUsers] = useState([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
@@ -363,10 +359,6 @@ const MentionsTextarea = ({
 
   const handleKeyDown = useCallback(
     (event) => {
-      if (onMarkdownShortcut && onMarkdownShortcut(event)) {
-        return;
-      }
-
       if (issueTriggerState) {
         if ('Escape' === event.key) {
           event.preventDefault();
@@ -412,7 +404,6 @@ const MentionsTextarea = ({
       highlightedIndex,
       issueTriggerState,
       mentionState,
-      onMarkdownShortcut,
       selectSuggestion,
       suggestions,
     ],
@@ -445,7 +436,6 @@ const MentionsTextarea = ({
         ref={handleTextareaRef}
         disabled={disabled}
         onKeyDown={handleKeyDown}
-        onPaste={onPaste}
         onKeyUp={handleCaretUpdate}
         onClick={handleCaretUpdate}
         __nextHasNoMarginBottom
@@ -576,8 +566,6 @@ MentionsTextarea.propTypes = {
   searchScopeIssueIds: PropTypes.arrayOf(
     PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   ),
-  onMarkdownShortcut: PropTypes.func,
-  onPaste: PropTypes.func,
 };
 
 MentionsTextarea.defaultProps = {
