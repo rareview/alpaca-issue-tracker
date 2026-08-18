@@ -661,13 +661,24 @@ const AgenticSettings = () => {
       <h1 className="agentic-wizard-title">
         {__('AI Issue Resolver', 'alpaca-issue-tracker')}
       </h1>
-      <p className="agentic-wizard-tagline">
-        {__(
-          'Let the AI agents automatically solve your Alpaca issues on Github',
-          'alpaca-issue-tracker',
-        )}
-        <sup aria-hidden="true">*</sup>
-      </p>
+      <Notice
+        className="agentic-advisory-notice"
+        status="warning"
+        isDismissible={false}
+      >
+        <p>
+          {__(
+            'AI Issue Resolver can only propose code changes within the boundaries of the GitHub repository referenced below.',
+            'alpaca-issue-tracker',
+          )}
+        </p>
+        <p>
+          {__(
+            'All Pull Requests must be thoroughly reviewed by a competent developer before being applied to your live site.',
+            'alpaca-issue-tracker',
+          )}
+        </p>
+      </Notice>
 
       {!canEdit && data.is_engineer ? (
         <Notice status="info" isDismissible={false}>
@@ -971,47 +982,6 @@ const AgenticSettings = () => {
               </p>
             ) : null}
 
-            <p>
-              {__(
-                'Enter your GitHub repository and credentials.',
-                'alpaca-issue-tracker',
-              )}{' '}
-              <HelpTip
-                label={__('Token permissions', 'alpaca-issue-tracker')}
-                wide
-                tooltip={
-                  <>
-                    {__(
-                      'The token needs Issues, Contents, and Workflows write access (classic PAT: repo + workflow scopes).',
-                      'alpaca-issue-tracker',
-                    )}
-                    <br />
-                    <br />
-                    {__(
-                      'Fine-grained PAT permissions:',
-                      'alpaca-issue-tracker',
-                    )}
-                    <br />
-                    {__('Contents — Read and write', 'alpaca-issue-tracker')}
-                    <br />
-                    {__('Issues — Read and write', 'alpaca-issue-tracker')}
-                    <br />
-                    {__(
-                      'Metadata — Read-only (required)',
-                      'alpaca-issue-tracker',
-                    )}
-                    <br />
-                    {__(
-                      'Pull requests — Read and write',
-                      'alpaca-issue-tracker',
-                    )}
-                    <br />
-                    {__('Workflows — Read and write', 'alpaca-issue-tracker')}
-                  </>
-                }
-              />
-            </p>
-
             <table className="form-table" role="presentation">
               <tbody>
                 <tr>
@@ -1044,7 +1014,50 @@ const AgenticSettings = () => {
                       {__(
                         'Personal Access Token (PAT)',
                         'alpaca-issue-tracker',
-                      )}
+                      )}{' '}
+                      <HelpTip
+                        label={__('Token permissions', 'alpaca-issue-tracker')}
+                        wide
+                        tooltip={
+                          <>
+                            {__(
+                              'The token needs Issues, Contents, and Workflows write access (classic PAT: repo + workflow scopes).',
+                              'alpaca-issue-tracker',
+                            )}
+                            <br />
+                            <br />
+                            {__(
+                              'Fine-grained PAT permissions:',
+                              'alpaca-issue-tracker',
+                            )}
+                            <br />
+                            {__(
+                              'Contents — Read and write',
+                              'alpaca-issue-tracker',
+                            )}
+                            <br />
+                            {__(
+                              'Issues — Read and write',
+                              'alpaca-issue-tracker',
+                            )}
+                            <br />
+                            {__(
+                              'Metadata — Read-only (required)',
+                              'alpaca-issue-tracker',
+                            )}
+                            <br />
+                            {__(
+                              'Pull requests — Read and write',
+                              'alpaca-issue-tracker',
+                            )}
+                            <br />
+                            {__(
+                              'Workflows — Read and write',
+                              'alpaca-issue-tracker',
+                            )}
+                          </>
+                        }
+                      />
                     </label>
                   </th>
                   <td>
@@ -1605,7 +1618,6 @@ define( 'ALPAISTR_AGENTIC_AI_API_KEY', '...' );`}</pre>
       </div>
 
       <p className="agentic-wizard-footnote">
-        <sup aria-hidden="true">*</sup>
         {__(
           'Only intended for skilled engineers with GitHub access who can review the AI-generated pull requests.',
           'alpaca-issue-tracker',
