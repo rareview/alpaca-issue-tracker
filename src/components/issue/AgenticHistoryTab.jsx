@@ -1,28 +1,107 @@
 const { __ } = wp.i18n;
 import PropTypes from 'prop-types';
 import {
-  formatAgenticSentDate,
-  readAgenticSendHistoryFromMeta,
+  formatAgenticActivityDate,
+  readAgenticHistoryFromMeta,
 } from '../../utils/agenticHistory';
 
 /**
- * AI Issue Resolver history tab content.
+ * Render one "sent" history entry: date, target branch, GitHub issue link.
+ *
+ * @param {Object} entry        History entry.
+ * @param {string} activityDate Pre-formatted date string.
+ * @return {JSX.Element} Row content.
+ */
+function renderSentEntry(entry, activityDate) {
+  return (
+    <>
+      {activityDate ? (
+        <span className="agentic-activity-strip__date">{activityDate}</span>
+      ) : null}
+      {entry.targetBranch ? (
+        <span className="agentic-activity-strip__branch">
+          {'→ ' + entry.targetBranch}
+        </span>
+      ) : null}
+      <a
+        className="agentic-activity-strip__link"
+        href={entry.url}
+        target="_blank"
+        rel="noreferrer noopener"
+      >
+        {entry.url}
+      </a>
+    </>
+  );
+}
+
+/**
+ * Render a "deleted" (draft deleted/restarted) history entry.
+ *
+ * @param {string} activityDate Pre-formatted date string.
+ * @return {JSX.Element} Row content.
+ */
+function renderDeletedEntry(activityDate) {
+  return (
+    <>
+      {activityDate ? (
+        <span className="agentic-activity-strip__date">{activityDate}</span>
+      ) : null}
+      <span className="agentic-activity-strip__label">
+        {__('Draft deleted/restarted', 'alpaca-issue-tracker')}
+      </span>
+    </>
+  );
+}
+
+/**
+ * Render an "applied" (staging-tested fix applied to production) history entry.
+ *
+ * @param {Object} entry        History entry.
+ * @param {string} activityDate Pre-formatted date string.
+ * @return {JSX.Element} Row content.
+ */
+function renderAppliedEntry(entry, activityDate) {
+  return (
+    <>
+      {activityDate ? (
+        <span className="agentic-activity-strip__date">{activityDate}</span>
+      ) : null}
+      {entry.targetBranch ? (
+        <span className="agentic-activity-strip__branch">
+          {'→ ' + entry.targetBranch}
+        </span>
+      ) : null}
+      <span className="agentic-activity-strip__label">
+        {__('Applied tested fix from', 'alpaca-issue-tracker')}
+      </span>
+      <a
+        className="agentic-activity-strip__link"
+        href={entry.stagingPrUrl}
+        target="_blank"
+        rel="noreferrer noopener"
+      >
+        {entry.stagingPrUrl}
+      </a>
+    </>
+  );
+}
+
+/**
+ * AI Issue Resolver activity log tab content.
  *
  * @param {Object} props
  * @param {Object} props.issueDetails Issue details payload.
  * @return {JSX.Element} AgenticHistoryTab component
  */
 const AgenticHistoryTab = ({ issueDetails }) => {
-  const sendHistory = readAgenticSendHistoryFromMeta(issueDetails?.meta || {});
+  const history = readAgenticHistoryFromMeta(issueDetails?.meta || {});
 
-  if (!sendHistory.length) {
+  if (!history.length) {
     return (
       <div className="agentic-history-tab">
         <p className="agentic-history-tab__empty">
-          {__(
-            'No AI Issue Resolver history yet. Use "Send to AI agent on GitHub" to create one.',
-            'alpaca-issue-tracker',
-          )}
+          {__('No AI Issue Resolver activity yet.', 'alpaca-issue-tracker')}
         </p>
       </div>
     );
@@ -30,34 +109,29 @@ const AgenticHistoryTab = ({ issueDetails }) => {
 
   return (
     <div className="agentic-history-tab">
-      <div className="agentic-status-list__heading">
-        {__('Sent to GitHub AI Agent:', 'alpaca-issue-tracker')}
+      <div className="agentic-activity-list__heading">
+        {__('AI Issue Resolver activity:', 'alpaca-issue-tracker')}
       </div>
-      <div className="agentic-status-list" role="status">
-        {sendHistory.map((send, index) => {
-          const sentDate = formatAgenticSentDate(send.sentAt);
+      <div className="agentic-activity-list" role="status">
+        {history.map((entry, index) => {
+          const activityDate = formatAgenticActivityDate(entry.occurredAt);
+          const key =
+            (entry.url || entry.stagingPrUrl || entry.type || 'entry') +
+            '-' +
+            index;
+
+          let rowContent;
+          if ('deleted' === entry.type) {
+            rowContent = renderDeletedEntry(activityDate);
+          } else if ('applied' === entry.type) {
+            rowContent = renderAppliedEntry(entry, activityDate);
+          } else {
+            rowContent = renderSentEntry(entry, activityDate);
+          }
 
           return (
-            <div
-              key={(send.url || 'send') + '-' + index}
-              className="agentic-status-strip"
-            >
-              {sentDate ? (
-                <span className="agentic-status-strip__date">{sentDate}</span>
-              ) : null}
-              {send.targetBranch ? (
-                <span className="agentic-status-strip__branch">
-                  {'→ ' + send.targetBranch}
-                </span>
-              ) : null}
-              <a
-                className="agentic-status-strip__link"
-                href={send.url}
-                target="_blank"
-                rel="noreferrer noopener"
-              >
-                {send.url}
-              </a>
+            <div key={key} className="agentic-activity-strip">
+              {rowContent}
             </div>
           );
         })}

@@ -95,7 +95,7 @@
   color: #646970;
 }
 
-.agentic-status-list {
+.agentic-activity-list {
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -104,14 +104,14 @@
   margin-block-start: 8px;
 }
 
-.agentic-status-list__heading {
+.agentic-activity-list__heading {
   font-size: 13px;
   font-weight: 600;
   line-height: 1.4;
   color: #5b21b6;
 }
 
-.agentic-status-strip {
+.agentic-activity-strip {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -121,18 +121,23 @@
   color: #50575e;
 }
 
-.agentic-status-strip__date {
+.agentic-activity-strip__date {
   flex: 0 0 auto;
   color: #646970;
 }
 
-.agentic-status-strip__branch {
+.agentic-activity-strip__branch {
   flex: 0 0 auto;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   color: #3c434a;
 }
 
-.agentic-status-strip__link {
+.agentic-activity-strip__label {
+  flex: 0 0 auto;
+  color: #646970;
+}
+
+.agentic-activity-strip__link {
   flex: 1 1 auto;
   min-width: 0;
   overflow-wrap: anywhere;
@@ -141,8 +146,8 @@
   text-underline-offset: 2px;
 }
 
-.agentic-status-strip__link:hover,
-.agentic-status-strip__link:focus-visible {
+.agentic-activity-strip__link:hover,
+.agentic-activity-strip__link:focus-visible {
   color: #4c1d95;
 }
 
@@ -657,6 +662,12 @@
 
 .agentic-branch-intro {
   margin-block-start: 22px;
+}
+
+.agentic-staging-first-notice {
+  margin-block-start: 8px;
+  font-size: 13px;
+  color: #646970;
 }
 
 /* Toggle switch (Step 1) */

@@ -242,17 +242,17 @@ addAction(
 | ---------- | -------- | ---------------------------------------------------------------- |
 | `$payload` | `Object` | Payload containing `issueId`, `newCount`, and `newCountByAgent`. |
 
-### `alpaca.agentic.sent`
+### `alpaca.agentic.changed`
 
 **Type:** Action.
 
-**Purpose:** Fires after an Alpaca issue is successfully sent to the GitHub AI Issue Resolver, so the UI can refetch issue details (send history, labels).
+**Purpose:** Fires after any AI Issue Resolver mutating action (sent, draft deleted/restarted, or staging fix applied to production), so the UI can re-fetch issue details (history, draft, labels).
 
 **Parameters**
 
-| Parameter  | Type     | Description                                      |
-| ---------- | -------- | ------------------------------------------------ |
-| `$payload` | `Object` | Payload containing `issueId` of the sent issue. |
+| Parameter  | Type     | Description                                                                    |
+| ---------- | -------- | ------------------------------------------------------------------------------ |
+| `$payload` | `Object` | Payload containing `issueId` and `mutation` (`sent`, `deleted`, or `applied`). |
 
 ### `alpaca.lastActivityChanged`
 

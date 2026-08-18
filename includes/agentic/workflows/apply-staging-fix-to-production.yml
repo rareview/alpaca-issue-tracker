@@ -1,0 +1,141 @@
+# Applies a fix already proven (merged) on staging to production by cherry-picking
+# the exact same commits -- no AI regeneration, so the code deployed is
+# guaranteed identical to what was already tested.
+#
+# Triggered by Alpaca's "Apply fix to Production" action via a repository_dispatch
+# event (POST /agentic/apply-staging-fix-to-production), carrying:
+#   staging_pr_number — the already-merged staging pull request to cherry-pick
+#   production_branch — the configured production branch to cherry-pick onto
+#   alpaca_issue_id    — Alpaca's own post ID (for reference only; this workflow
+#                        has no Alpaca credentials, so conflicts are reported on
+#                        the staging pull request instead)
+#
+# On success: opens a new pull request against production_branch, labeled tested-fix.
+# On a cherry-pick conflict: aborts and comments on the staging pull request
+# asking a human to resolve it manually.
+
+name: Apply Staging Fix To Production
+
+on:
+  repository_dispatch:
+    types: [alpaca-apply-staging-fix-to-production]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  cherry-pick:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+
+    steps:
+      - name: Checkout production branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.client_payload.production_branch }}
+          fetch-depth: 0
+
+      - name: Read staging PR
+        id: staging-pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = ${{ github.event.client_payload.staging_pr_number }};
+
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+            });
+
+            const { data: commits } = await github.rest.pulls.listCommits({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber,
+              per_page: 100,
+            });
+
+            core.setOutput('title', pr.title);
+            core.setOutput('url', pr.html_url);
+            core.setOutput('shas', commits.map((c) => c.sha).join(' '));
+
+      - name: Create branch and cherry-pick commits
+        id: cherry-pick
+        run: |
+          set -e
+          git config user.name "alpaca-ai-bot"
+          git config user.email "alpaca-ai-bot@users.noreply.github.com"
+
+          BRANCH="apply-fix/pr-${{ github.event.client_payload.staging_pr_number }}-to-${{ github.event.client_payload.production_branch }}"
+          git checkout -b "$BRANCH"
+
+          CONFLICT=0
+          for SHA in ${{ steps.staging-pr.outputs.shas }}; do
+            if ! git cherry-pick "$SHA"; then
+              git cherry-pick --abort
+              CONFLICT=1
+              break
+            fi
+          done
+
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+          echo "conflict=$CONFLICT" >> "$GITHUB_OUTPUT"
+
+          if [ "$CONFLICT" = "0" ]; then
+            git push origin "$BRANCH"
+          fi
+
+      - name: Open pull request
+        if: steps.cherry-pick.outputs.conflict == '0'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: pr } = await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `${{ steps.staging-pr.outputs.title }} (applied to ${{ github.event.client_payload.production_branch }})`,
+              head: '${{ steps.cherry-pick.outputs.branch }}',
+              base: '${{ github.event.client_payload.production_branch }}',
+              body: [
+                'Applies the exact fix already proven (merged) in ${{ steps.staging-pr.outputs.url }} to this branch.',
+                '',
+                'Cherry-picked, not AI-regenerated — the code here is identical to what was already tested.',
+              ].join('\n'),
+            });
+
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              labels: ['tested-fix'],
+            });
+
+            console.log(`Opened ${pr.html_url}`);
+
+      - name: Comment on staging PR about the conflict
+        if: steps.cherry-pick.outputs.conflict == '1'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: ${{ github.event.client_payload.staging_pr_number }},
+              body: [
+                '⚠️ **Could not apply this fix to `${{ github.event.client_payload.production_branch }}` automatically.**',
+                '',
+                'Cherry-picking hit a conflict, so nothing was pushed. A human needs to resolve it manually:',
+                '',
+                '```',
+                'git checkout ${{ github.event.client_payload.production_branch }}',
+                'git checkout -b apply-fix/pr-${{ github.event.client_payload.staging_pr_number }}-to-${{ github.event.client_payload.production_branch }}',
+                'git cherry-pick <commit-sha>',
+                '# resolve conflicts, git add, git cherry-pick --continue',
+                '```',
+                '',
+                'Then open a pull request labeled `tested-fix` targeting `${{ github.event.client_payload.production_branch }}`.'
+              ].join('\n'),
+            });

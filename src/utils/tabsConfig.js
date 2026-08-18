@@ -57,7 +57,7 @@ export const getTabsConfig = (issueDetails) => {
           },
         ]
       : []),
-    // Only when the issue has been sent to the AI Issue Resolver at least once.
+    // Only when the issue has AI Issue Resolver activity history.
     ...(hasAgenticHistory(issueDetails?.meta)
       ? [
           {

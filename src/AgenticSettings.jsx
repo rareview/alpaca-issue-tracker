@@ -1150,6 +1150,15 @@ const AgenticSettings = () => {
               />
             </p>
 
+            {form.branches?.staging && form.branches?.production ? (
+              <p className="agentic-branch-intro agentic-staging-first-notice">
+                {__(
+                  'Recommended: prove each AI fix on Staging before merging its "Apply fix to Production" pull request — that pull request cherry-picks the exact code already tested on Staging.',
+                  'alpaca-issue-tracker',
+                )}
+              </p>
+            ) : null}
+
             <fieldset
               className={`agentic-branch-section${canManageBranches ? '' : ' agentic-fieldset-disabled'}`}
               disabled={!canManageBranches}

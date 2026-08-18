@@ -755,14 +755,13 @@ const AlpacaIssue = ({
       );
   }, [showNotification]);
 
-  // After AI Issue Resolver sends an issue, refresh details so the AI tab,
-  // history meta, and "Sent to AI" label appear without reopening the modal.
+  // After the AI Issue Resolver activity/changes, refresh the AI Log tab content.
   useEffect(() => {
     if (!issueId || isCreating) {
       return undefined;
     }
 
-    const refreshAfterAgenticSend = async ({ issueId: changedId }) => {
+    const refreshAfterAgenticChange = async ({ issueId: changedId }) => {
       if (String(changedId) !== String(issueId)) {
         return;
       }
@@ -788,13 +787,13 @@ const AlpacaIssue = ({
     };
 
     wp.hooks.addAction(
-      'alpaca.agentic.sent',
+      'alpaca.agentic.changed',
       'alpaca/agentic-history',
-      refreshAfterAgenticSend,
+      refreshAfterAgenticChange,
     );
 
     return () => {
-      wp.hooks.removeAction('alpaca.agentic.sent', 'alpaca/agentic-history');
+      wp.hooks.removeAction('alpaca.agentic.changed', 'alpaca/agentic-history');
     };
   }, [issueId, isCreating, onLabelsChange, refetchData, setIssueDetails]);
 
@@ -2099,9 +2098,9 @@ const AlpacaIssue = ({
 
   // issueTabs = which tabs to show for this issue.
   // issueTabsKey = fingerprint of that set (e.g. "comments|agentic"), used as TabPanel's
-  // React key. After sending to AI, AI Log is added while the modal stays open; changing
-  // the key forces the tab bar to rebuild so the new tab appears. Without it, WordPress
-  // TabPanel can keep the old tab list and ignore the new tab.
+  // React key. After agentic workflow activity is recorded, AI Log may be added while the modal
+  // stays open; changing the key forces the tab bar to rebuild so the new tab appears.
+  // Without it, WordPress TabPanel can keep the old tab list and ignore the new tab.
   const issueTabs = useMemo(() => getTabsConfig(issueDetails), [issueDetails]);
   const issueTabsKey = useMemo(
     () => issueTabs.map((tab) => tab.name).join('|'),
