@@ -242,6 +242,18 @@ addAction(
 | ---------- | -------- | ---------------------------------------------------------------- |
 | `$payload` | `Object` | Payload containing `issueId`, `newCount`, and `newCountByAgent`. |
 
+### `alpaca.agentic.changed`
+
+**Type:** Action.
+
+**Purpose:** Fires after any AI Issue Resolver mutating action (sent, draft deleted/restarted, or staging fix applied to production), so the UI can re-fetch issue details (history, draft, labels).
+
+**Parameters**
+
+| Parameter  | Type     | Description                                                                    |
+| ---------- | -------- | ------------------------------------------------------------------------------ |
+| `$payload` | `Object` | Payload containing `issueId` and `mutation` (`sent`, `deleted`, or `applied`). |
+
 ### `alpaca.lastActivityChanged`
 
 **Type:** Action.

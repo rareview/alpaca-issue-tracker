@@ -1,0 +1,329 @@
+# Listens for slash commands on issue comments:
+#
+#   /approve-plan  — resumes implementation after a complexity:high planning phase
+#   /run-agent     — re-triggers the agent on any issue without touching labels
+#
+# Both commands require write or admin permission on the repo.
+#
+# The /approve-plan flow:
+#   1. agent-ready-trigger.yml fires, Claude commits a plan to docs/plans/
+#   2. Claude posts a comment asking for /approve-plan
+#   3. This workflow fires, verifies the commenter, then runs implementation
+#
+# The /run-agent flow:
+#   1. User comments /run-agent on an issue
+#   2. This workflow fires, verifies the commenter
+#   3. Runs the same complexity-aware routing as agent-ready-trigger.yml
+
+name: Plan Approval Gate
+
+on:
+  issue_comment:
+    types: [created]
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  handle-approve-plan:
+    if: |
+      github.event.issue.pull_request == null &&
+      startsWith(github.event.comment.body, '/approve-plan')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+
+    steps:
+      - name: Determine target branch
+        id: target-branch
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const labels = (context.payload.issue?.labels || []).map(l => l.name);
+            const prefix = 'target-branch:';
+            const match = labels.find(name => name.startsWith(prefix));
+            let branch = match ? match.slice(prefix.length).trim() : '';
+            if (!branch) {
+              const { data: repo } = await github.rest.repos.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+              });
+              branch = repo.default_branch;
+            }
+            console.log('Target branch:', branch);
+            core.setOutput('branch', branch);
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.target-branch.outputs.branch }}
+
+      - name: Check commenter permissions
+        id: permission-check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const commenter = context.payload.comment.user.login;
+            const issueNumber = context.payload.issue.number;
+
+            let permLevel;
+            try {
+              const result = await github.rest.repos.getCollaboratorPermissionLevel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                username: commenter
+              });
+              permLevel = result.data.permission;
+            } catch (err) {
+              permLevel = 'none';
+            }
+
+            const allowed = ['write', 'admin'].includes(permLevel);
+            console.log(`Commenter ${commenter} has permission: ${permLevel} — allowed: ${allowed}`);
+
+            if (!allowed) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                body: `@${commenter} Only collaborators with write access can approve plans. Your approval was not processed.`
+              });
+            }
+
+            core.setOutput('allowed', allowed ? 'true' : 'false');
+
+      - name: Check for existing PR (idempotency)
+        id: pr-check
+        if: steps.permission-check.outputs.allowed == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueNumber = context.payload.issue.number;
+            const { data: prs } = await github.rest.pulls.list({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open'
+            });
+
+            const existing = prs.find(pr =>
+              pr.body && (
+                pr.body.includes(`Closes #${issueNumber}`) ||
+                pr.body.includes(`closes #${issueNumber}`) ||
+                pr.body.includes(`Fixes #${issueNumber}`) ||
+                pr.body.includes(`fixes #${issueNumber}`)
+              )
+            );
+
+            if (existing) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                body: `Implementation is already in progress: ${existing.html_url}`
+              });
+              core.setOutput('already_running', 'true');
+            } else {
+              core.setOutput('already_running', 'false');
+            }
+
+      - name: Run Claude Code — Implementation
+        if: |
+          steps.permission-check.outputs.allowed == 'true' &&
+          steps.pr-check.outputs.already_running == 'false'
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            You are implementing issue #${{ github.event.issue.number }}.
+
+            Issue title: ${{ github.event.issue.title }}
+
+            Target branch for the PR: `${{ steps.target-branch.outputs.branch }}`
+
+            A human has approved the plan for this issue. Your job is to implement it.
+
+            Instructions:
+            1. Find the plan file in docs/plans/ that corresponds to this issue
+               (look for a file matching issue-${{ github.event.issue.number }} or check recently committed files)
+            2. Read AGENTS.md for project-specific coding standards and file conventions
+            3. Implement the feature per the approved plan
+            4. Open a PR using the template at .github/PULL_REQUEST_TEMPLATE/agent-generated.md
+               - Branch off of `${{ steps.target-branch.outputs.branch }}`
+               - PR base must be `${{ steps.target-branch.outputs.branch }}` (use `gh pr create --base ${{ steps.target-branch.outputs.branch }}`)
+            5. Reference "Closes #${{ github.event.issue.number }}" in the PR body
+            6. Add the 'agent-generated' label to the PR
+
+            Stay within the issue's defined scope ("Out of scope" is a hard boundary).
+            If blocked or uncertain, comment on the issue asking for clarification.
+
+          additional_permissions: |
+            actions: read
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # /run-agent — re-triggers the agent on any issue without touching labels.
+  # Useful when agent-ready is already present on the issue (GitHub only fires
+  # the 'labeled' event when the label is first added, not on subsequent edits).
+  # ─────────────────────────────────────────────────────────────────────────────
+  handle-run-agent:
+    if: |
+      github.event.issue.pull_request == null &&
+      startsWith(github.event.comment.body, '/run-agent')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read
+
+    steps:
+      - name: Determine target branch
+        id: target-branch
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const labels = (context.payload.issue?.labels || []).map(l => l.name);
+            const prefix = 'target-branch:';
+            const match = labels.find(name => name.startsWith(prefix));
+            let branch = match ? match.slice(prefix.length).trim() : '';
+            if (!branch) {
+              const { data: repo } = await github.rest.repos.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+              });
+              branch = repo.default_branch;
+            }
+            console.log('Target branch:', branch);
+            core.setOutput('branch', branch);
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.target-branch.outputs.branch }}
+
+      - name: Check commenter permissions
+        id: permission-check
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const commenter = context.payload.comment.user.login;
+            const issueNumber = context.payload.issue.number;
+
+            let permLevel;
+            try {
+              const result = await github.rest.repos.getCollaboratorPermissionLevel({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                username: commenter
+              });
+              permLevel = result.data.permission;
+            } catch (err) {
+              permLevel = 'none';
+            }
+
+            const allowed = ['write', 'admin'].includes(permLevel);
+            console.log(`Commenter ${commenter} has permission: ${permLevel} — allowed: ${allowed}`);
+
+            if (!allowed) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                body: `@${commenter} Only collaborators with write access can trigger the agent. Your \`/run-agent\` command was not processed.`
+              });
+            }
+
+            core.setOutput('allowed', allowed ? 'true' : 'false');
+
+      - name: Determine complexity
+        id: complexity
+        if: steps.permission-check.outputs.allowed == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const labels = context.payload.issue.labels.map(l => l.name);
+            const isHigh = labels.includes('complexity:high');
+            console.log('Issue labels:', labels.join(', '));
+            console.log('complexity:high:', isHigh);
+            core.setOutput('is_high', isHigh ? 'true' : 'false');
+
+      # ── HIGH COMPLEXITY: plan first ──────────────────────────────────────────
+      - name: Run Claude Code — Planning Phase (complexity:high)
+        if: |
+          steps.permission-check.outputs.allowed == 'true' &&
+          steps.complexity.outputs.is_high == 'true'
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_args: "--permission-mode bypassPermissions"
+          additional_permissions: |
+            actions: read
+          prompt: |
+            You are planning the implementation for issue #${{ github.event.issue.number }}.
+
+            Issue title: ${{ github.event.issue.title }}
+
+            This is a complexity:high issue. Your job is to PLAN, not implement.
+
+            Instructions:
+            1. Read the full issue body:
+               gh issue view ${{ github.event.issue.number }} --repo ${{ github.repository }}
+            2. Read AGENTS.md for project-specific coding standards and file conventions
+            3. Read the key files referenced in Technical Notes to understand existing patterns
+            4. Write a structured implementation plan as a markdown file saved to:
+               docs/plans/YYYY-MM-DD-NNN-<type>-<short-title>-plan.md
+               The plan should include: problem frame, requirements, scope boundaries,
+               key technical decisions, and implementation units (each with goal, files,
+               approach, and test scenarios)
+            5. Commit the plan file to a new branch named:
+               plan/issue-${{ github.event.issue.number }}
+               Branch off of `${{ steps.target-branch.outputs.branch }}` (the PR target branch).
+            6. After committing, post a comment on the issue with:
+               - A link to the plan file (GitHub URL)
+               - "Implementation plan is ready for review. Reply /approve-plan to begin
+                 implementation, or comment with feedback to revise the plan."
+            7. Do NOT write any application code
+            8. Do NOT open a pull request
+
+      # ── LOW/MEDIUM COMPLEXITY: execute directly ──────────────────────────────
+      - name: Run Claude Code — Direct Execution (complexity:low/medium)
+        if: |
+          steps.permission-check.outputs.allowed == 'true' &&
+          steps.complexity.outputs.is_high == 'false'
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_args: "--permission-mode bypassPermissions"
+          additional_permissions: |
+            actions: read
+          prompt: |
+            You are implementing issue #${{ github.event.issue.number }}.
+
+            Issue title: ${{ github.event.issue.title }}
+
+            Target branch for the PR: `${{ steps.target-branch.outputs.branch }}`
+
+            Instructions:
+            1. Read the full issue body carefully using the GitHub CLI:
+               gh issue view ${{ github.event.issue.number }} --repo ${{ github.repository }}
+            2. Read AGENTS.md for project coding standards, file conventions, and architecture
+            3. Implement the feature following the acceptance criteria exactly
+            4. Stay within the defined scope — "Out of scope" is a hard boundary
+            5. Follow the patterns referenced in Technical Notes (read the key files listed there)
+            6. Create a branch, commit your changes, and open a PR:
+               - Branch off of `${{ steps.target-branch.outputs.branch }}`
+               - Branch name: agent/issue-${{ github.event.issue.number }}
+               - PR title should match the issue title
+               - PR base must be `${{ steps.target-branch.outputs.branch }}` (use `gh pr create --base ${{ steps.target-branch.outputs.branch }}`)
+               - PR body: reference "Closes #${{ github.event.issue.number }}" and summarize what you did
+               - Use the template at .github/PULL_REQUEST_TEMPLATE/agent-generated.md
+            7. Add the 'agent-generated' label to the PR
+            8. After the PR is open, update the original issue's acceptance criteria:
+               - Check off any criteria your implementation directly satisfies
+               - Leave unchecked anything that requires manual testing, human review, or CI
+
+            If you are blocked or unclear on something, post a comment on the issue
+            asking for clarification rather than guessing.

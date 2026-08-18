@@ -1,0 +1,1098 @@
+/**
+ * Alpaca Agentic (AI Issue Resolver) styles.
+ *
+ * Scoped under .agentic-* and .agentic-export-modal to avoid conflicts with Alpaca or wp-admin.
+ */
+
+/* ── Design tokens ───────────────────────────────────────────────────────────── */
+
+:root {
+  --agentic-gradient: linear-gradient(
+    135deg,
+    #4f46e5 0%,
+    #7c3aed 35%,
+    #c026d3 65%,
+    #6366f1 100%
+  );
+  --agentic-gradient-soft: linear-gradient(
+    135deg,
+    rgb(79 70 229 / 12%) 0%,
+    rgb(124 58 237 / 10%) 50%,
+    rgb(192 38 211 / 12%) 100%
+  );
+  --agentic-glow: 0 4px 14px rgb(124 58 237 / 35%);
+  --agentic-glow-hover: 0 6px 20px rgb(124 58 237 / 50%);
+}
+
+/* ── Keyframes ───────────────────────────────────────────────────────────────── */
+
+@keyframes agentic-gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes agentic-shimmer {
+  0% {
+    transform: translateX(-120%);
+  }
+
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+@keyframes agentic-sparkle {
+  0%,
+  100% {
+    opacity: 0.65;
+    transform: scale(1) rotate(0deg);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.15) rotate(12deg);
+  }
+}
+
+@keyframes agentic-pulse-glow {
+  0%,
+  100% {
+    box-shadow: var(--agentic-glow);
+  }
+
+  50% {
+    box-shadow: 0 4px 22px rgb(192 38 211 / 45%);
+  }
+}
+
+/* ── Above-tabs bar ─────────────────────────────────────────────────────────── */
+
+.agentic-abovetabs-bar {
+  display: flex;
+  align-items: center;
+  padding: 16px 16px 10px;
+  border-block-end: 1px solid rgb(124 58 237 / 15%);
+  background: var(--agentic-gradient-soft);
+}
+
+.agentic-history-tab {
+  padding: 12px 4px 8px;
+}
+
+.agentic-history-tab__empty {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #646970;
+}
+
+.agentic-activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+  margin-block-start: 8px;
+}
+
+.agentic-activity-list__heading {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #5b21b6;
+}
+
+.agentic-activity-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  font-size: 12px;
+  line-height: 1.4;
+  color: #50575e;
+}
+
+.agentic-activity-strip__date {
+  flex: 0 0 auto;
+  color: #646970;
+}
+
+.agentic-activity-strip__branch {
+  flex: 0 0 auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  color: #3c434a;
+}
+
+.agentic-activity-strip__label {
+  flex: 0 0 auto;
+  color: #646970;
+}
+
+.agentic-activity-strip__link {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: #5b21b6;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.agentic-activity-strip__link:hover,
+.agentic-activity-strip__link:focus-visible {
+  color: #4c1d95;
+}
+
+.agentic-branches-required-notice {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: #50575e;
+}
+
+/* ── Primary AI magic button ─────────────────────────────────────────────────── */
+
+.components-button.agentic-agent-btn {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  border: 0 !important;
+  color: #fff !important;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  background: var(--agentic-gradient) !important;
+  background-size: 220% 220% !important;
+  box-shadow: var(--agentic-glow);
+  animation:
+    agentic-gradient-shift 5s ease infinite,
+    agentic-pulse-glow 3s ease-in-out infinite;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.components-button.agentic-agent-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 20%,
+    rgb(255 255 255 / 35%) 50%,
+    transparent 80%
+  );
+  transform: translateX(-120%);
+  animation: agentic-shimmer 2.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.components-button.agentic-agent-btn:hover,
+.components-button.agentic-agent-btn:focus-visible {
+  color: #fff !important;
+  transform: translateY(-1px);
+  box-shadow: var(--agentic-glow-hover) !important;
+}
+
+.components-button.agentic-agent-btn:active {
+  transform: translateY(0);
+}
+
+.components-button.agentic-agent-btn:disabled,
+.components-button.agentic-agent-btn[disabled] {
+  opacity: 0.55;
+  animation: none;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.components-button.agentic-agent-btn svg {
+  flex-shrink: 0;
+  filter: drop-shadow(0 1px 1px rgb(0 0 0 / 20%));
+}
+
+/* Regenerate: outlined magic variant */
+
+.components-button.agentic-agent-btn-secondary {
+  border: 1px solid rgb(124 58 237 / 45%) !important;
+  color: #6d28d9 !important;
+  background: linear-gradient(
+    135deg,
+    rgb(255 255 255 / 95%) 0%,
+    rgb(237 233 254 / 90%) 100%
+  ) !important;
+  box-shadow: 0 2px 8px rgb(124 58 237 / 12%);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.components-button.agentic-agent-btn-secondary:hover,
+.components-button.agentic-agent-btn-secondary:focus-visible {
+  border-color: #7c3aed !important;
+  color: #5b21b6 !important;
+  box-shadow: 0 4px 12px rgb(124 58 237 / 22%);
+  transform: translateY(-1px);
+}
+
+/* ── Modal ───────────────────────────────────────────────────────────────────── */
+
+.agentic-export-modal .components-modal__header {
+  background: var(--agentic-gradient-soft);
+  border-block-end: 1px solid rgb(124 58 237 / 12%);
+}
+
+.agentic-export-modal .components-modal__content {
+  padding: 0 24px 24px;
+}
+
+.agentic-modal-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.agentic-modal-header-icon {
+  font-size: 18px;
+  line-height: 1;
+  background: var(--agentic-gradient);
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: agentic-sparkle 2.4s ease-in-out infinite;
+}
+
+/* Loading state */
+
+.agentic-modal-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 48px 0;
+  color: #6d28d9;
+}
+
+.agentic-modal-loading .components-spinner {
+  width: 32px;
+  height: 32px;
+}
+
+.agentic-modal-loading .components-spinner circle {
+  stroke: #7c3aed;
+}
+
+/* Form layout */
+
+.agentic-modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.agentic-field-title .components-base-control__field {
+  margin-block-end: 4px;
+}
+
+.agentic-field-body textarea {
+  font-family:
+    ui-monospace, 'SF Mono', 'Cascadia Mono', 'Segoe UI Mono', monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  min-height: 320px;
+  resize: vertical;
+}
+
+/* Meta row: complexity + labels side by side */
+
+.agentic-modal-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 640px) {
+  .agentic-modal-meta {
+    grid-template-columns: 1fr;
+  }
+}
+
+.agentic-label-checkboxes {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.agentic-label-checkboxes legend {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #757575;
+  margin-block-end: 8px;
+}
+
+.agentic-modal-hint {
+  font-size: 12px;
+  color: #757575;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Actions row */
+
+.agentic-modal-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-block-start: 8px;
+  padding-block-start: 16px;
+  border-block-start: 1px solid rgb(124 58 237 / 10%);
+}
+
+.agentic-modal-actions .components-spinner {
+  margin: 0;
+}
+
+/* ── AI Development Wizard ───────────────────────────────────────────────────── */
+
+.agentic-wizard-wrap {
+  max-width: 860px;
+}
+
+.agentic-wizard-title {
+  font-size: 24px;
+  margin-block-end: 4px;
+}
+
+.agentic-advisory-notice {
+  margin-block: 16px 24px;
+}
+
+.agentic-advisory-notice p {
+  margin: 0;
+}
+
+.agentic-advisory-notice p + p {
+  margin-block-start: 8px;
+}
+
+.agentic-wizard-tagline {
+  margin: 0 0 24px;
+  color: #757575;
+}
+
+.agentic-wizard-footnote {
+  margin: 16px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #757575;
+}
+
+.agentic-wizard-footnote sup {
+  margin-inline-end: 2px;
+}
+
+.agentic-help-tip {
+  position: relative;
+  display: inline-flex;
+  vertical-align: middle;
+  margin-inline-start: 4px;
+  cursor: help;
+  outline: none;
+}
+
+.agentic-help-tip .dashicons {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  color: #757575;
+}
+
+.agentic-help-tip:hover .dashicons,
+.agentic-help-tip:focus .dashicons {
+  color: #4f46e5;
+}
+
+.agentic-help-tip__tooltip {
+  position: absolute;
+  inset-block-end: calc(100% + 8px);
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  width: 280px;
+  padding: 8px 10px;
+  background: #1d2327;
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.4;
+  font-weight: 400;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 15%);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.15s ease,
+    visibility 0.15s ease;
+  z-index: 10;
+  text-align: start;
+}
+
+.agentic-help-tip__tooltip--wide {
+  width: 320px;
+  inset-inline-start: 0;
+  transform: none;
+}
+
+.agentic-help-tip__tooltip::after {
+  content: '';
+  position: absolute;
+  inset-block-start: 100%;
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-block-start-color: #1d2327;
+}
+
+.agentic-help-tip__tooltip--wide::after {
+  inset-inline-start: 8px;
+  transform: none;
+}
+
+.agentic-help-tip:hover .agentic-help-tip__tooltip,
+.agentic-help-tip:focus .agentic-help-tip__tooltip,
+.agentic-help-tip:focus-within .agentic-help-tip__tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+.agentic-step-hr {
+  border: 0;
+  border-block-start: 1px solid #e0e0e0;
+  margin: 20px 0 16px;
+}
+
+/* Step indicator tabs */
+
+.agentic-step-indicators {
+  display: flex;
+  gap: 0;
+  margin-block-end: 0;
+  border: 1px solid #ddd;
+  border-radius: 6px 6px 0 0;
+  overflow: hidden;
+}
+
+.agentic-step-indicator {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  text-decoration: none;
+  color: #757575;
+  background: #f9f9f9;
+  border: 0;
+  border-radius: 0;
+  border-inline-end: 1px solid #ddd;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  text-align: start;
+  transition: background 0.15s ease;
+}
+
+.agentic-step-indicator:last-child {
+  border-inline-end: 0;
+}
+
+.agentic-step-indicator:hover {
+  background: #f0f0f0;
+  color: #1d2327;
+  text-decoration: none;
+}
+
+.agentic-step-indicator.agentic-indicator-active {
+  background: #fff;
+  color: #4f46e5;
+  font-weight: 600;
+  border-block-end: 2px solid #4f46e5;
+  margin-block-end: -1px;
+}
+
+.agentic-step-indicator.agentic-indicator-done {
+  color: #008a20;
+}
+
+.agentic-indicator-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #e0e0e0;
+  color: #555;
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.agentic-indicator-active .agentic-indicator-badge {
+  background: #4f46e5;
+  color: #fff;
+}
+
+.agentic-indicator-done .agentic-indicator-badge {
+  background: #008a20;
+  color: #fff;
+}
+
+.agentic-step-indicator.agentic-indicator-locked {
+  opacity: 0.55;
+}
+
+.agentic-step-indicator.agentic-indicator-locked:hover {
+  opacity: 0.75;
+}
+
+@media (max-width: 640px) {
+  .agentic-indicator-label {
+    display: none;
+  }
+}
+
+/* Active step panel */
+
+.agentic-wizard-panel {
+  position: relative;
+  border: 1px solid #ddd;
+  border-block-start: 0;
+  border-radius: 0 0 6px 6px;
+  padding: 24px;
+  background: #fff;
+}
+
+.agentic-wizard-panel .form-table th {
+  width: 275px;
+}
+
+.agentic-wizard-panel.agentic-step-locked {
+  opacity: 0.9;
+}
+
+.agentic-panel-title {
+  font-size: 18px;
+  margin: 0 0 12px;
+  padding: 0;
+}
+
+.agentic-panel-subtitle {
+  font-size: 14px;
+  font-weight: 600;
+  margin: 20px 0 8px;
+  padding: 0;
+}
+
+.agentic-panel-subtitle:first-of-type {
+  margin-block-start: 0;
+}
+
+.agentic-project-context {
+  margin-block-start: 28px;
+}
+
+.agentic-project-context .agentic-panel-subtitle {
+  margin-block-start: 0;
+}
+
+.agentic-project-context__textarea {
+  width: 100%;
+  max-width: 40rem;
+  min-height: 10rem;
+  font-family: Consolas, Monaco, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Locked fieldset: show content grayed out but non-interactive */
+
+.agentic-fieldset-disabled {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  opacity: 0.55;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Locked notice message shown inside a locked step body */
+
+.agentic-locked-notice {
+  margin: 0;
+  padding: 10px 0 4px;
+  font-size: 13px;
+  color: #757575;
+  font-style: italic;
+}
+
+.agentic-branch-section {
+  border: 0;
+  margin: 16px 0 0;
+  padding: 0;
+  transition: opacity 0.2s ease;
+}
+
+.agentic-branch-section .form-table {
+  margin-block-start: 8px;
+}
+
+.agentic-branch-field {
+  max-width: 25em; /* Match wp-admin .regular-text (Repo / PAT). */
+}
+
+.agentic-branch-field .components-combobox-control,
+.agentic-branch-field .components-base-control {
+  max-width: 100%;
+}
+
+.agentic-branch-field .components-combobox-control__input,
+.agentic-branch-field input.components-combobox-control__input {
+  width: 100%;
+  max-width: 100%;
+}
+
+.agentic-step-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-block-start: 16px;
+}
+
+.agentic-step-actions .button {
+  margin: 0 !important;
+}
+
+.agentic-branch-intro {
+  margin-block-start: 22px;
+}
+
+.agentic-staging-first-notice {
+  margin-block-start: 8px;
+  font-size: 13px;
+  color: #646970;
+}
+
+/* Toggle switch (Step 1) */
+
+.agentic-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  margin-block-end: 16px;
+  font-size: 14px;
+}
+
+.agentic-toggle-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.agentic-toggle-track {
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+  border-radius: 11px;
+  background: #ccc;
+  position: relative;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+}
+
+.agentic-toggle-track::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  inset-inline-start: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.2s ease;
+}
+
+.agentic-toggle-input:checked + .agentic-toggle-track {
+  background: #4f46e5;
+}
+
+.agentic-toggle-input:checked + .agentic-toggle-track::after {
+  transform: translateX(18px);
+}
+
+.agentic-toggle-state--on {
+  display: none;
+}
+
+.agentic-toggle-input:checked
+  ~ .agentic-toggle-text
+  .agentic-toggle-state--off {
+  display: none;
+}
+
+.agentic-toggle-input:checked ~ .agentic-toggle-text .agentic-toggle-state--on {
+  display: inline;
+}
+
+/* AI provider fields in Step 1 — grayed out until enabled */
+
+.agentic-ai-provider-fields {
+  border: 0;
+  margin: 16px 0 0;
+  padding: 0;
+  transition: opacity 0.2s ease;
+}
+
+.agentic-ai-provider-fields .form-table {
+  margin-block-start: 0;
+}
+
+.agentic-ai-provider-fields.agentic-fieldset-disabled,
+.agentic-ai-provider-fields[disabled] {
+  opacity: 0.55;
+  pointer-events: none;
+  user-select: none;
+}
+
+.agentic-ai-provider-fields select:disabled,
+.agentic-ai-provider-fields input:disabled {
+  opacity: 1;
+  background-color: #f0f0f1;
+  color: #a7aaad;
+  cursor: not-allowed;
+}
+
+/* Connection test result */
+
+.agentic-connection-result {
+  font-size: 13px;
+}
+
+.agentic-result-success {
+  color: #008a20;
+}
+
+.agentic-result-error {
+  color: #d63638;
+}
+
+.agentic-result-pending {
+  color: #757575;
+}
+
+/* Site ↔ GitHub repo confirmation */
+
+.agentic-repo-match {
+  margin-block: 0 1em;
+}
+
+.agentic-repo-match label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+/* Reset wp-admin forms.css checkbox offset so text lines up with the box. */
+.agentic-repo-match input[type='checkbox'] {
+  margin: 0 !important;
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+  vertical-align: middle;
+}
+
+.agentic-repo-match span {
+  line-height: 1.4;
+}
+
+.agentic-branch-save-status {
+  font-size: 13px;
+}
+
+/* Install workflow button */
+
+/* Install workflow button — match wp-admin button sizing */
+
+.agentic-step-actions .agentic-install-btn {
+  margin: 0 !important;
+}
+
+.agentic-install-spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid #4f46e5;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: agentic-spin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-inline-start: 8px;
+}
+
+@keyframes agentic-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.agentic-install-error {
+  margin-block-start: 10px;
+  padding: 10px 14px;
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-radius: 4px;
+  color: #d63638;
+  font-size: 13px;
+}
+
+/* Workflow installed state */
+
+.agentic-workflow-installed {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #1d2327;
+  flex-wrap: wrap;
+}
+
+.agentic-workflow-installed a {
+  color: #4f46e5;
+  word-break: break-all;
+}
+
+.agentic-check-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #008a20;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* Checklist (Step 4) */
+
+.agentic-checklist {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+}
+
+.agentic-checklist-item {
+  padding: 10px 0;
+  border-block-end: 1px solid #f0f0f0;
+}
+
+.agentic-checklist-item:last-child {
+  border-block-end: 0;
+}
+
+.agentic-checklist-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.agentic-checklist-label input[type='checkbox'] {
+  margin-block-start: 2px;
+  flex-shrink: 0;
+}
+
+.agentic-checklist-done .agentic-checklist-label {
+  color: #757575;
+  text-decoration: line-through;
+}
+
+.agentic-checklist-done .agentic-checklist-label code {
+  text-decoration: none;
+}
+
+/* Ready notice (Step 4 complete) */
+
+.agentic-ready-notice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-block-start: 16px;
+  padding: 14px 18px;
+  background: #f0fff4;
+  border: 1px solid #c3e6cb;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #1d2327;
+}
+
+/* Install section disabled state (credentials not yet saved) */
+
+.agentic-section-disabled {
+  opacity: 0.55;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Details / summary accordion */
+
+.agentic-details-block {
+  margin-block-start: 16px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.agentic-details-block summary {
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  background: #f9f9f9;
+  user-select: none;
+}
+
+.agentic-details-block summary:hover {
+  background: #f0f0f0;
+}
+
+.agentic-details-block p,
+.agentic-details-block ol,
+.agentic-details-block pre {
+  margin: 12px 14px;
+  font-size: 13px;
+}
+
+.agentic-details-block ol {
+  padding-inline-start: 18px;
+}
+
+.agentic-details-block ol ul {
+  margin: 6px 0 0;
+  padding-inline-start: 18px;
+  list-style: disc;
+}
+
+.agentic-details-block pre {
+  background: #f6f7f7;
+  padding: 10px 12px;
+  border-radius: 3px;
+  font-size: 12px;
+  display: inline-block;
+}
+
+/* All-done state: all tabs green ─────────────────────────────────────────── */
+
+.agentic-indicators-all-done .agentic-step-indicator {
+  color: #008a20;
+}
+
+.agentic-indicators-all-done .agentic-step-indicator:hover {
+  background: #f0fff4;
+  color: #006117;
+}
+
+.agentic-indicators-all-done .agentic-indicator-badge {
+  background: #008a20;
+  color: #fff;
+}
+
+/* All-done banner (above step tabs) ──────────────────────────────────────── */
+
+.agentic-all-done-banner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-block-end: 20px;
+  padding: 20px 24px;
+  border: 1px solid #c3e6cb;
+  border-radius: 6px;
+  background: #f0fff4;
+}
+
+.agentic-all-done-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #008a20;
+  color: #fff;
+  font-size: 24px;
+  font-weight: 700;
+  flex-shrink: 0;
+  box-shadow: 0 0 0 6px #e6f4ea;
+}
+
+.agentic-all-done-copy {
+  min-width: 0;
+}
+
+.agentic-all-done-heading {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1d2327;
+  margin: 0 0 4px;
+  padding: 0;
+  line-height: 1.3;
+}
+
+.agentic-all-done-sub {
+  font-size: 14px;
+  color: #50575e;
+  margin: 0;
+  line-height: 1.5;
+}
+
+#agentic-review-content[hidden],
+.agentic-review-step[hidden] {
+  display: none !important;
+}
+
+/* ── Accessibility: respect reduced motion ─────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .components-button.agentic-agent-btn {
+    animation: none;
+  }
+
+  .components-button.agentic-agent-btn::before {
+    animation: none;
+    display: none;
+  }
+
+  .agentic-modal-header-icon {
+    animation: none;
+  }
+}

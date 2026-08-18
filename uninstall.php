@@ -23,6 +23,9 @@ global $wpdb;
 delete_option( 'alpaistr_needs_term_setup' );
 delete_option( 'alpaistr_default_status_id' );
 delete_option( 'alpaistr_enable_test_logs' );
+delete_option( 'alpaistr_agentic_settings' );
+delete_option( 'alpaistr_agentic_workflow_pr_url' );
+delete_transient( 'alpaistr_agentic_workflow_installed' );
 
 // Delete term meta.
 // Keep label color metadata because label terms are intentionally retained.

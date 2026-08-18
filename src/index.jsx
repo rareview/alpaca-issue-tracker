@@ -5,6 +5,7 @@ import './utils/boardHelpers.js';
 import { installAlpacaApiRootMiddleware } from './utils/restApiRoot.js';
 import reactMountUtils from './utils/reactMount';
 import { initializeAlpacaDataDump } from './utils/dataDump.js';
+import './agentic.js';
 
 // Import Prism.js and required languages
 import Prism from 'prismjs';
@@ -20,6 +21,7 @@ import './utils/prismKeyValue';
 
 import AlpacaToolbar from './Toolbar.jsx';
 import AlpacaSettings from './Settings.jsx';
+import AgenticSettings from './AgenticSettings.jsx';
 import { WatchlistProvider } from './context/WatchlistContext.jsx';
 import { NotificationProvider } from './context/NotificationContext.jsx';
 import { AlpacaBoard } from './Board.jsx';
@@ -167,5 +169,12 @@ if (document.querySelector('#alpaca-email-templates-page')) {
   mountReactTree(
     <EmailTemplatesScreen />,
     document.querySelector('#alpaca-email-templates-page'),
+  );
+}
+
+if (document.querySelector('#alpaca-ai-issue-resolver-page')) {
+  mountReactTree(
+    <AgenticSettings />,
+    document.querySelector('#alpaca-ai-issue-resolver-page'),
   );
 }

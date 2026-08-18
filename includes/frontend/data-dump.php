@@ -216,3 +216,92 @@ function alpaistr_prepare_datadump() {
 		'env' => base64_encode( $alpaca_json ), // phpcs:ignore WordPress.PHP.DiscouragedFunctions.obfuscation_base64_encode
 	];
 }
+
+/**
+ * Snapshot of the active theme (name, slug, version, optional parent).
+ *
+ * @return array{name: string, stylesheet: string, version: string, parent: string}
+ */
+function alpaistr_get_environment_theme_snapshot() {
+	$theme  = wp_get_theme();
+	$parent = $theme->parent();
+
+	return [
+		'name'       => sanitize_text_field( (string) $theme->get( 'Name' ) ),
+		'stylesheet' => sanitize_text_field( (string) $theme->get_stylesheet() ),
+		'version'    => sanitize_text_field( (string) $theme->get( 'Version' ) ),
+		// Empty string when this is not a child theme.
+		'parent'     => $parent
+			? sanitize_text_field( $parent->get( 'Name' ) . ' ' . $parent->get( 'Version' ) )
+			: '',
+	];
+}
+
+/**
+ * Snapshot of active plugins as name + version (+ file path for debugging).
+ *
+ * @return array<int, array{name: string, version: string, file: string}>
+ */
+function alpaistr_get_environment_plugins_snapshot() {
+	if ( ! function_exists( 'get_plugins' ) ) {
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+	}
+
+	$all_plugins    = get_plugins();
+	$active_plugins = (array) get_option( 'active_plugins', [] );
+
+	// On multisite, also include network-activated plugins.
+	if ( is_multisite() ) {
+		$network_plugins = array_keys( (array) get_site_option( 'active_sitewide_plugins', [] ) );
+		$active_plugins  = array_unique( array_merge( $active_plugins, $network_plugins ) );
+	}
+
+	$snapshot = [];
+
+	foreach ( $active_plugins as $plugin_file ) {
+		if ( ! is_string( $plugin_file ) || '' === $plugin_file ) {
+			continue;
+		}
+
+		if ( isset( $all_plugins[ $plugin_file ] ) ) {
+			$snapshot[] = [
+				'name'    => sanitize_text_field( (string) ( $all_plugins[ $plugin_file ]['Name'] ?? $plugin_file ) ),
+				'version' => sanitize_text_field( (string) ( $all_plugins[ $plugin_file ]['Version'] ?? '' ) ),
+				'file'    => sanitize_text_field( $plugin_file ),
+			];
+			continue;
+		}
+
+		// Fallback if the plugin header could not be read.
+		$snapshot[] = [
+			'name'    => sanitize_text_field( $plugin_file ),
+			'version' => '',
+			'file'    => sanitize_text_field( $plugin_file ),
+		];
+	}
+
+	return $snapshot;
+}
+
+/**
+ * Snapshot of must-use plugins (always-on, under wp-content/mu-plugins).
+ *
+ * @return array<int, array{name: string, version: string, file: string}>
+ */
+function alpaistr_get_environment_mu_plugins_snapshot() {
+	if ( ! function_exists( 'get_mu_plugins' ) ) {
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+	}
+
+	$snapshot = [];
+
+	foreach ( get_mu_plugins() as $plugin_file => $plugin_data ) {
+		$snapshot[] = [
+			'name'    => sanitize_text_field( (string) ( $plugin_data['Name'] ?? $plugin_file ) ),
+			'version' => sanitize_text_field( (string) ( $plugin_data['Version'] ?? '' ) ),
+			'file'    => sanitize_text_field( (string) $plugin_file ),
+		];
+	}
+
+	return $snapshot;
+}
