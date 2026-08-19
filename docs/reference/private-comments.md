@@ -2,7 +2,7 @@
 
 ## REST Visibility Override
 
-### `alpaca_private_comments_rest_visibility_param`
+### `private_comments_rest_visibility_param`
 
 **Type:** Filter.
 
@@ -16,7 +16,7 @@
 
 ## Per-Type Visibility Decisions
 
-### `alpaca_private_comments_user_can_view_type`
+### `private_comments_user_can_view_type`
 
 **Type:** Filter.
 
@@ -24,7 +24,7 @@
 
 **Parameters**
 
-| Parameter   | Type     | Description                              |
-| ----------- | -------- | ---------------------------------------- |
+| Parameter   | Type     | Description                                         |
+| ----------- | -------- | --------------------------------------------------- |
 | `$can_view` | `bool`   | Alpaca Issue Tracker's current visibility decision. |
-| `$type`     | `string` | The hidden comment type being evaluated. |
+| `$type`     | `string` | The hidden comment type being evaluated.            |
