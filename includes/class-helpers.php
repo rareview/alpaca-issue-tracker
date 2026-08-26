@@ -68,6 +68,7 @@ class Helpers {
 		// Default decision for common actions.
 		switch ( $action ) {
 			case 'view_board':
+			case 'view_frontend_board':
 			case 'get_issue':
 			case 'comment_count':
 			case 'list_users':

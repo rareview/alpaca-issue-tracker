@@ -1,6 +1,7 @@
 @use '../../abstracts' as *;
 
-.wp-admin #project-board {
+.wp-admin #project-board,
+.alpaca-project-board {
   & > * {
     clear: both;
   }

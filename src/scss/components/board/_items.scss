@@ -3,7 +3,8 @@
 /*
 * Items (Cards)
 */
-.wp-admin {
+.wp-admin,
+.alpaca-project-board {
   .alpaca-item {
     --alpaca-item-controls-width: #{$size-control-lg};
 

@@ -88,4 +88,22 @@ class HelpersRestPermissionTest extends \PHPUnit\Framework\TestCase {
 
 		$this->assertTrue( $result );
 	}
+
+	/**
+	 * The frontend board view action must remain overridable through the shared permission filter.
+	 */
+	public function test_frontend_board_permission_is_filterable(): void {
+		Functions
+			::expect( 'apply_filters' )
+			->once()
+			->with(
+				'alpaca_user_can',
+				true,
+				'view_frontend_board',
+				[ 'post_id' => 42 ]
+			)
+			->andReturn( false );
+
+		$this->assertFalse( Helpers::user_can( 'view_frontend_board', [ 'post_id' => 42 ] ) );
+	}
 }

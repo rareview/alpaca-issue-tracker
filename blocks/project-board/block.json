@@ -1,0 +1,42 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "alpaca/project-board",
+  "version": "1.0.0",
+  "title": "Project Board",
+  "category": "widgets",
+  "description": "Display an Alpaca Issue Tracker project board.",
+  "textdomain": "alpaca-issue-tracker",
+  "editorScript": "alpaca-project-board-editor",
+  "icon": "schedule",
+  "attributes": {
+    "accessMode": {
+      "type": "string",
+      "default": "login_required"
+    },
+    "anonymousDetailMode": {
+      "type": "string",
+      "default": "cards_only"
+    },
+    "statusIds": {
+      "type": "array",
+      "default": []
+    },
+    "showFilters": {
+      "type": "boolean",
+      "default": true
+    },
+    "showSearch": {
+      "type": "boolean",
+      "default": true
+    },
+    "datapoints": {
+      "type": "object",
+      "default": {}
+    }
+  },
+  "supports": {
+    "html": false,
+    "multiple": true
+  }
+}

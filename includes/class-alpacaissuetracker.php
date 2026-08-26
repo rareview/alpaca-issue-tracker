@@ -111,6 +111,8 @@ final class AlpacaIssueTracker {
 		// Load core functionality.
 		require_once ALPAISTR_PLUGIN_DIR . 'includes/core/posttypes-and-taxonomies.php';
 		require_once ALPAISTR_PLUGIN_DIR . 'includes/core/board.php';
+		require_once ALPAISTR_PLUGIN_DIR . 'includes/blocks/class-project-board-block.php';
+		new Project_Board_Block();
 
 		// Load admin bar (available both frontend and backend).
 		require_once ALPAISTR_PLUGIN_DIR . 'includes/admin/admin-bar.php';

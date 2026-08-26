@@ -3,7 +3,8 @@
 /*
 * 3.4 - Focus On Column
 */
-.wp-admin {
+.wp-admin,
+.alpaca-project-board {
   .alpaca-board-canvas {
     --alpaca-unfocused-column-opacity: 0.3;
     --alpaca-column-focus-backdrop: rgb(240 240 241 / 50%);

@@ -17,15 +17,30 @@ import { dispatchStatusChangedAction } from './utils/statusChange';
 import { computeDeadlineState } from './utils/filters';
 
 import { updateIssue } from './services/issueApi';
+import PropTypes from 'prop-types';
 
 /**
  * Main board component.
+ *
+ * @param {Object}  props                  Component props.
+ * @param {Array}   props.boardData        Server-provided board data.
+ * @param {string}  props.controlsSelector Controls mount selector.
+ * @param {boolean} props.showFilters      Whether board filters are visible.
+ * @param {boolean} props.showSearch       Whether board search is visible.
+ * @param {boolean} props.showInbox        Whether the notification inbox is visible.
+ * @return {JSX.Element} Board interface.
  */
-export function AlpacaBoard() {
+export function AlpacaBoard({
+  boardData = window.alpaistrBoardData || [],
+  controlsSelector = '#project-board-controls-mount',
+  showFilters = true,
+  showSearch = true,
+  showInbox = true,
+}) {
   const canDeleteIssues = Boolean(window.alpaistrSettings?.canDeleteIssues);
   const [containers, setContainers] = useState(() => {
-    if (typeof window.alpaistrBoardData !== 'undefined') {
-      return transformDataForBoard(window.alpaistrBoardData);
+    if (Array.isArray(boardData)) {
+      return transformDataForBoard(boardData);
     }
     return [];
   });
@@ -1741,7 +1756,7 @@ export function AlpacaBoard() {
   return (
     <>
       <BoardControls
-        selector="#project-board-controls-mount"
+        selector={controlsSelector}
         containers={containers}
         activeFilter={activeBoardFilter}
         activeSearchFilter={activeSearchFilter}
@@ -1750,9 +1765,13 @@ export function AlpacaBoard() {
         onClearFilter={handleClearBoardFilter}
         onSetSearchFilter={handleSetSearchFilter}
         onClearSearchFilter={handleClearSearchFilter}
+        showFilters={showFilters}
+        showInbox={showInbox}
+        showSearch={showSearch}
       />
       <div
         className={boardCanvasClassName}
+        data-alpaca-project-board-canvas="true"
         data-alpaca-focused-column-id={focusedContainerId || undefined}
         onDragStartCapture={handleBoardDragStartCapture}
         onDragEndCapture={handleBoardDragStopCapture}
@@ -1882,3 +1901,11 @@ export function AlpacaBoard() {
 }
 
 AlpacaBoard.displayName = 'AlpacaBoard';
+
+AlpacaBoard.propTypes = {
+  boardData: PropTypes.array,
+  controlsSelector: PropTypes.string,
+  showFilters: PropTypes.bool,
+  showInbox: PropTypes.bool,
+  showSearch: PropTypes.bool,
+};

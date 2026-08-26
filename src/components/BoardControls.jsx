@@ -23,6 +23,9 @@ import SearchPortal from './Search';
  * @param {Function} props.onClearFilter       Clear filter callback.
  * @param {Function} props.onSetSearchFilter   Set search filter callback.
  * @param {Function} props.onClearSearchFilter Clear search filter callback.
+ * @param {boolean}  props.showFilters         Whether to include filter controls.
+ * @param {boolean}  props.showInbox           Whether to include the inbox control.
+ * @param {boolean}  props.showSearch          Whether to include search controls.
  * @return {JSX.Element} Rendered board controls.
  */
 function BoardControls({
@@ -35,36 +38,51 @@ function BoardControls({
   onClearFilter,
   onSetSearchFilter,
   onClearSearchFilter,
+  showFilters,
+  showInbox,
+  showSearch,
 }) {
   const defaultControls = useMemo(
     () => [
-      {
-        key: 'inbox',
-        component: InboxControl,
-        props: { selector },
-      },
-      {
-        key: 'filter',
-        component: BoardFilterControl,
-        props: {
-          selector,
-          containers,
-          activeFilter,
-          onSetFilter,
-          onClearFilter,
-        },
-      },
-      {
-        key: 'search',
-        component: SearchPortal,
-        props: {
-          selector,
-          activeSearchFilter,
-          searchScopeIssueIds,
-          onSetSearchFilter,
-          onClearSearchFilter,
-        },
-      },
+      ...(showInbox
+        ? [
+            {
+              key: 'inbox',
+              component: InboxControl,
+              props: { selector },
+            },
+          ]
+        : []),
+      ...(showFilters
+        ? [
+            {
+              key: 'filter',
+              component: BoardFilterControl,
+              props: {
+                selector,
+                containers,
+                activeFilter,
+                onSetFilter,
+                onClearFilter,
+              },
+            },
+          ]
+        : []),
+      ...(showSearch
+        ? [
+            {
+              key: 'search',
+              component: SearchPortal,
+              props: {
+                selector,
+                activeSearchFilter,
+                searchScopeIssueIds,
+                onSetSearchFilter,
+                onClearSearchFilter,
+              },
+            },
+          ]
+        : []),
     ],
     [
       selector,
@@ -76,6 +94,9 @@ function BoardControls({
       onClearFilter,
       onSetSearchFilter,
       onClearSearchFilter,
+      showFilters,
+      showInbox,
+      showSearch,
     ],
   );
 
@@ -144,6 +165,9 @@ BoardControls.propTypes = {
   onClearFilter: PropTypes.func,
   onSetSearchFilter: PropTypes.func,
   onClearSearchFilter: PropTypes.func,
+  showFilters: PropTypes.bool,
+  showInbox: PropTypes.bool,
+  showSearch: PropTypes.bool,
 };
 
 BoardControls.defaultProps = {
@@ -156,6 +180,9 @@ BoardControls.defaultProps = {
   onClearFilter: () => {},
   onSetSearchFilter: () => {},
   onClearSearchFilter: () => {},
+  showFilters: true,
+  showInbox: true,
+  showSearch: true,
 };
 
 export default BoardControls;

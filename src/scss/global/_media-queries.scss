@@ -4,8 +4,10 @@
  * Media Queries
  */
 @media (width >= $breakpoint-board-desktop) {
-  .wp-admin {
-    #project-board {
+  .wp-admin,
+  .alpaca-project-board {
+    #project-board,
+    [data-alpaca-project-board-canvas='true'] {
       .alpaca-wrap {
         flex-direction: row;
         padding: $space-xs 1px $space-4xl 0;
@@ -77,7 +79,35 @@
 }
 
 @media (width <= $breakpoint-board-mobile) {
-  .wp-admin {
+  .wp-admin,
+  .alpaca-project-board {
+    .alpaca-project-board-controls {
+      flex-direction: column;
+      align-items: stretch;
+      gap: $space-lg;
+      margin-bottom: 0;
+
+      > .alpaca-project-board-controls-mount {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+        align-items: stretch;
+        gap: $space-sm;
+        inline-size: 100%;
+      }
+
+      .alpaca-board-control {
+        inline-size: 100%;
+        justify-content: flex-start;
+        min-inline-size: 0;
+      }
+
+      .alpaca-board-search.alpaca-board-control {
+        grid-column: 1 / -1;
+        inline-size: 100%;
+        flex: 1 1 auto;
+      }
+    }
+
     #project-board-controls {
       flex-direction: column;
       align-items: stretch;
@@ -119,7 +149,8 @@
       }
     }
 
-    #project-board {
+    #project-board,
+    [data-alpaca-project-board-canvas='true'] {
       .alpaca-wrap {
         flex-direction: column;
       }

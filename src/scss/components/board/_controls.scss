@@ -3,7 +3,26 @@
 /*
 * 3.1 - Board Controls
 */
-.wp-admin {
+.wp-admin,
+.alpaca-project-board {
+  .alpaca-project-board-controls {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: $space-gap-inline;
+    width: 100%;
+    margin-bottom: $space-4xl;
+
+    > .alpaca-project-board-controls-mount {
+      display: flex;
+      align-items: center;
+      flex: 1 1 auto;
+      gap: $space-lg;
+      justify-content: flex-end;
+      min-inline-size: 0;
+    }
+  }
+
   #alpaca-presence {
     display: flex;
     align-items: center;
