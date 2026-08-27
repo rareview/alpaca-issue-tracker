@@ -20,7 +20,6 @@
       gap: $space-lg;
       justify-content: flex-end;
       min-inline-size: 0;
-
     }
 
     > .alpaca-add-issue-control {
@@ -125,7 +124,9 @@
       position: absolute;
       top: calc(100% + #{$space-xs});
       transform: translate(-50%, -$space-xs);
-      transition: opacity $duration-fast, transform $duration-fast;
+      transition:
+        opacity $duration-fast,
+        transform $duration-fast;
       white-space: nowrap;
       z-index: 100000;
     }

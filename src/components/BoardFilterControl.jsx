@@ -253,10 +253,7 @@ function BoardFilterControl({
       <div
         className={`alpaca-board-filter-control ${activeValue ? 'is-active-filter alpaca-board-control' : ''}`}
       >
-        <span
-          className="alpaca-board-tooltip"
-          data-tooltip={tooltipLabel}
-        >
+        <span className="alpaca-board-tooltip" data-tooltip={tooltipLabel}>
           <button
             type="button"
             className={`alpaca-filter-control-trigger alpaca-board-control ${isOpen ? 'is-open' : ''}`}
