@@ -3,7 +3,8 @@
 /*
 * Timeline Items
 */
-.wp-admin {
+.wp-admin,
+body:not(.wp-admin).alpaca-details-modal-open {
   .alpaca-timeline-item[data-source='audit'] {
     position: relative;
 

@@ -3,7 +3,8 @@
 /*
 * Errors Tab
 */
-.wp-admin {
+.wp-admin,
+body:not(.wp-admin).alpaca-details-modal-open {
   .alpaca-errors-tab {
     .alpaca-error-item {
       margin-bottom: $space-6xl;

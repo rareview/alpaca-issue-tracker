@@ -3,41 +3,7 @@
 /*
  * 4.1 - Modal Frame
  */
-.wp-admin {
-  .components-modal__frame.alpaca-details-modal {
-    position: absolute;
-    top: 0;
-    inset-inline-end: calc(
-      -1 * var(--alpaca-side-panel-frame-overhang, $space-sm)
-    );
-    max-width: var(--alpaca-side-panel-max-width, #{$width-side-panel});
-    height: calc(100% - var(--alpaca-side-panel-top-offset, $size-control-md));
-    margin: var(--alpaca-side-panel-top-offset, $space-6xl) 0 0 0;
-
-    @include alpaca-slide-right-enter;
-
-    .components-panel {
-      margin-bottom: $space-2xl;
-
-      .alpaca-modal-textarea {
-        width: 100%;
-      }
-
-      textarea {
-        width: 100%;
-        font-family: $font-family-code;
-        white-space: pre;
-        overflow: hidden scroll;
-      }
-    }
-  }
-
-  .alpaca-details-modal.alpaca-side-panel {
-    --alpaca-side-panel-top-offset: #{$size-control-md};
-    --alpaca-side-panel-max-width: #{$width-side-panel};
-    --alpaca-side-panel-frame-overhang: #{$space-sm};
-  }
-
+@mixin alpaca-issue-modal-content {
   .alpaca-issue-details {
     p,
     input,
@@ -63,11 +29,6 @@
       display: flex;
       align-items: baseline;
       gap: $space-sm;
-
-      .alpaca-issue-title {
-        flex: 1 1 auto;
-        min-width: 0;
-      }
     }
 
     .alpaca-issue-watch-indicator {
@@ -78,7 +39,6 @@
       border: 0;
       padding: 0;
       cursor: pointer;
-
       width: $size-icon-lg;
       height: $size-icon-lg;
       font-size: $font-size-xl;
@@ -90,7 +50,9 @@
     }
 
     .alpaca-issue-title {
-      font-size: $font-size-display; // Match h3 scale.
+      flex: 1 1 auto;
+      min-width: 0;
+      font-size: $font-size-display;
       font-weight: $font-weight-bold;
       line-height: $line-height-base;
       margin: 0;
@@ -143,11 +105,64 @@
     }
   }
 
-  /* Inline code used in modal menus */
   .alpaca-menu-code {
     font-family: $font-family-code !important;
     font-size: $font-size-sm;
     color: $color-text-muted;
     margin-inline-start: 0.5ch;
   }
+}
+
+.wp-admin {
+  .components-modal__frame.alpaca-details-modal {
+    position: absolute;
+    top: 0;
+    inset-inline-end: calc(
+      -1 * var(--alpaca-side-panel-frame-overhang, $space-sm)
+    );
+    max-width: var(--alpaca-side-panel-max-width, #{$width-side-panel});
+    height: calc(100% - var(--alpaca-side-panel-top-offset, $size-control-md));
+    margin: var(--alpaca-side-panel-top-offset, $space-6xl) 0 0 0;
+
+    @include alpaca-slide-right-enter;
+
+    .components-panel {
+      margin-bottom: $space-2xl;
+
+      .alpaca-modal-textarea {
+        width: 100%;
+      }
+
+      textarea {
+        width: 100%;
+        font-family: $font-family-code;
+        white-space: pre;
+        overflow: hidden scroll;
+      }
+    }
+  }
+
+  .alpaca-details-modal.alpaca-side-panel {
+    --alpaca-side-panel-top-offset: #{$size-control-md};
+    --alpaca-side-panel-max-width: #{$width-side-panel};
+    --alpaca-side-panel-frame-overhang: #{$space-sm};
+  }
+
+  @include alpaca-issue-modal-content;
+}
+
+body:not(.wp-admin).alpaca-details-modal-open {
+  .components-modal__frame.alpaca-details-modal {
+    inset: 0;
+    max-width: calc(100% - 2rem);
+    width: min(#{$width-side-panel}, calc(100% - 2rem));
+    height: calc(100% - 2rem);
+    margin: 1rem auto;
+    font-family: $font-family-base;
+    font-size: $font-size-md;
+    font-weight: $font-weight-normal;
+    line-height: $line-height-base;
+  }
+
+  @include alpaca-issue-modal-content;
 }

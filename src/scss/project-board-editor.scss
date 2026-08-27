@@ -1,0 +1,22 @@
+.alpaca-project-board-editor-preview {
+  align-items: center;
+  background: #f0f0f1;
+  border: 1px solid #c3c4c7;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: min(75vh, 48rem);
+  padding: 2rem;
+  text-align: center;
+}
+
+.alpaca-project-board-editor-preview strong {
+  color: #1d2327;
+  font-size: 1.25rem;
+}
+
+.alpaca-project-board-editor-preview p {
+  color: #50575e;
+  margin: 0.5rem 0 0;
+}

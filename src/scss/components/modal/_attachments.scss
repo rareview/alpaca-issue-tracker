@@ -3,7 +3,8 @@
 /*
 * Attachments
 */
-.wp-admin {
+.wp-admin,
+body:not(.wp-admin).alpaca-details-modal-open {
   .alpaca-attachments-wrapper {
     display: flex;
     gap: $space-2xl;

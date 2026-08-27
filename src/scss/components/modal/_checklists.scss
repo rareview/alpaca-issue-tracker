@@ -3,7 +3,8 @@
 /*
 * Checklists
 */
-.wp-admin {
+.wp-admin,
+body:not(.wp-admin).alpaca-details-modal-open {
   .alpaca-subissues {
     padding: $space-3xs 0;
   }

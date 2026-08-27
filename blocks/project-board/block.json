@@ -8,6 +8,7 @@
   "description": "Display an Alpaca Issue Tracker project board.",
   "textdomain": "alpaca-issue-tracker",
   "editorScript": "alpaca-project-board-editor",
+  "editorStyle": "alpaca-project-board-editor",
   "icon": "schedule",
   "attributes": {
     "accessMode": {
@@ -36,6 +37,7 @@
     }
   },
   "supports": {
+    "align": ["wide", "full"],
     "html": false,
     "multiple": true
   }

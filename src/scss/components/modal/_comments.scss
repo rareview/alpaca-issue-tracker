@@ -3,7 +3,8 @@
 /*
 * Comments
 */
-.wp-admin {
+.wp-admin,
+body:not(.wp-admin).alpaca-details-modal-open {
   #alpaca-comments-header {
     text-align: end;
   }
@@ -404,7 +405,7 @@
   }
 }
 
-.wp-admin.alpaca-details-modal-open .components-tooltip,
+body:not(.wp-admin).alpaca-details-modal-open .components-tooltip,
 .wp-admin.alpaca-inbox-open .components-tooltip {
   z-index: 999000030 !important;
 }

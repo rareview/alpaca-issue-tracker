@@ -3,7 +3,8 @@
 /*
  * Details (compact grid)
  */
-.wp-admin {
+.wp-admin,
+body:not(.wp-admin).alpaca-details-modal-open {
   /* Grid layout for compact details (2x2) */
   .alpaca-details-grid {
     display: grid;
@@ -35,6 +36,11 @@
   margin-bottom: $space-2xs;
   text-transform: uppercase;
   color: var(--wp-components-color-foreground, $color-text-primary);
+}
+
+body:not(.wp-admin).alpaca-details-modal-open .alpaca-details-grid__label {
+  font-size: 0.8125rem;
+  line-height: 1.4;
 }
 
 .alpaca-details-grid__value {
@@ -288,7 +294,8 @@
 }
 
 @media (width <= $breakpoint-admin-bar-mobile) {
-  .wp-admin {
+  .wp-admin,
+  body:not(.wp-admin).alpaca-details-modal-open {
     .alpaca-details-grid {
       grid-template-columns: 1fr;
       gap: $space-md;
@@ -390,7 +397,8 @@
   }
 }
 
-body.wp-admin {
+body.wp-admin,
+body:not(.wp-admin).alpaca-details-modal-open {
   /*
    * 4.0 - Modal (Issue Details)
    */

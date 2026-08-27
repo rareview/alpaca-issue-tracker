@@ -3,7 +3,8 @@
 /*
 * Header & Meta
 */
-.wp-admin {
+.wp-admin,
+body:not(.wp-admin).alpaca-details-modal-open {
   .alpaca-issue-meta {
     color: $color-text-muted;
     font-size: $font-size-sm;
@@ -25,6 +26,17 @@
 
     .alpaca-user-name {
       font-weight: $font-weight-semibold;
+    }
+
+    .alpaca-user-avatar img {
+      aspect-ratio: 1;
+      background: $color-white;
+      border: 1px solid $color-border;
+      border-radius: $radius-round;
+      display: block;
+      height: $size-control-lg;
+      vertical-align: middle;
+      width: $size-control-lg;
     }
   }
 

@@ -3,7 +3,8 @@
 /*
 * Syntax Highlighting
 */
-.wp-admin {
+.wp-admin,
+body:not(.wp-admin).alpaca-details-modal-open {
   :is(
     .alpaca-data-table,
     .alpaca-json-table,

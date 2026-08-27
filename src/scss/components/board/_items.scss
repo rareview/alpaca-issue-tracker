@@ -30,7 +30,8 @@
     }
 
     span.components-text {
-      font-size: $font-size-md;
+      font-size: inherit;
+      line-height: inherit;
     }
 
     .components-card__media {
@@ -71,6 +72,8 @@
     .alpaca-item-content {
       grid-column: 1;
       grid-row: 1;
+      font-size: $font-size-md;
+      line-height: $line-height-base;
       min-inline-size: 0;
       overflow-wrap: anywhere;
     }

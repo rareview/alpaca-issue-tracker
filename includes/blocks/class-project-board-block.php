@@ -30,8 +30,9 @@ class Project_Board_Block {
 	 * @return void
 	 */
 	public function register() {
-		$script_handle      = 'alpaca-project-board-editor';
-		$view_script_handle = 'alpaca-project-board-view';
+		$script_handle       = 'alpaca-project-board-editor';
+		$editor_style_handle = 'alpaca-project-board-editor';
+		$view_script_handle  = 'alpaca-project-board-view';
 		wp_register_script(
 			$script_handle,
 			Helpers::asset_url( 'dist/project-board-editor.js' ),
@@ -51,6 +52,13 @@ class Project_Board_Block {
 			$script_handle,
 			'alpaca-issue-tracker',
 			ALPAISTR_PLUGIN_DIR . 'languages'
+		);
+
+		wp_register_style(
+			$editor_style_handle,
+			Helpers::asset_url( 'dist/scss/project-board-editor.css' ),
+			[],
+			Helpers::version()
 		);
 
 		wp_register_script(

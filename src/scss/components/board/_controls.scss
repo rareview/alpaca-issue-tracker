@@ -93,6 +93,9 @@
 
   #project-board-controls
     .alpaca-board-filter-control
+    .alpaca-filter-control-trigger-content,
+  .alpaca-project-board-controls
+    .alpaca-board-filter-control
     .alpaca-filter-control-trigger-content {
     display: inline-flex;
     align-items: center;
@@ -102,14 +105,23 @@
 
   #project-board-controls
     .alpaca-deadline-filter-control
+    .alpaca-filter-control-trigger-content,
+  .alpaca-project-board-controls
+    .alpaca-deadline-filter-control
     .alpaca-filter-control-trigger-content {
     gap: $space-sm;
   }
 
   #project-board-controls
     .alpaca-deadline-filter-control
+    .alpaca-filter-control-icon,
+  .alpaca-project-board-controls
+    .alpaca-deadline-filter-control
     .alpaca-filter-control-icon {
+    align-items: center;
+    display: inline-flex;
     font-size: $font-size-xl;
+    justify-content: center;
     line-height: $line-height-reset;
   }
 
