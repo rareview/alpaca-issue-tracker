@@ -113,8 +113,10 @@ final class AlpacaIssueTracker {
 		require_once ALPAISTR_PLUGIN_DIR . 'includes/core/board.php';
 		require_once ALPAISTR_PLUGIN_DIR . 'includes/blocks/class-project-board-block.php';
 		require_once ALPAISTR_PLUGIN_DIR . 'includes/blocks/class-project-activity-block.php';
+		require_once ALPAISTR_PLUGIN_DIR . 'includes/blocks/class-inbox-block.php';
 		new Project_Board_Block();
 		new Project_Activity_Block();
+		new Inbox_Block();
 
 		// Load admin bar (available both frontend and backend).
 		require_once ALPAISTR_PLUGIN_DIR . 'includes/admin/admin-bar.php';

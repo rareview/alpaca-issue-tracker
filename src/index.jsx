@@ -98,7 +98,7 @@ if (!isAdmin && contextualCaptureEnabled) {
 
   const toolbar = (
     <AlpacaToolbar
-      showUnreadBadge={canViewNotificationInbox}
+      showInbox={canViewNotificationInbox}
       showActivity={canViewProjectActivity}
     />
   );

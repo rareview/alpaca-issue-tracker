@@ -130,6 +130,7 @@
   flex-direction: column;
   z-index: 9999;
   opacity: 1;
+  font-family: $font-family-base;
   transition: opacity $duration-base ease-in-out;
 
   @include alpaca-slide-right-enter;
@@ -137,6 +138,18 @@
   &.is-closing {
     opacity: 0;
     pointer-events: none;
+  }
+
+  &.alpaca-inbox-panel--embedded {
+    position: relative;
+    inset: auto;
+    width: 100%;
+    max-width: none;
+    min-height: 0;
+    max-height: none;
+    box-shadow: none;
+    transform: none;
+    animation: none;
   }
 }
 
@@ -293,7 +306,8 @@
   box-shadow: 0 0 0 1px rgb(34 113 177 / 10%);
 }
 
-.wp-admin .alpaca-inbox-entry-item[data-source='audit'] {
+.wp-admin .alpaca-inbox-entry-item[data-source='audit'],
+.alpaca-inbox-panel .alpaca-inbox-entry-item[data-source='audit'] {
   margin: 0;
 
   .alpaca-timeline-icon {

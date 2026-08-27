@@ -5,8 +5,7 @@ import { useTestLogger } from './utils/testLogger.js';
 import { isTestLoggingEnabled } from './utils/testLogSetting.js';
 import Icon from './components/icons/Icon';
 import ActivityPopover from './components/ActivityPopover';
-import UnreadCountBadge from './components/notifications/UnreadCountBadge.jsx';
-import { useNotification } from './context/NotificationContext.jsx';
+import InboxControl from './components/InboxControl';
 import { buildAlpacaRestUrl, getAlpacaRestNonce } from './utils/restApiRoot.js';
 import { getProjectBoardUrl } from './utils/projectBoardUrl.js';
 import {
@@ -22,34 +21,15 @@ const { useState, useRef, useEffect, useCallback } = wp.element;
 const FORM_CLOSE_RESET_DELAY_MS = 300;
 
 /**
- * Render the Project Board toolbar unread badge.
- *
- * @return {JSX.Element|null} Badge markup.
- */
-const ProjectBoardUnreadBadge = () => {
-  const { unreadCount } = useNotification();
-
-  if (unreadCount <= 0) {
-    return null;
-  }
-
-  return (
-    <span className="alpaca-toolbar-project-board-badge">
-      <UnreadCountBadge count={unreadCount} variant="inline" />
-    </span>
-  );
-};
-
-/**
  * Bottom Toolbar component for Alpaca Issue Tracker issue reporting.
  * Dark admin bar theme with WP Components form.
  *
  * @param {Object}  props                 Component props.
- * @param {boolean} props.showUnreadBadge Whether to show the unread badge.
+ * @param {boolean} props.showInbox       Whether to show Inbox.
  * @param {boolean} props.showActivity    Whether to show Project Activity.
  * @return {JSX.Element} Toolbar component
  */
-const AlpacaToolbar = ({ showUnreadBadge, showActivity }) => {
+const AlpacaToolbar = ({ showInbox, showActivity }) => {
   const [isExpanded, setIsExpanded] = useState(true); // Open by default
   const [isFormVisible, setFormVisible] = useState(false);
   const [status, setStatus] = useState('idle');
@@ -271,10 +251,10 @@ const AlpacaToolbar = ({ showUnreadBadge, showActivity }) => {
           {__('Report An Issue', 'alpaca-issue-tracker')}
         </button>
         {showActivity && <ActivityPopover />}
+        {showInbox && <InboxControl isInline />}
         <a href={projectBoardUrl} className="project-board-link">
           <Icon name="board" />
           {__('Project Board', 'alpaca-issue-tracker')}
-          {showUnreadBadge && <ProjectBoardUnreadBadge />}
         </a>
         <button className="toggle-button" onClick={toggleExpand}>
           <span className="toggle-pointer">►</span>
@@ -352,12 +332,12 @@ const AlpacaToolbar = ({ showUnreadBadge, showActivity }) => {
 };
 
 AlpacaToolbar.propTypes = {
-  showUnreadBadge: PropTypes.bool,
+  showInbox: PropTypes.bool,
   showActivity: PropTypes.bool,
 };
 
 AlpacaToolbar.defaultProps = {
-  showUnreadBadge: false,
+  showInbox: false,
   showActivity: false,
 };
 

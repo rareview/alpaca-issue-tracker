@@ -6,7 +6,8 @@
 .wp-admin,
 body:not(.wp-admin).alpaca-details-modal-open,
 .alpaca-activity-popover,
-.alpaca-project-activity {
+.alpaca-project-activity,
+.alpaca-inbox-panel {
   .alpaca-timeline-item[data-source='audit'] {
     position: relative;
 

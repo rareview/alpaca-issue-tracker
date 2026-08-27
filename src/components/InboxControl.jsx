@@ -218,13 +218,14 @@ const clearInboxOpenQueryParam = () => {
 /**
  * Board inbox control rendered beside the board search.
  *
- * @param {Object} props          Component props.
- * @param {string} props.selector Controls mount selector.
+ * @param {Object}  props            Component props.
+ * @param {boolean} props.isEmbedded Whether to render the full panel inline.
+ * @param {string}  props.selector   Controls mount selector.
  * @return {JSX.Element|null} Inbox control.
  */
-function InboxControl({ selector }) {
+function InboxControl({ selector, isEmbedded = false, isInline = false }) {
   const { unreadCount, updateUnreadCount } = useNotification();
-  const [isPanelVisible, setIsPanelVisible] = useState(false);
+  const [isPanelVisible, setIsPanelVisible] = useState(isEmbedded);
   const [isClosing, setIsClosing] = useState(false);
   const [filter, setFilter] = useState('unread');
   const [items, setItems] = useState([]);
@@ -251,13 +252,17 @@ function InboxControl({ selector }) {
   }, []);
 
   useEffect(() => {
+    if (isEmbedded) {
+      return;
+    }
+
     if (!shouldOpenInboxFromUrl()) {
       return;
     }
 
     openPanel();
     clearInboxOpenQueryParam();
-  }, [openPanel]);
+  }, [isEmbedded, openPanel]);
 
   useEffect(() => {
     if (!isClosing) {
@@ -322,7 +327,7 @@ function InboxControl({ selector }) {
   }, [filter, isPanelVisible, loadInbox]);
 
   useEffect(() => {
-    if (!isPanelVisible) {
+    if (isEmbedded || !isPanelVisible) {
       return undefined;
     }
 
@@ -358,15 +363,19 @@ function InboxControl({ selector }) {
       document.removeEventListener('mousedown', handlePointerDown, true);
       document.removeEventListener('touchstart', handlePointerDown, true);
     };
-  }, [closePanel, isPanelVisible]);
+  }, [closePanel, isEmbedded, isPanelVisible]);
 
   useEffect(() => {
+    if (isEmbedded) {
+      return undefined;
+    }
+
     document.body.classList.toggle('alpaca-inbox-open', isPanelVisible);
 
     return () => {
       document.body.classList.remove('alpaca-inbox-open');
     };
-  }, [isPanelVisible]);
+  }, [isEmbedded, isPanelVisible]);
 
   const hasMoreItems = useMemo(() => page < totalPages, [page, totalPages]);
 
@@ -593,47 +602,164 @@ function InboxControl({ selector }) {
     return null;
   }
 
-  const mountNode = document.querySelector(selector);
-  if (!mountNode) {
-    return null;
+  const control = (
+    <div className="alpaca-inbox-control">
+      <span
+        className="alpaca-board-tooltip"
+        data-tooltip={__('Inbox', 'alpaca-issue-tracker')}
+      >
+        <button
+          type="button"
+          className={`alpaca-inbox-trigger alpaca-board-control ${isPanelVisible ? 'is-open' : ''}`}
+          onClick={() => {
+            if (isPanelVisible) {
+              closePanel();
+              return;
+            }
+
+            openPanel();
+          }}
+          ref={buttonRef}
+          aria-haspopup="dialog"
+          aria-expanded={isPanelVisible}
+          aria-controls="alpaca-inbox-panel"
+        >
+          <span
+            className="dashicons dashicons-bell alpaca-inbox-icon"
+            aria-hidden="true"
+          />
+          {__('Inbox', 'alpaca-issue-tracker')}
+          <UnreadCountBadge count={unreadCount} variant="inbox-trigger" />
+        </button>
+      </span>
+    </div>
+  );
+
+  const panelContent = (
+    <>
+      <div className="alpaca-inbox-panel-header">
+        <div>
+          <h2>{__('Inbox', 'alpaca-issue-tracker')}</h2>
+        </div>
+        {!isEmbedded && (
+          <button
+            type="button"
+            className="alpaca-inbox-close"
+            onClick={closePanel}
+          >
+            <span className="screen-reader-text">
+              {__('Close inbox', 'alpaca-issue-tracker')}
+            </span>
+            <span className="dashicons dashicons-no-alt" aria-hidden="true" />
+          </button>
+        )}
+      </div>
+
+      <div className="alpaca-inbox-panel-toolbar">
+        <div className="alpaca-inbox-filter-group">
+          <ToggleGroupControl
+            value={filter}
+            isBlock={false}
+            __nextHasNoMarginBottom
+            __next40pxDefaultSize
+            onChange={(nextFilter) => {
+              if ('unread' !== nextFilter && 'all' !== nextFilter) {
+                return;
+              }
+
+              setFilter(nextFilter);
+            }}
+            disabled={isLoading || isMutating}
+            label={__('Inbox filter', 'alpaca-issue-tracker')}
+            hideLabelFromVision
+          >
+            <ToggleGroupControlOption
+              value="unread"
+              label={__('Unread', 'alpaca-issue-tracker')}
+            />
+            <ToggleGroupControlOption
+              value="all"
+              label={__('All', 'alpaca-issue-tracker')}
+            />
+          </ToggleGroupControl>
+        </div>
+
+        <Button
+          variant="tertiary"
+          onClick={handleMarkAllRead}
+          disabled={isMutating || unreadCount <= 0}
+        >
+          {__('Mark All Read', 'alpaca-issue-tracker')}
+        </Button>
+      </div>
+
+      {error && (
+        <Notice status="error" onRemove={() => setError('')}>
+          {error}
+        </Notice>
+      )}
+
+      <div className="alpaca-inbox-panel-body">{panelBody}</div>
+
+      {hasMoreItems && (
+        <div className="alpaca-inbox-panel-footer">
+          <Button
+            variant="secondary"
+            onClick={handleLoadMore}
+            disabled={isLoadingMore}
+          >
+            {isLoadingMore
+              ? __('Loading…', 'alpaca-issue-tracker')
+              : __('Load More', 'alpaca-issue-tracker')}
+          </Button>
+        </div>
+      )}
+    </>
+  );
+
+  if (isEmbedded) {
+    return (
+      <aside
+        className="alpaca-inbox-panel alpaca-inbox-panel--embedded alpaca-side-panel"
+        ref={panelRef}
+        aria-label={__('Inbox', 'alpaca-issue-tracker')}
+      >
+        {panelContent}
+      </aside>
+    );
+  }
+
+  if (!isInline) {
+    const mountNode = document.querySelector(selector);
+    if (!mountNode) {
+      return null;
+    }
+
+    return (
+      <>
+        {createPortal(control, mountNode)}
+        {isPanelVisible &&
+          createPortal(
+            <>
+              <div className="alpaca-inbox-backdrop" />
+              <aside
+                id="alpaca-inbox-panel"
+                className={`alpaca-inbox-panel alpaca-side-panel ${isClosing ? 'is-closing' : ''}`}
+                ref={panelRef}
+                aria-label={__('Inbox', 'alpaca-issue-tracker')}
+              >
+                {panelContent}
+              </aside>
+            </>,
+            document.body,
+          )}
+      </>
+    );
   }
 
   return (
     <>
-      {createPortal(
-        <div className="alpaca-inbox-control">
-          <span
-            className="alpaca-board-tooltip"
-            data-tooltip={__('Inbox', 'alpaca-issue-tracker')}
-          >
-            <button
-              type="button"
-              className={`alpaca-inbox-trigger alpaca-board-control ${isPanelVisible ? 'is-open' : ''}`}
-              onClick={() => {
-                if (isPanelVisible) {
-                  closePanel();
-                  return;
-                }
-
-                openPanel();
-              }}
-              ref={buttonRef}
-              aria-haspopup="dialog"
-              aria-expanded={isPanelVisible}
-              aria-controls="alpaca-inbox-panel"
-            >
-              <Icon
-                name="bell"
-                className="alpaca-inbox-icon"
-                aria-hidden="true"
-              />
-              {__('Inbox', 'alpaca-issue-tracker')}
-              <UnreadCountBadge count={unreadCount} variant="inbox-trigger" />
-            </button>
-          </span>
-        </div>,
-        mountNode,
-      )}
+      {control}
       {isPanelVisible &&
         createPortal(
           <>
@@ -644,84 +770,7 @@ function InboxControl({ selector }) {
               ref={panelRef}
               aria-label={__('Inbox', 'alpaca-issue-tracker')}
             >
-              <div className="alpaca-inbox-panel-header">
-                <div>
-                  <h2>{__('Inbox', 'alpaca-issue-tracker')}</h2>
-                </div>
-                <button
-                  type="button"
-                  className="alpaca-inbox-close"
-                  onClick={closePanel}
-                >
-                  <span className="screen-reader-text">
-                    {__('Close inbox', 'alpaca-issue-tracker')}
-                  </span>
-                  <span
-                    className="dashicons dashicons-no-alt"
-                    aria-hidden="true"
-                  />
-                </button>
-              </div>
-
-              <div className="alpaca-inbox-panel-toolbar">
-                <div className="alpaca-inbox-filter-group">
-                  <ToggleGroupControl
-                    value={filter}
-                    isBlock={false}
-                    __nextHasNoMarginBottom
-                    __next40pxDefaultSize
-                    onChange={(nextFilter) => {
-                      if ('unread' !== nextFilter && 'all' !== nextFilter) {
-                        return;
-                      }
-
-                      setFilter(nextFilter);
-                    }}
-                    disabled={isLoading || isMutating}
-                    label={__('Inbox filter', 'alpaca-issue-tracker')}
-                    hideLabelFromVision
-                  >
-                    <ToggleGroupControlOption
-                      value="unread"
-                      label={__('Unread', 'alpaca-issue-tracker')}
-                    />
-                    <ToggleGroupControlOption
-                      value="all"
-                      label={__('All', 'alpaca-issue-tracker')}
-                    />
-                  </ToggleGroupControl>
-                </div>
-
-                <Button
-                  variant="tertiary"
-                  onClick={handleMarkAllRead}
-                  disabled={isMutating || unreadCount <= 0}
-                >
-                  {__('Mark All Read', 'alpaca-issue-tracker')}
-                </Button>
-              </div>
-
-              {error && (
-                <Notice status="error" onRemove={() => setError('')}>
-                  {error}
-                </Notice>
-              )}
-
-              <div className="alpaca-inbox-panel-body">{panelBody}</div>
-
-              {hasMoreItems && (
-                <div className="alpaca-inbox-panel-footer">
-                  <Button
-                    variant="secondary"
-                    onClick={handleLoadMore}
-                    disabled={isLoadingMore}
-                  >
-                    {isLoadingMore
-                      ? __('Loading…', 'alpaca-issue-tracker')
-                      : __('Load More', 'alpaca-issue-tracker')}
-                  </Button>
-                </div>
-              )}
+              {panelContent}
             </aside>
           </>,
           document.body,
@@ -731,10 +780,14 @@ function InboxControl({ selector }) {
 }
 
 InboxControl.propTypes = {
+  isEmbedded: PropTypes.bool,
+  isInline: PropTypes.bool,
   selector: PropTypes.string,
 };
 
 InboxControl.defaultProps = {
+  isEmbedded: false,
+  isInline: false,
   selector: '#project-board-controls-mount',
 };
 
