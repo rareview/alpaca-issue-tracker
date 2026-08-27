@@ -16,10 +16,7 @@ function InboxEdit() {
     <div {...blockProps}>
       <strong>{__('Alpaca Inbox', 'alpaca-issue-tracker')}</strong>
       <p>
-        {__(
-          'Notification inbox for authorized users.',
-          'alpaca-issue-tracker',
-        )}
+        {__('Notification inbox for authorized users.', 'alpaca-issue-tracker')}
       </p>
     </div>
   );
