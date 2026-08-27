@@ -17,7 +17,6 @@ const {
   Button,
   Notice,
   Spinner,
-  Tooltip,
   ToggleGroupControl: ComponentsToggleGroupControl,
   ToggleGroupControlOption: ComponentsToggleGroupControlOption,
   __experimentalToggleGroupControl,
@@ -602,7 +601,10 @@ function InboxControl({ selector }) {
     <>
       {createPortal(
         <div className="alpaca-inbox-control">
-          <Tooltip text={__('Inbox', 'alpaca-issue-tracker')}>
+          <span
+            className="alpaca-board-tooltip"
+            data-tooltip={__('Inbox', 'alpaca-issue-tracker')}
+          >
             <button
               type="button"
               className={`alpaca-inbox-trigger alpaca-board-control ${isPanelVisible ? 'is-open' : ''}`}
@@ -627,7 +629,7 @@ function InboxControl({ selector }) {
               {__('Inbox', 'alpaca-issue-tracker')}
               <UnreadCountBadge count={unreadCount} variant="inbox-trigger" />
             </button>
-          </Tooltip>
+          </span>
         </div>,
         mountNode,
       )}

@@ -26,6 +26,7 @@ import PropTypes from 'prop-types';
  * @param {Array}   props.boardData        Server-provided board data.
  * @param {string}  props.controlsSelector Controls mount selector.
  * @param {boolean} props.showFilters      Whether board filters are visible.
+ * @param {boolean} props.showAddIssue     Whether the add issue control is visible.
  * @param {boolean} props.showSearch       Whether board search is visible.
  * @param {boolean} props.showInbox        Whether the notification inbox is visible.
  * @return {JSX.Element} Board interface.
@@ -34,6 +35,7 @@ export function AlpacaBoard({
   boardData = window.alpaistrBoardData || [],
   controlsSelector = '#project-board-controls-mount',
   showFilters = true,
+  showAddIssue = false,
   showSearch = true,
   showInbox = true,
 }) {
@@ -409,22 +411,26 @@ export function AlpacaBoard({
     [containers],
   );
 
+  const handleCreateIssue = useCallback(() => {
+    setSelectedItem({ isCreating: true });
+  }, []);
+
   // From BoardFrame.jsx
   useEffect(() => {
-    const handleCreateBoardIssue = () => {
-      setSelectedItem({ isCreating: true });
-    };
-
     wp.hooks.addAction(
       'alpaca.createBoardIssue',
       'alpaca/board',
-      handleCreateBoardIssue,
+      handleCreateIssue,
     );
 
     return () => {
-      wp.hooks.removeAction('alpaca.createBoardIssue', 'alpaca/board');
+      wp.hooks.removeAction(
+        'alpaca.createBoardIssue',
+        'alpaca/board',
+        handleCreateIssue,
+      );
     };
-  }, []);
+  }, [handleCreateIssue]);
 
   // Effect to update cookie when hiddenContainerIds changes
   useEffect(() => {
@@ -1765,7 +1771,9 @@ export function AlpacaBoard({
         onClearFilter={handleClearBoardFilter}
         onSetSearchFilter={handleSetSearchFilter}
         onClearSearchFilter={handleClearSearchFilter}
+        onAddIssue={handleCreateIssue}
         showFilters={showFilters}
+        showAddIssue={showAddIssue}
         showInbox={showInbox}
         showSearch={showSearch}
       />
@@ -1906,6 +1914,7 @@ AlpacaBoard.propTypes = {
   boardData: PropTypes.array,
   controlsSelector: PropTypes.string,
   showFilters: PropTypes.bool,
+  showAddIssue: PropTypes.bool,
   showInbox: PropTypes.bool,
   showSearch: PropTypes.bool,
 };

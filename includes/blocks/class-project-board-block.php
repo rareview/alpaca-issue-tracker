@@ -179,7 +179,7 @@ class Project_Board_Block {
 		);
 
 		return sprintf(
-			'<div %1$s data-alpaca-project-board="%2$s"><div class="alpaca-project-board-controls" id="%3$s-controls"><div class="alpaca-project-board-controls-mount" id="%3$s-controls-mount"></div></div><div id="%3$s-board"></div></div>',
+			'<div %1$s data-alpaca-project-board="%2$s"><div class="alpaca-project-board-controls" id="%3$s-controls"><div class="alpaca-project-board-presence" id="%3$s-presence"></div><div class="alpaca-project-board-controls-mount" id="%3$s-controls-mount"></div></div><div id="%3$s-board"></div></div>',
 			get_block_wrapper_attributes( [ 'class' => 'alpaca-project-board' ] ),
 			esc_attr( $instance_id ),
 			esc_attr( $instance_id )

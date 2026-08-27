@@ -1,6 +1,5 @@
 const { useEffect, useState, useRef, useCallback, memo } = wp.element;
 const { __ } = wp.i18n;
-const { Tooltip } = wp.components;
 const apiFetch = wp.apiFetch;
 import User from './User';
 
@@ -93,11 +92,14 @@ const Presence = memo(function Presence() {
           u.user_nicename ||
           __('User', 'alpaca-issue-tracker');
         return (
-          <Tooltip key={u.id} text={name}>
-            <span className="alpaca-presence-user-wrap">
-              <User user={u} showAvatar={true} showName={true} />
-            </span>
-          </Tooltip>
+          <span
+            key={u.id}
+            className="alpaca-presence-user-wrap alpaca-board-tooltip"
+            data-tooltip={name}
+            title={name}
+          >
+            <User user={u} showAvatar={true} showName={true} />
+          </span>
         );
       })}
     </div>

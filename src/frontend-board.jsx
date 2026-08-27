@@ -2,6 +2,7 @@ import './scss/main.scss';
 
 import { AlpacaBoard } from './Board.jsx';
 import { WatchlistProvider } from './context/WatchlistContext.jsx';
+import Presence from './components/Presence.jsx';
 import { installAlpacaApiRootMiddleware } from './utils/restApiRoot.js';
 
 const { createRoot } = wp.element;
@@ -17,12 +18,19 @@ Object.entries(boardInstances).forEach(([instanceId, settings]) => {
     return;
   }
 
+  const presenceMount = document.getElementById(`${instanceId}-presence`);
+
+  if (presenceMount) {
+    createRoot(presenceMount).render(<Presence />);
+  }
+
   createRoot(boardMount).render(
     <WatchlistProvider>
       <AlpacaBoard
         boardData={Array.isArray(settings.boardData) ? settings.boardData : []}
         controlsSelector={`#${instanceId}-controls`}
         showFilters={settings.showFilters !== false}
+        showAddIssue={true}
         showInbox={false}
         showSearch={settings.showSearch !== false}
       />

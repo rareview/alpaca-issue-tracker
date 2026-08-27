@@ -1,6 +1,6 @@
 const { useState, useRef, useMemo, useEffect, createPortal } = wp.element;
 const { __ } = wp.i18n;
-const { Popover, Tooltip } = wp.components;
+const { Popover } = wp.components;
 const {
   ToggleGroupControl: ComponentsToggleGroupControl,
   ToggleGroupControlOption: ComponentsToggleGroupControlOption,
@@ -253,7 +253,10 @@ function BoardFilterControl({
       <div
         className={`alpaca-board-filter-control ${activeValue ? 'is-active-filter alpaca-board-control' : ''}`}
       >
-        <Tooltip text={tooltipLabel}>
+        <span
+          className="alpaca-board-tooltip"
+          data-tooltip={tooltipLabel}
+        >
           <button
             type="button"
             className={`alpaca-filter-control-trigger alpaca-board-control ${isOpen ? 'is-open' : ''}`}
@@ -265,10 +268,11 @@ function BoardFilterControl({
             ref={triggerRef}
             aria-expanded={isOpen}
             aria-haspopup="dialog"
+            title={tooltipLabel}
           >
             {renderTrigger(activeValue)}
           </button>
-        </Tooltip>
+        </span>
 
         {activeValue ? (
           <button
@@ -414,7 +418,10 @@ function BoardFilterControl({
         <div
           className={`alpaca-board-filter-control alpaca-deadline-filter-control ${showActiveDeadlineChrome ? 'is-active-filter alpaca-board-control' : ''}`}
         >
-          <Tooltip text={__('Due Date', 'alpaca-issue-tracker')}>
+          <span
+            className="alpaca-board-tooltip"
+            data-tooltip={__('Due Date', 'alpaca-issue-tracker')}
+          >
             <button
               type="button"
               className={`alpaca-filter-control-trigger alpaca-board-control ${isDeadlineOpen ? 'is-open' : ''}`}
@@ -426,6 +433,7 @@ function BoardFilterControl({
               ref={deadlineTriggerRef}
               aria-expanded={isDeadlineOpen}
               aria-haspopup="dialog"
+              title={__('Due Date', 'alpaca-issue-tracker')}
             >
               {showActiveDeadlineChrome ? (
                 <span className="alpaca-filter-control-current alpaca-filter-control-current-text">
@@ -441,7 +449,7 @@ function BoardFilterControl({
                 </span>
               )}
             </button>
-          </Tooltip>
+          </span>
 
           {showActiveDeadlineChrome ? (
             <button

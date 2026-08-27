@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 
 import InboxControl from './InboxControl';
 import BoardFilterControl from './BoardFilterControl';
+import AddIssueControl from './AddIssueControl';
 import SearchPortal from './Search';
 
 /**
@@ -23,7 +24,9 @@ import SearchPortal from './Search';
  * @param {Function} props.onClearFilter       Clear filter callback.
  * @param {Function} props.onSetSearchFilter   Set search filter callback.
  * @param {Function} props.onClearSearchFilter Clear search filter callback.
+ * @param {Function} props.onAddIssue          Create issue callback.
  * @param {boolean}  props.showFilters         Whether to include filter controls.
+ * @param {boolean}  props.showAddIssue        Whether to include the add issue control.
  * @param {boolean}  props.showInbox           Whether to include the inbox control.
  * @param {boolean}  props.showSearch          Whether to include search controls.
  * @return {JSX.Element} Rendered board controls.
@@ -38,12 +41,23 @@ function BoardControls({
   onClearFilter,
   onSetSearchFilter,
   onClearSearchFilter,
+  onAddIssue,
   showFilters,
+  showAddIssue,
   showInbox,
   showSearch,
 }) {
   const defaultControls = useMemo(
     () => [
+      ...(showAddIssue
+        ? [
+            {
+              key: 'add-issue',
+              component: AddIssueControl,
+              props: { selector, onAddIssue },
+            },
+          ]
+        : []),
       ...(showInbox
         ? [
             {
@@ -94,7 +108,9 @@ function BoardControls({
       onClearFilter,
       onSetSearchFilter,
       onClearSearchFilter,
+      onAddIssue,
       showFilters,
+      showAddIssue,
       showInbox,
       showSearch,
     ],
@@ -165,7 +181,9 @@ BoardControls.propTypes = {
   onClearFilter: PropTypes.func,
   onSetSearchFilter: PropTypes.func,
   onClearSearchFilter: PropTypes.func,
+  onAddIssue: PropTypes.func,
   showFilters: PropTypes.bool,
+  showAddIssue: PropTypes.bool,
   showInbox: PropTypes.bool,
   showSearch: PropTypes.bool,
 };
@@ -180,7 +198,9 @@ BoardControls.defaultProps = {
   onClearFilter: () => {},
   onSetSearchFilter: () => {},
   onClearSearchFilter: () => {},
+  onAddIssue: () => {},
   showFilters: true,
+  showAddIssue: false,
   showInbox: true,
   showSearch: true,
 };
