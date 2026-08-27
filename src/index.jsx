@@ -71,6 +71,11 @@ const canViewNotificationInbox =
   (window.alpaistrSettings?.canViewNotificationInbox === true ||
     window.alpaistrSettings?.canViewNotificationInbox === 1 ||
     window.alpaistrSettings?.canViewNotificationInbox === '1');
+const canViewProjectActivity =
+  typeof window !== 'undefined' &&
+  (window.alpaistrSettings?.canViewProjectActivity === true ||
+    window.alpaistrSettings?.canViewProjectActivity === 1 ||
+    window.alpaistrSettings?.canViewProjectActivity === '1');
 const mountReactTree = createMountReactTree({
   createRoot,
   legacyRender,
@@ -91,7 +96,12 @@ if (!isAdmin && contextualCaptureEnabled) {
   toolbarContainer.id = 'alpaca-toolbar-mount';
   document.body.appendChild(toolbarContainer);
 
-  const toolbar = <AlpacaToolbar showUnreadBadge={canViewNotificationInbox} />;
+  const toolbar = (
+    <AlpacaToolbar
+      showUnreadBadge={canViewNotificationInbox}
+      showActivity={canViewProjectActivity}
+    />
+  );
 
   mountReactTree(
     canViewNotificationInbox ? (

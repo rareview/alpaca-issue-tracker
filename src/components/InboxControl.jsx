@@ -17,6 +17,7 @@ const {
   Button,
   Notice,
   Spinner,
+  Tooltip,
   ToggleGroupControl: ComponentsToggleGroupControl,
   ToggleGroupControlOption: ComponentsToggleGroupControlOption,
   __experimentalToggleGroupControl,

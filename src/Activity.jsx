@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import AlpacaIssue from './components/Issue';
 import TimelineEntry from './components/comment/TimelineEntry';
 import Lightbox from './components/issue/Lightbox';
@@ -110,9 +111,11 @@ const buildIssueLookupFromPosts = (posts) => {
 /**
  * Project activity screen with timeline entries for issue comments.
  *
+ * @param {Object}  props           Component props.
+ * @param {boolean} props.isPopover Whether to use compact popover rendering.
  * @return {JSX.Element} Activity screen.
  */
-const Activity = () => {
+const Activity = ({ isPopover = false, rootId = 'alpaca-activity' }) => {
   const canDeleteIssues = Boolean(window.alpaistrSettings?.canDeleteIssues);
 
   const [comments, setComments] = useState([]);
@@ -346,7 +349,13 @@ const Activity = () => {
 
   // If the initial batch does not fill the viewport, eagerly load the next page.
   useEffect(() => {
-    if (isLoading || isLoadingMore || !hasMorePages || loadingRef.current) {
+    if (
+      isPopover ||
+      isLoading ||
+      isLoadingMore ||
+      !hasMorePages ||
+      loadingRef.current
+    ) {
       return;
     }
 
@@ -359,6 +368,7 @@ const Activity = () => {
   }, [
     comments.length,
     hasMorePages,
+    isPopover,
     isLoading,
     isLoadingMore,
     requestNextPage,
@@ -590,7 +600,10 @@ const Activity = () => {
   const handleLightboxClose = useCallback(() => setLightboxSrc(null), []);
 
   return (
-    <div id="alpaca-activity">
+    <div
+      id={rootId}
+      className={`alpaca-activity${isPopover ? ' alpaca-activity-popover-content' : ''}`}
+    >
       {isLoading && (
         <div className="alpaca-activity-loading">
           <Spinner />
@@ -710,6 +723,11 @@ const Activity = () => {
       />
     </div>
   );
+};
+
+Activity.propTypes = {
+  isPopover: PropTypes.bool,
+  rootId: PropTypes.string,
 };
 
 export default Activity;

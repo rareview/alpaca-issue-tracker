@@ -4,6 +4,7 @@ import { dataUrlToFile, uploadIssueAttachment } from './utils/attachmentUpload';
 import { useTestLogger } from './utils/testLogger.js';
 import { isTestLoggingEnabled } from './utils/testLogSetting.js';
 import Icon from './components/icons/Icon';
+import ActivityPopover from './components/ActivityPopover';
 import UnreadCountBadge from './components/notifications/UnreadCountBadge.jsx';
 import { useNotification } from './context/NotificationContext.jsx';
 import { buildAlpacaRestUrl, getAlpacaRestNonce } from './utils/restApiRoot.js';
@@ -45,9 +46,10 @@ const ProjectBoardUnreadBadge = () => {
  *
  * @param {Object}  props                 Component props.
  * @param {boolean} props.showUnreadBadge Whether to show the unread badge.
+ * @param {boolean} props.showActivity    Whether to show Project Activity.
  * @return {JSX.Element} Toolbar component
  */
-const AlpacaToolbar = ({ showUnreadBadge }) => {
+const AlpacaToolbar = ({ showUnreadBadge, showActivity }) => {
   const [isExpanded, setIsExpanded] = useState(true); // Open by default
   const [isFormVisible, setFormVisible] = useState(false);
   const [status, setStatus] = useState('idle');
@@ -268,6 +270,7 @@ const AlpacaToolbar = ({ showUnreadBadge }) => {
           <Icon name="report" />
           {__('Report An Issue', 'alpaca-issue-tracker')}
         </button>
+        {showActivity && <ActivityPopover />}
         <a href={projectBoardUrl} className="project-board-link">
           <Icon name="board" />
           {__('Project Board', 'alpaca-issue-tracker')}
@@ -350,10 +353,12 @@ const AlpacaToolbar = ({ showUnreadBadge }) => {
 
 AlpacaToolbar.propTypes = {
   showUnreadBadge: PropTypes.bool,
+  showActivity: PropTypes.bool,
 };
 
 AlpacaToolbar.defaultProps = {
   showUnreadBadge: false,
+  showActivity: false,
 };
 
 export default AlpacaToolbar;

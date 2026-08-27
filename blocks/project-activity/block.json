@@ -1,0 +1,18 @@
+{
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "alpaca/project-activity",
+  "version": "1.0.0",
+  "title": "Project Activity",
+  "category": "widgets",
+  "description": "Display compact Alpaca Issue Tracker project activity.",
+  "textdomain": "alpaca-issue-tracker",
+  "editorScript": "alpaca-project-activity-editor",
+  "editorStyle": "alpaca-project-board-editor",
+  "icon": "format-chat",
+  "supports": {
+    "align": ["wide", "full"],
+    "html": false,
+    "multiple": true
+  }
+}

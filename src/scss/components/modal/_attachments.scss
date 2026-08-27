@@ -4,12 +4,19 @@
 * Attachments
 */
 .wp-admin,
-body:not(.wp-admin).alpaca-details-modal-open {
+body:not(.wp-admin).alpaca-details-modal-open,
+.alpaca-activity-popover,
+.alpaca-project-activity {
   .alpaca-attachments-wrapper {
     display: flex;
     gap: $space-2xl;
     padding-bottom: $space-md;
     flex-wrap: wrap;
+  }
+
+  .alpaca-timeline-item[data-source='human'] .alpaca-comment-attachments,
+  .alpaca-timeline-item[data-source='create'] .alpaca-comment-attachments {
+    margin-block-start: $space-md;
   }
 
   .alpaca-comment-attachments--pending {

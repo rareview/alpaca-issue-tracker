@@ -4,7 +4,9 @@
 * Comments
 */
 .wp-admin,
-body:not(.wp-admin).alpaca-details-modal-open {
+body:not(.wp-admin).alpaca-details-modal-open,
+.alpaca-activity-popover,
+.alpaca-project-activity {
   #alpaca-comments-header {
     text-align: end;
   }

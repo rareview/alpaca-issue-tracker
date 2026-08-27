@@ -1,4 +1,5 @@
-.alpaca-project-board-editor-preview {
+.alpaca-project-board-editor-preview,
+.alpaca-project-activity-editor-preview {
   align-items: center;
   background: #f0f0f1;
   border: 1px solid #c3c4c7;
@@ -11,12 +12,14 @@
   text-align: center;
 }
 
-.alpaca-project-board-editor-preview strong {
+.alpaca-project-board-editor-preview strong,
+.alpaca-project-activity-editor-preview strong {
   color: #1d2327;
   font-size: 1.25rem;
 }
 
-.alpaca-project-board-editor-preview p {
+.alpaca-project-board-editor-preview p,
+.alpaca-project-activity-editor-preview p {
   color: #50575e;
   margin: 0.5rem 0 0;
 }

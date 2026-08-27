@@ -78,7 +78,8 @@
   text-align: start;
 }
 
-#alpaca-activity {
+#alpaca-activity,
+.alpaca-project-activity .alpaca-activity {
   margin-top: $space-2xl;
   max-width: 45rem;
 
