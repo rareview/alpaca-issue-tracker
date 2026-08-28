@@ -7,7 +7,6 @@
 .alpaca-project-board {
   .alpaca-board-canvas {
     --alpaca-unfocused-column-opacity: 0.3;
-    --alpaca-column-focus-backdrop: rgb(240 240 241 / 50%);
 
     isolation: isolate;
     position: relative;
@@ -52,7 +51,7 @@
     inset: 0;
     margin: 0;
     padding: 0;
-    background-color: var(--alpaca-column-focus-backdrop);
+    background-color: var(--alpaca-board-focus-backdrop);
     cursor: default;
     z-index: 1000;
   }

@@ -31,6 +31,10 @@
       "type": "boolean",
       "default": true
     },
+    "appearance": {
+      "type": "string",
+      "default": "auto"
+    },
     "datapoints": {
       "type": "object",
       "default": {}

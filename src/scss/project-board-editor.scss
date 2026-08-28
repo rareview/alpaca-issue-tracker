@@ -1,3 +1,5 @@
+@use './abstracts' as *;
+
 .alpaca-project-board-editor-preview,
 .alpaca-project-activity-editor-preview,
 .alpaca-inbox-editor-preview {
@@ -25,4 +27,62 @@
 .alpaca-inbox-editor-preview p {
   color: #50575e;
   margin: 0.5rem 0 0;
+}
+
+.alpaca-project-board-editor-preview--light,
+.alpaca-project-board-editor-preview--dark,
+.alpaca-project-board-editor-preview--auto {
+  border-color: var(--alpaca-board-border);
+  color: var(--alpaca-board-text-primary);
+  font-family: $font-family-base;
+  background: var(--alpaca-board-surface-column);
+
+  strong {
+    color: var(--alpaca-board-text-primary);
+  }
+
+  p {
+    color: var(--alpaca-board-text-muted);
+  }
+}
+
+.alpaca-project-board-editor-preview--light {
+  color-scheme: light;
+
+  --alpaca-board-surface-column: rgb(255 255 255 / 72%);
+  --alpaca-board-text-primary: rgb(29 35 39 / 92%);
+  --alpaca-board-text-muted: rgb(29 35 39 / 66%);
+  --alpaca-board-border: rgb(29 35 39 / 18%);
+}
+
+.alpaca-project-board-editor-preview--dark {
+  color-scheme: dark;
+
+  --alpaca-board-surface-column: rgb(24 31 36 / 76%);
+  --alpaca-board-text-primary: rgb(255 255 255 / 92%);
+  --alpaca-board-text-muted: rgb(255 255 255 / 68%);
+  --alpaca-board-border: rgb(255 255 255 / 20%);
+}
+
+@supports (color: light-dark(black, white)) {
+  .alpaca-project-board-editor-preview--auto {
+    color-scheme: light dark;
+
+    --alpaca-board-surface-column: light-dark(
+      rgb(255 255 255 / 72%),
+      rgb(24 31 36 / 76%)
+    );
+    --alpaca-board-text-primary: light-dark(
+      rgb(29 35 39 / 92%),
+      rgb(255 255 255 / 92%)
+    );
+    --alpaca-board-text-muted: light-dark(
+      rgb(29 35 39 / 66%),
+      rgb(255 255 255 / 68%)
+    );
+    --alpaca-board-border: light-dark(
+      rgb(29 35 39 / 18%),
+      rgb(255 255 255 / 20%)
+    );
+  }
 }

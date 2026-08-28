@@ -4,7 +4,8 @@
 * 3.1 - Board Controls
 */
 .wp-admin,
-.alpaca-project-board {
+.alpaca-project-board,
+.alpaca-filter-control-popover[class*='alpaca-frontend-filter-control-popover--'] {
   .alpaca-project-board-controls {
     display: flex;
     align-items: center;
@@ -109,12 +110,13 @@
     position: relative;
 
     &::after {
-      background: $color-text-primary;
+      background: var(--alpaca-board-tooltip-background);
       border-radius: $radius-sm;
-      color: $color-white;
+      color: var(--alpaca-board-tooltip-text);
       content: attr(data-tooltip);
       font-size: $font-size-xs;
       font-weight: $font-weight-normal;
+      font-family: $font-family-base;
       left: 50%;
       line-height: $line-height-reset;
       max-width: 16rem;
@@ -185,9 +187,9 @@
     .alpaca-filter-control-trigger:hover,
   .alpaca-board-filter-control:not(.is-active-filter)
     .alpaca-filter-control-trigger:focus-visible {
-    border-color: $color-link;
-    color: $color-link-dark;
-    box-shadow: 0 0 0 1px $color-link-soft-border;
+    border-color: var(--alpaca-board-control-hover-border);
+    color: var(--alpaca-board-control-hover-text);
+    box-shadow: 0 0 0 1px var(--alpaca-board-control-hover-ring);
   }
 
   /* Shared typography for board controls. */
@@ -198,10 +200,10 @@
 
   /* Shared board control styling (boxy controls like the inbox trigger). */
   .alpaca-board-control {
-    background: $color-white;
-    border: 1px solid $color-border;
+    background: var(--alpaca-board-surface-control);
+    border: 1px solid var(--alpaca-board-border);
     border-radius: $radius-md;
-    color: $color-text-muted;
+    color: var(--alpaca-board-text-muted);
     cursor: pointer;
     display: inline-flex;
     align-items: center;
@@ -221,7 +223,7 @@
     padding: 0;
     min-height: $size-control-xl;
     border-radius: $radius-md;
-    border-color: $color-border;
+    border-color: var(--alpaca-board-border);
     inline-size: $width-board-search;
     flex: 0 0 $width-board-search;
     display: inline-flex;
@@ -230,9 +232,9 @@
 
     &:hover,
     &:focus-within {
-      border-color: $color-link;
-      color: $color-link-dark;
-      box-shadow: 0 0 0 1px $color-link-soft-border;
+      border-color: var(--alpaca-board-control-hover-border);
+      color: var(--alpaca-board-control-hover-text);
+      box-shadow: 0 0 0 1px var(--alpaca-board-control-hover-ring);
     }
 
     /* let the inner components take full width */
@@ -272,6 +274,16 @@
       box-shadow: none;
     }
 
+    .components-search-control input[type='search'],
+    .components-input-control__input {
+      color: var(--alpaca-board-text-primary);
+
+      &::placeholder {
+        color: var(--alpaca-board-text-muted);
+        opacity: 1;
+      }
+    }
+
     /* Make input grow but reserve space for suffix (clear 'x') so width doesn't change. */
     .components-input-control__input {
       border: 0;
@@ -302,9 +314,9 @@
   .alpaca-board-control:hover,
   .alpaca-board-control:focus-visible,
   .alpaca-board-control.is-open {
-    border-color: $color-link;
-    color: $color-link-dark;
-    box-shadow: 0 0 0 1px $color-link-soft-border;
+    border-color: var(--alpaca-board-control-hover-border);
+    color: var(--alpaca-board-control-hover-text);
+    box-shadow: 0 0 0 1px var(--alpaca-board-control-hover-ring);
   }
 
   .alpaca-filter-control-current {
@@ -321,7 +333,7 @@
   }
 
   .alpaca-filter-control-current-assignee .alpaca-filter-control-avatar {
-    border: 1px solid $color-border;
+    border: 1px solid var(--alpaca-board-border);
     border-radius: $radius-round;
     height: $size-icon-md;
     width: $size-icon-md;
@@ -345,13 +357,13 @@
   }
 
   .alpaca-filter-control-clear:hover {
-    background: $color-surface-admin;
+    background: var(--alpaca-board-surface-muted);
   }
 
   /* Place the clear button inline inside the parent's box when the filter is active. */
   .alpaca-board-filter-control.is-active-filter {
-    background: $color-white;
-    border: 1px solid $color-border;
+    background: var(--alpaca-board-surface-control);
+    border: 1px solid var(--alpaca-board-border);
     border-radius: $radius-md;
     padding: $space-2xs $space-sm;
     min-height: $size-control-xl;
@@ -390,6 +402,8 @@
   }
 
   .alpaca-filter-control-popover .components-popover__content {
+    background: var(--alpaca-board-surface-control);
+    color: var(--alpaca-board-text-primary);
     padding: 0;
     width: min(28.75rem, calc(100vw - $size-control-md));
   }
@@ -406,7 +420,7 @@
     margin-bottom: 0;
   }
 
-  .alpaca-deadline-filter-popover .components-toggle-group-control {
+  &.alpaca-deadline-filter-popover .components-toggle-group-control {
     inline-size: 100%;
   }
 
@@ -447,8 +461,8 @@
 
   .alpaca-filter-control-assignee-option .alpaca-user {
     align-items: center;
-    background: $color-surface-muted;
-    border: 1px solid $color-border;
+    background: var(--alpaca-board-surface-muted);
+    border: 1px solid var(--alpaca-board-border);
     border-radius: $radius-pill;
     display: inline-flex;
     gap: $space-xs;
@@ -457,7 +471,7 @@
   }
 
   .alpaca-filter-control-assignee-option .alpaca-user-avatar img {
-    border: 1px solid $color-border;
+    border: 1px solid var(--alpaca-board-border);
     border-radius: $radius-round;
     display: block;
     height: $size-icon-md;
@@ -482,7 +496,128 @@
   }
 
   .alpaca-filter-control-empty {
-    color: $color-text-muted;
+    color: var(--alpaca-board-text-muted);
     margin: 0;
+  }
+}
+
+/* Popovers are portaled outside the board and need their own board contract. */
+.alpaca-filter-control-popover {
+  font-family: $font-family-base;
+  font-size: $font-size-sm;
+  line-height: $line-height-base;
+  opacity: 1;
+
+  .components-popover__content {
+    background: $color-white;
+    border: 1px solid $color-border;
+    color: $color-text-primary;
+    opacity: 1;
+    padding: 0;
+    width: min(28.75rem, calc(100vw - $size-control-md));
+  }
+
+  .alpaca-filter-control-popover-content {
+    display: grid;
+    gap: $space-lg;
+    max-height: 22.5rem;
+    overflow-y: auto;
+    padding: $space-lg;
+  }
+
+  .alpaca-filter-control-section {
+    display: grid;
+    gap: $space-sm;
+  }
+
+  .alpaca-filter-control-section-title {
+    color: $color-text-primary;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+    letter-spacing: $letter-spacing-ui;
+    line-height: $line-height-tight;
+    margin: 0;
+    text-transform: uppercase;
+  }
+
+  .alpaca-filter-control-empty {
+    color: $color-text-muted;
+    font-size: $font-size-sm;
+    line-height: $line-height-base;
+    margin: 0;
+    max-inline-size: 20rem;
+  }
+
+  .alpaca-deadline-filter-popover .components-toggle-group-control {
+    background: $color-white;
+    border: 1px solid $color-border;
+    color: $color-text-primary;
+    font-family: $font-family-base;
+    font-size: $font-size-sm;
+  }
+
+  &.alpaca-deadline-filter-popover
+    .components-toggle-group-control-option-base {
+    color: $color-text-primary;
+    font-family: inherit;
+    font-size: inherit;
+  }
+}
+
+.alpaca-filter-control-popover[class*='alpaca-frontend-filter-control-popover--']
+  .components-popover__content {
+  background: var(--alpaca-board-popover-surface);
+  border-color: var(--alpaca-board-border);
+  color: var(--alpaca-board-text-primary);
+}
+
+.wp-admin .alpaca-filter-control-popover .components-popover__content {
+  background: $color-white !important;
+  color: $color-text-primary !important;
+  opacity: 1 !important;
+}
+
+.alpaca-filter-control-popover[class*='alpaca-frontend-filter-control-popover--'] {
+  .alpaca-filter-control-section-title {
+    color: var(--alpaca-board-text-primary);
+  }
+
+  .alpaca-filter-control-empty {
+    color: var(--alpaca-board-text-muted);
+  }
+
+  &.alpaca-deadline-filter-popover .components-toggle-group-control {
+    background: var(--alpaca-board-surface-muted);
+    border-color: var(--alpaca-board-border);
+    color: var(--alpaca-board-text-primary);
+  }
+
+  &.alpaca-deadline-filter-popover
+    .components-toggle-group-control-option-base {
+    color: var(--alpaca-board-text-primary);
+  }
+}
+
+.alpaca-frontend-column-menu--light,
+.alpaca-frontend-column-menu--dark,
+.alpaca-frontend-column-menu--auto {
+  .components-popover__content {
+    background: var(--alpaca-board-popover-surface);
+    border-color: var(--alpaca-board-border);
+    color: var(--alpaca-board-text-primary);
+  }
+
+  .components-dropdown-menu__menu-item {
+    color: var(--alpaca-board-text-primary);
+
+    .dashicon {
+      color: currentcolor;
+    }
+
+    &:hover,
+    &:focus {
+      background: var(--alpaca-board-surface-muted);
+      color: var(--alpaca-board-text-primary);
+    }
   }
 }

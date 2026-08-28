@@ -16,6 +16,7 @@ import {
 } from '../utils/boardFiltering';
 import { getBuiltInContainerMenuControls } from './container/menu-controls';
 import { buildContainerMenuControlContext } from '../utils/containerMenuControls';
+import { getAdminBarOffset } from '../utils/adminBarOffset';
 
 import PropTypes from 'prop-types';
 
@@ -69,6 +70,7 @@ function Container({
   const [newTitle, setNewTitle] = useState(title);
   const inputRef = useRef(null);
   const containerRef = useRef(null);
+  const [controlsElement, setControlsElement] = useState(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [dragOverIndex, setDragOverIndex] = useState(null);
   const [dragOverItem, setDragOverItem] = useState(null);
@@ -276,6 +278,17 @@ function Container({
   const containerMenuControls = Array.isArray(filteredMenuControls)
     ? filteredMenuControls
     : menuControls;
+
+  const boardElement = controlsElement
+    ? controlsElement.closest('.alpaca-project-board')
+    : null;
+  const appearance = boardElement
+    ? boardElement.getAttribute('data-alpaca-appearance')
+    : '';
+  const adminBarOffset = getAdminBarOffset(boardElement);
+  const menuPopoverClassName = appearance
+    ? `alpaca-frontend-column-menu--${appearance}`
+    : '';
 
   /**
    * Check whether an item is marked as high priority.
@@ -520,12 +533,22 @@ function Container({
           </>
         )}
 
-        <div className="alpaca-container-controls">
-          <DropdownMenu
-            icon="menu"
-            label={__('Options', 'alpaca-issue-tracker')}
-            controls={containerMenuControls}
-          />
+        <div className="alpaca-container-controls" ref={setControlsElement}>
+          <span
+            className="alpaca-board-tooltip alpaca-column-menu-tooltip"
+            data-tooltip={__('Options', 'alpaca-issue-tracker')}
+          >
+            <DropdownMenu
+              icon="menu"
+              label={__('Options', 'alpaca-issue-tracker')}
+              controls={containerMenuControls}
+              toggleProps={{ showTooltip: false }}
+              popoverProps={{
+                offset: adminBarOffset,
+                className: menuPopoverClassName,
+              }}
+            />
+          </span>
         </div>
       </CardHeader>
 

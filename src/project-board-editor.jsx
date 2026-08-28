@@ -77,6 +77,7 @@ function ProjectBoardEdit({ attributes, setAttributes }) {
   const {
     accessMode,
     anonymousDetailMode,
+    appearance,
     datapoints,
     showFilters,
     showSearch,
@@ -131,7 +132,7 @@ function ProjectBoardEdit({ attributes, setAttributes }) {
   };
 
   const blockProps = useBlockProps({
-    className: 'alpaca-project-board-editor-preview',
+    className: `alpaca-project-board-editor-preview alpaca-project-board-editor-preview--${appearance}`,
   });
 
   return (
@@ -212,6 +213,25 @@ function ProjectBoardEdit({ attributes, setAttributes }) {
           title={__('Display', 'alpaca-issue-tracker')}
           initialOpen={false}
         >
+          <SelectControl
+            label={__('Appearance', 'alpaca-issue-tracker')}
+            value={appearance}
+            options={[
+              {
+                label: __('Automatic', 'alpaca-issue-tracker'),
+                value: 'auto',
+              },
+              {
+                label: __('Light', 'alpaca-issue-tracker'),
+                value: 'light',
+              },
+              {
+                label: __('Dark', 'alpaca-issue-tracker'),
+                value: 'dark',
+              },
+            ]}
+            onChange={(value) => setAttributes({ appearance: value })}
+          />
           <ToggleControl
             label={__('Show filters', 'alpaca-issue-tracker')}
             checked={showFilters}
@@ -256,6 +276,7 @@ ProjectBoardEdit.propTypes = {
   attributes: PropTypes.shape({
     accessMode: PropTypes.string,
     anonymousDetailMode: PropTypes.string,
+    appearance: PropTypes.string,
     datapoints: PropTypes.object,
     showFilters: PropTypes.bool,
     showSearch: PropTypes.bool,

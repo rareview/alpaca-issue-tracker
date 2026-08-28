@@ -135,9 +135,14 @@ class Project_Board_Block {
 
 		$instance_id = wp_unique_id( 'alpaca-project-board-' );
 		$board_data  = alpaistr_get_board_data();
+		$appearance  = isset( $context['attributes']['appearance'] ) ? $context['attributes']['appearance'] : 'auto';
 		$status_ids  = isset( $context['attributes']['statusIds'] ) && is_array( $context['attributes']['statusIds'] )
 			? array_filter( array_map( 'intval', $context['attributes']['statusIds'] ) )
 			: [];
+
+		if ( ! in_array( $appearance, [ 'auto', 'light', 'dark' ], true ) ) {
+			$appearance = 'auto';
+		}
 
 		if ( ! empty( $status_ids ) ) {
 			$board_data = array_values(
@@ -179,9 +184,10 @@ class Project_Board_Block {
 		);
 
 		return sprintf(
-			'<div %1$s data-alpaca-project-board="%2$s"><div class="alpaca-project-board-controls" id="%3$s-controls"><div class="alpaca-project-board-presence" id="%3$s-presence"></div><div class="alpaca-project-board-controls-mount" id="%3$s-controls-mount"></div></div><div id="%3$s-board"></div></div>',
+			'<div %1$s data-alpaca-project-board="%2$s" data-alpaca-appearance="%3$s"><div class="alpaca-project-board-controls" id="%4$s-controls"><div class="alpaca-project-board-presence" id="%4$s-presence"></div><div class="alpaca-project-board-controls-mount" id="%4$s-controls-mount"></div></div><div id="%4$s-board"></div></div>',
 			get_block_wrapper_attributes( [ 'class' => 'alpaca-project-board' ] ),
 			esc_attr( $instance_id ),
+			esc_attr( $appearance ),
 			esc_attr( $instance_id )
 		);
 	}

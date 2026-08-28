@@ -5,10 +5,15 @@
 */
 .wp-admin,
 .alpaca-project-board {
+  #project-board .alpaca-container-controls button {
+    color: $color-text-secondary;
+    opacity: 0.8;
+  }
+
   .alpaca-container {
     margin-block: 0;
     margin-inline: 1px $space-md;
-    background: $color-surface-subtle;
+    background: var(--alpaca-board-surface-column);
     border-radius: $radius-sm;
     display: flex;
     overflow: hidden;
@@ -25,6 +30,7 @@
 
     .alpaca-container-header {
       display: grid;
+
       /* Reserve columns: title, item-count, controls */
       grid-template-columns: auto 1fr $size-control-xl;
       align-items: center;
@@ -32,6 +38,7 @@
 
       h2,
       .alpaca-container-title-input input {
+        color: var(--alpaca-board-text-primary);
         margin: 0;
         font-size: $font-size-lg;
         font-weight: $font-weight-semibold;
@@ -61,6 +68,7 @@
         grid-column: 2;
         display: inline-flex;
         align-items: center;
+        color: var(--alpaca-board-text-muted);
         margin: 0 $space-xs 0 $space-2xs;
         padding: $space-3xs $space-2xs 0 $space-2xs;
         font-size: $font-size-sm;
@@ -78,11 +86,13 @@
         }
 
         button {
+          color: var(--alpaca-board-text-muted);
           margin-inline-start: $space-3xs;
-          opacity: 0.2;
+          opacity: var(--alpaca-board-column-control-opacity);
           transition: opacity $duration-base ease-in-out;
 
           &:hover {
+            color: var(--alpaca-board-text-primary);
             opacity: 1;
             cursor: pointer;
           }

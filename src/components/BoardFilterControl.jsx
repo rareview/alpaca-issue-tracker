@@ -17,6 +17,7 @@ import { getActiveFilter, buildBoardOptions } from '../utils/filters';
 import { normalizeLabelColor } from '../utils/labelColor';
 
 import PropTypes from 'prop-types';
+import { getAdminBarOffset } from '../utils/adminBarOffset';
 import Icon from './icons/Icon';
 
 /**
@@ -208,6 +209,15 @@ function BoardFilterControl({
     return null;
   }
 
+  const boardElement = mountNode.closest('.alpaca-project-board');
+  const appearance = boardElement
+    ? boardElement.getAttribute('data-alpaca-appearance')
+    : '';
+  const adminBarOffset = getAdminBarOffset(boardElement);
+  const popoverClassName = appearance
+    ? `alpaca-filter-control-popover alpaca-frontend-filter-control-popover--${appearance}`
+    : 'alpaca-filter-control-popover';
+
   const hasLabelOptions = labels.length > 0;
   const hasAssigneeOptions = assignees.length > 0;
   const activeLabelFilter = getActiveFilter(activeFilter, 'label');
@@ -224,6 +234,32 @@ function BoardFilterControl({
     ? activeDeadlineFilter.state.charAt(0).toUpperCase() +
       activeDeadlineFilter.state.slice(1)
     : __('Due Date', 'alpaca-issue-tracker');
+
+  /**
+   * Render the shared filter popover shell.
+   *
+   * @param {Object}      config           Popover configuration.
+   * @param {Object}      config.anchor    Popover anchor element.
+   * @param {string}      config.className Popover class name.
+   * @param {JSX.Element} config.content   Popover content.
+   * @param {number}      config.offset    Main-axis offset in pixels.
+   * @return {JSX.Element} Popover shell.
+   */
+  const renderPopoverShell = ({ anchor, className, content, offset }) => (
+    <Popover
+      anchor={anchor}
+      offset={offset}
+      position="bottom left"
+      className={className}
+      onClose={() => setOpenPopoverType('')}
+      onFocusOutside={() => setOpenPopoverType('')}
+      onEscape={() => setOpenPopoverType('')}
+      focusOnMount={false}
+      animate={false}
+    >
+      <div className="alpaca-filter-control-popover-content">{content}</div>
+    </Popover>
+  );
 
   /**
    * Render a filter control with trigger, clear, and popover content.
@@ -248,6 +284,15 @@ function BoardFilterControl({
     renderPopover,
   }) => {
     const isOpen = openPopoverType === filterType;
+    const triggerBoardElement = triggerRef.current
+      ? triggerRef.current.closest('.alpaca-project-board')
+      : null;
+    const triggerAppearance = triggerBoardElement
+      ? triggerBoardElement.getAttribute('data-alpaca-appearance')
+      : '';
+    const triggerPopoverClassName = triggerAppearance
+      ? `alpaca-filter-control-popover alpaca-frontend-filter-control-popover--${triggerAppearance}`
+      : 'alpaca-filter-control-popover';
 
     return (
       <div
@@ -286,30 +331,26 @@ function BoardFilterControl({
           </button>
         ) : null}
 
-        {isOpen && triggerRef.current ? (
-          <Popover
-            anchor={triggerRef.current}
-            position="bottom left"
-            className="alpaca-filter-control-popover"
-            onClose={() => setOpenPopoverType('')}
-            onFocusOutside={() => setOpenPopoverType('')}
-            onEscape={() => setOpenPopoverType('')}
-            focusOnMount={false}
-            animate={false}
-          >
-            <div className="alpaca-filter-control-popover-content">
-              {!hasOptionItems ? (
-                <p className="alpaca-filter-control-empty">
-                  {__(
-                    'No options found on board cards.',
-                    'alpaca-issue-tracker',
-                  )}
-                </p>
-              ) : null}
-              {hasOptionItems ? renderPopover() : null}
-            </div>
-          </Popover>
-        ) : null}
+        {isOpen && triggerRef.current
+          ? renderPopoverShell({
+              anchor: triggerRef.current,
+              className: triggerPopoverClassName,
+              offset: adminBarOffset,
+              content: (
+                <>
+                  {!hasOptionItems ? (
+                    <p className="alpaca-filter-control-empty">
+                      {__(
+                        'No options found on board cards.',
+                        'alpaca-issue-tracker',
+                      )}
+                    </p>
+                  ) : null}
+                  {hasOptionItems ? renderPopover() : null}
+                </>
+              ),
+            })
+          : null}
       </div>
     );
   };
@@ -463,56 +504,50 @@ function BoardFilterControl({
             </button>
           ) : null}
 
-          {isDeadlineOpen && deadlineTriggerRef.current ? (
-            <Popover
-              anchor={deadlineTriggerRef.current}
-              position="bottom left"
-              className="alpaca-filter-control-popover alpaca-deadline-filter-popover"
-              onClose={() => setOpenPopoverType('')}
-              onFocusOutside={() => setOpenPopoverType('')}
-              onEscape={() => setOpenPopoverType('')}
-              focusOnMount={false}
-              animate={false}
-            >
-              <div className="alpaca-filter-control-popover-content">
-                <section className="alpaca-filter-control-section">
-                  <h3 className="alpaca-filter-control-section-title">
-                    {__('Deadline state', 'alpaca-issue-tracker')}
-                  </h3>
-                  <ToggleGroupControl
-                    label={__('Show cards that are', 'alpaca-issue-tracker')}
-                    value={
-                      activeDeadlineFilter ? activeDeadlineFilter.state : ''
-                    }
-                    __nextHasNoMarginBottom
-                    __next40pxDefaultSize
-                    onChange={(value) => {
-                      onSetFilter({
-                        filterType: 'deadline',
-                        state: value || '',
-                      });
-                      setOpenPopoverType('');
-                    }}
-                    isBlock
-                    hideLabelFromVision
-                  >
-                    <ToggleGroupControlOption
-                      value="soon"
-                      label={__('Soon', 'alpaca-issue-tracker')}
-                    />
-                    <ToggleGroupControlOption
-                      value="today"
-                      label={__('Today', 'alpaca-issue-tracker')}
-                    />
-                    <ToggleGroupControlOption
-                      value="late"
-                      label={__('Late', 'alpaca-issue-tracker')}
-                    />
-                  </ToggleGroupControl>
-                </section>
-              </div>
-            </Popover>
-          ) : null}
+          {isDeadlineOpen && deadlineTriggerRef.current
+            ? renderPopoverShell({
+                anchor: deadlineTriggerRef.current,
+                className: `${popoverClassName} alpaca-deadline-filter-popover`,
+                offset: adminBarOffset,
+                content: (
+                  <section className="alpaca-filter-control-section">
+                    <h3 className="alpaca-filter-control-section-title">
+                      {__('Deadline state', 'alpaca-issue-tracker')}
+                    </h3>
+                    <ToggleGroupControl
+                      label={__('Show cards that are', 'alpaca-issue-tracker')}
+                      value={
+                        activeDeadlineFilter ? activeDeadlineFilter.state : ''
+                      }
+                      __nextHasNoMarginBottom
+                      __next40pxDefaultSize
+                      onChange={(value) => {
+                        onSetFilter({
+                          filterType: 'deadline',
+                          state: value || '',
+                        });
+                        setOpenPopoverType('');
+                      }}
+                      isBlock
+                      hideLabelFromVision
+                    >
+                      <ToggleGroupControlOption
+                        value="soon"
+                        label={__('Soon', 'alpaca-issue-tracker')}
+                      />
+                      <ToggleGroupControlOption
+                        value="today"
+                        label={__('Today', 'alpaca-issue-tracker')}
+                      />
+                      <ToggleGroupControlOption
+                        value="late"
+                        label={__('Late', 'alpaca-issue-tracker')}
+                      />
+                    </ToggleGroupControl>
+                  </section>
+                ),
+              })
+            : null}
         </div>
       ) : null}
     </>,
