@@ -20,10 +20,12 @@ const ActivityPopover = () => {
       return undefined;
     }
 
+    const trigger = triggerRef.current;
+
     closeButtonRef.current?.focus();
 
     return () => {
-      triggerRef.current?.focus();
+      trigger?.focus();
     };
   }, [isOpen]);
 

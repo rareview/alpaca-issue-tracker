@@ -190,6 +190,12 @@
     box-shadow: 0 0 0 1px $color-link-soft-border;
   }
 
+  /* Shared typography for board controls. */
+  .alpaca-board-control,
+  .alpaca-add-issue-control {
+    font-family: $font-family-base;
+  }
+
   /* Shared board control styling (boxy controls like the inbox trigger). */
   .alpaca-board-control {
     background: $color-white;

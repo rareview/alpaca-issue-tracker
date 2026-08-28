@@ -24,9 +24,9 @@ const FORM_CLOSE_RESET_DELAY_MS = 300;
  * Bottom Toolbar component for Alpaca Issue Tracker issue reporting.
  * Dark admin bar theme with WP Components form.
  *
- * @param {Object}  props                 Component props.
- * @param {boolean} props.showInbox       Whether to show Inbox.
- * @param {boolean} props.showActivity    Whether to show Project Activity.
+ * @param {Object}  props              Component props.
+ * @param {boolean} props.showInbox    Whether to show Inbox.
+ * @param {boolean} props.showActivity Whether to show Project Activity.
  * @return {JSX.Element} Toolbar component
  */
 const AlpacaToolbar = ({ showInbox, showActivity }) => {

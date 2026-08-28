@@ -113,6 +113,7 @@ const buildIssueLookupFromPosts = (posts) => {
  *
  * @param {Object}  props           Component props.
  * @param {boolean} props.isPopover Whether to use compact popover rendering.
+ * @param {string}  props.rootId    Root element ID.
  * @return {JSX.Element} Activity screen.
  */
 const Activity = ({ isPopover = false, rootId = 'alpaca-activity' }) => {

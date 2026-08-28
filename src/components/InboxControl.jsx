@@ -220,6 +220,7 @@ const clearInboxOpenQueryParam = () => {
  *
  * @param {Object}  props            Component props.
  * @param {boolean} props.isEmbedded Whether to render the full panel inline.
+ * @param {boolean} props.isInline   Whether to use inline control styling.
  * @param {string}  props.selector   Controls mount selector.
  * @return {JSX.Element|null} Inbox control.
  */
