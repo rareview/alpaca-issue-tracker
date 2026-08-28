@@ -47,42 +47,13 @@
 }
 
 .alpaca-project-board-editor-preview--light {
-  color-scheme: light;
-
-  --alpaca-board-surface-column: rgb(255 255 255 / 72%);
-  --alpaca-board-text-primary: rgb(29 35 39 / 92%);
-  --alpaca-board-text-muted: rgb(29 35 39 / 66%);
-  --alpaca-board-border: rgb(29 35 39 / 18%);
+  @include alpaca-board-light-tokens;
 }
 
 .alpaca-project-board-editor-preview--dark {
-  color-scheme: dark;
-
-  --alpaca-board-surface-column: rgb(24 31 36 / 76%);
-  --alpaca-board-text-primary: rgb(255 255 255 / 92%);
-  --alpaca-board-text-muted: rgb(255 255 255 / 68%);
-  --alpaca-board-border: rgb(255 255 255 / 20%);
+  @include alpaca-board-dark-tokens;
 }
 
-@supports (color: light-dark(black, white)) {
-  .alpaca-project-board-editor-preview--auto {
-    color-scheme: light dark;
-
-    --alpaca-board-surface-column: light-dark(
-      rgb(255 255 255 / 72%),
-      rgb(24 31 36 / 76%)
-    );
-    --alpaca-board-text-primary: light-dark(
-      rgb(29 35 39 / 92%),
-      rgb(255 255 255 / 92%)
-    );
-    --alpaca-board-text-muted: light-dark(
-      rgb(29 35 39 / 66%),
-      rgb(255 255 255 / 68%)
-    );
-    --alpaca-board-border: light-dark(
-      rgb(29 35 39 / 18%),
-      rgb(255 255 255 / 20%)
-    );
-  }
+.alpaca-project-board-editor-preview--auto {
+  @include alpaca-board-auto-tokens;
 }

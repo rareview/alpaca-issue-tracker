@@ -242,13 +242,12 @@ function BoardFilterControl({
    * @param {Object}      config.anchor    Popover anchor element.
    * @param {string}      config.className Popover class name.
    * @param {JSX.Element} config.content   Popover content.
-   * @param {number}      config.offset    Main-axis offset in pixels.
    * @return {JSX.Element} Popover shell.
    */
-  const renderPopoverShell = ({ anchor, className, content, offset }) => (
+  const renderPopoverShell = ({ anchor, className, content }) => (
     <Popover
       anchor={anchor}
-      offset={offset}
+      offset={adminBarOffset}
       position="bottom left"
       className={className}
       onClose={() => setOpenPopoverType('')}
@@ -284,15 +283,6 @@ function BoardFilterControl({
     renderPopover,
   }) => {
     const isOpen = openPopoverType === filterType;
-    const triggerBoardElement = triggerRef.current
-      ? triggerRef.current.closest('.alpaca-project-board')
-      : null;
-    const triggerAppearance = triggerBoardElement
-      ? triggerBoardElement.getAttribute('data-alpaca-appearance')
-      : '';
-    const triggerPopoverClassName = triggerAppearance
-      ? `alpaca-filter-control-popover alpaca-frontend-filter-control-popover--${triggerAppearance}`
-      : 'alpaca-filter-control-popover';
 
     return (
       <div
@@ -334,8 +324,7 @@ function BoardFilterControl({
         {isOpen && triggerRef.current
           ? renderPopoverShell({
               anchor: triggerRef.current,
-              className: triggerPopoverClassName,
-              offset: adminBarOffset,
+              className: popoverClassName,
               content: (
                 <>
                   {!hasOptionItems ? (
@@ -508,7 +497,6 @@ function BoardFilterControl({
             ? renderPopoverShell({
                 anchor: deadlineTriggerRef.current,
                 className: `${popoverClassName} alpaca-deadline-filter-popover`,
-                offset: adminBarOffset,
                 content: (
                   <section className="alpaca-filter-control-section">
                     <h3 className="alpaca-filter-control-section-title">

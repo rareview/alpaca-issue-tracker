@@ -4,6 +4,115 @@
 /*
  * Mixins
  */
+@mixin alpaca-board-default-tokens {
+  --alpaca-board-surface-column: #{$color-surface-subtle};
+  --alpaca-board-surface-control: #{$color-white};
+  --alpaca-board-surface-muted: #{$color-surface-muted};
+  --alpaca-board-text-primary: #{$color-text-primary};
+  --alpaca-board-text-muted: #{$color-text-muted};
+  --alpaca-board-border: #{$color-border};
+  --alpaca-board-column-control-opacity: 0.2;
+  --alpaca-board-control-hover-border: #{$color-link};
+  --alpaca-board-control-hover-text: #{$color-link-dark};
+  --alpaca-board-control-hover-ring: #{$color-link-soft-border};
+  --alpaca-board-focus-backdrop: rgb(240 240 241 / 50%);
+  --alpaca-board-tooltip-background: #{$color-text-primary};
+  --alpaca-board-tooltip-text: #{$color-white};
+  --alpaca-board-popover-surface: #{$color-white};
+}
+
+@mixin alpaca-board-light-tokens {
+  color-scheme: light;
+
+  --alpaca-board-surface-column: rgb(255 255 255 / 72%);
+  --alpaca-board-surface-control: rgb(255 255 255 / 88%);
+  --alpaca-board-surface-muted: rgb(255 255 255 / 58%);
+  --alpaca-board-text-primary: rgb(29 35 39 / 92%);
+  --alpaca-board-text-muted: rgb(29 35 39 / 66%);
+  --alpaca-board-border: rgb(29 35 39 / 18%);
+  --alpaca-board-column-control-opacity: 0.6;
+  --alpaca-board-control-hover-border: #{$color-link};
+  --alpaca-board-control-hover-text: #{$color-link-dark};
+  --alpaca-board-control-hover-ring: #{$color-link-soft-border};
+  --alpaca-board-focus-backdrop: rgb(29 35 39 / 28%);
+  --alpaca-board-tooltip-background: rgb(29 35 39 / 94%);
+  --alpaca-board-tooltip-text: #{$color-white};
+  --alpaca-board-popover-surface: #{$color-white};
+}
+
+@mixin alpaca-board-dark-tokens {
+  color-scheme: dark;
+
+  --alpaca-board-surface-column: rgb(0 0 0 / 60%);
+  --alpaca-board-surface-control: rgb(24 31 36 / 88%);
+  --alpaca-board-surface-muted: rgb(255 255 255 / 10%);
+  --alpaca-board-text-primary: rgb(255 255 255 / 92%);
+  --alpaca-board-text-muted: rgb(255 255 255 / 68%);
+  --alpaca-board-border: rgb(255 255 255 / 20%);
+  --alpaca-board-column-control-opacity: 0.8;
+  --alpaca-board-control-hover-border: #{$color-toolbar-accent};
+  --alpaca-board-control-hover-text: #{$color-toolbar-accent};
+  --alpaca-board-control-hover-ring: rgb(114 174 230 / 55%);
+  --alpaca-board-focus-backdrop: rgb(0 0 0 / 48%);
+  --alpaca-board-tooltip-background: rgb(0 0 0 / 88%);
+  --alpaca-board-tooltip-text: #{$color-white};
+  --alpaca-board-popover-surface: rgb(24 31 36);
+}
+
+@mixin alpaca-board-auto-tokens {
+  @supports (color: light-dark(black, white)) {
+    color-scheme: light dark;
+
+    --alpaca-board-surface-column: light-dark(
+      rgb(255 255 255 / 72%),
+      rgb(0 0 0 / 60%)
+    );
+    --alpaca-board-surface-control: light-dark(
+      rgb(255 255 255 / 88%),
+      rgb(24 31 36 / 88%)
+    );
+    --alpaca-board-surface-muted: light-dark(
+      rgb(255 255 255 / 58%),
+      rgb(255 255 255 / 10%)
+    );
+    --alpaca-board-text-primary: light-dark(
+      rgb(29 35 39 / 92%),
+      rgb(255 255 255 / 92%)
+    );
+    --alpaca-board-text-muted: light-dark(
+      rgb(29 35 39 / 66%),
+      rgb(255 255 255 / 68%)
+    );
+    --alpaca-board-border: light-dark(
+      rgb(29 35 39 / 18%),
+      rgb(255 255 255 / 20%)
+    );
+    --alpaca-board-column-control-opacity: light-dark(0.6, 0.8);
+    --alpaca-board-control-hover-border: light-dark(
+      #{$color-link},
+      #{$color-toolbar-accent}
+    );
+    --alpaca-board-control-hover-text: light-dark(
+      #{$color-link-dark},
+      #{$color-toolbar-accent}
+    );
+    --alpaca-board-control-hover-ring: light-dark(
+      #{$color-link-soft-border},
+      rgb(114 174 230 / 55%)
+    );
+    --alpaca-board-focus-backdrop: light-dark(
+      rgb(29 35 39 / 28%),
+      rgb(0 0 0 / 48%)
+    );
+    --alpaca-board-tooltip-background: light-dark(
+      rgb(29 35 39 / 94%),
+      rgb(0 0 0 / 88%)
+    );
+    --alpaca-board-tooltip-text: #{$color-white};
+    --alpaca-board-popover-surface: light-dark(#{$color-white}, rgb(24 31 36));
+  }
+}
+
 @mixin deadline-style($bg-color) {
   background-color: $bg-color;
   color: if(
@@ -52,7 +161,7 @@
 
 @mixin alpaca-assignee-stack(
   $avatar-size: $size-icon-xl,
-  $user-offset: -$space-sm,
+  $user-offset: - $space-sm,
   $avatar-overlap: calc(-1 * 2px),
   $show-single-name: true,
   $user-font-size: $font-size-xs,

@@ -99,6 +99,15 @@ const DraggableItem = forwardRef(
           // Create wrapper to preserve rotation
           const wrapper = document.createElement('div');
           wrapper.classList.add('alpaca-project-board');
+          const boardElement = e.currentTarget.closest(
+            '.alpaca-project-board[data-alpaca-appearance]',
+          );
+
+          if (boardElement) {
+            wrapper.dataset.alpacaAppearance =
+              boardElement.dataset.alpacaAppearance;
+          }
+
           wrapper.style.position = 'absolute';
           wrapper.style.top = '-9999px';
           wrapper.style.left = '-9999px';

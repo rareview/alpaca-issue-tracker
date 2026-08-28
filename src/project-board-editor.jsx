@@ -132,7 +132,7 @@ function ProjectBoardEdit({ attributes, setAttributes }) {
   };
 
   const blockProps = useBlockProps({
-    className: `alpaca-project-board-editor-preview alpaca-project-board-editor-preview--${appearance}`,
+    className: `alpaca-project-board-editor-preview alpaca-project-board-editor-preview--${appearance || 'auto'}`,
   });
 
   return (

@@ -29,6 +29,7 @@ function AddIssueControl({ selector, onAddIssue }) {
       variant="primary"
       onClick={onAddIssue}
     >
+      <span className="dashicons dashicons-plus" aria-hidden="true" />
       {__('Add Issue', 'alpaca-issue-tracker')}
     </Button>,
     mountNode,

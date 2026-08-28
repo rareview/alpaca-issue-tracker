@@ -26,18 +26,14 @@ Object.entries(boardInstances).forEach(([instanceId, settings]) => {
 
   createRoot(boardMount).render(
     <WatchlistProvider>
-      <>
-        <AlpacaBoard
-          boardData={
-            Array.isArray(settings.boardData) ? settings.boardData : []
-          }
-          controlsSelector={`#${instanceId}-controls`}
-          showFilters={settings.showFilters !== false}
-          showAddIssue={true}
-          showInbox={false}
-          showSearch={settings.showSearch !== false}
-        />
-      </>
+      <AlpacaBoard
+        boardData={Array.isArray(settings.boardData) ? settings.boardData : []}
+        controlsSelector={`#${instanceId}-controls`}
+        showFilters={settings.showFilters !== false}
+        showAddIssue={true}
+        showInbox={false}
+        showSearch={settings.showSearch !== false}
+      />
     </WatchlistProvider>,
   );
 });

@@ -501,6 +501,31 @@
   }
 }
 
+.alpaca-project-board[data-alpaca-appearance] .alpaca-add-issue-control {
+  background: var(--alpaca-board-surface-control);
+  border: 1px solid var(--alpaca-board-border);
+  color: var(--alpaca-board-text-primary);
+  gap: $space-xs;
+
+  .dashicons {
+    align-items: center;
+    display: inline-flex;
+    font-size: $font-size-md;
+    height: $size-icon-md;
+    justify-content: center;
+    line-height: 1;
+    width: $size-icon-md;
+  }
+
+  &:hover:not(:disabled),
+  &:focus-visible {
+    background: var(--alpaca-board-surface-muted);
+    border-color: var(--alpaca-board-control-hover-border);
+    color: var(--alpaca-board-control-hover-text);
+    box-shadow: 0 0 0 1px var(--alpaca-board-control-hover-ring);
+  }
+}
+
 /* Popovers are portaled outside the board and need their own board contract. */
 .alpaca-filter-control-popover {
   font-family: $font-family-base;
