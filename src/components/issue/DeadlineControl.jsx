@@ -31,7 +31,11 @@ const DeadlineControl = memo(({ deadline, onChange, onClear, isLoading }) => {
         <div
           ref={calendarButtonRef}
           className={`alpaca-input alpaca-deadline-display ${deadline ? '' : 'placeholder'}`}
-          onClick={() => setIsEditingDeadline((prev) => !prev)}
+          onClick={() => {
+            if (!isLoading) {
+              setIsEditingDeadline((prev) => !prev);
+            }
+          }}
           contentEditable={false} // read-only for now
           role="button"
           tabIndex={0} // makes it focusable

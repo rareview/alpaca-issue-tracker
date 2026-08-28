@@ -30,9 +30,15 @@ Object.entries(boardInstances).forEach(([instanceId, settings]) => {
         boardData={Array.isArray(settings.boardData) ? settings.boardData : []}
         controlsSelector={`#${instanceId}-controls`}
         showFilters={settings.showFilters !== false}
-        showAddIssue={true}
+        showAddIssue={settings.isAnonymousReadOnly !== true}
         showInbox={false}
         showSearch={settings.showSearch !== false}
+        readOnly={settings.isAnonymousReadOnly === true}
+        allowIssueDetail={
+          settings.isAnonymousReadOnly !== true ||
+          settings.anonymousDetailMode === 'issue_detail'
+        }
+        publicDetailTokens={settings.publicDetailTokens || {}}
       />
     </WatchlistProvider>,
   );

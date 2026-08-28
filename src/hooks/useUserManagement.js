@@ -1,12 +1,16 @@
 const { useState, useEffect } = wp.element;
 import { fetchUsers } from '../services/issueApi'; // Assuming this will be created
 
-const useUserManagement = () => {
+const useUserManagement = (enabled = true) => {
   const [allUsers, setAllUsers] = useState([]);
   const [allUserObjects, setAllUserObjects] = useState([]);
   const [userMap, setUserMap] = useState({});
 
   useEffect(() => {
+    if (!enabled) {
+      return;
+    }
+
     fetchUsers()
       .then((users) => {
         const usersWithAvatar = users.map((u) => ({
@@ -31,7 +35,7 @@ const useUserManagement = () => {
       .catch((err) => {
         console.error('Error fetching users:', err);
       });
-  }, []);
+  }, [enabled]);
 
   return { allUsers, allUserObjects, userMap };
 };

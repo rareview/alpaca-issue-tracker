@@ -1,4 +1,10 @@
-export const fetchIssue = (id) => wp.apiFetch({ path: `/alpaca/v1/get/${id}` });
+export const fetchIssue = (id, publicDetailToken = '') => {
+  const publicQuery = publicDetailToken
+    ? `?public_detail=1&public_nonce=${encodeURIComponent(publicDetailToken)}`
+    : '';
+
+  return wp.apiFetch({ path: `/alpaca/v1/get/${id}${publicQuery}` });
+};
 
 export const updateIssue = (id, data) => {
   return wp.apiFetch({

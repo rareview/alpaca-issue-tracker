@@ -2,7 +2,7 @@ const { useState, useEffect, useCallback } = wp.element;
 const { __ } = wp.i18n;
 import { fetchIssue } from '../services/issueApi'; // Assuming this will be created
 
-const useIssueData = (issueId, isOpen) => {
+const useIssueData = (issueId, isOpen, publicDetailToken = '') => {
   const [issueDetails, setIssueDetails] = useState(null);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [error, setError] = useState(null);
@@ -12,7 +12,7 @@ const useIssueData = (issueId, isOpen) => {
       setIsLoadingDetails(true);
       setError(null);
 
-      fetchIssue(issueId)
+      fetchIssue(issueId, publicDetailToken)
         .then((issueData) => {
           setIssueDetails(issueData);
         })
@@ -30,14 +30,14 @@ const useIssueData = (issueId, isOpen) => {
           setIsLoadingDetails(false);
         });
     }
-  }, [issueId, isOpen]);
+  }, [issueId, isOpen, publicDetailToken]);
 
   const refetchData = useCallback(() => {
     if (issueId && isOpen) {
       setIsLoadingDetails(true);
       setError(null);
 
-      fetchIssue(issueId)
+      fetchIssue(issueId, publicDetailToken)
         .then(setIssueDetails)
         .catch((err) => {
           console.error('Error refetching issue data:', err);
@@ -50,7 +50,7 @@ const useIssueData = (issueId, isOpen) => {
         })
         .finally(() => setIsLoadingDetails(false));
     }
-  }, [issueId, isOpen]);
+  }, [issueId, isOpen, publicDetailToken]);
 
   return {
     issueDetails,

@@ -13,6 +13,8 @@ const TabContent = memo(
     activeSearchQuery,
     commentRefreshKey,
     showNotification,
+    readOnly,
+    publicDetailToken,
   }) => {
     switch (tab.name) {
       case 'comments':
@@ -31,6 +33,8 @@ const TabContent = memo(
             commentRefreshKey={commentRefreshKey}
             searchScopeIssueIds={searchScopeIssueIds}
             showNotification={showNotification}
+            readOnly={readOnly}
+            publicDetailToken={publicDetailToken}
           />
         );
       case 'report':

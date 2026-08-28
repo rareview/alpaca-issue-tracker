@@ -442,6 +442,8 @@ const Commenting = ({
   commentRefreshKey,
   searchScopeIssueIds,
   showNotification,
+  readOnly,
+  publicDetailToken,
 }) => {
   const [comments, setComments] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
@@ -476,8 +478,12 @@ const Commenting = ({
   );
 
   useEffect(() => {
+    if (readOnly) {
+      return;
+    }
+
     getUser().then(setCurrentUser);
-  }, []);
+  }, [readOnly]);
 
   useEffect(() => {
     if (!editingCommentId) {
@@ -522,7 +528,7 @@ const Commenting = ({
       }
 
       wp.apiFetch({
-        path: `/wp/v2/comments?post=${issueId}&_embed=author&per_page=-1&orderby=date&order=desc&comment_type=issuecomment&alpaca_include_hidden_comments=1&context=edit`,
+        path: `/wp/v2/comments?post=${issueId}&_embed=author&per_page=-1&orderby=date&order=desc&comment_type=issuecomment&alpaca_include_hidden_comments=1&context=${publicDetailToken ? 'view' : 'edit'}${publicDetailToken ? `&public_nonce=${encodeURIComponent(publicDetailToken)}` : ''}`,
       })
         .then(setComments)
         .catch((err) => {
@@ -538,7 +544,7 @@ const Commenting = ({
           }
         });
     },
-    [issueId, showNotification],
+    [issueId, publicDetailToken, showNotification],
   );
 
   useEffect(() => fetchComments(), [fetchComments, commentRefreshKey]);
@@ -1080,52 +1086,56 @@ const Commenting = ({
 
   return (
     <div id="alpaca-comments-wrapper">
-      <div id="alpaca-comments-header">
-        <Button variant="tertiary" onClick={toggleSortOrder}>
-          {sortOrder === 'desc'
-            ? __('Sort: ↑', 'alpaca-issue-tracker')
-            : __('Sort: ↓', 'alpaca-issue-tracker')}
-        </Button>
-      </div>
+      {!readOnly && (
+        <div id="alpaca-comments-header">
+          <Button variant="tertiary" onClick={toggleSortOrder}>
+            {sortOrder === 'desc'
+              ? __('Sort: ↑', 'alpaca-issue-tracker')
+              : __('Sort: ↓', 'alpaca-issue-tracker')}
+          </Button>
+        </div>
+      )}
 
       <div id="alpaca-comments">
-        <div className="alpaca-comment-form" data-source="human">
-          <div className="alpaca-timeline-content">
-            <AttachmentControls
-              attachments={pendingAttachments}
-              onDrop={handlePendingAttachmentDrop}
-              onUpload={handleAttachmentUpload}
-              onRemove={removePendingAttachment}
-              onClick={setLightboxSrc}
-              isSubmitting={isSubmitting}
-              isProcessing={isProcessingAttachments}
-              pendingAltText={__(
-                'Pending comment attachment',
-                'alpaca-issue-tracker',
-              )}
-              actions={
-                <Button
-                  isPrimary
-                  onClick={handleCommentSubmit}
-                  disabled={isSubmitting || isProcessingAttachments}
-                >
-                  {isSubmitting
-                    ? __('Submitting…', 'alpaca-issue-tracker')
-                    : __('Submit Comment', 'alpaca-issue-tracker')}
-                </Button>
-              }
-            >
-              <MentionsTextarea
-                placeholder={__('Add a comment…', 'alpaca-issue-tracker')}
-                value={newComment}
-                onChange={setNewComment}
-                textareaRef={newCommentRef}
-                disabled={isSubmitting}
-                searchScopeIssueIds={searchScopeIssueIds}
-              />
-            </AttachmentControls>
+        {!readOnly && (
+          <div className="alpaca-comment-form" data-source="human">
+            <div className="alpaca-timeline-content">
+              <AttachmentControls
+                attachments={pendingAttachments}
+                onDrop={handlePendingAttachmentDrop}
+                onUpload={handleAttachmentUpload}
+                onRemove={removePendingAttachment}
+                onClick={setLightboxSrc}
+                isSubmitting={isSubmitting}
+                isProcessing={isProcessingAttachments}
+                pendingAltText={__(
+                  'Pending comment attachment',
+                  'alpaca-issue-tracker',
+                )}
+                actions={
+                  <Button
+                    isPrimary
+                    onClick={handleCommentSubmit}
+                    disabled={isSubmitting || isProcessingAttachments}
+                  >
+                    {isSubmitting
+                      ? __('Submitting…', 'alpaca-issue-tracker')
+                      : __('Submit Comment', 'alpaca-issue-tracker')}
+                  </Button>
+                }
+              >
+                <MentionsTextarea
+                  placeholder={__('Add a comment…', 'alpaca-issue-tracker')}
+                  value={newComment}
+                  onChange={setNewComment}
+                  textareaRef={newCommentRef}
+                  disabled={isSubmitting}
+                  searchScopeIssueIds={searchScopeIssueIds}
+                />
+              </AttachmentControls>
+            </div>
           </div>
-        </div>
+        )}
 
         {isLoadingComments && (
           <p className="alpaca-loading">
@@ -1243,6 +1253,8 @@ Commenting.propTypes = {
     PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   ),
   showNotification: PropTypes.func.isRequired,
+  readOnly: PropTypes.bool,
+  publicDetailToken: PropTypes.string,
 };
 
 Commenting.defaultProps = {

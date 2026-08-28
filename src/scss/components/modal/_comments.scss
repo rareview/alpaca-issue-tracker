@@ -372,6 +372,19 @@ body:not(.wp-admin).alpaca-details-modal-open,
   .alpaca-comment-content {
     padding: 0;
 
+    p {
+      color: $color-text-primary;
+    }
+
+    a {
+      color: $color-link;
+
+      &:hover,
+      &:focus {
+        color: $color-link-dark;
+      }
+    }
+
     blockquote {
       background: $color-surface-neutral;
       padding-block-start: $space-5xl;

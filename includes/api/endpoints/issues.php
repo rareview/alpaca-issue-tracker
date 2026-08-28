@@ -691,7 +691,15 @@ function alpaistr_get_issue_data() {
 		[
 			'methods'             => 'GET',
 			'callback'            => 'alpaistr_get_issue_data_callback',
-			'permission_callback' => function () {
+			'permission_callback' => function ( WP_REST_Request $request ) {
+				$issue_id      = (int) $request['id'];
+				$public_detail = $request->get_param( 'public_detail' );
+				$public_nonce  = $request->get_param( 'public_nonce' );
+
+				if ( '1' === (string) $public_detail && is_string( $public_nonce ) && '' !== $public_nonce ) {
+					return (bool) wp_verify_nonce( $public_nonce, 'alpaca_public_issue_' . $issue_id );
+				}
+
 				return Helpers::user_can( 'comment_count' );
 			},
 			'args'                => [

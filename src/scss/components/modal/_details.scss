@@ -49,6 +49,10 @@ body:not(.wp-admin).alpaca-details-modal-open .alpaca-details-grid__label {
   gap: $space-sm;
 }
 
+.alpaca-details-modal-read-only .alpaca-issue-details {
+  pointer-events: none;
+}
+
 .alpaca-subissues-block .alpaca-details-grid__label {
   margin-bottom: $space-md;
 }

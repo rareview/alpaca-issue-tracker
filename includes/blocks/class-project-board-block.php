@@ -105,12 +105,16 @@ class Project_Board_Block {
 	public function render( $attributes, $content, $block ) {
 		unset( $content );
 
-		$context = [
+		$context              = [
 			'attributes' => is_array( $attributes ) ? $attributes : [],
 			'post_id'    => isset( $block->context['postId'] ) ? (int) $block->context['postId'] : 0,
 		];
+		$access_mode          = isset( $context['attributes']['accessMode'] ) && is_string( $context['attributes']['accessMode'] )
+			? $context['attributes']['accessMode']
+			: 'login_required';
+		$is_anonymous_visitor = 'anonymous_read_only' === $access_mode && ! is_user_logged_in();
 
-		if ( ! is_user_logged_in() ) {
+		if ( ! is_user_logged_in() && ! $is_anonymous_visitor ) {
 			$redirect_url = get_permalink( $context['post_id'] );
 			if ( ! is_string( $redirect_url ) || '' === $redirect_url ) {
 				$redirect_url = home_url( '/' );
@@ -125,7 +129,7 @@ class Project_Board_Block {
 			);
 		}
 
-		if ( ! Helpers::user_can( 'view_frontend_board', $context ) ) {
+		if ( ! $is_anonymous_visitor && ! Helpers::user_can( 'view_frontend_board', $context ) ) {
 			return sprintf(
 				'<div %1$s><p>%2$s</p></div>',
 				get_block_wrapper_attributes( [ 'class' => 'alpaca-project-board-access-denied' ] ),
@@ -156,6 +160,25 @@ class Project_Board_Block {
 			);
 		}
 
+		$anonymous_detail_mode = isset( $context['attributes']['anonymousDetailMode'] ) && is_string( $context['attributes']['anonymousDetailMode'] )
+			? $context['attributes']['anonymousDetailMode']
+			: 'cards_only';
+		$public_detail_tokens  = [];
+		if ( $is_anonymous_visitor && 'issue_detail' === $anonymous_detail_mode ) {
+			foreach ( $board_data as $column ) {
+				if ( ! is_array( $column ) || ! isset( $column['issues'] ) || ! is_array( $column['issues'] ) ) {
+					continue;
+				}
+
+				foreach ( $column['issues'] as $issue ) {
+					if ( is_array( $issue ) && isset( $issue['id'] ) ) {
+						$issue_id                          = (int) $issue['id'];
+						$public_detail_tokens[ $issue_id ] = wp_create_nonce( 'alpaca_public_issue_' . $issue_id );
+					}
+				}
+			}
+		}
+
 		wp_enqueue_script( 'alpaca-project-board-view' );
 		wp_enqueue_style( 'alpaca-project-board-view' );
 
@@ -175,10 +198,13 @@ class Project_Board_Block {
 			'alpaca-project-board-view',
 			'window.alpaistrFrontendBoards = window.alpaistrFrontendBoards || {}; window.alpaistrFrontendBoards[' . wp_json_encode( $instance_id ) . '] = ' . wp_json_encode(
 				[
-					'boardData'   => $board_data,
-					'datapoints'  => isset( $context['attributes']['datapoints'] ) && is_array( $context['attributes']['datapoints'] ) ? $context['attributes']['datapoints'] : [],
-					'showFilters' => ! isset( $context['attributes']['showFilters'] ) || (bool) $context['attributes']['showFilters'],
-					'showSearch'  => ! isset( $context['attributes']['showSearch'] ) || (bool) $context['attributes']['showSearch'],
+					'boardData'           => $board_data,
+					'datapoints'          => isset( $context['attributes']['datapoints'] ) && is_array( $context['attributes']['datapoints'] ) ? $context['attributes']['datapoints'] : [],
+					'showFilters'         => ! isset( $context['attributes']['showFilters'] ) || (bool) $context['attributes']['showFilters'],
+					'showSearch'          => ! isset( $context['attributes']['showSearch'] ) || (bool) $context['attributes']['showSearch'],
+					'isAnonymousReadOnly' => $is_anonymous_visitor,
+					'anonymousDetailMode' => $is_anonymous_visitor ? $anonymous_detail_mode : 'cards_only',
+					'publicDetailTokens'  => $public_detail_tokens,
 				]
 			) . ';',
 			'before'

@@ -43,6 +43,7 @@ import PropTypes from 'prop-types';
  * @param {Function} root0.onItemDrop         - Callback for drag-and-drop moves
  * @param {Function} root0.onBulkItemReorder  - Callback for bulk item reordering
  * @param {Function} root0.onAddIssue         - Callback to add a new issue in this column
+ * @param {boolean}  root0.readOnly           - Whether container controls are disabled
  * @return {JSX.Element} Container component
  */
 function Container({
@@ -65,6 +66,7 @@ function Container({
   onItemDrop,
   onBulkItemReorder,
   onAddIssue,
+  readOnly = false,
 }) {
   const [isRenaming, setIsRenaming] = useState(false);
   const [newTitle, setNewTitle] = useState(title);
@@ -221,7 +223,11 @@ function Container({
     },
   ];
 
-  if (!isLastContainer) {
+  if (readOnly) {
+    menuControls.length = 0;
+  }
+
+  if (!readOnly && !isLastContainer) {
     menuControls.push({
       icon: (
         <span
@@ -235,7 +241,7 @@ function Container({
     });
   }
 
-  if (isLastContainer && canDeleteIssues) {
+  if (!readOnly && isLastContainer && canDeleteIssues) {
     menuControls.push({
       icon: 'trash',
       title: __('Delete All', 'alpaca-issue-tracker'),
@@ -245,35 +251,37 @@ function Container({
   }
 
   // Allow third-party code to customize container menu controls.
-  const filteredMenuControls = wp.hooks.applyFilters(
-    'alpaca.container.menuControls',
-    menuControls,
-    buildContainerMenuControlContext({
-      id,
-      title,
-      items,
-      activeFilter,
-      hasItems,
-      isLastContainer,
-      isHidden,
-      focusedContainerId,
-      isFocused,
-      isFiltering,
-      visibleItemEntries,
-      itemMatchesFilter,
-      areBulkActionsDisabled,
-      onMoveAllToNext,
-      onDeleteAll,
-      onToggleHidden,
-      onToggleFocus,
-      onRename,
-      onBulkItemReorder,
-      startAnimation,
-      stopAnimation,
-      waitForTransitions,
-      isAnimatingRef,
-    }),
-  );
+  const filteredMenuControls = readOnly
+    ? []
+    : wp.hooks.applyFilters(
+        'alpaca.container.menuControls',
+        menuControls,
+        buildContainerMenuControlContext({
+          id,
+          title,
+          items,
+          activeFilter,
+          hasItems,
+          isLastContainer,
+          isHidden,
+          focusedContainerId,
+          isFocused,
+          isFiltering,
+          visibleItemEntries,
+          itemMatchesFilter,
+          areBulkActionsDisabled,
+          onMoveAllToNext,
+          onDeleteAll,
+          onToggleHidden,
+          onToggleFocus,
+          onRename,
+          onBulkItemReorder,
+          startAnimation,
+          stopAnimation,
+          waitForTransitions,
+          isAnimatingRef,
+        }),
+      );
 
   const containerMenuControls = Array.isArray(filteredMenuControls)
     ? filteredMenuControls
@@ -307,6 +315,10 @@ function Container({
   };
 
   const handleDragOver = (e) => {
+    if (readOnly) {
+      return;
+    }
+
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
     setIsDragOver(true);
@@ -437,6 +449,10 @@ function Container({
   };
 
   const handleDrop = (e) => {
+    if (readOnly) {
+      return;
+    }
+
     e.preventDefault();
     setIsDragOver(false);
     // Don't clear global drag state yet; consume it below after calling onItemDrop
@@ -534,30 +550,32 @@ function Container({
         )}
 
         <div className="alpaca-container-controls" ref={setControlsElement}>
-          <span
-            className="alpaca-board-tooltip alpaca-column-menu-tooltip"
-            data-tooltip={__('Options', 'alpaca-issue-tracker')}
-          >
-            <DropdownMenu
-              icon="menu"
-              label={__('Options', 'alpaca-issue-tracker')}
-              controls={containerMenuControls}
-              toggleProps={{ showTooltip: false }}
-              popoverProps={{
-                offset: adminBarOffset,
-                className: menuPopoverClassName,
-              }}
-            />
-          </span>
+          {!readOnly && (
+            <span
+              className="alpaca-board-tooltip alpaca-column-menu-tooltip"
+              data-tooltip={__('Options', 'alpaca-issue-tracker')}
+            >
+              <DropdownMenu
+                icon="menu"
+                label={__('Options', 'alpaca-issue-tracker')}
+                controls={containerMenuControls}
+                toggleProps={{ showTooltip: false }}
+                popoverProps={{
+                  offset: adminBarOffset,
+                  className: menuPopoverClassName,
+                }}
+              />
+            </span>
+          )}
         </div>
       </CardHeader>
 
       <CardBody className="alpaca-container-body" size="xSmall">
         <div
           ref={containerRef}
-          onDragOver={handleDragOver}
+          onDragOver={readOnly ? undefined : handleDragOver}
           onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
+          onDrop={readOnly ? undefined : handleDrop}
           className={`alpaca-items ${isDragOver ? 'dragging-over' : ''}`}
         >
           {(() => {
@@ -704,6 +722,7 @@ function Container({
                     commentCountByAgent={item.commentCountByAgent}
                     meta={item.meta}
                     onClick={onItemClick}
+                    isDragDisabled={readOnly}
                   />
                 );
               });
@@ -739,6 +758,7 @@ function Container({
                       commentCountByAgent={item.commentCountByAgent}
                       meta={item.meta}
                       onClick={onItemClick}
+                      isDragDisabled={readOnly}
                     />,
                   );
                 }
@@ -777,6 +797,7 @@ function Container({
                     commentCountByAgent={item.commentCountByAgent}
                     meta={item.meta}
                     onClick={onItemClick}
+                    isDragDisabled={readOnly}
                   />,
                 );
               }
@@ -821,6 +842,7 @@ Container.propTypes = {
   onItemDrop: PropTypes.func,
   onBulkItemReorder: PropTypes.func,
   onAddIssue: PropTypes.func,
+  readOnly: PropTypes.bool,
 };
 
 Container.defaultProps = {

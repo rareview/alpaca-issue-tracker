@@ -22,13 +22,16 @@ import PropTypes from 'prop-types';
 /**
  * Main board component.
  *
- * @param {Object}  props                  Component props.
- * @param {Array}   props.boardData        Server-provided board data.
- * @param {string}  props.controlsSelector Controls mount selector.
- * @param {boolean} props.showFilters      Whether board filters are visible.
- * @param {boolean} props.showAddIssue     Whether the add issue control is visible.
- * @param {boolean} props.showSearch       Whether board search is visible.
- * @param {boolean} props.showInbox        Whether the notification inbox is visible.
+ * @param {Object}  props                    Component props.
+ * @param {Array}   props.boardData          Server-provided board data.
+ * @param {string}  props.controlsSelector   Controls mount selector.
+ * @param {boolean} props.showFilters        Whether board filters are visible.
+ * @param {boolean} props.showAddIssue       Whether the add issue control is visible.
+ * @param {boolean} props.showSearch         Whether board search is visible.
+ * @param {boolean} props.showInbox          Whether the notification inbox is visible.
+ * @param {boolean} props.readOnly           Whether board mutation controls are disabled.
+ * @param {boolean} props.allowIssueDetail   Whether cards can open issue details.
+ * @param {Object}  props.publicDetailTokens Public issue detail tokens by ID.
  * @return {JSX.Element} Board interface.
  */
 export function AlpacaBoard({
@@ -38,6 +41,9 @@ export function AlpacaBoard({
   showAddIssue = false,
   showSearch = true,
   showInbox = true,
+  readOnly = false,
+  allowIssueDetail = true,
+  publicDetailTokens = {},
 }) {
   const canDeleteIssues = Boolean(window.alpaistrSettings?.canDeleteIssues);
   const [containers, setContainers] = useState(() => {
@@ -412,8 +418,12 @@ export function AlpacaBoard({
   );
 
   const handleCreateIssue = useCallback(() => {
+    if (readOnly) {
+      return;
+    }
+
     setSelectedItem({ isCreating: true });
-  }, []);
+  }, [readOnly]);
 
   // From BoardFrame.jsx
   useEffect(() => {
@@ -819,6 +829,10 @@ export function AlpacaBoard({
   // (Atlaskit handler removed; using native drop handlers and `handleItemDrop`)
 
   const handleItemClick = (event, itemId) => {
+    if (!allowIssueDetail) {
+      return;
+    }
+
     triggerRef.current = event.currentTarget;
     event.currentTarget.blur();
 
@@ -1585,44 +1599,51 @@ export function AlpacaBoard({
    * @param {Array<number|string>} orderedItemIds Ordered list of item IDs.
    * @return {void}
    */
-  const handleBulkItemReorder = useCallback((containerId, orderedItemIds) => {
-    if (!containerId || !Array.isArray(orderedItemIds)) {
-      return;
-    }
+  const handleBulkItemReorder = useCallback(
+    (containerId, orderedItemIds) => {
+      if (readOnly) {
+        return;
+      }
 
-    setContainers((prevContainers) =>
-      prevContainers.map((container) => {
-        if (container.id.toString() !== containerId.toString()) {
-          return container;
-        }
+      if (!containerId || !Array.isArray(orderedItemIds)) {
+        return;
+      }
 
-        const itemMap = new Map();
-        container.items.forEach((item) => {
-          itemMap.set(item.id.toString(), item);
-        });
-
-        const reorderedItems = [];
-        orderedItemIds.forEach((itemId) => {
-          const itemKey = itemId.toString();
-          if (itemMap.has(itemKey)) {
-            reorderedItems.push(itemMap.get(itemKey));
-            itemMap.delete(itemKey);
+      setContainers((prevContainers) =>
+        prevContainers.map((container) => {
+          if (container.id.toString() !== containerId.toString()) {
+            return container;
           }
-        });
 
-        itemMap.forEach((item) => {
-          reorderedItems.push(item);
-        });
+          const itemMap = new Map();
+          container.items.forEach((item) => {
+            itemMap.set(item.id.toString(), item);
+          });
 
-        return {
-          ...container,
-          items: reorderedItems,
-        };
-      }),
-    );
+          const reorderedItems = [];
+          orderedItemIds.forEach((itemId) => {
+            const itemKey = itemId.toString();
+            if (itemMap.has(itemKey)) {
+              reorderedItems.push(itemMap.get(itemKey));
+              itemMap.delete(itemKey);
+            }
+          });
 
-    setNeedsSave(true);
-  }, []);
+          itemMap.forEach((item) => {
+            reorderedItems.push(item);
+          });
+
+          return {
+            ...container,
+            items: reorderedItems,
+          };
+        }),
+      );
+
+      setNeedsSave(true);
+    },
+    [readOnly],
+  );
 
   // Handler invoked by Containers when an item is dropped
   const combinedBoardFilter =
@@ -1634,6 +1655,10 @@ export function AlpacaBoard({
       : null;
 
   const handleItemDrop = (data) => {
+    if (readOnly) {
+      return;
+    }
+
     // data: { itemId, sourceContainerId, sourceIndex, destinationContainerId, destinationIndex }
     const {
       //   itemId,
@@ -1851,6 +1876,7 @@ export function AlpacaBoard({
                 onItemDrop={handleItemDrop}
                 onBulkItemReorder={handleBulkItemReorder}
                 onAddIssue={handleAddIssueInColumn}
+                readOnly={readOnly}
               />
             ))}
           </div>
@@ -1870,6 +1896,12 @@ export function AlpacaBoard({
         }
         searchScopeIssueIds={issueLinkScopeIssueIds}
         onClose={closeModal}
+        readOnly={readOnly}
+        publicDetailToken={
+          selectedItem && publicDetailTokens[selectedItem.id]
+            ? publicDetailTokens[selectedItem.id]
+            : ''
+        }
         onDelete={handleDeleteIssue}
         canDeleteIssues={canDeleteIssues}
         triggerRef={triggerRef}
@@ -1917,4 +1949,7 @@ AlpacaBoard.propTypes = {
   showAddIssue: PropTypes.bool,
   showInbox: PropTypes.bool,
   showSearch: PropTypes.bool,
+  readOnly: PropTypes.bool,
+  allowIssueDetail: PropTypes.bool,
+  publicDetailTokens: PropTypes.object,
 };

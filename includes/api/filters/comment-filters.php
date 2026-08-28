@@ -126,6 +126,19 @@ add_filter(
 
 				$endpoints['/wp/v2/comments'][ $idx ]['permission_callback'] = function ( $request ) use ( $original, $can_view_issuecomment ) {
 					$comment_type = (string) $request->get_param( 'comment_type' );
+					$public_nonce = (string) $request->get_param( 'public_nonce' );
+					$post_id      = (int) $request->get_param( 'post' );
+
+					if (
+						'GET' === $request->get_method()
+						&& 'issuecomment' === $comment_type
+						&& $post_id > 0
+						&& '' !== $public_nonce
+						&& wp_verify_nonce( $public_nonce, 'alpaca_public_issue_' . $post_id )
+						&& alpaistr_is_issue_comment_target_post( $post_id )
+					) {
+						return true;
+					}
 
 					// If this is an Alpaca Issue Tracker issue comment, allow based on our helper.
 					if ( 'issuecomment' === $comment_type ) {

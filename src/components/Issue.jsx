@@ -62,7 +62,7 @@ const { decodeEntities } = wp.htmlEntities;
 
 // ----- Memoized rows -----
 const PriorityRow = memo(
-  ({ isHighPriority, onChange, isLoading }) => (
+  ({ isHighPriority, onChange, isLoading, readOnly }) => (
     <div id="priority" className="alpaca-details-grid__item">
       <div className="alpaca-details-grid__label">
         {__('Priority', 'alpaca-issue-tracker')}
@@ -72,7 +72,7 @@ const PriorityRow = memo(
           label={__('High Priority', 'alpaca-issue-tracker')}
           checked={isHighPriority}
           onChange={onChange}
-          disabled={isLoading}
+          disabled={isLoading || readOnly}
           __nextHasNoMarginBottom
           className="alpaca-priority-toggle"
         />
@@ -85,7 +85,7 @@ const PriorityRow = memo(
 );
 
 const AssigneeRow = memo(
-  ({ assignees, allUsers, allUserObjects, onChange, isLoading }) => (
+  ({ assignees, allUsers, allUserObjects, onChange, isLoading, readOnly }) => (
     <div id="assignees" className="alpaca-details-grid__item">
       <div className="alpaca-details-grid__label">
         {__('Assignees', 'alpaca-issue-tracker')}
@@ -96,7 +96,7 @@ const AssigneeRow = memo(
           allUsers={allUsers}
           allUserObjects={allUserObjects}
           onChange={onChange}
-          isLoading={isLoading}
+          isLoading={isLoading || readOnly}
         />
       </div>
     </div>
@@ -109,7 +109,7 @@ const AssigneeRow = memo(
 );
 
 const LabelsRow = memo(
-  ({ labels, selectedIds, onChange, isLoading }) => (
+  ({ labels, selectedIds, onChange, isLoading, readOnly }) => (
     <div id="labels" className="alpaca-details-grid__item">
       <div className="alpaca-details-grid__label">
         {__('Labels', 'alpaca-issue-tracker')}
@@ -119,7 +119,7 @@ const LabelsRow = memo(
           labels={labels}
           selectedIds={selectedIds}
           onChange={onChange}
-          isLoading={isLoading}
+          isLoading={isLoading || readOnly}
         />
       </div>
     </div>
@@ -131,7 +131,7 @@ const LabelsRow = memo(
 );
 
 const DeadlineRow = memo(
-  ({ deadline, onChange, onClear, isLoading }) => (
+  ({ deadline, onChange, onClear, isLoading, readOnly }) => (
     <div id="deadline" className="alpaca-details-grid__item">
       <div className="alpaca-details-grid__label">
         {__('Due Date', 'alpaca-issue-tracker')}
@@ -141,7 +141,7 @@ const DeadlineRow = memo(
           deadline={deadline}
           onChange={onChange}
           onClear={onClear}
-          isLoading={isLoading}
+          isLoading={isLoading || readOnly}
         />
       </div>
     </div>
@@ -592,6 +592,8 @@ const AlpacaIssue = ({
   onIssueTitleChange,
   onIssueCreated,
   onLabelsChange,
+  readOnly = false,
+  publicDetailToken = '',
 }) => {
   const {
     issueDetails,
@@ -599,9 +601,9 @@ const AlpacaIssue = ({
     isLoadingDetails,
     error,
     refetchData,
-  } = useIssueData(isCreating ? null : issueId, isOpen);
+  } = useIssueData(isCreating ? null : issueId, isOpen, publicDetailToken);
 
-  const { allUsers, allUserObjects, userMap } = useUserManagement();
+  const { allUsers, allUserObjects, userMap } = useUserManagement(!readOnly);
   const { loadingStates, setLoading } = useLoadingStates();
   const {
     isWatched,
@@ -733,6 +735,10 @@ const AlpacaIssue = ({
 
   // Fetch statuses
   useEffect(() => {
+    if (readOnly) {
+      return;
+    }
+
     fetchStatuses()
       .then(setAllStatuses)
       .catch(() =>
@@ -741,9 +747,13 @@ const AlpacaIssue = ({
           'error',
         ),
       );
-  }, [showNotification]);
+  }, [readOnly, showNotification]);
 
   useEffect(() => {
+    if (readOnly) {
+      return;
+    }
+
     fetchLabels()
       .then((labels) => setAllLabels(Array.isArray(labels) ? labels : []))
       .catch(() =>
@@ -752,7 +762,7 @@ const AlpacaIssue = ({
           'error',
         ),
       );
-  }, [showNotification]);
+  }, [readOnly, showNotification]);
 
   const getAssigneeNamesFromIssue = useCallback(
     (details) => {
@@ -2127,9 +2137,10 @@ const AlpacaIssue = ({
       <Modal
         size="fill"
         onRequestClose={onClose}
-        className="alpaca-details-modal"
+        className={`alpaca-details-modal${readOnly ? ' alpaca-details-modal-read-only' : ''}`}
         headerActions={
-          !isCreating && (
+          !isCreating &&
+          !readOnly && (
             <Dropdown
               popoverProps={{ placement: 'bottom-end' }}
               renderToggle={({ onToggle }) => (
@@ -2254,7 +2265,7 @@ const AlpacaIssue = ({
                   isEditing={isEditingTitle}
                   title={editedTitle}
                   highlightQuery={activeSearchQuery}
-                  onEditStart={() => setIsEditingTitle(true)}
+                  onEditStart={() => !readOnly && setIsEditingTitle(true)}
                   onChange={setEditedTitle}
                   onSave={handleTitleSave}
                   onCancel={handleTitleCancel}
@@ -2306,6 +2317,7 @@ const AlpacaIssue = ({
                   isHighPriority={isHighPriority}
                   onChange={handlePriorityChange}
                   isLoading={loadingStates.priority}
+                  readOnly={readOnly}
                 />
 
                 <DeadlineRow
@@ -2313,6 +2325,7 @@ const AlpacaIssue = ({
                   onChange={handleDeadlineChange}
                   onClear={handleDeadlineClear}
                   isLoading={loadingStates.deadline}
+                  readOnly={readOnly}
                 />
 
                 <AssigneeRow
@@ -2321,6 +2334,7 @@ const AlpacaIssue = ({
                   allUserObjects={allUserObjects}
                   onChange={handleAssigneeChange}
                   isLoading={stableIsLoading}
+                  readOnly={readOnly}
                 />
 
                 <LabelsRow
@@ -2328,6 +2342,7 @@ const AlpacaIssue = ({
                   selectedIds={stableSelectedLabelIds}
                   onChange={handleLabelChange}
                   isLoading={stableIsLabelLoading}
+                  readOnly={readOnly}
                 />
               </div>
 
@@ -2550,6 +2565,8 @@ const AlpacaIssue = ({
                         activeSearchQuery={activeSearchQuery}
                         commentRefreshKey={commentRefreshKey}
                         showNotification={showNotification}
+                        readOnly={readOnly}
+                        publicDetailToken={publicDetailToken}
                       />
                     );
                   }}
@@ -2643,6 +2660,8 @@ AlpacaIssue.propTypes = {
   isCreating: PropTypes.bool,
   initialStatusId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   onIssueCreated: PropTypes.func,
+  readOnly: PropTypes.bool,
+  publicDetailToken: PropTypes.string,
   activeSearchQuery: PropTypes.string,
   searchScopeIssueIds: PropTypes.arrayOf(
     PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
