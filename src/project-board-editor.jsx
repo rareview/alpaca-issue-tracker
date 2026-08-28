@@ -1,13 +1,7 @@
 const { registerBlockType } = wp.blocks;
 const { InspectorControls, useBlockProps } = wp.blockEditor;
-const {
-  CheckboxControl,
-  Notice,
-  PanelBody,
-  SelectControl,
-  Spinner,
-  ToggleControl,
-} = wp.components;
+const { Notice, PanelBody, SelectControl, Spinner, ToggleControl } =
+  wp.components;
 const { useEffect, useState } = wp.element;
 const { __ } = wp.i18n;
 
@@ -85,7 +79,7 @@ function ProjectBoardEdit({ attributes, setAttributes }) {
   } = attributes;
   const selectedStatusIds = Array.isArray(statusIds)
     ? statusIds.map((statusId) => String(statusId))
-    : [];
+    : statuses.map((status) => String(status.term_id));
   const enabledDatapoints =
     datapoints && typeof datapoints === 'object' ? datapoints : {};
 
@@ -186,17 +180,11 @@ function ProjectBoardEdit({ attributes, setAttributes }) {
           )}
           {!isLoadingStatuses && !statusError && (
             <>
-              <p>
-                {__(
-                  'Leave all statuses unselected to show every column.',
-                  'alpaca-issue-tracker',
-                )}
-              </p>
               {statuses.map((status) => {
                 const statusId = String(status.term_id);
 
                 return (
-                  <CheckboxControl
+                  <ToggleControl
                     key={statusId}
                     label={status.name}
                     checked={selectedStatusIds.includes(statusId)}

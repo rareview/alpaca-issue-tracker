@@ -133,10 +133,11 @@ class Project_Board_Block {
 			);
 		}
 
-		$instance_id = wp_unique_id( 'alpaca-project-board-' );
-		$board_data  = alpaistr_get_board_data();
-		$appearance  = isset( $context['attributes']['appearance'] ) ? $context['attributes']['appearance'] : 'auto';
-		$status_ids  = isset( $context['attributes']['statusIds'] ) && is_array( $context['attributes']['statusIds'] )
+		$instance_id          = wp_unique_id( 'alpaca-project-board-' );
+		$board_data           = alpaistr_get_board_data();
+		$appearance           = isset( $context['attributes']['appearance'] ) ? $context['attributes']['appearance'] : 'auto';
+		$has_status_selection = array_key_exists( 'statusIds', $context['attributes'] ) && is_array( $context['attributes']['statusIds'] );
+		$status_ids           = $has_status_selection
 			? array_filter( array_map( 'intval', $context['attributes']['statusIds'] ) )
 			: [];
 
@@ -144,7 +145,7 @@ class Project_Board_Block {
 			$appearance = 'auto';
 		}
 
-		if ( ! empty( $status_ids ) ) {
+		if ( $has_status_selection ) {
 			$board_data = array_values(
 				array_filter(
 					$board_data,

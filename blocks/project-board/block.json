@@ -20,8 +20,7 @@
       "default": "cards_only"
     },
     "statusIds": {
-      "type": "array",
-      "default": []
+      "type": "array"
     },
     "showFilters": {
       "type": "boolean",
