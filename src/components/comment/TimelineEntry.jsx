@@ -234,7 +234,16 @@ const TimelineEntry = ({
     dataSource = 'create';
   }
   const isAudit = dataSource === 'audit';
-  const commentTags = comment.meta?.alpacaCommentTags || [];
+  const rawCommentTags = comment.meta?.alpacaCommentTags;
+  const commentTags = Array.isArray(rawCommentTags)
+    ? rawCommentTags.filter(Boolean)
+    : [];
+  const agenticActivityText = String(
+    comment?.content?.raw || comment?.content?.rendered || '',
+  ).replace(/<[^>]*>/g, ' ');
+  const isAgenticActivity =
+    commentTags.some((tag) => String(tag).startsWith('agentic-')) ||
+    agenticActivityText.includes('Fix with AI');
   const commentAttachments = comment.meta?.alpacaCommentAttachments || [];
   const lastEditMeta = comment.meta?.alpacaCommentLastEdit || null;
   const editedByUserId = resolveUserId(lastEditMeta?.userId);
@@ -270,6 +279,7 @@ const TimelineEntry = ({
   const timelineItemClasses = [
     'alpaca-timeline-item',
     ...commentTags,
+    isAgenticActivity ? 'agentic-activity' : '',
     className,
   ]
     .filter(Boolean)

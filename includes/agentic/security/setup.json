@@ -1,0 +1,13 @@
+{
+  "branch_protection": [
+    {
+      "key": 5,
+      "label": "Enable branch protection on the AI target branch: require at least one approving review, disable force-push"
+    },
+    {
+      "key": 6,
+      "label": "Enable branch protection on the production/default branch with the same rules"
+    }
+  ],
+  "pat_guidance": "Use a fine-grained PAT scoped to this repository only (not org-wide). Required permissions: Contents, Issues, Pull requests, Workflows (read/write), Metadata (read-only). For org repos with SSO, authorize the token for the org."
+}

@@ -1,14 +1,14 @@
 /**
- * AI Issue Resolver settings wizard.
+ * Fix with AI settings wizard.
  *
- * Mounted on #alpaca-ai-issue-resolver-page.
+ * Mounted on #alpaca-fix-with-ai-page.
  */
 import PropTypes from 'prop-types';
 import useUserManagement from './hooks/useUserManagement';
 
 const { useState, useEffect, useCallback, useMemo } = wp.element;
-const { __ } = wp.i18n;
-const { Spinner, Notice, FormTokenField, ComboboxControl } = wp.components;
+const { __, sprintf } = wp.i18n;
+const { Spinner, Notice, FormTokenField } = wp.components;
 
 const REST_PATH = '/alpaca/v1/agentic';
 
@@ -33,7 +33,10 @@ const PROJECT_CONTEXT_PLACEHOLDER = [
     '• Important plugins or tools the AI should know about',
     'alpaca-issue-tracker',
   ),
-  __('• Anything unusual about staging vs production', 'alpaca-issue-tracker'),
+  __(
+    '• Anything unusual about environments or deploy targets',
+    'alpaca-issue-tracker',
+  ),
   __('• Team conventions or “don’t touch” areas', 'alpaca-issue-tracker'),
 ].join('\n');
 
@@ -43,58 +46,15 @@ const emptyForm = () => ({
   aiApiKey: '',
   githubRepo: '',
   githubToken: '',
+  aiTargetBranch: '',
+  githubDefaultBranch: '',
   setupChecklist: [],
   // Admin confirmed WP site + theme match the chosen GitHub repo.
   repoMatchConfirmed: false,
   engineers: [],
   // Site-wide notes appended to every AI-drafted GitHub issue.
   projectContext: '',
-  // Empty string = None (not mapped to a GitHub branch).
-  branches: {
-    staging: '',
-    production: '',
-  },
 });
-
-const BRANCH_ROLES = [
-  {
-    key: 'staging',
-    label: __('Staging environment', 'alpaca-issue-tracker'),
-  },
-  {
-    key: 'production',
-    label: __('Production environment', 'alpaca-issue-tracker'),
-  },
-];
-
-/**
- * Build ComboboxControl options: placeholder + repo branch names.
- *
- * @param {string[]} repoBranches Branch names from GitHub.
- * @param {string}   selected     Currently saved value (kept in options even if not in list).
- * @return {Array<{value: string, label: string}>} Options.
- */
-const buildBranchOptions = (repoBranches, selected) => {
-  const names = new Set(repoBranches);
-  if (selected) {
-    names.add(selected);
-  }
-
-  const options = [
-    {
-      value: '',
-      label: __('Select a branch…', 'alpaca-issue-tracker'),
-    },
-  ];
-  [...names]
-    .filter(Boolean)
-    .sort((a, b) => a.localeCompare(b))
-    .forEach((name) => {
-      options.push({ value: name, label: name });
-    });
-
-  return options;
-};
 
 /**
  * @param {Object}  props         Component props.
@@ -143,22 +103,41 @@ const getStepStates = (data) => {
   return {
     1: { done: enabled, locked: false },
     2: {
-      done: enabled && githubConfigured && workflowInstalled,
+      done:
+        enabled &&
+        githubConfigured &&
+        workflowInstalled &&
+        !!data.ai_target_branch,
       locked: !enabled,
     },
     // Optional step: unlocked after GitHub is ready; does not block Finish Setup.
     3: {
-      done: enabled && githubConfigured && workflowInstalled,
-      locked: !(enabled && githubConfigured && workflowInstalled),
+      done:
+        enabled &&
+        githubConfigured &&
+        workflowInstalled &&
+        !!data.ai_target_branch,
+      locked: !(
+        enabled &&
+        githubConfigured &&
+        workflowInstalled &&
+        !!data.ai_target_branch
+      ),
     },
     4: {
       done:
         enabled &&
         githubConfigured &&
         workflowInstalled &&
+        !!data.ai_target_branch &&
         checklistCount >= 2 &&
         repoMatchConfirmed,
-      locked: !(enabled && githubConfigured && workflowInstalled),
+      locked: !(
+        enabled &&
+        githubConfigured &&
+        workflowInstalled &&
+        !!data.ai_target_branch
+      ),
     },
   };
 };
@@ -176,12 +155,22 @@ const getActiveStep = (stepStates) => {
   return 4;
 };
 
+const PRODUCTION_BRANCH_NAMES = new Set([
+  'main',
+  'master',
+  'production',
+  'prod',
+]);
+
 /**
- * @param {Object} props      Component props.
- * @param {string} props.repo Repository slug.
+ * @param {Object} props                 Component props.
+ * @param {string} props.repo            Repository slug.
+ * @param {string} props.defaultBranch   GitHub default branch.
+ * @param {string} props.aiTargetBranch  AI code target branch.
  * @return {JSX.Element} Install intro paragraph.
  */
-const RepoInstallMessage = ({ repo }) => {
+const RepoInstallMessage = ({ repo, defaultBranch, aiTargetBranch }) => {
+  const actionsBranch = defaultBranch || __('the default branch', 'alpaca-issue-tracker');
   /* translators: %s: GitHub repository slug (owner/repo). */
   const template = __(
     'Open a pull request to add the required GitHub Actions files to the %s repository.',
@@ -189,16 +178,30 @@ const RepoInstallMessage = ({ repo }) => {
   );
   const parts = template.split('%s');
   return (
-    <p>
-      {parts[0]}
-      <strong>{repo}</strong>
-      {parts[1] || ''}
-    </p>
+    <>
+      <p>
+        {parts[0]}
+        <strong>{repo}</strong>
+        {parts[1] || ''}
+      </p>
+      <p className="description">
+        {sprintf(
+          __(
+            'GitHub Actions files go to %1$s (the repository default). AI code pull requests go to %2$s.',
+            'alpaca-issue-tracker',
+          ),
+          actionsBranch,
+          aiTargetBranch || __('the AI target branch', 'alpaca-issue-tracker'),
+        )}
+      </p>
+    </>
   );
 };
 
 RepoInstallMessage.propTypes = {
   repo: PropTypes.string.isRequired,
+  defaultBranch: PropTypes.string,
+  aiTargetBranch: PropTypes.string,
 };
 
 /**
@@ -262,7 +265,7 @@ EngineersField.propTypes = {
 };
 
 /**
- * AI Issue Resolver admin screen.
+ * Fix with AI admin screen.
  *
  * @return {JSX.Element} Wizard screen.
  */
@@ -276,7 +279,6 @@ const AgenticSettings = () => {
   const [focusedStep, setFocusedStep] = useState(1);
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState(null);
-  const [branchSaveStatus, setBranchSaveStatus] = useState('idle'); // Save in progress.
   const [setupCompletedStatus, setSetupCompletedStatus] = useState('idle'); // Saved.
   const [installing, setInstalling] = useState(false);
   const [installError, setInstallError] = useState('');
@@ -285,13 +287,14 @@ const AgenticSettings = () => {
 
   const applySettings = useCallback((payload, advanceToActive = false) => {
     setData(payload);
-    const savedBranches = payload.branches || {};
     setForm({
       enabled: !!payload.enabled,
       aiProvider: payload.ai_provider || 'claude',
       aiApiKey: '',
       githubRepo: payload.github_repo || '',
       githubToken: '',
+      aiTargetBranch: payload.ai_target_branch || '',
+      githubDefaultBranch: payload.github_default_branch || '',
       setupChecklist: Array.isArray(payload.setup_checklist)
         ? payload.setup_checklist.map(Number)
         : [],
@@ -300,10 +303,6 @@ const AgenticSettings = () => {
         ? payload.engineers.map(Number)
         : [],
       projectContext: payload.project_context || '',
-      branches: {
-        staging: savedBranches.staging || '',
-        production: savedBranches.production || '',
-      },
     });
     if (true === advanceToActive) {
       setFocusedStep(getActiveStep(getStepStates(payload)));
@@ -318,7 +317,7 @@ const AgenticSettings = () => {
     wp.apiFetch({ path: `${REST_PATH}/settings` })
       .then((payload) => {
         if (!cancelled) {
-          applySettings(payload, true);
+          applySettings(payload);
         }
       })
       .catch((err) => {
@@ -363,9 +362,6 @@ const AgenticSettings = () => {
     !!stepStates[3]?.done &&
     !!stepStates[4]?.done;
 
-  // Branch fields unlock only after a successful connection test + branch fetch.
-  const canManageBranches = 'agentic-result-success' === testResult?.className;
-
   const updateForm = useCallback((patch) => {
     setForm((existing) => ({ ...existing, ...patch }));
   }, []);
@@ -377,13 +373,11 @@ const AgenticSettings = () => {
       enabled: !!form.enabled,
       ai_provider: form.aiProvider || 'claude',
       github_repo: form.githubRepo || '',
+      ai_target_branch: form.aiTargetBranch || '',
+      github_default_branch: form.githubDefaultBranch || '',
       setup_checklist: form.setupChecklist,
       repo_match_confirmed: !!form.repoMatchConfirmed,
       engineers: form.engineers,
-      branches: {
-        staging: form.branches?.staging || '',
-        production: form.branches?.production || '',
-      },
       project_context: form.projectContext || '',
     };
     if (form.aiApiKey) {
@@ -395,17 +389,6 @@ const AgenticSettings = () => {
     /* eslint-enable camelcase */
     return payload;
   }, [form]);
-
-  const updateBranchRole = useCallback((role, value) => {
-    setBranchSaveStatus('idle');
-    setForm((existing) => ({
-      ...existing,
-      branches: {
-        ...existing.branches,
-        [role]: value || '',
-      },
-    }));
-  }, []);
 
   const saveSettings = useCallback(
     async (advance = false) => {
@@ -432,16 +415,6 @@ const AgenticSettings = () => {
     [applySettings, buildSavePayload],
   );
 
-  const saveBranchMapping = useCallback(async () => {
-    setBranchSaveStatus('saving');
-    try {
-      await saveSettings(false);
-      setBranchSaveStatus('saved');
-    } catch (_err) {
-      setBranchSaveStatus('error');
-    }
-  }, [saveSettings]);
-
   const saveFinishSetup = useCallback(async () => {
     setSetupCompletedStatus('saving');
     try {
@@ -452,30 +425,31 @@ const AgenticSettings = () => {
     }
   }, [saveSettings]);
 
-  const testGithubConnectionAndFetchBranches = useCallback(async () => {
+  const testGithubConnection = useCallback(async () => {
     setTesting(true);
     setTestResult({
-      message: __(
-        'Connecting to GitHub and fetching branches…',
-        'alpaca-issue-tracker',
-      ),
+      message: __('Connecting to GitHub…', 'alpaca-issue-tracker'),
       className: 'agentic-result-pending',
     });
     try {
       await saveSettings(false);
-      // Also returns up to 100 branch names for the selectors below.
       const result = await wp.apiFetch({
         path: `${REST_PATH}/test-github`,
         method: 'POST',
         data: {},
       });
-      setRepoBranches(Array.isArray(result?.branches) ? result.branches : []);
+      const nextBranches = Array.isArray(result?.branches)
+        ? result.branches
+        : [];
+      setRepoBranches(nextBranches);
+      updateForm({
+        githubDefaultBranch: result?.default_branch || '',
+      });
       setTestResult({
         message: result?.message || __('Connected.', 'alpaca-issue-tracker'),
         className: 'agentic-result-success',
       });
     } catch (err) {
-      setRepoBranches([]);
       setTestResult({
         message:
           err?.message || __('Connection failed.', 'alpaca-issue-tracker'),
@@ -484,7 +458,7 @@ const AgenticSettings = () => {
     } finally {
       setTesting(false);
     }
-  }, [saveSettings]);
+  }, [saveSettings, updateForm]);
 
   const handleInstall = useCallback(async () => {
     setInstalling(true);
@@ -518,6 +492,31 @@ const AgenticSettings = () => {
     }
   }, [applySettings, saveSettings]);
 
+  useEffect(() => {
+    if (
+      2 !== focusedStep ||
+      !data?.github_repo ||
+      !data?.github_token_set
+    ) {
+      return;
+    }
+
+    let cancelled = false;
+    wp.apiFetch({ path: `${REST_PATH}/branches` })
+      .then((payload) => {
+        if (!cancelled && Array.isArray(payload?.branches)) {
+          setRepoBranches(payload.branches);
+        }
+      })
+      .catch(() => {
+        // Branch list is optional until Test connection succeeds.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [focusedStep, data?.github_repo, data?.github_token_set]);
+
   const toggleChecklist = useCallback((key) => {
     setSetupCompletedStatus('idle');
     setForm((prev) => {
@@ -548,11 +547,11 @@ const AgenticSettings = () => {
     return (
       <div className="agentic-wizard-inner">
         <h1 className="agentic-wizard-title">
-          {__('AI Issue Resolver', 'alpaca-issue-tracker')}
+          {__('Fix with AI', 'alpaca-issue-tracker')}
         </h1>
         <Notice status="warning" isDismissible={false}>
           {__(
-            'The AI Issue Fixer is only available to administrators and users granted engineer access. Contact your site administrator if you need access.',
+            'Fix with AI is only available to administrators and users granted engineer access. Contact your site administrator if you need access.',
             'alpaca-issue-tracker',
           )}
         </Notice>
@@ -651,16 +650,49 @@ const AgenticSettings = () => {
         )
       ),
     },
+    ...((Array.isArray(data.setup_security?.branch_protection)
+      ? data.setup_security.branch_protection
+      : []
+    )
+      .filter(
+        (item) =>
+          item &&
+          Number.isFinite(Number(item.key)) &&
+          'string' === typeof item.label &&
+          item.label.trim(),
+      )
+      .map((item) => ({
+        key: Number(item.key),
+        node: item.label,
+      }))),
   ];
+
+  const patGuidance =
+    'string' === typeof data.setup_security?.pat_guidance
+      ? data.setup_security.pat_guidance.trim()
+      : '';
 
   return (
     <div
       className={`agentic-wizard-inner${allDone ? ' agentic-wizard-all-done' : ''}`}
       data-agentic-all-done={allDone ? '1' : undefined}
     >
-      <h1 className="agentic-wizard-title">
-        {__('AI Issue Resolver', 'alpaca-issue-tracker')}
-      </h1>
+      <div className="agentic-wizard-header">
+        <h1 className="wp-heading-inline agentic-wizard-title">
+          {__('Fix with AI', 'alpaca-issue-tracker')}
+        </h1>
+        {allDone ? (
+          <p className="agentic-all-done-status">
+            <span className="agentic-all-done-icon" aria-hidden="true">
+              ✓
+            </span>
+            <strong className="agentic-all-done-heading">
+              {__("You're all set!", 'alpaca-issue-tracker')}
+            </strong>
+            {__('The AI agent is ready.', 'alpaca-issue-tracker')}
+          </p>
+        ) : null}
+      </div>
       <Notice
         className="agentic-advisory-notice"
         status="warning"
@@ -668,7 +700,7 @@ const AgenticSettings = () => {
       >
         <p>
           {__(
-            'AI Issue Resolver can only propose code changes within the boundaries of the GitHub repository referenced below.',
+            'Fix with AI can only propose code changes within the boundaries of the GitHub repository referenced below.',
             'alpaca-issue-tracker',
           )}
         </p>
@@ -683,7 +715,7 @@ const AgenticSettings = () => {
       {!canEdit && data.is_engineer ? (
         <Notice status="info" isDismissible={false}>
           {__(
-            'You have AI Issue Fixer access and can view setup status below. Only administrators can change these settings.',
+            'You have Fix with AI access and can view setup status below. Only administrators can change these settings.',
             'alpaca-issue-tracker',
           )}
         </Notice>
@@ -692,25 +724,6 @@ const AgenticSettings = () => {
       {error ? (
         <div className="notice notice-error inline">
           <p>{error}</p>
-        </div>
-      ) : null}
-
-      {allDone ? (
-        <div className="agentic-all-done-banner">
-          <div className="agentic-all-done-icon" aria-hidden="true">
-            ✓
-          </div>
-          <div className="agentic-all-done-copy">
-            <h2 className="agentic-all-done-heading">
-              {__("You're all set!", 'alpaca-issue-tracker')}
-            </h2>
-            <p className="agentic-all-done-sub">
-              {__(
-                'The AI agent is ready. Apply the agent-ready label to any GitHub issue to get started.',
-                'alpaca-issue-tracker',
-              )}
-            </p>
-          </div>
         </div>
       ) : null}
 
@@ -1003,6 +1016,8 @@ const AgenticSettings = () => {
                         updateForm({
                           githubRepo: nextRepo,
                           repoMatchConfirmed: false,
+                          aiTargetBranch: '',
+                          githubDefaultBranch: '',
                         });
                       }}
                     />
@@ -1076,27 +1091,88 @@ const AgenticSettings = () => {
                             'alpaca-issue-tracker',
                           )}
                         </p>
+                        {patGuidance ? (
+                          <p className="description">{patGuidance}</p>
+                        ) : null}
                       </>
                     ) : (
-                      <input
-                        type="password"
-                        id="agentic-github-token"
-                        className="regular-text"
-                        autoComplete="off"
-                        value={form.githubToken}
-                        placeholder={
-                          data.github_token_set
-                            ? __(
-                                '•••••••• (saved — leave blank to keep)',
-                                'alpaca-issue-tracker',
-                              )
-                            : ''
-                        }
-                        onChange={(event) =>
-                          updateForm({ githubToken: event.target.value })
-                        }
-                      />
+                      <>
+                        <input
+                          type="password"
+                          id="agentic-github-token"
+                          className="regular-text"
+                          autoComplete="off"
+                          value={form.githubToken}
+                          placeholder={
+                            data.github_token_set
+                              ? __(
+                                  '•••••••• (saved — leave blank to keep)',
+                                  'alpaca-issue-tracker',
+                                )
+                              : ''
+                          }
+                          onChange={(event) =>
+                            updateForm({ githubToken: event.target.value })
+                          }
+                        />
+                        {patGuidance ? (
+                          <p className="description">{patGuidance}</p>
+                        ) : null}
+                      </>
                     )}
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">
+                    <label htmlFor="agentic-ai-target-branch">
+                      {__('AI target branch', 'alpaca-issue-tracker')}
+                    </label>
+                  </th>
+                  <td>
+                    <select
+                      id="agentic-ai-target-branch"
+                      value={form.aiTargetBranch}
+                      disabled={
+                        0 === repoBranches.length && !form.aiTargetBranch
+                      }
+                      onChange={(event) =>
+                        updateForm({ aiTargetBranch: event.target.value })
+                      }
+                    >
+                      <option value="">
+                        {0 === repoBranches.length && !form.aiTargetBranch
+                          ? __(
+                              'Test connection to load branches',
+                              'alpaca-issue-tracker',
+                            )
+                          : __('Select a branch…', 'alpaca-issue-tracker')}
+                      </option>
+                      {(form.aiTargetBranch &&
+                      !repoBranches.includes(form.aiTargetBranch)
+                        ? [form.aiTargetBranch, ...repoBranches]
+                        : repoBranches
+                      ).map((branchName) => (
+                        <option key={branchName} value={branchName}>
+                          {branchName}
+                        </option>
+                      ))}
+                    </select>
+                    <p className="description">
+                      {__(
+                        'The AI opens pull requests into this branch. Do not use a production branch.',
+                        'alpaca-issue-tracker',
+                      )}
+                    </p>
+                    {PRODUCTION_BRANCH_NAMES.has(
+                      (form.aiTargetBranch || '').toLowerCase(),
+                    ) ? (
+                      <p className="agentic-install-error">
+                        {__(
+                          'This looks like a production branch. Pick a development or staging branch instead if you can.',
+                          'alpaca-issue-tracker',
+                        )}
+                      </p>
+                    ) : null}
                   </td>
                 </tr>
               </tbody>
@@ -1126,100 +1202,6 @@ const AgenticSettings = () => {
             <div className="agentic-step-actions">
               <button
                 type="button"
-                className="button button-primary"
-                disabled={
-                  saving || testing || panelLocked || !form.repoMatchConfirmed
-                }
-                onClick={testGithubConnectionAndFetchBranches}
-              >
-                {testing
-                  ? __('Connecting…', 'alpaca-issue-tracker')
-                  : __(
-                      'Test connection & fetch branches',
-                      'alpaca-issue-tracker',
-                    )}
-              </button>
-              {testResult ? (
-                <span
-                  className={`agentic-connection-result ${testResult.className}`}
-                >
-                  {testResult.message}
-                </span>
-              ) : null}
-            </div>
-
-            <p className="agentic-branch-intro">
-              {__(
-                'Select remote branches for each environment.',
-                'alpaca-issue-tracker',
-              )}{' '}
-              <HelpTip
-                label={__('Branch mapping guidance', 'alpaca-issue-tracker')}
-                wide
-                tooltip={__(
-                  'At least one environment must have a branch assigned so the AI has a target for creating pull requests.',
-                  'alpaca-issue-tracker',
-                )}
-              />
-            </p>
-
-            {form.branches?.staging && form.branches?.production ? (
-              <p className="agentic-branch-intro agentic-staging-first-notice">
-                {__(
-                  'Recommended: prove each AI fix on Staging before merging its "Apply fix to Production" pull request — that pull request cherry-picks the exact code already tested on Staging.',
-                  'alpaca-issue-tracker',
-                )}
-              </p>
-            ) : null}
-
-            <fieldset
-              className={`agentic-branch-section${canManageBranches ? '' : ' agentic-fieldset-disabled'}`}
-              disabled={!canManageBranches}
-            >
-              <table className="form-table" role="presentation">
-                <tbody>
-                  {BRANCH_ROLES.map(({ key, label }, index) => (
-                    <tr key={key}>
-                      <th scope="row">
-                        <label htmlFor={`agentic-branch-${key}`}>{label}</label>
-                      </th>
-                      <td>
-                        <div className="agentic-branch-field">
-                          <ComboboxControl
-                            id={`agentic-branch-${key}`}
-                            hideLabelFromVision
-                            label={label}
-                            value={form.branches?.[key] || ''}
-                            options={buildBranchOptions(
-                              repoBranches,
-                              form.branches?.[key] || '',
-                            )}
-                            onChange={(value) => updateBranchRole(key, value)}
-                            allowReset={false}
-                            __nextHasNoMarginBottom
-                            __next40pxDefaultSize
-                          />
-                        </div>
-                        {canManageBranches &&
-                        BRANCH_ROLES.length - 1 === index &&
-                        0 === repoBranches.length ? (
-                          <p className="description">
-                            {__(
-                              'Click “Test connection & fetch branches” above to load branch options from the repository.',
-                              'alpaca-issue-tracker',
-                            )}
-                          </p>
-                        ) : null}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </fieldset>
-
-            <div className="agentic-step-actions">
-              <button
-                type="button"
                 className="button button-secondary"
                 onClick={() => setFocusedStep(1)}
               >
@@ -1228,26 +1210,20 @@ const AgenticSettings = () => {
               <button
                 type="button"
                 className="button button-primary"
-                disabled={saving || panelLocked}
-                onClick={saveBranchMapping}
+                disabled={
+                  saving || testing || panelLocked || !form.repoMatchConfirmed
+                }
+                onClick={testGithubConnection}
               >
-                {saving
-                  ? __('Saving…', 'alpaca-issue-tracker')
-                  : __('Save', 'alpaca-issue-tracker')}
+                {testing
+                  ? __('Connecting…', 'alpaca-issue-tracker')
+                  : __('Test connection', 'alpaca-issue-tracker')}
               </button>
-              {'saving' === branchSaveStatus ? (
-                <span className="agentic-branch-save-status agentic-result-pending">
-                  {__('Saving branch mapping…', 'alpaca-issue-tracker')}
-                </span>
-              ) : null}
-              {'saved' === branchSaveStatus ? (
-                <span className="agentic-branch-save-status agentic-result-success">
-                  {__('Branch mapping saved.', 'alpaca-issue-tracker')}
-                </span>
-              ) : null}
-              {'error' === branchSaveStatus ? (
-                <span className="agentic-branch-save-status agentic-result-error">
-                  {__('Could not save branch mapping.', 'alpaca-issue-tracker')}
+              {testResult ? (
+                <span
+                  className={`agentic-connection-result ${testResult.className}`}
+                >
+                  {testResult.message}
                 </span>
               ) : null}
             </div>
@@ -1330,7 +1306,11 @@ const AgenticSettings = () => {
                 <>
                   {prUrl ? (
                     <>
-                      <RepoInstallMessage repo={data.github_repo} />
+                      <RepoInstallMessage
+                        repo={data.github_repo}
+                        defaultBranch={form.githubDefaultBranch}
+                        aiTargetBranch={form.aiTargetBranch}
+                      />
                       <div className="agentic-workflow-installed">
                         <span className="agentic-check-icon">✓</span>
                         {__(
@@ -1367,8 +1347,10 @@ const AgenticSettings = () => {
                     <button
                       type="button"
                       className="button button-primary"
-                      disabled={!form.repoMatchConfirmed}
-                      onClick={() => setFocusedStep(3)}
+                      disabled={
+                        saving || !form.repoMatchConfirmed || !form.aiTargetBranch
+                      }
+                      onClick={() => saveSettings(3)}
                     >
                       {__('Continue to WP Setup', 'alpaca-issue-tracker')}
                     </button>
@@ -1377,12 +1359,20 @@ const AgenticSettings = () => {
               )}
               {githubConfigured && !workflowInstalled && (
                 <div>
-                  <RepoInstallMessage repo={data.github_repo} />
+                  <RepoInstallMessage
+                    repo={data.github_repo}
+                    defaultBranch={form.githubDefaultBranch}
+                    aiTargetBranch={form.aiTargetBranch}
+                  />
                   <div className="agentic-step-actions">
                     <button
                       type="button"
                       className="button agentic-install-btn"
-                      disabled={installing || !form.repoMatchConfirmed}
+                      disabled={
+                        installing ||
+                        !form.repoMatchConfirmed ||
+                        !form.aiTargetBranch
+                      }
                       onClick={handleInstall}
                     >
                       {installing
@@ -1444,7 +1434,7 @@ const AgenticSettings = () => {
             ) : (
               <p>
                 {__(
-                  'Only administrators can manage who has access to the AI Issue Fixer.',
+                  'Only administrators can manage who has access to Fix with AI.',
                   'alpaca-issue-tracker',
                 )}
               </p>

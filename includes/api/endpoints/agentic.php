@@ -1,6 +1,6 @@
 <?php
 /**
- * REST API endpoints for the Agentic (AI Issue Resolver) feature.
+ * REST API endpoints for the Agentic (Fix with AI) feature.
  *
  * @package AlpacaIssueTracker
  */
@@ -13,20 +13,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Post meta key for chronological AI Issue Resolver activity history.
+ * Post meta key for chronological Fix with AI activity history.
  *
- * Each activity record has a `type` (`sent`, `deleted`, or `applied`), type-specific
- * fields, and an `occurred_at` GMT ISO-8601 timestamp. Entries are retained
- * across workflow restarts.
+ * Each activity record has a `type` (`sent`, `change_requested`, or
+ * `reverted`), type-specific fields, and an `occurred_at` GMT ISO-8601
+ * timestamp. Sent records also store `pr_url`, `pr_number`, and `pr_state`
+ * once the linked GitHub pull request is discovered. Change-requested
+ * records store a GitHub comment URL and a short AI title for the change
+ * (full notes still go to GitHub and follow-up reconstruction).
  */
-const ALPAISTR_AGENTIC_HISTORY_META = 'alpaca_agentic_history';
-
-/**
- * Post meta key that stores the current AI-drafted issue text (title/body/complexity/labels).
- *
- * Cleared whenever the draft is deleted or restarted via /agentic/drop-draft.
- */
-const ALPAISTR_AGENTIC_DRAFT_META = 'alpaca_agentic_draft';
+/* Constants needed for "fixing attempts/request change/start over approach-workflow */
+const ALPAISTR_AGENTIC_HISTORY_META      = 'alpaca_agentic_history';
+const ALPAISTR_AGENTIC_START_SHA_META    = 'alpaca_agentic_start_sha';
+const ALPAISTR_AGENTIC_START_BRANCH_META = 'alpaca_agentic_start_branch';
 
 add_action( 'rest_api_init', 'alpaistr_register_agentic_endpoints' );
 
@@ -86,13 +85,52 @@ function alpaistr_register_agentic_endpoints(): void {
 		]
 	);
 
-	// Drop draft.
+	// Load branches from the GitHub repository, so the user can select the AI target branch.
 	register_rest_route(
 		'alpaca/v1',
-		'/agentic/drop-draft',
+		'/agentic/branches',
 		[
-			'methods'             => WP_REST_Server::CREATABLE, // Method: post.
-			'callback'            => 'alpaistr_agentic_drop_draft_callback',
+			'methods'             => WP_REST_Server::READABLE,
+			'callback'            => 'alpaistr_agentic_list_branches_callback',
+			'permission_callback' => 'alpaistr_agentic_can_use_permission_check',
+		]
+	);
+
+	register_rest_route(
+		'alpaca/v1',
+		'/agentic/request-change',
+		[
+			'methods'             => WP_REST_Server::CREATABLE,
+			'callback'            => 'alpaistr_agentic_request_change_callback',
+			'permission_callback' => 'alpaistr_agentic_can_use_permission_check',
+			'args'                => [
+				'issue_id' => [
+					'required'          => true,
+					'type'              => 'integer',
+					'minimum'           => 1,
+					'sanitize_callback' => 'absint',
+				],
+				'notes'    => [
+					'required'          => true,
+					'type'              => 'string',
+					'sanitize_callback' => 'sanitize_textarea_field',
+				],
+				'force'    => [
+					'required' => false,
+					'type'     => 'boolean',
+					'default'  => false,
+				],
+			],
+		]
+	);
+
+	// Helps when opening an issue, to decide what to show: whether Start over / Request a change are allowed, PR state, waiting on an issue, branch reset info, etc. 
+	register_rest_route(
+		'alpaca/v1',
+		'/agentic/start-over-status',
+		[
+			'methods'             => WP_REST_Server::READABLE,
+			'callback'            => 'alpaistr_agentic_start_over_status_callback',
 			'permission_callback' => 'alpaistr_agentic_can_use_permission_check',
 			'args'                => [
 				'issue_id' => [
@@ -105,13 +143,13 @@ function alpaistr_register_agentic_endpoints(): void {
 		]
 	);
 
-	// Check whether staging fix has been merged on GitHub.
+	// Closes open GitHub issues/PRs and may reset the branch.
 	register_rest_route(
 		'alpaca/v1',
-		'/agentic/staging-fix-status',
+		'/agentic/start-over',
 		[
-			'methods'             => WP_REST_Server::CREATABLE, // Method: post.
-			'callback'            => 'alpaistr_agentic_staging_fix_status_callback',
+			'methods'             => WP_REST_Server::CREATABLE,
+			'callback'            => 'alpaistr_agentic_start_over_callback',
 			'permission_callback' => 'alpaistr_agentic_can_use_permission_check',
 			'args'                => [
 				'issue_id' => [
@@ -124,16 +162,22 @@ function alpaistr_register_agentic_endpoints(): void {
 		]
 	);
 
-	// Trigger GitHub action to apply the staging fix to production.
+	// Removes a fix attempt from the Alpaca issue. Does not do anything on GitHub.
 	register_rest_route(
 		'alpaca/v1',
-		'/agentic/apply-staging-fix-to-production',
+		'/agentic/delete-fix',
 		[
-			'methods'             => WP_REST_Server::CREATABLE, // Method: post.
-			'callback'            => 'alpaistr_agentic_apply_staging_fix_to_production_callback',
+			'methods'             => WP_REST_Server::CREATABLE,
+			'callback'            => 'alpaistr_agentic_delete_fix_callback',
 			'permission_callback' => 'alpaistr_agentic_can_use_permission_check',
 			'args'                => [
-				'issue_id' => [
+				'issue_id'      => [
+					'required'          => true,
+					'type'              => 'integer',
+					'minimum'           => 1,
+					'sanitize_callback' => 'absint',
+				],
+				'github_number' => [
 					'required'          => true,
 					'type'              => 'integer',
 					'minimum'           => 1,
@@ -208,14 +252,14 @@ function alpaistr_agentic_manage_options_permission_check(): bool|WP_Error {
 
 /**
  * Allow logged-in administrators and users on the engineers allowlist to use the
- * AI Issue Fixer (draft/create a GitHub issue, view setup status).
+ * Fix with AI (draft/create a GitHub issue, view setup status).
  */
 function alpaistr_agentic_can_use_permission_check(): bool|WP_Error {
 	if ( ! is_user_logged_in() ) {
 		return new WP_Error( 'rest_forbidden', esc_html__( 'Authentication required.', 'alpaca-issue-tracker' ), [ 'status' => 401 ] );
 	}
 	if ( ! Agentic::current_user_can_use() ) {
-		return new WP_Error( 'rest_forbidden', esc_html__( 'The AI Issue Fixer is only available to administrators and users granted engineer access.', 'alpaca-issue-tracker' ), [ 'status' => 403 ] );
+		return new WP_Error( 'rest_forbidden', esc_html__( 'Fix with AI is only available to administrators and users granted engineer access.', 'alpaca-issue-tracker' ), [ 'status' => 403 ] );
 	}
 	return true;
 }
@@ -239,6 +283,17 @@ function alpaistr_agentic_save_settings_callback( WP_REST_Request $request ): WP
 	$clean    = $settings->sanitize_settings( $raw ); // Security.
 	update_option( Agentic::OPTION_KEY, $clean ); // Save the settings.
 
+	// Send the selected AI target branch to the GitHub.
+	$token            = (string) ( $clean['github_token'] ?? '' );
+	$repo             = (string) ( $clean['github_repo'] ?? '' );
+	$ai_target_branch = (string) ( $clean['ai_target_branch'] ?? '' );
+	if ( '' !== $token && '' !== $repo && '' !== $ai_target_branch ) {
+		$repo_parts = alpaistr_agentic_parse_github_repo( $repo );
+		if ( ! is_wp_error( $repo_parts ) ) {
+			alpaistr_agentic_sync_ai_target_branch_variable( $token, $repo_parts, $ai_target_branch );
+		}
+	}
+
 	return rest_ensure_response( Agentic::get_wizard_settings() ); // Return the settings to the client.
 }
 
@@ -261,7 +316,7 @@ function alpaistr_agentic_draft_callback( WP_REST_Request $request ): WP_REST_Re
 
 	// Although AI "magic" button is hidden if the settings are not fully completed, the REST endpoint is still callable (browser console, Postman, another script) by anyone with manage_options.
 	if ( empty( $settings['ai_api_key'] ) ) {
-		return new WP_Error( 'not_configured', esc_html__( 'AI API key is not configured. Visit Project Board → AI Issue Resolver to set it up.', 'alpaca-issue-tracker' ), [ 'status' => 400 ] );
+		return new WP_Error( 'not_configured', esc_html__( 'AI API key is not configured. Visit Project Board → Fix with AI to set it up.', 'alpaca-issue-tracker' ), [ 'status' => 400 ] );
 	}
 	if ( empty( $settings['github_repo'] ) ) {
 		return new WP_Error( 'not_configured', esc_html__( 'GitHub repository is not configured.', 'alpaca-issue-tracker' ), [ 'status' => 400 ] );
@@ -423,7 +478,7 @@ function alpaistr_agentic_call_ai( array $issue_data, array $settings ): array|W
 	} else {
 		return new WP_Error(
 			'ai_not_configured',
-			esc_html__( 'No AI provider is configured. Set up an AI provider in Settings → Connectors, or add a custom API key in the AI Issue Fixer settings.', 'alpaca-issue-tracker' ),
+			esc_html__( 'No AI provider is configured. Set up an AI provider in Settings → Connectors, or add a custom API key in the Fix with AI settings.', 'alpaca-issue-tracker' ),
 			[ 'status' => 400 ]
 		);
 	}
@@ -471,6 +526,16 @@ function alpaistr_agentic_build_system_prompt( string $extra_context = '' ): str
 	$path = ALPAISTR_PLUGIN_DIR . 'includes/agentic/draft-agent-ready-issue.md';
 	// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Local plugin file.
 	$prompt = is_readable( $path ) ? (string) file_get_contents( $path ) : '';
+
+	$draft_review = Agentic::load_security_file( 'draft-review.md' );
+	if ( '' !== $draft_review ) {
+		$prompt .= "\n\n" . $draft_review;
+	}
+
+	$draft_suitability = Agentic::load_security_file( 'draft-suitability.md' );
+	if ( '' !== $draft_suitability ) {
+		$prompt .= "\n\n" . $draft_suitability;
+	}
 
 	if ( ! empty( $extra_context ) ) {
 		$prompt .= "\n\nAdditional project context (use to inform Context and Technical Notes; do not paste this block verbatim — it is appended to the issue automatically):\n" . $extra_context;
@@ -785,13 +850,29 @@ function alpaistr_agentic_parse_draft_text( string $text ): array|WP_Error {
 		);
 	}
 
+	$suspicious        = ! empty( $draft['suspicious'] );
+	$suspicious_reason = $suspicious
+		? sanitize_text_field( (string) ( $draft['suspicious_reason'] ?? '' ) )
+		: '';
+
+	// Missing key defaults to suitable so older model replies still create drafts.
+	$suitable_for_agent = ! array_key_exists( 'suitable_for_agent', $draft )
+		|| filter_var( $draft['suitable_for_agent'], FILTER_VALIDATE_BOOLEAN );
+	$unsuitable_reason  = $suitable_for_agent
+		? ''
+		: sanitize_text_field( (string) ( $draft['unsuitable_reason'] ?? '' ) );
+
 	return [
-		'title'      => sanitize_text_field( $draft['title'] ),
-		'body'       => wp_kses_post( $draft['body'] ),
-		'complexity' => in_array( $draft['complexity'] ?? '', [ 'low', 'medium', 'high' ], true )
+		'title'              => sanitize_text_field( $draft['title'] ),
+		'body'               => wp_kses_post( $draft['body'] ),
+		'complexity'         => in_array( $draft['complexity'] ?? '', [ 'low', 'medium', 'high' ], true )
 			? $draft['complexity']
 			: 'medium',
-		'labels'     => array_map( 'sanitize_text_field', (array) ( $draft['labels'] ?? [] ) ),
+		'labels'             => array_map( 'sanitize_text_field', (array) ( $draft['labels'] ?? [] ) ),
+		'suspicious'         => $suspicious,
+		'suspicious_reason'  => $suspicious_reason,
+		'suitable_for_agent' => $suitable_for_agent,
+		'unsuitable_reason'  => $unsuitable_reason,
 	];
 }
 
@@ -803,6 +884,22 @@ function alpaistr_agentic_parse_draft_text( string $text ): array|WP_Error {
  * @return array|WP_Error Parsed draft or error.
  */
 function alpaistr_agentic_parse_ai_response( array|WP_Error $response, string $provider ): array|WP_Error {
+	$text = alpaistr_agentic_extract_ai_response_text( $response, $provider );
+	if ( is_wp_error( $text ) ) {
+		return $text;
+	}
+
+	return alpaistr_agentic_parse_draft_text( $text );
+}
+
+/**
+ * Extract plain text from a Claude or OpenAI HTTP response.
+ *
+ * @param array|WP_Error $response The wp_remote_post response.
+ * @param string         $provider 'claude' or 'openai'.
+ * @return string|WP_Error Model text or error.
+ */
+function alpaistr_agentic_extract_ai_response_text( array|WP_Error $response, string $provider ): string|WP_Error {
 	if ( is_wp_error( $response ) ) {
 		return new WP_Error(
 			'ai_request_failed',
@@ -829,7 +926,187 @@ function alpaistr_agentic_parse_ai_response( array|WP_Error $response, string $p
 		$text = $data['choices'][0]['message']['content'] ?? '';
 	}
 
-	return alpaistr_agentic_parse_draft_text( (string) $text );
+	return (string) $text;
+}
+
+/**
+ * Parse AI suitability JSON into array.
+ *
+ * @param string $text Raw AI text output.
+ * @return array{suitable_for_agent: bool, unsuitable_reason: string, title: string}|WP_Error
+ */
+function alpaistr_agentic_parse_suitability_verdict( string $text ): array|WP_Error {
+	$text = preg_replace( '/^```(?:json)?\s*/m', '', $text );
+	$text = preg_replace( '/\s*```$/m', '', $text );
+	$text = trim( (string) $text );
+
+	$verdict = json_decode( $text, true );
+	if ( ! is_array( $verdict ) || ! array_key_exists( 'suitable_for_agent', $verdict ) ) {
+		return new WP_Error(
+			'ai_parse_error',
+			esc_html__( 'AI returned an unexpected format. Please try again.', 'alpaca-issue-tracker' ),
+			[ 'status' => 502 ]
+		);
+	}
+
+	$suitable = filter_var( $verdict['suitable_for_agent'], FILTER_VALIDATE_BOOLEAN );
+	$reason   = $suitable
+		? ''
+		: sanitize_text_field( (string) ( $verdict['unsuitable_reason'] ?? '' ) );
+	$title    = sanitize_text_field( (string) ( $verdict['title'] ?? '' ) );
+	if ( strlen( $title ) > 60 ) {
+		$title = rtrim( substr( $title, 0, 57 ) ) . '…';
+	}
+
+	return [
+		'suitable_for_agent' => $suitable,
+		'unsuitable_reason'  => $reason,
+		'title'              => $title,
+	];
+}
+
+/**
+ * Ask the configured AI whether Request a change notes are agent-suitable,
+ * and generate a short log title for the change.
+ *
+ * @param string  $notes User-requested change notes.
+ * @param WP_Post $post  Alpaca issue post.
+ * @return array{suitable_for_agent: bool, unsuitable_reason: string, title: string}|WP_Error
+ */
+function alpaistr_agentic_evaluate_request_change_notes( string $notes, WP_Post $post ): array|WP_Error {
+	$settings = alpaistr_agentic_get_settings();
+	$prompt   = Agentic::load_security_file( 'request-change-suitability.md' );
+	if ( '' === $prompt ) {
+		return [
+			'suitable_for_agent' => true,
+			'unsuitable_reason'  => '',
+			'title'              => alpaistr_agentic_fallback_change_request_title( $notes ),
+		];
+	}
+
+	$user_message = "Alpaca issue title:\n" . $post->post_title . "\n\nRequested changes:\n" . $notes;
+	$text         = alpaistr_agentic_generate_ai_text( $prompt, $user_message, $settings, 400 );
+	if ( is_wp_error( $text ) ) {
+		return $text;
+	}
+
+	return alpaistr_agentic_parse_suitability_verdict( $text );
+}
+
+/**
+ * Fallback short title when the AI does not return one.
+ *
+ * @param string $notes User-requested change notes.
+ * @return string
+ */
+function alpaistr_agentic_fallback_change_request_title( string $notes ): string {
+	$notes = trim( preg_replace( '/\s+/', ' ', $notes ) ?? '' );
+	if ( '' === $notes ) {
+		return __( 'Requested changes', 'alpaca-issue-tracker' );
+	}
+
+	if ( strlen( $notes ) <= 60 ) {
+		return $notes;
+	}
+
+	return rtrim( substr( $notes, 0, 57 ) ) . '…';
+}
+
+/**
+ * Generate raw model text via Connectors or the configured fallback provider.
+ *
+ * @param string               $system_prompt System instructions.
+ * @param string               $user_message  User message.
+ * @param array<string, mixed> $settings      Plugin settings.
+ * @param int                  $max_tokens    Max completion tokens.
+ * @return string|WP_Error
+ */
+function alpaistr_agentic_generate_ai_text( string $system_prompt, string $user_message, array $settings, int $max_tokens = 3000 ): string|WP_Error {
+	if ( Agentic::is_wp_ai_configured() ) {
+		$text = wp_ai_client_prompt( $user_message )
+			->using_system_instruction( $system_prompt )
+			->generate_text();
+
+		if ( is_wp_error( $text ) ) {
+			return new WP_Error(
+				'ai_request_failed',
+				/* translators: %s: error message */
+				sprintf( esc_html__( 'AI request failed: %s', 'alpaca-issue-tracker' ), $text->get_error_message() ),
+				[ 'status' => 502 ]
+			);
+		}
+
+		return (string) $text;
+	}
+
+	if ( empty( $settings['ai_api_key'] ) ) {
+		return new WP_Error(
+			'ai_not_configured',
+			esc_html__( 'No AI provider is configured. Set up an AI provider in Settings → Connectors, or add a custom API key in the Fix with AI settings.', 'alpaca-issue-tracker' ),
+			[ 'status' => 400 ]
+		);
+	}
+
+	$max_tokens = max( 64, $max_tokens );
+
+	if ( 'openai' === ( $settings['ai_provider'] ?? '' ) ) {
+		$response = wp_remote_post(
+			'https://api.openai.com/v1/chat/completions',
+			[
+				'timeout' => 60,
+				'headers' => [
+					'Authorization' => 'Bearer ' . $settings['ai_api_key'],
+					'content-type'  => 'application/json',
+				],
+				'body'    => wp_json_encode(
+					[
+						'model'           => 'gpt-4o',
+						'max_tokens'      => $max_tokens,
+						'response_format' => [ 'type' => 'json_object' ],
+						'messages'        => [
+							[
+								'role'    => 'system',
+								'content' => $system_prompt,
+							],
+							[
+								'role'    => 'user',
+								'content' => $user_message,
+							],
+						],
+					]
+				),
+			]
+		);
+
+		return alpaistr_agentic_extract_ai_response_text( $response, 'openai' );
+	}
+
+	$response = wp_remote_post(
+		'https://api.anthropic.com/v1/messages',
+		[
+			'timeout' => 60,
+			'headers' => [
+				'x-api-key'         => $settings['ai_api_key'],
+				'anthropic-version' => '2023-06-01',
+				'content-type'      => 'application/json',
+			],
+			'body'    => wp_json_encode(
+				[
+					'model'      => 'claude-opus-4-5',
+					'max_tokens' => $max_tokens,
+					'system'     => $system_prompt,
+					'messages'   => [
+						[
+							'role'    => 'user',
+							'content' => $user_message,
+						],
+					],
+				]
+			),
+		]
+	);
+
+	return alpaistr_agentic_extract_ai_response_text( $response, 'claude' );
 }
 
 /**
@@ -954,6 +1231,7 @@ function alpaistr_agentic_touch_github_callback(): WP_REST_Response|WP_Error {
 			'message'         => $message,
 			'private'         => (bool) ( $gh_data['private'] ?? false ),
 			'html_url'        => esc_url_raw( $gh_data['html_url'] ?? '' ),
+			'default_branch'  => $default_branch,
 			'branches'        => $branches,
 		]
 	);
@@ -1052,15 +1330,19 @@ function alpaistr_agentic_workflow_status_callback(): WP_REST_Response|WP_Error 
  * @return WP_REST_Response|WP_Error
  */
 function alpaistr_agentic_install_workflow_callback(): WP_REST_Response|WP_Error {
-	$settings = alpaistr_agentic_get_settings();
-	$token    = $settings['github_token'];
-	$repo     = $settings['github_repo'];
+	$settings         = alpaistr_agentic_get_settings();
+	$token            = $settings['github_token'];
+	$repo             = $settings['github_repo'];
+	$ai_target_branch = sanitize_text_field( (string) ( $settings['ai_target_branch'] ?? '' ) );
 
 	if ( empty( $token ) ) {
 		return new WP_Error( 'not_configured', __( 'GitHub Personal Access Token is not configured.', 'alpaca-issue-tracker' ), [ 'status' => 400 ] );
 	}
 	if ( empty( $repo ) ) {
 		return new WP_Error( 'not_configured', __( 'GitHub repository is not configured.', 'alpaca-issue-tracker' ), [ 'status' => 400 ] );
+	}
+	if ( '' === $ai_target_branch ) {
+		return new WP_Error( 'not_configured', __( 'AI target branch is not configured.', 'alpaca-issue-tracker' ), [ 'status' => 400 ] );
 	}
 
 	$repo_parts = alpaistr_agentic_parse_github_repo( $repo );
@@ -1100,6 +1382,10 @@ function alpaistr_agentic_install_workflow_callback(): WP_REST_Response|WP_Error
 	}
 
 	$default_branch = (string) ( $repo_data['default_branch'] ?? 'main' );
+
+	if ( '' !== $ai_target_branch ) {
+		alpaistr_agentic_sync_ai_target_branch_variable( $token, $repo_parts, $ai_target_branch );
+	}
 
 	if ( alpaistr_agentic_workflow_marker_exists( $token, $repo_parts, $default_branch ) ) {
 		return alpaistr_agentic_mark_workflow_already_installed();
@@ -1147,6 +1433,8 @@ function alpaistr_agentic_install_workflow_callback(): WP_REST_Response|WP_Error
 		if ( false === $content ) {
 			continue;
 		}
+
+		$content = str_replace( '__ALPACA_AI_TARGET_BRANCH__', $ai_target_branch, $content );
 
 		$file_response = wp_remote_request(
 			sprintf(
@@ -1196,6 +1484,24 @@ function alpaistr_agentic_install_workflow_callback(): WP_REST_Response|WP_Error
 		);
 	}
 
+	foreach (
+		[
+			'.github/workflows/apply-staging-fix-to-production.yml',
+			'.github/workflows/cherry-pick-fix.yml',
+		] as $stale_path
+	) {
+		$deleted_old = alpaistr_agentic_delete_github_file(
+			$token,
+			$repo_parts,
+			$stale_path,
+			$branch_name,
+			'Remove ' . basename( $stale_path ) . ' [alpaca-ai-development]'
+		);
+		if ( ! is_wp_error( $deleted_old ) && true === $deleted_old ) {
+			++$committed;
+		}
+	}
+
 	if ( 0 === $committed && 0 === $skipped ) {
 		return new WP_Error(
 			'github_api_error',
@@ -1234,7 +1540,7 @@ function alpaistr_agentic_install_workflow_callback(): WP_REST_Response|WP_Error
 			[
 				'## Add Alpaca AI Development workflow',
 				'',
-				'This pull request was opened by the **Alpaca AI Issue Resolver** feature.',
+				'This pull request was opened by the **Fix with AI** feature in Alpaca Issue Tracker.',
 				'It adds the GitHub Actions workflows, labels, and issue templates needed to connect Alpaca with your AI agent.',
 				'',
 				'### What\'s included',
@@ -1246,18 +1552,19 @@ function alpaistr_agentic_install_workflow_callback(): WP_REST_Response|WP_Error
 				'- `setup-labels.yml` — one-time label import',
 				'- `claude.yml` — `@claude` mention trigger',
 				'- `claude-code-review.yml` — automated PR code review',
-				'- `apply-staging-fix-to-production.yml` — cherry-picks a proven staging fix onto production ("Apply fix to Production")',
 				'- Issue and PR templates',
 				'- Label definitions',
+				'- `.github/alpaca/security/agent.json` — Claude agent deny-list and untrusted-content policy',
 				'',
 				'### Next steps after merging',
 				'',
 				'1. Add `CLAUDE_CODE_OAUTH_TOKEN` to **Settings → Secrets and variables → Secrets**',
 				'2. Optionally add `ANTHROPIC_API_KEY` for automated code review',
 				'3. Run **Actions → Setup Labels → Run workflow** to create all labels',
+				'4. Enable branch protection on the AI target branch and production branch (require review, disable force-push)',
 				'',
 				'---',
-				'_Opened by Alpaca Issue Tracker (AI Issue Resolver) v' . ALPAISTR_VERSION . '_',
+				'_Opened by Alpaca Issue Tracker (Fix with AI) v' . ALPAISTR_VERSION . '_',
 			]
 		);
 
@@ -1384,7 +1691,8 @@ function alpaistr_agentic_get_template_files( string $dir, string $base_path = '
 		return $files;
 	}
 
-	$skip = [ '.', '..', 'index.php', '.DS_Store', 'draft-agent-ready-issue.md' ];
+	// security/ stays plugin-local except agent.json, which is installed explicitly.
+	$skip = [ '.', '..', 'index.php', '.DS_Store', 'draft-agent-ready-issue.md', 'security' ];
 
 	foreach ( $entries as $entry ) {
 		if ( in_array( $entry, $skip, true ) ) {
@@ -1398,6 +1706,14 @@ function alpaistr_agentic_get_template_files( string $dir, string $base_path = '
 			$files = array_merge( $files, alpaistr_agentic_get_template_files( $full . '/', $rel . '/' ) );
 		} elseif ( is_file( $full ) ) {
 			$files[ $rel ] = $full;
+		}
+	}
+
+	// Only on the root templates pass: ship CI agent security policy to customer repos.
+	if ( '' === $base_path ) {
+		$agent_security = Agentic::agent_security_json_path();
+		if ( '' !== $agent_security ) {
+			$files['alpaca/security/agent.json'] = $agent_security;
 		}
 	}
 
@@ -1430,6 +1746,21 @@ function alpaistr_agentic_create_callback( WP_REST_Request $request ): WP_REST_R
 	$body   = $request->get_param( 'body' );
 	$labels = array_values( array_filter( array_map( 'sanitize_text_field', (array) $request->get_param( 'labels' ) ) ) );
 
+	$ai_target_branch = sanitize_text_field( (string) ( $settings['ai_target_branch'] ?? '' ) );
+	if ( '' === $ai_target_branch ) {
+		return new WP_Error( 'not_configured', esc_html__( 'AI target branch is not configured.', 'alpaca-issue-tracker' ), [ 'status' => 400 ] );
+	}
+
+	$labels = array_values(
+		array_filter(
+			$labels,
+			static function ( $label_name ): bool {
+				return is_string( $label_name ) && ! str_starts_with( $label_name, 'target-branch:' );
+			}
+		)
+	);
+	$labels[] = 'target-branch:' . $ai_target_branch;
+
 	// agent-ready must be applied in a separate API call so GitHub fires the
 	// issues.labeled webhook and Agent-Ready Auto-Trigger runs immediately.
 	$apply_agent_ready = in_array( 'agent-ready', $labels, true );
@@ -1440,9 +1771,38 @@ function alpaistr_agentic_create_callback( WP_REST_Request $request ): WP_REST_R
 		return $repo_parts;
 	}
 
-	// target-branch:* labels are per-repo and not in LABELS.yml — create if missing.
+	$current_attempt_has_sent = false;
+	foreach ( alpaistr_agentic_current_attempt_entries( $issue_id ) as $entry ) {
+		if ( 'sent' === ( $entry['type'] ?? '' ) ) {
+			$current_attempt_has_sent = true;
+			break;
+		}
+	}
+
+	if ( $current_attempt_has_sent ) {
+		$open_work_branch = (string) get_post_meta( $issue_id, ALPAISTR_AGENTIC_START_BRANCH_META, true );
+		if ( '' === $open_work_branch ) {
+			$open_work_branch = $ai_target_branch;
+		}
+
+		$work = alpaistr_agentic_task_github_work_status( $token, $repo_parts, $issue_id, $open_work_branch );
+		if ( ! empty( $work['has_open_work'] ) ) {
+			$message = ! empty( $work['has_open_pr'] )
+				? esc_html__( 'Wait for the in-progress AI pull request to merge or be closed, or use Start over.', 'alpaca-issue-tracker' )
+				: esc_html__( 'The AI is still working on a GitHub issue. Wait for a pull request, or use Start over.', 'alpaca-issue-tracker' );
+
+			return new WP_Error(
+				'request_change_blocked',
+				$message,
+				[ 'status' => 409 ]
+			);
+		}
+
+		alpaistr_agentic_close_abandoned_github_issues( $token, $repo_parts, $issue_id, $open_work_branch );
+	}
+
 	foreach ( $create_labels as $label_name ) {
-		if ( str_starts_with( $label_name, 'target-branch:' ) ) {
+		if ( is_string( $label_name ) && str_starts_with( $label_name, 'target-branch:' ) ) {
 			alpaistr_agentic_ensure_github_label( $token, $repo_parts, $label_name );
 		}
 	}
@@ -1508,236 +1868,920 @@ function alpaistr_agentic_create_callback( WP_REST_Request $request ): WP_REST_R
 		}
 	}
 
-	$github_url    = esc_url_raw( $gh_data['html_url'] );
+	$github_url    = esc_url_raw( $gh_data['html_url'] ?? '' );
 	$github_number = (int) ( $gh_data['number'] ?? 0 );
-	$target_branch = alpaistr_agentic_extract_target_branch_from_labels( $labels );
 
-	$history = alpaistr_agentic_record_sent_activity( $issue_id, $github_url, $github_number, $target_branch );
-	alpaistr_agentic_insert_sent_activity_comment( $issue_id, $github_url, $target_branch );
+	alpaistr_agentic_remember_start_sha( $issue_id, $token, $repo_parts, $ai_target_branch );
+
+	$history = alpaistr_agentic_record_sent_activity(
+		$issue_id,
+		$github_url,
+		$github_number,
+		$ai_target_branch,
+		alpaistr_agentic_build_draft_snapshot( $title, $body, $labels )
+	);
+	alpaistr_agentic_insert_sent_activity_comment( $issue_id, $github_url, $ai_target_branch );
 	alpaistr_agentic_assign_sent_to_ai_label( $issue_id );
-	alpaistr_agentic_save_draft( $issue_id, $title, $body, $labels );
 
 	return rest_ensure_response(
 		[
 			'url'           => $github_url,
 			'github_number' => $github_number,
 			'status'        => 'sent',
-			'target_branch' => $target_branch,
+			'target_branch' => $ai_target_branch,
 			'history'       => $history,
 		]
 	);
 }
 
 /**
- * Delete the current draft and restart the whole workflow.
+ * Request a change: comment on in-flight GitHub work, or open a new issue/PR.
  *
- * Used both for "Delete draft" (stops here) and as the first step of
- * "Edit / regenerate draft" (immediately followed by a fresh AI draft on the
- * client). Never touches GitHub -- the issue(s) already created there are left
- * exactly as they are, since Alpaca still has no reliable way to know their state.
+ * Open pull request → comment on that PR so the agent updates it.
+ * Open GitHub issue with no PR yet → comment on that issue.
+ * Merged PR → new GitHub issue asking for a follow-up PR on top of the merge.
+ * Closed without merging → new GitHub issue that retries the original work
+ * plus the requested changes.
  *
  * @param WP_REST_Request $request REST request.
  * @return WP_REST_Response|WP_Error
  */
-function alpaistr_agentic_drop_draft_callback( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+function alpaistr_agentic_request_change_callback( WP_REST_Request $request ): WP_REST_Response|WP_Error {
 	$issue_id = (int) $request->get_param( 'issue_id' );
-	$post     = get_post( $issue_id );
-
-	// Check if Alpaca issue exists.
-	if ( ! $post || 'alpaca_issue' !== $post->post_type ) {
-		return new WP_Error( 'not_found', esc_html__( 'Alpaca issue not found.', 'alpaca-issue-tracker' ), [ 'status' => 404 ] );
+	$post     = alpaistr_agentic_require_issue_post( $issue_id );
+	if ( is_wp_error( $post ) ) {
+		return $post;
 	}
 
-	// Delete the current draft while retaining the activity history.
-	delete_post_meta( $issue_id, ALPAISTR_AGENTIC_DRAFT_META );
+	$notes = trim( (string) $request->get_param( 'notes' ) );
+	if ( '' === $notes ) {
+		return new WP_Error(
+			'invalid_notes',
+			esc_html__( 'Describe the changes you want.', 'alpaca-issue-tracker' ),
+			[ 'status' => 400 ]
+		);
+	}
 
-	$history = alpaistr_agentic_append_history_entry(
+	$force       = (bool) $request->get_param( 'force' );
+	$verdict     = alpaistr_agentic_evaluate_request_change_notes( $notes, $post );
+	$notes_title = '';
+
+	if ( ! is_wp_error( $verdict ) ) {
+		$notes_title = trim( (string) ( $verdict['title'] ?? '' ) );
+		// Fail open when the classifier itself errors so Request a change is not bricked.
+		if ( ! $force && empty( $verdict['suitable_for_agent'] ) ) {
+			$reason = (string) ( $verdict['unsuitable_reason'] ?? '' );
+			if ( '' === $reason ) {
+				$reason = __(
+					'These notes are not suitable for the GitHub agentic workflow. Request a change only sends follow-up instructions for bounded code changes in the connected repository.',
+					'alpaca-issue-tracker'
+				);
+			}
+
+			return new WP_Error(
+				'unsuitable_for_agent',
+				$reason,
+				[
+					'status'             => 422,
+					'unsuitable_reason'  => $reason,
+					'suitable_for_agent' => false,
+				]
+			);
+		}
+	}
+
+	if ( '' === $notes_title ) {
+		$notes_title = alpaistr_agentic_fallback_change_request_title( $notes );
+	}
+
+	$work = alpaistr_agentic_evaluate_start_over( $issue_id );
+	if ( is_wp_error( $work ) ) {
+		return $work;
+	}
+
+	if ( empty( $work['allowed'] ) ) {
+		return new WP_Error(
+			'request_change_blocked',
+			esc_html__( 'Send this issue with Fix with AI before requesting a change.', 'alpaca-issue-tracker' ),
+			[ 'status' => 409 ]
+		);
+	}
+
+	$open_pr              = is_array( $work['pull_request'] ?? null ) ? $work['pull_request'] : null;
+	$has_open_pr          = ! empty( $work['has_open_pr'] )
+		&& is_array( $open_pr )
+		&& (int) ( $open_pr['number'] ?? 0 ) > 0
+		&& empty( $open_pr['merged'] )
+		&& 'closed' !== ( $open_pr['state'] ?? '' );
+	$waiting_issue_number = (int) ( $work['waiting_issue_number'] ?? 0 );
+	$has_merged_pr        = ! empty( $work['has_merged_pr'] );
+
+	if ( $has_open_pr ) {
+		return alpaistr_agentic_request_change_comment(
+			$issue_id,
+			$work,
+			(int) $open_pr['number'],
+			$notes,
+			$notes_title,
+			'pr',
+			(string) ( $open_pr['url'] ?? '' )
+		);
+	}
+
+	if ( ! empty( $work['has_open_work'] ) && $waiting_issue_number > 0 ) {
+		return alpaistr_agentic_request_change_comment(
+			$issue_id,
+			$work,
+			$waiting_issue_number,
+			$notes,
+			$notes_title,
+			'issue',
+			''
+		);
+	}
+
+	return alpaistr_agentic_request_change_create_issue(
+		$issue_id,
+		$notes,
+		$notes_title,
+		$has_merged_pr ? 'create_pr' : 'retry_pr'
+	);
+}
+
+/**
+ * Post requested changes as a GitHub comment on an open PR or issue.
+ *
+ * @param int                  $issue_id      Alpaca issue post ID.
+ * @param array<string, mixed> $work          Live GitHub work status.
+ * @param int                  $github_number GitHub issue or pull request number.
+ * @param string               $notes         User-requested changes.
+ * @param string               $notes_title   Short AI title for the AI Log.
+ * @param string               $target        'pr' or 'issue'.
+ * @param string               $fallback_url  Known HTML URL when available.
+ * @return WP_REST_Response|WP_Error
+ */
+function alpaistr_agentic_request_change_comment(
+	int $issue_id,
+	array $work,
+	int $github_number,
+	string $notes,
+	string $notes_title,
+	string $target,
+	string $fallback_url
+): WP_REST_Response|WP_Error {
+	$token      = (string) ( $work['token'] ?? '' );
+	$repo_parts = is_array( $work['repo_parts'] ?? null ) ? $work['repo_parts'] : [];
+	if ( '' === $token || empty( $repo_parts['owner'] ) || empty( $repo_parts['name'] ) ) {
+		return new WP_Error( 'not_configured', esc_html__( 'GitHub token or repository is not configured.', 'alpaca-issue-tracker' ), [ 'status' => 400 ] );
+	}
+
+	$comment = alpaistr_agentic_post_github_issue_comment(
+		$token,
+		$repo_parts,
+		$github_number,
+		alpaistr_agentic_build_request_change_comment_body( $notes, $target )
+	);
+	if ( is_wp_error( $comment ) ) {
+		return $comment;
+	}
+
+	$comment_url = esc_url_raw( (string) ( $comment['html_url'] ?? '' ) );
+	if ( '' === $comment_url ) {
+		$comment_url = esc_url_raw( $fallback_url );
+	}
+	if ( '' === $comment_url ) {
+		$comment_url = esc_url_raw(
+			sprintf(
+				'https://github.com/%s/%s/issues/%d',
+				$repo_parts['owner'],
+				$repo_parts['name'],
+				$github_number
+			)
+		);
+	}
+
+	alpaistr_agentic_save_current_attempt_follow_up_notes(
+		$issue_id,
+		array_merge( alpaistr_agentic_current_attempt_follow_up_notes( $issue_id ), [ $notes ] )
+	);
+
+	$pr_url    = 'pr' === $target ? $fallback_url : '';
+	$pr_number = 'pr' === $target ? $github_number : 0;
+	if ( 'pr' === $target && is_array( $work['pull_request'] ?? null ) ) {
+		if ( '' === $pr_url ) {
+			$pr_url = (string) ( $work['pull_request']['url'] ?? '' );
+		}
+		if ( $pr_number <= 0 ) {
+			$pr_number = (int) ( $work['pull_request']['number'] ?? 0 );
+		}
+	}
+
+	if ( '' === trim( $notes_title ) ) {
+		$notes_title = alpaistr_agentic_fallback_change_request_title( $notes );
+	}
+
+	alpaistr_agentic_append_history_entry(
 		$issue_id,
 		[
-			'type'        => 'deleted',
-			'occurred_at' => gmdate( 'c' ),
+			'type'          => 'change_requested',
+			'url'           => $comment_url,
+			'notes'         => $notes_title,
+			'notes_full'    => $notes,
+			'target'        => $target,
+			'pr_url'        => esc_url_raw( $pr_url ),
+			'pr_number'     => $pr_number,
+			'github_number' => 'issue' === $target
+				? $github_number
+				: (int) ( $work['pull_request']['github_issue_number'] ?? 0 ),
+			'occurred_at'   => gmdate( 'c' ),
 		]
 	);
 
-	// Insert comment.
-	alpaistr_agentic_insert_activity_comment(
-		$issue_id,
-		__( 'AI Issue Resolver: draft deleted/restarted in Alpaca. This does not change anything on GitHub.', 'alpaca-issue-tracker' ),
-		'agentic-deleted'
-	);
+	if ( 'pr' === $target ) {
+		$content = sprintf(
+			/* translators: %s: GitHub pull request or comment URL. */
+			__( 'Fix with AI: requested changes posted on the open pull request — [%1$s](%1$s).', 'alpaca-issue-tracker' ), // phpcs:ignore WordPress.WP.I18n.UnorderedPlaceholdersText -- URL repeated for markdown link.
+			$comment_url
+		);
+	} else {
+		$content = sprintf(
+			/* translators: %s: GitHub issue or comment URL. */
+			__( 'Fix with AI: requested changes posted on the GitHub issue — [%1$s](%1$s).', 'alpaca-issue-tracker' ), // phpcs:ignore WordPress.WP.I18n.UnorderedPlaceholdersText -- URL repeated for markdown link.
+			$comment_url
+		);
+	}
+	alpaistr_agentic_insert_activity_comment( $issue_id, $content, 'agentic-sent' );
 
-	// Return Rest API response about operation success.
 	return rest_ensure_response(
 		[
-			'success' => true,
-			'history' => $history,
+			'url'    => $comment_url,
+			'action' => 'commented',
+			'mode'   => 'pr' === $target ? 'comment_pr' : 'comment_issue',
 		]
 	);
 }
 
 /**
- * Check whether the fix sent to staging has been merged on GitHub.
+ * Open a new GitHub issue for a follow-up or retry pull request.
  *
- * Read-only lookup -- never writes to history or posts a comment.
- *
- * @param WP_REST_Request $request REST request.
+ * @param int    $issue_id    Alpaca issue post ID.
+ * @param string $notes       User-requested changes.
+ * @param string $notes_title Short AI title for the follow-up issue / AI Log.
+ * @param string $mode        'create_pr' or 'retry_pr'.
  * @return WP_REST_Response|WP_Error
  */
-function alpaistr_agentic_staging_fix_status_callback( WP_REST_Request $request ): WP_REST_Response|WP_Error {
-	$issue_id = (int) $request->get_param( 'issue_id' );
-
-	// Check if there is Alpaca issue.
-	$post = get_post( $issue_id );
-	if ( ! $post || 'alpaca_issue' !== $post->post_type ) {
-		return new WP_Error( 'not_found', esc_html__( 'Alpaca issue not found.', 'alpaca-issue-tracker' ), [ 'status' => 404 ] );
-	}
-
-	$settings       = alpaistr_agentic_get_settings();
-	$staging_branch = $settings['branches']['staging'];
-
-	// Check if Alpaca issue has been sent to GitHub.
-	$sent_entry = alpaistr_agentic_find_staging_sent_entry( $issue_id, $staging_branch );
-	if ( ! $sent_entry || empty( $sent_entry['github_number'] ) ) {
-		return rest_ensure_response(
-			[
-				'merged'            => false,
-				'staging_pr_number' => 0,
-			]
+function alpaistr_agentic_request_change_create_issue( int $issue_id, string $notes, string $notes_title, string $mode ): WP_REST_Response|WP_Error {
+	$drafts   = alpaistr_agentic_current_attempt_sent_drafts( $issue_id );
+	$template = alpaistr_agentic_original_agent_ready_draft( $drafts );
+	if ( ! is_array( $template ) ) {
+		return new WP_Error(
+			'missing_draft',
+			esc_html__( 'The original GitHub issue draft is missing.', 'alpaca-issue-tracker' ),
+			[ 'status' => 409 ]
 		);
 	}
 
-	// Get GitHub repository data that will be needed later.
-	$repo_parts = alpaistr_agentic_parse_github_repo( $settings['github_repo'] );
-	if ( is_wp_error( $repo_parts ) ) {
-		return $repo_parts;
+	$all_notes = array_merge( alpaistr_agentic_current_attempt_follow_up_notes( $issue_id ), [ $notes ] );
+	$original  = alpaistr_agentic_strip_follow_up_sections( (string) ( $template['body'] ?? '' ) );
+	$body      = 'retry_pr' === $mode
+		? alpaistr_agentic_build_retry_issue_body( $original, $all_notes )
+		: alpaistr_agentic_build_follow_up_issue_body( $original, $all_notes );
+
+	$complexity      = (string) ( $template['complexity'] ?? 'medium' );
+	$previous_labels = is_array( $template['labels'] ?? null ) ? $template['labels'] : [];
+	$allowed_labels  = [ 'bug', 'enhancement', 'agent-candidate', 'agent-ready' ];
+	$labels          = array_values(
+		array_unique(
+			array_merge(
+				array_values(
+					array_filter(
+						$previous_labels,
+						static function ( $label_name ) use ( $allowed_labels ): bool {
+							return is_string( $label_name ) && in_array( $label_name, $allowed_labels, true );
+						}
+					)
+				),
+				[ 'complexity:' . $complexity, 'agent-ready' ]
+			)
+		)
+	);
+
+	if ( '' === trim( $notes_title ) ) {
+		$notes_title = alpaistr_agentic_fallback_change_request_title( $notes );
 	}
 
-	// Find the relevant pull request for the issue.
-	$pr = alpaistr_agentic_find_pr_for_issue( $settings['github_token'], $repo_parts, (int) $sent_entry['github_number'], $staging_branch );
+	$create_request = new WP_REST_Request( 'POST', '/alpaca/v1/agentic/create' );
+	$create_request->set_param( 'issue_id', $issue_id );
+	$create_request->set_param( 'title', $notes_title );
+	$create_request->set_param( 'body', $body );
+	$create_request->set_param( 'labels', $labels );
 
-	// Pull request not found.
-	if ( ! $pr ) {
-		return rest_ensure_response(
-			[
-				'merged'            => false,
-				'staging_pr_number' => 0,
-			]
-		);
+	$response = alpaistr_agentic_create_callback( $create_request );
+	if ( is_wp_error( $response ) ) {
+		return $response;
 	}
 
-	// Pull request not merged.
-	if ( empty( $pr['merged_at'] ) ) {
-		return rest_ensure_response(
-			[
-				'merged'            => false,
-				'staging_pr_number' => (int) $pr['number'],
-				'staging_pr_url'    => esc_url_raw( $pr['html_url'] ?? '' ),
-			]
-		);
+	alpaistr_agentic_save_current_attempt_follow_up_notes( $issue_id, $all_notes );
+
+	$data           = $response->get_data();
+	$data           = is_array( $data ) ? $data : [];
+	$data['action'] = 'created';
+	$data['mode']   = $mode;
+
+	return rest_ensure_response( $data );
+}
+
+/**
+ * Post a comment on a GitHub issue or pull request conversation.
+ *
+ * @param string                             $token      GitHub token.
+ * @param array{owner: string, name: string} $repo_parts Parsed repository.
+ * @param int                                $number     Issue or pull request number.
+ * @param string                             $body       Comment markdown.
+ * @return array<string, mixed>|WP_Error
+ */
+function alpaistr_agentic_post_github_issue_comment( string $token, array $repo_parts, int $number, string $body ): array|WP_Error {
+	if ( $number <= 0 || '' === $body ) {
+		return new WP_Error( 'invalid_comment', esc_html__( 'Could not post the requested changes to GitHub.', 'alpaca-issue-tracker' ), [ 'status' => 400 ] );
 	}
 
-	// Pull request merged.
-	return rest_ensure_response(
+	$response = wp_remote_post(
+		sprintf(
+			'https://api.github.com/repos/%s/%s/issues/%d/comments',
+			rawurlencode( $repo_parts['owner'] ),
+			rawurlencode( $repo_parts['name'] ),
+			$number
+		),
 		[
-			'merged'            => true,
-			'staging_pr_number' => (int) $pr['number'],
-			'staging_pr_url'    => esc_url_raw( $pr['html_url'] ?? '' ),
+			'timeout' => 30,
+			'headers' => alpaistr_agentic_github_api_headers( $token ),
+			'body'    => wp_json_encode(
+				[
+					'body' => $body,
+				]
+			),
+		]
+	);
+
+	if ( is_wp_error( $response ) ) {
+		return new WP_Error(
+			'github_request_failed',
+			sprintf(
+				/* translators: %s: error message */
+				esc_html__( 'GitHub request failed: %s', 'alpaca-issue-tracker' ),
+				$response->get_error_message()
+			),
+			[ 'status' => 502 ]
+		);
+	}
+
+	$code = (int) wp_remote_retrieve_response_code( $response );
+	$data = json_decode( wp_remote_retrieve_body( $response ), true );
+
+	if ( $code >= 400 || ! is_array( $data ) ) {
+		return new WP_Error(
+			'github_api_error',
+			alpaistr_agentic_format_github_error_message( $code, is_array( $data ) ? $data : [], $repo_parts ),
+			[ 'status' => 502 ]
+		);
+	}
+
+	return $data;
+}
+
+/**
+ * Comment body that asks the AI agent to apply requested changes in place.
+ *
+ * @param string $notes  User-requested changes.
+ * @param string $target 'pr' or 'issue'.
+ * @return string GitHub markdown.
+ */
+function alpaistr_agentic_build_request_change_comment_body( string $notes, string $target ): string {
+	if ( 'pr' === $target ) {
+		$instructions = 'These notes are follow-up changes for this open pull request. Update this PR: commit to this PR\'s existing branch and push. Do not open a new pull request. Do not create a new GitHub issue.';
+	} else {
+		$instructions = 'The GitHub issue is still in progress and no pull request is open yet. Incorporate these changes into the current implementation before you open a pull request. Do not open a second GitHub issue.';
+	}
+
+	return implode(
+		"\n",
+		[
+			'@claude',
+			'',
+			'## Requested changes (from Alpaca)',
+			'',
+			$notes,
+			'',
+			$instructions,
 		]
 	);
 }
 
 /**
- * Apply an already-merged staging fix to production via `git cherry-pick`.
+ * Draft snapshots from the current attempt's sent GitHub issues, oldest first.
  *
- * Finds and verifies the staging pull request, then fires a repository_dispatch
- * event targeting the configured production branch. Fire-and-forget, same as
- * the existing "send to AI agent" flow -- Alpaca does not poll GitHub Actions
- * for completion.
- *
- * @param WP_REST_Request $request REST request.
- * @return WP_REST_Response|WP_Error
+ * @param int $issue_id Alpaca issue post ID.
+ * @return array<int, array<string, mixed>>
  */
-function alpaistr_agentic_apply_staging_fix_to_production_callback( WP_REST_Request $request ): WP_REST_Response|WP_Error {
-	$issue_id = (int) $request->get_param( 'issue_id' );
+function alpaistr_agentic_current_attempt_sent_drafts( int $issue_id ): array {
+	$drafts = [];
+	foreach ( alpaistr_agentic_current_attempt_entries( $issue_id ) as $entry ) {
+		if ( 'sent' !== ( $entry['type'] ?? '' ) || ! is_array( $entry['draft'] ?? null ) ) {
+			continue;
+		}
+		$drafts[] = $entry['draft'];
+	}
+	return $drafts;
+}
 
-	// Check if Alpaca issue exists.
+/**
+ * Original agent-ready draft (full GitHub issue template).
+ *
+ * @param array<int, array<string, mixed>> $drafts Sent drafts, oldest first.
+ * @return array<string, mixed>|null
+ */
+function alpaistr_agentic_original_agent_ready_draft( array $drafts ): array|null {
+	foreach ( $drafts as $draft ) {
+		if ( preg_match( '/(^|\n)## Summary(\s|$)/', (string) ( $draft['body'] ?? '' ) ) ) {
+			return $draft;
+		}
+	}
+	return $drafts[0] ?? null;
+}
+
+/**
+ * Remove follow-up sections so the original template can be reused.
+ *
+ * @param string $body GitHub issue body.
+ * @return string Body without follow-up sections.
+ */
+function alpaistr_agentic_strip_follow_up_sections( string $body ): string {
+	$text = $body;
+	if ( preg_match( '/^## Follow-up requests\s*$/m', $text, $matches, PREG_OFFSET_CAPTURE ) ) {
+		$text = substr( $text, 0, (int) $matches[0][1] );
+	}
+	if ( ! preg_match( '/(^|\n)## Summary(\s|$)/', $text ) && preg_match( '/^## Requested changes\s*$/m', $text, $matches, PREG_OFFSET_CAPTURE ) ) {
+		$text = substr( $text, 0, (int) $matches[0][1] );
+	}
+	return rtrim( $text );
+}
+
+/**
+ * Pull follow-up request notes out of a previously sent GitHub issue body.
+ *
+ * @param string $body GitHub issue body.
+ * @return array<int, string>
+ */
+function alpaistr_agentic_extract_follow_up_notes( string $body ): array {
+	if ( preg_match( '/^## Follow-up requests\s*\n([\s\S]*)$/m', $body, $follow_up_match ) ) {
+		$parts = preg_split( '/^### Request \d+\s*$/m', $follow_up_match[1] );
+		$notes = [];
+		foreach ( is_array( $parts ) ? $parts : [] as $part ) {
+			$part = trim( (string) $part );
+			if ( '' === $part || str_starts_with( $part, 'The original issue above was already implemented' ) || str_starts_with( $part, 'The previous AI pull request was closed without merging' ) ) {
+				continue;
+			}
+			$notes[] = $part;
+		}
+		return $notes;
+	}
+
+	if ( ! preg_match( '/(^|\n)## Summary(\s|$)/', $body ) && preg_match( '/^## Requested changes\s*\n+([\s\S]*?)(?:\n+Implement these changes[\s\S]*)?$/', $body, $legacy_match ) ) {
+		$note = trim( (string) ( $legacy_match[1] ?? '' ) );
+		return '' !== $note ? [ $note ] : [];
+	}
+
+	return [];
+}
+
+/**
+ * Follow-up notes stored on this attempt, oldest first.
+ *
+ * @param int $issue_id Alpaca issue post ID.
+ * @return array<int, string>
+ */
+function alpaistr_agentic_current_attempt_follow_up_notes( int $issue_id ): array {
+	$history = alpaistr_agentic_get_activity_history( $issue_id );
+	$index   = alpaistr_agentic_current_attempt_original_sent_index( $history );
+	if ( $index >= 0 && isset( $history[ $index ]['follow_up_notes'] ) && is_array( $history[ $index ]['follow_up_notes'] ) ) {
+		$notes = [];
+		foreach ( $history[ $index ]['follow_up_notes'] as $note ) {
+			$note = trim( (string) $note );
+			if ( '' !== $note ) {
+				$notes[] = $note;
+			}
+		}
+		return $notes;
+	}
+
+	$drafts = alpaistr_agentic_current_attempt_sent_drafts( $issue_id );
+	if ( count( $drafts ) < 2 ) {
+		return [];
+	}
+
+	$last_draft = $drafts[ count( $drafts ) - 1 ];
+	$last_body  = (string) ( $last_draft['body'] ?? '' );
+	if ( preg_match( '/^## Follow-up requests\s*$/m', $last_body ) ) {
+		return alpaistr_agentic_extract_follow_up_notes( $last_body );
+	}
+
+	$notes = [];
+	for ( $i = 1, $count = count( $drafts ); $i < $count; $i++ ) {
+		$notes = array_merge( $notes, alpaistr_agentic_extract_follow_up_notes( (string) ( $drafts[ $i ]['body'] ?? '' ) ) );
+	}
+	return $notes;
+}
+
+/**
+ * Persist follow-up notes on the original sent entry for this attempt.
+ *
+ * @param int                $issue_id Alpaca issue post ID.
+ * @param array<int, string> $notes    Notes, oldest first.
+ */
+function alpaistr_agentic_save_current_attempt_follow_up_notes( int $issue_id, array $notes ): void {
+	$history = alpaistr_agentic_get_activity_history( $issue_id );
+	$index   = alpaistr_agentic_current_attempt_original_sent_index( $history );
+	if ( $index < 0 ) {
+		return;
+	}
+
+	$clean = [];
+	foreach ( $notes as $note ) {
+		$note = trim( (string) $note );
+		if ( '' !== $note ) {
+			$clean[] = $note;
+		}
+	}
+
+	$history[ $index ]['follow_up_notes'] = $clean;
+	update_post_meta( $issue_id, ALPAISTR_AGENTIC_HISTORY_META, $history );
+}
+
+/**
+ * Index of the original sent entry after the latest start-over.
+ *
+ * @param array<int, array<string, mixed>> $history Full activity history.
+ * @return int Index, or -1 when missing.
+ */
+function alpaistr_agentic_current_attempt_original_sent_index( array $history ): int {
+	$last_revert = -1;
+	foreach ( $history as $index => $entry ) {
+		if ( 'reverted' === ( $entry['type'] ?? '' ) ) {
+			$last_revert = (int) $index;
+		}
+	}
+
+	$first_sent = -1;
+	for ( $index = $last_revert + 1, $count = count( $history ); $index < $count; $index++ ) {
+		if ( 'sent' !== ( $history[ $index ]['type'] ?? '' ) ) {
+			continue;
+		}
+		if ( -1 === $first_sent ) {
+			$first_sent = $index;
+		}
+		$body = (string) ( $history[ $index ]['draft']['body'] ?? '' );
+		if ( preg_match( '/(^|\n)## Summary(\s|$)/', $body ) ) {
+			return $index;
+		}
+	}
+
+	return $first_sent;
+}
+
+/**
+ * Original agent-ready template plus every follow-up request.
+ *
+ * @param string             $original_body Original GitHub issue body.
+ * @param array<int, string> $notes         Follow-up notes, oldest first.
+ * @return string GitHub issue body.
+ */
+function alpaistr_agentic_build_follow_up_issue_body( string $original_body, array $notes ): string {
+	$requests = [];
+	foreach ( $notes as $index => $note ) {
+		$requests[] = '### Request ' . ( $index + 1 ) . "\n\n" . $note;
+	}
+
+	return implode(
+		"\n",
+		[
+			rtrim( $original_body ),
+			'',
+			'## Follow-up requests',
+			'',
+			'The original issue above was already implemented. Apply the follow-up requests below on the current AI target branch and open a pull request into that branch.',
+			'',
+			implode( "\n\n", $requests ),
+		]
+	);
+}
+
+/**
+ * Original template plus requested changes after a PR was closed without merging.
+ *
+ * @param string             $original_body Original GitHub issue body.
+ * @param array<int, string> $notes         Follow-up notes, oldest first.
+ * @return string GitHub issue body.
+ */
+function alpaistr_agentic_build_retry_issue_body( string $original_body, array $notes ): string {
+	$requests = [];
+	foreach ( $notes as $index => $note ) {
+		$requests[] = '### Request ' . ( $index + 1 ) . "\n\n" . $note;
+	}
+
+	return implode(
+		"\n",
+		[
+			rtrim( $original_body ),
+			'',
+			'## Follow-up requests',
+			'',
+			'The previous AI pull request was closed without merging. Implement the original issue above, including the follow-up requests below, and open a pull request into the current AI target branch.',
+			'',
+			implode( "\n\n", $requests ),
+		]
+	);
+}
+
+/**
+ * Load an Alpaca issue post or return a not-found error.
+ *
+ * @param int $issue_id Alpaca issue post ID.
+ * @return WP_Post|WP_Error
+ */
+function alpaistr_agentic_require_issue_post( int $issue_id ): WP_Post|WP_Error {
 	$post = get_post( $issue_id );
 	if ( ! $post || 'alpaca_issue' !== $post->post_type ) {
 		return new WP_Error( 'not_found', esc_html__( 'Alpaca issue not found.', 'alpaca-issue-tracker' ), [ 'status' => 404 ] );
 	}
 
-	// Get repository, that will be needed later.
-	$settings   = alpaistr_agentic_get_settings();
-	$repo_parts = alpaistr_agentic_parse_github_repo( $settings['github_repo'] );
+	return $post;
+}
+
+/**
+ * List GitHub branches for the configured repository.
+ *
+ * @return WP_REST_Response|WP_Error
+ */
+function alpaistr_agentic_list_branches_callback(): WP_REST_Response|WP_Error {
+	$settings = alpaistr_agentic_get_settings();
+	$token    = $settings['github_token'];
+	$repo     = $settings['github_repo'];
+
+	if ( empty( $token ) || empty( $repo ) ) {
+		return new WP_Error( 'not_configured', esc_html__( 'GitHub token or repository is not configured.', 'alpaca-issue-tracker' ), [ 'status' => 400 ] );
+	}
+
+	$repo_parts = alpaistr_agentic_parse_github_repo( $repo );
 	if ( is_wp_error( $repo_parts ) ) {
 		return $repo_parts;
 	}
 
-	// Both branches must be configured for this workflow to work.
-	$staging_branch    = $settings['branches']['staging'];
-	$production_branch = $settings['branches']['production'];
-	if ( '' === $staging_branch || '' === $production_branch ) {
-		return new WP_Error( 'branches_not_configured', esc_html__( 'Both staging and production branches must be configured.', 'alpaca-issue-tracker' ), [ 'status' => 409 ] );
+	$branches = alpaistr_agentic_fetch_github_branches( $token, $repo_parts );
+	if ( is_wp_error( $branches ) ) {
+		return $branches;
 	}
 
-	// Check if issue has been sent to staging for AI to fix it there first.
-	$sent_entry = alpaistr_agentic_find_staging_sent_entry( $issue_id, $staging_branch );
-	if ( ! $sent_entry || empty( $sent_entry['github_number'] ) ) {
-		return new WP_Error( 'staging_fix_not_sent', esc_html__( 'This issue has not been sent to the staging branch.', 'alpaca-issue-tracker' ), [ 'status' => 409 ] );
+	return rest_ensure_response(
+		[
+			'branches' => $branches,
+		]
+	);
+}
+
+/**
+ * Return whether Start over and Request a change are allowed for this issue,
+ * plus the live GitHub pull request linked to this Alpaca task.
+ *
+ * @param WP_REST_Request $request REST request.
+ * @return WP_REST_Response|WP_Error
+ */
+function alpaistr_agentic_start_over_status_callback( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+	$issue_id = (int) $request->get_param( 'issue_id' );
+	$post     = alpaistr_agentic_require_issue_post( $issue_id );
+	if ( is_wp_error( $post ) ) {
+		return $post;
 	}
 
-	// Verify the staging pull request is merged before applying the same fix to production.
-	$pr = alpaistr_agentic_find_pr_for_issue( $settings['github_token'], $repo_parts, (int) $sent_entry['github_number'], $staging_branch );
-	if ( ! $pr ) {
-		return new WP_Error( 'pull_request_not_found', esc_html__( 'No pull request was found for the staging fix.', 'alpaca-issue-tracker' ), [ 'status' => 409 ] );
-	}
-	if ( empty( $pr['merged_at'] ) ) {
-		return new WP_Error( 'not_merged', esc_html__( 'That pull request is not merged.', 'alpaca-issue-tracker' ), [ 'status' => 409 ] );
+	$result = alpaistr_agentic_evaluate_start_over( $issue_id );
+	if ( is_wp_error( $result ) ) {
+		return $result;
 	}
 
-	$staging_pr_number = (int) $pr['number'];
+	$has_open_work        = ! empty( $result['has_open_work'] );
+	$has_merged_pr        = ! empty( $result['has_merged_pr'] );
+	$has_open_pr          = ! empty( $result['has_open_pr'] );
+	$has_sent             = ! empty( $result['allowed'] );
+	$waiting_on_issue     = ! empty( $result['waiting_on_issue'] );
+	$waiting_issue_number = (int) ( $result['waiting_issue_number'] ?? 0 );
 
-	// Trigger GitHub action to create a production pull request.
-	$dispatched = alpaistr_agentic_dispatch_staging_fix_to_production( $settings['github_token'], $repo_parts, $staging_pr_number, $production_branch, $issue_id );
-	if ( is_wp_error( $dispatched ) ) {
-		return $dispatched;
+	$request_change_mode   = '';
+	$request_change_reason = '';
+	if ( $has_sent ) {
+		if ( $has_open_pr ) {
+			$request_change_mode = 'comment_pr';
+		} elseif ( $has_open_work ) {
+			$request_change_mode = 'comment_issue';
+		} elseif ( $has_merged_pr ) {
+			$request_change_mode = 'create_pr';
+		} else {
+			$request_change_mode = 'retry_pr';
+		}
 	}
 
-	// Get the staging pull request URL for the activity log.
-	$staging_pr_url = esc_url_raw( $pr['html_url'] ?? '' );
+	$pull_requests = array_values(
+		array_filter(
+			(array) ( $result['pull_requests'] ?? [] ),
+			static function ( $pull_request ): bool {
+				return is_array( $pull_request );
+			}
+		)
+	);
+	$pull_request  = is_array( $result['pull_request'] ?? null ) ? $result['pull_request'] : null;
+	if ( null === $pull_request && ! empty( $pull_requests[0] ) ) {
+		$pull_request = $pull_requests[0];
+	}
 
-	// Save activities.
+	return rest_ensure_response(
+		[
+			'allowed'                => (bool) $result['allowed'],
+			'reason'                 => (string) $result['reason'],
+			'request_change_allowed' => $has_sent,
+			'request_change_reason'  => $request_change_reason,
+			'request_change_mode'    => $request_change_mode,
+			'primary_action'         => $has_sent ? 'request_change' : 'fix',
+			'has_open_work'          => $has_open_work,
+			'has_merged_pr'          => $has_merged_pr,
+			'has_open_pr'            => $has_open_pr,
+			'waiting_on_issue'       => $waiting_on_issue,
+			'waiting_issue_number'   => $waiting_issue_number,
+			'pull_request'           => $pull_request,
+			'pull_requests'          => $pull_requests,
+			'can_reset_branch'       => ! empty( $result['can_reset_branch'] ),
+			'will_reset_branch'      => ! empty( $result['will_reset_branch'] ),
+			'has_outside_commits'    => ! empty( $result['has_outside_commits'] ),
+			'reset_blocked_reason'   => (string) ( $result['reset_blocked_reason'] ?? '' ),
+			'branch'                 => (string) ( $result['branch'] ?? '' ),
+		]
+	);
+}
+
+/**
+ * End the current fixing session: close in-flight GitHub work and start fresh.
+ *
+ * Always closes every still-open GitHub issue and pull request from this task.
+ * If the target branch only gained this session's AI commits, its head is moved
+ * back to the snapshot from before the session. Other commits leave the branch
+ * as it is. Re-checks GitHub at click time in case work landed after the button
+ * was shown.
+ *
+ * @param WP_REST_Request $request REST request.
+ * @return WP_REST_Response|WP_Error
+ */
+function alpaistr_agentic_start_over_callback( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+	$issue_id = (int) $request->get_param( 'issue_id' );
+	$post     = alpaistr_agentic_require_issue_post( $issue_id );
+	if ( is_wp_error( $post ) ) {
+		return $post;
+	}
+
+	$result = alpaistr_agentic_evaluate_start_over( $issue_id );
+	if ( is_wp_error( $result ) ) {
+		return $result;
+	}
+
+	if ( empty( $result['allowed'] ) ) {
+		return new WP_Error(
+			'start_over_blocked',
+			$result['reason'],
+			[ 'status' => 409 ]
+		);
+	}
+
+	$token      = $result['token'];
+	$repo_parts = $result['repo_parts'];
+	$branch     = $result['branch'];
+
+	alpaistr_agentic_close_open_github_work( $token, $repo_parts, $issue_id, $branch );
+	alpaistr_agentic_mark_unmerged_sent_pull_requests_closed( $issue_id );
+
+	$plan                 = alpaistr_agentic_target_branch_reset_plan( $token, $repo_parts, $issue_id, $branch );
+	$branch_reset         = false;
+	$branch_reset_error   = '';
+	$will_reset           = ! empty( $plan['will_reset_branch'] );
+	$has_outside_commits  = ! empty( $plan['has_outside_commits'] );
+	$reset_blocked_reason = (string) ( $plan['reset_blocked_reason'] ?? '' );
+
+	if ( $will_reset ) {
+		$moved = alpaistr_agentic_force_update_branch_sha(
+			$token,
+			$repo_parts,
+			$branch,
+			(string) $plan['start_sha']
+		);
+		if ( is_wp_error( $moved ) ) {
+			$branch_reset_error = $moved->get_error_message();
+		} else {
+			$branch_reset = true;
+		}
+	}
+
+	delete_post_meta( $issue_id, ALPAISTR_AGENTIC_START_SHA_META );
+	delete_post_meta( $issue_id, ALPAISTR_AGENTIC_START_BRANCH_META );
+
+	$branch_reset_note = alpaistr_agentic_branch_reset_outcome_note(
+		$branch_reset,
+		$branch_reset_error,
+		$has_outside_commits,
+		(string) ( $plan['start_sha'] ?? '' ),
+		$reset_blocked_reason
+	);
+
 	$history = alpaistr_agentic_append_history_entry(
 		$issue_id,
 		[
-			'type'              => 'applied',
-			'staging_pr_number' => $staging_pr_number,
-			'staging_pr_url'    => $staging_pr_url,
-			'target_branch'     => $production_branch,
+			'type'              => 'reverted',
+			'pr_url'            => '',
+			'branch_reset'      => $branch_reset,
+			'branch_reset_note' => $branch_reset_note,
 			'occurred_at'       => gmdate( 'c' ),
 		]
 	);
 
-	// Keep track of activities.
-	alpaistr_agentic_insert_production_fix_activity_comment( $issue_id, $staging_pr_url, $production_branch );
+	alpaistr_agentic_insert_reverted_activity_comment( $issue_id, $branch_reset_note );
 
 	return rest_ensure_response(
 		[
-			'success'           => true,
-			'production_branch' => $production_branch,
-			'history'           => $history,
+			'success'              => true,
+			'pr_url'               => '',
+			'history'              => $history,
+			'branch_reset'         => $branch_reset,
+			'branch_reset_error'   => $branch_reset_error,
+			'reset_blocked_reason' => $reset_blocked_reason,
+			'has_outside_commits'  => $has_outside_commits,
+			'will_reset_branch'    => $will_reset,
 		]
 	);
+}
+
+/**
+ * Remove one sent AI fix (and its stored draft) from Alpaca history. Never touches GitHub.
+ *
+ * @param WP_REST_Request $request REST request.
+ * @return WP_REST_Response|WP_Error
+ */
+function alpaistr_agentic_delete_fix_callback( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+	$issue_id      = (int) $request->get_param( 'issue_id' );
+	$github_number = (int) $request->get_param( 'github_number' );
+
+	$post = alpaistr_agentic_require_issue_post( $issue_id );
+	if ( is_wp_error( $post ) ) {
+		return $post;
+	}
+
+	$history = alpaistr_agentic_get_activity_history( $issue_id );
+	$kept    = [];
+	$removed = false;
+
+	foreach ( $history as $entry ) {
+		if ( 'sent' === ( $entry['type'] ?? '' ) && (int) ( $entry['github_number'] ?? 0 ) === $github_number ) {
+			$removed = true;
+			continue;
+		}
+		$kept[] = $entry;
+	}
+
+	if ( ! $removed ) {
+		return new WP_Error( 'not_found', esc_html__( 'That AI fix was not found on this issue.', 'alpaca-issue-tracker' ), [ 'status' => 404 ] );
+	}
+
+	update_post_meta( $issue_id, ALPAISTR_AGENTIC_HISTORY_META, $kept );
+
+	return rest_ensure_response(
+		[
+			'success' => true,
+			'history' => $kept,
+		]
+	);
+}
+
+/**
+ * Working branch the agent creates for a GitHub issue.
+ *
+ * @param int $issue_number GitHub issue number.
+ * @return string Branch name, e.g. agent/fix-142.
+ */
+function alpaistr_agentic_working_branch_name( int $issue_number ): string {
+	return 'agent/fix-' . $issue_number;
 }
 
 /**
  * Find the pull request opened by the AI agent for a given issue, preferring a merged one.
  *
- * The agent workflows always create branches named `agent/issue-<number>` targeting
- * the configured branch directly (see agent-ready-trigger.yml), so filtering GitHub's
- * pull list by that exact head branch and base branch is precise -- unlike scanning PR
- * bodies for a "Closes #N" keyword, which any unrelated PR mentioning the issue number
- * could also match.
+ * The agent workflows create branches named `agent/fix-<number>` targeting the chosen
+ * branch directly (see agent-ready-trigger.yml). Older PRs used `agent/issue-<number>`.
+ * Filtering GitHub's pull list by those head branches and the base branch is precise --
+ * unlike scanning PR bodies for a "Closes #N" keyword, which any unrelated PR mentioning
+ * the issue number could also match.
  *
  * @param string                             $token        GitHub personal access token.
  * @param array{owner: string, name: string} $repo_parts   Parsed repository.
@@ -1746,13 +2790,69 @@ function alpaistr_agentic_apply_staging_fix_to_production_callback( WP_REST_Requ
  * @return array<string, mixed>|null Pull request data, or null when no match is found.
  */
 function alpaistr_agentic_find_pr_for_issue( string $token, array $repo_parts, int $issue_number, string $base_branch ): ?array {
-	// Get the relevant pull request merged/opened towards staging branch.
+	$head_branches = [
+		alpaistr_agentic_working_branch_name( $issue_number ),
+		'agent/issue-' . $issue_number,
+	];
+
+	foreach ( $head_branches as $head_branch ) {
+		$pr = alpaistr_agentic_find_pr_by_head_and_base( $token, $repo_parts, $head_branch, $base_branch );
+		if ( $pr ) {
+			return $pr;
+		}
+	}
+
+	return null;
+}
+
+/**
+ * Every pull request opened from a GitHub issue's AI working branches.
+ *
+ * Request a change creates a new GitHub issue and a new PR; a task may have
+ * several. Start over closes every still-open one.
+ *
+ * @param string                             $token        GitHub personal access token.
+ * @param array{owner: string, name: string} $repo_parts   Parsed repository.
+ * @param int                                $issue_number GitHub issue number the PR should close.
+ * @param string                             $base_branch  Branch the PR should target.
+ * @return array<int, array<string, mixed>> Pull request payloads.
+ */
+function alpaistr_agentic_find_all_prs_for_issue( string $token, array $repo_parts, int $issue_number, string $base_branch ): array {
+	$head_branches = [
+		alpaistr_agentic_working_branch_name( $issue_number ),
+		'agent/issue-' . $issue_number,
+	];
+	$found         = [];
+
+	foreach ( $head_branches as $head_branch ) {
+		foreach ( alpaistr_agentic_list_prs_by_head_and_base( $token, $repo_parts, $head_branch, $base_branch ) as $pull ) {
+			$number = (int) ( $pull['number'] ?? 0 );
+			if ( $number <= 0 ) {
+				continue;
+			}
+			$found[ $number ] = $pull;
+		}
+	}
+
+	return array_values( $found );
+}
+
+/**
+ * List pull requests for an exact head and base branch.
+ *
+ * @param string                             $token       GitHub personal access token.
+ * @param array{owner: string, name: string} $repo_parts  Parsed repository.
+ * @param string                             $head_branch Head branch name (without owner prefix).
+ * @param string                             $base_branch Base branch name.
+ * @return array<int, array<string, mixed>> Pull request payloads.
+ */
+function alpaistr_agentic_list_prs_by_head_and_base( string $token, array $repo_parts, string $head_branch, string $base_branch ): array {
 	$response = wp_remote_get(
 		sprintf(
 			'https://api.github.com/repos/%s/%s/pulls?head=%s&base=%s&state=all&sort=updated&direction=desc',
 			rawurlencode( $repo_parts['owner'] ),
 			rawurlencode( $repo_parts['name'] ),
-			rawurlencode( $repo_parts['owner'] . ':agent/issue-' . $issue_number ),
+			rawurlencode( $repo_parts['owner'] . ':' . $head_branch ),
 			rawurlencode( $base_branch )
 		),
 		[
@@ -1762,39 +2862,963 @@ function alpaistr_agentic_find_pr_for_issue( string $token, array $repo_parts, i
 	);
 
 	if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
-		return null;
+		return [];
 	}
 
 	$pulls = json_decode( wp_remote_retrieve_body( $response ), true );
-	if ( ! is_array( $pulls ) || empty( $pulls ) ) {
-		return null;
+	if ( ! is_array( $pulls ) ) {
+		return [];
 	}
 
-	// Get the most recent pull request.
+	$found = [];
 	foreach ( $pulls as $pull ) {
-		if ( is_array( $pull ) && ! empty( $pull['merged_at'] ) ) {
-			return $pull; // Most recently updated merged match wins.
+		if ( ! is_array( $pull ) || empty( $pull['number'] ) ) {
+			continue;
 		}
+		$found[ (int) $pull['number'] ] = $pull;
 	}
 
-	return is_array( $pulls[0] ) ? $pulls[0] : null; // No merged match yet -- point at the most recent PR instead.
+	return array_values( $found );
 }
 
 /**
- * Fire the repository_dispatch event that the apply-staging-fix-to-production.yml GitHub action listens for.
- * This GitHub action will cherry-pick and apply the exact same changes previously tested on the staging branch.
+ * Find a pull request by exact head and base branch, preferring a merged one.
  *
- * @param string                             $token             GitHub personal access token.
- * @param array{owner: string, name: string} $repo_parts        Parsed repository.
- * @param int                                $staging_pr_number Merged staging pull request number.
- * @param string                             $production_branch Production branch to cherry-pick onto.
- * @param int                                $alpaca_issue_id   Alpaca issue post ID (for the workflow's conflict comment).
- * @return true|WP_Error
+ * @param string                             $token       GitHub personal access token.
+ * @param array{owner: string, name: string} $repo_parts  Parsed repository.
+ * @param string                             $head_branch Head branch name (without owner prefix).
+ * @param string                             $base_branch Base branch name.
+ * @return array<string, mixed>|null Pull request data, or null when no match is found.
  */
-function alpaistr_agentic_dispatch_staging_fix_to_production( string $token, array $repo_parts, int $staging_pr_number, string $production_branch, int $alpaca_issue_id ): bool|WP_Error {
-	$response = wp_remote_post(
+function alpaistr_agentic_find_pr_by_head_and_base( string $token, array $repo_parts, string $head_branch, string $base_branch ): ?array {
+	$pulls = alpaistr_agentic_list_prs_by_head_and_base( $token, $repo_parts, $head_branch, $base_branch );
+	if ( empty( $pulls ) ) {
+		return null;
+	}
+
+	foreach ( $pulls as $pull ) {
+		if ( ! empty( $pull['merged_at'] ) ) {
+			return $pull;
+		}
+	}
+
+	return $pulls[0];
+}
+
+/**
+ * Save the AI branch SHA on first send so Start over can restore it later.
+ *
+ * @param int                                $issue_id   Alpaca issue post ID.
+ * @param string                             $token      GitHub token.
+ * @param array{owner: string, name: string} $repo_parts Parsed repository.
+ * @param string                             $branch     AI target branch.
+ */
+function alpaistr_agentic_remember_start_sha( int $issue_id, string $token, array $repo_parts, string $branch ): void {
+	if ( $issue_id <= 0 || '' === $branch ) {
+		return;
+	}
+
+	$existing = (string) get_post_meta( $issue_id, ALPAISTR_AGENTIC_START_SHA_META, true );
+	if ( '' !== $existing ) {
+		return;
+	}
+
+	$sha = alpaistr_agentic_get_default_branch_sha( $token, $repo_parts, $branch );
+	if ( is_wp_error( $sha ) || '' === $sha ) {
+		return;
+	}
+
+	update_post_meta( $issue_id, ALPAISTR_AGENTIC_START_SHA_META, $sha );
+	update_post_meta( $issue_id, ALPAISTR_AGENTIC_START_BRANCH_META, $branch );
+}
+
+/**
+ * Decide whether Start over is allowed.
+ *
+ * Start over ends the current fixing session: in-flight GitHub issues and
+ * pull requests are closed, then the next Fix with AI starts a new session.
+ * The target branch is moved back only when it has no commits besides this
+ * session's AI work.
+ *
+ * @param int $issue_id Alpaca issue post ID.
+ * @return array<string, mixed>|WP_Error
+ */
+function alpaistr_agentic_evaluate_start_over( int $issue_id ): array|WP_Error {
+	$settings = alpaistr_agentic_get_settings();
+	$token    = $settings['github_token'];
+	$repo     = $settings['github_repo'];
+	$branch   = (string) get_post_meta( $issue_id, ALPAISTR_AGENTIC_START_BRANCH_META, true );
+	if ( '' === $branch ) {
+		$branch = (string) ( $settings['ai_target_branch'] ?? '' );
+	}
+
+	if ( empty( $token ) || empty( $repo ) ) {
+		return new WP_Error( 'not_configured', esc_html__( 'GitHub token or repository is not configured.', 'alpaca-issue-tracker' ), [ 'status' => 400 ] );
+	}
+
+	$repo_parts = alpaistr_agentic_parse_github_repo( $repo );
+	if ( is_wp_error( $repo_parts ) ) {
+		return $repo_parts;
+	}
+
+	$work     = alpaistr_agentic_task_github_work_status( $token, $repo_parts, $issue_id, $branch );
+	$has_sent = false;
+	foreach ( alpaistr_agentic_current_attempt_entries( $issue_id ) as $entry ) {
+		if ( 'sent' === ( $entry['type'] ?? '' ) ) {
+			$has_sent = true;
+			break;
+		}
+	}
+
+	$reset = alpaistr_agentic_target_branch_reset_plan( $token, $repo_parts, $issue_id, $branch, $work );
+
+	return array_merge(
+		[
+			'allowed'              => $has_sent,
+			'should_restore'       => false,
+			'reason'               => $has_sent
+				? ''
+				: __( 'There is no active fix attempt to start over.', 'alpaca-issue-tracker' ),
+			'token'                => $token,
+			'repo_parts'           => $repo_parts,
+			'branch'               => $branch,
+			'start_sha'            => (string) ( $reset['start_sha'] ?? '' ),
+			'head_sha'             => (string) ( $reset['head_sha'] ?? '' ),
+			'can_reset_branch'     => ! empty( $reset['can_reset_branch'] ),
+			'will_reset_branch'    => ! empty( $reset['will_reset_branch'] ),
+			'has_outside_commits'  => ! empty( $reset['has_outside_commits'] ),
+			'reset_blocked_reason' => (string) ( $reset['reset_blocked_reason'] ?? '' ),
+			'tree_matches_start'   => true,
+		],
+		alpaistr_agentic_github_work_fields( $work )
+	);
+}
+
+/**
+ * Whether the AI target branch can be moved back to the session start snapshot.
+ *
+ * Safe only when every first-parent commit after the start SHA is a merge from
+ * this fixing session. Any other commit leaves the branch untouched.
+ *
+ * @param string                             $token      GitHub token.
+ * @param array{owner: string, name: string} $repo_parts Parsed repository.
+ * @param int                                $issue_id   Alpaca issue post ID.
+ * @param string                             $branch     AI target branch.
+ * @param array<string, mixed>               $work       Optional live GitHub work status.
+ * @return array<string, mixed>
+ */
+function alpaistr_agentic_target_branch_reset_plan( string $token, array $repo_parts, int $issue_id, string $branch, array $work = [] ): array {
+	$other_commits_message = __( 'Since outside changes were pushed to the AI target branch during this session, Start over cannot revert it to the state it had before the session.', 'alpaca-issue-tracker' );
+
+	$missing_snapshot_message = __( 'Alpaca does not have the starting commit for this session, so the AI target branch will be left as it is.', 'alpaca-issue-tracker' );
+
+	$plan = [
+		'can_reset_branch'     => false,
+		'will_reset_branch'    => false,
+		'has_outside_commits'  => false,
+		'reset_blocked_reason' => $missing_snapshot_message,
+		'start_sha'            => (string) get_post_meta( $issue_id, ALPAISTR_AGENTIC_START_SHA_META, true ),
+		'head_sha'             => '',
+	];
+
+	if ( '' === $plan['start_sha'] || '' === $branch ) {
+		return $plan;
+	}
+
+	$head_sha = alpaistr_agentic_get_default_branch_sha( $token, $repo_parts, $branch );
+	if ( is_wp_error( $head_sha ) || '' === $head_sha ) {
+		$plan['reset_blocked_reason'] = is_wp_error( $head_sha )
+			? $head_sha->get_error_message()
+			: $other_commits_message;
+		return $plan;
+	}
+
+	$plan['head_sha'] = $head_sha;
+
+	if ( strtolower( $head_sha ) === strtolower( $plan['start_sha'] ) ) {
+		$plan['can_reset_branch']     = true;
+		$plan['will_reset_branch']    = false;
+		$plan['reset_blocked_reason'] = '';
+		return $plan;
+	}
+
+	$walk_shas = alpaistr_agentic_list_first_parent_shas_after_start( $token, $repo_parts, $head_sha, $plan['start_sha'] );
+	if ( is_wp_error( $walk_shas ) || empty( $walk_shas ) ) {
+		$plan['has_outside_commits']  = true;
+		$plan['reset_blocked_reason'] = $other_commits_message;
+		return $plan;
+	}
+
+	$ai_shas = [];
+	foreach ( alpaistr_agentic_current_session_merge_commit_shas( $token, $repo_parts, $issue_id, $branch, $work ) as $sha ) {
+		$ai_shas[ strtolower( $sha ) ] = true;
+	}
+
+	foreach ( $walk_shas as $sha ) {
+		if ( ! isset( $ai_shas[ strtolower( (string) $sha ) ] ) ) {
+			$plan['has_outside_commits']  = true;
+			$plan['reset_blocked_reason'] = $other_commits_message;
+			return $plan;
+		}
+	}
+
+	$plan['can_reset_branch']     = true;
+	$plan['will_reset_branch']    = true;
+	$plan['reset_blocked_reason'] = '';
+
+	return $plan;
+}
+
+/**
+ * Merge commit SHAs for this fixing session's merged AI pull requests.
+ *
+ * @param string                             $token      GitHub token.
+ * @param array{owner: string, name: string} $repo_parts Parsed repository.
+ * @param int                                $issue_id   Alpaca issue post ID.
+ * @param string                             $branch     AI target branch.
+ * @param array<string, mixed>               $work       Optional live GitHub work status.
+ * @return string[]
+ */
+function alpaistr_agentic_current_session_merge_commit_shas( string $token, array $repo_parts, int $issue_id, string $branch, array $work = [] ): array {
+	$current_numbers = [];
+	foreach ( alpaistr_agentic_current_attempt_entries( $issue_id ) as $entry ) {
+		if ( 'sent' !== ( $entry['type'] ?? '' ) ) {
+			continue;
+		}
+
+		$github_number = (int) ( $entry['github_number'] ?? 0 );
+		if ( $github_number > 0 ) {
+			$current_numbers[ $github_number ] = true;
+		}
+	}
+
+	$shas = [];
+	foreach ( (array) ( $work['pull_requests'] ?? [] ) as $pr ) {
+		if ( ! is_array( $pr ) || empty( $pr['merged'] ) ) {
+			continue;
+		}
+
+		$github_number = (int) ( $pr['github_issue_number'] ?? 0 );
+		if ( ! isset( $current_numbers[ $github_number ] ) ) {
+			continue;
+		}
+
+		$merge_sha = strtolower( (string) ( $pr['merge_commit_sha'] ?? '' ) );
+		if ( '' !== $merge_sha ) {
+			$shas[ $merge_sha ] = true;
+		}
+	}
+
+	if ( ! empty( $work['pull_requests'] ) || '' === $branch || empty( $current_numbers ) ) {
+		return array_keys( $shas );
+	}
+
+	foreach ( array_keys( $current_numbers ) as $github_number ) {
+		foreach ( alpaistr_agentic_find_all_prs_for_issue( $token, $repo_parts, (int) $github_number, $branch ) as $pr ) {
+			if ( empty( $pr['merged_at'] ) ) {
+				continue;
+			}
+
+			$merge_sha = strtolower( (string) ( $pr['merge_commit_sha'] ?? '' ) );
+			if ( '' !== $merge_sha ) {
+				$shas[ $merge_sha ] = true;
+			}
+		}
+	}
+
+	return array_keys( $shas );
+}
+
+/**
+ * First-parent commit SHAs after a start snapshot, newest first.
+ *
+ * @param string                             $token      GitHub token.
+ * @param array{owner: string, name: string} $repo_parts Parsed repository.
+ * @param string                             $head_sha   Current branch tip.
+ * @param string                             $start_sha  Saved starting commit.
+ * @return string[]|WP_Error
+ */
+function alpaistr_agentic_list_first_parent_shas_after_start( string $token, array $repo_parts, string $head_sha, string $start_sha ): array|WP_Error {
+	$response = wp_remote_get(
 		sprintf(
-			'https://api.github.com/repos/%s/%s/dispatches',
+			'https://api.github.com/repos/%s/%s/commits?sha=%s&per_page=100',
+			rawurlencode( $repo_parts['owner'] ),
+			rawurlencode( $repo_parts['name'] ),
+			rawurlencode( $head_sha )
+		),
+		[
+			'timeout' => 20,
+			'headers' => alpaistr_agentic_github_api_headers( $token ),
+		]
+	);
+
+	if ( is_wp_error( $response ) ) {
+		return new WP_Error( 'github_request_failed', $response->get_error_message(), [ 'status' => 502 ] );
+	}
+
+	if ( 200 !== wp_remote_retrieve_response_code( $response ) ) {
+		return new WP_Error(
+			'github_api_error',
+			__( 'Could not read commits from GitHub.', 'alpaca-issue-tracker' ),
+			[ 'status' => 502 ]
+		);
+	}
+
+	$commits = json_decode( wp_remote_retrieve_body( $response ), true );
+	if ( ! is_array( $commits ) ) {
+		return new WP_Error(
+			'github_api_error',
+			__( 'Could not read commits from GitHub.', 'alpaca-issue-tracker' ),
+			[ 'status' => 502 ]
+		);
+	}
+
+	$start  = strtolower( $start_sha );
+	$head   = strtolower( $head_sha );
+	$by_sha = [];
+
+	foreach ( $commits as $commit ) {
+		if ( ! is_array( $commit ) ) {
+			continue;
+		}
+
+		$sha = strtolower( (string) ( $commit['sha'] ?? '' ) );
+		if ( '' !== $sha ) {
+			$by_sha[ $sha ] = $commit;
+		}
+	}
+
+	$shas    = [];
+	$current = $head;
+
+	for ( $i = 0; $i < 100 && '' !== $current && $current !== $start; $i++ ) {
+		if ( ! isset( $by_sha[ $current ] ) ) {
+			return new WP_Error(
+				'start_over_foreign_commits',
+				__( 'Could not find the session start commit on the target branch.', 'alpaca-issue-tracker' )
+			);
+		}
+
+		$shas[]  = $current;
+		$parents = $by_sha[ $current ]['parents'] ?? [];
+		$current = strtolower( (string) ( is_array( $parents[0] ?? null ) ? ( $parents[0]['sha'] ?? '' ) : '' ) );
+	}
+
+	if ( $current !== $start ) {
+		return new WP_Error(
+			'start_over_foreign_commits',
+			__( 'Could not find the session start commit on the target branch.', 'alpaca-issue-tracker' )
+		);
+	}
+
+	return $shas;
+}
+
+/**
+ * Walk first-parent commits from HEAD back to a start SHA.
+ *
+ * @param string                             $token      GitHub token.
+ * @param array{owner: string, name: string} $repo_parts Parsed repository.
+ * @param string                             $head_sha   Current branch tip.
+ * @param string                             $start_sha  Saved starting commit.
+ * @return array{shas: string[], head_tree: string, start_tree: string}|WP_Error
+ */
+function alpaistr_agentic_first_parent_shas_until( string $token, array $repo_parts, string $head_sha, string $start_sha ): array|WP_Error {
+	$shas       = [];
+	$current    = $head_sha;
+	$head_tree  = '';
+	$start_tree = '';
+
+	for ( $i = 0; $i < 80 && '' !== $current; $i++ ) {
+		$commit = alpaistr_agentic_github_get_commit( $token, $repo_parts, $current );
+		if ( is_wp_error( $commit ) ) {
+			return $commit;
+		}
+
+		$tree = (string) ( $commit['commit']['tree']['sha'] ?? '' );
+		if ( $current === $head_sha ) {
+			$head_tree = $tree;
+		}
+
+		if ( $current === $start_sha ) {
+			$start_tree = $tree;
+			break;
+		}
+
+		$shas[]   = $current;
+		$parents  = is_array( $commit['parents'] ?? null ) ? $commit['parents'] : [];
+		$current  = (string) ( $parents[0]['sha'] ?? '' );
+	}
+
+	if ( $current !== $start_sha && $head_sha !== $start_sha ) {
+		return new WP_Error(
+			'start_over_blocked',
+			__( 'Start over is unavailable because the AI branch has commits that are not from this issue.', 'alpaca-issue-tracker' )
+		);
+	}
+
+	if ( '' === $start_tree ) {
+		$start_commit = alpaistr_agentic_github_get_commit( $token, $repo_parts, $start_sha );
+		if ( is_wp_error( $start_commit ) ) {
+			return $start_commit;
+		}
+		$start_tree = (string) ( $start_commit['commit']['tree']['sha'] ?? '' );
+	}
+
+	if ( '' === $head_tree ) {
+		$head_tree = $start_tree;
+	}
+
+	return [
+		'shas'       => $shas,
+		'head_tree'  => $head_tree,
+		'start_tree' => $start_tree,
+	];
+}
+
+/**
+ * Merge commit SHAs for this issue's AI fix PRs and start-over PRs.
+ *
+ * @param string                             $token      GitHub token.
+ * @param array{owner: string, name: string} $repo_parts Parsed repository.
+ * @param int                                $issue_id   Alpaca issue post ID.
+ * @param string                             $branch     AI target branch.
+ * @return string[]
+ */
+function alpaistr_agentic_issue_merge_commit_shas( string $token, array $repo_parts, int $issue_id, string $branch ): array {
+	$shas = [];
+
+	foreach ( alpaistr_agentic_get_activity_history( $issue_id ) as $entry ) {
+		if ( 'sent' !== ( $entry['type'] ?? '' ) ) {
+			continue;
+		}
+
+		$github_number = (int) ( $entry['github_number'] ?? 0 );
+		if ( $github_number <= 0 ) {
+			continue;
+		}
+
+		$pr = alpaistr_agentic_find_pr_for_issue( $token, $repo_parts, $github_number, $branch );
+		if ( ! $pr || empty( $pr['merged_at'] ) ) {
+			continue;
+		}
+
+		$merge_sha = (string) ( $pr['merge_commit_sha'] ?? '' );
+		if ( '' !== $merge_sha ) {
+			$shas[] = $merge_sha;
+		}
+	}
+
+	$restore_pr = alpaistr_agentic_find_pr_by_head_and_base(
+		$token,
+		$repo_parts,
+		alpaistr_agentic_restore_branch_name( $issue_id ),
+		$branch
+	);
+	if ( $restore_pr && ! empty( $restore_pr['merged_at'] ) ) {
+		$merge_sha = (string) ( $restore_pr['merge_commit_sha'] ?? '' );
+		if ( '' !== $merge_sha ) {
+			$shas[] = $merge_sha;
+		}
+	}
+
+	return array_values( array_unique( $shas ) );
+}
+
+/**
+ * Empty GitHub work status for an Alpaca issue.
+ *
+ * @return array<string, mixed>
+ */
+function alpaistr_agentic_empty_github_work_status(): array {
+	return [
+		'has_open_work'        => false,
+		'has_merged_pr'        => false,
+		'has_open_pr'          => false,
+		'waiting_on_issue'     => false,
+		'waiting_issue_number' => 0,
+		'pull_request'         => null,
+		'pull_requests'        => [],
+	];
+}
+
+/**
+ * Flatten GitHub work flags onto a start-over result.
+ *
+ * @param array<string, mixed> $work Work status.
+ * @return array<string, mixed>
+ */
+function alpaistr_agentic_github_work_fields( array $work ): array {
+	return [
+		'has_open_work'        => ! empty( $work['has_open_work'] ),
+		'has_merged_pr'        => ! empty( $work['has_merged_pr'] ),
+		'has_open_pr'          => ! empty( $work['has_open_pr'] ),
+		'waiting_on_issue'     => ! empty( $work['waiting_on_issue'] ),
+		'waiting_issue_number' => (int) ( $work['waiting_issue_number'] ?? 0 ),
+		'pull_request'         => is_array( $work['pull_request'] ?? null ) ? $work['pull_request'] : null,
+		'pull_requests'        => array_values(
+			array_filter(
+				(array) ( $work['pull_requests'] ?? [] ),
+				static function ( $pull_request ): bool {
+					return is_array( $pull_request );
+				}
+			)
+		),
+	];
+}
+
+/**
+ * Public fields for a GitHub pull request linked to an Alpaca task.
+ *
+ * @param array<string, mixed> $pr            GitHub pull request payload.
+ * @param int                  $github_number GitHub issue number that opened this PR.
+ * @return array<string, mixed>
+ */
+function alpaistr_agentic_summarize_pull_request( array $pr, int $github_number = 0 ): array {
+	$merged = ! empty( $pr['merged_at'] );
+	$state  = $merged ? 'merged' : (string) ( $pr['state'] ?? 'closed' );
+
+	return [
+		'number'              => (int) ( $pr['number'] ?? 0 ),
+		'url'                 => esc_url_raw( (string) ( $pr['html_url'] ?? '' ) ),
+		'state'               => $state,
+		'merged'              => $merged,
+		'merge_commit_sha'    => strtolower( (string) ( $pr['merge_commit_sha'] ?? '' ) ),
+		'github_issue_number' => $github_number,
+	];
+}
+
+/**
+ * Save discovered pull request details onto matching sent history entries.
+ *
+ * @param int                              $issue_id             Alpaca issue post ID.
+ * @param array<int, array<string, mixed>> $prs_by_github_number Map of GitHub issue number to summarized PR.
+ */
+function alpaistr_agentic_remember_sent_pull_requests( int $issue_id, array $prs_by_github_number ): void {
+	if ( empty( $prs_by_github_number ) ) {
+		return;
+	}
+
+	$history = alpaistr_agentic_get_activity_history( $issue_id );
+	$changed = false;
+
+	foreach ( $history as $index => $entry ) {
+		$github_number = (int) ( $entry['github_number'] ?? 0 );
+		if ( 'sent' !== ( $entry['type'] ?? '' ) || ! isset( $prs_by_github_number[ $github_number ] ) ) {
+			continue;
+		}
+
+		$pr        = $prs_by_github_number[ $github_number ];
+		$pr_url    = (string) ( $pr['url'] ?? '' );
+		$pr_number = (int) ( $pr['number'] ?? 0 );
+		$pr_state  = (string) ( $pr['state'] ?? '' );
+
+		if (
+			(string) ( $entry['pr_url'] ?? '' ) === $pr_url
+			&& (int) ( $entry['pr_number'] ?? 0 ) === $pr_number
+			&& (string) ( $entry['pr_state'] ?? '' ) === $pr_state
+		) {
+			continue;
+		}
+
+		$history[ $index ]['pr_url']    = $pr_url;
+		$history[ $index ]['pr_number'] = $pr_number;
+		$history[ $index ]['pr_state']  = $pr_state;
+		$changed                        = true;
+	}
+
+	if ( $changed ) {
+		update_post_meta( $issue_id, ALPAISTR_AGENTIC_HISTORY_META, $history );
+	}
+}
+
+/**
+ * Mark stored pull requests as closed after Start over closes them on GitHub.
+ *
+ * Merged pull requests are left unchanged. Entries with no pull request yet
+ * stay as they are so the AI Log can still show "waiting".
+ *
+ * @param int $issue_id Alpaca issue post ID.
+ */
+function alpaistr_agentic_mark_unmerged_sent_pull_requests_closed( int $issue_id ): void {
+	$history = alpaistr_agentic_get_activity_history( $issue_id );
+	$changed = false;
+
+	foreach ( $history as $index => $entry ) {
+		if ( 'sent' !== ( $entry['type'] ?? '' ) ) {
+			continue;
+		}
+
+		$pr_state  = (string) ( $entry['pr_state'] ?? '' );
+		$pr_number = (int) ( $entry['pr_number'] ?? 0 );
+		$pr_url    = (string) ( $entry['pr_url'] ?? '' );
+
+		if ( 'merged' === $pr_state || 'closed' === $pr_state ) {
+			continue;
+		}
+
+		if ( $pr_number <= 0 && '' === $pr_url ) {
+			continue;
+		}
+
+		$history[ $index ]['pr_state'] = 'closed';
+		$changed                       = true;
+	}
+
+	if ( $changed ) {
+		update_post_meta( $issue_id, ALPAISTR_AGENTIC_HISTORY_META, $history );
+	}
+}
+
+/**
+ * Live GitHub PR/issue status for this Alpaca task.
+ *
+ * Button flags (open work, merged, waiting) use the current fixing session
+ * only. The pull request list includes every sent GitHub issue on the task
+ * so the AI Log can show past sessions too.
+ *
+ * A closed (unmerged) PR is treated as abandoned for that send so the next
+ * action can run. Request a change comments on in-flight work, or opens a
+ * new GitHub issue after a merge or a closed-without-merging PR. Start over
+ * closes every still-open GitHub issue and pull request from this task.
+ *
+ * @param string                             $token      GitHub token.
+ * @param array{owner: string, name: string} $repo_parts Parsed repository.
+ * @param int                                $issue_id   Alpaca issue post ID.
+ * @param string                             $branch     AI target branch.
+ * @return array<string, mixed>
+ */
+function alpaistr_agentic_task_github_work_status( string $token, array $repo_parts, int $issue_id, string $branch ): array {
+	$status           = alpaistr_agentic_empty_github_work_status();
+	$open_pr          = null;
+	$merged_pr        = null;
+	$closed_pr        = null;
+	$prs_by_issue     = [];
+	$pull_requests    = [];
+	$waiting_on_issue     = false;
+	$waiting_issue_number = 0;
+	$seen_issues          = [];
+
+	$current_issue_numbers = [];
+	foreach ( alpaistr_agentic_current_attempt_entries( $issue_id ) as $entry ) {
+		if ( 'sent' !== ( $entry['type'] ?? '' ) ) {
+			continue;
+		}
+
+		$github_number = (int) ( $entry['github_number'] ?? 0 );
+		if ( $github_number > 0 ) {
+			$current_issue_numbers[ $github_number ] = true;
+		}
+	}
+
+	foreach ( alpaistr_agentic_get_activity_history( $issue_id ) as $entry ) {
+		if ( 'sent' !== ( $entry['type'] ?? '' ) ) {
+			continue;
+		}
+
+		$github_number = (int) ( $entry['github_number'] ?? 0 );
+		if ( $github_number <= 0 || isset( $seen_issues[ $github_number ] ) ) {
+			continue;
+		}
+
+		$seen_issues[ $github_number ] = true;
+		$is_current                    = isset( $current_issue_numbers[ $github_number ] );
+
+		$prs = '' !== $branch
+			? alpaistr_agentic_find_all_prs_for_issue( $token, $repo_parts, $github_number, $branch )
+			: [];
+
+		if ( ! empty( $prs ) ) {
+			foreach ( $prs as $pr ) {
+				$summary                        = alpaistr_agentic_summarize_pull_request( $pr, $github_number );
+				$pull_requests[]                = $summary;
+				$prs_by_issue[ $github_number ] = $summary;
+
+				if ( ! $is_current ) {
+					continue;
+				}
+
+				if ( ! empty( $summary['merged'] ) ) {
+					$status['has_merged_pr'] = true;
+					$merged_pr               = $summary;
+				} elseif ( 'open' === ( $summary['state'] ?? '' ) ) {
+					$status['has_open_pr'] = true;
+					$open_pr               = $summary;
+				} else {
+					$closed_pr = $summary;
+				}
+			}
+			continue;
+		}
+
+		if ( $is_current && alpaistr_agentic_github_issue_is_open( $token, $repo_parts, $github_number ) ) {
+			$waiting_on_issue     = true;
+			$waiting_issue_number = $github_number;
+		}
+	}
+
+	alpaistr_agentic_remember_sent_pull_requests( $issue_id, $prs_by_issue );
+
+	usort(
+		$pull_requests,
+		static function ( array $left, array $right ): int {
+			$rank = static function ( array $pull_request ): int {
+				if ( 'open' === ( $pull_request['state'] ?? '' ) ) {
+					return 0;
+				}
+				if ( ! empty( $pull_request['merged'] ) ) {
+					return 1;
+				}
+				return 2;
+			};
+
+			$order = $rank( $left ) <=> $rank( $right );
+			if ( 0 !== $order ) {
+				return $order;
+			}
+
+			return (int) ( $right['number'] ?? 0 ) <=> (int) ( $left['number'] ?? 0 );
+		}
+	);
+
+	$status['waiting_on_issue']     = $waiting_on_issue;
+	$status['waiting_issue_number'] = $waiting_issue_number;
+	$status['has_open_work']        = ! empty( $status['has_open_pr'] ) || $waiting_on_issue;
+	$status['pull_requests']    = $pull_requests;
+	if ( $open_pr ) {
+		$status['pull_request'] = $open_pr;
+	} elseif ( $merged_pr ) {
+		$status['pull_request'] = $merged_pr;
+	} else {
+		$status['pull_request'] = $closed_pr;
+	}
+
+	return $status;
+}
+
+/**
+ * Close leftover GitHub issues whose AI pull request is no longer open.
+ *
+ * @param string                             $token      GitHub token.
+ * @param array{owner: string, name: string} $repo_parts Parsed repository.
+ * @param int                                $issue_id   Alpaca issue post ID.
+ * @param string                             $branch     AI target branch.
+ */
+function alpaistr_agentic_close_abandoned_github_issues( string $token, array $repo_parts, int $issue_id, string $branch ): void {
+	foreach ( alpaistr_agentic_current_attempt_entries( $issue_id ) as $entry ) {
+		if ( 'sent' !== ( $entry['type'] ?? '' ) ) {
+			continue;
+		}
+
+		$github_number = (int) ( $entry['github_number'] ?? 0 );
+		if ( $github_number <= 0 ) {
+			continue;
+		}
+
+		$prs = '' !== $branch
+			? alpaistr_agentic_find_all_prs_for_issue( $token, $repo_parts, $github_number, $branch )
+			: [];
+
+		$has_open_pr = false;
+		foreach ( $prs as $pr ) {
+			if ( 'open' === ( $pr['state'] ?? '' ) ) {
+				$has_open_pr = true;
+				break;
+			}
+		}
+
+		if ( empty( $prs ) || $has_open_pr ) {
+			continue;
+		}
+
+		alpaistr_agentic_close_github_issue( $token, $repo_parts, $github_number );
+	}
+}
+
+/**
+ * Close a GitHub pull request if it is still open.
+ *
+ * @param string                             $token      GitHub token.
+ * @param array{owner: string, name: string} $repo_parts Parsed repository.
+ * @param int                                $pr_number  Pull request number.
+ */
+function alpaistr_agentic_close_github_pull_request( string $token, array $repo_parts, int $pr_number ): void {
+	if ( $pr_number <= 0 ) {
+		return;
+	}
+
+	wp_remote_request(
+		sprintf(
+			'https://api.github.com/repos/%s/%s/pulls/%d',
+			rawurlencode( $repo_parts['owner'] ),
+			rawurlencode( $repo_parts['name'] ),
+			$pr_number
+		),
+		[
+			'method'  => 'PATCH',
+			'timeout' => 20,
+			'headers' => alpaistr_agentic_github_api_headers( $token ),
+			'body'    => wp_json_encode(
+				[
+					'state' => 'closed',
+				]
+			),
+		]
+	);
+}
+
+/**
+ * Close every still-open GitHub issue and AI pull request for this Alpaca task.
+ *
+ * Covers every Fix with AI / Request a change send in history, plus a leftover
+ * start-over restore pull request from earlier versions. Merged pull requests
+ * stay on GitHub and are not reverted.
+ *
+ * @param string                             $token      GitHub token.
+ * @param array{owner: string, name: string} $repo_parts Parsed repository.
+ * @param int                                $issue_id   Alpaca issue post ID.
+ * @param string                             $branch     AI target branch.
+ */
+function alpaistr_agentic_close_open_github_work( string $token, array $repo_parts, int $issue_id, string $branch ): void {
+	$closed_pr_numbers = [];
+
+	foreach ( alpaistr_agentic_get_activity_history( $issue_id ) as $entry ) {
+		if ( 'sent' !== ( $entry['type'] ?? '' ) ) {
+			continue;
+		}
+
+		$github_number = (int) ( $entry['github_number'] ?? 0 );
+		$stored_pr     = (int) ( $entry['pr_number'] ?? 0 );
+
+		if ( $stored_pr > 0 && ! isset( $closed_pr_numbers[ $stored_pr ] ) ) {
+			alpaistr_agentic_close_github_pull_request( $token, $repo_parts, $stored_pr );
+			$closed_pr_numbers[ $stored_pr ] = true;
+		}
+
+		if ( $github_number > 0 && '' !== $branch ) {
+			foreach ( alpaistr_agentic_find_all_prs_for_issue( $token, $repo_parts, $github_number, $branch ) as $pr ) {
+				$pr_number = (int) ( $pr['number'] ?? 0 );
+				if ( $pr_number <= 0 || isset( $closed_pr_numbers[ $pr_number ] ) ) {
+					continue;
+				}
+				if ( 'open' === ( $pr['state'] ?? '' ) ) {
+					alpaistr_agentic_close_github_pull_request( $token, $repo_parts, $pr_number );
+				}
+				$closed_pr_numbers[ $pr_number ] = true;
+			}
+		}
+
+		if ( $github_number > 0 ) {
+			alpaistr_agentic_close_github_issue( $token, $repo_parts, $github_number );
+		}
+	}
+
+	if ( '' !== $branch ) {
+		$restore_pr     = alpaistr_agentic_find_pr_by_head_and_base(
+			$token,
+			$repo_parts,
+			alpaistr_agentic_restore_branch_name( $issue_id ),
+			$branch
+		);
+		$restore_number = is_array( $restore_pr ) ? (int) ( $restore_pr['number'] ?? 0 ) : 0;
+		if ( $restore_number > 0 && 'open' === ( $restore_pr['state'] ?? '' ) && ! isset( $closed_pr_numbers[ $restore_number ] ) ) {
+			alpaistr_agentic_close_github_pull_request( $token, $repo_parts, $restore_number );
+		}
+	}
+}
+
+/**
+ * Whether a GitHub issue is currently open.
+ *
+ * @param string                             $token        GitHub token.
+ * @param array{owner: string, name: string} $repo_parts   Parsed repository.
+ * @param int                                $issue_number GitHub issue number.
+ * @return bool
+ */
+function alpaistr_agentic_github_issue_is_open( string $token, array $repo_parts, int $issue_number ): bool {
+	if ( $issue_number <= 0 ) {
+		return false;
+	}
+
+	$response = wp_remote_get(
+		sprintf(
+			'https://api.github.com/repos/%s/%s/issues/%d',
+			rawurlencode( $repo_parts['owner'] ),
+			rawurlencode( $repo_parts['name'] ),
+			$issue_number
+		),
+		[
+			'timeout' => 15,
+			'headers' => alpaistr_agentic_github_api_headers( $token ),
+		]
+	);
+
+	if ( is_wp_error( $response ) || 200 !== wp_remote_retrieve_response_code( $response ) ) {
+		return false;
+	}
+
+	$data = json_decode( wp_remote_retrieve_body( $response ), true );
+
+	return is_array( $data ) && 'open' === ( $data['state'] ?? '' );
+}
+
+/**
+ * Close a GitHub issue.
+ *
+ * @param string                             $token        GitHub token.
+ * @param array{owner: string, name: string} $repo_parts   Parsed repository.
+ * @param int                                $issue_number GitHub issue number.
+ */
+function alpaistr_agentic_close_github_issue( string $token, array $repo_parts, int $issue_number ): void {
+	if ( $issue_number <= 0 ) {
+		return;
+	}
+
+	wp_remote_request(
+		sprintf(
+			'https://api.github.com/repos/%s/%s/issues/%d',
+			rawurlencode( $repo_parts['owner'] ),
+			rawurlencode( $repo_parts['name'] ),
+			$issue_number
+		),
+		[
+			'method'  => 'PATCH',
+			'timeout' => 20,
+			'headers' => alpaistr_agentic_github_api_headers( $token ),
+			'body'    => wp_json_encode(
+				[
+					'state' => 'closed',
+				]
+			),
+		]
+	);
+}
+
+/**
+ * Create a restore branch whose tree matches the start SHA and open a PR.
+ *
+ * @param string                             $token      GitHub token.
+ * @param array{owner: string, name: string} $repo_parts Parsed repository.
+ * @param int                                $issue_id   Alpaca issue post ID.
+ * @param string                             $branch     AI target branch.
+ * @param string                             $start_sha  Original commit SHA.
+ * @param string                             $head_sha   Current branch tip.
+ * @return string|WP_Error Pull request URL.
+ */
+function alpaistr_agentic_open_restore_pull_request( string $token, array $repo_parts, int $issue_id, string $branch, string $start_sha, string $head_sha ): string|WP_Error {
+	$start_commit = alpaistr_agentic_github_get_commit( $token, $repo_parts, $start_sha );
+	if ( is_wp_error( $start_commit ) ) {
+		return $start_commit;
+	}
+
+	$tree_sha = (string) ( $start_commit['commit']['tree']['sha'] ?? '' );
+	if ( '' === $tree_sha ) {
+		return new WP_Error( 'github_api_error', __( 'Could not read the original branch snapshot.', 'alpaca-issue-tracker' ), [ 'status' => 502 ] );
+	}
+
+	$commit_response = wp_remote_post(
+		sprintf(
+			'https://api.github.com/repos/%s/%s/git/commits',
 			rawurlencode( $repo_parts['owner'] ),
 			rawurlencode( $repo_parts['name'] )
 		),
@@ -1803,61 +3827,264 @@ function alpaistr_agentic_dispatch_staging_fix_to_production( string $token, arr
 			'headers' => alpaistr_agentic_github_api_headers( $token ),
 			'body'    => wp_json_encode(
 				[
-					'event_type'     => 'alpaca-apply-staging-fix-to-production',
-					'client_payload' => [
-						'staging_pr_number' => $staging_pr_number,
-						'production_branch' => $production_branch,
-						'alpaca_issue_id'   => $alpaca_issue_id,
-					],
+					'message' => sprintf(
+						'Restore %s to the state before Alpaca issue %d [alpaca-ai-development]',
+						$branch,
+						$issue_id
+					),
+					'tree'    => $tree_sha,
+					'parents' => [ $head_sha ],
 				]
 			),
 		]
 	);
 
-	// Catch the error, if any.
+	if ( is_wp_error( $commit_response ) ) {
+		return new WP_Error( 'github_request_failed', $commit_response->get_error_message(), [ 'status' => 502 ] );
+	}
+
+	$commit_code = wp_remote_retrieve_response_code( $commit_response );
+	$commit_data = json_decode( wp_remote_retrieve_body( $commit_response ), true );
+	$new_sha     = is_array( $commit_data ) ? (string) ( $commit_data['sha'] ?? '' ) : '';
+
+	if ( 201 !== $commit_code || '' === $new_sha ) {
+		$message = is_array( $commit_data ) ? (string) ( $commit_data['message'] ?? '' ) : '';
+		return new WP_Error(
+			'github_api_error',
+			'' !== $message ? $message : __( 'Could not create the restore commit.', 'alpaca-issue-tracker' ),
+			[ 'status' => 502 ]
+		);
+	}
+
+	$restore_branch = alpaistr_agentic_restore_branch_name( $issue_id );
+	$ref_url        = sprintf(
+		'https://api.github.com/repos/%s/%s/git/refs/heads/%s',
+		rawurlencode( $repo_parts['owner'] ),
+		rawurlencode( $repo_parts['name'] ),
+		rawurlencode( $restore_branch )
+	);
+
+	$existing_ref = wp_remote_get(
+		$ref_url,
+		[
+			'timeout' => 20,
+			'headers' => alpaistr_agentic_github_api_headers( $token ),
+		]
+	);
+
+	if ( ! is_wp_error( $existing_ref ) && 200 === wp_remote_retrieve_response_code( $existing_ref ) ) {
+		wp_remote_request(
+			$ref_url,
+			[
+				'method'  => 'PATCH',
+				'timeout' => 20,
+				'headers' => alpaistr_agentic_github_api_headers( $token ),
+				'body'    => wp_json_encode(
+					[
+						'sha'   => $new_sha,
+						'force' => true,
+					]
+				),
+			]
+		);
+	} else {
+		wp_remote_post(
+			sprintf(
+				'https://api.github.com/repos/%s/%s/git/refs',
+				rawurlencode( $repo_parts['owner'] ),
+				rawurlencode( $repo_parts['name'] )
+			),
+			[
+				'timeout' => 20,
+				'headers' => alpaistr_agentic_github_api_headers( $token ),
+				'body'    => wp_json_encode(
+					[
+						'ref' => 'refs/heads/' . $restore_branch,
+						'sha' => $new_sha,
+					]
+				),
+			]
+		);
+	}
+
+	$existing_pr = alpaistr_agentic_find_open_pull_request( $token, $repo_parts, $restore_branch );
+	if ( '' !== $existing_pr ) {
+		return $existing_pr;
+	}
+
+	$pr_response = wp_remote_post(
+		sprintf(
+			'https://api.github.com/repos/%s/%s/pulls',
+			rawurlencode( $repo_parts['owner'] ),
+			rawurlencode( $repo_parts['name'] )
+		),
+		[
+			'timeout' => 30,
+			'headers' => alpaistr_agentic_github_api_headers( $token ),
+			'body'    => wp_json_encode(
+				[
+					'title' => sprintf( 'Start over: restore %s (Alpaca issue %d)', $branch, $issue_id ),
+					'body'  => sprintf(
+						"Restores `%s` to the snapshot saved when this Alpaca issue was first sent to AI.\n\nMerge this pull request to undo the AI changes for this issue.",
+						$branch
+					),
+					'head'  => $restore_branch,
+					'base'  => $branch,
+				]
+			),
+		]
+	);
+
+	if ( is_wp_error( $pr_response ) ) {
+		return new WP_Error( 'github_request_failed', $pr_response->get_error_message(), [ 'status' => 502 ] );
+	}
+
+	$pr_code = wp_remote_retrieve_response_code( $pr_response );
+	$pr_data = json_decode( wp_remote_retrieve_body( $pr_response ), true );
+	$pr_url  = is_array( $pr_data ) ? esc_url_raw( (string) ( $pr_data['html_url'] ?? '' ) ) : '';
+
+	if ( 201 === $pr_code && '' !== $pr_url ) {
+		return $pr_url;
+	}
+
+	$existing_pr = alpaistr_agentic_find_open_pull_request( $token, $repo_parts, $restore_branch );
+	if ( '' !== $existing_pr ) {
+		return $existing_pr;
+	}
+
+	$message = is_array( $pr_data ) ? (string) ( $pr_data['message'] ?? '' ) : '';
+	return new WP_Error(
+		'github_api_error',
+		'' !== $message ? $message : __( 'Could not open the start-over pull request.', 'alpaca-issue-tracker' ),
+		[ 'status' => 502 ]
+	);
+}
+
+/**
+ * Working branch used to restore the AI target branch.
+ *
+ * @param int $issue_id Alpaca issue post ID.
+ * @return string
+ */
+function alpaistr_agentic_restore_branch_name( int $issue_id ): string {
+	return 'alpaca/start-over-' . $issue_id;
+}
+
+/**
+ * Fetch a commit from GitHub.
+ *
+ * @param string                             $token      GitHub token.
+ * @param array{owner: string, name: string} $repo_parts Parsed repository.
+ * @param string                             $sha        Commit SHA.
+ * @return array<string, mixed>|WP_Error
+ */
+function alpaistr_agentic_github_get_commit( string $token, array $repo_parts, string $sha ): array|WP_Error {
+	$response = wp_remote_get(
+		sprintf(
+			'https://api.github.com/repos/%s/%s/commits/%s',
+			rawurlencode( $repo_parts['owner'] ),
+			rawurlencode( $repo_parts['name'] ),
+			rawurlencode( $sha )
+		),
+		[
+			'timeout' => 20,
+			'headers' => alpaistr_agentic_github_api_headers( $token ),
+		]
+	);
+
 	if ( is_wp_error( $response ) ) {
 		return new WP_Error( 'github_request_failed', $response->get_error_message(), [ 'status' => 502 ] );
 	}
 
 	$code = wp_remote_retrieve_response_code( $response );
-	if ( 204 !== $code ) {
-		$data    = json_decode( wp_remote_retrieve_body( $response ), true );
-		$message = is_array( $data ) && isset( $data['message'] ) ? (string) $data['message'] : __( 'GitHub rejected the dispatch event.', 'alpaca-issue-tracker' );
-		return new WP_Error( 'github_api_error', $message, [ 'status' => 502 ] );
+	$data = json_decode( wp_remote_retrieve_body( $response ), true );
+
+	if ( 200 !== $code || ! is_array( $data ) ) {
+		return new WP_Error(
+			'github_api_error',
+			__( 'Could not read commits from GitHub.', 'alpaca-issue-tracker' ),
+			[ 'status' => 502 ]
+		);
 	}
 
-	// Confirm success.
+	return $data;
+}
+
+/**
+ * Move a GitHub branch head to a specific commit.
+ *
+ * Uses a force update so the branch can rewind to the session start snapshot.
+ *
+ * @param string                             $token      GitHub token.
+ * @param array{owner: string, name: string} $repo_parts Parsed repository.
+ * @param string                             $branch     Branch name.
+ * @param string                             $sha        Target commit SHA.
+ * @return bool|WP_Error
+ */
+function alpaistr_agentic_force_update_branch_sha( string $token, array $repo_parts, string $branch, string $sha ): bool|WP_Error {
+	if ( '' === $branch || '' === $sha ) {
+		return new WP_Error(
+			'github_api_error',
+			__( 'Could not reset the AI target branch because the snapshot is missing.', 'alpaca-issue-tracker' ),
+			[ 'status' => 400 ]
+		);
+	}
+
+	$response = wp_remote_request(
+		sprintf(
+			'https://api.github.com/repos/%s/%s/git/refs/heads/%s',
+			rawurlencode( $repo_parts['owner'] ),
+			rawurlencode( $repo_parts['name'] ),
+			rawurlencode( $branch )
+		),
+		[
+			'method'  => 'PATCH',
+			'timeout' => 20,
+			'headers' => alpaistr_agentic_github_api_headers( $token ),
+			'body'    => wp_json_encode(
+				[
+					'sha'   => $sha,
+					'force' => true,
+				]
+			),
+		]
+	);
+
+	if ( is_wp_error( $response ) ) {
+		return new WP_Error( 'github_request_failed', $response->get_error_message(), [ 'status' => 502 ] );
+	}
+
+	$code = wp_remote_retrieve_response_code( $response );
+	$data = json_decode( wp_remote_retrieve_body( $response ), true );
+
+	if ( $code < 200 || $code >= 300 ) {
+		$message = is_array( $data ) ? (string) ( $data['message'] ?? '' ) : '';
+		return new WP_Error(
+			'github_api_error',
+			'' !== $message ? $message : __( 'Could not move the AI target branch back to the session start.', 'alpaca-issue-tracker' ),
+			[ 'status' => 502 ]
+		);
+	}
+
 	return true;
 }
 
 /**
- * Pull the GitHub PR base branch from target-branch:* labels.
+ * Record a sent activity in the chronological Fix with AI history.
  *
- * @param string[] $labels Label names sent with the GitHub issue.
- * @return string Branch name, or empty string when absent.
- */
-function alpaistr_agentic_extract_target_branch_from_labels( array $labels ): string {
-	foreach ( $labels as $label_name ) {
-		if ( ! is_string( $label_name ) || ! str_starts_with( $label_name, 'target-branch:' ) ) {
-			continue;
-		}
-
-		return sanitize_text_field( substr( $label_name, strlen( 'target-branch:' ) ) );
-	}
-
-	return '';
-}
-
-/**
- * Record a sent activity in the chronological AI Issue Resolver history.
- *
- * @param int    $issue_id      Alpaca issue post ID.
- * @param string $github_url    GitHub issue HTML URL.
- * @param int    $github_number GitHub issue number.
- * @param string $target_branch PR target branch name.
+ * @param int                  $issue_id      Alpaca issue post ID.
+ * @param string               $github_url    GitHub issue HTML URL.
+ * @param int                  $github_number GitHub issue number.
+ * @param string               $target_branch PR target branch name.
+ * @param array<string, mixed> $draft         Snapshot of the sent GitHub issue text.
  * @return array<int, array<string, mixed>> Full activity history after append (oldest first).
  */
-function alpaistr_agentic_record_sent_activity( int $issue_id, string $github_url, int $github_number, string $target_branch ): array {
+function alpaistr_agentic_record_sent_activity( int $issue_id, string $github_url, int $github_number, string $target_branch, array $draft ): array {
+	$log_title = sanitize_text_field( (string) ( $draft['title'] ?? '' ) );
+	if ( '' === $log_title ) {
+		$log_title = __( 'Fix with AI', 'alpaca-issue-tracker' );
+	}
+
 	$history = alpaistr_agentic_append_history_entry(
 		$issue_id,
 		[
@@ -1865,6 +4092,8 @@ function alpaistr_agentic_record_sent_activity( int $issue_id, string $github_ur
 			'url'           => $github_url,
 			'github_number' => $github_number,
 			'target_branch' => $target_branch,
+			'notes'         => $log_title,
+			'draft'         => $draft,
 			'occurred_at'   => gmdate( 'c' ),
 		]
 	);
@@ -1873,10 +4102,10 @@ function alpaistr_agentic_record_sent_activity( int $issue_id, string $github_ur
 }
 
 /**
- * Append one entry to the chronological AI Issue Resolver history and save it.
+ * Append one entry to the chronological Fix with AI history and save it.
  *
- * Shared by the sent/deleted/applied mutating actions so every step of the
- * workflow -- including restarts -- stays visible in the AI Log tab.
+ * Shared by the sent and reverted mutating actions so every step stays visible
+ * in the AI Log tab.
  *
  * @param int   $issue_id Alpaca issue post ID.
  * @param array $entry    History entry (must include a `type`).
@@ -1892,7 +4121,7 @@ function alpaistr_agentic_append_history_entry( int $issue_id, array $entry ): a
 }
 
 /**
- * Load the chronological AI Issue Resolver history for an issue.
+ * Load the chronological Fix with AI history for an issue.
  *
  * @param int $issue_id Alpaca issue post ID.
  * @return array<int, array<string, mixed>> Oldest-first list of history entries.
@@ -1907,57 +4136,29 @@ function alpaistr_agentic_get_activity_history( int $issue_id ): array {
 		array_filter(
 			$records,
 			static function ( $entry ): bool {
-				return is_array( $entry ) && in_array( $entry['type'] ?? '', [ 'sent', 'deleted', 'applied' ], true );
+				return is_array( $entry ) && in_array( $entry['type'] ?? '', [ 'sent', 'change_requested', 'reverted' ], true );
 			}
 		)
 	);
 }
 
 /**
- * Get the history entries since the most recent restart (deleted-type entry), if any.
- *
- * Older entries stay visible in the AI Log tab forever, but "is this branch already
- * handled" checks must only look at the current cycle so a restart really resets
- * eligibility instead of it lingering from a previous, now-irrelevant attempt.
+ * History entries after the latest start-over, oldest first.
  *
  * @param int $issue_id Alpaca issue post ID.
- * @return array<int, array<string, mixed>> Oldest-first entries for the current cycle.
+ * @return array<int, array<string, mixed>> Current attempt entries.
  */
-function alpaistr_agentic_get_current_cycle_history( int $issue_id ): array {
-	$history            = alpaistr_agentic_get_activity_history( $issue_id );
-	$last_deleted_index = -1;
+function alpaistr_agentic_current_attempt_entries( int $issue_id ): array {
+	$history     = alpaistr_agentic_get_activity_history( $issue_id );
+	$last_revert = -1;
 
-	// Set "index" to the latest "deleted" event, so we later return only history after that.
 	foreach ( $history as $index => $entry ) {
-		if ( 'deleted' === ( $entry['type'] ?? '' ) ) {
-			$last_deleted_index = $index;
+		if ( 'reverted' === ( $entry['type'] ?? '' ) ) {
+			$last_revert = (int) $index;
 		}
 	}
 
-	return array_slice( $history, $last_deleted_index + 1 );
-}
-
-/**
- * Find the most recent staging "sent" entry within the current cycle.
- *
- * @param int    $issue_id      Alpaca issue post ID.
- * @param string $staging_branch Configured staging branch name.
- * @return array<string, mixed>|null The matching entry, or null when staging has not been sent this cycle.
- */
-function alpaistr_agentic_find_staging_sent_entry( int $issue_id, string $staging_branch ): ?array {
-	if ( '' === $staging_branch ) {
-		return null;
-	}
-
-	$found = null;
-	// In the current workflow (circle), find the draft that has actually been sent.
-	foreach ( alpaistr_agentic_get_current_cycle_history( $issue_id ) as $entry ) {
-		if ( 'sent' === ( $entry['type'] ?? '' ) && ( $entry['target_branch'] ?? '' ) === $staging_branch ) {
-			$found = $entry; // Keep the last (most recent) match -- entries are oldest-first.
-		}
-	}
-
-	return $found;
+	return array_values( array_slice( $history, $last_revert + 1 ) );
 }
 
 /**
@@ -1982,7 +4183,7 @@ function alpaistr_agentic_assign_sent_to_ai_label( int $issue_id ): void {
 			return;
 		}
 		$term_id = (int) $created['term_id'];
-		// Violet accent aligned with the AI Issue Resolver UI.
+		// Violet accent aligned with the Fix with AI UI.
 		update_term_meta( $term_id, 'alpaca_label_color', '#7c3aed' );
 	}
 
@@ -2000,7 +4201,7 @@ function alpaistr_agentic_assign_sent_to_ai_label( int $issue_id ): void {
 /**
  * Extract the complexity value ('low'|'medium'|'high') from a flattened labels array.
  *
- * @param array $labels Labels array as sent to /agentic/create (includes complexity:* and target-branch:*).
+ * @param array $labels Labels array as sent to /agentic/create (includes complexity:*).
  * @return string Complexity value, defaulting to 'medium' when absent or invalid.
  */
 function alpaistr_agentic_extract_complexity_from_labels( array $labels ): string {
@@ -2015,21 +4216,14 @@ function alpaistr_agentic_extract_complexity_from_labels( array $labels ): strin
 }
 
 /**
- * Save the current AI-drafted issue text as post meta.
+ * Build a draft snapshot of the GitHub issue text that was sent.
  *
- * Called whenever /agentic/create succeeds, so the exact text that was sent to
- * GitHub can later be viewed, resent to another branch, or deleted/restarted.
- *
- * complexity/labels are parsed out of the flattened labels array already sent --
- * no separate request params needed.
- *
- * @param int    $issue_id Alpaca issue post ID.
- * @param string $title    Issue title.
- * @param string $body     Issue body.
- * @param array  $labels   Flattened labels array (includes complexity:* and target-branch:*).
- * @return void
+ * @param string $title  Issue title.
+ * @param string $body   Issue body.
+ * @param array  $labels Flattened labels array (includes complexity:*).
+ * @return array{title: string, body: string, complexity: string, labels: array<int, string>}
  */
-function alpaistr_agentic_save_draft( int $issue_id, string $title, string $body, array $labels ): void {
+function alpaistr_agentic_build_draft_snapshot( string $title, string $body, array $labels ): array {
 	$plain_labels = array_values(
 		array_filter(
 			$labels,
@@ -2041,24 +4235,19 @@ function alpaistr_agentic_save_draft( int $issue_id, string $title, string $body
 		)
 	);
 
-	update_post_meta(
-		$issue_id,
-		ALPAISTR_AGENTIC_DRAFT_META,
-		[
-			'title'      => $title,
-			'body'       => $body,
-			'complexity' => alpaistr_agentic_extract_complexity_from_labels( $labels ),
-			'labels'     => $plain_labels,
-			'updated_at' => gmdate( 'c' ),
-		]
-	);
+	return [
+		'title'      => $title,
+		'body'       => $body,
+		'complexity' => alpaistr_agentic_extract_complexity_from_labels( $labels ),
+		'labels'     => $plain_labels,
+	];
 }
 
 /**
  * Insert a system activity comment on an Alpaca issue.
  *
- * Shared low-level helper for every AI Issue Resolver mutating action (sent,
- * deleted/restarted, applied) so each one leaves the same kind of audit trail.
+ * Shared low-level helper for every Fix with AI mutating action (sent,
+ * reverted) so each one leaves the same kind of audit trail.
  * Skips notification dispatch so watchers are not spammed for automated activity notes.
  *
  * @param int    $issue_id Alpaca issue post ID.
@@ -2127,13 +4316,13 @@ function alpaistr_agentic_insert_sent_activity_comment( int $issue_id, string $g
 	$content = '' !== $target_branch
 		? sprintf(
 			/* translators: 1: GitHub issue URL, 2: target branch name. */
-			__( 'AI Issue Resolver: GitHub issue created — [%1$s](%1$s). Target branch: **%2$s**.', 'alpaca-issue-tracker' ),
+			__( 'Fix with AI: GitHub issue created — [%1$s](%1$s). Target branch: **%2$s**.', 'alpaca-issue-tracker' ),
 			$github_url,
 			$target_branch
 		)
 		: sprintf(
 			/* translators: %s: GitHub issue URL. */
-			__( 'AI Issue Resolver: GitHub issue created — [%1$s](%1$s).', 'alpaca-issue-tracker' ), // phpcs:ignore WordPress.WP.I18n.UnorderedPlaceholdersText -- URL repeated for markdown link.
+			__( 'Fix with AI: GitHub issue created — [%1$s](%1$s).', 'alpaca-issue-tracker' ), // phpcs:ignore WordPress.WP.I18n.UnorderedPlaceholdersText -- URL repeated for markdown link.
 			$github_url
 		);
 
@@ -2141,22 +4330,68 @@ function alpaistr_agentic_insert_sent_activity_comment( int $issue_id, string $g
 }
 
 /**
- * Insert a system activity comment recording that a proven staging fix was applied to production.
+ * Short AI log note explaining whether the target branch was reset on start over.
  *
- * @param int    $issue_id      Alpaca issue post ID.
- * @param string $staging_pr_url Merged staging pull request HTML URL.
- * @param string $production_branch Production branch the fix was cherry-picked onto.
+ * @param bool   $branch_reset         Whether the branch head was moved back.
+ * @param string $branch_reset_error   GitHub error when a reset was attempted.
+ * @param bool   $has_outside_commits  Whether non-AI commits block a reset.
+ * @param string $start_sha            Snapshot SHA from before this session.
+ * @param string $reset_blocked_reason Longer reason when reset is skipped.
+ * @return string Outcome note for history and activity comments.
+ */
+function alpaistr_agentic_branch_reset_outcome_note(
+	bool $branch_reset,
+	string $branch_reset_error,
+	bool $has_outside_commits,
+	string $start_sha,
+	string $reset_blocked_reason
+): string {
+	if ( $branch_reset ) {
+		return __( 'Target branch was reset to before this attempt.', 'alpaca-issue-tracker' );
+	}
+
+	if ( '' !== $branch_reset_error ) {
+		return sprintf(
+			/* translators: %s: error message from GitHub. */
+			__( 'Target branch was not reset: %s', 'alpaca-issue-tracker' ),
+			$branch_reset_error
+		);
+	}
+
+	if ( $has_outside_commits ) {
+		return __( 'Target branch was not reset because outside changes were pushed during this attempt.', 'alpaca-issue-tracker' );
+	}
+
+	if ( '' === $start_sha ) {
+		return __( 'Target branch was not reset because Alpaca does not have the starting commit for this session.', 'alpaca-issue-tracker' );
+	}
+
+	if ( '' !== $reset_blocked_reason ) {
+		return sprintf(
+			/* translators: %s: error message from GitHub. */
+			__( 'Target branch was not reset: %s', 'alpaca-issue-tracker' ),
+			$reset_blocked_reason
+		);
+	}
+
+	return __( 'Target branch was not reset because it was already at the commit from before this attempt.', 'alpaca-issue-tracker' );
+}
+
+/**
+ * Insert a system activity comment recording that a fixing session ended.
+ *
+ * @param int    $issue_id          Alpaca issue post ID.
+ * @param string $branch_reset_note Outcome note for the AI target branch.
  * @return int Inserted comment ID, or 0 on failure.
  */
-function alpaistr_agentic_insert_production_fix_activity_comment( int $issue_id, string $staging_pr_url, string $production_branch ): int {
+function alpaistr_agentic_insert_reverted_activity_comment( int $issue_id, string $branch_reset_note ): int {
 	$content = sprintf(
-		/* translators: 1: staging pull request URL, 2: production branch name. */
-		__( 'AI Issue Resolver: applied the tested fix from [%1$s](%1$s) to **%2$s**', 'alpaca-issue-tracker' ),
-		$staging_pr_url,
-		$production_branch
+		/* translators: %s: branch reset outcome note. */
+		__( 'Fix with AI: start over — this fix attempt ended. Open GitHub issues and pull requests were closed. %s', 'alpaca-issue-tracker' ),
+		$branch_reset_note
 	);
 
-	return alpaistr_agentic_insert_activity_comment( $issue_id, $content, 'agentic-applied' );
+	return alpaistr_agentic_insert_activity_comment( $issue_id, $content, 'agentic-reverted' );
 }
 
 /**
@@ -2178,13 +4413,13 @@ function alpaistr_agentic_github_api_headers( string $token ): array {
 /**
  * Create a GitHub label if it does not already exist.
  *
- * Used for dynamic labels like target-branch:develop that are not in LABELS.yml.
- * Failures are ignored — the subsequent issue create will surface a clear error.
+ * Used for target-branch:* labels that the installed Actions workflows read
+ * to decide the pull request base. Failures are ignored — the subsequent
+ * issue create will surface a clear error.
  *
  * @param string                             $token      GitHub personal access token.
  * @param array{owner: string, name: string} $repo_parts Parsed repository.
  * @param string                             $name       Label name.
- * @return void
  */
 function alpaistr_agentic_ensure_github_label( string $token, array $repo_parts, string $name ): void {
 	wp_remote_post(
@@ -2201,6 +4436,64 @@ function alpaistr_agentic_ensure_github_label( string $token, array $repo_parts,
 					'name'        => $name,
 					'color'       => '0E8A16',
 					'description' => 'PR base branch for the AI agent',
+				]
+			),
+		]
+	);
+}
+
+/**
+ * It creates or updates the GitHub Actions repo variable ALPACA_AI_TARGET_BRANCH with the branch name from Alpaca settings.
+ *
+ * Newer workflow files prefer this variable. Failures are ignored so a token
+ * without Variables permission does not block saving settings.
+ *
+ * @param string                             $token  GitHub personal access token.
+ * @param array{owner: string, name: string} $repo_parts Parsed repository.
+ * @param string                             $branch AI target branch.
+ */
+function alpaistr_agentic_sync_ai_target_branch_variable( string $token, array $repo_parts, string $branch ): void {
+	if ( '' === $branch ) {
+		return;
+	}
+
+	$headers = alpaistr_agentic_github_api_headers( $token );
+	$patch   = wp_remote_request(
+		sprintf(
+			'https://api.github.com/repos/%s/%s/actions/variables/ALPACA_AI_TARGET_BRANCH',
+			rawurlencode( $repo_parts['owner'] ),
+			rawurlencode( $repo_parts['name'] )
+		),
+		[
+			'method'  => 'PATCH',
+			'timeout' => 15,
+			'headers' => $headers,
+			'body'    => wp_json_encode(
+				[
+					'name'  => 'ALPACA_AI_TARGET_BRANCH',
+					'value' => $branch,
+				]
+			),
+		]
+	);
+
+	if ( ! is_wp_error( $patch ) && in_array( (int) wp_remote_retrieve_response_code( $patch ), [ 201, 204 ], true ) ) {
+		return;
+	}
+
+	wp_remote_post(
+		sprintf(
+			'https://api.github.com/repos/%s/%s/actions/variables',
+			rawurlencode( $repo_parts['owner'] ),
+			rawurlencode( $repo_parts['name'] )
+		),
+		[
+			'timeout' => 15,
+			'headers' => $headers,
+			'body'    => wp_json_encode(
+				[
+					'name'  => 'ALPACA_AI_TARGET_BRANCH',
+					'value' => $branch,
 				]
 			),
 		]
@@ -2299,10 +4592,24 @@ function alpaistr_agentic_parse_github_repo( string $repo ): array|WP_Error {
  * @return bool
  */
 function alpaistr_agentic_workflow_marker_exists( string $token, array $repo_parts, string $branch = '' ): bool {
+	return alpaistr_agentic_github_file_exists( $token, $repo_parts, '.github/workflows/agent-ready-trigger.yml', $branch );
+}
+
+/**
+ * Whether a file exists in the configured GitHub repository.
+ *
+ * @param string                             $token      GitHub personal access token.
+ * @param array{owner: string, name: string} $repo_parts Parsed repository.
+ * @param string                             $path       Path relative to the repo root.
+ * @param string                             $branch     Branch name. Empty uses the default branch.
+ * @return bool
+ */
+function alpaistr_agentic_github_file_exists( string $token, array $repo_parts, string $path, string $branch = '' ): bool {
 	$api_url = sprintf(
-		'https://api.github.com/repos/%s/%s/contents/.github/workflows/agent-ready-trigger.yml',
+		'https://api.github.com/repos/%s/%s/contents/%s',
 		rawurlencode( $repo_parts['owner'] ),
-		rawurlencode( $repo_parts['name'] )
+		rawurlencode( $repo_parts['name'] ),
+		$path
 	);
 
 	if ( '' !== $branch ) {
@@ -2318,6 +4625,76 @@ function alpaistr_agentic_workflow_marker_exists( string $token, array $repo_par
 	);
 
 	return ! is_wp_error( $response ) && 200 === wp_remote_retrieve_response_code( $response );
+}
+
+/**
+ * Delete a file from a GitHub branch if it exists.
+ *
+ * @param string                             $token      GitHub personal access token.
+ * @param array{owner: string, name: string} $repo_parts Parsed repository.
+ * @param string                             $path       Path relative to the repo root.
+ * @param string                             $branch     Branch name.
+ * @param string                             $message    Commit message.
+ * @return true|false|WP_Error True when deleted, false when the file was absent.
+ */
+function alpaistr_agentic_delete_github_file( string $token, array $repo_parts, string $path, string $branch, string $message ): bool|WP_Error {
+	$api_url = sprintf(
+		'https://api.github.com/repos/%s/%s/contents/%s',
+		rawurlencode( $repo_parts['owner'] ),
+		rawurlencode( $repo_parts['name'] ),
+		$path
+	);
+
+	$get_response = wp_remote_get(
+		add_query_arg( 'ref', $branch, $api_url ),
+		[
+			'timeout' => 15,
+			'headers' => alpaistr_agentic_github_api_headers( $token ),
+		]
+	);
+
+	if ( is_wp_error( $get_response ) ) {
+		return $get_response;
+	}
+
+	if ( 200 !== wp_remote_retrieve_response_code( $get_response ) ) {
+		return false;
+	}
+
+	$file = json_decode( wp_remote_retrieve_body( $get_response ), true );
+	$sha  = is_array( $file ) ? (string) ( $file['sha'] ?? '' ) : '';
+	if ( '' === $sha ) {
+		return false;
+	}
+
+	$delete_response = wp_remote_request(
+		$api_url,
+		[
+			'method'  => 'DELETE',
+			'timeout' => 30,
+			'headers' => alpaistr_agentic_github_api_headers( $token ),
+			'body'    => wp_json_encode(
+				[
+					'message' => $message,
+					'sha'     => $sha,
+					'branch'  => $branch,
+				]
+			),
+		]
+	);
+
+	if ( is_wp_error( $delete_response ) ) {
+		return $delete_response;
+	}
+
+	$code = wp_remote_retrieve_response_code( $delete_response );
+	if ( $code < 200 || $code >= 300 ) {
+		$data           = json_decode( wp_remote_retrieve_body( $delete_response ), true );
+		$error_message  = is_array( $data ) && isset( $data['message'] ) ? (string) $data['message'] : __( 'Could not delete the old workflow file.', 'alpaca-issue-tracker' );
+		return new WP_Error( 'github_api_error', $error_message, [ 'status' => 502 ] );
+	}
+
+	return true;
 }
 
 /**
@@ -2715,11 +5092,11 @@ function alpaistr_agentic_get_settings(): array {
 	}
 
 	return [
-		'github_token'    => defined( 'ALPAISTR_AGENTIC_GITHUB_TOKEN' ) ? ALPAISTR_AGENTIC_GITHUB_TOKEN : ( $options['github_token'] ?? '' ),
-		'github_repo'     => $options['github_repo'] ?? '',
-		'branches'        => Agentic::get_branches( $options ),
-		'ai_provider'     => $options['ai_provider'] ?? 'claude',
-		'ai_api_key'      => defined( 'ALPAISTR_AGENTIC_AI_API_KEY' ) ? ALPAISTR_AGENTIC_AI_API_KEY : ( $options['ai_api_key'] ?? '' ),
-		'project_context' => $options['project_context'] ?? '',
+		'github_token'     => defined( 'ALPAISTR_AGENTIC_GITHUB_TOKEN' ) ? ALPAISTR_AGENTIC_GITHUB_TOKEN : ( $options['github_token'] ?? '' ),
+		'github_repo'      => $options['github_repo'] ?? '',
+		'ai_target_branch' => $options['ai_target_branch'] ?? '',
+		'ai_provider'      => $options['ai_provider'] ?? 'claude',
+		'ai_api_key'       => defined( 'ALPAISTR_AGENTIC_AI_API_KEY' ) ? ALPAISTR_AGENTIC_AI_API_KEY : ( $options['ai_api_key'] ?? '' ),
+		'project_context'  => $options['project_context'] ?? '',
 	];
 }

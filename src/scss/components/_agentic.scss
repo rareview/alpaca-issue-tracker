@@ -1,8 +1,10 @@
 /**
- * Alpaca Agentic (AI Issue Resolver) styles.
+ * Alpaca Agentic (Fix with AI) styles.
  *
  * Scoped under .agentic-* and .agentic-export-modal to avoid conflicts with Alpaca or wp-admin.
  */
+
+@use '../abstracts' as *;
 
 /* ── Design tokens ───────────────────────────────────────────────────────────── */
 
@@ -78,77 +80,551 @@
 
 .agentic-abovetabs-bar {
   display: flex;
-  align-items: center;
-  padding: 16px 16px 10px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 16px 12px;
   border-block-end: 1px solid rgb(124 58 237 / 15%);
   background: var(--agentic-gradient-soft);
 }
 
-.agentic-history-tab {
-  padding: 12px 4px 8px;
-}
-
-.agentic-history-tab__empty {
+.agentic-abovetabs-title {
   margin: 0;
-  font-size: 13px;
-  line-height: 1.45;
-  color: #646970;
-}
-
-.agentic-activity-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  width: 100%;
-  min-width: 0;
-  margin-block-start: 8px;
-}
-
-.agentic-activity-list__heading {
   font-size: 13px;
   font-weight: 600;
   line-height: 1.4;
   color: #5b21b6;
 }
 
+.agentic-abovetabs-info {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: $space-sm;
+  width: 100%;
+  margin: 0;
+  padding: 2px 0;
+  font-size: $font-size-sm;
+  line-height: $line-height-base;
+  color: $color-text-secondary;
+  box-sizing: border-box;
+}
+
+.agentic-abovetabs-info--error {
+  padding: 8px 10px;
+  border: 1px solid rgb(124 58 237 / 18%);
+  border-inline-start-width: 3px;
+  border-radius: 4px;
+  border-inline-start-color: #d63638;
+  color: #b32d2e;
+  background: rgb(255 245 245 / 80%);
+}
+
+.agentic-abovetabs-info .components-spinner {
+  margin: 0;
+  width: 16px;
+  height: 16px;
+}
+
+.agentic-abovetabs-info .components-button.is-link {
+  font-size: $font-size-sm;
+  line-height: $line-height-base;
+}
+
+.agentic-abovetabs-info__summary {
+  display: inline;
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: $font-size-sm;
+  line-height: $line-height-base;
+}
+
+.agentic-abovetabs-info__attempt-link.components-button.is-link {
+  display: inline;
+  height: auto;
+  padding: 0;
+  color: #5b21b6;
+  font-size: inherit;
+  font-weight: 600;
+  line-height: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  vertical-align: baseline;
+
+  &:hover,
+  &:focus-visible {
+    color: #4c1d95;
+  }
+}
+
+.agentic-abovetabs-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.agentic-start-over {
+  display: inline-flex;
+}
+
+.agentic-start-over .components-button:disabled {
+  pointer-events: none;
+}
+
+.agentic-start-over--checking .components-button.agentic-agent-btn:disabled,
+.agentic-start-over--checking .components-button.agentic-agent-btn[disabled],
+.agentic-start-over--checking .components-button.agentic-agent-btn[aria-disabled='true'] {
+  opacity: 1;
+  cursor: progress;
+  animation:
+    agentic-gradient-shift 5s ease infinite,
+    agentic-pulse-glow 3s ease-in-out infinite;
+  box-shadow: var(--agentic-glow);
+}
+
+.agentic-start-over--checking .components-button.agentic-agent-btn:disabled::before,
+.agentic-start-over--checking .components-button.agentic-agent-btn[disabled]::before,
+.agentic-start-over--checking .components-button.agentic-agent-btn[aria-disabled='true']::before {
+  display: none;
+}
+
+.agentic-start-over-spinner {
+  display: block;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  border: 2px solid rgb(255 255 255 / 35%);
+  border-block-start-color: #fff;
+  border-radius: 50%;
+  animation: agentic-start-over-spin 0.7s linear infinite;
+}
+
+@keyframes agentic-start-over-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.agentic-history-tab {
+  padding: $space-lg $space-2xs $space-sm;
+}
+
+.agentic-history-tab__empty {
+  margin: 0;
+  font-size: $font-size-sm;
+  line-height: $line-height-base;
+  color: $color-text-secondary;
+}
+
+.agentic-activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: $space-xs;
+  width: 100%;
+  min-width: 0;
+  margin-block-start: $space-sm;
+}
+
+.agentic-activity-list__heading {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-base;
+  color: $color-text-primary;
+}
+
+.agentic-session-list {
+  display: flex;
+  flex-direction: column;
+  gap: $space-lg;
+  width: 100%;
+  min-width: 0;
+  margin-block-start: $space-md;
+}
+
+.agentic-log-branch {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: calc(#{$space-5xl} - 10px);
+  margin: 0;
+  padding-inline-start: calc(#{$space-3xl} + 1px);
+  font-size: $font-size-sm;
+  line-height: $line-height-base;
+  color: $color-text-secondary;
+}
+
+.agentic-log-branch::before {
+  content: '';
+  flex-shrink: 0;
+  width: 9px;
+  height: 9px;
+  background: $color-white;
+  border: 1px solid $color-border;
+  border-radius: $radius-round;
+}
+
+.agentic-session {
+  min-width: 0;
+  padding: $space-lg $space-3xl;
+  background: $color-white;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+}
+
+.agentic-session--current {
+  background: rgb(56 88 233 / 4%);
+  border-color: $color-link-soft-border;
+  border-inline-start: 3px solid $color-brand-blue;
+}
+
+@keyframes agentic-session-focus-pulse {
+  0%,
+  100% {
+    border-color: $color-link-soft-border;
+    box-shadow: none;
+  }
+
+  50% {
+    border-color: $color-brand-blue;
+    box-shadow: 0 0 0 3px rgb(56 88 233 / 18%);
+  }
+}
+
+.agentic-session--focus-pulse {
+  animation: agentic-session-focus-pulse 1s ease-in-out 1;
+}
+
+.agentic-session--current.agentic-session--focus-pulse {
+  border-inline-start-color: $color-brand-blue;
+}
+
+.agentic-session--cancelled,
+.agentic-session--closed {
+  background: $color-surface-muted;
+  border-color: $color-border-muted;
+}
+
+.agentic-session--cancelled .agentic-session__title,
+.agentic-session--closed .agentic-session__title {
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+}
+
+.agentic-session--cancelled .agentic-session__meta,
+.agentic-session--closed .agentic-session__meta {
+  color: $color-text-muted;
+}
+
+.agentic-session__header {
+  margin: 0 0 $space-md;
+}
+
+.agentic-session__title {
+  margin: 0;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-heading;
+  color: $color-text-primary;
+}
+
+.agentic-session__disclosure {
+  min-width: 0;
+}
+
+.agentic-session__disclosure > summary.agentic-session__title {
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.agentic-session__disclosure > summary.agentic-session__title:hover,
+.agentic-session__disclosure > summary.agentic-session__title:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.agentic-session__details {
+  margin: $space-sm 0 0;
+  padding: $space-sm $space-lg;
+  background: $color-surface-subtle;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+}
+
+.agentic-session__details .agentic-activity-strip__draft-title:first-child {
+  margin-top: 0;
+}
+
+.agentic-session--current .agentic-session__title {
+  color: $color-brand-blue;
+}
+
+.agentic-session__meta {
+  margin: $space-2xs 0 0;
+  font-size: $font-size-xs;
+  line-height: $line-height-base;
+  letter-spacing: $letter-spacing-meta;
+  color: $color-text-muted;
+}
+
+.agentic-session__steps {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+  margin: 0;
+  padding-inline-start: $space-5xl;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: $space-sm;
+    bottom: $space-sm;
+    inset-inline-start: 5px;
+    width: 1px;
+    background-color: $color-border;
+  }
+}
+
+.agentic-session-step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: $space-2xs;
+  min-width: 0;
+  padding: $space-sm $space-lg;
+  background: $color-white;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+}
+
+.agentic-session-step::before {
+  content: '';
+  position: absolute;
+  top: $space-md;
+  inset-inline-start: calc(-1 * #{$space-5xl} + 1px);
+  width: 9px;
+  height: 9px;
+  background: $color-white;
+  border: 1px solid $color-border;
+  border-radius: $radius-round;
+  z-index: 1;
+}
+
+.agentic-session--current .agentic-session-step::before {
+  background: $color-brand-blue;
+  border-color: $color-brand-blue;
+  box-shadow: 0 0 0 3px rgb(56 88 233 / 12%);
+}
+
+.agentic-session--current .agentic-session-step {
+  border-color: $color-link-soft-border;
+}
+
+.agentic-session-step__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: $space-xs $space-md;
+}
+
+.agentic-session-step__action {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-base;
+  color: $color-text-primary;
+}
+
+.agentic-session-step__date {
+  margin-inline-start: auto;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-normal;
+  letter-spacing: $letter-spacing-meta;
+  line-height: $line-height-tight;
+  color: $color-text-muted;
+}
+
+.agentic-session-step__links,
+.agentic-session-step__pr {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-xs $space-md;
+  font-size: $font-size-sm;
+  line-height: $line-height-base;
+}
+
+.agentic-session-step__notes {
+  margin: 0;
+  font-size: $font-size-sm;
+  line-height: $line-height-base;
+  color: $color-text-secondary;
+  white-space: pre-wrap;
+}
+
+.agentic-session-step__links--stack {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: $space-2xs;
+  color: $color-text-secondary;
+}
+
+.agentic-session-step__link {
+  color: $color-link;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.agentic-session-step__link:hover,
+.agentic-session-step__link:focus-visible {
+  color: $color-link-dark;
+}
+
+.agentic-session-step__branch {
+  font-family: $font-family-code;
+  color: $color-text-secondary;
+}
+
+.agentic-session-step--cancelled {
+  background: $color-surface-muted;
+}
+
+.agentic-pr-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px $space-sm;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-base;
+  border-radius: $radius-pill;
+}
+
+.agentic-pr-badge--open {
+  background: $color-link-soft;
+  color: $color-link-emphasis;
+}
+
+.agentic-pr-badge--merged {
+  background: $color-success-soft;
+  color: $color-success-dark;
+}
+
+.agentic-pr-badge--closed {
+  background: $color-surface-neutral;
+  color: $color-text-secondary;
+}
+
+.agentic-pr-badge--waiting {
+  background: $color-warning-soft;
+  color: $color-text-primary;
+}
+
 .agentic-activity-strip {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px 10px;
-  font-size: 12px;
-  line-height: 1.4;
-  color: #50575e;
+  gap: $space-xs $space-md;
+  font-size: $font-size-sm;
+  line-height: $line-height-base;
+  color: $color-text-secondary;
+}
+
+.agentic-activity-strip--reverted {
+  margin-block: $space-2xs;
+  padding: $space-xs $space-md;
+  background: rgb(56 88 233 / 4%);
+  border-radius: $radius-md;
+  border-inline-start: 3px solid $color-brand-blue;
+}
+
+.agentic-activity-strip--reverted .agentic-activity-strip__date {
+  color: $color-text-muted;
+}
+
+.agentic-activity-strip--reverted .agentic-activity-strip__label {
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
 }
 
 .agentic-activity-strip__date {
   flex: 0 0 auto;
-  color: #646970;
+  color: $color-text-muted;
 }
 
 .agentic-activity-strip__branch {
   flex: 0 0 auto;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  color: #3c434a;
+  font-family: $font-family-code;
+  color: $color-text-secondary;
 }
 
 .agentic-activity-strip__label {
   flex: 0 0 auto;
-  color: #646970;
+  color: $color-text-muted;
 }
 
 .agentic-activity-strip__link {
   flex: 1 1 auto;
   min-width: 0;
   overflow-wrap: anywhere;
-  color: #5b21b6;
+  color: $color-link;
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
 .agentic-activity-strip__link:hover,
 .agentic-activity-strip__link:focus-visible {
-  color: #4c1d95;
+  color: $color-link-dark;
+}
+
+.agentic-activity-strip__draft {
+  flex: 1 1 100%;
+  min-width: 0;
+  margin: 0;
+}
+
+.agentic-activity-strip__draft-title {
+  margin: $space-sm 0 $space-2xs;
+  font-weight: $font-weight-semibold;
+}
+
+.agentic-activity-strip__draft-body {
+  margin: 0;
+  padding: $space-sm;
+  max-height: 240px;
+  overflow: auto;
+  white-space: pre-wrap;
+  font-size: $font-size-sm;
+  font-family: $font-family-code;
+  background: $color-surface-subtle;
+  border: 1px solid $color-border;
+  border-radius: $radius-md;
+}
+
+.agentic-activity-strip__delete {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: $space-xs;
+}
+
+.agentic-history-tab__error {
+  margin: $space-sm 0 0;
+  color: $color-danger-dark;
+  font-size: $font-size-sm;
+}
+
+.agentic-choice-copy {
+  margin: 8px 0 16px;
+  padding-block-start: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #1e1e1e;
+}
+
+.agentic-choice-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .agentic-branches-required-notice {
@@ -206,11 +682,30 @@
 }
 
 .components-button.agentic-agent-btn:disabled,
-.components-button.agentic-agent-btn[disabled] {
+.components-button.agentic-agent-btn[disabled],
+.components-button.agentic-agent-btn[aria-disabled='true'] {
   opacity: 0.55;
   animation: none;
   box-shadow: none;
+  transform: none;
   cursor: not-allowed;
+}
+
+.components-button.agentic-agent-btn:disabled::before,
+.components-button.agentic-agent-btn[disabled]::before,
+.components-button.agentic-agent-btn[aria-disabled='true']::before {
+  animation: none;
+  display: none;
+}
+
+.components-button.agentic-agent-btn:disabled:hover,
+.components-button.agentic-agent-btn[disabled]:hover,
+.components-button.agentic-agent-btn[aria-disabled='true']:hover,
+.components-button.agentic-agent-btn:disabled:focus-visible,
+.components-button.agentic-agent-btn[disabled]:focus-visible,
+.components-button.agentic-agent-btn[aria-disabled='true']:focus-visible {
+  transform: none;
+  box-shadow: none !important;
 }
 
 .components-button.agentic-agent-btn svg {
@@ -252,6 +747,10 @@
 
 .agentic-export-modal .components-modal__content {
   padding: 0 24px 24px;
+}
+
+.agentic-export-modal .components-notice {
+  margin-block-start: 16px;
 }
 
 .agentic-modal-header {
@@ -296,6 +795,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  padding-block-start: 12px;
 }
 
 .agentic-field-title .components-base-control__field {
@@ -311,41 +811,8 @@
   resize: vertical;
 }
 
-/* Meta row: complexity + labels side by side */
-
-.agentic-modal-meta {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  align-items: start;
-}
-
-@media (max-width: 640px) {
-  .agentic-modal-meta {
-    grid-template-columns: 1fr;
-  }
-}
-
-.agentic-label-checkboxes {
-  border: 0;
-  padding: 0;
-  margin: 0;
-}
-
-.agentic-label-checkboxes legend {
-  font-size: 11px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #757575;
-  margin-block-end: 8px;
-}
-
-.agentic-modal-hint {
-  font-size: 12px;
-  color: #757575;
-  margin: 0;
-  line-height: 1.5;
+.agentic-request-change-field {
+  padding-block-start: 16px;
 }
 
 /* Actions row */
@@ -369,9 +836,24 @@
   max-width: 860px;
 }
 
+.agentic-wizard-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-block-end: 4px;
+}
+
 .agentic-wizard-title {
   font-size: 24px;
+  margin: 0;
   margin-block-end: 4px;
+}
+
+.wrap .agentic-wizard-header .agentic-wizard-title {
+  margin: 0;
+  padding: 0;
+  line-height: 1.3;
 }
 
 .agentic-advisory-notice {
@@ -645,32 +1127,6 @@
   font-style: italic;
 }
 
-.agentic-branch-section {
-  border: 0;
-  margin: 16px 0 0;
-  padding: 0;
-  transition: opacity 0.2s ease;
-}
-
-.agentic-branch-section .form-table {
-  margin-block-start: 8px;
-}
-
-.agentic-branch-field {
-  max-width: 25em; /* Match wp-admin .regular-text (Repo / PAT). */
-}
-
-.agentic-branch-field .components-combobox-control,
-.agentic-branch-field .components-base-control {
-  max-width: 100%;
-}
-
-.agentic-branch-field .components-combobox-control__input,
-.agentic-branch-field input.components-combobox-control__input {
-  width: 100%;
-  max-width: 100%;
-}
-
 .agentic-step-actions {
   display: flex;
   align-items: center;
@@ -681,16 +1137,6 @@
 
 .agentic-step-actions .button {
   margin: 0 !important;
-}
-
-.agentic-branch-intro {
-  margin-block-start: 22px;
-}
-
-.agentic-staging-first-notice {
-  margin-block-start: 8px;
-  font-size: 13px;
-  color: #646970;
 }
 
 /* Toggle switch (Step 1) */
@@ -829,10 +1275,6 @@
 
 .agentic-repo-match span {
   line-height: 1.4;
-}
-
-.agentic-branch-save-status {
-  font-size: 13px;
 }
 
 /* Install workflow button */
@@ -1027,52 +1469,38 @@
   color: #fff;
 }
 
-/* All-done banner (above step tabs) ──────────────────────────────────────── */
+/* All-done status (inline with the page heading) ─────────────────────────── */
 
-.agentic-all-done-banner {
-  display: flex;
+.agentic-all-done-status {
+  display: inline-flex;
   align-items: center;
-  gap: 16px;
-  margin-block-end: 20px;
-  padding: 20px 24px;
-  border: 1px solid #c3e6cb;
-  border-radius: 6px;
-  background: #f0fff4;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  font-size: 13px;
+  line-height: 1;
+  color: #50575e;
+  transform: translateY(1px);
 }
 
 .agentic-all-done-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
   background: #008a20;
   color: #fff;
-  font-size: 24px;
+  font-size: 10px;
   font-weight: 700;
   flex-shrink: 0;
-  box-shadow: 0 0 0 6px #e6f4ea;
-}
-
-.agentic-all-done-copy {
-  min-width: 0;
 }
 
 .agentic-all-done-heading {
-  font-size: 20px;
+  font-size: inherit;
   font-weight: 700;
-  color: #1d2327;
-  margin: 0 0 4px;
-  padding: 0;
-  line-height: 1.3;
-}
-
-.agentic-all-done-sub {
-  font-size: 14px;
-  color: #50575e;
-  margin: 0;
-  line-height: 1.5;
+  color: #008a20;
 }
 
 #agentic-review-content[hidden],
@@ -1094,5 +1522,16 @@
 
   .agentic-modal-header-icon {
     animation: none;
+  }
+
+  .agentic-start-over-spinner {
+    animation: none;
+    border-color: #fff;
+  }
+
+  .agentic-session--focus-pulse {
+    animation: none;
+    border-color: $color-brand-blue;
+    box-shadow: 0 0 0 2px rgb(56 88 233 / 18%);
   }
 }

@@ -246,13 +246,13 @@ addAction(
 
 **Type:** Action.
 
-**Purpose:** Fires after any AI Issue Resolver mutating action (sent, draft deleted/restarted, or staging fix applied to production), so the UI can re-fetch issue details (history, draft, labels).
+**Purpose:** Fires after any Fix with AI mutating action (sent, start over, or a sent fix deleted), so the UI can re-fetch issue details (history, labels).
 
 **Parameters**
 
 | Parameter  | Type     | Description                                                                    |
 | ---------- | -------- | ------------------------------------------------------------------------------ |
-| `$payload` | `Object` | Payload containing `issueId` and `mutation` (`sent`, `deleted`, or `applied`). |
+| `$payload` | `Object` | Payload containing `issueId` and `mutation` (`sent`, `deleted`, or `reverted`). `deleted` is per-fix removal from Alpaca; `reverted` is a start-over restore. |
 
 ### `alpaca.lastActivityChanged`
 

@@ -627,6 +627,8 @@ const AlpacaIssue = ({
   const snackbarTimersRef = useRef({});
   const snackbarCloseTimersRef = useRef({});
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [selectedIssueTab, setSelectedIssueTab] = useState('comments');
+  const [issueTabPanelMountKey, setIssueTabPanelMountKey] = useState(0);
 
   useAutoExpandTextarea(issueCommentRef, issueComment, isCreating);
 
@@ -755,7 +757,7 @@ const AlpacaIssue = ({
       );
   }, [showNotification]);
 
-  // After the AI Issue Resolver activity/changes, refresh the AI Log tab content.
+  // After the Fix with AI activity/changes, refresh the AI Log tab content.
   useEffect(() => {
     if (!issueId || isCreating) {
       return undefined;
@@ -796,6 +798,14 @@ const AlpacaIssue = ({
       wp.hooks.removeAction('alpaca.agentic.changed', 'alpaca/agentic-history');
     };
   }, [issueId, isCreating, onLabelsChange, refetchData, setIssueDetails]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+    setSelectedIssueTab('comments');
+    setIssueTabPanelMountKey(0);
+  }, [issueId, isOpen]);
 
   const getAssigneeNamesFromIssue = useCallback(
     (details) => {
@@ -2106,6 +2116,40 @@ const AlpacaIssue = ({
     () => issueTabs.map((tab) => tab.name).join('|'),
     [issueTabs],
   );
+
+  useEffect(() => {
+    if (!issueId || isCreating) {
+      return undefined;
+    }
+
+    const selectIssueTab = (tabName, targetIssueId) => {
+      if (targetIssueId && String(targetIssueId) !== String(issueId)) {
+        return;
+      }
+
+      const tabId = String(tabName || '').trim();
+      if (!tabId || !issueTabs.some((tab) => tab.name === tabId)) {
+        return;
+      }
+
+      setSelectedIssueTab(tabId);
+      setIssueTabPanelMountKey((key) => key + 1);
+    };
+
+    wp.hooks.addAction(
+      'alpaca.issue.selectTab',
+      'alpaca/issue-select-tab',
+      selectIssueTab,
+    );
+
+    return () => {
+      wp.hooks.removeAction(
+        'alpaca.issue.selectTab',
+        'alpaca/issue-select-tab',
+      );
+    };
+  }, [issueId, isCreating, issueTabs]);
+
   const stableSelectedLabelIds = useMemo(
     () => selectedLabelIds,
     [selectedLabelIds],
@@ -2573,16 +2617,18 @@ const AlpacaIssue = ({
                 </div>
               )}
 
-              {wp.hooks.applyFilters('alpaca.issue.abovetabs', null, {
-                issueId,
-                meta: issueDetails?.meta || {},
-              })}
+              {!isCreating &&
+                wp.hooks.applyFilters('alpaca.issue.abovetabs', null, {
+                  issueId,
+                  meta: issueDetails?.meta || {},
+                })}
 
               {!isCreating && (
                 <TabPanel
-                  key={issueTabsKey}
+                  key={`${issueTabsKey}-${issueTabPanelMountKey}`}
                   className="alpaca-issue-tabs"
-                  initialTabName="comments"
+                  initialTabName={selectedIssueTab}
+                  onSelect={setSelectedIssueTab}
                   tabs={issueTabs}
                 >
                   {(tab) => {

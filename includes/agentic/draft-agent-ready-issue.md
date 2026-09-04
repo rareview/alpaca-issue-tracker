@@ -91,5 +91,9 @@ Rules:
     "title": "Concise issue title, max 60 chars",
     "body": "Full Markdown issue body following the template above",
     "complexity": "low" | "medium" | "high",
-    "labels": ["bug" or "enhancement", "complexity:low" or "complexity:medium" or "complexity:high"]
+    "labels": ["bug" or "enhancement", "complexity:low" or "complexity:medium" or "complexity:high"],
+    "suspicious": false,
+    "suspicious_reason": "",
+    "suitable_for_agent": true,
+    "unsuitable_reason": ""
   }

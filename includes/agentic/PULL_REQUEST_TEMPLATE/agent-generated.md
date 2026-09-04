@@ -66,10 +66,6 @@
 - [ ] Proper output escaping
 - [ ] Authorization checks where needed
 
-### Staging first
-
-- [ ] If a Staging branch is configured, this fix has been proven there before merging to Production — use "Apply fix to Production" to cherry-pick the exact tested code instead of re-running the agent
-
 ---
 
 ### Reviewer Notes
