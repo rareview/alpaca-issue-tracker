@@ -172,9 +172,9 @@ if (document.querySelector('#alpaca-email-templates-page')) {
   );
 }
 
-if (document.querySelector('#alpaca-ai-issue-resolver-page')) {
+if (document.querySelector('#alpaca-fix-with-ai-page')) {
   mountReactTree(
     <AgenticSettings />,
-    document.querySelector('#alpaca-ai-issue-resolver-page'),
+    document.querySelector('#alpaca-fix-with-ai-page'),
   );
 }

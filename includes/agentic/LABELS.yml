@@ -5,7 +5,7 @@
   description: PR was created by an AI agent
   name: agent-generated
 - color: 0E8A16
-  description: PR cherry-picks a staging fix already proven by a merged pull request
+  description: Verified AI-generated pull request
   name: tested-fix
 - color: 7057FF
   description: Issue has been evaluated as an agent candidate by the screener

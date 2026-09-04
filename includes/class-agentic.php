@@ -1,6 +1,6 @@
 <?php
 /**
- * Settings for the Agentic (AI Issue Resolver) feature.
+ * Settings for the Agentic (Fix with AI) feature.
  *
  * Option registration, board config localization, and client settings payload.
  * Admin UI mounts via React (src/AgenticSettings.jsx).
@@ -33,7 +33,7 @@ class Agentic {
 	 *
 	 * @var string
 	 */
-	const PAGE_SLUG = 'alpaca-ai-issue-resolver';
+	const PAGE_SLUG = 'alpaca-fix-with-ai';
 
 	/**
 	 * Register WordPress hooks.
@@ -98,83 +98,63 @@ class Agentic {
 			$ai_api_key = $current_settings['ai_api_key'] ?? '';
 		}
 
-		// Environment names → GitHub branch names. Empty string = None.
-		$environment_roles  = [ 'staging', 'production' ];
-		$saved_branches     = is_array( $current_settings['branches'] ?? null ) ? $current_settings['branches'] : [];
-		$submitted_branches = is_array( $raw['branches'] ?? null ) ? $raw['branches'] : null;
-		$environments       = [];
-		foreach ( $environment_roles as $role ) {
-			if ( null !== $submitted_branches && array_key_exists( $role, $submitted_branches ) ) {
-				// First try to read the submitted branch for this role.
-				$environments[ $role ] = sanitize_text_field( (string) $submitted_branches[ $role ] );
-			} else {
-				// If not, use the saved branch.
-				$environments[ $role ] = sanitize_text_field( (string) ( $saved_branches[ $role ] ?? '' ) );
-			}
-		}
-
 		$github_repo = sanitize_text_field( $raw['github_repo'] ?? ( $current_settings['github_repo'] ?? '' ) );
 
 		// Confirmation that this WP site matches the chosen GitHub repo (warn-only gate in the wizard).
 		$repo_changed = (string) ( $current_settings['github_repo'] ?? '' ) !== $github_repo;
 		if ( $repo_changed ) {
 			// Changing the repo clears the confirmation so the admin must re-check.
-			$repo_match_confirmed = false;
+			$repo_match_confirmed   = false;
+			$ai_target_branch      = sanitize_text_field( (string) ( $raw['ai_target_branch'] ?? '' ) );
+			$github_default_branch = sanitize_text_field( (string) ( $raw['github_default_branch'] ?? '' ) );
 		} elseif ( array_key_exists( 'repo_match_confirmed', $raw ) ) {
 			$repo_match_confirmed = ! empty( $raw['repo_match_confirmed'] );
+			$ai_target_branch     = sanitize_text_field(
+				(string) ( $raw['ai_target_branch'] ?? ( $current_settings['ai_target_branch'] ?? '' ) )
+			);
+			$github_default_branch = sanitize_text_field(
+				(string) ( $raw['github_default_branch'] ?? ( $current_settings['github_default_branch'] ?? '' ) )
+			);
 		} else {
-			$repo_match_confirmed = ! empty( $current_settings['repo_match_confirmed'] );
+			$repo_match_confirmed  = ! empty( $current_settings['repo_match_confirmed'] );
+			$ai_target_branch      = sanitize_text_field( (string) ( $current_settings['ai_target_branch'] ?? '' ) );
+			$github_default_branch = sanitize_text_field( (string) ( $current_settings['github_default_branch'] ?? '' ) );
+		}
+
+		if ( array_key_exists( 'ai_target_branch', $raw ) && ! $repo_changed ) {
+			$ai_target_branch = sanitize_text_field( (string) $raw['ai_target_branch'] );
+		}
+		if ( array_key_exists( 'github_default_branch', $raw ) && ! $repo_changed ) {
+			$github_default_branch = sanitize_text_field( (string) $raw['github_default_branch'] );
 		}
 
 		return [
-			'enabled'              => ! empty( $raw['enabled'] ),
-			'github_token'         => $github_token,
-			'github_repo'          => $github_repo,
-			'ai_provider'          => in_array( $raw['ai_provider'] ?? '', $providers, true )
+			'enabled'                => ! empty( $raw['enabled'] ),
+			'github_token'           => $github_token,
+			'github_repo'            => $github_repo,
+			'ai_target_branch'       => $ai_target_branch,
+			'github_default_branch'  => $github_default_branch,
+			'ai_provider'            => in_array( $raw['ai_provider'] ?? '', $providers, true )
 				? $raw['ai_provider']
 				: ( $current_settings['ai_provider'] ?? 'claude' ),
-			'ai_api_key'           => $ai_api_key,
+			'ai_api_key'             => $ai_api_key,
 			// Optional per-site notes appended to every AI-drafted GitHub issue.
-			'project_context'      => sanitize_textarea_field( $raw['project_context'] ?? ( $current_settings['project_context'] ?? '' ) ),
-			'setup_checklist'      => array_values(
+			'project_context'        => sanitize_textarea_field( $raw['project_context'] ?? ( $current_settings['project_context'] ?? '' ) ),
+			'setup_checklist'        => array_values(
 				array_unique(
 					array_map( 'absint', (array) ( $raw['setup_checklist'] ?? [] ) )
 				)
 			),
-			'repo_match_confirmed' => $repo_match_confirmed,
-			// User IDs allowed to use the AI Issue Fixer besides administrators (who always have access).
-			'engineers'            => array_key_exists( 'engineers', $raw )
+			'repo_match_confirmed'   => $repo_match_confirmed,
+			// User IDs allowed to use the Fix with AI feature besides administrators (who always have access).
+			'engineers'              => array_key_exists( 'engineers', $raw )
 				? array_values( array_unique( array_map( 'absint', (array) $raw['engineers'] ) ) )
 				: array_values( array_unique( array_map( 'absint', (array) ( $current_settings['engineers'] ?? [] ) ) ) ),
-			'branches'             => $environments,
 		];
 	}
 
 	/**
-	 * Normalize the saved Staging / Production branch map.
-	 * Empty string means "None" (not configured).
-	 *
-	 * @param array $options Raw option array.
-	 * @return array{staging: string, production: string}
-	 */
-	public static function get_branches( array $options = [] ): array {
-		if ( empty( $options ) ) {
-			$options = get_option( self::OPTION_KEY, [] );
-			if ( ! is_array( $options ) ) {
-				$options = [];
-			}
-		}
-
-		$saved = is_array( $options['branches'] ?? null ) ? $options['branches'] : [];
-
-		return [
-			'staging'    => (string) ( $saved['staging'] ?? '' ),
-			'production' => (string) ( $saved['production'] ?? '' ),
-		];
-	}
-
-	/**
-	 * Get the IDs of users explicitly granted AI Issue Fixer access (besides administrators).
+	 * Get the IDs of users explicitly granted Fix with AI access (besides administrators).
 	 *
 	 * @return int[] User IDs.
 	 */
@@ -194,7 +174,7 @@ class Agentic {
 	}
 
 	/**
-	 * Whether the current user may use the AI Issue Fixer:
+	 * Whether the current user may use the Fix with AI feature:
 	 * 1. administrators always can,
 	 * 2. plus anyone explicitly added to the engineers allowlist.
 	 */
@@ -272,6 +252,8 @@ class Agentic {
 		return [
 			'enabled'                    => ! empty( $options['enabled'] ),
 			'github_repo'                => $github_repo,
+			'ai_target_branch'           => $options['ai_target_branch'] ?? '',
+			'github_default_branch'      => $options['github_default_branch'] ?? '',
 			'ai_provider'                => $options['ai_provider'] ?? 'claude',
 			'project_context'            => $options['project_context'] ?? '',
 			'setup_checklist'            => array_map( 'absint', (array) ( $options['setup_checklist'] ?? [] ) ),
@@ -289,8 +271,6 @@ class Agentic {
 			'is_admin'                   => $is_admin,
 			'is_engineer'                => self::is_current_user_engineer(),
 			'can_edit'                   => $is_admin, // only admins can edit settings.
-			// PR target branches (empty string = None). At least one must be set to send issues.
-			'branches'                   => self::get_branches( $options ),
 			// WP Connectors / AI Client status.
 			'wp_ai_available'            => self::is_wp_ai_available(),
 			'wp_ai_configured'           => self::is_wp_ai_configured(),
@@ -299,6 +279,38 @@ class Agentic {
 			'ai_ready'                   => self::is_wp_ai_available()
 				? self::is_wp_ai_configured()
 				: '' !== (string) $ai_api_key,
+			// Security setup checklist + PAT guidance from includes/agentic/security/setup.json.
+			'setup_security'             => self::get_setup_security_payload(),
+		];
+	}
+
+	/**
+	 * Client-safe setup security checklist and PAT guidance.
+	 *
+	 * @return array{branch_protection: array<int, array{key: int, label: string}>, pat_guidance: string}
+	 */
+	public static function get_setup_security_payload(): array {
+		$raw = self::load_security_json( 'setup.json' );
+		$branch_protection = [];
+
+		foreach ( (array) ( $raw['branch_protection'] ?? [] ) as $item ) {
+			if ( ! is_array( $item ) ) {
+				continue;
+			}
+			$key   = absint( $item['key'] ?? 0 );
+			$label = sanitize_text_field( (string) ( $item['label'] ?? '' ) );
+			if ( $key <= 0 || '' === $label ) {
+				continue;
+			}
+			$branch_protection[] = [
+				'key'   => $key,
+				'label' => $label,
+			];
+		}
+
+		return [
+			'branch_protection' => $branch_protection,
+			'pat_guidance'      => sanitize_textarea_field( (string) ( $raw['pat_guidance'] ?? '' ) ),
 		];
 	}
 
@@ -320,15 +332,20 @@ class Agentic {
 		}
 
 		// Localize.
+		$options = get_option( self::OPTION_KEY, [] );
+		if ( ! is_array( $options ) ) {
+			$options = [];
+		}
+
 		wp_localize_script(
 			'alpaca-script',
 			'agenticConfig',
 			[
-				'restBase'       => esc_url_raw( rest_url( 'alpaca/v1/agentic' ) ),
-				'nonce'          => wp_create_nonce( 'wp_rest' ),
-				'setupCompleted' => $this->is_setup_completed(),
-				'isAuthorized'   => self::current_user_can_use(), // Only administrators and users on the engineers allowlist may send issues to the AI agent.
-				'branches'       => self::get_branches(), // Staging / Production branch names (empty = None).
+				'restBase'        => esc_url_raw( rest_url( 'alpaca/v1/agentic' ) ),
+				'nonce'           => wp_create_nonce( 'wp_rest' ),
+				'setupCompleted'  => $this->is_setup_completed(),
+				'isAuthorized'    => self::current_user_can_use(), // Only administrators and users on the engineers allowlist may send issues to the AI agent.
+				'aiTargetBranch'  => (string) ( $options['ai_target_branch'] ?? '' ),
 			]
 		);
 	}
@@ -349,12 +366,73 @@ class Agentic {
 		$ai_ready = self::is_wp_ai_available()
 			? self::is_wp_ai_configured()
 			: ! empty( $ai_key );
-		if ( empty( $github_token ) || empty( $github_repo ) || ! $ai_ready ) {
+		$ai_target_branch = $options['ai_target_branch'] ?? '';
+		if ( empty( $github_token ) || empty( $github_repo ) || empty( $ai_target_branch ) || ! $ai_ready ) {
 			return false;
 		}
 
 		$workflow_installed = get_transient( 'alpaistr_agentic_workflow_installed' ) || get_option( 'alpaistr_agentic_workflow_pr_url', '' );
 		return (bool) $workflow_installed;
+	}
+
+	/**
+	 * Absolute path to the bundled Fix with AI security policy directory.
+	 *
+	 * @return string Trailing-slash directory path.
+	 */
+	public static function security_dir(): string {
+		return ALPAISTR_PLUGIN_DIR . 'includes/agentic/security/';
+	}
+
+	/**
+	 * Read a file from the security policy directory.
+	 *
+	 * @param string $filename File name relative to the security directory (e.g. agent.json).
+	 * @return string File contents, or empty string when missing/unreadable.
+	 */
+	public static function load_security_file( string $filename ): string {
+		$filename = ltrim( str_replace( [ '..', '\\' ], '', $filename ), '/' );
+		if ( '' === $filename || str_contains( $filename, '/' ) ) {
+			return '';
+		}
+
+		$path = self::security_dir() . $filename;
+		if ( ! is_readable( $path ) ) {
+			return '';
+		}
+
+		// phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Local plugin file.
+		$contents = file_get_contents( $path );
+
+		return false === $contents ? '' : (string) $contents;
+	}
+
+	/**
+	 * Decode a JSON file from the security policy directory.
+	 *
+	 * @param string $filename JSON file name (e.g. setup.json).
+	 * @return array<string, mixed> Decoded object, or empty array on failure.
+	 */
+	public static function load_security_json( string $filename ): array {
+		$raw = self::load_security_file( $filename );
+		if ( '' === $raw ) {
+			return [];
+		}
+
+		$decoded = json_decode( $raw, true );
+
+		return is_array( $decoded ) ? $decoded : [];
+	}
+
+	/**
+	 * Absolute path to the CI agent security policy file (installed to customer repos).
+	 *
+	 * @return string Absolute filesystem path, or empty when missing.
+	 */
+	public static function agent_security_json_path(): string {
+		$path = self::security_dir() . 'agent.json';
+
+		return is_readable( $path ) ? $path : '';
 	}
 
 	/**

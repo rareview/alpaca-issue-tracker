@@ -214,7 +214,7 @@ class Register {
 				'project-board_page_alpaca-settings',
 				'project-board_page_alpaca-notifications',
 				'project-board_page_alpaca-email-templates',
-				'project-board_page_alpaca-ai-issue-resolver',
+				'project-board_page_alpaca-fix-with-ai',
 			],
 			true
 		);

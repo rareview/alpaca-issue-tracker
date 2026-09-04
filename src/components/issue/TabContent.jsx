@@ -60,7 +60,9 @@ const TabContent = memo(
           />
         );
       case 'agentic':
-        return <AgenticHistoryTab issueDetails={issueDetails} />;
+        return (
+          <AgenticHistoryTab issueId={issueId} issueDetails={issueDetails} />
+        );
       default:
         return null;
     }

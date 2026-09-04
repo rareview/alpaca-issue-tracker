@@ -19,7 +19,7 @@ We plan to introduce additional permission controls in future releases.
 | Configure        | `manage_options`                                   |
 | My Notifications | `edit_posts`                                       |
 | Email Templates  | `manage_options`                                   |
-| AI Issue Resolver | `edit_posts` to view; `manage_options` to edit     |
+| Fix with AI        | `edit_posts` to view; `manage_options` to edit     |
 
 ## Issue Workflows
 
@@ -37,13 +37,13 @@ Users with `edit_posts` can usually:
 
 Issue deletion is restricted to `manage_options` by default.
 
-## AI Issue Fixer Access
+## Fix with AI Access
 
-The AI Issue Fixer (AI Issue Resolver) is meant only for engineers with GitHub access who will review each auto-generated pull request, so access is more restricted than the rest of the board:
+The Fix with AI feature is meant only for engineers with GitHub access who will review each auto-generated pull request, so access is more restricted than the rest of the board:
 
 - Administrators (`manage_options`) always have full access: they can configure the feature and use it.
-- Administrators can grant additional users AI Issue Fixer access from the WP Setup step on the AI Issue Resolver screen. Those users can use the feature (send issues to the AI agent) and view setup status, but cannot change settings or credentials.
-- Everyone else can see the AI Issue Resolver menu item, but the screen shows a message that access is limited to administrators and granted users, and the "Fix with AI" action never appears for them.
+- Administrators can grant additional users Fix with AI access from the WP Setup step on the Fix with AI screen. Those users can use the feature (send issues to the AI agent) and view setup status, but cannot change settings or credentials.
+- Everyone else can see the Fix with AI menu item, but the screen shows a message that access is limited to administrators and granted users, and the "Fix with AI" action never appears for them.
 
 ## Configuration Workflows
 
