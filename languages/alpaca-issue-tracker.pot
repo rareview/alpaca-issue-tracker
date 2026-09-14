@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-08-13T09:55:22+00:00\n"
+"POT-Creation-Date: 2026-09-14T15:44:23+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: alpaca-issue-tracker\n"
@@ -1271,7 +1271,7 @@ msgstr ""
 #: src/components/CommentForm.jsx:501
 #: src/components/Issue.jsx:2614
 #: src/components/issue/AttachmentRow.jsx:169
-#: src/components/MarkdownTextarea.jsx:858
+#: src/components/MarkdownTextarea.jsx:878
 #: src/components/settings/SettingsList.jsx:332
 #: src/Modal.jsx:259
 #: src/Toolbar.jsx:341
@@ -1859,7 +1859,7 @@ msgid "Last edit"
 msgstr ""
 
 #: src/components/issue/ReportTab.jsx:134
-#: src/components/MarkdownTextarea.jsx:850
+#: src/components/MarkdownTextarea.jsx:863
 msgid "URL"
 msgstr ""
 
@@ -1921,11 +1921,11 @@ msgstr ""
 msgid "Are you sure you want to delete the label"
 msgstr ""
 
-#: src/components/MarkdownTextarea.jsx:843
+#: src/components/MarkdownTextarea.jsx:871
 msgid "Text"
 msgstr ""
 
-#: src/components/MarkdownTextarea.jsx:861
+#: src/components/MarkdownTextarea.jsx:881
 msgid "Apply"
 msgstr ""
 
@@ -2094,20 +2094,20 @@ msgstr ""
 msgid "Activity types"
 msgstr ""
 
-#: src/components/notifications/MentionsTextarea.jsx:453
-#: src/components/notifications/MentionsTextarea.jsx:456
+#: src/components/notifications/MentionsTextarea.jsx:454
+#: src/components/notifications/MentionsTextarea.jsx:457
 msgid "Search issues"
 msgstr ""
 
-#: src/components/notifications/MentionsTextarea.jsx:462
+#: src/components/notifications/MentionsTextarea.jsx:463
 msgid "Type at least 3 characters to search issues."
 msgstr ""
 
-#: src/components/notifications/MentionsTextarea.jsx:473
+#: src/components/notifications/MentionsTextarea.jsx:474
 msgid "No matching issues found."
 msgstr ""
 
-#: src/components/notifications/MentionsTextarea.jsx:510
+#: src/components/notifications/MentionsTextarea.jsx:511
 msgid "No matching users found."
 msgstr ""
 
