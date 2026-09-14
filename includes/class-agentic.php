@@ -1,6 +1,6 @@
 <?php
 /**
- * Settings for the Agentic (Fix with AI) feature.
+ * Settings for the Agentic (Fix With AI) feature.
  *
  * Option registration, board config localization, and client settings payload.
  * Admin UI mounts via React (src/AgenticSettings.jsx).
@@ -146,7 +146,7 @@ class Agentic {
 				)
 			),
 			'repo_match_confirmed'   => $repo_match_confirmed,
-			// User IDs allowed to use the Fix with AI feature besides administrators (who always have access).
+			// User IDs allowed to use the Fix With AI feature besides administrators (who always have access).
 			'engineers'              => array_key_exists( 'engineers', $raw )
 				? array_values( array_unique( array_map( 'absint', (array) $raw['engineers'] ) ) )
 				: array_values( array_unique( array_map( 'absint', (array) ( $current_settings['engineers'] ?? [] ) ) ) ),
@@ -154,7 +154,7 @@ class Agentic {
 	}
 
 	/**
-	 * Get the IDs of users explicitly granted Fix with AI access (besides administrators).
+	 * Get the IDs of users explicitly granted Fix With AI access (besides administrators).
 	 *
 	 * @return int[] User IDs.
 	 */
@@ -174,7 +174,7 @@ class Agentic {
 	}
 
 	/**
-	 * Whether the current user may use the Fix with AI feature:
+	 * Whether the current user may use the Fix With AI feature:
 	 * 1. administrators always can,
 	 * 2. plus anyone explicitly added to the engineers allowlist.
 	 */
@@ -376,7 +376,7 @@ class Agentic {
 	}
 
 	/**
-	 * Absolute path to the bundled Fix with AI security policy directory.
+	 * Absolute path to the bundled Fix With AI security policy directory.
 	 *
 	 * @return string Trailing-slash directory path.
 	 */

@@ -1,5 +1,5 @@
 /**
- * Fix with AI settings wizard.
+ * Fix With AI settings wizard.
  *
  * Mounted on #alpaca-fix-with-ai-page.
  */
@@ -265,7 +265,7 @@ EngineersField.propTypes = {
 };
 
 /**
- * Fix with AI admin screen.
+ * Fix With AI admin screen.
  *
  * @return {JSX.Element} Wizard screen.
  */
@@ -547,11 +547,11 @@ const AgenticSettings = () => {
     return (
       <div className="agentic-wizard-inner">
         <h1 className="agentic-wizard-title">
-          {__('Fix with AI', 'alpaca-issue-tracker')}
+          {__('Fix With AI', 'alpaca-issue-tracker')}
         </h1>
         <Notice status="warning" isDismissible={false}>
           {__(
-            'Fix with AI is only available to administrators and users granted engineer access. Contact your site administrator if you need access.',
+            'Fix With AI is only available to administrators and users granted engineer access. Contact your site administrator if you need access.',
             'alpaca-issue-tracker',
           )}
         </Notice>
@@ -679,7 +679,7 @@ const AgenticSettings = () => {
     >
       <div className="agentic-wizard-header">
         <h1 className="wp-heading-inline agentic-wizard-title">
-          {__('Fix with AI', 'alpaca-issue-tracker')}
+          {__('Fix With AI', 'alpaca-issue-tracker')}
         </h1>
         {allDone ? (
           <p className="agentic-all-done-status">
@@ -700,7 +700,7 @@ const AgenticSettings = () => {
       >
         <p>
           {__(
-            'Fix with AI can only propose code changes within the boundaries of the GitHub repository referenced below.',
+            'Fix With AI can only propose code changes within the boundaries of the GitHub repository referenced below.',
             'alpaca-issue-tracker',
           )}
         </p>
@@ -715,7 +715,7 @@ const AgenticSettings = () => {
       {!canEdit && data.is_engineer ? (
         <Notice status="info" isDismissible={false}>
           {__(
-            'You have Fix with AI access and can view setup status below. Only administrators can change these settings.',
+            'You have Fix With AI access and can view setup status below. Only administrators can change these settings.',
             'alpaca-issue-tracker',
           )}
         </Notice>
@@ -1434,7 +1434,7 @@ const AgenticSettings = () => {
             ) : (
               <p>
                 {__(
-                  'Only administrators can manage who has access to Fix with AI.',
+                  'Only administrators can manage who has access to Fix With AI.',
                   'alpaca-issue-tracker',
                 )}
               </p>

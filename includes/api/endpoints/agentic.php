@@ -1,6 +1,6 @@
 <?php
 /**
- * REST API endpoints for the Agentic (Fix with AI) feature.
+ * REST API endpoints for the Agentic (Fix With AI) feature.
  *
  * @package AlpacaIssueTracker
  */
@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Post meta key for chronological Fix with AI activity history.
+ * Post meta key for chronological Fix With AI activity history.
  *
  * Each activity record has a `type` (`sent`, `change_requested`, or
  * `reverted`), type-specific fields, and an `occurred_at` GMT ISO-8601
@@ -252,14 +252,14 @@ function alpaistr_agentic_manage_options_permission_check(): bool|WP_Error {
 
 /**
  * Allow logged-in administrators and users on the engineers allowlist to use the
- * Fix with AI (draft/create a GitHub issue, view setup status).
+ * Fix With AI (draft/create a GitHub issue, view setup status).
  */
 function alpaistr_agentic_can_use_permission_check(): bool|WP_Error {
 	if ( ! is_user_logged_in() ) {
 		return new WP_Error( 'rest_forbidden', esc_html__( 'Authentication required.', 'alpaca-issue-tracker' ), [ 'status' => 401 ] );
 	}
 	if ( ! Agentic::current_user_can_use() ) {
-		return new WP_Error( 'rest_forbidden', esc_html__( 'Fix with AI is only available to administrators and users granted engineer access.', 'alpaca-issue-tracker' ), [ 'status' => 403 ] );
+		return new WP_Error( 'rest_forbidden', esc_html__( 'Fix With AI is only available to administrators and users granted engineer access.', 'alpaca-issue-tracker' ), [ 'status' => 403 ] );
 	}
 	return true;
 }
@@ -316,7 +316,7 @@ function alpaistr_agentic_draft_callback( WP_REST_Request $request ): WP_REST_Re
 
 	// Although AI "magic" button is hidden if the settings are not fully completed, the REST endpoint is still callable (browser console, Postman, another script) by anyone with manage_options.
 	if ( empty( $settings['ai_api_key'] ) ) {
-		return new WP_Error( 'not_configured', esc_html__( 'AI API key is not configured. Visit Project Board → Fix with AI to set it up.', 'alpaca-issue-tracker' ), [ 'status' => 400 ] );
+		return new WP_Error( 'not_configured', esc_html__( 'AI API key is not configured. Visit Project Board → Fix With AI to set it up.', 'alpaca-issue-tracker' ), [ 'status' => 400 ] );
 	}
 	if ( empty( $settings['github_repo'] ) ) {
 		return new WP_Error( 'not_configured', esc_html__( 'GitHub repository is not configured.', 'alpaca-issue-tracker' ), [ 'status' => 400 ] );
@@ -478,7 +478,7 @@ function alpaistr_agentic_call_ai( array $issue_data, array $settings ): array|W
 	} else {
 		return new WP_Error(
 			'ai_not_configured',
-			esc_html__( 'No AI provider is configured. Set up an AI provider in Settings → Connectors, or add a custom API key in the Fix with AI settings.', 'alpaca-issue-tracker' ),
+			esc_html__( 'No AI provider is configured. Set up an AI provider in Settings → Connectors, or add a custom API key in the Fix With AI settings.', 'alpaca-issue-tracker' ),
 			[ 'status' => 400 ]
 		);
 	}
@@ -1042,7 +1042,7 @@ function alpaistr_agentic_generate_ai_text( string $system_prompt, string $user_
 	if ( empty( $settings['ai_api_key'] ) ) {
 		return new WP_Error(
 			'ai_not_configured',
-			esc_html__( 'No AI provider is configured. Set up an AI provider in Settings → Connectors, or add a custom API key in the Fix with AI settings.', 'alpaca-issue-tracker' ),
+			esc_html__( 'No AI provider is configured. Set up an AI provider in Settings → Connectors, or add a custom API key in the Fix With AI settings.', 'alpaca-issue-tracker' ),
 			[ 'status' => 400 ]
 		);
 	}
@@ -1540,7 +1540,7 @@ function alpaistr_agentic_install_workflow_callback(): WP_REST_Response|WP_Error
 			[
 				'## Add Alpaca AI Development workflow',
 				'',
-				'This pull request was opened by the **Fix with AI** feature in Alpaca Issue Tracker.',
+				'This pull request was opened by the **Fix With AI** feature in Alpaca Issue Tracker.',
 				'It adds the GitHub Actions workflows, labels, and issue templates needed to connect Alpaca with your AI agent.',
 				'',
 				'### What\'s included',
@@ -1564,7 +1564,7 @@ function alpaistr_agentic_install_workflow_callback(): WP_REST_Response|WP_Error
 				'4. Enable branch protection on the AI target branch and production branch (require review, disable force-push)',
 				'',
 				'---',
-				'_Opened by Alpaca Issue Tracker (Fix with AI) v' . ALPAISTR_VERSION . '_',
+				'_Opened by Alpaca Issue Tracker (Fix With AI) v' . ALPAISTR_VERSION . '_',
 			]
 		);
 
@@ -1962,7 +1962,7 @@ function alpaistr_agentic_request_change_callback( WP_REST_Request $request ): W
 	if ( empty( $work['allowed'] ) ) {
 		return new WP_Error(
 			'request_change_blocked',
-			esc_html__( 'Send this issue with Fix with AI before requesting a change.', 'alpaca-issue-tracker' ),
+			esc_html__( 'Send this issue with Fix With AI before requesting a change.', 'alpaca-issue-tracker' ),
 			[ 'status' => 409 ]
 		);
 	}
@@ -2100,13 +2100,13 @@ function alpaistr_agentic_request_change_comment(
 	if ( 'pr' === $target ) {
 		$content = sprintf(
 			/* translators: %s: GitHub pull request or comment URL. */
-			__( 'Fix with AI: requested changes posted on the open pull request — [%1$s](%1$s).', 'alpaca-issue-tracker' ), // phpcs:ignore WordPress.WP.I18n.UnorderedPlaceholdersText -- URL repeated for markdown link.
+			__( 'Fix With AI: requested changes posted on the open pull request — [%1$s](%1$s).', 'alpaca-issue-tracker' ), // phpcs:ignore WordPress.WP.I18n.UnorderedPlaceholdersText -- URL repeated for markdown link.
 			$comment_url
 		);
 	} else {
 		$content = sprintf(
 			/* translators: %s: GitHub issue or comment URL. */
-			__( 'Fix with AI: requested changes posted on the GitHub issue — [%1$s](%1$s).', 'alpaca-issue-tracker' ), // phpcs:ignore WordPress.WP.I18n.UnorderedPlaceholdersText -- URL repeated for markdown link.
+			__( 'Fix With AI: requested changes posted on the GitHub issue — [%1$s](%1$s).', 'alpaca-issue-tracker' ), // phpcs:ignore WordPress.WP.I18n.UnorderedPlaceholdersText -- URL repeated for markdown link.
 			$comment_url
 		);
 	}
@@ -2936,7 +2936,7 @@ function alpaistr_agentic_remember_start_sha( int $issue_id, string $token, arra
  * Decide whether Start over is allowed.
  *
  * Start over ends the current fixing session: in-flight GitHub issues and
- * pull requests are closed, then the next Fix with AI starts a new session.
+ * pull requests are closed, then the next Fix With AI starts a new session.
  * The target branch is moved back only when it has no commits besides this
  * session's AI work.
  *
@@ -3670,7 +3670,7 @@ function alpaistr_agentic_close_github_pull_request( string $token, array $repo_
 /**
  * Close every still-open GitHub issue and AI pull request for this Alpaca task.
  *
- * Covers every Fix with AI / Request a change send in history, plus a leftover
+ * Covers every Fix With AI / Request a change send in history, plus a leftover
  * start-over restore pull request from earlier versions. Merged pull requests
  * stay on GitHub and are not reverted.
  *
@@ -4070,7 +4070,7 @@ function alpaistr_agentic_force_update_branch_sha( string $token, array $repo_pa
 }
 
 /**
- * Record a sent activity in the chronological Fix with AI history.
+ * Record a sent activity in the chronological Fix With AI history.
  *
  * @param int                  $issue_id      Alpaca issue post ID.
  * @param string               $github_url    GitHub issue HTML URL.
@@ -4082,7 +4082,7 @@ function alpaistr_agentic_force_update_branch_sha( string $token, array $repo_pa
 function alpaistr_agentic_record_sent_activity( int $issue_id, string $github_url, int $github_number, string $target_branch, array $draft ): array {
 	$log_title = sanitize_text_field( (string) ( $draft['title'] ?? '' ) );
 	if ( '' === $log_title ) {
-		$log_title = __( 'Fix with AI', 'alpaca-issue-tracker' );
+		$log_title = __( 'Fix With AI', 'alpaca-issue-tracker' );
 	}
 
 	$history = alpaistr_agentic_append_history_entry(
@@ -4102,7 +4102,7 @@ function alpaistr_agentic_record_sent_activity( int $issue_id, string $github_ur
 }
 
 /**
- * Append one entry to the chronological Fix with AI history and save it.
+ * Append one entry to the chronological Fix With AI history and save it.
  *
  * Shared by the sent and reverted mutating actions so every step stays visible
  * in the AI Log tab.
@@ -4121,7 +4121,7 @@ function alpaistr_agentic_append_history_entry( int $issue_id, array $entry ): a
 }
 
 /**
- * Load the chronological Fix with AI history for an issue.
+ * Load the chronological Fix With AI history for an issue.
  *
  * @param int $issue_id Alpaca issue post ID.
  * @return array<int, array<string, mixed>> Oldest-first list of history entries.
@@ -4183,7 +4183,7 @@ function alpaistr_agentic_assign_sent_to_ai_label( int $issue_id ): void {
 			return;
 		}
 		$term_id = (int) $created['term_id'];
-		// Violet accent aligned with the Fix with AI UI.
+		// Violet accent aligned with the Fix With AI UI.
 		update_term_meta( $term_id, 'alpaca_label_color', '#7c3aed' );
 	}
 
@@ -4246,7 +4246,7 @@ function alpaistr_agentic_build_draft_snapshot( string $title, string $body, arr
 /**
  * Insert a system activity comment on an Alpaca issue.
  *
- * Shared low-level helper for every Fix with AI mutating action (sent,
+ * Shared low-level helper for every Fix With AI mutating action (sent,
  * reverted) so each one leaves the same kind of audit trail.
  * Skips notification dispatch so watchers are not spammed for automated activity notes.
  *
@@ -4316,13 +4316,13 @@ function alpaistr_agentic_insert_sent_activity_comment( int $issue_id, string $g
 	$content = '' !== $target_branch
 		? sprintf(
 			/* translators: 1: GitHub issue URL, 2: target branch name. */
-			__( 'Fix with AI: GitHub issue created — [%1$s](%1$s). Target branch: **%2$s**.', 'alpaca-issue-tracker' ),
+			__( 'Fix With AI: GitHub issue created — [%1$s](%1$s). Target branch: **%2$s**.', 'alpaca-issue-tracker' ),
 			$github_url,
 			$target_branch
 		)
 		: sprintf(
 			/* translators: %s: GitHub issue URL. */
-			__( 'Fix with AI: GitHub issue created — [%1$s](%1$s).', 'alpaca-issue-tracker' ), // phpcs:ignore WordPress.WP.I18n.UnorderedPlaceholdersText -- URL repeated for markdown link.
+			__( 'Fix With AI: GitHub issue created — [%1$s](%1$s).', 'alpaca-issue-tracker' ), // phpcs:ignore WordPress.WP.I18n.UnorderedPlaceholdersText -- URL repeated for markdown link.
 			$github_url
 		);
 
@@ -4387,7 +4387,7 @@ function alpaistr_agentic_branch_reset_outcome_note(
 function alpaistr_agentic_insert_reverted_activity_comment( int $issue_id, string $branch_reset_note ): int {
 	$content = sprintf(
 		/* translators: %s: branch reset outcome note. */
-		__( 'Fix with AI: start over — this fix attempt ended. Open GitHub issues and pull requests were closed. %s', 'alpaca-issue-tracker' ),
+		__( 'Fix With AI: start over — this fix attempt ended. Open GitHub issues and pull requests were closed. %s', 'alpaca-issue-tracker' ),
 		$branch_reset_note
 	);
 

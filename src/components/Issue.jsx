@@ -757,7 +757,7 @@ const AlpacaIssue = ({
       );
   }, [showNotification]);
 
-  // After the Fix with AI activity/changes, refresh the AI Log tab content.
+  // After the Fix With AI activity/changes, refresh the AI Log tab content.
   useEffect(() => {
     if (!issueId || isCreating) {
       return undefined;

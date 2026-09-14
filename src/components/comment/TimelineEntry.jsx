@@ -243,7 +243,7 @@ const TimelineEntry = ({
   ).replace(/<[^>]*>/g, ' ');
   const isAgenticActivity =
     commentTags.some((tag) => String(tag).startsWith('agentic-')) ||
-    agenticActivityText.includes('Fix with AI');
+    agenticActivityText.includes('Fix With AI');
   const commentAttachments = comment.meta?.alpacaCommentAttachments || [];
   const lastEditMeta = comment.meta?.alpacaCommentLastEdit || null;
   const editedByUserId = resolveUserId(lastEditMeta?.userId);

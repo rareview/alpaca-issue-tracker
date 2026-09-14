@@ -246,7 +246,7 @@ addAction(
 
 **Type:** Action.
 
-**Purpose:** Fires after any Fix with AI mutating action (sent, start over, or a sent fix deleted), so the UI can re-fetch issue details (history, labels).
+**Purpose:** Fires after any Fix With AI mutating action (sent, start over, or a sent fix deleted), so the UI can re-fetch issue details (history, labels).
 
 **Parameters**
 

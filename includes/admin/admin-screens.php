@@ -60,8 +60,8 @@ add_action(
 
 		add_submenu_page(
 			'project-board',
-			esc_html__( 'Fix with AI', 'alpaca-issue-tracker' ),
-			esc_html__( 'Fix with AI', 'alpaca-issue-tracker' ),
+			esc_html__( 'Fix With AI', 'alpaca-issue-tracker' ),
+			esc_html__( 'Fix With AI', 'alpaca-issue-tracker' ),
 			// Visible to all staff, but the React screen renders a locked/read-only view for users who are not admins or on the engineers allowlist.
 			'edit_posts',
 			'alpaca-fix-with-ai',
@@ -149,7 +149,7 @@ function alpaistr_email_templates_page() {
 }
 
 /**
- * Render the Fix with AI settings page mount point.
+ * Render the Fix With AI settings page mount point.
  */
 function alpaistr_ai_issue_resolver_page() {
 	?>

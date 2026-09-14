@@ -57,7 +57,7 @@ export const getTabsConfig = (issueDetails) => {
           },
         ]
       : []),
-    // Only when the issue has Fix with AI activity history.
+    // Only when the issue has Fix With AI activity history.
     ...(hasAgenticHistory(issueDetails?.meta)
       ? [
           {

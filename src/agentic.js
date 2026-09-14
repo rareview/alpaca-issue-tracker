@@ -1,7 +1,7 @@
 /**
- * Alpaca Fix with AI
+ * Alpaca Fix With AI
  *
- * Injects Fix with AI / Request a change / Start over into the issue detail view.
+ * Injects Fix With AI / Request a change / Start over into the issue detail view.
  *
  * Relies on globals loaded by Alpaca:
  *   wp.element   (React)
@@ -251,7 +251,7 @@ import {
     }
 
     return __(
-      'This request is not suitable for the GitHub agentic workflow. Fix with AI only handles bounded code changes in the connected repository.',
+      'This request is not suitable for the GitHub agentic workflow. Fix With AI only handles bounded code changes in the connected repository.',
       'alpaca-issue-tracker',
     );
   }
@@ -1233,7 +1233,7 @@ import {
         onClick: () =>
           renderModal(el(ExportModal, { issueId, onClose: closeModal })),
       },
-      __('Fix with AI', 'alpaca-issue-tracker'),
+      __('Fix With AI', 'alpaca-issue-tracker'),
     );
 
     const requestChangeButton = el(
@@ -1349,7 +1349,7 @@ import {
       el(
         'h3',
         { className: 'agentic-abovetabs-title' },
-        __('Fix with AI', 'alpaca-issue-tracker'),
+        __('Fix With AI', 'alpaca-issue-tracker'),
       ),
       info,
       actions,

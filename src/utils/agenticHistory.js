@@ -1,5 +1,5 @@
 /**
- * Helpers for Fix with AI history stored on issue meta.
+ * Helpers for Fix With AI history stored on issue meta.
  */
 
 import { formatWpDateValue } from './date';
@@ -95,7 +95,7 @@ export function normalizeAgenticHistoryEntry(entry) {
 }
 
 /**
- * Read the chronological Fix with AI history from issue meta (oldest first).
+ * Read the chronological Fix With AI history from issue meta (oldest first).
  *
  * @param {Object} meta Issue meta payload.
  * @return {Array<Object>} Oldest-first normalized history entries.
@@ -131,7 +131,7 @@ function currentAttemptEntries(meta) {
 }
 
 /**
- * Whether the issue has any Fix with AI history.
+ * Whether the issue has any Fix With AI history.
  *
  * @param {Object} meta Issue meta payload.
  * @return {boolean} True when the history has at least one valid entry.
@@ -144,7 +144,7 @@ export function hasAgenticHistory(meta) {
  * Whether the current attempt has been sent to GitHub at least once.
  *
  * Sent entries from before the latest Start over are ignored so the UI
- * can return to Fix with AI.
+ * can return to Fix With AI.
  *
  * @param {Object} meta Issue meta payload.
  * @return {boolean} True when a sent history entry exists for this attempt.
@@ -193,7 +193,7 @@ export function formatAgenticActivityDate(occurredAt) {
 /**
  * Split chronological history into fixing sessions.
  *
- * A session is one Fix with AI plus any Request a change sends or comments.
+ * A session is one Fix With AI plus any Request a change sends or comments.
  * Start over closes that session and the next send begins a new one. Newest
  * session first.
  *

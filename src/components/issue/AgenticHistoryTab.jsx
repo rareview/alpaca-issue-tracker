@@ -50,7 +50,7 @@ function pullRequestBadgeClassName(state) {
  */
 function sessionSendActionLabel(sendIndex) {
   if (0 === sendIndex) {
-    return __('Fix with AI', 'alpaca-issue-tracker');
+    return __('Fix With AI', 'alpaca-issue-tracker');
   }
   return sprintf(
     /* translators: %d: follow-up request number, starting at 1. */
@@ -88,7 +88,7 @@ function changeRequestOutcomeLabel(entry) {
 }
 
 /**
- * One Fix with AI send or Request a change step inside a fixing session.
+ * One Fix With AI send or Request a change step inside a fixing session.
  *
  * @param {Object} props
  * @param {Object} props.entry     Normalized sent or change_requested entry.
@@ -297,7 +297,7 @@ function sessionPullRequestsWereClosed(session) {
 }
 
 /**
- * One fixing session: Fix with AI, follow-up requests, and optional start over.
+ * One fixing session: Fix With AI, follow-up requests, and optional start over.
  *
  * @param {Object}  props
  * @param {Object}  props.session    Grouped fixing session.
@@ -396,7 +396,7 @@ FixingSessionCard.propTypes = {
 };
 
 /**
- * Fix with AI activity log tab content.
+ * Fix With AI activity log tab content.
  *
  * @param {Object} props
  * @param {number} props.issueId      Alpaca issue post ID.
@@ -513,7 +513,7 @@ const AgenticHistoryTab = ({ issueId, issueDetails }) => {
     return (
       <div className="agentic-history-tab">
         <p className="agentic-history-tab__empty">
-          {__('No Fix with AI activity yet.', 'alpaca-issue-tracker')}
+          {__('No Fix With AI activity yet.', 'alpaca-issue-tracker')}
         </p>
       </div>
     );
