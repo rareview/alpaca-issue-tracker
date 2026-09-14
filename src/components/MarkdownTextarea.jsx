@@ -820,12 +820,20 @@ const MarkdownTextarea = ({
       className="alpaca-markdown-textarea"
       ref={wrapperRef}
       onKeyDownCapture={(event) => {
+        if (disabled || event.target !== textareaRef.current) {
+          return;
+        }
+
         handleMarkdownShortcut(event);
         handleLinkUndoShortcut(event);
         handleCreateLinkShortcut(event);
         handleWordBoundarySelection(event);
       }}
-      onPasteCapture={handlePaste}
+      onPasteCapture={(event) => {
+        if (!disabled && event.target === textareaRef.current) {
+          handlePaste(event);
+        }
+      }}
       data-disabled={disabled ? 'true' : 'false'}
     >
       <div
@@ -851,17 +859,10 @@ const MarkdownTextarea = ({
           onClose={() => setActiveLink(null)}
           onFocusOutside={() => setActiveLink(null)}
           onEscape={() => setActiveLink(null)}
-          focusOnMount={false}
+          focusOnMount="firstElement"
           animate={false}
         >
           <div className="alpaca-markdown-link-editor">
-            <TextControl
-              __next40pxDefaultSize
-              label={__('Text', 'alpaca-issue-tracker')}
-              value={activeLink.label}
-              onKeyDown={handleLinkEditorKeyDown}
-              onChange={(nextValue) => updateActiveLink('label', nextValue)}
-            />
             <TextControl
               __next40pxDefaultSize
               label={__('URL', 'alpaca-issue-tracker')}
@@ -869,6 +870,13 @@ const MarkdownTextarea = ({
               value={activeLink.url}
               onKeyDown={handleLinkEditorKeyDown}
               onChange={(nextValue) => updateActiveLink('url', nextValue)}
+            />
+            <TextControl
+              __next40pxDefaultSize
+              label={__('Text', 'alpaca-issue-tracker')}
+              value={activeLink.label}
+              onKeyDown={handleLinkEditorKeyDown}
+              onChange={(nextValue) => updateActiveLink('label', nextValue)}
             />
             <div className="alpaca-markdown-link-editor__actions">
               <Button variant="tertiary" onClick={() => setActiveLink(null)}>
