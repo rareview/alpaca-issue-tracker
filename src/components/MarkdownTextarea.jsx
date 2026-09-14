@@ -6,7 +6,7 @@ const { Button, Popover, TextControl } = wp.components;
 const { __ } = wp.i18n;
 
 const createMarkdownPattern = () =>
-  /\[([^\]\n]+)\]\((https?:\/\/[^)\s]+|(?![A-Za-z][A-Za-z0-9+.-]*:)[^)\s]+)\)|`([^`\n]+)`|\*\*([^*\n]+)\*\*|\*([^*\n]+)\*/g;
+  /\[([^\]\n]+)\]\((https?:\/\/[^)\s]+|(?![A-Za-z][A-Za-z0-9+.-]*:)[^)\s]+)\)|`([^`\n]+)`|(\*{1,3})([^*\n]+)\4/g;
 
 const escapeHtml = (value) =>
   String(value || '')
@@ -71,11 +71,8 @@ const getSourceOffset = (value, previewOffset) => {
     }
 
     renderedPosition += plainLength;
-    let markerLength = 1;
-    if (match[4]) {
-      markerLength = 2;
-    }
-    const content = match[1] || match[3] || match[4] || match[5];
+    const markerLength = match[4]?.length || 1;
+    const content = match[1] || match[3] || match[5];
     const contentLength = content.length;
     if (previewOffset <= renderedPosition) {
       return match.index + markerLength;
@@ -108,11 +105,8 @@ const getRenderedOffset = (value, sourceOffset) => {
     }
 
     renderedPosition += plainLength;
-    let markerLength = 1;
-    if (match[4]) {
-      markerLength = 2;
-    }
-    const content = match[1] || match[3] || match[4] || match[5];
+    const markerLength = match[4]?.length || 1;
+    const content = match[1] || match[3] || match[5];
     const contentStart = match.index + markerLength;
     const contentEnd = contentStart + content.length;
 
@@ -136,7 +130,7 @@ const getRenderedOffset = (value, sourceOffset) => {
 const getVisibleWordBoundary = (value, sourceOffset, direction) => {
   const visibleText = String(value || '').replace(
     createMarkdownPattern(),
-    (match, link, url, code, bold, italic) => link || code || bold || italic,
+    (match, link, url, code, markers, formatted) => link || code || formatted,
   );
   let visibleOffset = getRenderedOffset(value, sourceOffset);
 
@@ -168,7 +162,7 @@ const getVisibleWordBoundary = (value, sourceOffset, direction) => {
 const getVisibleWordSelection = (value, sourceOffset) => {
   const visibleText = String(value || '').replace(
     createMarkdownPattern(),
-    (match, link, url, code, bold, italic) => link || code || bold || italic,
+    (match, link, url, code, markers, formatted) => link || code || formatted,
   );
   let visibleOffset = getRenderedOffset(value, sourceOffset);
 
@@ -266,8 +260,8 @@ const renderMarkdownPreview = (
   while ((match = markdownPattern.exec(text)) !== null) {
     const matchStart = match.index;
     const matchEnd = markdownPattern.lastIndex;
-    let markerLength = 1;
-    let content = match[1] || match[3] || match[5];
+    const markerLength = match[4]?.length || 1;
+    const content = match[1] || match[3] || match[5];
     let tagName = 'em';
 
     if (match[1]) {
@@ -276,9 +270,7 @@ const renderMarkdownPreview = (
       tagName = 'code';
     }
 
-    if (match[4]) {
-      markerLength = 2;
-      content = match[4];
+    if (markerLength >= 2) {
       tagName = 'strong';
     }
 
@@ -356,6 +348,9 @@ const renderMarkdownPreview = (
     const linkAttributes = match[1]
       ? ` class="alpaca-markdown-link" href="${escapeHtml(match[2])}" data-alpaca-markdown-link="true" data-markdown-link-start="${matchStart}" data-markdown-link-end="${matchEnd}"`
       : '';
+    if (markerLength === 3) {
+      formattedContent = `<em>${formattedContent}</em>`;
+    }
     html += `<${tagName}${linkAttributes}>${formattedContent}</${tagName}>`;
     html += caretAfterFormattedText
       ? '<span class="alpaca-markdown-caret" aria-hidden="true"></span>'

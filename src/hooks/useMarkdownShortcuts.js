@@ -99,7 +99,15 @@ export const formatMarkdownSelection = (
 ) => {
   const currentValue = typeof value === 'string' ? value : '';
   const marker = shortcut.prefix;
+  const precedingStars =
+    currentValue.slice(0, selectionStart).match(/\*+$/)?.[0].length || 0;
+  const followingStars =
+    currentValue.slice(selectionEnd).match(/^\*+/)?.[0].length || 0;
+  // An even star run marks bold, not an enclosing italic marker.
+  const hasItalicMarkers =
+    precedingStars % 2 === 1 && followingStars % 2 === 1;
   const hasEnclosingFormatting =
+    (marker !== '*' || hasItalicMarkers) &&
     selectionStart >= marker.length &&
     currentValue.slice(selectionStart - marker.length, selectionStart) ===
       marker &&
