@@ -271,11 +271,21 @@ const useMarkdownShortcuts = (textareaRef, value, onChange, options = {}) => {
       const selectionStart = textarea.selectionStart;
       const selectionEnd = textarea.selectionEnd;
       event.preventDefault();
-      replaceSelection(
-        linkMarkdownSelection(value, selectionStart, selectionEnd, pastedUrl),
+      const nextValue = linkMarkdownSelection(
+        value,
+        selectionStart,
+        selectionEnd,
+        pastedUrl,
       );
+      undoStack.current.push({
+        nextValue: nextValue.nextValue,
+        previousValue: value,
+        previousSelectionStart: selectionStart,
+        previousSelectionEnd: selectionEnd,
+      });
+      replaceSelection(nextValue);
     },
-    [isUrl, replaceSelection, textareaRef, value],
+    [isUrl, replaceSelection, textareaRef, undoStack, value],
   );
 
   return { handleMarkdownShortcut, handlePaste };
