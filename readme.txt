@@ -2,9 +2,9 @@
 Contributors: rareview, s1m0nd, pratikbarvaliya, tahireu, georgestephanis
 Tags: issue tracker, bug tracker, project management, kanban, development
 Requires at least: 6.9
-Tested up to: 7.0
+Tested up to: 7.1
 Requires PHP: 8.0
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -121,6 +121,11 @@ Alpaca Issue Tracker includes runtime copies or bundled output from the followin
 Alpaca Issue Tracker uses user images throughout its interface, for extra humanity. We recommend **Simple Local Avatars** as a reliable solution for processing and hosting photos of your users without using an external service.
 
 == Changelog ==
+
+= 1.1.1 =
+* Comments now show Markdown formatting as you type, with bold and italic keyboard shortcuts and link editing.
+* Removed the `alpaca_` prefix from private-comment filters.
+* Updated the tested WordPress version to 7.1.
 
 = 1.1.0 =
 * Improved layout and presentation on the Configure screen for statuses and labels.
