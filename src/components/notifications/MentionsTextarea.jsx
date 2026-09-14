@@ -438,6 +438,7 @@ const MentionsTextarea = ({
         onKeyDown={handleKeyDown}
         onKeyUp={handleCaretUpdate}
         onClick={handleCaretUpdate}
+        onSelect={handleCaretUpdate}
         __nextHasNoMarginBottom
       />
       {issueTriggerState && (
