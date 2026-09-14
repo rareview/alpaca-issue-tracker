@@ -395,15 +395,15 @@ add_filter(
 
 ### Private Comment Visibility Filters
 
-`alpaca_private_comments_rest_visibility_param` customizes the request parameter used to opt into hidden issue comments.
+`private_comments_rest_visibility_param` customizes the request parameter used to opt into hidden issue comments.
 
-`alpaca_private_comments_user_can_view_type` customizes who can view private issue comments by comment type.
+`private_comments_user_can_view_type` customizes who can view private issue comments by comment type.
 
 Example: restrict hidden issue comments to administrators.
 
 ```php
 add_filter(
-	'alpaca_private_comments_user_can_view_type',
+  'private_comments_user_can_view_type',
 	static function ( $allowed, $comment_type ) {
 		if ( 'issuecomment' === $comment_type ) {
 			return current_user_can( 'manage_options' );
