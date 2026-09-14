@@ -32,6 +32,7 @@ import { uploadIssueAttachment } from '../utils/attachmentUpload';
 import { renderIssueLinkMarkup } from '../utils/issueLinks';
 import { postIssueMentionAuditComments } from '../utils/issueCommentHandler';
 import MentionsTextarea from './notifications/MentionsTextarea';
+import MarkdownTextarea from './MarkdownTextarea';
 
 const deleteCommentAttachment = async (url, issueId, commentId = null) => {
   if (!url || !issueId) {
@@ -153,6 +154,13 @@ const AttachmentControls = ({
                     'alpaca-issue-tracker',
                   ),
                   placeholders: { code: <code /> },
+                },
+                {
+                  text: __(
+                    'Use <kbd>Cmd/Ctrl+B</kbd> for bold, <kbd>Cmd/Ctrl+I</kbd> for italic, and <kbd>Cmd/Ctrl+K</kbd> to create a link.',
+                    'alpaca-issue-tracker',
+                  ),
+                  placeholders: { kbd: <kbd /> },
                 },
                 {
                   text: __(
@@ -349,42 +357,53 @@ const Comment = memo(
           ) : null
         }
         editBody={
-          <AttachmentControls
-            attachments={editingAttachments}
-            onDrop={onEditAttachDrop}
-            onUpload={onEditAttachFiles}
-            onRemove={onEditAttachRemove}
-            onClick={onAttachmentClick}
-            isSubmitting={isSubmitting}
-            isProcessing={isProcessingAttachments}
-            pendingAltText={__(
-              'Pending comment attachment',
-              'alpaca-issue-tracker',
-            )}
-            actions={
-              <>
-                <Button onClick={cancelEditing} disabled={isSubmitting}>
-                  {__('Cancel', 'alpaca-issue-tracker')}
-                </Button>
-                <Button
-                  isPrimary
-                  onClick={() => saveEdit(comment.id)}
-                  disabled={isSubmitting || isProcessingAttachments}
+          <div className="alpaca-comment-form">
+            <div className="alpaca-comment-form__content alpaca-timeline-content">
+              <AttachmentControls
+                attachments={editingAttachments}
+                onDrop={onEditAttachDrop}
+                onUpload={onEditAttachFiles}
+                onRemove={onEditAttachRemove}
+                onClick={onAttachmentClick}
+                isSubmitting={isSubmitting}
+                isProcessing={isProcessingAttachments}
+                pendingAltText={__(
+                  'Pending comment attachment',
+                  'alpaca-issue-tracker',
+                )}
+                actions={
+                  <>
+                    <Button onClick={cancelEditing} disabled={isSubmitting}>
+                      {__('Cancel', 'alpaca-issue-tracker')}
+                    </Button>
+                    <Button
+                      isPrimary
+                      onClick={() => saveEdit(comment.id)}
+                      disabled={isSubmitting || isProcessingAttachments}
+                    >
+                      {__('Save', 'alpaca-issue-tracker')}
+                    </Button>
+                  </>
+                }
+              >
+                <MarkdownTextarea
+                  value={editingContent}
+                  onChange={setEditingContent}
+                  textareaRef={editingRef}
+                  disabled={isSubmitting}
                 >
-                  {__('Save', 'alpaca-issue-tracker')}
-                </Button>
-              </>
-            }
-          >
-            <MentionsTextarea
-              value={editingContent}
-              onChange={setEditingContent}
-              textareaRef={editingRef}
-              placeholder={__('Edit comment…', 'alpaca-issue-tracker')}
-              disabled={isSubmitting}
-              searchScopeIssueIds={searchScopeIssueIds}
-            />
-          </AttachmentControls>
+                  <MentionsTextarea
+                    value={editingContent}
+                    onChange={setEditingContent}
+                    textareaRef={editingRef}
+                    placeholder={__('Edit comment…', 'alpaca-issue-tracker')}
+                    disabled={isSubmitting}
+                    searchScopeIssueIds={searchScopeIssueIds}
+                  />
+                </MarkdownTextarea>
+              </AttachmentControls>
+            </div>
+          </div>
         }
       />
     );
@@ -1115,14 +1134,21 @@ const Commenting = ({
                 </Button>
               }
             >
-              <MentionsTextarea
-                placeholder={__('Add a comment…', 'alpaca-issue-tracker')}
+              <MarkdownTextarea
                 value={newComment}
-                onChange={setNewComment}
                 textareaRef={newCommentRef}
+                onChange={setNewComment}
                 disabled={isSubmitting}
-                searchScopeIssueIds={searchScopeIssueIds}
-              />
+              >
+                <MentionsTextarea
+                  placeholder={__('Add a comment…', 'alpaca-issue-tracker')}
+                  value={newComment}
+                  onChange={setNewComment}
+                  textareaRef={newCommentRef}
+                  disabled={isSubmitting}
+                  searchScopeIssueIds={searchScopeIssueIds}
+                />
+              </MarkdownTextarea>
             </AttachmentControls>
           </div>
         </div>
