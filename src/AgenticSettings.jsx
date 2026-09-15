@@ -483,7 +483,7 @@ const AgenticSettings = () => {
   const testGithubConnection = useCallback(async () => {
     setTesting(true);
     setTestResult({
-      message: __('Connecting to GitHub…', 'alpaca-issue-tracker'),
+      message: __('Validating credentials…', 'alpaca-issue-tracker'),
       className: 'agentic-result-pending',
     });
     try {
@@ -497,9 +497,20 @@ const AgenticSettings = () => {
         ? result.branches
         : [];
       setRepoBranches(nextBranches);
-      updateForm({
-        githubDefaultBranch: result?.default_branch || '',
+      const defaultBranch = result?.default_branch || '';
+      // Successful validation replaces the old site↔repo checkbox confirmation.
+      /* eslint-disable camelcase -- REST API uses snake_case field names. */
+      const payload = await wp.apiFetch({
+        path: `${REST_PATH}/settings`,
+        method: 'POST',
+        data: {
+          ...buildSavePayload(),
+          repo_match_confirmed: true,
+          github_default_branch: defaultBranch,
+        },
       });
+      /* eslint-enable camelcase */
+      applySettings(payload, false);
       setTestResult({
         message: result?.message || __('Connected.', 'alpaca-issue-tracker'),
         className: 'agentic-result-success',
@@ -513,7 +524,7 @@ const AgenticSettings = () => {
     } finally {
       setTesting(false);
     }
-  }, [saveSettings, updateForm]);
+  }, [applySettings, buildSavePayload, saveSettings]);
 
   const handleInstall = useCallback(async () => {
     setInstalling(true);
@@ -564,7 +575,7 @@ const AgenticSettings = () => {
         }
       })
       .catch(() => {
-        // Branch list is optional until Test connection succeeds.
+        // Branch list is optional until Validate credentials succeeds.
       });
 
     return () => {
@@ -1010,6 +1021,13 @@ const AgenticSettings = () => {
               </>
             )}
 
+            <p className="description">
+              {__(
+                'Make sure this WordPress site matches the GitHub repository.',
+                'alpaca-issue-tracker',
+              )}
+            </p>
+
             <table className="form-table" role="presentation">
               <tbody>
                 <tr>
@@ -1027,7 +1045,7 @@ const AgenticSettings = () => {
                       value={form.githubRepo}
                       onChange={(event) => {
                         const nextRepo = event.target.value;
-                        // Changing repo clears the site↔repo confirmation.
+                        // Changing repo clears confirmation until credentials are validated again.
                         updateForm({
                           githubRepo: nextRepo,
                           repoMatchConfirmed: false,
@@ -1138,6 +1156,30 @@ const AgenticSettings = () => {
                   </td>
                 </tr>
                 <tr>
+                  <th scope="row" />
+                  <td>
+                    <div className="agentic-step-actions">
+                      <button
+                        type="button"
+                        className="button button-primary"
+                        disabled={saving || testing || panelLocked}
+                        onClick={testGithubConnection}
+                      >
+                        {testing
+                          ? __('Validating…', 'alpaca-issue-tracker')
+                          : __('Validate credentials', 'alpaca-issue-tracker')}
+                      </button>
+                      {testResult ? (
+                        <span
+                          className={`agentic-connection-result ${testResult.className}`}
+                        >
+                          {testResult.message}
+                        </span>
+                      ) : null}
+                    </div>
+                  </td>
+                </tr>
+                <tr>
                   <th scope="row">
                     <label htmlFor="agentic-ai-target-branch">
                       {__('AI target branch', 'alpaca-issue-tracker')}
@@ -1157,7 +1199,7 @@ const AgenticSettings = () => {
                       <option value="">
                         {0 === repoBranches.length && !form.aiTargetBranch
                           ? __(
-                              'Test connection to load branches',
+                              'Validate credentials to load branches',
                               'alpaca-issue-tracker',
                             )
                           : __('Select a branch…', 'alpaca-issue-tracker')}
@@ -1192,49 +1234,6 @@ const AgenticSettings = () => {
                 </tr>
               </tbody>
             </table>
-
-            <p className="agentic-repo-match">
-              <label htmlFor="agentic-repo-match-confirm">
-                <input
-                  id="agentic-repo-match-confirm"
-                  type="checkbox"
-                  checked={!!form.repoMatchConfirmed}
-                  onChange={(event) =>
-                    updateForm({
-                      repoMatchConfirmed: event.target.checked,
-                    })
-                  }
-                />
-                <span>
-                  {__(
-                    'Confirm this WordPress site matches the GitHub repository.',
-                    'alpaca-issue-tracker',
-                  )}
-                </span>
-              </label>
-            </p>
-
-            <div className="agentic-step-actions">
-              <button
-                type="button"
-                className="button button-primary"
-                disabled={
-                  saving || testing || panelLocked || !form.repoMatchConfirmed
-                }
-                onClick={testGithubConnection}
-              >
-                {testing
-                  ? __('Connecting…', 'alpaca-issue-tracker')
-                  : __('Test connection', 'alpaca-issue-tracker')}
-              </button>
-              {testResult ? (
-                <span
-                  className={`agentic-connection-result ${testResult.className}`}
-                >
-                  {testResult.message}
-                </span>
-              ) : null}
-            </div>
 
             <details className="agentic-details-block">
               <summary>
@@ -1543,7 +1542,7 @@ const AgenticSettings = () => {
             {!form.repoMatchConfirmed ? (
               <p className="notice notice-warning inline">
                 {__(
-                  'Confirm that this WordPress site matches the GitHub repository in GitHub Setup before finishing.',
+                  'Validate credentials in GitHub Setup before finishing.',
                   'alpaca-issue-tracker',
                 )}
               </p>
