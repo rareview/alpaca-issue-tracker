@@ -6,9 +6,11 @@
 import PropTypes from 'prop-types';
 import useUserManagement from './hooks/useUserManagement';
 
-const { useState, useEffect, useCallback, useMemo } = wp.element;
+const { useState, useEffect, useCallback, useMemo, useRef, createInterpolateElement } =
+  wp.element;
 const { __, sprintf } = wp.i18n;
-const { Spinner, Notice, FormTokenField } = wp.components;
+const { Spinner, Notice, FormTokenField, Popover, SlotFillProvider } =
+  wp.components;
 
 const REST_PATH = '/alpaca/v1/agentic';
 
@@ -83,6 +85,109 @@ HelpTip.propTypes = {
   label: PropTypes.string.isRequired,
   tooltip: PropTypes.node.isRequired,
   wide: PropTypes.bool,
+};
+
+const PAT_READ_WRITE = __('Read & write', 'alpaca-issue-tracker');
+const PAT_READ_ONLY = __('Read-only', 'alpaca-issue-tracker');
+
+// GitHub fine-grained PAT permissions required for this integration.
+const PAT_PERMISSIONS = [
+  { label: __('Contents', 'alpaca-issue-tracker'), access: PAT_READ_WRITE },
+  { label: __('Issues', 'alpaca-issue-tracker'), access: PAT_READ_WRITE },
+  {
+    label: __('Pull requests', 'alpaca-issue-tracker'),
+    access: PAT_READ_WRITE,
+  },
+  { label: __('Workflows', 'alpaca-issue-tracker'), access: PAT_READ_WRITE },
+  { label: __('Metadata', 'alpaca-issue-tracker'), access: PAT_READ_ONLY },
+];
+
+/**
+ * Click-to-open PAT help. Uses the Gutenberg Popover.
+ *
+ * @return {JSX.Element} Help control.
+ */
+const PatHelpPopover = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const anchorRef = useRef(null);
+
+  return (
+    <span className="agentic-pat-help-wrap" ref={anchorRef}>
+      <button
+        type="button"
+        className="agentic-pat-help-trigger"
+        aria-expanded={isOpen}
+        aria-label={__('Required permissions', 'alpaca-issue-tracker')}
+        onMouseDown={(event) => event.preventDefault()}
+        onClick={() => setIsOpen((open) => !open)}
+      >
+        <span className="dashicons dashicons-info-outline" aria-hidden="true" />
+      </button>
+      {isOpen ? (
+        <Popover
+          anchor={anchorRef.current}
+          placement="bottom-start"
+          focusOnMount="container"
+          className="agentic-pat-help-popover"
+          onClose={() => setIsOpen(false)}
+          onFocusOutside={() => setIsOpen(false)}
+        >
+          <div className="agentic-pat-help-popover__content">
+            <p className="agentic-pat-help-popover__intro">
+              {createInterpolateElement(
+                __(
+                  'Use a fine-grained PAT <strong>scoped to this repository only</strong>, with these permissions:',
+                  'alpaca-issue-tracker',
+                ),
+                { strong: <strong /> },
+              )}
+            </p>
+
+            <ul className="agentic-pat-permission-list">
+              {PAT_PERMISSIONS.map((permission) => (
+                <li
+                  key={permission.label}
+                  className="agentic-pat-permission-list__row"
+                >
+                  <span>{permission.label}</span>
+                  <span
+                    className={`agentic-pat-permission-badge${
+                      permission.access === PAT_READ_ONLY
+                        ? ' agentic-pat-permission-badge--read'
+                        : ' agentic-pat-permission-badge--write'
+                    }`}
+                  >
+                    {permission.access}
+                  </span>
+                </li>
+              ))}
+            </ul>
+
+            <ul className="agentic-pat-help-popover__notes">
+              <li>
+                {__(
+                  'Classic PAT instead? Enable the repo and workflow scopes.',
+                  'alpaca-issue-tracker',
+                )}
+              </li>
+              <li>
+                {__(
+                  'The token owner must be a member of the organisation with access to this repository.',
+                  'alpaca-issue-tracker',
+                )}
+              </li>
+              <li>
+                {__(
+                  'Org uses SSO? Authorise the token for the org in GitHub settings.',
+                  'alpaca-issue-tracker',
+                )}
+              </li>
+            </ul>
+          </div>
+        </Popover>
+      ) : null}
+    </span>
+  );
 };
 
 /**
@@ -733,12 +838,8 @@ const AgenticSettings = () => {
       }))),
   ];
 
-  const patGuidance =
-    'string' === typeof data.setup_security?.pat_guidance
-      ? data.setup_security.pat_guidance.trim()
-      : '';
-
   return (
+    <SlotFillProvider>
     <div
       className={`agentic-wizard-inner${allDone ? ' agentic-wizard-all-done' : ''}`}
       data-agentic-all-done={allDone ? '1' : undefined}
@@ -999,17 +1100,14 @@ const AgenticSettings = () => {
                                   updateForm({ aiApiKey: nextKey })
                                 }
                               />
-                              <p className="description">
-                                {data.ai_api_key_set
-                                  ? __(
-                                      'Leave blank to keep the current key. Enter a new key only to replace it.',
-                                      'alpaca-issue-tracker',
-                                    )
-                                  : __(
-                                      'Used to draft agent-ready issues from Alpaca cards.',
-                                      'alpaca-issue-tracker',
-                                    )}
-                              </p>
+                              {!data.ai_api_key_set ? (
+                                <p className="description">
+                                  {__(
+                                    'Used to draft agent-ready issues from Alpaca cards.',
+                                    'alpaca-issue-tracker',
+                                  )}
+                                </p>
+                              ) : null}
                             </>
                           )}
                         </td>
@@ -1061,51 +1159,9 @@ const AgenticSettings = () => {
                       {__(
                         'Personal Access Token (PAT)',
                         'alpaca-issue-tracker',
-                      )}{' '}
-                      <HelpTip
-                        label={__('Token permissions', 'alpaca-issue-tracker')}
-                        wide
-                        tooltip={
-                          <>
-                            {__(
-                              'The token needs Issues, Contents, and Workflows write access (classic PAT: repo + workflow scopes).',
-                              'alpaca-issue-tracker',
-                            )}
-                            <br />
-                            <br />
-                            {__(
-                              'Fine-grained PAT permissions:',
-                              'alpaca-issue-tracker',
-                            )}
-                            <br />
-                            {__(
-                              'Contents — Read and write',
-                              'alpaca-issue-tracker',
-                            )}
-                            <br />
-                            {__(
-                              'Issues — Read and write',
-                              'alpaca-issue-tracker',
-                            )}
-                            <br />
-                            {__(
-                              'Metadata — Read-only (required)',
-                              'alpaca-issue-tracker',
-                            )}
-                            <br />
-                            {__(
-                              'Pull requests — Read and write',
-                              'alpaca-issue-tracker',
-                            )}
-                            <br />
-                            {__(
-                              'Workflows — Read and write',
-                              'alpaca-issue-tracker',
-                            )}
-                          </>
-                        }
-                      />
+                      )}
                     </label>
+                    <PatHelpPopover />
                   </th>
                   <td>
                     {data.github_token_from_constant ? (
@@ -1124,9 +1180,6 @@ const AgenticSettings = () => {
                             'alpaca-issue-tracker',
                           )}
                         </p>
-                        {patGuidance ? (
-                          <p className="description">{patGuidance}</p>
-                        ) : null}
                       </>
                     ) : (
                       <>
@@ -1139,17 +1192,6 @@ const AgenticSettings = () => {
                             updateForm({ githubToken: nextToken })
                           }
                         />
-                        {data.github_token_set ? (
-                          <p className="description">
-                            {__(
-                              'Leave blank to keep the current token. Enter a new token only to replace it.',
-                              'alpaca-issue-tracker',
-                            )}
-                          </p>
-                        ) : null}
-                        {patGuidance ? (
-                          <p className="description">{patGuidance}</p>
-                        ) : null}
                       </>
                     )}
                   </td>
@@ -1233,64 +1275,6 @@ const AgenticSettings = () => {
                 </tr>
               </tbody>
             </table>
-
-            <details className="agentic-details-block">
-              <summary>
-                {__('GitHub checklist', 'alpaca-issue-tracker')}
-              </summary>
-              <ol>
-                <li>
-                  {__(
-                    'Repository is owner/repo (e.g. acme/my-theme).',
-                    'alpaca-issue-tracker',
-                  )}
-                </li>
-                <li>
-                  {__(
-                    'Token owner is a member of the organisation with repo access.',
-                    'alpaca-issue-tracker',
-                  )}
-                </li>
-                <li>
-                  {__(
-                    'Classic PAT: enable repo + workflow scopes.',
-                    'alpaca-issue-tracker',
-                  )}
-                </li>
-                <li>
-                  {__('Fine-grained PAT on this repo:', 'alpaca-issue-tracker')}
-                  <ul>
-                    <li>
-                      {__('Contents — Read and write', 'alpaca-issue-tracker')}
-                    </li>
-                    <li>
-                      {__('Issues — Read and write', 'alpaca-issue-tracker')}
-                    </li>
-                    <li>
-                      {__(
-                        'Metadata — Read-only (required)',
-                        'alpaca-issue-tracker',
-                      )}
-                    </li>
-                    <li>
-                      {__(
-                        'Pull requests — Read and write',
-                        'alpaca-issue-tracker',
-                      )}
-                    </li>
-                    <li>
-                      {__('Workflows — Read and write', 'alpaca-issue-tracker')}
-                    </li>
-                  </ul>
-                </li>
-                <li>
-                  {__(
-                    'If the org uses SSO: authorise the token for the org in GitHub settings.',
-                    'alpaca-issue-tracker',
-                  )}
-                </li>
-              </ol>
-            </details>
 
             <hr className="agentic-step-hr" />
 
@@ -1630,6 +1614,8 @@ define( 'ALPAISTR_AGENTIC_AI_API_KEY', '...' );`}</pre>
         )}
       </p>
     </div>
+    <Popover.Slot />
+    </SlotFillProvider>
   );
 };
 

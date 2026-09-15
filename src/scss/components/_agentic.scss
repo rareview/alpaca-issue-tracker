@@ -898,16 +898,33 @@
   outline: none;
 }
 
-.agentic-help-tip .dashicons {
+/* Click-to-open PAT permissions help */
+.agentic-pat-help-wrap {
+  display: inline-flex;
+  vertical-align: middle;
+  margin-inline-start: 4px;
+}
+
+.agentic-pat-help-trigger {
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #4f46e5;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.agentic-pat-help-trigger .dashicons {
   font-size: 16px;
   width: 16px;
   height: 16px;
-  color: #757575;
 }
 
-.agentic-help-tip:hover .dashicons,
-.agentic-help-tip:focus .dashicons {
-  color: #4f46e5;
+.agentic-pat-help-trigger:hover,
+.agentic-pat-help-trigger:focus {
+  color: #4338ca;
 }
 
 .agentic-help-tip__tooltip {
@@ -960,6 +977,92 @@
 .agentic-help-tip:focus-within .agentic-help-tip__tooltip {
   opacity: 1;
   visibility: visible;
+}
+
+.agentic-pat-help-popover .components-popover__content {
+  min-width: 300px;
+  max-width: 340px;
+}
+
+.agentic-pat-help-popover__content {
+  padding: 14px 16px;
+}
+
+.agentic-pat-help-popover__intro {
+  margin: 0 0 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: $color-text-secondary;
+}
+
+/* Permission rows — the key info, made to stand out */
+.agentic-pat-permission-list {
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+  border: 1px solid $color-surface-neutral;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.agentic-pat-permission-list__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: $color-text-primary;
+}
+
+.agentic-pat-permission-list__row:nth-child(odd) {
+  background: #fafafa;
+}
+
+.agentic-pat-permission-badge {
+  flex-shrink: 0;
+  padding: 2px $space-sm;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  line-height: $line-height-base;
+  border-radius: $radius-pill;
+}
+
+.agentic-pat-permission-badge--write {
+  background: $color-success-soft;
+  color: $color-success-dark;
+}
+
+.agentic-pat-permission-badge--read {
+  background: $color-surface-neutral;
+  color: $color-text-secondary;
+}
+
+/* Secondary notes — de-emphasised so the permissions list stays the focal point */
+.agentic-pat-help-popover__notes {
+  margin: 0;
+  padding: 10px 0 0;
+  border-block-start: 1px solid $color-surface-neutral;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.agentic-pat-help-popover__notes li {
+  position: relative;
+  padding-inline-start: 14px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: $color-text-secondary;
+}
+
+.agentic-pat-help-popover__notes li::before {
+  content: '·';
+  position: absolute;
+  inset-inline-start: 4px;
+  font-weight: $font-weight-semibold;
 }
 
 .agentic-step-hr {
