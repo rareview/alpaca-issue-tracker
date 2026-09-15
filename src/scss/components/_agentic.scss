@@ -1307,6 +1307,15 @@
   font-size: 13px;
 }
 
+.agentic-production-branch-warning {
+  margin-block-start: 8px;
+  padding: 10px 14px;
+  background: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-radius: 4px;
+  color: #d63638;
+}
+
 /* Workflow installed state */
 
 .agentic-workflow-installed {

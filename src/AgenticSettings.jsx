@@ -1216,16 +1216,16 @@ const AgenticSettings = () => {
                     </select>
                     <p className="description">
                       {__(
-                        'The AI opens pull requests into this branch. Do not use a production branch.',
+                        'The AI opens pull requests into this branch. Do not use a production branch, unless you are sure what you are doing.',
                         'alpaca-issue-tracker',
                       )}
                     </p>
                     {PRODUCTION_BRANCH_NAMES.has(
                       (form.aiTargetBranch || '').toLowerCase(),
                     ) ? (
-                      <p className="agentic-install-error">
+                      <p className="description agentic-production-branch-warning">
                         {__(
-                          'This looks like a production branch. Pick a development or staging branch instead if you can.',
+                          'Are you sure? This looks like a production branch. Staging or development branches are generally preferable.',
                           'alpaca-issue-tracker',
                         )}
                       </p>
