@@ -86,6 +86,52 @@ HelpTip.propTypes = {
 };
 
 /**
+ * Placeholder shown when a secret is already stored server-side.
+ * The real key is never sent to the browser.
+ */
+const SAVED_SECRET_MASK = '••••••••••••••••';
+
+/**
+ * Password-style custom input, without possibility to reveal the secret (they stay saved on the server).
+ * Empty value means "keep the saved secret"; placeholder shows that one exists.
+ *
+ * @param {Object}   props            Component props.
+ * @param {string}   props.id         Input id.
+ * @param {string}   props.value      Draft value typed by the user (empty = keep saved).
+ * @param {boolean}  props.isSaved    Whether a secret is already stored.
+ * @param {boolean}  [props.disabled] Disable the field.
+ * @param {Function} props.onChange   Called with the next draft string.
+ * @return {JSX.Element} Secret input.
+ */
+const SavedSecretInput = ({
+  id,
+  value,
+  isSaved,
+  disabled = false, // Disabled only when the secret comes from a PHP constant.
+  onChange,
+}) => (
+  <input
+    type="password"
+    id={id}
+    className="regular-text"
+    autoComplete="new-password"
+    spellCheck="false"
+    disabled={disabled}
+    value={value}
+    placeholder={isSaved ? SAVED_SECRET_MASK : ''}
+    onChange={(event) => onChange(event.target.value)}
+  />
+);
+
+SavedSecretInput.propTypes = {
+  id: PropTypes.string.isRequired,
+  value: PropTypes.string.isRequired,
+  isSaved: PropTypes.bool.isRequired,
+  disabled: PropTypes.bool,
+  onChange: PropTypes.func.isRequired,
+};
+
+/**
  * @param {Object} data Client settings payload from REST.
  * @return {Object} Step done/locked map.
  */
@@ -264,10 +310,13 @@ const AgenticSettings = () => {
   const [installing, setInstalling] = useState(false);
   const [installError, setInstallError] = useState('');
   const [repoBranches, setRepoBranches] = useState([]);
+  // Bumped after settings reload so secret inputs remount with a clean UI.
+  const [secretFieldsResetKey, setSecretFieldsResetKey] = useState(0);
   const { allUserObjects } = useUserManagement();
 
   const applySettings = useCallback((payload, advanceToActive = false) => {
     setData(payload);
+    setSecretFieldsResetKey((resetKey) => resetKey + 1);
     setForm({
       enabled: !!payload.enabled,
       aiProvider: payload.ai_provider || 'claude',
@@ -914,12 +963,13 @@ const AgenticSettings = () => {
                         <td>
                           {data.ai_api_key_from_constant ? (
                             <>
-                              <input
-                                type="password"
+                              <SavedSecretInput
+                                key={`ai-api-key-${secretFieldsResetKey}`}
                                 id="agentic-ai-api-key"
                                 value=""
-                                className="regular-text"
+                                isSaved
                                 disabled
+                                onChange={() => {}}
                               />
                               <p className="description">
                                 {__(
@@ -930,29 +980,25 @@ const AgenticSettings = () => {
                             </>
                           ) : (
                             <>
-                              <input
-                                type="password"
+                              <SavedSecretInput
+                                key={`ai-api-key-${secretFieldsResetKey}`}
                                 id="agentic-ai-api-key"
                                 value={form.aiApiKey}
-                                className="regular-text"
-                                autoComplete="off"
-                                placeholder={
-                                  data.ai_api_key_set
-                                    ? __(
-                                        '•••••••• (saved — leave blank to keep)',
-                                        'alpaca-issue-tracker',
-                                      )
-                                    : ''
-                                }
-                                onChange={(event) =>
-                                  updateForm({ aiApiKey: event.target.value })
+                                isSaved={!!data.ai_api_key_set}
+                                onChange={(nextKey) =>
+                                  updateForm({ aiApiKey: nextKey })
                                 }
                               />
                               <p className="description">
-                                {__(
-                                  'Used to draft agent-ready issues from Alpaca cards.',
-                                  'alpaca-issue-tracker',
-                                )}
+                                {data.ai_api_key_set
+                                  ? __(
+                                      'Leave blank to keep the current key. Enter a new key only to replace it.',
+                                      'alpaca-issue-tracker',
+                                    )
+                                  : __(
+                                      'Used to draft agent-ready issues from Alpaca cards.',
+                                      'alpaca-issue-tracker',
+                                    )}
                               </p>
                             </>
                           )}
@@ -1047,12 +1093,13 @@ const AgenticSettings = () => {
                   <td>
                     {data.github_token_from_constant ? (
                       <>
-                        <input
-                          type="password"
+                        <SavedSecretInput
+                          key={`github-token-${secretFieldsResetKey}`}
                           id="agentic-github-token"
                           value=""
-                          className="regular-text"
+                          isSaved
                           disabled
+                          onChange={() => {}}
                         />
                         <p className="description">
                           {__(
@@ -1066,24 +1113,23 @@ const AgenticSettings = () => {
                       </>
                     ) : (
                       <>
-                        <input
-                          type="password"
+                        <SavedSecretInput
+                          key={`github-token-${secretFieldsResetKey}`}
                           id="agentic-github-token"
-                          className="regular-text"
-                          autoComplete="off"
                           value={form.githubToken}
-                          placeholder={
-                            data.github_token_set
-                              ? __(
-                                  '•••••••• (saved — leave blank to keep)',
-                                  'alpaca-issue-tracker',
-                                )
-                              : ''
-                          }
-                          onChange={(event) =>
-                            updateForm({ githubToken: event.target.value })
+                          isSaved={!!data.github_token_set}
+                          onChange={(nextToken) =>
+                            updateForm({ githubToken: nextToken })
                           }
                         />
+                        {data.github_token_set ? (
+                          <p className="description">
+                            {__(
+                              'Leave blank to keep the current token. Enter a new token only to replace it.',
+                              'alpaca-issue-tracker',
+                            )}
+                          </p>
+                        ) : null}
                         {patGuidance ? (
                           <p className="description">{patGuidance}</p>
                         ) : null}
