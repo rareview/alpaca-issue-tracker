@@ -780,7 +780,6 @@ const AgenticSettings = () => {
             <strong className="agentic-all-done-heading">
               {__("You're all set!", 'alpaca-issue-tracker')}
             </strong>
-            {__('The AI agent is ready.', 'alpaca-issue-tracker')}
           </p>
         ) : null}
       </div>
