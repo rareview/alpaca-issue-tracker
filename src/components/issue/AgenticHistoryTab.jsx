@@ -134,18 +134,17 @@ function SessionSendStep({ entry, sendIndex }) {
         <span className="agentic-session-step__notes">{stepTitle}</span>
       ) : null}
       <div className="agentic-session-step__links">
-        {isComment ? (
-          entry.url ? (
-            <a
-              className="agentic-session-step__link"
-              href={entry.url}
-              target="_blank"
-              rel="noreferrer noopener"
-            >
-              {commentLabel}
-            </a>
-          ) : null
-        ) : (
+        {isComment && entry.url ? (
+          <a
+            className="agentic-session-step__link"
+            href={entry.url}
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            {commentLabel}
+          </a>
+        ) : null}
+        {!isComment ? (
           <>
             {entry.url ? (
               <a
@@ -173,7 +172,7 @@ function SessionSendStep({ entry, sendIndex }) {
               </span>
             ) : null}
           </>
-        )}
+        ) : null}
       </div>
     </div>
   );

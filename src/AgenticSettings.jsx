@@ -13,10 +13,9 @@ const { Spinner, Notice, FormTokenField } = wp.components;
 const REST_PATH = '/alpaca/v1/agentic';
 
 const STEP_LABELS = {
-  1: __('Enable', 'alpaca-issue-tracker'),
-  2: __('GitHub Setup', 'alpaca-issue-tracker'),
-  3: __('WP Setup', 'alpaca-issue-tracker'),
-  4: __('Finish Setup', 'alpaca-issue-tracker'),
+  1: __('GitHub Setup', 'alpaca-issue-tracker'),
+  2: __('WP Setup', 'alpaca-issue-tracker'),
+  3: __('Finish Setup', 'alpaca-issue-tracker'),
 };
 
 const PROJECT_CONTEXT_PLACEHOLDER = [
@@ -100,44 +99,25 @@ const getStepStates = (data) => {
     : 0;
   const repoMatchConfirmed = !!data.repo_match_confirmed;
 
+  const githubReady =
+    enabled &&
+    githubConfigured &&
+    workflowInstalled &&
+    !!data.ai_target_branch;
+
   return {
-    1: { done: enabled, locked: false },
-    2: {
-      done:
-        enabled &&
-        githubConfigured &&
-        workflowInstalled &&
-        !!data.ai_target_branch,
+    1: {
+      done: githubReady,
       locked: !enabled,
     },
     // Optional step: unlocked after GitHub is ready; does not block Finish Setup.
-    3: {
-      done:
-        enabled &&
-        githubConfigured &&
-        workflowInstalled &&
-        !!data.ai_target_branch,
-      locked: !(
-        enabled &&
-        githubConfigured &&
-        workflowInstalled &&
-        !!data.ai_target_branch
-      ),
+    2: {
+      done: githubReady,
+      locked: !githubReady,
     },
-    4: {
-      done:
-        enabled &&
-        githubConfigured &&
-        workflowInstalled &&
-        !!data.ai_target_branch &&
-        checklistCount >= 2 &&
-        repoMatchConfirmed,
-      locked: !(
-        enabled &&
-        githubConfigured &&
-        workflowInstalled &&
-        !!data.ai_target_branch
-      ),
+    3: {
+      done: githubReady && checklistCount >= 2 && repoMatchConfirmed,
+      locked: !githubReady,
     },
   };
 };
@@ -147,12 +127,12 @@ const getStepStates = (data) => {
  * @return {number} First incomplete unlocked step.
  */
 const getActiveStep = (stepStates) => {
-  for (const step of [1, 2, 3, 4]) {
+  for (const step of [1, 2, 3]) {
     if (!stepStates[step].done && !stepStates[step].locked) {
       return step;
     }
   }
-  return 4;
+  return 3;
 };
 
 const PRODUCTION_BRANCH_NAMES = new Set([
@@ -163,10 +143,10 @@ const PRODUCTION_BRANCH_NAMES = new Set([
 ]);
 
 /**
- * @param {Object} props                 Component props.
- * @param {string} props.repo            Repository slug.
- * @param {string} props.defaultBranch   GitHub default branch.
- * @param {string} props.aiTargetBranch  AI code target branch.
+ * @param {Object} props                Component props.
+ * @param {string} props.repo           Repository slug.
+ * @param {string} props.defaultBranch  GitHub default branch.
+ * @param {string} props.aiTargetBranch AI code target branch.
  * @return {JSX.Element} Install intro paragraph.
  */
 const RepoInstallMessage = ({ repo, defaultBranch, aiTargetBranch }) => {
@@ -186,6 +166,7 @@ const RepoInstallMessage = ({ repo, defaultBranch, aiTargetBranch }) => {
       </p>
       <p className="description">
         {sprintf(
+          /* translators: %1$s: repository default branch. %2$s: AI target branch. */
           __(
             'GitHub Actions files go to %1$s (the repository default). AI code pull requests go to %2$s.',
             'alpaca-issue-tracker',
@@ -345,22 +326,21 @@ const AgenticSettings = () => {
   const stepStates = useMemo(
     () =>
       data
-        ? getStepStates(data)
+        ? getStepStates({ ...data, enabled: form.enabled })
         : {
-            1: { done: false, locked: false },
+            1: { done: false, locked: true },
             2: { done: false, locked: true },
             3: { done: false, locked: true },
-            4: { done: false, locked: true },
           },
-    [data],
+    [data, form.enabled],
   );
 
   // !! to make sure it's a boolean, and avoid undefined values.
   const allDone =
+    !!form.enabled &&
     !!stepStates[1]?.done &&
     !!stepStates[2]?.done &&
-    !!stepStates[3]?.done &&
-    !!stepStates[4]?.done;
+    !!stepStates[3]?.done;
 
   const updateForm = useCallback((patch) => {
     setForm((existing) => ({ ...existing, ...patch }));
@@ -413,6 +393,32 @@ const AgenticSettings = () => {
       }
     },
     [applySettings, buildSavePayload],
+  );
+
+  const saveEnabledToggle = useCallback(
+    async (enabled) => {
+      updateForm({ enabled });
+      setSaving(true);
+      setError('');
+      try {
+        const payload = await wp.apiFetch({
+          path: `${REST_PATH}/settings`,
+          method: 'POST',
+          data: { ...buildSavePayload(), enabled },
+        });
+        applySettings(payload, enabled ? true : false);
+        return payload;
+      } catch (err) {
+        updateForm({ enabled: !enabled });
+        setError(
+          err?.message ||
+            __('Could not save settings.', 'alpaca-issue-tracker'),
+        );
+      } finally {
+        setSaving(false);
+      }
+    },
+    [applySettings, buildSavePayload, updateForm],
   );
 
   const saveFinishSetup = useCallback(async () => {
@@ -473,7 +479,7 @@ const AgenticSettings = () => {
       if (result?.pr_url || result?.already_installed) {
         const payload = await wp.apiFetch({ path: `${REST_PATH}/settings` });
         applySettings(payload, false);
-        setFocusedStep(3);
+        setFocusedStep(2);
         return;
       }
       setInstallError(
@@ -494,7 +500,7 @@ const AgenticSettings = () => {
 
   useEffect(() => {
     if (
-      2 !== focusedStep ||
+      1 !== focusedStep ||
       !data?.github_repo ||
       !data?.github_token_set
     ) {
@@ -681,6 +687,31 @@ const AgenticSettings = () => {
         <h1 className="wp-heading-inline agentic-wizard-title">
           {__('Fix With AI', 'alpaca-issue-tracker')}
         </h1>
+        <label
+          htmlFor="agentic-enable-toggle"
+          className={`agentic-toggle-label agentic-header-toggle${!canEdit ? ' agentic-fieldset-disabled' : ''}`}
+        >
+          <input
+            id="agentic-enable-toggle"
+            type="checkbox"
+            className="agentic-toggle-input"
+            checked={!!form.enabled}
+            disabled={!canEdit || saving}
+            onChange={(event) => saveEnabledToggle(event.target.checked)}
+          />
+          <span className="agentic-toggle-track" />
+          <span className="agentic-toggle-text" aria-hidden="true">
+            <span className="agentic-toggle-state agentic-toggle-state--off">
+              {__('Off', 'alpaca-issue-tracker')}
+            </span>
+            <span className="agentic-toggle-state agentic-toggle-state--on">
+              {__('On', 'alpaca-issue-tracker')}
+            </span>
+          </span>
+          <span className="screen-reader-text">
+            {__('Enable Fix With AI', 'alpaca-issue-tracker')}
+          </span>
+        </label>
         {allDone ? (
           <p className="agentic-all-done-status">
             <span className="agentic-all-done-icon" aria-hidden="true">
@@ -728,10 +759,10 @@ const AgenticSettings = () => {
       ) : null}
 
       <div
-        className={`agentic-step-indicators${allDone ? ' agentic-indicators-all-done' : ''}`}
+        className={`agentic-step-indicators${allDone ? ' agentic-indicators-all-done' : ''}${!form.enabled ? ' agentic-indicators-disabled' : ''}`}
         role="tablist"
       >
-        {[1, 2, 3, 4].map((num) => {
+        {[1, 2, 3].map((num) => {
           const state = stepStates[num] || { done: false, locked: true };
           const isDone = allDone || state.done;
           const isActive = num === focusedStep;
@@ -754,7 +785,13 @@ const AgenticSettings = () => {
               className={classes.join(' ')}
               role="tab"
               aria-selected={isActive ? 'true' : 'false'}
-              onClick={() => setFocusedStep(num)}
+              aria-disabled={!form.enabled ? 'true' : 'false'}
+              onClick={() => {
+                if (!form.enabled) {
+                  return;
+                }
+                setFocusedStep(num);
+              }}
             >
               <span className="agentic-indicator-badge">
                 {isDone ? '✓' : String(num)}
@@ -778,48 +815,19 @@ const AgenticSettings = () => {
             }
           >
             <h2 className="agentic-panel-title">
-              {__('Enable', 'alpaca-issue-tracker')}
+              {__('GitHub Setup', 'alpaca-issue-tracker')}
             </h2>
             {panelLocked ? (
               <p className="agentic-locked-notice">
                 {__(
-                  'Complete the previous steps to unlock this step.',
+                  'Turn on Fix With AI above to unlock setup steps.',
                   'alpaca-issue-tracker',
                 )}
               </p>
             ) : null}
 
-            <label
-              htmlFor="agentic-enable-toggle"
-              className="agentic-toggle-label"
-            >
-              <input
-                id="agentic-enable-toggle"
-                type="checkbox"
-                className="agentic-toggle-input"
-                checked={!!form.enabled}
-                onChange={(event) =>
-                  updateForm({ enabled: event.target.checked })
-                }
-              />
-              <span className="agentic-toggle-track" />
-              <span className="agentic-toggle-text" aria-hidden="true">
-                <span className="agentic-toggle-state agentic-toggle-state--off">
-                  {__('Off', 'alpaca-issue-tracker')}
-                </span>
-                <span className="agentic-toggle-state agentic-toggle-state--on">
-                  {__('On', 'alpaca-issue-tracker')}
-                </span>
-              </span>
-              <span className="screen-reader-text">
-                {__('Enable', 'alpaca-issue-tracker')}
-              </span>
-            </label>
-
             {data.wp_ai_available ? (
-              <div
-                className={`agentic-connectors-status${form.enabled ? '' : ' agentic-fieldset-disabled'}`}
-              >
+              <div className="agentic-connectors-status">
                 {data.wp_ai_configured ? (
                   <p className="agentic-connectors-connected">
                     <span
@@ -872,10 +880,7 @@ const AgenticSettings = () => {
                     )}
                   />
                 </p>
-                <fieldset
-                  className={`agentic-ai-provider-fields${form.enabled ? '' : ' agentic-fieldset-disabled'}`}
-                  disabled={!form.enabled}
-                >
+                <fieldset className="agentic-ai-provider-fields">
                   <legend className="screen-reader-text">
                     {__('AI provider settings', 'alpaca-issue-tracker')}
                   </legend>
@@ -891,7 +896,6 @@ const AgenticSettings = () => {
                           <select
                             id="agentic-ai-provider"
                             value={form.aiProvider || 'claude'}
-                            disabled={!form.enabled}
                             onChange={(event) =>
                               updateForm({ aiProvider: event.target.value })
                             }
@@ -932,7 +936,6 @@ const AgenticSettings = () => {
                                 value={form.aiApiKey}
                                 className="regular-text"
                                 autoComplete="off"
-                                disabled={!form.enabled}
                                 placeholder={
                                   data.ai_api_key_set
                                     ? __(
@@ -960,40 +963,6 @@ const AgenticSettings = () => {
                 </fieldset>
               </>
             )}
-
-            <div className="agentic-step-actions">
-              <button
-                type="button"
-                className="button button-primary"
-                disabled={saving || panelLocked || !canEdit}
-                onClick={() => saveSettings(2)}
-              >
-                {saving
-                  ? __('Saving…', 'alpaca-issue-tracker')
-                  : __('Save & continue', 'alpaca-issue-tracker')}
-              </button>
-            </div>
-          </fieldset>
-        ) : null}
-
-        {2 === focusedStep ? (
-          <fieldset
-            disabled={panelLocked || !canEdit}
-            className={
-              panelLocked || !canEdit ? 'agentic-fieldset-disabled' : undefined
-            }
-          >
-            <h2 className="agentic-panel-title">
-              {__('GitHub Setup', 'alpaca-issue-tracker')}
-            </h2>
-            {panelLocked ? (
-              <p className="agentic-locked-notice">
-                {__(
-                  'Complete Step 1 to unlock this step.',
-                  'alpaca-issue-tracker',
-                )}
-              </p>
-            ) : null}
 
             <table className="form-table" role="presentation">
               <tbody>
@@ -1202,13 +1171,6 @@ const AgenticSettings = () => {
             <div className="agentic-step-actions">
               <button
                 type="button"
-                className="button button-secondary"
-                onClick={() => setFocusedStep(1)}
-              >
-                {__('Back', 'alpaca-issue-tracker')}
-              </button>
-              <button
-                type="button"
                 className="button button-primary"
                 disabled={
                   saving || testing || panelLocked || !form.repoMatchConfirmed
@@ -1350,7 +1312,7 @@ const AgenticSettings = () => {
                       disabled={
                         saving || !form.repoMatchConfirmed || !form.aiTargetBranch
                       }
-                      onClick={() => saveSettings(3)}
+                      onClick={() => saveSettings(2)}
                     >
                       {__('Continue to WP Setup', 'alpaca-issue-tracker')}
                     </button>
@@ -1395,7 +1357,7 @@ const AgenticSettings = () => {
           </fieldset>
         ) : null}
 
-        {3 === focusedStep ? (
+        {2 === focusedStep ? (
           <fieldset
             disabled={panelLocked || !canEdit}
             className={
@@ -1407,10 +1369,15 @@ const AgenticSettings = () => {
             </h2>
             {panelLocked ? (
               <p className="agentic-locked-notice">
-                {__(
-                  'Complete GitHub Setup to unlock this step.',
-                  'alpaca-issue-tracker',
-                )}
+                {!form.enabled
+                  ? __(
+                      'Turn on Fix With AI above to unlock setup steps.',
+                      'alpaca-issue-tracker',
+                    )
+                  : __(
+                      'Complete GitHub Setup to unlock this step.',
+                      'alpaca-issue-tracker',
+                    )}
               </p>
             ) : null}
 
@@ -1469,7 +1436,7 @@ const AgenticSettings = () => {
               <button
                 type="button"
                 className="button button-secondary"
-                onClick={() => setFocusedStep(2)}
+                onClick={() => setFocusedStep(1)}
               >
                 {__('Back', 'alpaca-issue-tracker')}
               </button>
@@ -1478,7 +1445,7 @@ const AgenticSettings = () => {
                   type="button"
                   className="button button-primary"
                   disabled={saving || panelLocked || !canEdit}
-                  onClick={() => saveSettings(4)}
+                  onClick={() => saveSettings(3)}
                 >
                   {saving
                     ? __('Saving…', 'alpaca-issue-tracker')
@@ -1488,7 +1455,7 @@ const AgenticSettings = () => {
                 <button
                   type="button"
                   className="button button-primary"
-                  onClick={() => setFocusedStep(4)}
+                  onClick={() => setFocusedStep(3)}
                 >
                   {__('Continue', 'alpaca-issue-tracker')}
                 </button>
@@ -1497,7 +1464,7 @@ const AgenticSettings = () => {
           </fieldset>
         ) : null}
 
-        {4 === focusedStep ? (
+        {3 === focusedStep ? (
           <fieldset
             disabled={panelLocked || !canEdit}
             className={
@@ -1509,10 +1476,15 @@ const AgenticSettings = () => {
             </h2>
             {panelLocked ? (
               <p className="agentic-locked-notice">
-                {__(
-                  'Complete the earlier steps to unlock this step.',
-                  'alpaca-issue-tracker',
-                )}
+                {!form.enabled
+                  ? __(
+                      'Turn on Fix With AI above to unlock setup steps.',
+                      'alpaca-issue-tracker',
+                    )
+                  : __(
+                      'Complete the earlier steps to unlock this step.',
+                      'alpaca-issue-tracker',
+                    )}
               </p>
             ) : null}
             <p>
@@ -1558,7 +1530,7 @@ const AgenticSettings = () => {
               <button
                 type="button"
                 className="button button-secondary"
-                onClick={() => setFocusedStep(3)}
+                onClick={() => setFocusedStep(2)}
               >
                 {__('Back', 'alpaca-issue-tracker')}
               </button>

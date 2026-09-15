@@ -124,7 +124,7 @@ function alpaistr_register_agentic_endpoints(): void {
 		]
 	);
 
-	// Helps when opening an issue, to decide what to show: whether Start over / Request a change are allowed, PR state, waiting on an issue, branch reset info, etc. 
+	// Helps when opening an issue, to decide what to show: whether Start over / Request a change are allowed, PR state, waiting on an issue, branch reset info, etc.
 	register_rest_route(
 		'alpaca/v1',
 		'/agentic/start-over-status',
@@ -1751,7 +1751,7 @@ function alpaistr_agentic_create_callback( WP_REST_Request $request ): WP_REST_R
 		return new WP_Error( 'not_configured', esc_html__( 'AI target branch is not configured.', 'alpaca-issue-tracker' ), [ 'status' => 400 ] );
 	}
 
-	$labels = array_values(
+	$labels   = array_values(
 		array_filter(
 			$labels,
 			static function ( $label_name ): bool {
@@ -3245,9 +3245,9 @@ function alpaistr_agentic_first_parent_shas_until( string $token, array $repo_pa
 			break;
 		}
 
-		$shas[]   = $current;
-		$parents  = is_array( $commit['parents'] ?? null ) ? $commit['parents'] : [];
-		$current  = (string) ( $parents[0]['sha'] ?? '' );
+		$shas[]  = $current;
+		$parents = is_array( $commit['parents'] ?? null ) ? $commit['parents'] : [];
+		$current = (string) ( $parents[0]['sha'] ?? '' );
 	}
 
 	if ( $current !== $start_sha && $head_sha !== $start_sha ) {
@@ -3489,12 +3489,12 @@ function alpaistr_agentic_mark_unmerged_sent_pull_requests_closed( int $issue_id
  * @return array<string, mixed>
  */
 function alpaistr_agentic_task_github_work_status( string $token, array $repo_parts, int $issue_id, string $branch ): array {
-	$status           = alpaistr_agentic_empty_github_work_status();
-	$open_pr          = null;
-	$merged_pr        = null;
-	$closed_pr        = null;
-	$prs_by_issue     = [];
-	$pull_requests    = [];
+	$status               = alpaistr_agentic_empty_github_work_status();
+	$open_pr              = null;
+	$merged_pr            = null;
+	$closed_pr            = null;
+	$prs_by_issue         = [];
+	$pull_requests        = [];
 	$waiting_on_issue     = false;
 	$waiting_issue_number = 0;
 	$seen_issues          = [];
@@ -3584,7 +3584,7 @@ function alpaistr_agentic_task_github_work_status( string $token, array $repo_pa
 	$status['waiting_on_issue']     = $waiting_on_issue;
 	$status['waiting_issue_number'] = $waiting_issue_number;
 	$status['has_open_work']        = ! empty( $status['has_open_pr'] ) || $waiting_on_issue;
-	$status['pull_requests']    = $pull_requests;
+	$status['pull_requests']        = $pull_requests;
 	if ( $open_pr ) {
 		$status['pull_request'] = $open_pr;
 	} elseif ( $merged_pr ) {
@@ -4689,8 +4689,8 @@ function alpaistr_agentic_delete_github_file( string $token, array $repo_parts, 
 
 	$code = wp_remote_retrieve_response_code( $delete_response );
 	if ( $code < 200 || $code >= 300 ) {
-		$data           = json_decode( wp_remote_retrieve_body( $delete_response ), true );
-		$error_message  = is_array( $data ) && isset( $data['message'] ) ? (string) $data['message'] : __( 'Could not delete the old workflow file.', 'alpaca-issue-tracker' );
+		$data          = json_decode( wp_remote_retrieve_body( $delete_response ), true );
+		$error_message = is_array( $data ) && isset( $data['message'] ) ? (string) $data['message'] : __( 'Could not delete the old workflow file.', 'alpaca-issue-tracker' );
 		return new WP_Error( 'github_api_error', $error_message, [ 'status' => 502 ] );
 	}
 

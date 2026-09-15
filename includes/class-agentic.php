@@ -104,12 +104,12 @@ class Agentic {
 		$repo_changed = (string) ( $current_settings['github_repo'] ?? '' ) !== $github_repo;
 		if ( $repo_changed ) {
 			// Changing the repo clears the confirmation so the admin must re-check.
-			$repo_match_confirmed   = false;
+			$repo_match_confirmed  = false;
 			$ai_target_branch      = sanitize_text_field( (string) ( $raw['ai_target_branch'] ?? '' ) );
 			$github_default_branch = sanitize_text_field( (string) ( $raw['github_default_branch'] ?? '' ) );
 		} elseif ( array_key_exists( 'repo_match_confirmed', $raw ) ) {
-			$repo_match_confirmed = ! empty( $raw['repo_match_confirmed'] );
-			$ai_target_branch     = sanitize_text_field(
+			$repo_match_confirmed  = ! empty( $raw['repo_match_confirmed'] );
+			$ai_target_branch      = sanitize_text_field(
 				(string) ( $raw['ai_target_branch'] ?? ( $current_settings['ai_target_branch'] ?? '' ) )
 			);
 			$github_default_branch = sanitize_text_field(
@@ -129,25 +129,25 @@ class Agentic {
 		}
 
 		return [
-			'enabled'                => ! empty( $raw['enabled'] ),
-			'github_token'           => $github_token,
-			'github_repo'            => $github_repo,
-			'ai_target_branch'       => $ai_target_branch,
-			'github_default_branch'  => $github_default_branch,
-			'ai_provider'            => in_array( $raw['ai_provider'] ?? '', $providers, true )
+			'enabled'               => ! empty( $raw['enabled'] ),
+			'github_token'          => $github_token,
+			'github_repo'           => $github_repo,
+			'ai_target_branch'      => $ai_target_branch,
+			'github_default_branch' => $github_default_branch,
+			'ai_provider'           => in_array( $raw['ai_provider'] ?? '', $providers, true )
 				? $raw['ai_provider']
 				: ( $current_settings['ai_provider'] ?? 'claude' ),
-			'ai_api_key'             => $ai_api_key,
+			'ai_api_key'            => $ai_api_key,
 			// Optional per-site notes appended to every AI-drafted GitHub issue.
-			'project_context'        => sanitize_textarea_field( $raw['project_context'] ?? ( $current_settings['project_context'] ?? '' ) ),
-			'setup_checklist'        => array_values(
+			'project_context'       => sanitize_textarea_field( $raw['project_context'] ?? ( $current_settings['project_context'] ?? '' ) ),
+			'setup_checklist'       => array_values(
 				array_unique(
 					array_map( 'absint', (array) ( $raw['setup_checklist'] ?? [] ) )
 				)
 			),
-			'repo_match_confirmed'   => $repo_match_confirmed,
+			'repo_match_confirmed'  => $repo_match_confirmed,
 			// User IDs allowed to use the Fix With AI feature besides administrators (who always have access).
-			'engineers'              => array_key_exists( 'engineers', $raw )
+			'engineers'             => array_key_exists( 'engineers', $raw )
 				? array_values( array_unique( array_map( 'absint', (array) $raw['engineers'] ) ) )
 				: array_values( array_unique( array_map( 'absint', (array) ( $current_settings['engineers'] ?? [] ) ) ) ),
 		];
@@ -290,7 +290,7 @@ class Agentic {
 	 * @return array{branch_protection: array<int, array{key: int, label: string}>, pat_guidance: string}
 	 */
 	public static function get_setup_security_payload(): array {
-		$raw = self::load_security_json( 'setup.json' );
+		$raw               = self::load_security_json( 'setup.json' );
 		$branch_protection = [];
 
 		foreach ( (array) ( $raw['branch_protection'] ?? [] ) as $item ) {
@@ -341,11 +341,11 @@ class Agentic {
 			'alpaca-script',
 			'agenticConfig',
 			[
-				'restBase'        => esc_url_raw( rest_url( 'alpaca/v1/agentic' ) ),
-				'nonce'           => wp_create_nonce( 'wp_rest' ),
-				'setupCompleted'  => $this->is_setup_completed(),
-				'isAuthorized'    => self::current_user_can_use(), // Only administrators and users on the engineers allowlist may send issues to the AI agent.
-				'aiTargetBranch'  => (string) ( $options['ai_target_branch'] ?? '' ),
+				'restBase'       => esc_url_raw( rest_url( 'alpaca/v1/agentic' ) ),
+				'nonce'          => wp_create_nonce( 'wp_rest' ),
+				'setupCompleted' => $this->is_setup_completed(),
+				'isAuthorized'   => self::current_user_can_use(), // Only administrators and users on the engineers allowlist may send issues to the AI agent.
+				'aiTargetBranch' => (string) ( $options['ai_target_branch'] ?? '' ),
 			]
 		);
 	}
@@ -363,7 +363,7 @@ class Agentic {
 		$github_repo  = $options['github_repo'] ?? '';
 		$ai_key       = defined( 'ALPAISTR_AGENTIC_AI_API_KEY' ) ? ALPAISTR_AGENTIC_AI_API_KEY : ( $options['ai_api_key'] ?? '' );
 
-		$ai_ready = self::is_wp_ai_available()
+		$ai_ready         = self::is_wp_ai_available()
 			? self::is_wp_ai_configured()
 			: ! empty( $ai_key );
 		$ai_target_branch = $options['ai_target_branch'] ?? '';

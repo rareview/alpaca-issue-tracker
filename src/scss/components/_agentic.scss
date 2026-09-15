@@ -834,6 +834,7 @@
 
 .agentic-wizard-wrap {
   max-width: 860px;
+  margin-block-start: 16px;
 }
 
 .agentic-wizard-header {
@@ -842,6 +843,10 @@
   flex-wrap: wrap;
   gap: 8px 16px;
   margin-block-end: 4px;
+}
+
+.agentic-wizard-header .agentic-header-toggle {
+  margin-block-end: 0;
 }
 
 .agentic-wizard-title {
@@ -974,6 +979,10 @@
   overflow: hidden;
 }
 
+.agentic-step-indicators.agentic-indicators-disabled {
+  opacity: 0.65;
+}
+
 .agentic-step-indicator {
   flex: 1;
   display: flex;
@@ -1045,6 +1054,16 @@
 
 .agentic-step-indicator.agentic-indicator-locked:hover {
   opacity: 0.75;
+}
+
+.agentic-indicators-disabled .agentic-step-indicator {
+  cursor: not-allowed;
+}
+
+.agentic-indicators-disabled .agentic-step-indicator:hover {
+  opacity: 0.55;
+  background: #f9f9f9;
+  color: #757575;
 }
 
 @media (max-width: 640px) {
@@ -1139,7 +1158,7 @@
   margin: 0 !important;
 }
 
-/* Toggle switch (Step 1) */
+/* Toggle switch */
 
 .agentic-toggle-label {
   display: flex;
@@ -1202,7 +1221,7 @@
   display: inline;
 }
 
-/* AI provider fields in Step 1 — grayed out until enabled */
+/* AI provider fields — grayed out until enabled */
 
 .agentic-ai-provider-fields {
   border: 0;

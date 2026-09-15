@@ -260,11 +260,11 @@ import {
    * Confirm dialog when continuing after an unsuitable verdict.
    *
    * @param {Object}   props
-   * @param {string}   props.reason      Unsuitable reason from the AI.
-   * @param {string}   props.context     'draft' or 'request_change'.
+   * @param {string}   props.reason       Unsuitable reason from the AI.
+   * @param {string}   props.context      'draft' or 'request_change'.
    * @param {string}   props.confirmLabel Primary button label.
-   * @param {Function} props.onConfirm   Called when the user confirms.
-   * @param {Function} props.onCancel    Called when the user cancels.
+   * @param {Function} props.onConfirm    Called when the user confirms.
+   * @param {Function} props.onCancel     Called when the user cancels.
    * @return {Object} Modal element.
    */
   function UnsuitableConfirmModal({
