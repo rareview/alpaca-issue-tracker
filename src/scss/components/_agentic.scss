@@ -894,8 +894,20 @@
   display: inline-flex;
   vertical-align: middle;
   margin-inline-start: 4px;
+  color: #4f46e5;
   cursor: help;
   outline: none;
+}
+
+.agentic-help-tip .dashicons {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+}
+
+.agentic-help-tip:hover,
+.agentic-help-tip:focus {
+  color: #4338ca;
 }
 
 /* Click-to-open PAT permissions help */
@@ -1190,6 +1202,19 @@
   width: 275px;
 }
 
+/* Match WP Setup descriptions: core sets .form-table td p to 14px. */
+.agentic-wizard-panel .description,
+.agentic-wizard-panel .form-table td p.description {
+  margin: 2px 0 5px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #646970;
+}
+
+.agentic-wizard-panel .form-table td p.description.agentic-production-branch-warning {
+  color: #d63638;
+}
+
 .agentic-wizard-panel.agentic-step-locked {
   opacity: 0.9;
 }
@@ -1417,6 +1442,8 @@
   border: 1px solid #fca5a5;
   border-radius: 4px;
   color: #d63638;
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 /* Workflow installed state */
