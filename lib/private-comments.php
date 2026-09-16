@@ -70,12 +70,12 @@ function get_request_param( $key ) {
  * Determine whether the current request asks to include hidden comments.
  *
  * Projects may provide the request parameter name via the
- * `alpaca_private_comments_rest_visibility_param` filter.
+ * `private_comments_rest_visibility_param` filter.
  *
  * @return bool Whether the current request asks to include hidden comments.
  */
 function is_rest_override_requested() {
-	$override_param = apply_filters( 'alpaca_private_comments_rest_visibility_param', '' );
+	$override_param = apply_filters( 'private_comments_rest_visibility_param', '' );
 
 	if ( ! is_string( $override_param ) || '' === $override_param ) {
 		return false;
@@ -222,7 +222,7 @@ function user_can_view_type( $type ) {
 	 * @param bool   $can_view Whether the current user can view the type.
 	 * @param string $type     Hidden comment type.
 	 */
-	return (bool) apply_filters( 'alpaca_private_comments_user_can_view_type', $can_view, $type );
+	return (bool) apply_filters( 'private_comments_user_can_view_type', $can_view, $type );
 }
 
 /**
