@@ -105,8 +105,8 @@ const PAT_PERMISSIONS = [
 /**
  * Click-to-open info help. Uses the Gutenberg Popover.
  *
- * @param {Object} props       Component props.
- * @param {string} props.label Accessible label for the trigger.
+ * @param {Object} props          Component props.
+ * @param {string} props.label    Accessible label for the trigger.
  * @param {*}      props.children Popover content.
  * @return {JSX.Element} Help control.
  */
