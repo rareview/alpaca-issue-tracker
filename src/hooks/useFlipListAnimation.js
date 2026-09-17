@@ -15,11 +15,7 @@ import {
  * @param {string}        easing     Transition easing value.
  * @return {Object} Hook API.
  */
-function useFlipListAnimation(
-  items,
-  durationMs = 300,
-  easing = 'ease-out',
-) {
+function useFlipListAnimation(items, durationMs = 300, easing = 'ease-out') {
   const itemRefs = useRef({});
   const isAnimatingRef = useRef(false);
   const [boundingBoxes, setBoundingBoxes] = useState({});

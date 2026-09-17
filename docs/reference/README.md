@@ -28,4 +28,4 @@ Use the pages below when you need exact signatures, examples, source locations, 
 | [rest-api.md](rest-api.md)                     | REST response hooks, dynamic REST hooks, and REST root customization             |       5 |
 | [private-comments.md](private-comments.md)     | Private comment visibility and REST override hooks                               |       2 |
 | [javascript-filters.md](javascript-filters.md) | JavaScript filters and public browser extension APIs                             |      32 |
-| [javascript-actions.md](javascript-actions.md) | JavaScript actions emitted by issue, comment, watchlist, and datapoint workflows |      35 |
+| [javascript-actions.md](javascript-actions.md) | JavaScript actions emitted by issue, comment, watchlist, and datapoint workflows |      36 |
