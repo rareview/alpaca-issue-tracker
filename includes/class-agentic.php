@@ -100,25 +100,22 @@ class Agentic {
 
 		$github_repo = sanitize_text_field( $raw['github_repo'] ?? ( $current_settings['github_repo'] ?? '' ) );
 
-		// Confirmation that this WP site matches the chosen GitHub repo (warn-only gate in the wizard).
+		// Changing the repo clears branch selections so the admin must re-select them.
 		$repo_changed = (string) ( $current_settings['github_repo'] ?? '' ) !== $github_repo;
 		if ( $repo_changed ) {
-			// Changing the repo clears the confirmation so the admin must re-check.
-			$repo_match_confirmed  = false;
 			$ai_target_branch      = sanitize_text_field( (string) ( $raw['ai_target_branch'] ?? '' ) );
 			$github_default_branch = sanitize_text_field( (string) ( $raw['github_default_branch'] ?? '' ) );
-		} elseif ( array_key_exists( 'repo_match_confirmed', $raw ) ) {
-			$repo_match_confirmed  = ! empty( $raw['repo_match_confirmed'] );
-			$ai_target_branch      = sanitize_text_field(
-				(string) ( $raw['ai_target_branch'] ?? ( $current_settings['ai_target_branch'] ?? '' ) )
+		} else {
+			$ai_target_branch = sanitize_text_field(
+				(string) ( array_key_exists( 'ai_target_branch', $raw )
+					? $raw['ai_target_branch']
+					: ( $current_settings['ai_target_branch'] ?? '' ) )
 			);
 			$github_default_branch = sanitize_text_field(
-				(string) ( $raw['github_default_branch'] ?? ( $current_settings['github_default_branch'] ?? '' ) )
+				(string) ( array_key_exists( 'github_default_branch', $raw )
+					? $raw['github_default_branch']
+					: ( $current_settings['github_default_branch'] ?? '' ) )
 			);
-		} else {
-			$repo_match_confirmed  = ! empty( $current_settings['repo_match_confirmed'] );
-			$ai_target_branch      = sanitize_text_field( (string) ( $current_settings['ai_target_branch'] ?? '' ) );
-			$github_default_branch = sanitize_text_field( (string) ( $current_settings['github_default_branch'] ?? '' ) );
 		}
 
 		// Confirmation that the Claude GitHub App is installed on the repo (required by the workflows).
@@ -128,13 +125,6 @@ class Agentic {
 			$claude_app_confirmed = ! empty( $raw['claude_app_confirmed'] );
 		} else {
 			$claude_app_confirmed = ! empty( $current_settings['claude_app_confirmed'] );
-		}
-
-		if ( array_key_exists( 'ai_target_branch', $raw ) && ! $repo_changed ) {
-			$ai_target_branch = sanitize_text_field( (string) $raw['ai_target_branch'] );
-		}
-		if ( array_key_exists( 'github_default_branch', $raw ) && ! $repo_changed ) {
-			$github_default_branch = sanitize_text_field( (string) $raw['github_default_branch'] );
 		}
 
 		return [
@@ -154,7 +144,6 @@ class Agentic {
 					array_map( 'absint', (array) ( $raw['setup_checklist'] ?? [] ) )
 				)
 			),
-			'repo_match_confirmed'  => $repo_match_confirmed,
 			'claude_app_confirmed'  => $claude_app_confirmed,
 			// User IDs allowed to use the Fix With AI feature besides administrators (who always have access).
 			'engineers'             => array_key_exists( 'engineers', $raw )
@@ -267,7 +256,6 @@ class Agentic {
 			'ai_provider'                => $options['ai_provider'] ?? 'claude',
 			'project_context'            => $options['project_context'] ?? '',
 			'setup_checklist'            => array_map( 'absint', (array) ( $options['setup_checklist'] ?? [] ) ),
-			'repo_match_confirmed'       => ! empty( $options['repo_match_confirmed'] ),
 			'claude_app_confirmed'       => ! empty( $options['claude_app_confirmed'] ),
 			'github_token_set'           => '' !== (string) $github_token,
 			'github_token_from_constant' => $github_token_from_constant,
@@ -362,7 +350,46 @@ class Agentic {
 	}
 
 	/**
-	 * Check that the feature is enabled, credentials are set, and workflow is installed.
+	 * Required Finish Setup checklist keys.
+	 * Branch-protection keys from setup.json are included dynamically.
+	 * Key 3 (ANTHROPIC_API_KEY) stays optional.
+	 *
+	 * @return int[]
+	 */
+	public static function get_required_setup_checklist_keys(): array {
+		$keys = [ 1, 2, 4 ];
+		foreach ( self::get_setup_security_payload()['branch_protection'] as $item ) {
+			$key = absint( $item['key'] ?? 0 );
+			if ( $key > 0 && ! in_array( $key, $keys, true ) ) {
+				$keys[] = $key;
+			}
+		}
+		return $keys;
+	}
+
+	/**
+	 * Whether every required Finish Setup checkbox has been confirmed.
+	 *
+	 * @param array $options Stored agentic settings.
+	 */
+	public static function has_required_finish_setup_checks( array $options ): bool {
+		if ( empty( $options['claude_app_confirmed'] ) ) {
+			return false;
+		}
+
+		$checklist = array_map( 'absint', (array) ( $options['setup_checklist'] ?? [] ) );
+		foreach ( self::get_required_setup_checklist_keys() as $key ) {
+			if ( ! in_array( $key, $checklist, true ) ) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Check that the feature is enabled, credentials are set, workflow is installed,
+	 * and required Finish Setup checkboxes are confirmed.
 	 */
 	public function is_setup_completed(): bool {
 		$options = get_option( self::OPTION_KEY, [] );
@@ -383,7 +410,11 @@ class Agentic {
 		}
 
 		$workflow_installed = get_transient( 'alpaistr_agentic_workflow_installed' ) || get_option( 'alpaistr_agentic_workflow_pr_url', '' );
-		return (bool) $workflow_installed;
+		if ( ! $workflow_installed ) {
+			return false;
+		}
+
+		return self::has_required_finish_setup_checks( $options );
 	}
 
 	/**

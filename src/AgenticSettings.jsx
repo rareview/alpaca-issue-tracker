@@ -53,8 +53,6 @@ const emptyForm = () => ({
   aiTargetBranch: '',
   githubDefaultBranch: '',
   setupChecklist: [],
-  // Admin confirmed WP site + theme match the chosen GitHub repo.
-  repoMatchConfirmed: false,
   // Admin confirmed the Claude GitHub App is installed on the chosen repo.
   claudeAppConfirmed: false,
   engineers: [],
@@ -251,6 +249,56 @@ SavedSecretInput.propTypes = {
   onChange: PropTypes.func.isRequired,
 };
 
+/** Checklist keys that do not block Finish Setup (currently ANTHROPIC_API_KEY). */
+const OPTIONAL_SETUP_CHECKLIST_KEYS = new Set([3]);
+
+/**
+ * Static Finish Setup checklist keys that must be checked (merge PR, OAuth token, labels).
+ * Branch-protection keys from setup_security are added dynamically.
+ *
+ * @type {number[]}
+ */
+const STATIC_REQUIRED_SETUP_CHECKLIST_KEYS = [1, 2, 4];
+
+/**
+ * @param {Object} data Client settings payload (may include live form overrides).
+ * @return {number[]} Required setup_checklist keys.
+ */
+const getRequiredSetupChecklistKeys = (data) => {
+  const keys = [...STATIC_REQUIRED_SETUP_CHECKLIST_KEYS];
+  const branchProtection = Array.isArray(data?.setup_security?.branch_protection)
+    ? data.setup_security.branch_protection
+    : [];
+  for (const item of branchProtection) {
+    const key = Number(item?.key);
+    if (
+      Number.isFinite(key) &&
+      key > 0 &&
+      !OPTIONAL_SETUP_CHECKLIST_KEYS.has(key) &&
+      !keys.includes(key)
+    ) {
+      keys.push(key);
+    }
+  }
+  return keys;
+};
+
+/**
+ * @param {Object} data Client settings payload (may include live form overrides).
+ * @return {boolean} Whether every required Finish Setup checkbox is checked.
+ */
+const areRequiredFinishSetupChecksComplete = (data) => {
+  if (!data?.claude_app_confirmed) {
+    return false;
+  }
+  const checked = new Set(
+    (Array.isArray(data.setup_checklist) ? data.setup_checklist : []).map(
+      Number,
+    ),
+  );
+  return getRequiredSetupChecklistKeys(data).every((key) => checked.has(key));
+};
+
 /**
  * @param {Object} data Client settings payload from REST.
  * @return {Object} Step done/locked map.
@@ -260,10 +308,6 @@ const getStepStates = (data) => {
   const githubConfigured =
     !!data.github_repo && !!data.github_token_set && !!data.ai_ready;
   const workflowInstalled = !!data.workflow_installed;
-  const checklistCount = Array.isArray(data.setup_checklist)
-    ? data.setup_checklist.length
-    : 0;
-  const repoMatchConfirmed = !!data.repo_match_confirmed;
 
   const githubReady =
     enabled &&
@@ -282,7 +326,7 @@ const getStepStates = (data) => {
       locked: !githubReady,
     },
     3: {
-      done: githubReady && checklistCount >= 2 && repoMatchConfirmed,
+      done: githubReady && areRequiredFinishSetupChecksComplete(data),
       locked: !githubReady,
     },
   };
@@ -448,7 +492,6 @@ const AgenticSettings = () => {
       setupChecklist: Array.isArray(payload.setup_checklist)
         ? payload.setup_checklist.map(Number)
         : [],
-      repoMatchConfirmed: !!payload.repo_match_confirmed,
       claudeAppConfirmed: !!payload.claude_app_confirmed,
       engineers: Array.isArray(payload.engineers)
         ? payload.engineers.map(Number)
@@ -505,6 +548,12 @@ const AgenticSettings = () => {
     [data, form.enabled],
   );
 
+  const finishSetupChecksComplete = areRequiredFinishSetupChecksComplete({
+    setup_checklist: form.setupChecklist,
+    claude_app_confirmed: form.claudeAppConfirmed,
+    setup_security: data?.setup_security,
+  });
+
   // !! to make sure it's a boolean, and avoid undefined values.
   const allDone =
     !!form.enabled &&
@@ -526,7 +575,6 @@ const AgenticSettings = () => {
       ai_target_branch: form.aiTargetBranch || '',
       github_default_branch: form.githubDefaultBranch || '',
       setup_checklist: form.setupChecklist,
-      repo_match_confirmed: !!form.repoMatchConfirmed,
       claude_app_confirmed: !!form.claudeAppConfirmed,
       engineers: form.engineers,
       project_context: form.projectContext || '',
@@ -620,14 +668,12 @@ const AgenticSettings = () => {
         : [];
       setRepoBranches(nextBranches);
       const defaultBranch = result?.default_branch || '';
-      // Successful validation replaces the old site↔repo checkbox confirmation.
       /* eslint-disable camelcase -- REST API uses snake_case field names. */
       const payload = await wp.apiFetch({
         path: `${REST_PATH}/settings`,
         method: 'POST',
         data: {
           ...buildSavePayload(),
-          repo_match_confirmed: true,
           github_default_branch: defaultBranch,
         },
       });
@@ -800,25 +846,6 @@ const AgenticSettings = () => {
       ),
     },
     {
-      key: 3,
-      node: secretsUrl ? (
-        <span>
-          {__('(Optional) Add ', 'alpaca-issue-tracker')}
-          <code>ANTHROPIC_API_KEY</code>
-          {__(' to ', 'alpaca-issue-tracker')}
-          <a href={secretsUrl} target="_blank" rel="noreferrer noopener">
-            {__('repository secrets', 'alpaca-issue-tracker')}
-          </a>
-          {__(' for automated code review', 'alpaca-issue-tracker')}
-        </span>
-      ) : (
-        __(
-          '(Optional) Add ANTHROPIC_API_KEY to repository secrets for automated code review',
-          'alpaca-issue-tracker',
-        )
-      ),
-    },
-    {
       key: 4,
       node: actionsUrl ? (
         <span>
@@ -853,6 +880,25 @@ const AgenticSettings = () => {
         key: Number(item.key),
         node: item.label,
       }))),
+    {
+      key: 3,
+      node: secretsUrl ? (
+        <span>
+          {__('(Optional) Add ', 'alpaca-issue-tracker')}
+          <code>ANTHROPIC_API_KEY</code>
+          {__(' to ', 'alpaca-issue-tracker')}
+          <a href={secretsUrl} target="_blank" rel="noreferrer noopener">
+            {__('repository secrets', 'alpaca-issue-tracker')}
+          </a>
+          {__(' for automated code review', 'alpaca-issue-tracker')}
+        </span>
+      ) : (
+        __(
+          '(Optional) Add ANTHROPIC_API_KEY to repository secrets for automated code review',
+          'alpaca-issue-tracker',
+        )
+      ),
+    },
   ];
 
   return (
@@ -1016,16 +1062,6 @@ const AgenticSettings = () => {
                     <label htmlFor="agentic-github-repo">
                       {__('Repository (owner/repo)', 'alpaca-issue-tracker')}
                     </label>
-                    <InfoHelpPopover
-                      label={__('Repository match', 'alpaca-issue-tracker')}
-                    >
-                      <p className="agentic-pat-help-popover__intro">
-                        {__(
-                          'Make sure this WordPress site matches the GitHub repository.',
-                          'alpaca-issue-tracker',
-                        )}
-                      </p>
-                    </InfoHelpPopover>
                   </th>
                   <td>
                     <input
@@ -1036,10 +1072,9 @@ const AgenticSettings = () => {
                       value={form.githubRepo}
                       onChange={(event) => {
                         const nextRepo = event.target.value;
-                        // Changing repo clears confirmation until credentials are validated again.
+                        // Changing repo clears branch and Claude App confirmation.
                         updateForm({
                           githubRepo: nextRepo,
-                          repoMatchConfirmed: false,
                           claudeAppConfirmed: false,
                           aiTargetBranch: '',
                           githubDefaultBranch: '',
@@ -1277,9 +1312,7 @@ const AgenticSettings = () => {
                     <button
                       type="button"
                       className="button button-primary"
-                      disabled={
-                        saving || !form.repoMatchConfirmed || !form.aiTargetBranch
-                      }
+                      disabled={saving || !form.aiTargetBranch}
                       onClick={() => saveSettings(2)}
                     >
                       {__('Continue to WordPress Setup', 'alpaca-issue-tracker')}
@@ -1298,9 +1331,7 @@ const AgenticSettings = () => {
                       type="button"
                       className="button agentic-install-btn"
                       disabled={
-                        installing ||
-                        !form.repoMatchConfirmed ||
-                        !form.aiTargetBranch
+                        installing || !form.aiTargetBranch
                       }
                       onClick={handleInstall}
                     >
@@ -1606,15 +1637,6 @@ const AgenticSettings = () => {
               )}
             </p>
 
-            {!form.repoMatchConfirmed ? (
-              <p className="notice notice-warning inline">
-                {__(
-                  'Validate credentials in GitHub Setup before finishing.',
-                  'alpaca-issue-tracker',
-                )}
-              </p>
-            ) : null}
-
             <ul className="agentic-checklist">
               <li
                 className={`agentic-checklist-item${
@@ -1632,15 +1654,27 @@ const AgenticSettings = () => {
                     }}
                   />
                   <label htmlFor="agentic-claude-app-confirmed">
-                    {sprintf(
-                      /* translators: %s: GitHub repository slug (owner/repo). */
-                      __(
-                        'The Claude GitHub App is installed on %s.',
-                        'alpaca-issue-tracker',
+                    {createInterpolateElement(
+                      sprintf(
+                        /* translators: %s: GitHub repository slug (owner/repo). */
+                        __(
+                          'The <a>Claude GitHub App</a> is installed on %s.',
+                          'alpaca-issue-tracker',
+                        ),
+                        form.githubRepo ||
+                          data.github_repo ||
+                          __('your repository', 'alpaca-issue-tracker'),
                       ),
-                      form.githubRepo ||
-                        data.github_repo ||
-                        __('your repository', 'alpaca-issue-tracker'),
+                      {
+                        a: (
+                          <a
+                            href={CLAUDE_APP_URL}
+                            target="_blank"
+                            rel="noreferrer noopener"
+                            onClick={(event) => event.stopPropagation()}
+                          />
+                        ),
+                      },
                     )}
                   </label>
                 </div>
@@ -1678,7 +1712,7 @@ const AgenticSettings = () => {
               <button
                 type="button"
                 className="button button-primary"
-                disabled={saving || panelLocked || !form.repoMatchConfirmed}
+                disabled={saving || panelLocked || !finishSetupChecksComplete}
                 onClick={saveFinishSetup}
               >
                 {saving
