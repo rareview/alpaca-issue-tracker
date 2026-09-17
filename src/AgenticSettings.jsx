@@ -19,7 +19,7 @@ const CLAUDE_APP_URL = 'https://github.com/apps/claude';
 
 const STEP_LABELS = {
   1: __('GitHub Setup', 'alpaca-issue-tracker'),
-  2: __('WP Setup', 'alpaca-issue-tracker'),
+  2: __('WordPress Setup', 'alpaca-issue-tracker'),
   3: __('Finish Setup', 'alpaca-issue-tracker'),
 };
 
@@ -1267,7 +1267,7 @@ const AgenticSettings = () => {
                       </div>
                       <p className="description">
                         {__(
-                          'GitHub Actions files are already in your repository. Continue to WP Setup.',
+                          'GitHub Actions files are already in your repository. Continue to WordPress Setup.',
                           'alpaca-issue-tracker',
                         )}
                       </p>
@@ -1282,7 +1282,7 @@ const AgenticSettings = () => {
                       }
                       onClick={() => saveSettings(2)}
                     >
-                      {__('Continue to WP Setup', 'alpaca-issue-tracker')}
+                      {__('Continue to WordPress Setup', 'alpaca-issue-tracker')}
                     </button>
                   </div>
                 </>
@@ -1340,7 +1340,7 @@ const AgenticSettings = () => {
             }
           >
             <h2 className="agentic-panel-title">
-              {__('WP Setup', 'alpaca-issue-tracker')}
+              {__('WordPress Setup', 'alpaca-issue-tracker')}
             </h2>
             {panelLocked ? (
               <p className="agentic-locked-notice">
@@ -1357,44 +1357,49 @@ const AgenticSettings = () => {
             ) : null}
 
             {data.wp_ai_available ? (
-              <div className="agentic-connectors-status">
-                {data.wp_ai_configured ? (
-                  <p className="agentic-connectors-connected">
-                    <span
-                      className="agentic-connectors-connected__icon"
-                      aria-hidden="true"
-                    >
-                      ✓
-                    </span>{' '}
-                    {__(
-                      'AI provider configured via WordPress Connectors.',
-                      'alpaca-issue-tracker',
-                    )}{' '}
-                    <a
-                      href={data.connectors_admin_url}
-                      target="_blank"
-                      rel="noreferrer noopener"
-                    >
-                      {__('Manage Connectors', 'alpaca-issue-tracker')}
-                    </a>
-                  </p>
-                ) : (
-                  <p className="agentic-connectors-unconfigured">
-                    {__('No AI provider configured.', 'alpaca-issue-tracker')}{' '}
-                    <a
-                      href={data.connectors_admin_url}
-                      target="_blank"
-                      rel="noreferrer noopener"
-                    >
+              <>
+                <h3 className="agentic-panel-subtitle">
+                  {__('WordPress Connectors', 'alpaca-issue-tracker')}
+                </h3>
+                <div className="agentic-connectors-status">
+                  {data.wp_ai_configured ? (
+                    <p className="agentic-connectors-connected">
+                      <span
+                        className="agentic-connectors-connected__icon"
+                        aria-hidden="true"
+                      >
+                        ✓
+                      </span>{' '}
                       {__(
-                        'Set up in Settings → Connectors',
+                        'AI provider configured via WordPress Connectors.',
                         'alpaca-issue-tracker',
-                      )}
-                    </a>
-                    {__(' to continue.', 'alpaca-issue-tracker')}
-                  </p>
-                )}
-              </div>
+                      )}{' '}
+                      <a
+                        href={data.connectors_admin_url}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                      >
+                        {__('Manage Connectors', 'alpaca-issue-tracker')}
+                      </a>
+                    </p>
+                  ) : (
+                    <p className="agentic-connectors-unconfigured">
+                      {__('No AI provider configured.', 'alpaca-issue-tracker')}{' '}
+                      <a
+                        href={data.connectors_admin_url}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                      >
+                        {__(
+                          'Set up in Settings → Connectors',
+                          'alpaca-issue-tracker',
+                        )}
+                      </a>
+                      {__(' to continue.', 'alpaca-issue-tracker')}
+                    </p>
+                  )}
+                </div>
+              </>
             ) : (
               <>
                 <p>
