@@ -1261,6 +1261,14 @@ const AgenticSettings = () => {
                       />
                     ) : null}
                   </div>
+                  {installing ? (
+                    <p className="agentic-install-patience">
+                      {__(
+                        'This can take a while, please keep this page open.',
+                        'alpaca-issue-tracker',
+                      )}
+                    </p>
+                  ) : null}
                   {installError ? (
                     <div className="agentic-install-error">{installError}</div>
                   ) : null}
