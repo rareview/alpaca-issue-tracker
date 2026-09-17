@@ -121,6 +121,15 @@ class Agentic {
 			$github_default_branch = sanitize_text_field( (string) ( $current_settings['github_default_branch'] ?? '' ) );
 		}
 
+		// Confirmation that the Claude GitHub App is installed on the repo (required by the workflows).
+		if ( $repo_changed ) {
+			$claude_app_confirmed = false;
+		} elseif ( array_key_exists( 'claude_app_confirmed', $raw ) ) {
+			$claude_app_confirmed = ! empty( $raw['claude_app_confirmed'] );
+		} else {
+			$claude_app_confirmed = ! empty( $current_settings['claude_app_confirmed'] );
+		}
+
 		if ( array_key_exists( 'ai_target_branch', $raw ) && ! $repo_changed ) {
 			$ai_target_branch = sanitize_text_field( (string) $raw['ai_target_branch'] );
 		}
@@ -146,6 +155,7 @@ class Agentic {
 				)
 			),
 			'repo_match_confirmed'  => $repo_match_confirmed,
+			'claude_app_confirmed'  => $claude_app_confirmed,
 			// User IDs allowed to use the Fix With AI feature besides administrators (who always have access).
 			'engineers'             => array_key_exists( 'engineers', $raw )
 				? array_values( array_unique( array_map( 'absint', (array) $raw['engineers'] ) ) )
@@ -258,6 +268,7 @@ class Agentic {
 			'project_context'            => $options['project_context'] ?? '',
 			'setup_checklist'            => array_map( 'absint', (array) ( $options['setup_checklist'] ?? [] ) ),
 			'repo_match_confirmed'       => ! empty( $options['repo_match_confirmed'] ),
+			'claude_app_confirmed'       => ! empty( $options['claude_app_confirmed'] ),
 			'github_token_set'           => '' !== (string) $github_token,
 			'github_token_from_constant' => $github_token_from_constant,
 			'ai_api_key_set'             => '' !== (string) $ai_api_key,

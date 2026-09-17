@@ -1212,6 +1212,7 @@
 }
 
 .agentic-wizard-panel .form-table td p.description.agentic-production-branch-warning {
+  margin-block-start: 16px;
   color: #d63638;
 }
 
@@ -1444,7 +1445,7 @@
 }
 
 .agentic-production-branch-warning {
-  margin-block-start: 8px;
+  margin-block-start: 16px;
   padding: 10px 14px;
   background: #fef2f2;
   border: 1px solid #fca5a5;

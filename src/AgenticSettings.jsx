@@ -14,6 +14,9 @@ const { Spinner, Notice, FormTokenField, Popover, SlotFillProvider } =
 
 const REST_PATH = '/alpaca/v1/agentic';
 
+// The workflows run Claude through this GitHub App; runs fail without it installed on the repo.
+const CLAUDE_APP_URL = 'https://github.com/apps/claude';
+
 const STEP_LABELS = {
   1: __('GitHub Setup', 'alpaca-issue-tracker'),
   2: __('WP Setup', 'alpaca-issue-tracker'),
@@ -52,6 +55,8 @@ const emptyForm = () => ({
   setupChecklist: [],
   // Admin confirmed WP site + theme match the chosen GitHub repo.
   repoMatchConfirmed: false,
+  // Admin confirmed the Claude GitHub App is installed on the chosen repo.
+  claudeAppConfirmed: false,
   engineers: [],
   // Site-wide notes appended to every AI-drafted GitHub issue.
   projectContext: '',
@@ -187,12 +192,6 @@ const PatHelpPopover = () => (
       <li>
         {__(
           'Classic PAT instead? Enable the repo and workflow scopes.',
-          'alpaca-issue-tracker',
-        )}
-      </li>
-      <li>
-        {__(
-          'The token owner must be a member of the organisation with access to this repository.',
           'alpaca-issue-tracker',
         )}
       </li>
@@ -450,6 +449,7 @@ const AgenticSettings = () => {
         ? payload.setup_checklist.map(Number)
         : [],
       repoMatchConfirmed: !!payload.repo_match_confirmed,
+      claudeAppConfirmed: !!payload.claude_app_confirmed,
       engineers: Array.isArray(payload.engineers)
         ? payload.engineers.map(Number)
         : [],
@@ -527,6 +527,7 @@ const AgenticSettings = () => {
       github_default_branch: form.githubDefaultBranch || '',
       setup_checklist: form.setupChecklist,
       repo_match_confirmed: !!form.repoMatchConfirmed,
+      claude_app_confirmed: !!form.claudeAppConfirmed,
       engineers: form.engineers,
       project_context: form.projectContext || '',
     };
@@ -1001,6 +1002,12 @@ const AgenticSettings = () => {
                 )}
               </p>
             ) : null}
+            <p>
+              {__(
+                'Membership of the organisation with access to this repository is required.',
+                'alpaca-issue-tracker',
+              )}
+            </p>
 
             <table className="form-table" role="presentation">
               <tbody>
@@ -1033,6 +1040,7 @@ const AgenticSettings = () => {
                         updateForm({
                           githubRepo: nextRepo,
                           repoMatchConfirmed: false,
+                          claudeAppConfirmed: false,
                           aiTargetBranch: '',
                           githubDefaultBranch: '',
                         });
@@ -1112,6 +1120,22 @@ const AgenticSettings = () => {
                     <label htmlFor="agentic-ai-target-branch">
                       {__('AI target branch', 'alpaca-issue-tracker')}
                     </label>
+                    <InfoHelpPopover
+                      label={__('AI target branch', 'alpaca-issue-tracker')}
+                    >
+                      <p className="agentic-pat-help-popover__intro">
+                        {__(
+                          'The AI opens pull requests into this branch.',
+                          'alpaca-issue-tracker',
+                        )}
+                      </p>
+                      <p className="agentic-pat-help-popover__intro">
+                        {__(
+                          'Avoid a production branch, unless you are sure what you are doing.',
+                          'alpaca-issue-tracker',
+                        )}
+                      </p>
+                    </InfoHelpPopover>
                   </th>
                   <td>
                     <select
@@ -1142,12 +1166,6 @@ const AgenticSettings = () => {
                         </option>
                       ))}
                     </select>
-                    <p className="description">
-                      {__(
-                        'The AI opens pull requests into this branch. Do not use a production branch, unless you are sure what you are doing.',
-                        'alpaca-issue-tracker',
-                      )}
-                    </p>
                     {PRODUCTION_BRANCH_NAMES.has(
                       (form.aiTargetBranch || '').toLowerCase(),
                     ) ? (
@@ -1158,6 +1176,42 @@ const AgenticSettings = () => {
                         )}
                       </p>
                     ) : null}
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">
+                    <span>
+                      {__(
+                        'Install the Claude GitHub App',
+                        'alpaca-issue-tracker',
+                      )}
+                    </span>
+                    <InfoHelpPopover
+                      label={__('Claude GitHub App', 'alpaca-issue-tracker')}
+                    >
+                      <p className="agentic-pat-help-popover__intro">
+                        {__(
+                          'Fix With AI runs Claude through the official Claude GitHub App. This step is required.',
+                          'alpaca-issue-tracker',
+                        )}
+                      </p>
+                      <p className="agentic-pat-help-popover__intro">
+                        {__(
+                          'Choose Configure, then select this repository.',
+                          'alpaca-issue-tracker',
+                        )}
+                      </p>
+                    </InfoHelpPopover>
+                  </th>
+                  <td>
+                    <a
+                      className="button"
+                      href={CLAUDE_APP_URL}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                    >
+                      {__('Install on GitHub', 'alpaca-issue-tracker')}
+                    </a>
                   </td>
                 </tr>
               </tbody>
@@ -1557,6 +1611,35 @@ const AgenticSettings = () => {
             ) : null}
 
             <ul className="agentic-checklist">
+              <li
+                className={`agentic-checklist-item${
+                  form.claudeAppConfirmed ? ' agentic-checklist-done' : ''
+                }`}
+              >
+                <div className="agentic-checklist-label">
+                  <input
+                    id="agentic-claude-app-confirmed"
+                    type="checkbox"
+                    checked={!!form.claudeAppConfirmed}
+                    onChange={(event) => {
+                      setSetupCompletedStatus('idle');
+                      updateForm({ claudeAppConfirmed: event.target.checked });
+                    }}
+                  />
+                  <label htmlFor="agentic-claude-app-confirmed">
+                    {sprintf(
+                      /* translators: %s: GitHub repository slug (owner/repo). */
+                      __(
+                        'The Claude GitHub App is installed on %s.',
+                        'alpaca-issue-tracker',
+                      ),
+                      form.githubRepo ||
+                        data.github_repo ||
+                        __('your repository', 'alpaca-issue-tracker'),
+                    )}
+                  </label>
+                </div>
+              </li>
               {checklistItems.map((item) => {
                 const checked = form.setupChecklist.includes(item.key);
                 const inputId = `agentic-checklist-${item.key}`;
