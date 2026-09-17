@@ -310,46 +310,46 @@ const PRODUCTION_BRANCH_NAMES = new Set([
 ]);
 
 /**
- * @param {Object} props                Component props.
- * @param {string} props.repo           Repository slug.
- * @param {string} props.defaultBranch  GitHub default branch.
- * @param {string} props.aiTargetBranch AI code target branch.
+ * @param {Object} props               Component props.
+ * @param {string} props.repo          Repository slug.
+ * @param {string} props.defaultBranch GitHub default branch.
  * @return {JSX.Element} Install intro paragraph.
  */
-const RepoInstallMessage = ({ repo, defaultBranch, aiTargetBranch }) => {
-  const actionsBranch = defaultBranch || __('the default branch', 'alpaca-issue-tracker');
+const RepoInstallMessage = ({ repo, defaultBranch }) => {
+  const actionsBranch =
+    defaultBranch || __('the default branch', 'alpaca-issue-tracker');
   /* translators: %s: GitHub repository slug (owner/repo). */
   const template = __(
-    'Open a pull request to add the required GitHub Actions files to the %s repository.',
+    'Add the required GitHub Actions files to the %s repository.',
     'alpaca-issue-tracker',
   );
   const parts = template.split('%s');
   return (
-    <>
-      <p>
-        {parts[0]}
-        <strong>{repo}</strong>
-        {parts[1] || ''}
-      </p>
-      <p className="description">
-        {sprintf(
-          /* translators: %1$s: repository default branch. %2$s: AI target branch. */
-          __(
-            'GitHub Actions files go to %1$s (the repository default). AI code pull requests go to %2$s.',
-            'alpaca-issue-tracker',
-          ),
-          actionsBranch,
-          aiTargetBranch || __('the AI target branch', 'alpaca-issue-tracker'),
-        )}
-      </p>
-    </>
+    <p>
+      {parts[0]}
+      <strong>{repo}</strong>
+      {parts[1] || ''}
+      <InfoHelpPopover
+        label={__('Where the files go', 'alpaca-issue-tracker')}
+      >
+        <p className="agentic-pat-help-popover__intro">
+          {sprintf(
+            /* translators: %s: repository default branch. */
+            __(
+              'GitHub Actions files go to %s branch (the repository default).',
+              'alpaca-issue-tracker',
+            ),
+            actionsBranch,
+          )}
+        </p>
+      </InfoHelpPopover>
+    </p>
   );
 };
 
 RepoInstallMessage.propTypes = {
   repo: PropTypes.string.isRequired,
   defaultBranch: PropTypes.string,
-  aiTargetBranch: PropTypes.string,
 };
 
 /**
@@ -1186,7 +1186,6 @@ const AgenticSettings = () => {
                       <RepoInstallMessage
                         repo={data.github_repo}
                         defaultBranch={form.githubDefaultBranch}
-                        aiTargetBranch={form.aiTargetBranch}
                       />
                       <div className="agentic-workflow-installed">
                         <span className="agentic-check-icon">✓</span>
@@ -1239,7 +1238,6 @@ const AgenticSettings = () => {
                   <RepoInstallMessage
                     repo={data.github_repo}
                     defaultBranch={form.githubDefaultBranch}
-                    aiTargetBranch={form.aiTargetBranch}
                   />
                   <div className="agentic-step-actions">
                     <button
