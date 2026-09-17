@@ -928,7 +928,9 @@
   cursor: pointer;
 }
 
-.agentic-pat-help-trigger .dashicons {
+.agentic-pat-help-trigger .dashicons,
+.agentic-pat-help-trigger .agentic-pat-help-icon {
+  display: block;
   font-size: 16px;
   width: 16px;
   height: 16px;
@@ -937,6 +939,15 @@
 .agentic-pat-help-trigger:hover,
 .agentic-pat-help-trigger:focus {
   color: #4338ca;
+}
+
+.agentic-pat-help-trigger--warning {
+  color: $color-warning;
+}
+
+.agentic-pat-help-trigger--warning:hover,
+.agentic-pat-help-trigger--warning:focus {
+  color: #b8920f;
 }
 
 .agentic-help-tip__tooltip {
@@ -1005,6 +1016,18 @@
   font-size: 13px;
   line-height: 1.5;
   color: $color-text-secondary;
+}
+
+.agentic-pat-help-popover__code {
+  margin: 0;
+  padding: 10px 12px;
+  background: #f6f7f7;
+  border-radius: 3px;
+  font-size: 12px;
+  line-height: 1.45;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 /* Permission rows — the key info, made to stand out */

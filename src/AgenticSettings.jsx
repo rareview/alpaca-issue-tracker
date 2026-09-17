@@ -106,28 +106,64 @@ const PAT_PERMISSIONS = [
 ];
 
 /**
+ * Outline warning glyph — same circle as dashicons-info-outline, with "!" instead of "i".
+ *
+ * @return {JSX.Element} SVG icon.
+ */
+const WarningOutlineIcon = () => (
+  <svg
+    className="agentic-pat-help-icon"
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 20 20"
+    width="16"
+    height="16"
+    aria-hidden="true"
+  >
+    {/* Outer ring copied from dashicons-info-outline so size matches the "i" icon. */}
+    <path
+      fill="currentColor"
+      d="M10 1c-5 0-9 4-9 9s4 9 9 9 9-4 9-9-4-9-9-9zm0 16c-3.9 0-7-3.1-7-7s3.1-7 7-7 7 3.1 7 7-3.1 7-7 7zM9 5h2v6H9V5zm1 8c-.5 0-1 .5-1 1s.5 1 1 1 1-.5 1-1-.5-1-1-1z"
+    />
+  </svg>
+);
+
+/**
  * Click-to-open info help. Uses the Gutenberg Popover.
  *
- * @param {Object} props          Component props.
- * @param {string} props.label    Accessible label for the trigger.
- * @param {*}      props.children Popover content.
+ * @param {Object}      props                    Component props.
+ * @param {string}      props.label              Accessible label for the trigger.
+ * @param {string|*}    [props.icon]             Dashicon class, or a custom icon element.
+ * @param {string}      [props.triggerClassName] Extra class on the trigger button.
+ * @param {*}           props.children           Popover content.
  * @return {JSX.Element} Help control.
  */
-const InfoHelpPopover = ({ label, children }) => {
+const InfoHelpPopover = ({
+  label,
+  children,
+  icon = 'dashicons-info-outline',
+  triggerClassName = '',
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const anchorRef = useRef(null);
+  const triggerClass = triggerClassName
+    ? `agentic-pat-help-trigger ${triggerClassName}`
+    : 'agentic-pat-help-trigger';
 
   return (
     <span className="agentic-pat-help-wrap" ref={anchorRef}>
       <button
         type="button"
-        className="agentic-pat-help-trigger"
+        className={triggerClass}
         aria-expanded={isOpen}
         aria-label={label}
         onMouseDown={(event) => event.preventDefault()}
         onClick={() => setIsOpen((open) => !open)}
       >
-        <span className="dashicons dashicons-info-outline" aria-hidden="true" />
+        {'string' === typeof icon ? (
+          <span className={`dashicons ${icon}`} aria-hidden="true" />
+        ) : (
+          icon
+        )}
       </button>
       {isOpen ? (
         <Popover
@@ -148,6 +184,8 @@ const InfoHelpPopover = ({ label, children }) => {
 InfoHelpPopover.propTypes = {
   label: PropTypes.string.isRequired,
   children: PropTypes.node.isRequired,
+  icon: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
+  triggerClassName: PropTypes.string,
 };
 
 /**
@@ -200,6 +238,27 @@ const PatHelpPopover = () => (
         )}
       </li>
     </ul>
+  </InfoHelpPopover>
+);
+
+/**
+ * Click-to-open security note for storing the GitHub token in the database.
+ *
+ * @return {JSX.Element} Security note control.
+ */
+const PatSecurityNotePopover = () => (
+  <InfoHelpPopover
+    label={__('Security note', 'alpaca-issue-tracker')}
+    icon={<WarningOutlineIcon />}
+    triggerClassName="agentic-pat-help-trigger--warning"
+  >
+    <p className="agentic-pat-help-popover__intro">
+      {__(
+        'The GitHub token is stored in the WordPress options table. For production environments, it is safer to define it as a constant in wp-config.php:',
+        'alpaca-issue-tracker',
+      )}
+    </p>
+    <pre className="agentic-pat-help-popover__code">{`define( 'ALPAISTR_AGENTIC_GITHUB_TOKEN', '...' );`}</pre>
   </InfoHelpPopover>
 );
 
@@ -1092,6 +1151,7 @@ const AgenticSettings = () => {
                       )}
                     </label>
                     <PatHelpPopover />
+                    <PatSecurityNotePopover />
                   </th>
                   <td>
                     {data.github_token_from_constant ? (
@@ -1735,21 +1795,6 @@ const AgenticSettings = () => {
                 </span>
               ) : null}
             </div>
-
-            <details
-              className="agentic-details-block"
-              style={{ marginBlockStart: 16 }}
-            >
-              <summary>{__('Security note', 'alpaca-issue-tracker')}</summary>
-              <p>
-                {__(
-                  'API keys are stored in the WordPress options table. For production environments, define them as constants in wp-config.php:',
-                  'alpaca-issue-tracker',
-                )}
-              </p>
-              <pre>{`define( 'ALPAISTR_AGENTIC_GITHUB_TOKEN', '...' );
-define( 'ALPAISTR_AGENTIC_AI_API_KEY', '...' );`}</pre>
-            </details>
           </fieldset>
         ) : null}
       </div>
