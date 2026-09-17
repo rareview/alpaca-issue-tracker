@@ -130,11 +130,11 @@ const WarningOutlineIcon = () => (
 /**
  * Click-to-open info help. Uses the Gutenberg Popover.
  *
- * @param {Object}      props                    Component props.
- * @param {string}      props.label              Accessible label for the trigger.
- * @param {string|*}    [props.icon]             Dashicon class, or a custom icon element.
- * @param {string}      [props.triggerClassName] Extra class on the trigger button.
- * @param {*}           props.children           Popover content.
+ * @param {Object}   props                    Component props.
+ * @param {string}   props.label              Accessible label for the trigger.
+ * @param {string|*} [props.icon]             Dashicon class, or a custom icon element.
+ * @param {string}   [props.triggerClassName] Extra class on the trigger button.
+ * @param {*}        props.children           Popover content.
  * @return {JSX.Element} Help control.
  */
 const InfoHelpPopover = ({
@@ -607,11 +607,13 @@ const AgenticSettings = () => {
     [data, form.enabled],
   );
 
+  /* eslint-disable camelcase -- Helper expects REST API snake_case field names. */
   const finishSetupChecksComplete = areRequiredFinishSetupChecksComplete({
     setup_checklist: form.setupChecklist,
     claude_app_confirmed: form.claudeAppConfirmed,
     setup_security: data?.setup_security,
   });
+  /* eslint-enable camelcase */
 
   // !! to make sure it's a boolean, and avoid undefined values.
   const allDone =
@@ -1727,6 +1729,8 @@ const AgenticSettings = () => {
                       ),
                       {
                         a: (
+                          // Content comes from createInterpolateElement (<a>...</a>).
+                          // eslint-disable-next-line jsx-a11y/anchor-has-content
                           <a
                             href={CLAUDE_APP_URL}
                             target="_blank"

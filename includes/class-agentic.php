@@ -106,7 +106,7 @@ class Agentic {
 			$ai_target_branch      = sanitize_text_field( (string) ( $raw['ai_target_branch'] ?? '' ) );
 			$github_default_branch = sanitize_text_field( (string) ( $raw['github_default_branch'] ?? '' ) );
 		} else {
-			$ai_target_branch = sanitize_text_field(
+			$ai_target_branch      = sanitize_text_field(
 				(string) ( array_key_exists( 'ai_target_branch', $raw )
 					? $raw['ai_target_branch']
 					: ( $current_settings['ai_target_branch'] ?? '' ) )
