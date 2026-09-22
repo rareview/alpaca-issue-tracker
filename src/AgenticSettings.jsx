@@ -1272,7 +1272,7 @@ const AgenticSettings = () => {
                   <th scope="row">
                     <span>
                       {__(
-                        'Install the Claude GitHub App',
+                        'Configure the Claude GitHub App',
                         'alpaca-issue-tracker',
                       )}
                     </span>
