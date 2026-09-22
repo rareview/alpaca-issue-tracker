@@ -9,8 +9,7 @@ import useUserManagement from './hooks/useUserManagement';
 const { useState, useEffect, useCallback, useMemo, useRef, createInterpolateElement } =
   wp.element;
 const { __, sprintf } = wp.i18n;
-const { Spinner, Notice, FormTokenField, Popover, SlotFillProvider } =
-  wp.components;
+const { Spinner, FormTokenField, Popover, SlotFillProvider } = wp.components;
 
 const REST_PATH = '/alpaca/v1/agentic';
 
@@ -844,21 +843,21 @@ const AgenticSettings = () => {
         <h1 className="agentic-wizard-title">
           {__('Fix With AI', 'alpaca-issue-tracker')}
         </h1>
-        <Notice status="warning" isDismissible={false}>
+        <p className="agentic-status-text agentic-status-text--warning">
           {__(
             'Fix With AI is only available to administrators and users granted engineer access. Contact your site administrator if you need access.',
             'alpaca-issue-tracker',
           )}
-        </Notice>
+        </p>
       </div>
     );
   }
 
   if (!data) {
     return (
-      <div className="notice notice-error inline">
-        <p>{error || __('Failed to load settings.', 'alpaca-issue-tracker')}</p>
-      </div>
+      <p className="agentic-status-text agentic-status-text--error">
+        {error || __('Failed to load settings.', 'alpaca-issue-tracker')}
+      </p>
     );
   }
 
@@ -1008,11 +1007,7 @@ const AgenticSettings = () => {
           </p>
         ) : null}
       </div>
-      <Notice
-        className="agentic-advisory-notice"
-        status="warning"
-        isDismissible={false}
-      >
+      <div className="agentic-advisory">
         <p>
           {__(
             'Fix With AI can only propose code changes within the boundaries of the GitHub repository referenced below.',
@@ -1025,21 +1020,19 @@ const AgenticSettings = () => {
             'alpaca-issue-tracker',
           )}
         </p>
-      </Notice>
+      </div>
 
       {!canEdit && data.is_engineer ? (
-        <Notice status="info" isDismissible={false}>
+        <p className="agentic-status-text agentic-status-text--info">
           {__(
             'You have Fix With AI access and can view setup status below. Only administrators can change these settings.',
             'alpaca-issue-tracker',
           )}
-        </Notice>
+        </p>
       ) : null}
 
       {error ? (
-        <div className="notice notice-error inline">
-          <p>{error}</p>
-        </div>
+        <p className="agentic-status-text agentic-status-text--error">{error}</p>
       ) : null}
 
       <div

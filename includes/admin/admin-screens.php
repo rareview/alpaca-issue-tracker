@@ -93,9 +93,9 @@ function alpaistr_settings_page() {
 	<div class="alpaca-settings wrap">
 	<h1><?php echo esc_html__( 'Configure', 'alpaca-issue-tracker' ); ?></h1>
 
-	<div class="notice notice-warning inline">
-		<p><?php echo esc_html__( 'Changes made on this screen will affect all users.', 'alpaca-issue-tracker' ); ?></p>
-	</div>
+	<p class="alpaca-screen-note alpaca-screen-note--warning">
+		<?php echo esc_html__( 'Changes made on this screen will affect all users.', 'alpaca-issue-tracker' ); ?>
+	</p>
 
 	<div id="alpaca-settings-internal"></div>
 
@@ -127,9 +127,9 @@ function alpaistr_notifications_page() {
 	<div class="alpaca-settings wrap alpaca-notifications-admin-page">
 		<h1><?php echo esc_html__( 'My Notifications', 'alpaca-issue-tracker' ); ?></h1>
 
-		<div class="notice notice-info inline">
-			<p><?php echo esc_html__( 'Changes made on this screen will only affect the current user.', 'alpaca-issue-tracker' ); ?></p>
-		</div>
+		<p class="alpaca-screen-note alpaca-screen-note--info">
+			<?php echo esc_html__( 'Changes made on this screen will only affect the current user.', 'alpaca-issue-tracker' ); ?>
+		</p>
 
 		<div id="alpaca-notifications-page"></div>
 	</div>

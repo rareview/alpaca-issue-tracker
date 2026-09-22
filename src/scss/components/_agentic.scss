@@ -861,16 +861,35 @@
   line-height: 1.3;
 }
 
-.agentic-advisory-notice {
+.agentic-advisory {
   margin-block: 16px 24px;
+  color: #757575;
 }
 
-.agentic-advisory-notice p {
+.agentic-advisory p {
   margin: 0;
 }
 
-.agentic-advisory-notice p + p {
+.agentic-advisory p + p {
   margin-block-start: 8px;
+}
+
+.agentic-status-text {
+  margin: 0 0 16px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.agentic-status-text--warning {
+  color: #996800;
+}
+
+.agentic-status-text--info {
+  color: #2c6ecb;
+}
+
+.agentic-status-text--error {
+  color: #d63638;
 }
 
 .agentic-wizard-tagline {
