@@ -1687,7 +1687,7 @@ const AgenticSettings = () => {
             ) : null}
             <p>
               {__(
-                'A few manual steps are needed to finish setup:',
+                'A few manual steps are needed to finish setup. Check them off here as you complete them.',
                 'alpaca-issue-tracker',
               )}
             </p>
