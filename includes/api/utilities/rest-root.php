@@ -125,21 +125,26 @@ function alpaistr_get_wp_api_settings_root_data() {
 
 /*
  * Bootstrapping: expose REST settings for frontend requests.
+ * Use wp-api-fetch on enqueue hooks instead of core wp-api on init, which triggers a WP > 6.9.1 jquery dependency notice.
  */
-add_action(
-	'init',
-	function () {
-		$root_data = alpaistr_get_wp_api_settings_root_data();
+add_action( 'wp_enqueue_scripts', 'alpaistr_localize_api_settings' );
+add_action( 'admin_enqueue_scripts', 'alpaistr_localize_api_settings' );
 
-		wp_localize_script(
-			'wp-api',
-			'alpaistrApiSettings',
-			[
-				'root'          => $root_data['root'],
-				'nonce'         => wp_create_nonce( 'wp_rest' ),
-				'hasCustomRoot' => (bool) $root_data['has_custom_root'],
-			]
-		);
-		wp_enqueue_script( 'wp-api' );
-	}
-);
+/**
+ * Localize REST root settings onto wp-api-fetch.
+ *
+ * @return void
+ */
+function alpaistr_localize_api_settings() {
+	$root_data = alpaistr_get_wp_api_settings_root_data();
+
+	wp_localize_script(
+		'wp-api-fetch',
+		'alpaistrApiSettings',
+		[
+			'root'          => $root_data['root'],
+			'nonce'         => wp_create_nonce( 'wp_rest' ),
+			'hasCustomRoot' => (bool) $root_data['has_custom_root'],
+		]
+	);
+}
