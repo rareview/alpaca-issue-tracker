@@ -22,7 +22,7 @@ final class AlpacaIssueTracker {
 	 *
 	 * @var string
 	 */
-	const VERSION = '1.1.1';
+	const VERSION = '1.1.2';
 
 	/**
 	 * Minimum PHP version.
