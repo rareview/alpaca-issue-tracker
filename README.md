@@ -1,56 +1,59 @@
-# ⏩ I just want to try the thing
+# Alpaca Issue Tracker: smart kanban inside WordPress
 
-Quick and dirty 'just get it running' instructions:
+- Minimum burden on users reporting website issues
+- Maximum detail in technical reports received by developers
+- Full-featured kanban board in wp-admin, for a familiar and secure user experience
 
-- Clone the repository
-- `npm install`
-- `npm run build`
-- `npm run zip`: you should now have `alpaca.zip` in your folder
-- Go to WordPress → wp-admin → Plugins → Add Plugin → Upload Plugin
-- Upload `alpaca.zip`
-- Activate
-- You should now have a Project Board in your `wp-admin` sidebar...
-- ... and an `Issues` menu in your admin toolbar along the top of the screen
+**Clients have neither the time nor the knowledge to provide detailed technical reports when they spot a problem on their website.** But developers can't do their job without that detail. Time is wasted on every issue report, as the developer tries to understand and replicate the problem.
 
-# 📚 Back story
+**But WordPress already knows everything about the context of each page request.** So an issue-capturing solution inside WordPress can capture all that information, silently in the background, giving the developer everything necessary to get to work.
 
-_(16 Sep 2025)_ It will probably help if I provide some context about what is (and isn't) happening here.
+**Why take it outside WordPress?** Every project needs a method for tracking issue progress: since your clients and developers will already be using WordPress for the website itself, the most logical place to do that is within WordPress.
 
-## Some context before we begin...
+Alpaca Issue Tracker provides a full-featured kanban experience inside wp-admin, using WordPress core components and approaches, for a familiar user _and_ developer experience.
 
-- Alpaca is just a working title: it isn't a serious proposal for the product's eventual name.
-- Some aspects of technical and visual design are further advanced than others.
-- It's the first large-scale project I've done with React, and with AI support. This may be obvious.
-- Some completed (or half-completed) functionality will be held back for a premium product.
-- Everything is up for discussion.
+## Try it in WordPress Playground
 
-## What's the big idea?
+[Open Alpaca Issue Tracker in WordPress Playground](https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/rareview/alpaca-issue-tracker/main/.github/blueprint.json)
 
-**Clients don't have the time or knowledge to provide detailed technical reports when they spot a problem.** But developers can't do their job without that detail. Time is wasted on every issue report as the developer tries to understand and contextualise the problem.
+[Download the latest Alpaca Issue Tracker ZIP](https://github.com/rareview/alpaca-issue-tracker/releases/latest/download/alpaca-issue-tracker.zip)
 
-**But WordPress already knows everything about the context of each page request.** So an issue-capturing solution inside WordPress could capture all that information, silently in the background, giving the developer everything necessary to get to work.
+For local branch testing, run `npm run playground:start`. That builds the current branch ZIP and opens a local Playground instance using the same seeded content as the public demo.
 
-**And if you start inside WordPress, you might as well stay inside WordPress.** We can build a Trello-like interface inside wp-admin, using WordPress core components and approaches, for a familiar user and developer experience.
+## Contributing
 
-Alpaca can be everything that a freelancer or small agency needs to track bugs and feature requests; and it can be the basis of a federated solution, suitable for larger agencies serving multiple clients. It's easy to see a roadmap from a free community product to a commercial solution with obvious value-adds.
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, coding standards, and pull request guidelines.
 
-## Project principles
+## Key features
 
-Everything should look, feel and operate like a natural extension of how WordPress already works.
+- **Kanban Board Interface** - Drag-and-drop issues between and within fully customizable status columns
+- **Automatic Context Capture** - Browser info, page context, and technical details are saved with each bug report submitted from the front end
+- **Built for WordPress** - Uses native WordPress components, post types, taxonomies and database tables
+- **Extensibility** - Developers can add custom functions and integrations via conventional WordPress actions & filters
+- **Respects User Permissions** - Integrates with WordPress user roles and capabilities
+- **Screenshot Capture** - See exactly what the user saw, captured and processed locally within the browser
+- **Comment and Activity Thread** - A unified view of each issue's progress, supporting attachment uploads and user mentions
+- **Priority Management** - Flag high-priority items and set deadlines
+- **Assignee System** - Assign issues and checklist items to team members
+- **Email Notifications** - Instant or daily digest email notifications for the issues you care about
+- **Translation Ready** - Fully localized and ready for translation into any language (including RTL support)
+- **No Artificial Limitations** - Use on as many sites, with as many users, issues, attachments and interactions as you need
 
-Think in terms of post types, taxonomies, comments and meta tables. Use action and filter hooks (php and js) in your custom code; expect and enable others to do the same. Use [existing WordPress components](https://wordpress.github.io/gutenberg/?path=/docs/docs-introduction--page) at every opportunity.
+## Who is Alpaca Issue Tracker designed for?
 
-We believe in the [WordPress development philosophy](https://wordpress.org/about/philosophy/), even if WordPress seems to have forgotten it.
+- Freelance developers managing client sites
+- Small agencies tracking bugs and feature requests
+- Engineering teams needing lightweight project management
+- Developers wanting tune their kanban experience
+- Clients performing QA on a new site
+- Account managers responsible for rolling retainer contracts
+- Enterprises and government bodies needing extra reassurance on hosting
 
-Our target market is individuals and smaller teams, with limited time and limited expertise. Make the human interactions as simple as possible. Capture more data than you probably need. Automate whatever you can. The base product should be 'perfect for most people', with the _potential_ to be extended to satisfy the rest.
+## External dependencies
 
-## Future
-
-There are 10-20 plugins in the WordPress space - some free, some premium - which most site-builders install on most of their projects. Think Yoast, Gravity Forms, ACF, Woo. We believe this plugin can earn a place alongside these industry leaders.
-
-We believe it can be the basis of a strong commercial business. A premium version must follow very quickly after the community release; but it must justify its cost. People will buy it because:
-
-- they see that it will deliver an immediate return on the investment they make
-- they acknowledge that some premium/cloud features incur costs to us
-
-Our approach must also be an example to our ecosystem. There has been a lot of talk about WordPress as an operating system; and about Gutenberg as a general-purpose component library. We can put those principles into practice, inspiring the community, and asserting our own expertise.
+- [Bowser](https://github.com/bowser-js/bowser) for browser detection. Copyright 2015, Dustin Diaz (the "Original Author"). All rights reserved. [MIT license.](https://github.com/bowser-js/bowser/blob/master/LICENSE)
+- [DOMPurify](https://github.com/cure53/DOMPurify) for HTML sanitization. Copyright 2025, Dr.-Ing. Mario Heiderich, Cure53. [MPL-2.0 or Apache-2.0 license.](https://github.com/cure53/DOMPurify/blob/main/LICENSE)
+- [Marked](https://marked.js.org/license) for Markdown processing. Copyright (c) 2018+, MarkedJS (https://github.com/markedjs/) Copyright (c) 2011-2018, Christopher Jeffrey (https://github.com/chjj/) [MIT license.](https://github.com/markedjs/marked/blob/master/LICENSE.md)
+- [PrismJS](https://prismjs.com/) for syntax highlighting. Copyright (c) 2012, Lea Verou. [MIT license.](https://github.com/PrismJS/prism/blob/master/LICENSE)
+- [PropTypes](https://github.com/facebook/prop-types) for React prop validation. Copyright (c) 2013-present, Facebook, Inc. [MIT license.](https://github.com/facebook/prop-types/blob/main/LICENSE)
+- [Snapdom](https://github.com/zumerlab/snapdom) for screenshot capture. Copyright (c) 2025 ZumerLab. [MIT license.](https://github.com/zumerlab/snapdom/blob/main/LICENSE)

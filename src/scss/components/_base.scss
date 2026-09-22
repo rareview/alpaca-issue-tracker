@@ -1,0 +1,208 @@
+@use '../abstracts' as *;
+
+/* Snackbar fade for Alpaca Issue Tracker(used by Board.jsx) */
+.alpaca-snackbar {
+  transition: opacity $duration-slow ease;
+  opacity: 1;
+  color: $color-white;
+  background: $color-surface-inverse;
+  transform: translateY(0);
+  will-change: opacity;
+}
+
+.alpaca-snackbar.alpaca-snackbar-error {
+  border-inline-start: 0.25rem solid $color-danger-dark;
+  background: $color-danger-soft;
+  color: $color-text-primary;
+}
+
+.alpaca-snackbar.alpaca-snackbar-warning {
+  border-inline-start: 0.25rem solid $color-warning;
+  background: $color-warning-soft;
+  color: $color-text-primary;
+}
+
+.alpaca-snackbar.alpaca-snackbar-success {
+  border-inline-start: 0.25rem solid $color-success;
+  background: $color-success-soft;
+  color: $color-text-primary;
+}
+
+.alpaca-snackbar.is-closing {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.alpaca-details-modal {
+  position: relative;
+}
+
+.alpaca-side-panel {
+  --alpaca-side-panel-border: 1px solid #{$color-border};
+  --alpaca-side-panel-radius: #{$radius-lg};
+  --alpaca-side-panel-shadow: #{-0.75rem 0 2rem rgb(0 0 0 / 16%)};
+
+  background: $color-white;
+  border: var(--alpaca-side-panel-border);
+  border-top-left-radius: var(--alpaca-side-panel-radius);
+  border-bottom-left-radius: var(--alpaca-side-panel-radius);
+  box-shadow: var(--alpaca-side-panel-shadow);
+  overflow: hidden;
+}
+
+.alpaca-snackbar-stack {
+  position: absolute;
+  inset-inline: $space-5xl;
+  top: $space-5xl;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: $space-sm;
+  pointer-events: none;
+}
+
+.alpaca-snackbar-stack .alpaca-snackbar {
+  pointer-events: auto;
+}
+
+#alpaca-comments-wrapper {
+  position: relative;
+}
+
+.alpaca-comment-issue-title {
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  color: $color-text-muted;
+  letter-spacing: $letter-spacing-meta;
+  margin-bottom: $space-sm;
+  text-align: start;
+}
+
+#alpaca-activity {
+  margin-top: $space-2xl;
+  max-width: 45rem;
+
+  .alpaca-activity-loading {
+    display: flex;
+    justify-content: center;
+    padding: $space-5xl 0;
+  }
+
+  .alpaca-activity-loading-more {
+    display: flex;
+    justify-content: center;
+    padding: $space-sm 0 $space-5xl 0;
+  }
+
+  .alpaca-activity-sentinel {
+    height: 1px;
+  }
+
+  .alpaca-activity-date-group + .alpaca-activity-date-group {
+    margin-top: $space-5xl;
+  }
+
+  .alpaca-activity-date-heading {
+    margin: 0 0 $space-md 0;
+    font-size: $font-size-sm;
+    color: $color-text-muted;
+    text-transform: uppercase;
+    letter-spacing: $letter-spacing-ui;
+  }
+
+  .alpaca-timeline-msg {
+    padding-top: $space-2xs;
+  }
+
+  .alpaca-comments-timeline {
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: $space-3xl;
+      inset-inline-start: $size-control-lg;
+      width: 1px;
+      background-color: $color-border;
+    }
+  }
+
+  .alpaca-activity-entry-button {
+    display: block;
+    width: 100%;
+    border: 0;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    text-align: start;
+    cursor: pointer;
+    border-radius: $radius-lg;
+
+    &.is-trashed {
+      cursor: default;
+    }
+  }
+
+  .alpaca-activity-entry-button:focus-visible {
+    outline: 2px solid $color-link;
+    outline-offset: 2px;
+  }
+}
+
+.alpaca-comment-content.with-avatar-meta,
+.alpaca-timeline-msg-content.with-avatar-meta,
+.alpaca-comment-edited-date.with-avatar-meta {
+  .alpaca-status-assignee[data-avatar] {
+    display: inline-flex;
+    align-items: center;
+
+    &::after {
+      content: '';
+      display: inline-block;
+      width: $size-icon-xl;
+      height: $size-icon-xl;
+      background-image: var(--avatar-url);
+      background-position: center;
+      background-size: cover;
+      border-radius: $radius-round;
+      border: 1px solid $color-border;
+      margin-inline-start: $space-xs;
+      vertical-align: middle;
+    }
+  }
+
+  .alpaca-issue-link {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0;
+    color: inherit;
+    font-weight: $font-weight-semibold;
+    text-decoration: none;
+
+    &::before {
+      content: '\f103';
+      font-family: dashicons, sans-serif;
+      font-size: $font-size-sm;
+      line-height: 1;
+      font-weight: $font-weight-semibold;
+      margin-inline-end: $space-2xs;
+    }
+
+    text-decoration: none;
+
+    .alpaca-issue-link-label {
+      text-decoration: none;
+    }
+
+    &:hover,
+    &:focus {
+      text-decoration: none;
+    }
+
+    &:hover .alpaca-issue-link-label,
+    &:focus .alpaca-issue-link-label {
+      text-decoration: underline;
+    }
+  }
+}

@@ -1,41 +1,69 @@
 const { Card, CardHeader, CardBody, DropdownMenu, TextControl } = wp.components;
 const { Heading = wp.components.__experimentalHeading } = wp.components;
+const { __ } = wp.i18n;
 
 const { useState, useEffect, useRef } = wp.element;
 
 import DraggableItem from './DraggableItem';
-import Item from './Item';
+import {
+  classesFromDescriptor,
+  attrsFromDescriptor,
+} from '../utils/dragAttributes';
+import useFlipListAnimation from '../hooks/useFlipListAnimation';
+import {
+  getAbsoluteDropIndexForFilteredContainer,
+  shouldDisableBulkContainerActions,
+} from '../utils/boardFiltering';
+import { getBuiltInContainerMenuControls } from './container/menu-controls';
+import { buildContainerMenuControlContext } from '../utils/containerMenuControls';
+
 import PropTypes from 'prop-types';
 
 /**
  * Container component (delegates rename to parent via onRename).
  *
- * @param {Object}   root0                 - Props object
- * @param {number}   root0.id              - Container ID
- * @param {string}   root0.title           - Container title
- * @param {Array}    root0.items           - Array of items in the container
- * @param {Function} root0.onItemClick     - Callback when item is clicked
- * @param {Function} root0.onMoveAllToNext - Callback to move all items to next container
- * @param {Function} root0.onDeleteAll     - Callback to delete all items
- * @param {boolean}  root0.isLastContainer - Whether this is the last container
- * @param {boolean}  root0.isHidden        - Whether container is hidden
- * @param {Function} root0.onToggleHidden  - Callback to toggle hidden state
- * @param {Function} root0.onRename        - Callback to rename container
- * @param {Function} root0.onItemDrop
+ * @param {Object}   root0                    - Props object
+ * @param {number}   root0.id                 - Container ID
+ * @param {string}   root0.title              - Container title
+ * @param {Array}    root0.items              - Array of items in the container
+ * @param {Object}   root0.activeFilter       - Current board filter payload
+ * @param {Function} root0.itemMatchesFilter  - Callback to determine item visibility under filter
+ * @param {Function} root0.onItemClick        - Callback when item is clicked
+ * @param {Function} root0.onMoveAllToNext    - Callback to move all items to next container
+ * @param {Function} root0.onDeleteAll        - Callback to delete all items
+ * @param {boolean}  root0.canDeleteIssues    - Whether current user can delete issues
+ * @param {boolean}  root0.isLastContainer    - Whether this is the last container
+ * @param {boolean}  root0.isHidden           - Whether container is hidden
+ * @param {string}   root0.focusedContainerId - Focused container identifier
+ * @param {boolean}  root0.isFocused          - Whether this container is focused
+ * @param {Function} root0.onToggleHidden     - Callback to toggle hidden state
+ * @param {Function} root0.onToggleFocus      - Callback to toggle focused state
+ * @param {Function} root0.onRename           - Callback to rename container
+ * @param {Function} root0.onItemDrop         - Callback for drag-and-drop moves
+ * @param {Function} root0.onBulkItemReorder  - Callback for bulk item reordering
+ * @param {Function} root0.onAddIssue         - Callback to add a new issue in this column
  * @return {JSX.Element} Container component
  */
 function Container({
   id,
   title,
   items,
+  activeFilter,
+  itemMatchesFilter,
   onItemClick,
   onMoveAllToNext,
   onDeleteAll,
+  canDeleteIssues,
   isLastContainer,
   isHidden,
+  focusedContainerId,
+  isFocused,
   onToggleHidden,
+  onToggleFocus,
   onRename,
   onItemDrop,
+  onBulkItemReorder,
+  onAddIssue,
 }) {
   const [isRenaming, setIsRenaming] = useState(false);
   const [newTitle, setNewTitle] = useState(title);
@@ -44,7 +72,28 @@ function Container({
   const [isDragOver, setIsDragOver] = useState(false);
   const [dragOverIndex, setDragOverIndex] = useState(null);
   const [dragOverItem, setDragOverItem] = useState(null);
+  const [, forceUpdate] = useState(0);
   const hasItems = items.length > 0;
+  const isFiltering = !!activeFilter && typeof itemMatchesFilter === 'function';
+  const areBulkActionsDisabled = shouldDisableBulkContainerActions({
+    hasItems,
+    isFiltering,
+  });
+
+  const visibleItemEntries = items.reduce((accumulator, item, actualIndex) => {
+    if (!isFiltering || itemMatchesFilter(item, activeFilter)) {
+      accumulator.push({ item, actualIndex });
+    }
+    return accumulator;
+  }, []);
+
+  const {
+    itemRefs,
+    startAnimation,
+    stopAnimation,
+    waitForTransitions,
+    isAnimatingRef,
+  } = useFlipListAnimation(items, 300, 'ease-out');
 
   // keep local input in sync if parent updates title
   useEffect(() => {
@@ -90,36 +139,159 @@ function Container({
 
   const menuControls = [
     {
-      icon: 'edit',
-      title: 'Rename',
+      icon: 'plus',
+      title: __('Add Issue In This Column', 'alpaca-issue-tracker'),
       onClick: () => {
-        setNewTitle(title);
-        setIsRenaming(true);
+        if (onAddIssue) {
+          onAddIssue(id);
+        }
       },
     },
     {
       icon: isHidden ? 'visibility' : 'hidden',
-      title: isHidden ? 'Expand Column' : 'Collapse Column',
+      title: isHidden
+        ? __('Expand Column', 'alpaca-issue-tracker')
+        : __('Collapse Column', 'alpaca-issue-tracker'),
       onClick: toggleHidden,
+    },
+    ...getBuiltInContainerMenuControls({
+      containerId: id,
+      isFocused,
+      onToggleFocus,
+    }),
+    {
+      icon: 'arrow-up-alt',
+      title: __('Lift Priority Items', 'alpaca-issue-tracker'),
+      isDisabled: areBulkActionsDisabled,
+      onClick: () => {
+        if (!onBulkItemReorder) {
+          return;
+        }
+
+        if (isAnimatingRef.current) {
+          return;
+        }
+
+        // Separate items into priority and non-priority groups.
+        const priorityItems = items.filter(
+          (item) =>
+            item.meta &&
+            (item.meta.alpaca_high_priority === '1' ||
+              item.meta.alpaca_high_priority === 1 ||
+              item.meta.alpaca_high_priority === true),
+        );
+        const otherItems = items.filter(
+          (item) =>
+            !(
+              item.meta &&
+              (item.meta.alpaca_high_priority === '1' ||
+                item.meta.alpaca_high_priority === 1 ||
+                item.meta.alpaca_high_priority === true)
+            ),
+        );
+
+        const newItems = [...priorityItems, ...otherItems];
+        const movedItemIds = newItems
+          .filter((item, index) => items[index] && items[index].id !== item.id)
+          .map((item) => item.id);
+
+        if (movedItemIds.length < 1) {
+          return;
+        }
+
+        startAnimation();
+
+        const runLiftPriorityAnimation = async () => {
+          try {
+            onBulkItemReorder(
+              id,
+              newItems.map((item) => item.id),
+            );
+
+            await waitForTransitions(movedItemIds);
+          } finally {
+            stopAnimation();
+          }
+        };
+
+        runLiftPriorityAnimation();
+      },
     },
   ];
 
   if (!isLastContainer) {
     menuControls.push({
-      icon: 'arrow-right-alt',
-      title: 'Move All To Next Column',
+      icon: (
+        <span
+          className="dashicon dashicons dashicons-arrow-right-alt alpaca-rtl-mirror"
+          aria-hidden="true"
+        ></span>
+      ),
+      title: __('Move All To Next Column', 'alpaca-issue-tracker'),
       onClick: () => onMoveAllToNext(id),
-      disabled: !hasItems,
+      isDisabled: areBulkActionsDisabled,
     });
   }
 
-  if (isLastContainer) {
+  if (isLastContainer && canDeleteIssues) {
     menuControls.push({
       icon: 'trash',
-      title: 'Delete All',
+      title: __('Delete All', 'alpaca-issue-tracker'),
+      isDisabled: areBulkActionsDisabled,
       onClick: () => onDeleteAll(id),
     });
   }
+
+  // Allow third-party code to customize container menu controls.
+  const filteredMenuControls = wp.hooks.applyFilters(
+    'alpaca.container.menuControls',
+    menuControls,
+    buildContainerMenuControlContext({
+      id,
+      title,
+      items,
+      activeFilter,
+      hasItems,
+      isLastContainer,
+      isHidden,
+      focusedContainerId,
+      isFocused,
+      isFiltering,
+      visibleItemEntries,
+      itemMatchesFilter,
+      areBulkActionsDisabled,
+      onMoveAllToNext,
+      onDeleteAll,
+      onToggleHidden,
+      onToggleFocus,
+      onRename,
+      onBulkItemReorder,
+      startAnimation,
+      stopAnimation,
+      waitForTransitions,
+      isAnimatingRef,
+    }),
+  );
+
+  const containerMenuControls = Array.isArray(filteredMenuControls)
+    ? filteredMenuControls
+    : menuControls;
+
+  /**
+   * Check whether an item is marked as high priority.
+   *
+   * @param {Object} item Item payload.
+   * @return {boolean} True when high priority is enabled.
+   */
+  const isHighPriorityItem = (item) => {
+    return Boolean(
+      item &&
+        item.meta &&
+        (item.meta.alpaca_high_priority === '1' ||
+          item.meta.alpaca_high_priority === 1 ||
+          item.meta.alpaca_high_priority === true),
+    );
+  };
 
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -175,17 +347,80 @@ function Container({
     }
   };
 
+  // Global dragend listener to catch drops outside any valid container
+  useEffect(() => {
+    const handleGlobalDragEnd = () => {
+      // Force reset of local drag state
+      setIsDragOver(false);
+      setDragOverIndex(null);
+      setDragOverItem(null);
+      stopAnimation();
+
+      // Also ensure global state is cleared if not already
+      try {
+        if (typeof window !== 'undefined' && window.__alpacaDragState) {
+          delete window.__alpacaDragState;
+        }
+      } catch (err) {
+        // ignore
+      }
+      forceUpdate((n) => n + 1);
+    };
+
+    window.addEventListener('dragend', handleGlobalDragEnd);
+    return () => {
+      window.removeEventListener('dragend', handleGlobalDragEnd);
+    };
+  }, [stopAnimation]);
+
   const getDropIndex = (e) => {
     const el = containerRef.current;
-    if (!el) return items.length;
+    if (!el) {
+      return items.length;
+    }
+
+    const computedStyle = window.getComputedStyle(el);
+    const isFlexContainer =
+      computedStyle.display === 'flex' ||
+      computedStyle.display === 'inline-flex';
+    const isHorizontalLayout =
+      isFlexContainer && computedStyle.flexDirection === 'row';
+
     const children = Array.from(
-      el.querySelectorAll('.alpaca-item:not(.empty)'),
+      el.querySelectorAll(
+        '.alpaca-item:not(.empty):not(.placeholder):not(.is-source-hidden)',
+      ),
     );
+
     for (let i = 0; i < children.length; i++) {
       const rect = children[i].getBoundingClientRect();
-      if (e.clientY < rect.top + rect.height / 2) return i;
+
+      if (isHorizontalLayout) {
+        if (e.clientX < rect.left + rect.width / 2) {
+          return i;
+        }
+      } else if (e.clientY < rect.top + rect.height / 2) {
+        return i;
+      }
     }
+
     return children.length;
+  };
+
+  /**
+   * Convert a drop index in filtered visible rows to an absolute index
+   * in the full container list so hidden rows keep their relative order.
+   *
+   * @param {number} visibleDropIndex Drop index among visible rows.
+   * @return {number} Absolute insertion index in the full list.
+   */
+  const getAbsoluteDropIndex = (visibleDropIndex) => {
+    return getAbsoluteDropIndexForFilteredContainer({
+      visibleDropIndex,
+      visibleItemEntries,
+      itemsLength: items.length,
+      isFiltering,
+    });
   };
 
   const handleDrop = (e) => {
@@ -207,7 +442,7 @@ function Container({
     }
 
     const { itemId, sourceContainerId, sourceIndex } = parsed || {};
-    const destIndex = getDropIndex(e);
+    const destIndex = getAbsoluteDropIndex(getDropIndex(e));
 
     // Clear preview state immediately to avoid temporary hiding of the dropped element
     setDragOverIndex(null);
@@ -220,6 +455,7 @@ function Container({
         sourceIndex,
         destinationContainerId: id,
         destinationIndex: destIndex,
+        destinationVisibleIndex: getDropIndex(e),
       });
     }
     // Now that we've consumed the payload, clear the global drag state so
@@ -243,7 +479,9 @@ function Container({
 
   return (
     <Card
-      className={`alpaca-container ${isHidden ? 'hidden' : ''}`}
+      className={`alpaca-container ${
+        isHidden ? 'is-collapsed' : ''
+      } ${isFocused ? 'alpaca-is-focused-column' : ''}`}
       data-id={id}
     >
       <CardHeader
@@ -252,22 +490,42 @@ function Container({
         isBorderless
       >
         {isRenaming ? (
-          <TextControl
-            className="alpaca-container-title-input"
-            value={newTitle}
-            onChange={setNewTitle}
-            onBlur={handleRename}
-            onKeyDown={handleKeyDown}
-            ref={inputRef}
-          />
+          <>
+            <TextControl
+              className="alpaca-container-title-input"
+              __next40pxDefaultSize
+              __nextHasNoMarginBottom
+              value={newTitle}
+              onChange={setNewTitle}
+              onBlur={handleRename}
+              onKeyDown={handleKeyDown}
+              ref={inputRef}
+            />
+            <span className="alpaca-item-count">
+              {isFiltering
+                ? `${visibleItemEntries.length}/${items.length}`
+                : items.length}
+            </span>
+          </>
         ) : (
-          <Heading level={2}>
-            {title} <span className="alpaca-item-count">{items.length}</span>
-          </Heading>
+          <>
+            <Heading level={2}>
+              <span className="alpaca-container-title">{title}</span>
+            </Heading>
+            <span className="alpaca-item-count">
+              {isFiltering
+                ? `${visibleItemEntries.length}/${items.length}`
+                : items.length}
+            </span>
+          </>
         )}
 
         <div className="alpaca-container-controls">
-          <DropdownMenu icon="menu" label="Options" controls={menuControls} />
+          <DropdownMenu
+            icon="menu"
+            label={__('Options', 'alpaca-issue-tracker')}
+            controls={containerMenuControls}
+          />
         </div>
       </CardHeader>
 
@@ -280,126 +538,228 @@ function Container({
           className={`alpaca-items ${isDragOver ? 'dragging-over' : ''}`}
         >
           {(() => {
-            // If there's an active drag preview, render the previewed list (remove source item if same container)
+            const renderList = [];
+
+            // Identify if the dragged item originated from this container
+            const draggingId = dragOverItem ? dragOverItem.itemId : null;
+            const isSourceContainer =
+              dragOverItem &&
+              dragOverItem.sourceContainerId &&
+              dragOverItem.sourceContainerId.toString() === id.toString();
+
+            let insertAt = items.length;
+            let filteredInsertAt = visibleItemEntries.length;
             if (dragOverItem) {
-              const itemIdStr = dragOverItem.itemId?.toString();
-              let previewItems = items;
-              if (
-                dragOverItem.sourceContainerId &&
-                dragOverItem.sourceContainerId.toString() === id.toString()
-              ) {
-                previewItems = items.filter((it) => it.id !== itemIdStr);
+              let idx = dragOverIndex === null ? items.length : dragOverIndex;
+              if (isSourceContainer) {
+                const sourceIndex = items.findIndex(
+                  (i) => i.id.toString() === draggingId?.toString(),
+                );
+                if (sourceIndex !== -1 && idx >= sourceIndex) {
+                  idx += 1;
+                }
               }
+              insertAt = Math.max(0, Math.min(items.length, idx));
 
-              const insertAt = Math.max(
-                0,
-                Math.min(
-                  previewItems.length,
-                  dragOverIndex === null ? previewItems.length : dragOverIndex,
-                ),
-              );
+              if (isFiltering) {
+                let visibleIdx =
+                  dragOverIndex === null
+                    ? visibleItemEntries.length
+                    : dragOverIndex;
 
-              return (
-                <>
-                  {previewItems.slice(0, insertAt).map((item, index) => (
-                    <DraggableItem
-                      className="alpaca-item"
-                      key={item.id}
-                      id={item.id}
-                      index={index}
-                      containerId={id}
-                      content={item.content}
-                      assignees={item.assignees}
-                      commentCount={item.commentCount}
-                      meta={item.meta}
-                      onClick={onItemClick}
-                    />
-                  ))}
+                if (isSourceContainer) {
+                  const sourceVisibleIndex = visibleItemEntries.findIndex(
+                    ({ item }) => item.id.toString() === draggingId?.toString(),
+                  );
 
-                  <div
-                    className="alpaca-item placeholder"
-                    key={`placeholder-${dragOverItem.itemId}`}
-                  >
-                    {dragOverItem.content ? (
-                      <Item
-                        content={dragOverItem.content}
-                        assignees={dragOverItem.assignees}
-                        commentCount={dragOverItem.commentCount}
-                        meta={dragOverItem.meta}
-                        className="alpaca-item-inner"
-                      />
-                    ) : (
-                      <div className="alpaca-item-inner">Moving...</div>
-                    )}
-                  </div>
+                  if (
+                    sourceVisibleIndex !== -1 &&
+                    visibleIdx >= sourceVisibleIndex
+                  ) {
+                    visibleIdx += 1;
+                  }
+                }
 
-                  {previewItems.slice(insertAt).map((item, index) => (
-                    <DraggableItem
-                      className="alpaca-item"
-                      key={item.id}
-                      id={item.id}
-                      index={insertAt + index}
-                      containerId={id}
-                      content={item.content}
-                      assignees={item.assignees}
-                      commentCount={item.commentCount}
-                      meta={item.meta}
-                      onClick={onItemClick}
-                    />
-                  ))}
-                </>
-              );
+                filteredInsertAt = Math.max(
+                  0,
+                  Math.min(visibleItemEntries.length, visibleIdx),
+                );
+              }
             }
 
-            return hasItems ? (
-              (() => {
-                const globalDrag =
-                  typeof window !== 'undefined'
-                    ? window.__alpacaDragState
-                    : null;
-                return items.map((item, index) => {
-                  const isSourceHidden =
-                    globalDrag &&
-                    globalDrag.itemId &&
-                    globalDrag.sourceContainerId &&
-                    globalDrag.itemId.toString() === item.id.toString() &&
-                    globalDrag.sourceContainerId.toString() === id.toString();
+            const renderPreview = () => {
+              const previewIsHighPriority = isHighPriorityItem(dragOverItem);
+              const descriptor = dragOverItem && dragOverItem.elementDescriptor;
+              const previewClasses = classesFromDescriptor(descriptor, [
+                'alpaca-item',
+                'placeholder',
+                previewIsHighPriority ? 'is-high-priority' : '',
+              ]);
+              const innerClasses = classesFromDescriptor(descriptor, [
+                'alpaca-item-inner',
+                previewIsHighPriority ? 'is-high-priority' : '',
+              ]);
+              const extraAttrs = attrsFromDescriptor(descriptor);
 
-                  if (isSourceHidden) {
-                    return (
-                      <div className="alpaca-item" key={item.id}>
-                        <Item
-                          id={item.id}
-                          content={item.content}
-                          assignees={item.assignees}
-                          commentCount={item.commentCount}
-                          meta={item.meta}
-                          className="alpaca-item-inner"
-                          style={{ visibility: 'hidden' }}
-                        />
-                      </div>
-                    );
-                  }
-
-                  return (
+              return (
+                <div
+                  className={previewClasses}
+                  key={`preview-${dragOverItem.itemId}`}
+                  {...extraAttrs}
+                >
+                  {dragOverItem.content ? (
                     <DraggableItem
-                      className="alpaca-item"
+                      id={-1}
+                      index={-1}
+                      containerId={id}
+                      content={dragOverItem.content}
+                      assignees={dragOverItem.assignees}
+                      labels={dragOverItem.labels}
+                      commentCount={dragOverItem.commentCount}
+                      commentCountByAgent={dragOverItem.commentCountByAgent}
+                      postDate={dragOverItem.postDate}
+                      meta={dragOverItem.meta}
+                      className={innerClasses}
+                      isDragDisabled={true}
+                    />
+                  ) : (
+                    <div className={innerClasses} {...extraAttrs}>
+                      {__('Moving…', 'alpaca-issue-tracker')}
+                    </div>
+                  )}
+                </div>
+              );
+            };
+
+            if (!dragOverItem) {
+              const listHasItems = visibleItemEntries.length > 0;
+              if (!listHasItems) {
+                if (isFiltering) {
+                  return (
+                    <div className="alpaca-item empty">
+                      {__(
+                        'No cards match the active filter.',
+                        'alpaca-issue-tracker',
+                      )}
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="alpaca-item empty">
+                    {__('Drop items here', 'alpaca-issue-tracker')}
+                  </div>
+                );
+              }
+
+              const globalDrag =
+                typeof window !== 'undefined' ? window.__alpacaDragState : null;
+
+              return visibleItemEntries.map(({ item, actualIndex }) => {
+                const isGlobalSourceHidden =
+                  globalDrag &&
+                  globalDrag.itemId &&
+                  globalDrag.sourceContainerId &&
+                  globalDrag.itemId.toString() === item.id.toString() &&
+                  globalDrag.sourceContainerId.toString() === id.toString();
+
+                return (
+                  <DraggableItem
+                    ref={itemRefs.current[item.id]}
+                    className={`alpaca-item ${
+                      isHighPriorityItem(item) ? 'is-high-priority' : ''
+                    } ${isGlobalSourceHidden ? 'is-source-hidden' : ''}`}
+                    key={item.id}
+                    id={item.id}
+                    index={actualIndex}
+                    containerId={id}
+                    content={item.content}
+                    postDate={item.postDate}
+                    assignees={item.assignees}
+                    labels={item.labels}
+                    commentCount={item.commentCount}
+                    commentCountByAgent={item.commentCountByAgent}
+                    meta={item.meta}
+                    onClick={onItemClick}
+                  />
+                );
+              });
+            }
+
+            if (isFiltering) {
+              for (let i = 0; i <= visibleItemEntries.length; i++) {
+                if (i === filteredInsertAt) {
+                  renderList.push(renderPreview());
+                }
+
+                if (i < visibleItemEntries.length) {
+                  const { item, actualIndex } = visibleItemEntries[i];
+                  const isSource =
+                    isSourceContainer &&
+                    item.id.toString() === draggingId?.toString();
+
+                  renderList.push(
+                    <DraggableItem
+                      ref={itemRefs.current[item.id]}
+                      className={`alpaca-item ${
+                        isHighPriorityItem(item) ? 'is-high-priority' : ''
+                      } ${isSource ? 'is-source-hidden' : ''}`}
                       key={item.id}
                       id={item.id}
-                      index={index}
+                      index={actualIndex}
                       containerId={id}
                       content={item.content}
+                      postDate={item.postDate}
                       assignees={item.assignees}
+                      labels={item.labels}
                       commentCount={item.commentCount}
+                      commentCountByAgent={item.commentCountByAgent}
                       meta={item.meta}
                       onClick={onItemClick}
-                    />
+                    />,
                   );
-                });
-              })()
-            ) : (
-              <div className="alpaca-item empty">Drop items here</div>
-            );
+                }
+              }
+
+              return renderList;
+            }
+
+            // Dragging IS Active Over This Container (Loop and insert)
+            for (let i = 0; i <= items.length; i++) {
+              if (i === insertAt) {
+                renderList.push(renderPreview());
+              }
+
+              if (i < items.length) {
+                const item = items[i];
+                const isSource =
+                  isSourceContainer &&
+                  item.id.toString() === draggingId?.toString();
+
+                renderList.push(
+                  <DraggableItem
+                    ref={itemRefs.current[item.id]}
+                    className={`alpaca-item ${
+                      isHighPriorityItem(item) ? 'is-high-priority' : ''
+                    } ${isSource ? 'is-source-hidden' : ''}`}
+                    key={item.id}
+                    id={item.id}
+                    index={i}
+                    containerId={id}
+                    content={item.content}
+                    postDate={item.postDate}
+                    assignees={item.assignees}
+                    labels={item.labels}
+                    commentCount={item.commentCount}
+                    commentCountByAgent={item.commentCountByAgent}
+                    meta={item.meta}
+                    onClick={onItemClick}
+                  />,
+                );
+              }
+            }
+
+            return renderList;
           })()}
         </div>
       </CardBody>
@@ -414,19 +774,34 @@ Container.propTypes = {
     PropTypes.shape({
       id: PropTypes.number.isRequired,
       content: PropTypes.string,
+      postDate: PropTypes.string,
       assignees: PropTypes.array,
+      labels: PropTypes.array,
       commentCount: PropTypes.number,
+      commentCountByAgent: PropTypes.object,
       meta: PropTypes.object,
     }),
   ).isRequired,
+  activeFilter: PropTypes.object,
+  itemMatchesFilter: PropTypes.func,
   onItemClick: PropTypes.func.isRequired,
   onMoveAllToNext: PropTypes.func.isRequired,
   onDeleteAll: PropTypes.func.isRequired,
+  canDeleteIssues: PropTypes.bool,
   isLastContainer: PropTypes.bool.isRequired,
   isHidden: PropTypes.bool.isRequired,
+  focusedContainerId: PropTypes.string,
+  isFocused: PropTypes.bool,
   onToggleHidden: PropTypes.func.isRequired,
+  onToggleFocus: PropTypes.func.isRequired,
   onRename: PropTypes.func.isRequired,
   onItemDrop: PropTypes.func,
+  onBulkItemReorder: PropTypes.func,
+  onAddIssue: PropTypes.func,
+};
+
+Container.defaultProps = {
+  canDeleteIssues: false,
 };
 
 export default Container;

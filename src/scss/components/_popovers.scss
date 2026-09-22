@@ -1,0 +1,12 @@
+@use '../abstracts' as *;
+
+/*
+* Popovers
+*/
+.wp-admin {
+  .alpaca-deadline-popover {
+    .components-popover__content {
+      padding: $space-2xl;
+    }
+  }
+}

@@ -1,0 +1,153 @@
+@use '../../abstracts' as *;
+
+/*
+ * 4.1 - Modal Frame
+ */
+.wp-admin {
+  .components-modal__frame.alpaca-details-modal {
+    position: absolute;
+    top: 0;
+    inset-inline-end: calc(
+      -1 * var(--alpaca-side-panel-frame-overhang, $space-sm)
+    );
+    max-width: var(--alpaca-side-panel-max-width, #{$width-side-panel});
+    height: calc(100% - var(--alpaca-side-panel-top-offset, $size-control-md));
+    margin: var(--alpaca-side-panel-top-offset, $space-6xl) 0 0 0;
+
+    @include alpaca-slide-right-enter;
+
+    .components-panel {
+      margin-bottom: $space-2xl;
+
+      .alpaca-modal-textarea {
+        width: 100%;
+      }
+
+      textarea {
+        width: 100%;
+        font-family: $font-family-code;
+        white-space: pre;
+        overflow: hidden scroll;
+      }
+    }
+  }
+
+  .alpaca-details-modal.alpaca-side-panel {
+    --alpaca-side-panel-top-offset: #{$size-control-md};
+    --alpaca-side-panel-max-width: #{$width-side-panel};
+    --alpaca-side-panel-frame-overhang: #{$space-sm};
+  }
+
+  .alpaca-issue-details {
+    p,
+    input,
+    textarea {
+      font-size: $font-size-md;
+    }
+
+    .alpaca-issue-tabs .components-tab-panel__tabs {
+      border-bottom: 1px solid $color-border;
+    }
+
+    .components-tab-panel__tab-content {
+      padding: $space-2xl 0;
+    }
+
+    .alpaca-timeline-item[data-source='audit'] .alpaca-comment-buttons {
+      top: -$space-sm;
+    }
+  }
+
+  .alpaca-issue-main {
+    .alpaca-issue-title-row {
+      display: flex;
+      align-items: baseline;
+      gap: $space-sm;
+
+      .alpaca-issue-title {
+        flex: 1 1 auto;
+        min-width: 0;
+      }
+    }
+
+    .alpaca-issue-watch-indicator {
+      color: $color-star;
+      display: inline-flex;
+      align-items: center;
+      background: transparent;
+      border: 0;
+      padding: 0;
+      cursor: pointer;
+
+      width: $size-icon-lg;
+      height: $size-icon-lg;
+      font-size: $font-size-xl;
+
+      &:disabled {
+        cursor: default;
+        opacity: 0.2;
+      }
+    }
+
+    .alpaca-issue-title {
+      font-size: $font-size-display; // Match h3 scale.
+      font-weight: $font-weight-bold;
+      line-height: $line-height-base;
+      margin: 0;
+      padding: 0;
+      color: inherit;
+      background: none;
+      border: none;
+      outline: none;
+      width: 100%;
+      text-align: start;
+
+      &:hover {
+        cursor: text;
+      }
+
+      &:focus {
+        outline: none;
+      }
+
+      &:empty[data-placeholder]::before {
+        content: attr(data-placeholder);
+        color: $color-text-muted;
+        opacity: 0.6;
+      }
+
+      &:focus:empty[data-placeholder]::before {
+        opacity: 0.5;
+      }
+
+      .alpaca-inline-search-highlight {
+        border-radius: $radius-xs;
+        padding: 0 1px;
+        background-color: var(
+          --alpaca-search-highlight,
+          $color-search-highlight
+        );
+      }
+    }
+
+    @media (width <= $breakpoint-admin-bar-mobile) {
+      .alpaca-issue-title-row {
+        align-items: flex-start;
+        gap: $space-xs;
+      }
+
+      .alpaca-issue-title {
+        font-size: $font-size-xl;
+        line-height: $line-height-tight;
+      }
+    }
+  }
+
+  /* Inline code used in modal menus */
+  .alpaca-menu-code {
+    font-family: $font-family-code !important;
+    font-size: $font-size-sm;
+    color: $color-text-muted;
+    margin-inline-start: 0.5ch;
+  }
+}

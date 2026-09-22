@@ -1,37 +1,69 @@
+import PropTypes from 'prop-types';
 import handleSnapdomCapture from './snapdomHandler.js';
+import { dataUrlToFile, uploadIssueAttachment } from './utils/attachmentUpload';
 import { useTestLogger } from './utils/testLogger.js';
+import { isTestLoggingEnabled } from './utils/testLogSetting.js';
+import Icon from './components/icons/Icon';
+import UnreadCountBadge from './components/notifications/UnreadCountBadge.jsx';
+import { useNotification } from './context/NotificationContext.jsx';
+import { buildAlpacaRestUrl, getAlpacaRestNonce } from './utils/restApiRoot.js';
+import { getProjectBoardUrl } from './utils/projectBoardUrl.js';
+import {
+  ensureAlpacaReportContext,
+  getAlpacaReportContext,
+} from './utils/reportContext.js';
 
-const { Button, TextareaControl, Spinner, CheckboxControl, ToggleControl } =
-  wp.components;
+const { __ } = wp.i18n;
+const { Button, TextareaControl, Spinner, ToggleControl } = wp.components;
 const { doAction } = wp.hooks;
 const { useState, useRef, useEffect, useCallback } = wp.element;
 
+const FORM_CLOSE_RESET_DELAY_MS = 300;
+
 /**
- * Bottom Toolbar component for Alpaca issue reporting.
+ * Render the Project Board toolbar unread badge.
+ *
+ * @return {JSX.Element|null} Badge markup.
+ */
+const ProjectBoardUnreadBadge = () => {
+  const { unreadCount } = useNotification();
+
+  if (unreadCount <= 0) {
+    return null;
+  }
+
+  return (
+    <span className="alpaca-toolbar-project-board-badge">
+      <UnreadCountBadge count={unreadCount} variant="inline" />
+    </span>
+  );
+};
+
+/**
+ * Bottom Toolbar component for Alpaca Issue Tracker issue reporting.
  * Dark admin bar theme with WP Components form.
  *
+ * @param {Object}  props                 Component props.
+ * @param {boolean} props.showUnreadBadge Whether to show the unread badge.
  * @return {JSX.Element} Toolbar component
  */
-const AlpacaToolbar = () => {
+const AlpacaToolbar = ({ showUnreadBadge }) => {
   const [isExpanded, setIsExpanded] = useState(true); // Open by default
   const [isFormVisible, setFormVisible] = useState(false);
   const [status, setStatus] = useState('idle');
   const [message, setMessage] = useState('');
   const [feedback, setFeedback] = useState('');
-  const [includeContext, setIncludeContext] = useState(true);
   const [isHighPriority, setIsHighPriority] = useState(false);
 
   const textareaRef = useRef(null);
   const formRef = useRef(null);
-  const [enableTestLogs, setEnableTestLogs] = useState(false);
+  const reportButtonRef = useRef(null);
+  const closeResetTimeoutRef = useRef(null);
+  const [enableTestLogs, setEnableTestLogs] = useState(isTestLoggingEnabled);
 
   useEffect(() => {
-    wp.apiFetch({ path: '/wp/v2/settings' }).then((settings) => {
-      setEnableTestLogs(settings.alpaca_enable_test_logs === '1');
-    });
-
     const handleTestLogSettingChange = (value) => {
-      setEnableTestLogs(value);
+      setEnableTestLogs(Boolean(value));
     };
 
     wp.hooks.addAction(
@@ -51,26 +83,55 @@ const AlpacaToolbar = () => {
     setIsExpanded((prev) => !prev);
   }, []);
 
-  const openForm = useCallback(() => {
-    setFormVisible(true);
+  const clearCloseResetTimeout = useCallback(() => {
+    if (closeResetTimeoutRef.current) {
+      window.clearTimeout(closeResetTimeoutRef.current);
+      closeResetTimeoutRef.current = null;
+    }
+  }, []);
+
+  const resetFormState = useCallback(() => {
     setMessage('');
     setStatus('idle');
     setFeedback('');
-    setIncludeContext(true);
     setIsHighPriority(false);
-    setTimeout(() => textareaRef.current?.focus(), 100);
   }, []);
+
+  const openForm = useCallback(() => {
+    clearCloseResetTimeout();
+    setFormVisible(true);
+    resetFormState();
+    setTimeout(() => textareaRef.current?.focus(), 100);
+  }, [clearCloseResetTimeout, resetFormState]);
 
   const closeForm = useCallback(() => {
     setFormVisible(false);
-    setStatus('idle');
-  }, []);
+    clearCloseResetTimeout();
+    closeResetTimeoutRef.current = window.setTimeout(() => {
+      resetFormState();
+      closeResetTimeoutRef.current = null;
+    }, FORM_CLOSE_RESET_DELAY_MS);
+  }, [clearCloseResetTimeout, resetFormState]);
+
+  const toggleFormVisibility = useCallback(() => {
+    if (isFormVisible) {
+      closeForm();
+      return;
+    }
+
+    openForm();
+  }, [closeForm, isFormVisible, openForm]);
 
   useEffect(() => {
     if (!isFormVisible) return;
 
     const handleClickOutside = (event) => {
-      if (formRef.current && !formRef.current.contains(event.target)) {
+      if (
+        formRef.current &&
+        !formRef.current.contains(event.target) &&
+        reportButtonRef.current &&
+        !reportButtonRef.current.contains(event.target)
+      ) {
         closeForm();
       }
     };
@@ -88,12 +149,15 @@ const AlpacaToolbar = () => {
     return () => wp.hooks.removeAction('alpaca.openModal', 'alpaca/toolbar');
   }, [openForm]);
 
+  useEffect(() => clearCloseResetTimeout, [clearCloseResetTimeout]);
+
   const submitIssue = useCallback(async () => {
     setMessage('');
 
     try {
-      const server = JSON.parse(atob(alpacaDataDump.env));
       setStatus('submitting');
+      const reportContext = await ensureAlpacaReportContext();
+      const server = JSON.parse(atob(reportContext.env));
 
       let screenshot = '';
       try {
@@ -106,23 +170,23 @@ const AlpacaToolbar = () => {
       const submitted = {
         userinput: {
           feedback,
-          includeContext,
+          includeContext: true, // Always include context
           isHighPriority,
         },
-        client: alpacaDataDump.device,
-        screenshot,
-        errors: alpacaDataDump.errors,
+        client: reportContext.device || getAlpacaReportContext().device,
+        screenshot: '',
+        errors: reportContext.errors || getAlpacaReportContext().errors || [],
       };
 
       const payload = { ...submitted, ...server };
 
-      const response = await fetch(wpApiSettings.root + 'alpaca/v1/submit', {
+      const response = await fetch(buildAlpacaRestUrl('/alpaca/v1/submit'), {
         method: 'POST',
         credentials: 'include',
         headers: new Headers({
           Accept: 'application/json',
           'Content-Type': 'application/json',
-          'X-WP-Nonce': wpApiSettings.nonce,
+          'X-WP-Nonce': getAlpacaRestNonce(),
         }),
         body: JSON.stringify(payload),
       });
@@ -133,42 +197,81 @@ const AlpacaToolbar = () => {
         throw new Error(responseData.message || `HTTP ${response.status}`);
       }
 
+      let screenshotUrl = '';
+      if (screenshot && responseData.issue?.id) {
+        try {
+          const screenshotFile = await dataUrlToFile(
+            screenshot,
+            'alpaca-screenshot.webp',
+          );
+          const uploaded = await uploadIssueAttachment(
+            screenshotFile,
+            responseData.issue.id,
+          );
+          screenshotUrl = uploaded.url || '';
+        } catch (uploadError) {
+          // eslint-disable-next-line no-console
+          console.warn('Screenshot upload failed:', uploadError);
+        }
+      }
+
       setStatus('success');
-      setMessage('Your issue has been submitted successfully.');
+      setMessage(
+        __(
+          'Your issue has been submitted successfully.',
+          'alpaca-issue-tracker',
+        ),
+      );
 
       doAction(
         'alpaca.issueSubmitted',
         responseData.issue,
         responseData.statusId,
+        isHighPriority,
+        {
+          feedback,
+          screenshotUrl,
+        },
       );
+
+      if (isHighPriority) {
+        doAction('alpaca.priorityUpdated', {
+          issueId: responseData.issue.id,
+          isHighPriority: true,
+          issue: responseData.issue,
+        });
+      }
 
       setTimeout(closeForm, 1500);
     } catch (error) {
       console.error('Submission error:', error);
       setStatus('error');
-      setMessage('There was an error submitting your issue. Please try again.');
+      setMessage(
+        __(
+          'There was an error submitting your issue. Please try again.',
+          'alpaca-issue-tracker',
+        ),
+      );
     }
-  }, [feedback, includeContext, isHighPriority, closeForm]);
+  }, [feedback, isHighPriority, closeForm]);
+
+  const projectBoardUrl = getProjectBoardUrl();
 
   return (
     <>
       <div className={`alpaca-bottom-toolbar ${isExpanded ? 'expanded' : ''}`}>
         <button
+          ref={reportButtonRef}
           className={`alpaca-report-button ${isFormVisible ? 'form-visible' : ''}`}
-          onClick={openForm}
+          onClick={toggleFormVisibility}
         >
-          <span className="dashicons dashicons-warning" />
-          Report An Issue
+          <Icon name="report" />
+          {__('Report An Issue', 'alpaca-issue-tracker')}
         </button>
-        <a
-          href={
-            wpApiSettings.root.replace('/wp-json/', '/wp-admin/') +
-            'admin.php?page=alpaca-board'
-          }
-          className="alpaca-board-link"
-        >
-          <span className="dashicons dashicons-analytics" />
-          Project Board
+        <a href={projectBoardUrl} className="project-board-link">
+          <Icon name="board" />
+          {__('Project Board', 'alpaca-issue-tracker')}
+          {showUnreadBadge && <ProjectBoardUnreadBadge />}
         </a>
         <button className="toggle-button" onClick={toggleExpand}>
           <span className="toggle-pointer">►</span>
@@ -180,7 +283,7 @@ const AlpacaToolbar = () => {
         className={`alpaca-report-form ${isFormVisible ? 'visible' : ''}`}
       >
         <div className="form-header">
-          <h4>Report An Issue</h4>
+          <h4>{__('Report An Issue', 'alpaca-issue-tracker')}</h4>
           <button className="form-close" onClick={closeForm}>
             ×
           </button>
@@ -190,32 +293,31 @@ const AlpacaToolbar = () => {
           <>
             <p>{message}</p>
             <Button variant="primary" onClick={closeForm} ref={textareaRef}>
-              Close
+              {__('Close', 'alpaca-issue-tracker')}
             </Button>
           </>
         ) : (
           <>
             <TextareaControl
-              placeholder="Describe the problem"
+              placeholder={__('Describe the problem', 'alpaca-issue-tracker')}
               value={feedback}
               onChange={(value) => setFeedback(value)}
               disabled={status === 'submitting'}
               ref={textareaRef}
+              __nextHasNoMarginBottom
             />
 
             <div className="form-toggles">
               <ToggleControl
-                label={<span className="priority-label">High Priority</span>}
+                label={
+                  <span className="priority-label">
+                    {__('High Priority', 'alpaca-issue-tracker')}
+                  </span>
+                }
                 checked={isHighPriority}
                 onChange={setIsHighPriority}
                 disabled={status === 'submitting'}
-              />
-              <CheckboxControl
-                label="Include full context with report?"
-                help="Always do this, unless you are sure it is not relevant"
-                checked={includeContext}
-                onChange={setIncludeContext}
-                disabled={status === 'submitting'}
+                __nextHasNoMarginBottom
               />
             </div>
 
@@ -225,14 +327,18 @@ const AlpacaToolbar = () => {
                 onClick={submitIssue}
                 disabled={status === 'submitting' || !feedback.trim()}
               >
-                {status === 'submitting' ? <Spinner /> : 'Submit'}
+                {status === 'submitting' ? (
+                  <Spinner />
+                ) : (
+                  __('Submit', 'alpaca-issue-tracker')
+                )}
               </Button>
               <Button
                 variant="secondary"
                 onClick={closeForm}
                 disabled={status === 'submitting'}
               >
-                Cancel
+                {__('Cancel', 'alpaca-issue-tracker')}
               </Button>
             </div>
           </>
@@ -240,6 +346,14 @@ const AlpacaToolbar = () => {
       </div>
     </>
   );
+};
+
+AlpacaToolbar.propTypes = {
+  showUnreadBadge: PropTypes.bool,
+};
+
+AlpacaToolbar.defaultProps = {
+  showUnreadBadge: false,
 };
 
 export default AlpacaToolbar;

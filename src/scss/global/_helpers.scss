@@ -1,0 +1,29 @@
+@use '../abstracts' as *;
+
+/*
+ * 2.0 - General / Helper Classes
+ */
+
+.rtl .alpaca-rtl-mirror,
+html[dir='rtl'] .alpaca-rtl-mirror {
+  transform: scaleX(-1);
+}
+
+.alpaca-timestamp,
+.alpaca-nowrap {
+  white-space: nowrap;
+}
+
+.alpaca-rotate-90 {
+  transform: rotate(90deg);
+}
+
+.alpaca-flex-align {
+  display: flex;
+  align-items: center;
+  gap: $space-gap-inline;
+}
+
+.alpaca-wrap {
+  flex-wrap: nowrap;
+}

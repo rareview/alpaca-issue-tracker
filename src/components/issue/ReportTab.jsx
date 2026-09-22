@@ -1,110 +1,143 @@
-const { memo } = wp.element;
+const { memo, useEffect, useRef } = wp.element;
+const { __, sprintf } = wp.i18n;
 import PropTypes from 'prop-types';
+import { highlightTableCells } from '../../utils/syntaxHighlight';
+import { isValidHttpUrl } from '../../utils/sanitize';
+import { formatWpDateValue, parseWpDateValue } from '../../utils/date';
 
-const { Button } = wp.components;
-
-const { date } = wp;
 const datesettings = wp.date.getSettings();
+
+/**
+ * Format a date with an explicit UTC offset suffix.
+ *
+ * @param {Date} value Date value.
+ * @return {string} Formatted date and offset label.
+ */
+const formatDateTimeWithUtcOffset = (value) => {
+  const formattedDate = formatWpDateValue(
+    value,
+    datesettings.formats.datetimeAbbreviated,
+  );
+  let offset = formatWpDateValue(value, 'P');
+
+  if (!offset) {
+    return formattedDate;
+  }
+
+  if ('Z' === offset) {
+    offset = '+00:00';
+  }
+
+  return sprintf(
+    /* translators: 1: formatted date/time. 2: UTC offset, e.g. +02:00. */
+    __('%1$s (UTC%2$s)', 'alpaca-issue-tracker'),
+    formattedDate,
+    offset,
+  );
+};
+
+/**
+ * Convert a taxonomy slug into a readable fallback label.
+ *
+ * @param {string} taxonomy Taxonomy slug.
+ * @return {string} Human-readable taxonomy label.
+ */
+function getTaxonomyFallbackLabel(taxonomy) {
+  return taxonomy
+    .replace(/^alpaca_/, '')
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
 
 /**
  * ReportTab component for displaying issue report information.
  *
- * @param {Object}   root0                    - Props object
- * @param {Object}   root0.issueDetails       - Issue details object
- * @param {Function} root0.onScreenshotDelete - Screenshot delete handler
- * @param {boolean}  root0.isLoading          - Loading state
- * @param {Function} root0.onScreenshotClick  - Screenshot click handler
+ * @param {Object} root0              - Props object
+ * @param {Object} root0.issueDetails - Issue details object
  * @return {JSX.Element} ReportTab component
  */
-const ReportTab = memo(
-  ({ issueDetails, onScreenshotDelete, isLoading, onScreenshotClick }) => (
-    <div className="alpaca-report-tab">
-      {(issueDetails.meta.alpaca_screenshot ||
-        issueDetails.meta.screenshot) && (
-        <div className="alpaca-screenshot-wrapper">
-          {/* eslint-disable jsx-a11y/no-noninteractive-element-to-interactive-role */}
-          <img
-            src={
-              issueDetails.meta.alpaca_screenshot ||
-              issueDetails.meta.screenshot
-            }
-            className="alpaca-screenshot"
-            alt="Screenshot"
-            style={{ cursor: 'zoom-in', maxWidth: '100%' }}
-            onClick={() =>
-              onScreenshotClick(
-                issueDetails.meta.alpaca_screenshot ||
-                  issueDetails.meta.screenshot,
-              )
-            }
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                onScreenshotClick(
-                  issueDetails.meta.alpaca_screenshot ||
-                    issueDetails.meta.screenshot,
-                );
-              }
-            }}
-          />
-          {/* eslint-enable jsx-a11y/no-noninteractive-element-to-interactive-role */}
-          <Button
-            disabled={isLoading}
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onScreenshotDelete();
-            }}
-            label="Delete"
-            showTooltip="true"
-            tooltipPosition="middle left"
-            icon="trash"
-            isDestructive
-            className="alpaca-screenshot-delete"
-            variant="primary"
-          />
-        </div>
-      )}
+const ReportTab = memo(({ issueDetails }) => {
+  const tableRef = useRef(null);
+  const urlCellRef = useRef(null);
+  const reportedDateRawValue =
+    issueDetails?.post_data?.post_date_gmt ||
+    issueDetails?.post_data?.post_date;
+  const lastEditedDateRawValue =
+    issueDetails?.post_data?.post_modified_gmt ||
+    issueDetails?.post_data?.post_modified;
+  const reportedDate = parseWpDateValue(reportedDateRawValue, {
+    treatMysqlAsUtc: Boolean(issueDetails?.post_data?.post_date_gmt),
+  });
+  const lastEditedDate = parseWpDateValue(lastEditedDateRawValue, {
+    treatMysqlAsUtc: Boolean(issueDetails?.post_data?.post_modified_gmt),
+  });
 
-      <table className="widefat striped">
+  const urlValue = issueDetails.meta.alpaca_url || issueDetails.meta.URL;
+  const taxonomyLabels = issueDetails.taxonomy_labels || {};
+  const defaultExcludedTaxonomies = [
+    'alpaca_assignee',
+    'alpaca_watching',
+    'alpaca_status',
+    'alpaca_label',
+  ];
+  const excludedTaxonomies =
+    wp.hooks && wp.hooks.applyFilters
+      ? wp.hooks.applyFilters(
+          'alpaca.reportTab.excludedTaxonomies',
+          defaultExcludedTaxonomies,
+        )
+      : defaultExcludedTaxonomies;
+
+  // Apply syntax highlighting to table cells after render
+  useEffect(() => {
+    if (!tableRef.current) return;
+
+    const timeoutId = setTimeout(() => {
+      highlightTableCells(tableRef.current);
+
+      // Make highlighted URLs clickable
+      if (urlValue && isValidHttpUrl(urlValue) && urlCellRef.current) {
+        const codeEl = urlCellRef.current.querySelector('code.language-uri');
+        if (codeEl) {
+          codeEl.style.cursor = 'pointer';
+          codeEl.addEventListener('click', () => {
+            window.open(urlValue, '_blank', 'noopener,noreferrer');
+          });
+        }
+      }
+    }, 0);
+
+    return () => clearTimeout(timeoutId);
+  }, [issueDetails, urlValue]);
+
+  return (
+    <div className="alpaca-report-tab alpaca-data-table-context">
+      <table ref={tableRef} className="alpaca-data-table">
         <tbody>
           <tr>
-            <th scope="row">Reported</th>
+            <th scope="row">{__('Reported', 'alpaca-issue-tracker')}</th>
             <td>
-              {date.format(
-                datesettings.formats.datetimeAbbreviated,
-                new Date(issueDetails.post_data.post_date),
-              )}
+              {reportedDate
+                ? formatDateTimeWithUtcOffset(reportedDate)
+                : __('N/A', 'alpaca-issue-tracker')}
             </td>
           </tr>
           <tr>
-            <th scope="row">Last edit</th>
+            <th scope="row">{__('Last edit', 'alpaca-issue-tracker')}</th>
             <td>
-              {date.format(
-                datesettings.formats.datetimeAbbreviated,
-                new Date(issueDetails.post_data.post_modified),
-              )}
+              {lastEditedDate
+                ? formatDateTimeWithUtcOffset(lastEditedDate)
+                : __('N/A', 'alpaca-issue-tracker')}
             </td>
           </tr>
           <tr>
-            <th scope="row">URL</th>
-            <td>
-              {issueDetails.meta.alpaca_url || issueDetails.meta.URL ? (
-                <a
-                  href={issueDetails.meta.alpaca_url || issueDetails.meta.URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {issueDetails.meta.alpaca_url || issueDetails.meta.URL}
-                </a>
-              ) : (
-                'N/A'
-              )}
+            <th scope="row">{__('URL', 'alpaca-issue-tracker')}</th>
+            <td ref={urlCellRef} className="alpaca-highlight-allowed">
+              {urlValue ? urlValue : __('N/A', 'alpaca-issue-tracker')}
             </td>
           </tr>
           <tr>
-            <th scope="row">Screen</th>
+            <th scope="row">{__('Viewport', 'alpaca-issue-tracker')}</th>
             <td>
               {(issueDetails.meta.alpaca_screenwidth ||
                 issueDetails.meta.screenwidth) &&
@@ -117,28 +150,28 @@ const ReportTab = memo(
                     issueDetails.meta.alpaca_screenheight ||
                     issueDetails.meta.screenheight
                   }`
-                : 'N/A'}
+                : __('N/A', 'alpaca-issue-tracker')}
             </td>
           </tr>
           {Object.entries(issueDetails.taxonomies)
-            .filter(([taxonomy]) => taxonomy !== 'assignee')
+            .filter(([taxonomy]) => !excludedTaxonomies.includes(taxonomy))
             .map(([taxonomy, terms]) => (
               <tr key={taxonomy}>
-                <th style={{ textTransform: 'capitalize' }}>{taxonomy}</th>
+                <th>
+                  {taxonomyLabels[taxonomy] ||
+                    getTaxonomyFallbackLabel(taxonomy)}
+                </th>
                 <td>{terms.map((term) => term.name).join(', ')}</td>
               </tr>
             ))}
         </tbody>
       </table>
     </div>
-  ),
-);
+  );
+});
 
 ReportTab.propTypes = {
   issueDetails: PropTypes.object.isRequired,
-  onScreenshotDelete: PropTypes.func.isRequired,
-  isLoading: PropTypes.bool.isRequired,
-  onScreenshotClick: PropTypes.func.isRequired,
 };
 
 ReportTab.displayName = 'ReportTab';

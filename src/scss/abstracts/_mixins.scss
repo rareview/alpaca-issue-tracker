@@ -1,0 +1,166 @@
+@use 'sass:color';
+@use 'variables' as *;
+
+/*
+ * Mixins
+ */
+@mixin deadline-style($bg-color) {
+  background-color: $bg-color;
+  color: if(
+    color.channel($bg-color, 'lightness', $space: hsl) > 67%,
+    $color-black,
+    $color-white
+  );
+  margin: $space-3xs 0;
+  margin-inline-end: $space-md;
+  padding: 0 $space-sm;
+}
+
+@mixin alpaca-item-deadline-states {
+  &[data-deadline-state='late'] {
+    @include deadline-style($color-priority-high);
+  }
+
+  &[data-deadline-state='today'] {
+    @include deadline-style($color-deadline-today);
+  }
+
+  &[data-deadline-state='soon'] {
+    @include deadline-style($color-deadline-soon);
+  }
+
+  &[data-deadline-state='future'] {
+    padding-inline: 0;
+  }
+}
+
+@mixin alpaca-item-priority-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4ch;
+
+  svg {
+    color: $color-priority-high;
+    width: $size-icon-lg;
+    height: $size-icon-lg;
+    border-radius: $radius-round;
+    padding: $space-3xs;
+    border: 1px solid $color-border;
+    flex-shrink: 0;
+  }
+}
+
+@mixin alpaca-assignee-stack(
+  $avatar-size: $size-icon-xl,
+  $user-offset: -$space-sm,
+  $avatar-overlap: calc(-1 * 2px),
+  $show-single-name: true,
+  $user-font-size: $font-size-xs,
+  $user-gap: $space-sm
+) {
+  .alpaca-user-name {
+    display: none;
+  }
+
+  @if $show-single-name {
+    &[data-assignees='1'] {
+      .alpaca-user .alpaca-user-name {
+        display: block;
+      }
+    }
+  }
+
+  .alpaca-user {
+    display: inline-flex;
+    align-items: center;
+    gap: $user-gap;
+    font-size: $user-font-size;
+    margin-inline-start: $user-offset;
+
+    &:first-child {
+      margin-inline-start: 0;
+    }
+  }
+
+  img {
+    width: $avatar-size;
+    height: $avatar-size;
+    border: 1px solid $color-border;
+    border-radius: $radius-round;
+    background: $color-white;
+    vertical-align: middle;
+    margin-inline-end: $avatar-overlap;
+  }
+}
+
+@mixin alpaca-item-datapoints-content(
+  $item-spacing: $space-md,
+  $text-color: $color-text-muted
+) {
+  color: $text-color;
+
+  > * {
+    display: inline-flex;
+    align-items: center;
+    gap: $space-2xs;
+    vertical-align: middle;
+    margin-inline-end: $item-spacing;
+  }
+
+  > *:last-child {
+    margin-inline-end: 0;
+  }
+
+  .alpaca-item-priority-badge {
+    @include alpaca-item-priority-badge;
+  }
+
+  .alpaca-item-assignees {
+    @include alpaca-assignee-stack;
+  }
+
+  .alpaca-item-deadline {
+    margin-inline-end: $item-spacing;
+  }
+
+  > *:last-child .alpaca-item-deadline {
+    margin-inline-end: 0;
+  }
+
+  .alpaca-item-labels {
+    display: inline;
+  }
+
+  .alpaca-item-labels > * {
+    margin-inline-end: $space-2xs;
+  }
+
+  .alpaca-item-labels > *:last-child {
+    margin-inline-end: 0;
+  }
+
+  .alpaca-item-icon {
+    text-wrap: nowrap;
+
+    svg {
+      margin-inline-end: $space-3xs;
+      vertical-align: middle;
+      margin-top: calc(-1 * 2px);
+    }
+  }
+}
+
+@mixin alpaca-slide-right-enter {
+  animation: slide-in-right $duration-slow ease-out forwards;
+  transform-origin: 100% center;
+
+  html[dir='rtl'] &,
+  .rtl & {
+    animation: slide-in-left $duration-slow ease-out forwards;
+    transform-origin: 0 center;
+  }
+}
+
+%alpaca-slide-right-enter {
+  @include alpaca-slide-right-enter;
+}

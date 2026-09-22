@@ -12,9 +12,7 @@
   },
   "globals": {
     "wp": "readonly",
-    "wpApiSettings": "readonly",
-    "alpaca_data": "readonly",
-    "alpacaDataDump": "readonly",
+    "alpaistrDataDump": "readonly",
     "snapdom": "readonly"
   },
   "parserOptions": {
@@ -57,9 +55,10 @@
       "error",
       {
         "allow": [
+          "^alpaca_",
+          "^alpaistr_",
           "unstable_batchedUpdates",
-          "alpaca_data",
-          "alpacaDataDump",
+          "alpaistrDataDump",
           "hide_from_snapdom",
           "comment_count",
           "display_name",
@@ -67,14 +66,12 @@
           "author_img",
           "term_id",
           "term_score",
-          "alpaca_enable_test_logs",
           "comment_type",
           "author_user_agent",
           "post_data",
           "post_content",
           "post_title",
-          "issue_id",
-          "alpaca_screenshot"
+          "issue_id"
         ]
       }
     ]

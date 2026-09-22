@@ -1,26 +1,240 @@
 import StatusManager from './components/StatusManager';
-import DefaultStatusSelector from './components/DefaultStatusSelector';
 import EnableTestLogsControl from './components/EnableTestLogsControl';
-const { useState, useEffect, useCallback } = wp.element;
+import EnableContextCaptureControl from './components/EnableContextCaptureControl';
+import LabelsManager from './components/LabelsManager';
+import RestoreManager from './components/RestoreManager';
+import ItemDatapointsManager from './components/ItemDatapointsManager';
+const { useState, useEffect, useCallback, useMemo, useRef } = wp.element;
+const { __ } = wp.i18n;
+const { applyFilters } = wp.hooks;
+const { TabPanel } = wp.components;
+
+const SETTINGS_TABS_FILTER = 'alpaca.settings.tabs';
+const SETTINGS_TAB_CONTENT_FILTER = 'alpaca.settings.tabContent';
+const SETTINGS_TAB_RENDER_DELAY_MS = 100;
+
+/*
+ * Third-party tab extension example:
+ * wp.hooks.addFilter(
+ *   'alpaca.settings.tabs',
+ *   'my-plugin/settings-tab',
+ *   (tabs) => [
+ *     ...tabs,
+ *     {
+ *       name: 'my-plugin',
+ *       title: __('My Plugin', 'my-plugin'),
+ *       className: 'alpaca-settings-tab--my-plugin',
+ *     },
+ *   ],
+ * );
+ *
+ * Then return that tab's panel content from:
+ * wp.hooks.addFilter(
+ *   'alpaca.settings.tabContent',
+ *   'my-plugin/settings-tab-content',
+ *   (content, tab, context) => {
+ *     if ('my-plugin' !== tab.name) {
+ *       return content;
+ *     }
+ *
+ *     return <MyPluginSettings statuses={context.statuses} />;
+ *   },
+ * );
+ */
+
+const SETTINGS_BASE_TABS = [
+  {
+    name: 'statuses',
+    title: __('Statuses', 'alpaca-issue-tracker'),
+    className: 'alpaca-settings-tab--statuses',
+  },
+  {
+    name: 'item-datapoints',
+    title: __('Cards', 'alpaca-issue-tracker'),
+    className: 'alpaca-settings-tab--item-datapoints',
+  },
+  {
+    name: 'labels',
+    title: __('Labels', 'alpaca-issue-tracker'),
+    className: 'alpaca-settings-tab--labels',
+  },
+  {
+    name: 'deleted-items',
+    title: __('Deleted Items', 'alpaca-issue-tracker'),
+    className: 'alpaca-settings-tab--deleted-items',
+  },
+];
+
+const SETTINGS_TAB = {
+  name: 'settings',
+  title: __('Settings', 'alpaca-issue-tracker'),
+  className: 'alpaca-settings-tab--settings',
+};
+
+/**
+ * Build settings tabs including third-party custom tabs.
+ *
+ * @param {Object} context Filter context.
+ * @return {Array<Object>} Tab definitions.
+ */
+const getSettingsTabs = (context) => {
+  const builtInTabs = [...SETTINGS_BASE_TABS, SETTINGS_TAB];
+  const filteredTabs =
+    'function' === typeof applyFilters
+      ? applyFilters(SETTINGS_TABS_FILTER, builtInTabs, context)
+      : builtInTabs;
+  const normalizedTabs = Array.isArray(filteredTabs)
+    ? filteredTabs.filter(
+        (tab) =>
+          tab &&
+          'object' === typeof tab &&
+          'string' === typeof tab.name &&
+          '' !== tab.name,
+      )
+    : builtInTabs;
+
+  return normalizedTabs;
+};
+
+const renderSettingsTab = (currentStatuses) => {
+  return (
+    <div className="alpaca-settings-tab-content">
+      <table className="form-table">
+        <tbody>
+          {/*
+           * Action hook for adding additional settings.
+           * @param {Object} context - Contains statuses array.
+           */}
+          {wp.hooks.applyFilters('alpaca.settings.additionalRows', null, {
+            statuses: currentStatuses,
+          })}
+          <EnableTestLogsControl />
+          <EnableContextCaptureControl />
+        </tbody>
+      </table>
+
+      {/* Extensibility hook for adding custom settings sections. */}
+      {wp.hooks.applyFilters('alpaca.settings.afterTable', null, {
+        statuses: currentStatuses,
+      })}
+    </div>
+  );
+};
+
+const renderStatusesTab = (
+  statuses,
+  fetchStatuses,
+  isLoading,
+  error,
+  handleStatusesOrderChange,
+) => {
+  return (
+    <div className="alpaca-settings-tab-content">
+      <StatusManager
+        statuses={statuses}
+        fetchStatuses={fetchStatuses}
+        isLoading={isLoading}
+        error={error}
+        onStatusesChange={handleStatusesOrderChange}
+      />
+    </div>
+  );
+};
+
+const renderLabelsTab = () => {
+  return (
+    <div className="alpaca-settings-tab-content">
+      <LabelsManager />
+    </div>
+  );
+};
+
+const renderItemDatapointsTab = () => {
+  return (
+    <div className="alpaca-settings-tab-content">
+      <ItemDatapointsManager />
+    </div>
+  );
+};
+
+const renderCustomSettingsTabContent = (tab, context) => {
+  if ('function' !== typeof applyFilters) {
+    return null;
+  }
+
+  return applyFilters(SETTINGS_TAB_CONTENT_FILTER, null, tab, context);
+};
 
 const AlpacaSettings = () => {
   const [statuses, setStatuses] = useState([]);
   const [currentStatuses, setCurrentStatuses] = useState([]); // Track current order
-  const [defaultStatusId, setDefaultStatusId] = useState(''); // Track default status
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const settingsTabsRef = useRef(null);
 
-  const fetchStatuses = useCallback(() => {
-    setIsLoading(true);
+  useEffect(() => {
+    const tabsElement = settingsTabsRef.current;
+
+    if (!tabsElement || typeof document.startViewTransition !== 'function') {
+      return undefined;
+    }
+
+    const handleTabClick = (event) => {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        return;
+      }
+
+      const target = event.target;
+      const tab =
+        target instanceof Element
+          ? target.closest('.components-tab-panel__tabs-item')
+          : null;
+
+      if (!tab || tab.classList.contains('is-active')) {
+        return;
+      }
+
+      try {
+        document.startViewTransition(
+          () =>
+            new Promise((resolve) => {
+              window.setTimeout(resolve, SETTINGS_TAB_RENDER_DELAY_MS);
+            }),
+        );
+      } catch (transitionError) {
+        void transitionError;
+      }
+    };
+
+    tabsElement.addEventListener('click', handleTabClick, true);
+
+    return () => {
+      tabsElement.removeEventListener('click', handleTabClick, true);
+    };
+  }, []);
+
+  const fetchStatuses = useCallback((options = {}) => {
+    const { silent = false } = options;
+
+    if (!silent) {
+      setIsLoading(true);
+    }
+
     wp.apiFetch({ path: '/alpaca/v1/statuses' })
       .then((data) => {
         setStatuses(data);
         setCurrentStatuses(data); // Initialize current order
-        setIsLoading(false);
+
+        if (!silent) {
+          setIsLoading(false);
+        }
       })
       .catch((err) => {
         setError(err.message);
-        setIsLoading(false);
+
+        if (!silent) {
+          setIsLoading(false);
+        }
       });
   }, []);
 
@@ -33,35 +247,64 @@ const AlpacaSettings = () => {
     setCurrentStatuses(newOrder);
   }, []);
 
-  // Handle when DefaultStatusSelector changes the default
-  const handleDefaultStatusChange = useCallback((newDefaultId) => {
-    setDefaultStatusId(newDefaultId);
-  }, []);
+  const settingsTabs = useMemo(
+    () => getSettingsTabs({ statuses: currentStatuses }),
+    [currentStatuses],
+  );
 
   return (
     <div className="alpaca-settings-wrap">
-      <StatusManager
-        statuses={statuses}
-        fetchStatuses={fetchStatuses}
-        isLoading={isLoading}
-        error={error}
-        onStatusesChange={handleStatusesOrderChange}
-        defaultStatusId={defaultStatusId}
-      />
+      <TabPanel
+        ref={settingsTabsRef}
+        className="alpaca-notifications-tabs alpaca-settings-tabs"
+        activeClass="is-active"
+        tabs={settingsTabs}
+      >
+        {(tab) => {
+          const tabContext = {
+            statuses: currentStatuses,
+          };
 
-      <hr />
+          if ('statuses' === tab.name) {
+            return renderStatusesTab(
+              statuses,
+              fetchStatuses,
+              isLoading,
+              error,
+              handleStatusesOrderChange,
+            );
+          }
 
-      <h3>Settings</h3>
+          if ('labels' === tab.name) {
+            return renderLabelsTab();
+          }
 
-      <table className="form-table">
-        <tbody>
-          <DefaultStatusSelector
-            statuses={currentStatuses}
-            onDefaultChange={handleDefaultStatusChange}
-          />
-          <EnableTestLogsControl />
-        </tbody>
-      </table>
+          if ('deleted-items' === tab.name) {
+            return (
+              <div className="alpaca-settings-tab-content">
+                <RestoreManager />
+              </div>
+            );
+          }
+
+          if ('item-datapoints' === tab.name) {
+            return renderItemDatapointsTab();
+          }
+
+          if ('settings' === tab.name) {
+            return renderSettingsTab(currentStatuses);
+          }
+
+          const customContent = renderCustomSettingsTabContent(tab, tabContext);
+          if (customContent) {
+            return (
+              <div className="alpaca-settings-tab-content">{customContent}</div>
+            );
+          }
+
+          return null;
+        }}
+      </TabPanel>
     </div>
   );
 };

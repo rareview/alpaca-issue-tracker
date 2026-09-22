@@ -1,14 +1,143 @@
 import { getUser, generateAssigneeSpan } from '../hooks/useUser.js';
 import { fetchIssueCommentCount } from '../services/issueApi.js';
+import { fetchIssueBySlug } from '../services/issueSearch';
+import { formatWpDateValue } from './date';
+import { buildIssueLinkToken, extractIssueLinks } from './issueLinks';
 
 /**
  * Handles automatic commenting on issues, such as when an issue is created.
  * This script hooks into WordPress actions to add comments via the REST API.
  */
-const { addAction, doAction } = wp.hooks;
+const { addAction, doAction, addFilter, applyFilters } = wp.hooks;
 const apiFetch = wp.apiFetch;
+const { __ } = wp.i18n;
 
-const postComment = async (issueOrId, content) => {
+/**
+ * Strips HTML and basic Markdown from a string.
+ *
+ * @param {string} input The string to sanitize.
+ * @return {string} The plain text string.
+ */
+const stripHtmlAndMarkdown = (input) => {
+  if (!input) {
+    return '';
+  }
+
+  let output = input;
+
+  // Strip HTML tags
+  output = output.replace(/<[^>]*>?/gm, '');
+
+  // Strip custom issue links, keeping the text label.
+  output = output.replace(/#\[([^\]]+)\]\(([^)\s]+)\)/g, '$1');
+
+  // Strip Markdown links, keeping the text
+  output = output.replace(/\[(.*?)\]\(.*?\)/g, '$1');
+
+  // Strip Markdown bold and italic, keeping the text
+  output = output.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1');
+
+  return output;
+};
+
+/**
+ * Build a user label for audit comments.
+ *
+ * @param {Object|null} user       Candidate user object.
+ * @param {string}      identifier User name or slug fallback.
+ * @return {string} HTML-safe label.
+ */
+const getAuditCommentUserLabel = (user, identifier = '') => {
+  if (user) {
+    return generateAssigneeSpan(user, true);
+  }
+
+  const fallbackLabel =
+    typeof identifier === 'string' && identifier.trim()
+      ? identifier.trim()
+      : __('Unknown user', 'alpaca-issue-tracker');
+
+  return fallbackLabel;
+};
+
+/**
+ * Safely format a subissue title for comments.
+ *
+ * @param {Object} subissue Subissue object.
+ * @return {string} Formatted subissue title.
+ */
+const getSubissueLabel = (subissue) => {
+  const title = subissue?.title || subissue?.content || '';
+  const cleanedTitle = stripHtmlAndMarkdown(title).trim();
+  return cleanedTitle || __('Untitled subissue', 'alpaca-issue-tracker');
+};
+
+/**
+ * Build structured notification context saved alongside audit comments.
+ *
+ * @param {Object} context Raw context object.
+ * @return {Object} Sanitized notification context.
+ */
+const buildNotificationContext = (context = {}) => {
+  const affectedUserIdsKey = 'affected_user_ids';
+  const subissueTitleKey = 'subissue_title';
+  const notificationContext = {};
+
+  if (typeof context.action === 'string' && context.action.trim()) {
+    notificationContext.action = context.action.trim();
+  }
+
+  if (Array.isArray(context.affectedUserIds)) {
+    notificationContext[affectedUserIdsKey] = context.affectedUserIds
+      .map((value) => Number(value))
+      .filter((value) => Number.isInteger(value) && value > 0);
+  }
+
+  if (
+    Number.isInteger(Number(context.subissueId)) &&
+    Number(context.subissueId) > 0
+  ) {
+    notificationContext.subissue_id = Number(context.subissueId);
+  }
+
+  if (
+    typeof context.subissueTitle === 'string' &&
+    context.subissueTitle.trim()
+  ) {
+    notificationContext[subissueTitleKey] = context.subissueTitle.trim();
+  }
+
+  return notificationContext;
+};
+
+const getUniqueIssueLinks = (content) => {
+  const seen = new Set();
+
+  return extractIssueLinks(content).filter((link) => {
+    const slug = String(link?.slug || '').trim();
+
+    if (!slug || seen.has(slug)) {
+      return false;
+    }
+
+    seen.add(slug);
+    return true;
+  });
+};
+
+addFilter('alpaca.commentObject', 'alpaca/addPlainText', (comment) => {
+  if (comment && comment.content && comment.content.raw) {
+    comment.content.txt = stripHtmlAndMarkdown(comment.content.raw);
+  }
+  return comment;
+});
+
+export const postComment = async (
+  issueOrId,
+  content,
+  commentTags = [],
+  options = {},
+) => {
   let postId;
   if (issueOrId && typeof issueOrId === 'object') {
     // Prioritize issue.post_id if available (for full issue objects)
@@ -24,60 +153,574 @@ const postComment = async (issueOrId, content) => {
       'postComment: No valid post ID found for comment.',
       issueOrId,
     );
-    return;
+    return null;
+  }
+
+  const authorUserAgent =
+    typeof options.authorUserAgent === 'string' &&
+    options.authorUserAgent.trim()
+      ? options.authorUserAgent.trim()
+      : 'audit';
+
+  const commentData = {
+    post: postId,
+    content,
+    comment_type: 'issuecomment',
+    author_user_agent: authorUserAgent,
+  };
+
+  const commentMeta =
+    options && options.meta && typeof options.meta === 'object'
+      ? options.meta
+      : {};
+
+  if (commentTags && commentTags.length > 0) {
+    commentData.meta = {
+      alpacaCommentTags: commentTags,
+      ...commentMeta,
+    };
+  } else if (Object.keys(commentMeta).length > 0) {
+    commentData.meta = commentMeta;
   }
 
   try {
-    await apiFetch({
+    const newlyCreatedComment = await apiFetch({
       path: '/wp/v2/comments',
       method: 'POST',
-      data: {
-        post: postId,
-        content,
-        comment_type: 'issuecomment',
-        status: 'approve',
-        author_user_agent: 'audit',
-      },
-    }).then(async (newlyCreatedComment) => {
-      wp.hooks.doAction('alpaca.commentPosted', newlyCreatedComment);
+      data: commentData,
+    });
+
+    doAction(
+      'alpaca.commentPosted',
+      applyFilters('alpaca.commentObject', newlyCreatedComment),
+    );
+
+    try {
       const response = await fetchIssueCommentCount(postId);
       if (response && typeof response.comment_count !== 'undefined') {
         doAction('alpaca.commentCountChanged', {
           issueId: postId.toString(),
           newCount: response.comment_count,
+          newCountByAgent: response.comment_count_by_agent || null,
+        });
+        doAction('alpaca.lastActivityChanged', {
+          issueId: postId.toString(),
+          lastActivity:
+            typeof response.last_activity !== 'undefined'
+              ? response.last_activity
+              : new Date().toISOString(),
         });
       }
-    });
+    } catch (countError) {
+      console.error(
+        'issueCommentHandler.js: Error updating comment count:',
+        countError,
+      );
+    }
+
+    return newlyCreatedComment;
   } catch (error) {
     console.error('issueCommentHandler.js: Error adding comment:', error);
+    return null;
   }
 };
 
-addAction('alpaca.issueSubmitted', 'alpaca/addIssueComment', async (issue) => {
-  const currentUser = await getUser();
-  const commentContent = `Issue created by ${generateAssigneeSpan(
-    currentUser,
-  )}`;
-  await postComment(issue, commentContent); // Pass issue object
-});
+/**
+ * Post audit comments on linked issues for newly added issue references.
+ *
+ * @param {Object} options                 Audit options.
+ * @param {string} options.content         Current comment content.
+ * @param {string} options.previousContent Previous comment content.
+ * @param {Object} options.currentUser     Current user object.
+ * @param {Object} options.sourceIssue     Linking issue context.
+ * @return {Promise<void>} Resolves when audit comments are posted.
+ */
+export const postIssueMentionAuditComments = async ({
+  content,
+  previousContent = '',
+  currentUser,
+  sourceIssue,
+}) => {
+  const sourceIssueId = Number(sourceIssue?.post_id || sourceIssue?.id || 0);
+  const sourceIssueSlug = String(
+    sourceIssue?.slug || sourceIssue?.post_name || '',
+  ).trim();
+
+  if (!sourceIssueId || !sourceIssueSlug || !content) {
+    return;
+  }
+
+  const previousSlugs = new Set(
+    getUniqueIssueLinks(previousContent).map((link) => link.slug),
+  );
+  const sourceIssueLabel =
+    stripHtmlAndMarkdown(
+      sourceIssue?.title ||
+        sourceIssue?.post_title ||
+        sourceIssue?.content ||
+        '',
+    ).trim() || __('Unknown issue', 'alpaca-issue-tracker');
+  const sourceIssueLink =
+    buildIssueLinkToken({
+      slug: sourceIssueSlug,
+      title: sourceIssueLabel,
+    }) || sourceIssueLabel;
+  const resolvedCurrentUser = currentUser || (await getUser());
+  const authorLabel = getAuditCommentUserLabel(
+    resolvedCurrentUser,
+    resolvedCurrentUser?.display_name || resolvedCurrentUser?.name || '',
+  );
+  const issueLinks = getUniqueIssueLinks(content).filter(
+    (link) => link.slug !== sourceIssueSlug && !previousSlugs.has(link.slug),
+  );
+
+  for (const link of issueLinks) {
+    // eslint-disable-next-line no-await-in-loop
+    const linkedIssue = await fetchIssueBySlug(link.slug);
+
+    if (!linkedIssue || Number(linkedIssue.id) === sourceIssueId) {
+      continue;
+    }
+
+    const commentContent = `${authorLabel} ${__(
+      'mentioned this issue on',
+      'alpaca-issue-tracker',
+    )} ${sourceIssueLink}`;
+
+    // eslint-disable-next-line no-await-in-loop
+    await postComment(linkedIssue.id, commentContent, ['issue-mentioned'], {
+      meta: {
+        alpacaNotificationContext: buildNotificationContext({
+          action: 'mention',
+        }),
+      },
+    });
+  }
+};
+
+addAction(
+  'alpaca.issueSubmitted',
+  'alpaca/addIssueSubmittedComment',
+  async (issue, _statusId, isHighPriority, submission = {}) => {
+    if (!issue || !issue.id) {
+      return;
+    }
+
+    if (submission.commentAlreadyCreated) {
+      return;
+    }
+
+    const submittedText =
+      typeof submission.feedback === 'string' ? submission.feedback.trim() : '';
+    const fallbackTitle =
+      typeof issue.title === 'string'
+        ? stripHtmlAndMarkdown(issue.title).trim()
+        : '';
+    const commentContent = submittedText || fallbackTitle;
+
+    if (!commentContent) {
+      return;
+    }
+
+    const screenshotUrl =
+      typeof submission.screenshotUrl === 'string'
+        ? submission.screenshotUrl.trim()
+        : '';
+    const commentMeta = {};
+    if (screenshotUrl) {
+      commentMeta.alpacaCommentAttachments = [screenshotUrl];
+    }
+
+    const commentTags = ['issue-created'];
+    if (isHighPriority) {
+      commentTags.push('high-priority');
+    }
+
+    await postComment(issue.id, commentContent, commentTags, {
+      authorUserAgent: 'create',
+      meta: commentMeta,
+    });
+  },
+);
 
 addAction(
   'alpaca.statusChanged',
   'alpaca/addStatusChangeComment',
   async (issue, fromStatus, toStatus) => {
-    const commentContent = `Status changed from **${fromStatus}** to **${toStatus}**`;
-    await postComment(issue, commentContent); // Pass issue object
+    const currentUser = await getUser();
+    const actionClass = ['status-changed'];
+    const commentContent = `${__('Status changed from', 'alpaca-issue-tracker')} **${fromStatus}** ${__(
+      'to',
+      'alpaca-issue-tracker',
+    )} **${toStatus}** ${__('by', 'alpaca-issue-tracker')} ${generateAssigneeSpan(
+      currentUser,
+    )}`;
+    await postComment(issue, commentContent, actionClass, {
+      meta: {
+        alpacaNotificationContext: buildNotificationContext({
+          action: 'changed',
+        }),
+      },
+    });
   },
 );
 
 addAction(
   'alpaca.assigneeChanged',
   'alpaca/addAssigneeChangeComment',
-  async (issue, user, isAssigned) => {
+  async (issue, user, isAssigned, identifier = '') => {
+    const currentUser = await getUser();
     const actionText = isAssigned ? 'assigned to' : 'unassigned from';
-    const commentContent = `${generateAssigneeSpan(
-      user,
-    )} ${actionText} this issue`;
-    await postComment(issue, commentContent); // Pass issue object
+    const actionClass = [
+      'assignee-changed',
+      isAssigned ? 'action-add' : 'action-remove',
+    ];
+    const targetUserLabel = getAuditCommentUserLabel(user, identifier);
+    const commentContent = `${targetUserLabel} ${__('was', 'alpaca-issue-tracker')} ${actionText} ${__(
+      'this issue by',
+      'alpaca-issue-tracker',
+    )} ${generateAssigneeSpan(currentUser)}`;
+    await postComment(issue, commentContent, actionClass, {
+      meta: {
+        alpacaNotificationContext: buildNotificationContext({
+          action: isAssigned ? 'assign' : 'unassign',
+          affectedUserIds: user?.id ? [user.id] : [],
+        }),
+      },
+    });
+  },
+);
+
+addAction(
+  'alpaca.deadlineUpdated',
+  'alpaca/addDeadlineChangeComment',
+  async (payload) => {
+    const { changeType, newDeadline, issue } = payload;
+    // payload also includes oldDeadline
+    const currentUser = await getUser();
+    let commentContent = '';
+    const actionClass = ['deadline-changed'];
+
+    const formatDate = (dateString) => {
+      if (!dateString) return '';
+      const format = wp.date.getSettings().formats.date;
+      return formatWpDateValue(dateString, format, {
+        treatMysqlAsUtc: true,
+      });
+    };
+
+    switch (changeType) {
+      case 'added':
+        actionClass.push('action-add');
+        commentContent = `${__('Deadline set to', 'alpaca-issue-tracker')} **${formatDate(
+          newDeadline,
+        )}** ${__('by', 'alpaca-issue-tracker')} ${generateAssigneeSpan(currentUser)}`;
+        break;
+      case 'deleted':
+        actionClass.push('action-remove');
+        commentContent = `${__('Deadline removed by', 'alpaca-issue-tracker')} ${generateAssigneeSpan(
+          currentUser,
+        )}`;
+        break;
+      case 'changed':
+        actionClass.push('action-update');
+        commentContent = `${__('Deadline changed to', 'alpaca-issue-tracker')} **${formatDate(
+          newDeadline,
+        )}** ${__('by', 'alpaca-issue-tracker')} ${generateAssigneeSpan(currentUser)}`;
+        break;
+      default:
+        // Do nothing if changeType is unknown
+        break;
+    }
+
+    if (commentContent) {
+      await postComment(issue, commentContent, actionClass, {
+        meta: {
+          alpacaNotificationContext: buildNotificationContext({
+            action: changeType,
+          }),
+        },
+      });
+    }
+  },
+);
+
+addAction(
+  'alpaca.priorityUpdated',
+  'alpaca/addPriorityChangeComment',
+  async (payload) => {
+    const { issue, isHighPriority } = payload;
+    const currentUser = await getUser();
+    const actionClass = ['priority-changed'];
+
+    let commentContent = '';
+    if (isHighPriority) {
+      actionClass.push('action-add');
+      commentContent = `${__('Priority set to **High** by', 'alpaca-issue-tracker')} ${generateAssigneeSpan(
+        currentUser,
+      )}`;
+    } else {
+      actionClass.push('action-remove');
+      commentContent = `${__('High priority removed by', 'alpaca-issue-tracker')} ${generateAssigneeSpan(
+        currentUser,
+      )}`;
+    }
+
+    if (commentContent) {
+      await postComment(issue, commentContent, actionClass, {
+        meta: {
+          alpacaNotificationContext: buildNotificationContext({
+            action: isHighPriority ? 'enable' : 'disable',
+          }),
+        },
+      });
+    }
+  },
+);
+
+addAction(
+  'alpaca.subissueCreated',
+  'alpaca/addSubissueCreatedComment',
+  async (issue, subissue) => {
+    const currentUser = await getUser();
+    const actionClass = ['subissue-created'];
+    const subissueLabel = getSubissueLabel(subissue);
+    const commentContent = `${__('Checklist item', 'alpaca-issue-tracker')} **${subissueLabel}** ${__(
+      'created by',
+      'alpaca-issue-tracker',
+    )} ${generateAssigneeSpan(currentUser)}`;
+
+    await postComment(issue, commentContent, actionClass, {
+      meta: {
+        alpacaNotificationContext: buildNotificationContext({
+          action: 'create',
+          subissueId: subissue?.id,
+          subissueTitle: subissueLabel,
+        }),
+      },
+    });
+  },
+);
+
+addAction(
+  'alpaca.subissueCompletionToggled',
+  'alpaca/addSubissueCompletionComment',
+  async (issue, subissue, isCompleted) => {
+    const currentUser = await getUser();
+    const actionClass = ['subissue-completion-changed'];
+    const subissueLabel = getSubissueLabel(subissue);
+    const stateLabel = isCompleted ? 'completed' : 'reopened';
+    const commentContent = `${__('Checklist item', 'alpaca-issue-tracker')} **${subissueLabel}** ${__(
+      'marked as',
+      'alpaca-issue-tracker',
+    )} **${stateLabel}** ${__('by', 'alpaca-issue-tracker')} ${generateAssigneeSpan(
+      currentUser,
+    )}`;
+
+    await postComment(issue, commentContent, actionClass, {
+      meta: {
+        alpacaNotificationContext: buildNotificationContext({
+          action: isCompleted ? 'complete' : 'reopen',
+          subissueId: subissue?.id,
+          subissueTitle: subissueLabel,
+        }),
+      },
+    });
+  },
+);
+
+addAction(
+  'alpaca.subissueAssigneeChanged',
+  'alpaca/addSubissueAssigneeComment',
+  async (issue, subissue, user, isAssigned, identifier = '') => {
+    const currentUser = await getUser();
+    const actionText = isAssigned ? 'assigned to' : 'unassigned from';
+    const actionClass = [
+      'subissue-assignee-changed',
+      isAssigned ? 'action-add' : 'action-remove',
+    ];
+    const subissueLabel = getSubissueLabel(subissue);
+    const targetUserLabel = getAuditCommentUserLabel(user, identifier);
+    const commentContent = `${targetUserLabel} ${__('was', 'alpaca-issue-tracker')} ${actionText} ${__(
+      'checklist item',
+      'alpaca-issue-tracker',
+    )} **${subissueLabel}** ${__('by', 'alpaca-issue-tracker')} ${generateAssigneeSpan(
+      currentUser,
+    )}`;
+
+    await postComment(issue, commentContent, actionClass, {
+      meta: {
+        alpacaNotificationContext: buildNotificationContext({
+          action: isAssigned ? 'assign' : 'unassign',
+          affectedUserIds: user?.id ? [user.id] : [],
+          subissueId: subissue?.id,
+          subissueTitle: subissueLabel,
+        }),
+      },
+    });
+  },
+);
+
+addAction(
+  'alpaca.subissuePromoted',
+  'alpaca/addSubissuePromotedComment',
+  async (payload) => {
+    const { parentIssue, promotedIssue, subissue } = payload || {};
+    const currentUser = await getUser();
+    const actionClass = ['subissue-promoted'];
+    const subissueLabel = getSubissueLabel(subissue);
+
+    const parentTitle = stripHtmlAndMarkdown(parentIssue?.title || '').trim();
+    const parentLabel =
+      parentTitle || __('Unknown issue', 'alpaca-issue-tracker');
+    const parentIssueLink = buildIssueLinkToken(parentIssue) || parentLabel;
+
+    const promotedId = promotedIssue?.id || subissue?.id;
+    const promotedTitle = stripHtmlAndMarkdown(
+      promotedIssue?.title || '',
+    ).trim();
+    const promotedLabel = promotedTitle || __('Issue', 'alpaca-issue-tracker');
+    const promotedIssueLink =
+      buildIssueLinkToken({
+        slug: promotedIssue?.slug || subissue?.slug || '',
+        title: promotedLabel,
+      }) || promotedLabel;
+
+    const parentComment = `${__('Checklist item', 'alpaca-issue-tracker')} **${subissueLabel}** ${__(
+      'was promoted to issue',
+      'alpaca-issue-tracker',
+    )} ${promotedIssueLink} ${__('by', 'alpaca-issue-tracker')} ${generateAssigneeSpan(
+      currentUser,
+    )}`;
+    const promotedComment = `${__('Issue created from checklist item', 'alpaca-issue-tracker')} **${subissueLabel}** ${__(
+      'on',
+      'alpaca-issue-tracker',
+    )} ${parentIssueLink} ${__('by', 'alpaca-issue-tracker')} ${generateAssigneeSpan(
+      currentUser,
+    )}`;
+
+    if (parentIssue?.id) {
+      await postComment(parentIssue.id, parentComment, actionClass, {
+        meta: {
+          alpacaNotificationContext: buildNotificationContext({
+            action: 'promote',
+            subissueId: subissue?.id,
+            subissueTitle: subissueLabel,
+          }),
+        },
+      });
+    }
+
+    if (promotedId) {
+      await postComment(promotedId, promotedComment, actionClass, {
+        meta: {
+          alpacaNotificationContext: buildNotificationContext({
+            action: 'promote',
+            subissueId: subissue?.id,
+            subissueTitle: subissueLabel,
+          }),
+        },
+      });
+    }
+  },
+);
+
+addAction(
+  'alpaca.subissueDeleted',
+  'alpaca/addSubissueDeletedComment',
+  async (issue, subissue) => {
+    const currentUser = await getUser();
+    const actionClass = ['subissue-deleted'];
+    const subissueLabel = getSubissueLabel(subissue);
+    const commentContent = `${__('Checklist item', 'alpaca-issue-tracker')} **${subissueLabel}** ${__(
+      'deleted by',
+      'alpaca-issue-tracker',
+    )} ${generateAssigneeSpan(currentUser)}`;
+
+    await postComment(issue, commentContent, actionClass, {
+      meta: {
+        alpacaNotificationContext: buildNotificationContext({
+          action: 'delete',
+          subissueId: subissue?.id,
+          subissueTitle: subissueLabel,
+        }),
+      },
+    });
+  },
+);
+
+addAction(
+  'alpaca.subissueRestoredAudit',
+  'alpaca/addSubissueRestoredComment',
+  async (issue, subissue) => {
+    if (!issue || !subissue) {
+      return;
+    }
+
+    const currentUser = await getUser();
+    const actionClass = ['subissue-restored'];
+    const subissueLabel = getSubissueLabel(subissue);
+    const commentContent = `${__('Checklist item', 'alpaca-issue-tracker')} **${subissueLabel}** ${__(
+      'restored by',
+      'alpaca-issue-tracker',
+    )} ${generateAssigneeSpan(currentUser)}`;
+
+    await postComment(issue, commentContent, actionClass, {
+      meta: {
+        alpacaNotificationContext: buildNotificationContext({
+          action: 'restore',
+          subissueId: Number(subissue?.id) || 0,
+          subissueTitle: subissueLabel,
+        }),
+      },
+    });
+  },
+);
+
+addAction(
+  'alpaca.issueDeletedAudit',
+  'alpaca/addIssueDeletedAuditComment',
+  async (issueId) => {
+    if (!issueId) {
+      return;
+    }
+
+    const currentUser = await getUser();
+    const actionClass = ['issue-deleted'];
+    const commentContent = `${__('Issue **deleted** by', 'alpaca-issue-tracker')} ${generateAssigneeSpan(
+      currentUser,
+    )}`;
+
+    await postComment(issueId, commentContent, actionClass, {
+      meta: {
+        alpacaNotificationContext: buildNotificationContext({
+          action: 'delete',
+        }),
+      },
+    });
+  },
+);
+
+addAction(
+  'alpaca.issueRestoredAudit',
+  'alpaca/addIssueRestoredAuditComment',
+  async (issueId) => {
+    if (!issueId) {
+      return;
+    }
+
+    const currentUser = await getUser();
+    const actionClass = ['issue-restored'];
+    const commentContent = `${__('Issue **restored** by', 'alpaca-issue-tracker')} ${generateAssigneeSpan(
+      currentUser,
+    )}`;
+
+    await postComment(issueId, commentContent, actionClass, {
+      meta: {
+        alpacaNotificationContext: buildNotificationContext({
+          action: 'restore',
+        }),
+      },
+    });
   },
 );

@@ -1,26 +1,33 @@
-const { forwardRef } = wp.element;
+const { forwardRef, useEffect, useRef, useState } = wp.element;
 import PropTypes from 'prop-types';
-const { Card, CardBody, CardFooter } = wp.components;
+const { Card, CardBody } = wp.components;
 const { Text = wp.components.__experimentalText } = wp.components;
 import { useWatchlist } from '../context/WatchlistContext';
-import User from './User';
-import CommentIcon from './icons/CommentIcon';
-import CalendarIcon from './icons/CalendarIcon';
+import {
+  getControlSubscriptionSignature,
+  getNormalizedItemControls,
+  getRenderableItemControls,
+} from '../utils/itemControlDescriptors';
+import '../utils/itemControls';
+import '../utils/itemDatapoints';
 
 /**
  * Item component displayed in board containers.
  *
- * @param {Object}   root0              - Props object
- * @param {number}   root0.id           - Item ID
- * @param {string}   root0.content      - Item content text
- * @param {Array}    root0.assignees    - Array of assignees
- * @param {number}   root0.commentCount - Number of comments
- * @param {Object}   root0.meta         - Metadata object
- * @param {string}   root0.className    - CSS class name
- * @param {Object}   root0.style        - Inline styles
- * @param {Function} root0.onClick      - Click handler
- * @param {Object}   root0.props        - Additional props
- * @param {Object}   ref                - Forwarded ref
+ * @param {Object}   root0                     - Props object
+ * @param {number}   root0.id                  - Item ID
+ * @param {string|*} root0.content             - Item content text or inline markup
+ * @param {Array}    root0.assignees           - Array of assignees
+ * @param {Array}    root0.labels              - Array of labels
+ * @param {number}   root0.commentCount        - Number of comments
+ * @param {Object}   root0.commentCountByAgent - Comment counts by agent type
+ * @param {Object}   root0.meta                - Metadata object
+ * @param {string}   root0.postDate            - Post creation date
+ * @param {string}   root0.className           - CSS class name
+ * @param {Object}   root0.style               - Inline styles
+ * @param {Function} root0.onClick             - Click handler
+ * @param {Object}   root0.props               - Additional props
+ * @param {Object}   ref                       - Forwarded ref
  * @return {JSX.Element} Item component
  */
 const Item = forwardRef(
@@ -29,8 +36,11 @@ const Item = forwardRef(
       id,
       content,
       assignees = [],
+      labels = [],
       commentCount,
+      commentCountByAgent,
       meta,
+      postDate,
       className,
       style,
       onClick,
@@ -38,134 +48,129 @@ const Item = forwardRef(
     },
     ref,
   ) => {
-    const { isWatched, toggleWatch } = useWatchlist();
+    const { isWatched, toggleWatch, loading } = useWatchlist();
+    const [, setControlStateVersion] = useState(0);
+    const normalizedItemControlsRef = useRef([]);
     const watched = isWatched(id);
 
-    const assigneeDataAttributes = assignees.reduce((acc, assignee) => {
-      if (assignee && assignee.id) {
-        acc[`data-assignee-${assignee.id}`] = '';
-      }
-      return acc;
-    }, {});
+    // Allow third-party code to inject additional `data-` attributes
+    // via the `alpaca.item.card.dataAttributes` filter. The default
+    // value is an empty object; a filter registered elsewhere (for
+    // example to add `data-assignee-*`) will supply defaults.
+    const extraDataAttributes = wp.hooks.applyFilters(
+      'alpaca.item.card.dataAttributes',
+      {},
+      {
+        id,
+        content,
+        meta,
+        postDate,
+        assignees,
+        labels,
+        commentCount,
+        commentCountByAgent,
+        watched,
+      },
+    );
 
     const watchedClass = watched ? 'is-watched item-highlight' : '';
 
-    const deadline =
-      meta && meta.deadline && meta.deadline[0]
-        ? new Date(meta.deadline[0])
-        : null;
-    const isValidDeadline = deadline && !isNaN(deadline);
+    const handleWatchToggle = (event) => {
+      event.stopPropagation();
+      toggleWatch(id);
+    };
 
-    const deadlineFormatted = new Intl.DateTimeFormat(undefined, {
-      month: 'short',
-      day: 'numeric',
-    }).format(deadline);
+    // Allow third-party code to add controls via `alpaca.item.controls`.
+    // Filters may return either renderable elements or descriptor objects.
+    const filteredItemControls = wp.hooks.applyFilters(
+      'alpaca.item.controls',
+      [],
+      {
+        id,
+        content,
+        meta,
+        postDate,
+        assignees,
+        labels,
+        commentCount,
+        commentCountByAgent,
+        watched,
+        loading,
+        onWatchToggle: handleWatchToggle,
+      },
+    );
 
-    let diffDays = null;
-    if (isValidDeadline) {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      deadline.setHours(0, 0, 0, 0);
-      diffDays = Math.ceil((deadline - today) / (1000 * 60 * 60 * 24));
-    }
+    const normalizedItemControls =
+      getNormalizedItemControls(filteredItemControls);
 
-    const lateClass = diffDays < 0 ? 'is-late' : '';
-    const highPriorityClass =
-      meta && meta.high_priority ? 'is-high-priority' : '';
+    normalizedItemControlsRef.current = normalizedItemControls;
 
-    // Format deadline display text
-    let deadlineText = deadlineFormatted;
-    if (isValidDeadline) {
-      if (diffDays === 1) {
-        deadlineText = 'Tomorrow';
-      } else if (diffDays === 0) {
-        deadlineText = 'Today';
-      } else if (diffDays === -1) {
-        deadlineText = 'Yesterday';
-      }
-    }
+    const controlSubscriptionSignature = getControlSubscriptionSignature(
+      normalizedItemControls,
+    );
+
+    useEffect(() => {
+      const unsubscribeCallbacks = normalizedItemControlsRef.current
+        .map((control) => {
+          if (!control.subscribe) {
+            return null;
+          }
+
+          return control.subscribe(() => {
+            setControlStateVersion((version) => version + 1);
+          });
+        })
+        .filter(Boolean);
+
+      return () => {
+        unsubscribeCallbacks.forEach((unsubscribe) => {
+          unsubscribe();
+        });
+      };
+    }, [controlSubscriptionSignature]);
+
+    // Sort ready controls so active ones appear first.
+    const sortedItemControls = getRenderableItemControls(
+      normalizedItemControls,
+      (element, key) =>
+        wp.element.cloneElement(element, {
+          key,
+        }),
+    );
 
     return (
       // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
       <Card
         ref={ref}
-        className={`${className} ${watchedClass} ${lateClass} ${highPriorityClass}`.trim()}
+        className={`${className} ${watchedClass} `.trim()}
         style={style}
-        data-id={id}
-        data-days-left={diffDays}
-        {...assigneeDataAttributes}
+        {...extraDataAttributes}
         {...props}
         onClick={onClick}
       >
         <CardBody size="xSmall">
-          <div className="alpaca-item-upper">
-            <div className="alpaca-item-content">
-              <Text>{content}</Text>
+          <div className="alpaca-item-layout">
+            <div className="alpaca-item-main">
+              <div className="alpaca-item-content">
+                <Text>{content}</Text>
+              </div>
+              <div className="alpaca-item-datapoints">
+                {wp.hooks.applyFilters('alpaca.item.datapoints', null, {
+                  id,
+                  title: content,
+                  content,
+                  meta,
+                  postDate,
+                  assignees,
+                  labels,
+                  commentCount,
+                  commentCountByAgent,
+                })}
+              </div>
             </div>
-            <div className="alpaca-item-controls">
-              <div
-                className="dashicons dashicons-star-filled"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleWatch(id);
-                }}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.stopPropagation();
-                    toggleWatch(id);
-                  }
-                }}
-              />
-            </div>
+            <div className="alpaca-item-controls">{sortedItemControls}</div>
           </div>
         </CardBody>
-        <CardFooter size="xSmall" isBorderless>
-          <div className="alpaca-item-datapoints flexalign">
-            {meta &&
-              (meta.alpaca_high_priority === '1' ||
-                meta.alpaca_high_priority === 1 ||
-                meta.alpaca_high_priority === true) && (
-                <div className="alpaca-item-priority-badge">Priority</div>
-              )}
-
-            {assignees.length > 0 && (
-              <div
-                className="alpaca-item-assignees"
-                data-assignees={assignees.length}
-                title={
-                  assignees.length === 1
-                    ? assignees[0].displayName || assignees[0].name
-                    : assignees.map((a) => a.displayName || a.name).join(', ')
-                }
-              >
-                {assignees.map((assignee) => (
-                  <User key={assignee.id} user={assignee} />
-                ))}
-              </div>
-            )}
-
-            {typeof commentCount !== 'undefined' && commentCount > 0 && (
-              <div className="alpaca-item-icon alpaca-item-comment-count">
-                <CommentIcon />
-                {commentCount}
-              </div>
-            )}
-
-            {wp.hooks.applyFilters('alpaca.item.datapoints', null, {
-              id,
-              meta,
-            })}
-
-            {isValidDeadline && (
-              <div className="alpaca-item-icon alpaca-item-deadline">
-                <CalendarIcon />
-                {deadlineText}
-              </div>
-            )}
-          </div>
-        </CardFooter>
       </Card>
     );
   },
@@ -173,10 +178,13 @@ const Item = forwardRef(
 
 Item.propTypes = {
   id: PropTypes.number.isRequired,
-  content: PropTypes.string.isRequired,
+  content: PropTypes.oneOfType([PropTypes.string, PropTypes.node]).isRequired,
   assignees: PropTypes.arrayOf(PropTypes.object),
+  labels: PropTypes.arrayOf(PropTypes.object),
   commentCount: PropTypes.number,
+  commentCountByAgent: PropTypes.object,
   meta: PropTypes.object,
+  postDate: PropTypes.string,
   className: PropTypes.string,
   style: PropTypes.object,
   onClick: PropTypes.func,

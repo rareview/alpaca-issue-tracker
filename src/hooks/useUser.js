@@ -1,4 +1,7 @@
+import { escapeHtml, escapeAttr } from '../utils/sanitize';
+
 const { useState, useEffect } = wp.element;
+const { __ } = wp.i18n;
 
 const cache = new Map();
 
@@ -9,11 +12,6 @@ export async function getUser(id = 'me') {
   const user = await wp.apiFetch({ path: `/wp/v2/users/${id}` });
   cache.set(id, user);
   return user;
-}
-
-export async function getUsers(ids) {
-  const users = await Promise.all(ids.map(getUser));
-  return users;
 }
 
 export const useUser = (user) => {
@@ -52,14 +50,23 @@ export const useUser = (user) => {
 
 /**
  * Generates HTML for an assignee span to be used in comments.
- * @param {Object} user The user object for the assignee.
+ * @param {Object}  user       The user object for the assignee.
+ * @param {boolean} withAvatar Whether to include avatar.
  * @return {string} HTML string.
  */
-export const generateAssigneeSpan = (user) => {
+export const generateAssigneeSpan = (user, withAvatar = false) => {
   if (!user) return '';
-  const avatarAttr = user.avatar ? ` data-avatar="${user.avatar}"` : '';
-  const displayName =
-    user.name || user.display_name || user.username || 'Unknown';
 
-  return `<span class="alpaca-status-assignee" data-userid="${user.id}"${avatarAttr}>${displayName}</span>`;
+  const el = user.avatar && withAvatar === true ? 'strong' : 'span';
+  const avatarAttr =
+    user.avatar && withAvatar === true
+      ? ` data-avatar="${escapeAttr(user.avatar)}"`
+      : '';
+  const displayName =
+    user.name ||
+    user.display_name ||
+    user.username ||
+    __('Unknown', 'alpaca-issue-tracker');
+
+  return `<${el} class="alpaca-status-assignee" data-userid="${escapeAttr(String(user.id))}"${avatarAttr}>${escapeHtml(displayName)}</${el}>`;
 };

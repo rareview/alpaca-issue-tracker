@@ -1,8 +1,9 @@
 const { decodeEntities } = wp.htmlEntities;
+import { buildBoardOrderPayload } from './boardFiltering';
 
 /**
  * Transform server data into array format for board state.
- * @param {Array} data The data from `alpaca_get_board_data`.
+ * @param {Array} data The data from `alpaistr_get_board_data`.
  */
 const transformDataForBoard = (data) => {
   if (!data || !Array.isArray(data)) return [];
@@ -12,35 +13,27 @@ const transformDataForBoard = (data) => {
     items: column.issues.map((issue) => ({
       id: issue.id.toString(),
       content: decodeEntities(issue.title),
+      slug: issue.slug || issue.post_name || '',
+      postDate: issue.post_date_gmt || issue.post_date,
       authorName: issue.author_name,
       authorImg: issue.author_img,
       assignees: issue.assignees || [],
+      labels: issue.labels || [],
       commentCount: issue.comment_count ?? 0,
+      commentCountByAgent: issue.comment_count_by_agent || null,
       meta: issue.meta || {},
     })),
   }));
 };
 
 /**
- * Save board order in DOM order, including container IDs & titles.
+ * Save board order using the full container state.
+ *
+ * @param {Array} containers Current board container state.
+ * @return {void}
  */
-const saveBoardOrder = () => {
-  const containersInDomOrder = document.querySelectorAll('.alpaca-container');
-
-  const data = Array.from(containersInDomOrder).map((containerEl) => {
-    const id = parseInt(containerEl.dataset.id, 10);
-    const title = containerEl.querySelector('h2').textContent.trim();
-    // Select all items except for the empty placeholder.
-    const items = containerEl.querySelectorAll('.alpaca-item:not(.empty)');
-
-    return {
-      id,
-      title,
-      issues: Array.from(items).map((itemEl) =>
-        parseInt(itemEl.dataset.id, 10),
-      ),
-    };
-  });
+const saveBoardOrder = (containers) => {
+  const data = buildBoardOrderPayload(containers);
 
   // Use wp.apiFetch to send data to the REST API endpoint.
   // It automatically handles nonces for authenticated requests.

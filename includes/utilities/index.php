@@ -2,5 +2,5 @@
 /**
  * Silence is golden.
  *
- * @package Alpaca
+ * @package AlpacaIssueTracker
  */

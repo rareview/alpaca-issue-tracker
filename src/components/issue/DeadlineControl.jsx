@@ -1,4 +1,5 @@
 const { useState, useRef, memo } = wp.element;
+const { __ } = wp.i18n;
 import PropTypes from 'prop-types';
 
 const { BaseControl, Popover, DatePicker, Button } = wp.components;
@@ -24,8 +25,9 @@ const DeadlineControl = memo(({ deadline, onChange, onClear, isLoading }) => {
     <BaseControl
       id="alpaca-deadline-control"
       className="alpaca-deadline-control"
+      __nextHasNoMarginBottom
     >
-      <div className="alpaca-deadline flexalign">
+      <div className="alpaca-deadline alpaca-flex-align">
         <div
           ref={calendarButtonRef}
           className={`alpaca-input alpaca-deadline-display ${deadline ? '' : 'placeholder'}`}
@@ -42,7 +44,7 @@ const DeadlineControl = memo(({ deadline, onChange, onClear, isLoading }) => {
         >
           {deadline
             ? date.format(datesettings.formats.date, deadline)
-            : 'Click to select a deadline'}
+            : __('Click to select a deadline', 'alpaca-issue-tracker')}
         </div>
 
         {isEditingDeadline && (
@@ -68,7 +70,7 @@ const DeadlineControl = memo(({ deadline, onChange, onClear, isLoading }) => {
         {deadline && (
           <Button
             icon="trash"
-            label="Clear deadline"
+            label={__('Clear deadline', 'alpaca-issue-tracker')}
             onClick={onClear}
             disabled={isLoading}
             className="is-small"

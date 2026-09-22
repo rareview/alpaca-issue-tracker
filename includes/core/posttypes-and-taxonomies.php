@@ -1,9 +1,16 @@
 <?php
 /**
- * Post types and taxonomies registration for Alpaca issues.
+ * Post types and taxonomies registration for Alpaca Issue Tracker issues.
  *
- * @package Alpaca
+ * @package AlpacaIssueTracker
  */
+
+use AlpacaIssueTracker\Helpers;
+
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 /**
  * Register a taxonomy with optional custom arguments.
@@ -11,13 +18,13 @@
  * @param string $slug       Taxonomy slug.
  * @param array  $customargs Custom arguments to merge with defaults.
  */
-function alpaca_register_taxonomy( $slug, $customargs = array() ) {
-	$defaults = array(
+function alpaistr_register_taxonomy( $slug, $customargs = [] ) {
+	$defaults = [
 		'public'             => true,
 		'publicly_queryable' => false,
 		'label'              => $slug,
 		'hierarchical'       => false,
-	);
+	];
 	$args     = array_merge( $defaults, $customargs );
 	register_taxonomy( $slug, 'alpaca_issue', $args );
 }
@@ -25,134 +32,121 @@ function alpaca_register_taxonomy( $slug, $customargs = array() ) {
 /**
  * Register custom post types and taxonomies for Alpaca.
  */
-function alpaca_register_cpts_and_taxonomies() {
+function alpaistr_register_cpts_and_taxonomies() {
 
 	register_term_meta(
 		'alpaca_status',
 		'term_score',
-		array(
+		[
 			'type'         => 'number',
 			'description'  => 'A score for ordering statuses on the board.',
 			'single'       => true,
 			'show_in_rest' => true,
 			'default'      => 0,
-		)
+		]
+	);
+	register_term_meta(
+		'alpaca_label',
+		'alpaca_label_color',
+		[
+			'type'              => 'string',
+			'description'       => 'Display color for issue labels.',
+			'single'            => true,
+			'show_in_rest'      => true,
+			'default'           => Helpers::DEFAULT_LABEL_COLOR,
+			'sanitize_callback' => 'sanitize_hex_color',
+		]
 	);
 
 	register_post_type(
 		'alpaca_issue',
-		array(
+		[
 			'public'        => false,
 			'show_in_rest'  => true,
 			'show_ui'       => false,
-			'label'         => 'Issues',
-			'labels'        => array(
-				'name'          => 'Issue',
-				'singular_name' => 'Issue',
-				'all_items'     => 'All Issues',
-				'edit_item'     => 'Edit Issue',
-				'view_item'     => 'View Issue',
-				'view_items'    => 'View Issues',
-			),
+			'label'         => esc_html__( 'Issues', 'alpaca-issue-tracker' ),
+			'labels'        => [
+				'name'          => esc_html__( 'Issue', 'alpaca-issue-tracker' ),
+				'singular_name' => esc_html__( 'Issue', 'alpaca-issue-tracker' ),
+				'all_items'     => esc_html__( 'All Issues', 'alpaca-issue-tracker' ),
+				'edit_item'     => esc_html__( 'Edit Issue', 'alpaca-issue-tracker' ),
+				'view_item'     => esc_html__( 'View Issue', 'alpaca-issue-tracker' ),
+				'view_items'    => esc_html__( 'View Issues', 'alpaca-issue-tracker' ),
+			],
 			'menu_icon'     => 'dashicons-warning',
 			'menu_position' => 102,
-			'supports'      => array( 'editor', 'custom-fields', 'author', 'comments' ),
+			'supports'      => [ 'editor', 'custom-fields', 'author', 'comments' ],
 			'map_meta_cap'  => true,
-		)
+		]
 	);
 
-	alpaca_register_taxonomy( 'alpaca_browser', array( 'label' => 'Browser' ) );
-	alpaca_register_taxonomy( 'alpaca_phptemplate', array( 'label' => 'PHP Template' ) );
-	alpaca_register_taxonomy( 'alpaca_type', array( 'label' => 'Type' ) );
-	alpaca_register_taxonomy(
+	alpaistr_register_taxonomy( 'alpaca_browser', [ 'label' => esc_html__( 'Browser', 'alpaca-issue-tracker' ) ] );
+	alpaistr_register_taxonomy( 'alpaca_phptemplate', [ 'label' => esc_html__( 'PHP Template', 'alpaca-issue-tracker' ) ] );
+	alpaistr_register_taxonomy( 'alpaca_type', [ 'label' => esc_html__( 'Type', 'alpaca-issue-tracker' ) ] );
+	alpaistr_register_taxonomy(
 		'alpaca_assignee',
-		array(
+		[
 			'public' => true,
-			'label'  => 'Assignee',
-		)
+			'label'  => esc_html__( 'Assignee', 'alpaca-issue-tracker' ),
+		]
 	);
-	alpaca_register_taxonomy(
+	alpaistr_register_taxonomy(
 		'alpaca_status',
-		array(
+		[
 			'show_in_rest' => true,
-			'meta_box_cb'  => 'alpaca_status_metabox',
-			'label'        => 'Status',
-		)
+			'label'        => esc_html__( 'Status', 'alpaca-issue-tracker' ),
+		]
+	);
+	alpaistr_register_taxonomy(
+		'alpaca_label',
+		[
+			'public'       => true,
+			'show_ui'      => false,
+			'show_in_rest' => true,
+			'label'        => esc_html__( 'Labels', 'alpaca-issue-tracker' ),
+		]
+	);
+	alpaistr_register_taxonomy(
+		'alpaca_watching',
+		[
+			'public'             => false,
+			'publicly_queryable' => false,
+			'show_ui'            => false,
+			'show_in_rest'       => false,
+			'label'              => esc_html__( 'Watching', 'alpaca-issue-tracker' ),
+		]
 	);
 
+	add_filter( 'rest_pre_insert_comment', 'alpaistr_rest_pre_insert_comment', 10, 2 );
+	add_filter( 'rest_comment_query', 'alpaistr_rest_comment_query', 10, 2 );
+	add_filter( 'comments_open', 'alpaistr_comments_open', 10, 2 );
+
+	// Allow Contributors to comment on and delete alpaca_issue posts.
 	add_filter(
-		'rest_pre_insert_comment',
-		function ( $prepared_comment, $request ) {
-			if ( isset( $request['comment_type'] ) && 'issuecomment' === $request['comment_type'] ) {
-				$prepared_comment['comment_type'] = 'issuecomment';
+		'map_meta_cap',
+		function ( $caps, $cap, $user_id, $args ) {
+			// Grant edit_post capability for commenting on issues.
+			if ( 'edit_post' === $cap && ! empty( $args[0] ) ) {
+				$post = get_post( $args[0] );
+
+				if ( $post && 'alpaca_issue' === $post->post_type && Helpers::user_can( 'create_issue' ) ) {
+					return [ 'exist' ];
+				}
 			}
 
-			if ( isset( $request['author_user_agent'] ) ) {
-				$prepared_comment['comment_agent'] = sanitize_text_field( $request['author_user_agent'] );
+			// Grant delete_post capability for deleting issues.
+			if ( 'delete_post' === $cap && ! empty( $args[0] ) ) {
+				$post = get_post( $args[0] );
+
+				if ( $post && 'alpaca_issue' === $post->post_type && Helpers::user_can( 'create_issue' ) ) {
+					return [ 'exist' ];
+				}
 			}
 
-			return $prepared_comment;
+			return $caps;
 		},
 		10,
-		2
-	);
-
-	add_filter(
-		'rest_comment_query',
-		function ( $args, $request ) {
-			if ( isset( $request['comment_type'] ) && 'issuecomment' === $request['comment_type'] ) {
-				$args['type'] = 'issuecomment';
-			}
-			return $args;
-		},
-		10,
-		2
-	);
-
-	add_filter(
-		'comments_open',
-		function ( $open, $post_id ) {
-			$post = get_post( $post_id );
-			if ( $post && 'alpaca_issue' === $post->post_type ) {
-				return true;
-			}
-			return $open;
-		},
-		10,
-		2
-	);
-
-	add_action(
-		'alpaca_status_add_form_fields',
-		function () {
-			wp_nonce_field( 'alpaca_status_meta_add', 'alpaca_status_nonce' );
-			?>
-		<div class="form-field">
-			<label for="term_score"><?php esc_html_e( 'Score', 'alpaca' ); ?></label>
-			<input type="number" name="term_score" id="term_score" value="" step="1" min="0">
-			<p class="description"><?php esc_html_e( 'Enter a numerical score for sorting purposes.', 'alpaca' ); ?></p>
-		</div>
-			<?php
-		}
-	);
-
-	add_action(
-		'alpaca_status_edit_form_fields',
-		function ( $term ) {
-			$score = get_term_meta( $term->term_id, 'term_score', true );
-			wp_nonce_field( 'alpaca_status_meta_edit', 'alpaca_status_nonce' );
-			?>
-		<tr class="form-field">
-			<th scope="row"><label for="term_score"><?php esc_html_e( 'Score', 'alpaca' ); ?></label></th>
-			<td>
-				<input type="number" name="term_score" id="term_score" value="<?php echo esc_attr( $score ); ?>" step="1">
-				<p class="description"><?php esc_html_e( 'Enter a numerical score for sorting purposes.', 'alpaca' ); ?></p>
-			</td>
-		</tr>
-			<?php
-		},
-		10,
-		1
+		4
 	);
 
 	// Save term meta when creating or editing.
@@ -161,7 +155,7 @@ function alpaca_register_cpts_and_taxonomies() {
 	 *
 	 * @param int $term_id Term ID.
 	 */
-	function alpaca_save_status_term_score( $term_id ) {
+	function alpaistr_save_status_term_score( $term_id ) {
 		// Verify nonce for security.
 		if ( ! isset( $_POST['alpaca_status_nonce'] ) ) {
 			return;
@@ -189,71 +183,39 @@ function alpaca_register_cpts_and_taxonomies() {
 			update_term_meta( $term_id, 'term_score', $score );
 		}
 	}
-	add_action( 'created_alpaca_status', 'alpaca_save_status_term_score' );
-	add_action( 'edited_alpaca_status', 'alpaca_save_status_term_score' );
-
-	// Add new column header.
-	add_filter(
-		'manage_edit-alpaca_status_columns',
-		function ( $columns ) {
-			$columns['term_score'] = __( 'Score', 'alpaca' );
-			return $columns;
-		}
-	);
-
-	// Fill the column content.
-	add_filter(
-		'manage_alpaca_status_custom_column',
-		function ( $content, $column_name, $term_id ) {
-			if ( 'term_score' === $column_name ) {
-				$score   = get_term_meta( $term_id, 'term_score', true );
-				$content = '' !== $score ? intval( $score ) : '—';
-			}
-			return $content;
-		},
-		10,
-		3
-	);
-	add_filter(
-		'manage_edit-alpaca_status_sortable_columns',
-		function ( $sortable_columns ) {
-			$sortable_columns['term_score'] = 'term_score';
-			return $sortable_columns;
-		}
-	);
-
-	/**
-	 * Custom metabox for status taxonomy.
-	 * Inspired by: https://wordpress.stackexchange.com/questions/50077/display-a-custom-taxonomy-as-a-dropdown-on-the-edit-posts-page
-	 *
-	 * @param WP_Post $post Post object.
-	 */
-	function alpaca_status_metabox( $post ) {
-		$current_terms   = wp_get_post_terms( $post->ID, 'alpaca_status', array( 'fields' => 'ids' ) );
-		$current_term_id = ! empty( $current_terms ) ? $current_terms[0] : 0;
-
-		$terms = alpaca_get_statuses();
-
-		echo '<div class="statuses_radiolist">';
-		foreach ( $terms as $term ) {
-			$checked = ( $current_term_id === $term->term_id ) ? 'checked' : '';
-			echo '<label><input type="radio" name="tax_input[alpaca_status][]" value="' . esc_attr( $term->slug ) . '" ' . esc_attr( $checked ) . '/> ' . esc_html( $term->name ) . '</label><br>';
-		}
-		echo '</div>';
-	}
+	add_action( 'created_alpaca_status', 'alpaistr_save_status_term_score' );
+	add_action( 'edited_alpaca_status', 'alpaistr_save_status_term_score' );
 }
-add_action( 'init', 'alpaca_register_cpts_and_taxonomies' );
+
+/**
+ * Allow duplicate comments on Alpaca Issue Tracker issues.
+ *
+ * @param int|false $dupe_id     Duplicate comment ID if found, otherwise false.
+ * @param array     $commentdata Comment data array.
+ * @return int|false Duplicate comment ID or false to allow duplicate comment.
+ */
+function alpaistr_allow_duplicate_issue_comments( $dupe_id, $commentdata ) {
+	$post_id = isset( $commentdata['comment_post_ID'] ) ? (int) $commentdata['comment_post_ID'] : 0;
+
+	if ( $post_id > 0 && 'alpaca_issue' === get_post_type( $post_id ) ) {
+		return false;
+	}
+
+	return $dupe_id;
+}
+add_filter( 'duplicate_comment_id', 'alpaistr_allow_duplicate_issue_comments', 10, 2 );
+add_action( 'init', 'alpaistr_register_cpts_and_taxonomies' );
 
 add_filter(
 	'alpaca_board_statuses',
 	function ( $statuses ) {
-		$desired_statuses = array();
+		$desired_statuses = [];
 		foreach ( $statuses as $status ) {
 			// Filter out statuses outside the visible range.
-			if ( $status->term_score > alpaca_get_max_term_score() ) {
+			if ( $status->term_score > alpaistr_get_max_term_score() ) {
 				continue;
 			}
-			if ( $status->term_score < alpaca_get_min_term_score() ) {
+			if ( $status->term_score < alpaistr_get_min_term_score() ) {
 				continue;
 			}
 			$desired_statuses[] = $status;
@@ -263,32 +225,74 @@ add_filter(
 );
 
 /**
- * Update assignee term name when user profile is updated.
+ * Update mirrored user terms when user profile is updated.
  *
- * When a user's profile is updated, find the corresponding 'assignee' term
- * and update its name to match the user's new display name.
- * The link between a user and an assignee term is the user's nicename (slug).
+ * When a user's profile is updated, find matching user terms in supported
+ * taxonomies and update the term name and slug to match current user data.
  *
  * @param int    $user_id       The ID of the user being updated.
  * @param object $old_user_data The old user data.
  */
-function alpaca_update_assignee_term_on_profile_update( $user_id, $old_user_data ) {
+function alpaistr_update_user_terms_on_profile_update( $user_id, $old_user_data ) {
 	$user = get_userdata( $user_id );
-
-	// No need to do anything if the display name hasn't changed.
-	if ( $user->display_name === $old_user_data->display_name ) {
+	if ( ! ( $user instanceof WP_User ) ) {
 		return;
 	}
 
-	// Find the term in the 'assignee' taxonomy with a slug that matches the user's nicename.
-	$term = get_term_by( 'slug', $user->user_nicename, 'alpaca_assignee' );
+	$old_slug = '';
+	if ( isset( $old_user_data->user_nicename ) ) {
+		$old_slug = sanitize_user( (string) $old_user_data->user_nicename );
+	}
 
-	// If a term is found, update its name to the user's new display name.
-	if ( $term ) {
-		wp_update_term( $term->term_id, 'alpaca_assignee', array( 'name' => $user->display_name ) );
+	$new_slug = sanitize_user( (string) $user->user_nicename );
+	$slugs    = array_filter(
+		[
+			$new_slug,
+			$old_slug,
+		]
+	);
+	$slugs    = array_values( array_unique( $slugs ) );
+
+	$old_display_name = '';
+	if ( isset( $old_user_data->display_name ) ) {
+		$old_display_name = (string) $old_user_data->display_name;
+	}
+
+	// No need to do anything if term-linked identity values are unchanged.
+	if ( $old_display_name === $user->display_name && $old_slug === $new_slug ) {
+		return;
+	}
+
+	$taxonomies = [
+		'alpaca_assignee',
+		'alpaca_watching',
+	];
+	foreach ( $taxonomies as $taxonomy ) {
+		if ( ! taxonomy_exists( $taxonomy ) ) {
+			continue;
+		}
+
+		foreach ( $slugs as $slug ) {
+			$term = get_term_by( 'slug', $slug, $taxonomy );
+			if ( ! $term || is_wp_error( $term ) ) {
+				continue;
+			}
+
+			wp_update_term(
+				$term->term_id,
+				$taxonomy,
+				[
+					'name'        => $user->display_name,
+					'slug'        => $new_slug,
+					'description' => '',
+				]
+			);
+
+			break;
+		}
 	}
 }
-add_action( 'profile_update', 'alpaca_update_assignee_term_on_profile_update', 10, 2 );
+add_action( 'profile_update', 'alpaistr_update_user_terms_on_profile_update', 10, 2 );
 
 /**
  * Get statuses ordered by score.
@@ -296,26 +300,74 @@ add_action( 'profile_update', 'alpaca_update_assignee_term_on_profile_update', 1
  * @param string $order Sort order (ASC or DESC).
  * @return array Array of status terms.
  */
-function alpaca_get_statuses( $order = 'ASC' ) {
+function alpaistr_get_statuses( $order = 'ASC' ) {
 	$terms = get_terms(
-		array(
+		[
 			'taxonomy'   => 'alpaca_status',
 			'hide_empty' => false,
 			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_key
 			'meta_key'   => 'term_score',
 			'orderby'    => 'meta_value_num',
 			'order'      => $order,
-		)
+		]
 	);
 	if ( empty( $terms )
 		|| ! is_array( $terms )
 		|| is_wp_error( $terms )
 	) {
-		return array();
+		return [];
 	}
 	foreach ( $terms as $term ) {
 		$score            = get_term_meta( $term->term_id, 'term_score', true );
 		$term->term_score = $score;
 	}
 	return $terms;
+}
+
+/**
+ * Filter REST API comment insertion to handle custom comment types.
+ *
+ * @param array           $prepared_comment Prepared comment data.
+ * @param WP_REST_Request $request          REST request object.
+ * @return array Modified comment data.
+ */
+function alpaistr_rest_pre_insert_comment( $prepared_comment, $request ) {
+	if ( isset( $request['comment_type'] ) && 'issuecomment' === $request['comment_type'] ) {
+		$prepared_comment['comment_type'] = 'issuecomment';
+	}
+
+	if ( isset( $request['author_user_agent'] ) ) {
+		$prepared_comment['comment_agent'] = sanitize_text_field( $request['author_user_agent'] );
+	}
+
+	return $prepared_comment;
+}
+
+/**
+ * Filter REST API comment query to handle custom comment types.
+ *
+ * @param array           $args    Comment query arguments.
+ * @param WP_REST_Request $request REST request object.
+ * @return array Modified query arguments.
+ */
+function alpaistr_rest_comment_query( $args, $request ) {
+	if ( isset( $request['comment_type'] ) && 'issuecomment' === $request['comment_type'] ) {
+		$args['type'] = 'issuecomment';
+	}
+	return $args;
+}
+
+/**
+ * Filter comments_open to always allow comments on alpaca_issue posts.
+ *
+ * @param bool $open    Whether comments are open.
+ * @param int  $post_id Post ID.
+ * @return bool Whether comments are open.
+ */
+function alpaistr_comments_open( $open, $post_id ) {
+	$post = get_post( $post_id );
+	if ( $post && 'alpaca_issue' === $post->post_type ) {
+		return true;
+	}
+	return $open;
 }

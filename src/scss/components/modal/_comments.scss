@@ -1,0 +1,539 @@
+@use '../../abstracts' as *;
+
+/*
+* Comments
+*/
+.wp-admin {
+  #alpaca-comments-header {
+    text-align: end;
+  }
+
+  #alpaca-comments {
+    padding-top: $space-sm;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+
+    .alpaca-comments-timeline {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+
+      .alpaca-timeline-item:last-child {
+        background: $color-white;
+      }
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: $space-3xl;
+        inset-inline-start: $size-control-lg; // Position of the vertical line.
+        width: 1px;
+        background-color: $color-border; // Color of the timeline line.
+      }
+    }
+
+    &.oldestfirst {
+      flex-direction: column-reverse;
+
+      .alpaca-comments-timeline::before {
+        bottom: 0;
+      }
+
+      .alpaca-comments-timeline {
+        flex-direction: column-reverse;
+
+        .alpaca-timeline-item:first-child {
+          margin-bottom: $size-control-lg;
+        }
+
+        .alpaca-timeline-item:last-child {
+          background: none;
+          margin-top: 0;
+        }
+      }
+    }
+
+    .components-textarea-control__input {
+      line-height: $line-height-code;
+      margin-top: 0;
+    }
+  }
+
+  .alpaca-comment-form {
+    border: 1px solid $color-border;
+    border-radius: $radius-lg;
+
+    button {
+      margin-bottom: $space-sm;
+    }
+
+    textarea {
+      border: none !important;
+      outline: none !important;
+      box-shadow: none !important;
+    }
+
+    .alpaca-markdown-textarea {
+      position: relative;
+    }
+
+    .alpaca-markdown-textarea .components-textarea-control__input {
+      position: relative;
+      z-index: 1;
+      color: transparent;
+      caret-color: transparent;
+      background: transparent;
+      line-height: $line-height-code;
+
+      &::selection {
+        color: transparent;
+        background: transparent;
+      }
+    }
+
+    .alpaca-markdown-textarea__preview {
+      position: absolute;
+      z-index: 2;
+      inset: 0;
+      overflow: auto;
+      padding: 0;
+      color: $color-black;
+      font: inherit;
+      line-height: $line-height-code;
+      white-space: pre-wrap;
+      overflow-wrap: break-word;
+      pointer-events: auto;
+      scrollbar-width: none;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
+
+    .alpaca-markdown-caret {
+      display: inline-block;
+      width: 0;
+      height: 1em;
+      margin-inline-end: -2px;
+      vertical-align: middle;
+      position: relative;
+      top: -2px;
+      border-inline-start: 2px solid $color-black;
+      animation: alpaca-markdown-caret-blink 1s step-end infinite;
+    }
+
+    .alpaca-markdown-selection {
+      background-color: rgba($color-brand-blue, 0.25);
+    }
+
+    .alpaca-markdown-paragraph-break {
+      display: block;
+      width: 100%;
+      height: $space-2xl;
+      line-height: $space-2xl;
+      font-size: 0;
+      white-space: pre;
+
+      .alpaca-markdown-caret {
+        height: $space-2xl;
+        top: 0;
+        vertical-align: middle;
+      }
+    }
+
+    .alpaca-markdown-link {
+      color: $color-brand-blue;
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 2px;
+    }
+
+    .alpaca-markdown-link-popover {
+      z-index: 100001;
+    }
+
+    .alpaca-markdown-link-editor {
+      width: 280px;
+      padding: $space-md;
+
+      .components-base-control {
+        margin-bottom: $space-md;
+      }
+    }
+
+    .alpaca-markdown-link-editor__actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: $space-xs;
+    }
+
+    @keyframes alpaca-markdown-caret-blink {
+      0%,
+      50% {
+        opacity: 1;
+      }
+
+      50.01%,
+      100% {
+        opacity: 0;
+      }
+    }
+
+    .alpaca-mentions-textarea,
+    .alpaca-mentions-textarea:focus-within,
+    .components-base-control,
+    .components-base-control:focus-within,
+    .components-base-control__field,
+    .components-base-control__field:focus-within,
+    .components-textarea-control,
+    .components-textarea-control:focus-within,
+    .components-textarea-control__input,
+    .components-textarea-control__input:focus,
+    .components-textarea-control__input:focus-visible {
+      border: none !important;
+      border-color: transparent !important;
+      outline: none !important;
+      outline-offset: 0 !important;
+      box-shadow: none !important;
+    }
+
+    .alpaca-user {
+      top: calc(-1 * 1px);
+    }
+
+    .alpaca-comment-dropzone {
+      position: relative;
+    }
+
+    .alpaca-comment-dropzone .components-drop-zone {
+      border: 2px dashed $color-border;
+      border-radius: $radius-lg;
+      position: absolute;
+      inset: 0;
+      background: rgb(255 255 255 / 85%);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity $duration-base ease-in-out;
+
+      &::after {
+        content: 'Drop images to attach';
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: $color-text-muted;
+        font-size: $font-size-sm;
+        letter-spacing: $letter-spacing-meta;
+      }
+    }
+
+    .alpaca-comment-dropzone .components-drop-zone.is-active,
+    .alpaca-comment-dropzone .components-drop-zone.is-dragging {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  }
+
+  .alpaca-timeline-item .alpaca-comment-body {
+    .alpaca-comment-form,
+    .alpaca-comment-form .alpaca-comment-form__content {
+      border: none;
+      border-radius: 0;
+    }
+
+    textarea {
+      border: none !important;
+      outline: none !important;
+      box-shadow: none !important;
+    }
+
+    .alpaca-mentions-textarea,
+    .alpaca-mentions-textarea:focus-within,
+    .components-base-control,
+    .components-base-control:focus-within,
+    .components-base-control__field,
+    .components-base-control__field:focus-within,
+    .components-textarea-control,
+    .components-textarea-control:focus-within,
+    .components-textarea-control__input,
+    .components-textarea-control__input:focus,
+    .components-textarea-control__input:focus-visible {
+      border: none !important;
+      border-color: transparent !important;
+      outline: none !important;
+      outline-offset: 0 !important;
+      box-shadow: none !important;
+    }
+
+    .alpaca-comment-dropzone {
+      position: relative;
+    }
+
+    .alpaca-comment-dropzone .components-drop-zone {
+      border: 2px dashed $color-border;
+      border-radius: $radius-lg;
+      position: absolute;
+      inset: 0;
+      background: rgb(255 255 255 / 85%);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity $duration-base ease-in-out;
+
+      &::after {
+        content: 'Drop images to attach';
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: $color-text-muted;
+        font-size: $font-size-sm;
+        letter-spacing: $letter-spacing-meta;
+      }
+    }
+
+    .alpaca-comment-dropzone .components-drop-zone.is-active,
+    .alpaca-comment-dropzone .components-drop-zone.is-dragging {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  }
+
+  .alpaca-timeline-item[data-source='human'] .alpaca-comment-content p,
+  .alpaca-timeline-item[data-source='human'] .alpaca-comment-content li,
+  .alpaca-timeline-item[data-source='create'] .alpaca-comment-content p,
+  .alpaca-timeline-item[data-source='create'] .alpaca-comment-content li {
+    font-size: $font-size-md;
+    line-height: $line-height-code;
+    margin-top: 0;
+  }
+
+  .alpaca-comment-content .alpaca-inline-search-highlight {
+    border-radius: $radius-xs;
+    padding: 0 1px;
+    background-color: var(--alpaca-search-highlight, $color-search-highlight);
+  }
+
+  .alpaca-timeline-item[data-source='human'] .alpaca-timeline-content,
+  .alpaca-timeline-item[data-source='create'] .alpaca-timeline-content,
+  .alpaca-comment-form textarea {
+    flex-grow: 1;
+    background: $color-white;
+
+    .alpaca-comment-header {
+      border-top-left-radius: $space-sm;
+      border-top-right-radius: $space-sm;
+      border-bottom: 1px solid $color-border;
+      padding-top: $space-lg;
+      padding-bottom: $space-lg;
+    }
+  }
+
+  .alpaca-timeline-item[data-source='human'] .alpaca-timeline-content,
+  .alpaca-timeline-item[data-source='create'] .alpaca-timeline-content {
+    border-radius: $radius-lg;
+    border: 1px solid $color-border;
+  }
+
+  .alpaca-timeline-item .alpaca-timeline-content .alpaca-comment-form,
+  .alpaca-timeline-item .alpaca-comment-body {
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    padding: 0;
+  }
+
+  .alpaca-timeline-item {
+    margin: $space-3xl 0 $space-lg 0;
+
+    .alpaca-comment-header {
+      font-size: $font-size-md;
+      line-height: $line-height-base;
+
+      p {
+        font-size: $font-size-md;
+        line-height: $line-height-base;
+      }
+
+      strong {
+        color: $color-black;
+      }
+
+      &.has-issue-title {
+        .alpaca-comment-author {
+          display: flex;
+          align-items: baseline;
+          gap: $space-2xs;
+          min-width: 0;
+          flex: 1 1 auto;
+          white-space: nowrap;
+        }
+
+        .alpaca-comment-on-title {
+          display: flex;
+          align-items: baseline;
+          gap: $space-2xs;
+          min-width: 0;
+          flex: 1 1 auto;
+          color: $color-text-muted;
+          font-weight: $font-weight-normal;
+        }
+
+        .alpaca-comment-on-title-text {
+          display: block;
+          min-width: 0;
+          flex: 1 1 auto;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+    }
+
+    &:hover .alpaca-comment-buttons {
+      opacity: 1;
+    }
+  }
+
+  .alpaca-comment-form-actions {
+    display: flex;
+    gap: $space-sm;
+
+    .components-form-file-upload {
+      margin-inline-end: auto;
+    }
+  }
+
+  .alpaca-comment-form,
+  .alpaca-timeline-item {
+    position: relative;
+    display: flex;
+    font-size: $font-size-md;
+
+    .alpaca-comment-form__content,
+    .alpaca-timeline-content,
+    textarea {
+      width: 100%;
+    }
+
+    .alpaca-comment-buttons {
+      display: flex;
+      margin-inline-start: auto;
+      opacity: 0;
+      transition: opacity $duration-base ease-in-out;
+      position: absolute;
+      top: $space-lg;
+      inset-inline-end: $space-3xl;
+    }
+
+    img {
+      width: $size-control-lg;
+      height: $size-control-lg;
+    }
+
+    .alpaca-user-name {
+      display: none;
+    }
+  }
+
+  .alpaca-comment-header {
+    display: flex;
+    padding-inline-start: $space-3xl;
+    padding-inline-end: $space-3xl;
+    background: $color-white;
+    font-size: $font-size-sm;
+    line-height: 2rem;
+    color: $color-text-muted;
+    gap: $space-gap-inline;
+  }
+
+  .alpaca-comment-date {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: $space-2xs;
+  }
+
+  .alpaca-comment-edited-date {
+    display: inline-flex;
+    align-items: center;
+    gap: $space-2xs;
+
+    .alpaca-user {
+      display: inline-flex;
+      align-items: center;
+      vertical-align: middle;
+    }
+
+    .alpaca-user-name {
+      display: inline;
+    }
+  }
+
+  .alpaca-timeline-content {
+    flex-grow: 1;
+  }
+
+  .alpaca-comment-content {
+    padding: 0;
+
+    blockquote {
+      background: $color-surface-neutral;
+      padding-block-start: $space-5xl;
+      padding-inline-end: $space-sm;
+      padding-block-end: $space-sm;
+      padding-inline-start: $space-5xl;
+      margin: 0 0 $space-5xl;
+      border-inline-start: 1px solid $color-border;
+    }
+
+    ul {
+      margin-top: 0;
+      padding-inline-start: $space-2xl;
+
+      li {
+        list-style-type: disc;
+      }
+    }
+  }
+
+  /*
+    * Form and comment display spacing
+    */
+  .alpaca-comment-form,
+  .alpaca-timeline-item .alpaca-comment-body {
+    padding: $space-2xl $space-2xl $space-xs;
+  }
+
+  .alpaca-comment-form textarea,
+  .alpaca-timeline-item textarea {
+    padding: 0;
+    border: none;
+    margin-bottom: $space-2xl;
+  }
+}
+
+.wp-admin .alpaca-markdown-link-popover {
+  .alpaca-markdown-link-editor {
+    width: 280px;
+    padding: $space-md;
+
+    .components-base-control {
+      margin-bottom: $space-md;
+    }
+  }
+
+  .alpaca-markdown-link-editor__actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: $space-xs;
+  }
+}
+
+.wp-admin.alpaca-details-modal-open .components-tooltip,
+.wp-admin.alpaca-inbox-open .components-tooltip {
+  z-index: 999000030 !important;
+}

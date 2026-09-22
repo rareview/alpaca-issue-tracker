@@ -1,0 +1,822 @@
+@use '../abstracts' as *;
+
+/*
+ * Notifications
+ */
+.alpaca-notifications-screen,
+.alpaca-notification-template-screen {
+  margin-top: $space-4xl;
+}
+
+.alpaca-notifications-screen > .alpaca-notifications-panel {
+  margin-top: $space-4xl;
+  transform: translateY(-$space-xs);
+  will-change: transform, opacity, max-height;
+  transition:
+    max-height $duration-slow cubic-bezier(0.2, 0.7, 0.2, 1),
+    opacity $duration-base ease,
+    transform $duration-base cubic-bezier(0.2, 0.7, 0.2, 1),
+    margin-block-start $duration-base ease;
+  background: none !important;
+  border: 0 !important;
+  padding: 0 !important;
+
+  p {
+    margin: 0;
+    color: $color-text-secondary;
+  }
+}
+
+.alpaca-notifications-tabs {
+  .components-tab-panel__tabs {
+    border-bottom: 1px solid $color-border;
+    margin-bottom: 0;
+  }
+
+  .components-tab-panel__tab-content {
+    padding-top: $space-4xl;
+  }
+}
+
+.alpaca-notifications-grid,
+.alpaca-notification-template-layout {
+  display: grid;
+  gap: $space-4xl;
+}
+
+.alpaca-notifications-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.alpaca-notification-template-layout {
+  grid-template-columns: minmax(0, 1.5fr) minmax($width-sidebar, 0.95fr);
+  align-items: start;
+}
+
+.alpaca-notifications-panel {
+  background: $color-white;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  padding: $space-4xl;
+
+  h2 {
+    margin: 0 0 $space-xl;
+    font-size: $font-size-lg;
+    line-height: $line-height-base;
+  }
+
+  p {
+    color: $color-text-secondary;
+    font-size: $font-size-xs;
+    margin: 0 0 $space-2xl;
+  }
+}
+
+/* Email Templates intro should sit on the grey admin background
+   not inside a white panel. Override the panel styles for this
+   specific intro so it has no background, border, or padding. */
+.alpaca-notification-template-intro.alpaca-notifications-panel {
+  background: none;
+  border: 0;
+  padding: 0;
+}
+
+.alpaca-notifications-panel-intro {
+  margin: 0 0 $space-2xl;
+}
+
+.alpaca-notifications-panel--narrow {
+  max-width: 35rem;
+}
+
+.alpaca-notifications-panel--email {
+  max-width: 32.5rem;
+}
+
+.alpaca-notifications-options {
+  display: grid;
+  gap: $space-md;
+}
+
+.alpaca-notifications-option-group {
+  display: grid;
+  gap: $space-sm;
+}
+
+.alpaca-notifications-channel-stack,
+.alpaca-notifications-email-layout {
+  display: grid;
+  gap: $space-lg;
+}
+
+.alpaca-notifications-channel-summary {
+  display: grid;
+  gap: $space-lg;
+}
+
+.alpaca-notifications-channel-row {
+  display: grid;
+  gap: $space-2xs;
+}
+
+.alpaca-notifications-channel-label {
+  color: $color-text-primary;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+}
+
+.alpaca-notifications-channel-value {
+  color: $color-text-secondary;
+  font-size: $font-size-sm;
+  line-height: $line-height-code;
+  word-break: break-word;
+}
+
+.alpaca-notifications-label-picker {
+  margin-inline-start: $space-5xl;
+  display: none;
+}
+
+.alpaca-notifications-label-picker.is-visible {
+  display: block;
+}
+
+.alpaca-notifications-label-grid {
+  display: grid;
+  gap: $space-md;
+}
+
+.alpaca-notifications-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-lg;
+  margin-top: $space-4xl;
+  padding-top: $space-2xl;
+}
+
+.alpaca-notifications-email-digest-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-lg;
+  align-items: center;
+}
+
+.alpaca-notifications-email-digest-checkbox .components-base-control,
+.alpaca-notifications-email-time-wrap .components-base-control {
+  margin-bottom: 0;
+}
+
+.alpaca-notifications-email-time-wrap {
+  flex: 0 0 auto;
+  margin-block-start: $space-3xs;
+}
+
+.alpaca-notifications-email-digest-settings {
+  display: grid;
+  gap: 0;
+  margin-block-start: 0;
+}
+
+.alpaca-notifications-email-time {
+  inline-size: min(100%, 13.75rem);
+}
+
+@media (max-width: $width-content-md) {
+  .alpaca-notifications-email-digest-row {
+    align-items: center;
+  }
+
+  .alpaca-notifications-email-time-wrap {
+    margin-block-start: 0;
+  }
+}
+
+.alpaca-notification-template-section-header {
+  margin-bottom: $space-2xl;
+
+  h2 {
+    margin-bottom: $space-xs;
+  }
+
+  p {
+    margin: 0;
+    max-width: 60ch;
+  }
+}
+
+.alpaca-notification-template-editor-shell {
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  background: $color-white;
+}
+
+.alpaca-notification-template-canvas {
+  min-height: 28.75rem;
+  padding: $space-4xl;
+  background: $color-surface-subtle;
+  font-family: $font-family-base;
+}
+
+.alpaca-notification-template-block-list {
+  max-width: 43.75rem;
+  margin: 0;
+}
+
+.alpaca-notification-template-canvas
+  .block-editor-block-list__layout
+  > .wp-block {
+  margin-top: 0;
+  margin-bottom: $space-xl;
+}
+
+.alpaca-notification-template-canvas .alpaca-notification-header {
+  display: flex;
+  align-items: center;
+  gap: $space-2xl;
+}
+
+.alpaca-notification-template-canvas .alpaca-notification-header__copy {
+  min-width: 0;
+}
+
+.alpaca-notification-template-canvas .alpaca-notification-header__title,
+.alpaca-notification-template-canvas .alpaca-notification-header__tagline {
+  margin: 0;
+}
+
+.alpaca-notification-template-canvas .wp-block-buttons {
+  margin-top: $space-3xl;
+  margin-bottom: $space-3xl;
+}
+
+.alpaca-notification-template-canvas .wp-block-button__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: $size-control-lg;
+  padding: $space-xs $space-lg;
+  border: 0;
+  border-radius: $radius-xs;
+  background: $color-brand-blue;
+  color: $color-white;
+  font-size: $font-size-sm;
+  line-height: $line-height-reset;
+  text-decoration: none;
+  box-sizing: border-box;
+
+  &:hover,
+  &:focus {
+    background: $color-brand-blue-hover;
+    color: $color-white;
+  }
+}
+
+.alpaca-notification-template-canvas .wp-block-separator {
+  opacity: 1;
+  border-top: 1px solid $color-border;
+}
+
+.alpaca-notification-template-appender {
+  max-width: 43.75rem;
+  margin: 0;
+
+  .block-editor-default-block-appender,
+  .block-editor-button-block-appender {
+    margin-top: $space-lg;
+  }
+}
+
+.alpaca-notification-token-block {
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  background: $color-white;
+  padding: $space-xl $space-2xl;
+
+  strong {
+    display: block;
+    margin-bottom: $space-xs;
+    font-size: $font-size-sm;
+  }
+
+  p {
+    margin: 0;
+    color: $color-text-secondary;
+    font-size: $font-size-sm;
+  }
+}
+
+.alpaca-notification-template-preview-panel {
+  position: sticky;
+  top: $size-control-md;
+}
+
+.alpaca-notification-preview-frame {
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  background: $color-white;
+  overflow: hidden;
+}
+
+.alpaca-notification-preview-envelope {
+  display: grid;
+  gap: $space-md;
+  padding: $space-2xl $space-3xl;
+  border-bottom: 1px solid $color-border;
+  background: $color-surface-muted;
+}
+
+.alpaca-notification-preview-meta {
+  display: grid;
+  gap: $space-2xs;
+
+  span {
+    color: $color-text-secondary;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+    letter-spacing: $letter-spacing-overline;
+    text-transform: uppercase;
+  }
+
+  strong {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    color: $color-text-primary;
+    word-break: break-word;
+  }
+}
+
+.alpaca-notification-preview-body {
+  background: $color-white;
+}
+
+.alpaca-mentions-textarea {
+  position: relative;
+}
+
+.alpaca-mentions-popover {
+  z-index: 100002;
+}
+
+.alpaca-mentions-popover-content {
+  min-width: 17.5rem;
+  max-width: 21.25rem;
+  padding: $space-sm;
+  display: grid;
+  gap: $space-2xs;
+}
+
+.alpaca-issue-links-popover-content {
+  min-width: 20rem;
+}
+
+.alpaca-mentions-empty {
+  margin: 0;
+  color: $color-text-muted;
+  padding: $space-sm;
+}
+
+.alpaca-mentions-option.components-button {
+  width: 100%;
+  justify-content: flex-start;
+  align-items: center;
+  gap: $space-md;
+  padding: $space-sm $space-md;
+  border-radius: $radius-md;
+  color: $color-text-strong;
+
+  &.is-active,
+  &:hover {
+    background: $color-link-soft;
+    color: $color-text-strong;
+  }
+}
+
+.alpaca-mentions-option-avatar {
+  width: $size-control-sm;
+  height: $size-control-sm;
+  border-radius: $radius-round;
+  flex: 0 0 $size-control-sm;
+  object-fit: cover;
+  border: 1px solid $color-border;
+}
+
+.alpaca-mentions-option-avatar--fallback {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.alpaca-mentions-option-labels {
+  display: grid;
+  gap: $space-3xs;
+  text-align: start;
+
+  span {
+    color: $color-text-subtle;
+    font-size: $font-size-xs;
+  }
+}
+
+.alpaca-issue-link-option-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: $color-link-emphasis;
+}
+
+.alpaca-notification-mention {
+  display: inline-flex;
+  align-items: center;
+  border-radius: $radius-pill;
+  background: $color-link-soft;
+  color: $color-link-emphasis;
+  font-weight: $font-weight-semibold;
+  padding: 0 $space-sm;
+}
+
+.alpaca-notification-email {
+  background: $color-surface-subtle;
+  color: $color-text-primary;
+  font-family: $font-family-base;
+  padding: $space-5xl $space-2xl;
+
+  .screen-reader-text {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: calc(-1 * 1px);
+    border: 0;
+    padding: 0;
+    clip: rect(1px, 1px, 1px, 1px);
+    overflow: hidden;
+    word-wrap: normal !important;
+  }
+
+  .alpaca-notification-email__inner {
+    max-width: 42.5rem;
+    margin: 0 auto;
+  }
+
+  .alpaca-notification-email__inner > * {
+    box-sizing: border-box;
+    width: 100%;
+    margin-inline-end: 0;
+    margin-inline-start: 0;
+    margin-bottom: $space-2xl;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: $color-text-primary;
+    margin-top: 0;
+  }
+
+  p,
+  li {
+    color: $color-text-secondary;
+    font-size: $font-size-md;
+    line-height: $line-height-relaxed;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  a {
+    color: $color-link;
+  }
+
+  .alpaca-notification-comment-content {
+    background: $color-white;
+    border: 1px solid $color-border;
+    border-radius: $radius-lg;
+    padding: $space-4xl;
+    box-shadow: none;
+  }
+
+  .wp-block-buttons {
+    margin-top: $space-4xl;
+    margin-bottom: $space-4xl;
+  }
+
+  .wp-block-buttons > .wp-block-button {
+    margin-inline-end: $space-sm;
+  }
+
+  .wp-block-button__link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: $size-control-lg;
+    padding: $space-xs $space-lg;
+    border: 0;
+    border-radius: $radius-xs;
+    background: $color-brand-blue;
+    color: $color-white;
+    font-size: $font-size-sm;
+    line-height: $line-height-reset;
+    text-decoration: none;
+  }
+
+  .wp-block-separator {
+    border-top: 1px solid $color-border;
+    opacity: 1;
+    margin-top: $space-4xl;
+    margin-bottom: $space-4xl;
+  }
+
+  .alpaca-notification-site-logo {
+    display: block;
+    max-width: 11.25rem;
+    height: auto;
+  }
+
+  .alpaca-notification-site-icon {
+    display: block;
+    width: $size-control-xl;
+    max-width: $size-control-xl;
+    height: $size-control-xl;
+    object-fit: contain;
+  }
+
+  .alpaca-notification-header {
+    display: flex;
+    align-items: center;
+    gap: $space-xl;
+    padding: 0;
+    background: transparent;
+    border: 0;
+  }
+
+  .alpaca-notification-header__copy {
+    min-width: 0;
+  }
+
+  .alpaca-notification-header__title {
+    margin: 0;
+    color: $color-text-primary;
+    font-size: $font-size-md;
+    font-weight: $font-weight-bold;
+    line-height: $line-height-base;
+  }
+
+  .alpaca-notification-header__tagline {
+    margin: 0;
+    color: $color-text-secondary;
+
+    &:empty {
+      display: none;
+    }
+  }
+
+  .alpaca-notification-attachments {
+    margin-top: $space-5xl;
+
+    h3 {
+      font-size: $font-size-sm;
+      letter-spacing: $letter-spacing-overline;
+      text-transform: uppercase;
+      color: $color-text-secondary;
+      margin-bottom: $space-sm;
+    }
+
+    ul {
+      margin: 0;
+      padding-inline-start: $space-4xl;
+    }
+  }
+
+  &.alpaca-notification-digest-email h2 {
+    margin: $space-4xl 0 $space-5xl;
+    color: $color-text-strong;
+    font-size: $font-size-display;
+    line-height: $line-height-tight;
+    letter-spacing: $letter-spacing-tight;
+  }
+
+  .alpaca-notification-digest-section {
+    margin-top: 2.125rem;
+
+    h3 {
+      margin-bottom: $space-2xl;
+      color: $color-text-strong;
+      font-size: $font-size-xl;
+      line-height: $line-height-tight;
+    }
+  }
+
+  .alpaca-notification-digest-deadline-table-wrap {
+    border: 1px solid $color-border;
+    border-radius: $radius-lg;
+    overflow: hidden;
+  }
+
+  .alpaca-notification-digest-deadline-table {
+    width: 100%;
+    border-collapse: collapse;
+
+    // table-layout: fixed;
+
+    th {
+      padding: $space-sm $space-lg;
+      border-bottom: 1px solid $color-border;
+      color: $color-text-secondary;
+      font-size: $font-size-xs;
+      font-weight: $font-weight-bold;
+      white-space: nowrap;
+      text-align: start;
+
+      &:first-child {
+        text-align: start;
+      }
+    }
+  }
+
+  .alpaca-notification-digest-deadline-row {
+    background: $color-white;
+
+    &:nth-child(even) {
+      background: $color-surface-subtle;
+    }
+
+    td {
+      padding: $space-xl $space-2xl;
+      border-top: 1px solid $color-border;
+      font-size: $font-size-sm;
+      line-height: $line-height-base;
+      vertical-align: middle;
+    }
+
+    &:first-child td {
+      border-top: 0;
+    }
+  }
+
+  .alpaca-notification-digest-deadline-row__title {
+    color: $color-text-strong;
+    font-weight: $font-weight-semibold;
+    width: 44%;
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+  }
+
+  .alpaca-notification-digest-deadline-row__title-stack {
+    display: grid;
+    gap: $space-sm;
+  }
+
+  .alpaca-notification-digest-deadline-row__due,
+  .alpaca-notification-digest-deadline-row__assignees,
+  .alpaca-notification-digest-deadline-row__status {
+    color: $color-text-primary;
+    width: auto;
+  }
+
+  .alpaca-notification-digest-deadline-row__status-text {
+    display: inline-block;
+    white-space: nowrap;
+  }
+
+  .alpaca-notification-digest-card {
+    display: grid;
+    gap: $space-xl;
+    background: $color-white;
+    border: 1px solid $color-border;
+    border-radius: $radius-lg;
+    padding: $space-5xl $space-5xl;
+    margin-top: $space-3xl;
+
+    &:first-of-type {
+      margin-top: 0;
+    }
+  }
+
+  .alpaca-notification-digest-card__title {
+    margin: 0;
+    color: $color-text-strong;
+    font-size: $font-size-xl;
+    line-height: $line-height-heading;
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+  }
+
+  .alpaca-notification-digest-card__more {
+    margin: 0;
+    font-size: $font-size-sm;
+    color: $color-text-secondary;
+  }
+
+  .alpaca-item-datapoints {
+    font-size: $font-size-sm;
+    line-height: $line-height-base;
+    @include alpaca-item-datapoints-content;
+  }
+
+  .alpaca-notification-digest-meta {
+    margin-top: 0;
+  }
+
+  .alpaca-item-deadline {
+    border-radius: $radius-lg;
+    margin: 0 !important;
+    @include alpaca-item-deadline-states;
+  }
+
+  .alpaca-item-assignees {
+    @include alpaca-assignee-stack;
+  }
+
+  .alpaca-notification-digest-events {
+    margin: 0;
+    padding-inline-start: 0;
+    list-style: none;
+  }
+
+  .alpaca-notification-digest-event {
+    margin-top: $space-lg;
+    padding-inline-start: $space-3xl;
+    position: relative;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: $space-sm;
+      inset-inline-start: 0;
+      width: $space-sm;
+      height: $space-sm;
+      border: 0.0938rem solid $color-text-subtle;
+      border-radius: $radius-round;
+      background: $color-white;
+    }
+
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+
+  .alpaca-notification-digest-event__row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: $space-lg;
+  }
+
+  .alpaca-notification-digest-event__headline {
+    color: $color-text-strong;
+    font-size: $font-size-md;
+    line-height: $line-height-code;
+  }
+
+  .alpaca-notification-digest-event__time {
+    flex-shrink: 0;
+    color: $color-text-subtle;
+    font-size: $font-size-sm;
+    line-height: $line-height-base;
+  }
+
+  .alpaca-notification-digest-event__excerpt {
+    margin-top: $space-xs;
+    color: $color-text-primary;
+    font-size: $font-size-sm;
+    line-height: $line-height-relaxed;
+  }
+
+  .alpaca-notification-digest-empty {
+    margin: 0;
+    color: $color-text-subtle;
+  }
+
+  .alpaca-notification-digest-deadline-row__assignees {
+    .alpaca-item-assignees {
+      @include alpaca-assignee-stack($size-icon-md, 0, 0, false, $font-size-xs);
+    }
+  }
+}
+
+@media (max-width: $breakpoint-notifications-lg) {
+  .alpaca-notification-template-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .alpaca-notification-template-preview-panel {
+    position: static;
+  }
+}
+
+@media (max-width: $breakpoint-notifications-md) {
+  .alpaca-notifications-grid {
+    grid-template-columns: 1fr;
+  }
+}

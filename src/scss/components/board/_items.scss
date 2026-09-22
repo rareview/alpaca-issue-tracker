@@ -1,0 +1,177 @@
+@use '../../abstracts' as *;
+
+/*
+* Items (Cards)
+*/
+.wp-admin {
+  .alpaca-item {
+    --alpaca-item-controls-width: #{$size-control-lg};
+
+    display: flex;
+    flex-direction: column;
+    gap: $space-gap-inline;
+    transition:
+      opacity $duration-base ease-in-out,
+      transform $duration-base ease-in-out;
+    margin: 1px 0 $space-md 0;
+    cursor: pointer;
+
+    &:active {
+      cursor: grabbing;
+    }
+
+    .alpaca-item-inner {
+      margin: 0;
+    }
+
+    .components-card__body {
+      padding-bottom: $space-2xs;
+    }
+
+    span.components-text {
+      font-size: $font-size-md;
+    }
+
+    .components-card__media {
+      margin: $space-2xs 0;
+    }
+
+    .alpaca-item-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) var(--alpaca-item-controls-width);
+      column-gap: $space-2xs;
+      align-items: start;
+    }
+
+    .alpaca-item-main {
+      min-inline-size: 0;
+    }
+
+    .alpaca-item-deadline {
+      border-radius: $radius-lg;
+      margin: 0;
+      @include alpaca-item-deadline-states;
+    }
+
+    &.is-high-priority {
+      .alpaca-item-inner {
+        box-shadow:
+          inset 0 0 6.25rem rgba($color-priority-high, 0.15),
+          rgba($color-priority-high, 0.25) 0 0 0 1px;
+      }
+      .alpaca-item-datapoints {
+        color: rgb(0 0 0 / 60%);
+      }
+      .alpaca-item-priority-badge svg {
+        border-color: rgba($color-priority-high, 0.5);
+      }
+    }
+
+    .alpaca-item-content {
+      grid-column: 1;
+      grid-row: 1;
+      min-inline-size: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .alpaca-item-controls {
+      inline-size: var(--alpaca-item-controls-width);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      gap: $space-2xs;
+      padding-bottom: $space-2xs;
+    }
+
+    .alpaca-item-controls .dashicons {
+      opacity: 0;
+      transition: opacity $duration-base ease-in-out;
+    }
+
+    .alpaca-item-controls button.dashicons {
+      background: transparent;
+      border: 0;
+      padding: 0;
+      width: $size-icon-lg;
+      height: $size-icon-lg;
+      color: inherit;
+    }
+
+    .alpaca-item-controls button.dashicons:disabled {
+      cursor: default;
+      opacity: 0.2;
+    }
+
+    &:hover .alpaca-item-controls .dashicons {
+      opacity: 0.3;
+    }
+
+    .alpaca-item-controls .dashicons:hover {
+      cursor: pointer;
+    }
+
+    &.is-watched .alpaca-item-controls .dashicons-star-filled {
+      opacity: 1;
+    }
+
+    .alpaca-item-inner.is-watched .alpaca-item-controls .dashicons-star-filled {
+      opacity: 1;
+    }
+
+    .alpaca-item-controls button.dashicons.dashicons-star-filled {
+      color: $color-star;
+    }
+  }
+
+  .alpaca-item-datapoints {
+    margin: $space-sm 0 $space-2xs 0;
+    font-size: $font-size-xs;
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-2xs;
+    line-height: $line-height-datapoints;
+    @include alpaca-item-datapoints-content;
+  }
+
+  .alpaca-item.empty {
+    font-style: italic;
+    background-color: transparent;
+    border: 1px dotted $color-border;
+    padding: $space-xs $space-sm;
+    height: calc(100% - $space-lg);
+
+    .alpaca-item-controls {
+      display: none;
+    }
+  }
+
+  .alpaca-item-dragging {
+    opacity: 0.4;
+  }
+
+  .alpaca-item.is-source-hidden {
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    opacity: 0 !important;
+    border: none !important;
+    pointer-events: none !important;
+  }
+}
+
+/* Canonical label pill styles (shared across items, modals, settings, and board controls)
+   Moved here to keep item-specific UI tokens near card styling. */
+.alpaca-label-pill {
+  border-radius: $radius-pill;
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  height: $size-icon-xl;
+  padding: 0 $space-sm;
+  line-height: $line-height-reset;
+  white-space: nowrap;
+  gap: $space-2xs;
+  font-size: $font-size-xs;
+}

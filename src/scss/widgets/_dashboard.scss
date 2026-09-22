@@ -1,0 +1,74 @@
+@use '../abstracts' as *;
+
+/*
+ * Dashboard Widget
+ */
+#alpaca-dashboard-widget {
+  margin-top: -$space-xs;
+
+  a {
+    text-decoration: none;
+  }
+
+  table {
+    border-spacing: 0;
+    border-collapse: collapse;
+    width: 100%;
+
+    tr {
+      &:first-child {
+        th {
+          border-bottom: 1px solid $color-border;
+        }
+      }
+
+      &:nth-child(even) {
+        background-color: $color-surface-subtle;
+      }
+    }
+
+    th,
+    td {
+      padding: $space-sm $space-xs;
+      vertical-align: top;
+      text-align: center;
+      white-space: nowrap;
+
+      &:first-child {
+        text-align: start;
+      }
+    }
+
+    th {
+      font-size: $font-size-sm;
+      font-weight: $font-weight-bold;
+    }
+
+    td {
+      width: 18%;
+
+      &.title {
+        white-space: unset;
+        width: auto;
+      }
+
+      &.high-priority {
+        width: $size-icon-sm;
+        color: $color-priority-high;
+      }
+    }
+  }
+
+  .assignees {
+    .alpaca-item-assignees {
+      @include alpaca-assignee-stack(
+        $size-icon-md,
+        0,
+        0,
+        false,
+        $font-size-xs,
+        $space-2xs
+      );
+    }
+  }
+}

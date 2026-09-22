@@ -1,7 +1,27 @@
+const { __ } = wp.i18n;
+
 export const getTabsConfig = (issueDetails) => {
+  const hasBrowserContext =
+    issueDetails?.meta?.alpaca_url ||
+    issueDetails?.meta?.alpaca_screenshot ||
+    issueDetails?.meta?.alpaca_queried_object ||
+    issueDetails?.meta?.alpaca_headers;
+
   return [
-    { name: 'comments', title: 'Timeline', className: 'comments' },
-    { name: 'report', title: 'Report', className: 'report' },
+    {
+      name: 'comments',
+      title: __('Timeline', 'alpaca-issue-tracker'),
+      className: 'comments',
+    },
+    ...(hasBrowserContext
+      ? [
+          {
+            name: 'report',
+            title: __('Report', 'alpaca-issue-tracker'),
+            className: 'report',
+          },
+        ]
+      : []),
     ...((issueDetails?.meta?.alpaca_queried_object &&
       issueDetails.meta.alpaca_queried_object !== 'null') ||
     (issueDetails?.meta?.queriedObject &&
@@ -9,7 +29,7 @@ export const getTabsConfig = (issueDetails) => {
       ? [
           {
             name: 'queriedobject',
-            title: 'Queried Object',
+            title: __('Queried Object', 'alpaca-issue-tracker'),
             className: 'queried-object',
           },
         ]
@@ -20,7 +40,7 @@ export const getTabsConfig = (issueDetails) => {
       ? [
           {
             name: 'headers',
-            title: 'Headers',
+            title: __('Headers', 'alpaca-issue-tracker'),
             className: 'headers',
           },
         ]
@@ -31,7 +51,7 @@ export const getTabsConfig = (issueDetails) => {
       ? [
           {
             name: 'errors',
-            title: 'Errors',
+            title: __('Errors', 'alpaca-issue-tracker'),
             className: 'errors',
           },
         ]

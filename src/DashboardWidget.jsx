@@ -1,0 +1,168 @@
+const { memo } = wp.element;
+const { TabPanel } = wp.components;
+const { __ } = wp.i18n;
+import PropTypes from 'prop-types';
+import User from './components/User';
+import useUserManagement from './hooks/useUserManagement';
+import Icon from './components/icons/Icon';
+import { formatWpDateValue } from './utils/date';
+
+/**
+ * Format a date string for display in the dashboard widget.
+ *
+ * @param {string} dateString - ISO date string.
+ * @return {string|null} Formatted date or null.
+ */
+const formatDate = (dateString) => {
+  if (!dateString) return null;
+
+  return formatWpDateValue(dateString, 'M j', {
+    treatDateOnlyAsLocalNoon: true,
+  });
+};
+
+/**
+ * Dashboard widget component showing assigned, latest, overdue, and watchlist issues.
+ *
+ * @param {Object} root0      - Props object
+ * @param {Object} root0.data - Widget data (assignedToMe, newlyCreated, overdue, watchlist)
+ * @return {JSX.Element} Dashboard widget
+ */
+const AlpacaDashboardWidget = memo(function AlpacaDashboardWidget({ data }) {
+  const { allUserObjects } = useUserManagement();
+  const adminUrlBase =
+    typeof window !== 'undefined' &&
+    window.alpaistrSettings &&
+    window.alpaistrSettings.adminUrl
+      ? window.alpaistrSettings.adminUrl
+      : 'admin.php';
+
+  if (!data) {
+    return <div>{__('Loading…', 'alpaca-issue-tracker')}</div>;
+  }
+
+  const tabs = [
+    {
+      name: 'assignedToMe',
+      title: __('Assigned to Me', 'alpaca-issue-tracker'),
+      issues: data.assignedToMe,
+    },
+    {
+      name: 'newlyCreated',
+      title: __('Latest', 'alpaca-issue-tracker'),
+      issues: data.newlyCreated,
+    },
+    {
+      name: 'overdue',
+      title: __('Overdue', 'alpaca-issue-tracker'),
+      issues: data.overdue,
+    },
+    {
+      name: 'watchlist',
+      title: __('Watchlist', 'alpaca-issue-tracker'),
+      issues: data.watchlist,
+    },
+  ];
+
+  return (
+    <TabPanel
+      className="alpaca-dashboard-widget-tabs"
+      activeClass="is-active"
+      tabs={tabs}
+    >
+      {(tab) => (
+        <div>
+          {tab.issues && tab.issues.length > 0 ? (
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">{__('Issue', 'alpaca-issue-tracker')}</th>
+                  <th scope="col" aria-hidden="true" />
+                  <th scope="col">{__('Due Date', 'alpaca-issue-tracker')}</th>
+                  <th scope="col">{__('Assignees', 'alpaca-issue-tracker')}</th>
+                  <th scope="col">{__('Status', 'alpaca-issue-tracker')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tab.issues.map((issue) =>
+                  (() => {
+                    const linkSlug =
+                      tab.name === 'assignedToMe' && issue.post_parent_slug
+                        ? issue.post_parent_slug
+                        : issue.slug || issue.post_name || '';
+
+                    return (
+                      <tr key={issue.id}>
+                        <td className="title">
+                          <a
+                            href={`${adminUrlBase}?page=project-board&issue=${encodeURIComponent(
+                              linkSlug,
+                            )}`}
+                            target="_self"
+                          >
+                            {issue.title}
+                          </a>
+                        </td>
+                        <td className="high-priority">
+                          {issue.high_priority ? (
+                            <Icon name="priority" />
+                          ) : null}
+                        </td>
+                        <td className="deadline">
+                          {formatDate(issue.deadline)}
+                        </td>
+                        <td className="assignees">
+                          {issue.assignees && issue.assignees.length > 0 ? (
+                            <div
+                              className="alpaca-item-assignees"
+                              data-assignees={issue.assignees.length}
+                            >
+                              {issue.assignees.map((assignee) => {
+                                const userObject = allUserObjects.find(
+                                  (u) => u.slug === assignee.slug,
+                                );
+                                return userObject ? (
+                                  <User
+                                    key={assignee.term_id}
+                                    user={userObject}
+                                    showName={false}
+                                  />
+                                ) : null;
+                              })}
+                            </div>
+                          ) : null}
+                        </td>
+                        <td className="status">
+                          <span className="alpaca-nowrap">
+                            {issue.status && issue.status[0]
+                              ? issue.status[0].name
+                              : ''}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })(),
+                )}
+              </tbody>
+            </table>
+          ) : (
+            <p>{__('No issues found.', 'alpaca-issue-tracker')}</p>
+          )}
+        </div>
+      )}
+    </TabPanel>
+  );
+});
+
+AlpacaDashboardWidget.propTypes = {
+  data: PropTypes.shape({
+    assignedToMe: PropTypes.array,
+    newlyCreated: PropTypes.array,
+    overdue: PropTypes.array,
+    watchlist: PropTypes.array,
+  }),
+};
+
+AlpacaDashboardWidget.displayName = 'AlpacaDashboardWidget';
+
+export default AlpacaDashboardWidget;

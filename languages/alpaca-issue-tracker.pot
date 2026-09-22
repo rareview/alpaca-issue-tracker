@@ -1,0 +1,2599 @@
+# Copyright (C) 2026 Rareview®
+# This file is distributed under the GPL v2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Alpaca Issue Tracker 1.1.1\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/alpaca-issue-tracker\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-09-14T17:27:51+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: alpaca-issue-tracker\n"
+
+#. Plugin Name of the plugin
+#: alpacaissuetracker.php
+#: includes/api/abilities.php:43
+msgid "Alpaca Issue Tracker"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: alpacaissuetracker.php
+msgid "https://github.com/rareview/alpaca-issue-tracker"
+msgstr ""
+
+#. Description of the plugin
+#: alpacaissuetracker.php
+msgid "A lightweight issue tracker built entirely inside WordPress, designed for developers and agencies managing client projects."
+msgstr ""
+
+#. Author of the plugin
+#: alpacaissuetracker.php
+msgid "Rareview®"
+msgstr ""
+
+#. Author URI of the plugin
+#: alpacaissuetracker.php
+msgid "https://rareview.com/"
+msgstr ""
+
+#: includes/admin/admin-bar.php:78
+#: src/Toolbar.jsx:269
+#: src/Toolbar.jsx:286
+msgid "Report An Issue"
+msgstr ""
+
+#: includes/admin/admin-screens.php:17
+#: includes/admin/admin-screens.php:18
+#: includes/core/board.php:22
+#: src/Toolbar.jsx:273
+msgid "Project Board"
+msgstr ""
+
+#: includes/admin/admin-screens.php:27
+#: includes/admin/admin-screens.php:28
+#: includes/admin/admin-screens.php:106
+msgid "Project Activity"
+msgstr ""
+
+#: includes/admin/admin-screens.php:36
+#: includes/admin/admin-screens.php:37
+#: includes/admin/admin-screens.php:84
+msgid "Configure"
+msgstr ""
+
+#: includes/admin/admin-screens.php:45
+#: includes/admin/admin-screens.php:46
+#: includes/admin/admin-screens.php:118
+msgid "My Notifications"
+msgstr ""
+
+#: includes/admin/admin-screens.php:54
+#: includes/admin/admin-screens.php:55
+#: includes/admin/admin-screens.php:135
+msgid "Email Templates"
+msgstr ""
+
+#: includes/admin/admin-screens.php:63
+#: includes/admin/admin-screens.php:64
+msgid "Documentation"
+msgstr ""
+
+#: includes/admin/admin-screens.php:87
+msgid "Changes made on this screen will affect all users."
+msgstr ""
+
+#: includes/admin/admin-screens.php:121
+msgid "Changes made on this screen will only affect the current user."
+msgstr ""
+
+#: includes/admin/dashboard-widget.php:19
+msgid "Project Issues"
+msgstr ""
+
+#: includes/api/abilities.php:44
+msgid "Abilities for managing issues, comments, and the project board in the Alpaca Issue Tracker."
+msgstr ""
+
+#: includes/api/abilities.php:64
+msgid "Get Board"
+msgstr ""
+
+#: includes/api/abilities.php:65
+msgid "Retrieves the backlog and board columns with their issues."
+msgstr ""
+
+#: includes/api/abilities.php:99
+#: src/components/CommentForm.jsx:459
+msgid "Create Issue"
+msgstr ""
+
+#: includes/api/abilities.php:100
+msgid "Creates a new issue in the tracker."
+msgstr ""
+
+#: includes/api/abilities.php:109
+msgid "The title or feedback content of the issue."
+msgstr ""
+
+#: includes/api/abilities.php:113
+msgid "Whether the issue is high priority."
+msgstr ""
+
+#: includes/api/abilities.php:140
+msgid "Get Issue Details"
+msgstr ""
+
+#: includes/api/abilities.php:141
+msgid "Retrieves detailed data for a specific issue by its ID."
+msgstr ""
+
+#: includes/api/abilities.php:150
+#: includes/api/abilities.php:291
+#: includes/api/abilities.php:332
+msgid "The ID of the issue."
+msgstr ""
+
+#: includes/api/abilities.php:182
+msgid "Update Issue"
+msgstr ""
+
+#: includes/api/abilities.php:183
+msgid "Updates specified fields of a given issue."
+msgstr ""
+
+#: includes/api/abilities.php:192
+msgid "The ID of the issue to update."
+msgstr ""
+
+#: includes/api/abilities.php:196
+msgid "The new title for the issue."
+msgstr ""
+
+#: includes/api/abilities.php:200
+msgid "The new description content for the issue."
+msgstr ""
+
+#: includes/api/abilities.php:204
+msgid "The ID of the status term to assign."
+msgstr ""
+
+#: includes/api/abilities.php:208
+msgid "Set to true to mark the issue as high priority, or false to clear."
+msgstr ""
+
+#: includes/api/abilities.php:212
+msgid "The parent issue ID (0 to remove parent)."
+msgstr ""
+
+#: includes/api/abilities.php:217
+msgid "An array of user slugs to assign to the issue."
+msgstr ""
+
+#: includes/api/abilities.php:244
+msgid "Delete Issue"
+msgstr ""
+
+#: includes/api/abilities.php:245
+msgid "Moves a specific issue to the trash."
+msgstr ""
+
+#: includes/api/abilities.php:254
+msgid "The ID of the issue to move to trash."
+msgstr ""
+
+#: includes/api/abilities.php:281
+msgid "Add Comment"
+msgstr ""
+
+#: includes/api/abilities.php:282
+msgid "Posts a new comment on a specific issue."
+msgstr ""
+
+#: includes/api/abilities.php:295
+msgid "The comment content."
+msgstr ""
+
+#: includes/api/abilities.php:322
+msgid "Get Comments"
+msgstr ""
+
+#: includes/api/abilities.php:323
+msgid "Retrieves comments for a specific issue."
+msgstr ""
+
+#: includes/api/abilities.php:446
+#: includes/api/abilities.php:467
+#: includes/notifications/events.php:377
+#: includes/notifications/inbox.php:390
+#: includes/notifications/inbox.php:415
+#: src/components/InboxControl.jsx:166
+#: src/utils/issueCommentHandler.js:58
+msgid "Unknown user"
+msgstr ""
+
+#: includes/api/abilities.php:631
+msgid "Alpaca Issue Tracker core board functions are missing."
+msgstr ""
+
+#: includes/api/abilities.php:651
+#: includes/api/endpoints/issues.php:67
+msgid "Feedback is required."
+msgstr ""
+
+#: includes/api/abilities.php:660
+msgid "Issue input could not be encoded."
+msgstr ""
+
+#: includes/api/abilities.php:681
+#: includes/api/endpoints/issues.php:91
+#: src/components/Issue.jsx:1517
+msgid "Failed to create issue."
+msgstr ""
+
+#: includes/api/abilities.php:748
+#: includes/api/abilities.php:849
+#: includes/api/abilities.php:1111
+#: includes/api/abilities.php:1161
+#: includes/api/abilities.php:1233
+#: includes/api/endpoints/issues.php:290
+#: includes/api/endpoints/issues.php:723
+#: includes/api/endpoints/issues.php:1249
+#: includes/api/endpoints/issues.php:1386
+#: includes/api/endpoints/users-labels-watchlist.php:524
+#: src/Board.jsx:348
+msgid "Issue not found."
+msgstr ""
+
+#: includes/api/abilities.php:866
+msgid "Status term not found."
+msgstr ""
+
+#. translators: %s: User slug.
+#: includes/api/abilities.php:887
+#, php-format
+msgid "Assignee not found: %s"
+msgstr ""
+
+#: includes/api/abilities.php:918
+#: includes/api/endpoints/issues.php:311
+msgid "Invalid parent issue."
+msgstr ""
+
+#: includes/api/abilities.php:926
+#: includes/api/endpoints/issues.php:322
+msgid "An issue cannot be its own parent."
+msgstr ""
+
+#: includes/api/abilities.php:936
+#: includes/api/endpoints/issues.php:335
+#: includes/api/endpoints/issues.php:622
+msgid "Parent issue not found."
+msgstr ""
+
+#: includes/api/abilities.php:945
+#: includes/api/endpoints/issues.php:347
+msgid "Invalid parent hierarchy."
+msgstr ""
+
+#: includes/api/abilities.php:958
+#: includes/api/endpoints/issues.php:363
+msgid "Failed to update the issue."
+msgstr ""
+
+#: includes/api/abilities.php:998
+#: includes/api/abilities.php:999
+msgid "Unknown status"
+msgstr ""
+
+#. translators: 1: Previous status name, 2: Current status name, 3: Current user display name.
+#: includes/api/abilities.php:1005
+#, php-format
+msgid "Status changed from **%1$s** to **%2$s** by %3$s"
+msgstr ""
+
+#. translators: 1: Assigned user display name, 2: Current user display name.
+#: includes/api/abilities.php:1029
+#, php-format
+msgid "%1$s was assigned to this issue by %2$s"
+msgstr ""
+
+#. translators: 1: Unassigned user display name, 2: Current user display name.
+#: includes/api/abilities.php:1049
+#, php-format
+msgid "%1$s was unassigned from this issue by %2$s"
+msgstr ""
+
+#. translators: %s: Current user display name.
+#: includes/api/abilities.php:1071
+#, php-format
+msgid "Priority set to **High** by %s"
+msgstr ""
+
+#. translators: %s: Current user display name.
+#: includes/api/abilities.php:1082
+#, php-format
+msgid "High priority removed by %s"
+msgstr ""
+
+#: includes/api/abilities.php:1120
+msgid "Failed to delete the issue."
+msgstr ""
+
+#. translators: %s: Current user display name.
+#: includes/api/abilities.php:1130
+#, php-format
+msgid "Issue **deleted** by %s"
+msgstr ""
+
+#: includes/api/abilities.php:1142
+msgid "Issue moved to trash successfully."
+msgstr ""
+
+#: includes/api/abilities.php:1169
+msgid "Comment content is required."
+msgstr ""
+
+#: includes/api/abilities.php:1192
+msgid "Failed to post comment."
+msgstr ""
+
+#: includes/api/endpoints/attachments.php:199
+msgid "Invalid issue."
+msgstr ""
+
+#: includes/api/endpoints/attachments.php:323
+#: src/utils/attachmentUpload.js:12
+msgid "Missing attachment file."
+msgstr ""
+
+#: includes/api/endpoints/attachments.php:336
+msgid "This file type is not allowed."
+msgstr ""
+
+#: includes/api/endpoints/attachments.php:349
+msgid "Failed to prepare upload directory."
+msgstr ""
+
+#: includes/api/endpoints/attachments.php:469
+msgid "Missing attachment URL."
+msgstr ""
+
+#: includes/api/endpoints/attachments.php:482
+msgid "Comment was not found."
+msgstr ""
+
+#: includes/api/endpoints/attachments.php:490
+msgid "Comment does not match this issue."
+msgstr ""
+
+#: includes/api/endpoints/attachments.php:498
+msgid "Attachment does not belong to this comment."
+msgstr ""
+
+#: includes/api/endpoints/attachments.php:508
+msgid "Comment ID is required to delete this attachment."
+msgstr ""
+
+#: includes/api/endpoints/attachments.php:523
+msgid "You are not allowed to delete this attachment."
+msgstr ""
+
+#: includes/api/endpoints/attachments.php:536
+msgid "Attachment URL is not valid."
+msgstr ""
+
+#: includes/api/endpoints/attachments.php:551
+#: includes/api/endpoints/attachments.php:562
+msgid "Attachment path is not valid."
+msgstr ""
+
+#: includes/api/endpoints/attachments.php:570
+msgid "Attachment not found."
+msgstr ""
+
+#: includes/api/endpoints/attachments.php:582
+#: src/components/Comment.jsx:62
+#: src/components/Comment.jsx:1034
+#: src/components/Comment.jsx:1077
+#: src/components/CommentForm.jsx:44
+#: src/components/CommentForm.jsx:406
+#: src/utils/attachmentUpload.js:75
+msgid "Failed to delete attachment."
+msgstr ""
+
+#: includes/api/endpoints/attachments.php:591
+msgid "Attachment deleted."
+msgstr ""
+
+#: includes/api/endpoints/board.php:78
+msgid "Invalid data format. Expected an array of columns."
+msgstr ""
+
+#: includes/api/endpoints/board.php:100
+msgid "Board order saved successfully."
+msgstr ""
+
+#: includes/api/endpoints/issues.php:50
+msgid "Invalid request body."
+msgstr ""
+
+#: includes/api/endpoints/issues.php:238
+msgid "Issue submitted successfully."
+msgstr ""
+
+#: includes/api/endpoints/issues.php:426
+msgid "Failed to update issue taxonomy terms."
+msgstr ""
+
+#: includes/api/endpoints/issues.php:481
+msgid "Issue updated successfully."
+msgstr ""
+
+#: includes/api/endpoints/issues.php:633
+msgid "Subissue title is required."
+msgstr ""
+
+#: includes/api/endpoints/issues.php:656
+#: src/components/Issue.jsx:1597
+msgid "Failed to create subissue."
+msgstr ""
+
+#: includes/api/endpoints/issues.php:673
+msgid "Subissue created successfully."
+msgstr ""
+
+#: includes/api/endpoints/issues.php:801
+msgid "Issue data retrieved successfully."
+msgstr ""
+
+#: includes/api/endpoints/issues.php:943
+#: src/components/RestoreManager.jsx:44
+msgid "(Untitled issue)"
+msgstr ""
+
+#: includes/api/endpoints/issues.php:1260
+msgid "Issue is not in trash."
+msgstr ""
+
+#: includes/api/endpoints/issues.php:1281
+msgid "Checklist items cannot be restored while their parent issue is still deleted."
+msgstr ""
+
+#: includes/api/endpoints/issues.php:1295
+#: includes/api/endpoints/issues.php:1314
+msgid "Failed to restore the issue."
+msgstr ""
+
+#: includes/api/endpoints/issues.php:1324
+msgid "Issue restored successfully."
+msgstr ""
+
+#: includes/api/endpoints/issues.php:1399
+msgid "Failed to trash the issue."
+msgstr ""
+
+#: includes/api/endpoints/issues.php:1409
+msgid "Issue trashed successfully."
+msgstr ""
+
+#: includes/api/endpoints/notifications.php:467
+msgid "Test digest email could not be sent."
+msgstr ""
+
+#. translators: %s: test email address.
+#: includes/api/endpoints/notifications.php:469
+#, php-format
+msgid "Test digest email sent to %s."
+msgstr ""
+
+#: includes/api/endpoints/notifications.php:483
+msgid "Test email could not be sent."
+msgstr ""
+
+#. translators: %s: test email address.
+#: includes/api/endpoints/notifications.php:485
+#, php-format
+msgid "Test email sent to %s."
+msgstr ""
+
+#: includes/api/endpoints/notifications.php:540
+msgid "Could not determine the current user."
+msgstr ""
+
+#: includes/api/endpoints/notifications.php:548
+msgid "Your WordPress profile does not have a valid email address."
+msgstr ""
+
+#: includes/api/endpoints/options-statuses.php:126
+msgid "Status not found."
+msgstr ""
+
+#: includes/api/endpoints/options-statuses.php:139
+msgid "Status name cannot be empty."
+msgstr ""
+
+#: includes/api/endpoints/options-statuses.php:161
+msgid "Failed to update status name and slug."
+msgstr ""
+
+#: includes/api/endpoints/options-statuses.php:174
+msgid "Status order must be a number."
+msgstr ""
+
+#: includes/api/endpoints/options-statuses.php:189
+msgid "Status order is outside the allowed range."
+msgstr ""
+
+#: includes/api/endpoints/options-statuses.php:202
+msgid "Status updated successfully."
+msgstr ""
+
+#: includes/api/endpoints/users-labels-watchlist.php:164
+msgid "Label not found."
+msgstr ""
+
+#: includes/api/endpoints/users-labels-watchlist.php:180
+msgid "Label name is required."
+msgstr ""
+
+#: includes/api/endpoints/users-labels-watchlist.php:256
+msgid "Failed to create label."
+msgstr ""
+
+#: includes/api/endpoints/users-labels-watchlist.php:274
+msgid "Label created, but could not be loaded."
+msgstr ""
+
+#: includes/api/endpoints/users-labels-watchlist.php:326
+msgid "Failed to update label."
+msgstr ""
+
+#: includes/api/endpoints/users-labels-watchlist.php:348
+msgid "Failed to load updated label."
+msgstr ""
+
+#: includes/api/endpoints/users-labels-watchlist.php:384
+#: src/components/LabelsManager.jsx:390
+msgid "Failed to delete label."
+msgstr ""
+
+#: includes/api/endpoints/users-labels-watchlist.php:476
+msgid "User not found."
+msgstr ""
+
+#: includes/api/endpoints/users-labels-watchlist.php:502
+#: includes/api/endpoints/users-labels-watchlist.php:536
+msgid "Could not update watchlist."
+msgstr ""
+
+#: includes/api/proxy/image-proxy.php:83
+msgid "Invalid proxy authentication token."
+msgstr ""
+
+#: includes/api/proxy/image-proxy.php:165
+msgid "Invalid URL."
+msgstr ""
+
+#: includes/api/proxy/image-proxy.php:174
+msgid "Only HTTP and HTTPS URLs are allowed."
+msgstr ""
+
+#: includes/api/proxy/image-proxy.php:183
+msgid "Invalid host."
+msgstr ""
+
+#: includes/api/proxy/image-proxy.php:193
+#: includes/api/proxy/image-proxy.php:213
+msgid "URL not allowed."
+msgstr ""
+
+#: includes/api/proxy/image-proxy.php:205
+msgid "Unable to resolve host."
+msgstr ""
+
+#: includes/api/proxy/image-proxy.php:287
+msgid "Failed to fetch image."
+msgstr ""
+
+#: includes/api/proxy/image-proxy.php:304
+msgid "Unsupported image type."
+msgstr ""
+
+#. translators: 1: Required PHP version, 2: Current PHP version
+#: includes/class-activator.php:53
+#, php-format
+msgid "Alpaca Issue Tracker requires PHP version %1$s or higher. You are running version %2$s."
+msgstr ""
+
+#: includes/class-activator.php:57
+#: includes/class-activator.php:73
+msgid "Plugin Activation Error"
+msgstr ""
+
+#. translators: 1: Required WP version, 2: Current WP version
+#: includes/class-activator.php:69
+#, php-format
+msgid "Alpaca Issue Tracker requires WordPress version %1$s or higher. You are running version %2$s."
+msgstr ""
+
+#: includes/class-alpacaissuetracker.php:328
+msgid "Enable console messages for testing purposes."
+msgstr ""
+
+#: includes/class-alpacaissuetracker.php:340
+msgid "Enable context capture, including the toolbar and data dump."
+msgstr ""
+
+#: includes/class-alpacaissuetracker.php:352
+msgid "Visibility map for item datapoints on issue cards."
+msgstr ""
+
+#: includes/class-helpers.php:143
+msgid "You are not allowed to access this endpoint."
+msgstr ""
+
+#: includes/class-helpers.php:157
+msgid "Invalid nonce."
+msgstr ""
+
+#: includes/core/board.php:23
+msgid "Add Issue"
+msgstr ""
+
+#: includes/core/posttypes-and-taxonomies.php:67
+msgid "Issues"
+msgstr ""
+
+#: includes/core/posttypes-and-taxonomies.php:69
+#: includes/core/posttypes-and-taxonomies.php:70
+#: includes/notifications/digest/render.php:417
+#: src/Activity.jsx:667
+#: src/components/RestoreManager.jsx:342
+#: src/DashboardWidget.jsx:79
+#: src/utils/issueCommentHandler.js:582
+msgid "Issue"
+msgstr ""
+
+#: includes/core/posttypes-and-taxonomies.php:71
+msgid "All Issues"
+msgstr ""
+
+#: includes/core/posttypes-and-taxonomies.php:72
+msgid "Edit Issue"
+msgstr ""
+
+#: includes/core/posttypes-and-taxonomies.php:73
+msgid "View Issue"
+msgstr ""
+
+#: includes/core/posttypes-and-taxonomies.php:74
+msgid "View Issues"
+msgstr ""
+
+#: includes/core/posttypes-and-taxonomies.php:83
+msgid "Browser"
+msgstr ""
+
+#: includes/core/posttypes-and-taxonomies.php:84
+msgid "PHP Template"
+msgstr ""
+
+#: includes/core/posttypes-and-taxonomies.php:85
+#: src/components/RestoreManager.jsx:318
+msgid "Type"
+msgstr ""
+
+#: includes/core/posttypes-and-taxonomies.php:90
+#: src/components/BoardFilterControl.jsx:100
+#: src/components/BoardFilterControl.jsx:123
+#: src/components/BoardFilterControl.jsx:369
+#: src/components/BoardFilterControl.jsx:403
+msgid "Assignee"
+msgstr ""
+
+#: includes/core/posttypes-and-taxonomies.php:97
+#: includes/notifications/digest/render.php:417
+#: src/DashboardWidget.jsx:83
+msgid "Status"
+msgstr ""
+
+#: includes/core/posttypes-and-taxonomies.php:106
+#: src/components/BoardFilterControl.jsx:328
+#: src/components/Issue.jsx:115
+#: src/components/LabelsManager.jsx:483
+#: src/components/RestoreManager.jsx:319
+#: src/datapoints/labelsDatapoint.js:23
+#: src/datapoints/labelsDatapoint.js:46
+#: src/Settings.jsx:58
+msgid "Labels"
+msgstr ""
+
+#: includes/core/posttypes-and-taxonomies.php:116
+msgid "Watching"
+msgstr ""
+
+#: includes/notifications/digest/payload.php:298
+#: includes/notifications/digest/render.php:106
+#: src/datapoints/deadlineDatapoint.js:57
+msgid "Tomorrow"
+msgstr ""
+
+#: includes/notifications/digest/payload.php:300
+#: src/components/BoardFilterControl.jsx:500
+#: src/datapoints/deadlineDatapoint.js:59
+msgid "Today"
+msgstr ""
+
+#: includes/notifications/digest/payload.php:302
+#: src/datapoints/deadlineDatapoint.js:61
+msgid "Yesterday"
+msgstr ""
+
+#: includes/notifications/digest/payload.php:682
+#: includes/notifications/digest/render.php:88
+msgid "Due soon"
+msgstr ""
+
+#: includes/notifications/digest/payload.php:686
+#: src/DashboardWidget.jsx:57
+msgid "Overdue"
+msgstr ""
+
+#: includes/notifications/digest/payload.php:689
+msgid "Due today"
+msgstr ""
+
+#: includes/notifications/digest/render.php:66
+msgid "This is a sample comment shown inside the daily digest. It is intentionally longer so the excerpt rendering can be previewed."
+msgstr ""
+
+#: includes/notifications/digest/render.php:71
+msgid "Sample User"
+msgstr ""
+
+#: includes/notifications/digest/render.php:83
+msgid "Launch homepage refresh"
+msgstr ""
+
+#: includes/notifications/digest/render.php:90
+#: includes/notifications/digest/render.php:120
+#: includes/utilities/functions.php:263
+msgid "In Progress"
+msgstr ""
+
+#: includes/notifications/digest/render.php:93
+#: includes/notifications/digest/render.php:97
+#: includes/notifications/digest/render.php:146
+msgid "Sam"
+msgstr ""
+
+#: includes/notifications/digest/render.php:100
+#: includes/notifications/digest/render.php:104
+#: includes/notifications/digest/render.php:130
+#: includes/notifications/digest/render.php:134
+#: includes/notifications/digest/render.php:170
+#: includes/notifications/digest/render.php:174
+msgid "Design"
+msgstr ""
+
+#: includes/notifications/digest/render.php:116
+#: includes/notifications/events.php:437
+msgid "Sample issue title"
+msgstr ""
+
+#: includes/notifications/digest/render.php:123
+#: includes/notifications/digest/render.php:127
+msgid "Alex"
+msgstr ""
+
+#: includes/notifications/digest/render.php:145
+#: includes/notifications/events.php:218
+msgid "Status changed"
+msgstr ""
+
+#: includes/notifications/digest/render.php:161
+msgid "Review new design request"
+msgstr ""
+
+#: includes/notifications/digest/render.php:165
+#: src/components/InboxControl.jsx:605
+#: src/components/InboxControl.jsx:627
+#: src/components/InboxControl.jsx:642
+#: src/components/InboxControl.jsx:646
+msgid "Inbox"
+msgstr ""
+
+#: includes/notifications/digest/render.php:206
+#: includes/notifications/digest/render.php:417
+#: src/components/Issue.jsx:68
+#: src/datapoints/priorityDatapoint.js:24
+#: src/datapoints/priorityDatapoint.js:26
+#: src/datapoints/priorityDatapoint.js:38
+msgid "Priority"
+msgstr ""
+
+#. translators: 1: event label, 2: actor name.
+#: includes/notifications/digest/render.php:349
+#, php-format
+msgid "%1$s by %2$s"
+msgstr ""
+
+#: includes/notifications/digest/render.php:382
+#: includes/notifications/digest/render.php:388
+msgid "No followed issues are overdue or due in the next two days."
+msgstr ""
+
+#: includes/notifications/digest/render.php:417
+#: src/components/BoardFilterControl.jsx:226
+#: src/components/BoardFilterControl.jsx:417
+#: src/components/BoardFilterControl.jsx:440
+#: src/components/Issue.jsx:137
+#: src/DashboardWidget.jsx:81
+msgid "Due Date"
+msgstr ""
+
+#: includes/notifications/digest/render.php:417
+#: src/components/BoardFilterControl.jsx:377
+#: src/components/Issue.jsx:91
+#: src/DashboardWidget.jsx:82
+#: src/datapoints/assigneesDatapoint.js:19
+#: src/datapoints/assigneesDatapoint.js:45
+msgid "Assignees"
+msgstr ""
+
+#. translators: %d: additional item count.
+#: includes/notifications/digest/render.php:448
+#: includes/notifications/digest/render.php:483
+#, php-format
+msgid "+%d more"
+msgstr ""
+
+#: includes/notifications/digest/render.php:464
+msgid "No followed issues had activity in the last 24 hours."
+msgstr ""
+
+#: includes/notifications/digest/render.php:546
+#: src/components/DailyDigestTemplateScreen.jsx:22
+msgid "Issues Falling Due"
+msgstr ""
+
+#: includes/notifications/digest/render.php:552
+#: src/components/DailyDigestTemplateScreen.jsx:31
+msgid "My Issues"
+msgstr ""
+
+#: includes/notifications/digest/render.php:559
+msgid "New Issues"
+msgstr ""
+
+#: includes/notifications/digest/schedule.php:245
+msgid "Every fifteen minutes"
+msgstr ""
+
+#: includes/notifications/digest/template.php:83
+msgid "You are receiving this summary because you opted into the daily digest."
+msgstr ""
+
+#: includes/notifications/digest/template.php:107
+msgid "Daily Summary for {{digest_day}}"
+msgstr ""
+
+#: includes/notifications/digest/template.php:119
+#: includes/notifications/template.php:75
+#: includes/notifications/template.php:110
+msgid "Manage notifications"
+msgstr ""
+
+#: includes/notifications/digest/template.php:261
+msgid "The daily digest template must contain at least one supported block."
+msgstr ""
+
+#: includes/notifications/digest/template.php:263
+msgid "The daily digest template must include the locked digest section blocks."
+msgstr ""
+
+#: includes/notifications/events.php:212
+msgid "Issue added"
+msgstr ""
+
+#: includes/notifications/events.php:215
+#: includes/notifications/events.php:434
+#: src/components/InboxControl.jsx:85
+msgid "Comment added"
+msgstr ""
+
+#: includes/notifications/events.php:222
+msgid "Issue assigned"
+msgstr ""
+
+#: includes/notifications/events.php:226
+msgid "Issue unassigned"
+msgstr ""
+
+#: includes/notifications/events.php:229
+msgid "Issue assignment changed"
+msgstr ""
+
+#: includes/notifications/events.php:233
+msgid "Due date set"
+msgstr ""
+
+#: includes/notifications/events.php:237
+msgid "Due date removed"
+msgstr ""
+
+#: includes/notifications/events.php:240
+msgid "Due date changed"
+msgstr ""
+
+#: includes/notifications/events.php:244
+msgid "Checklist item created"
+msgstr ""
+
+#: includes/notifications/events.php:248
+msgid "Checklist item deleted"
+msgstr ""
+
+#: includes/notifications/events.php:251
+msgid "Checklist updated"
+msgstr ""
+
+#: includes/notifications/events.php:255
+msgid "Checklist item assigned"
+msgstr ""
+
+#: includes/notifications/events.php:259
+msgid "Checklist item unassigned"
+msgstr ""
+
+#: includes/notifications/events.php:262
+msgid "Checklist assignment changed"
+msgstr ""
+
+#: includes/notifications/events.php:266
+msgid "Checklist item completed"
+msgstr ""
+
+#: includes/notifications/events.php:270
+msgid "Checklist item reopened"
+msgstr ""
+
+#: includes/notifications/events.php:273
+msgid "Checklist completion changed"
+msgstr ""
+
+#: includes/notifications/events.php:276
+msgid "Checklist item promoted"
+msgstr ""
+
+#: includes/notifications/events.php:280
+msgid "High priority enabled"
+msgstr ""
+
+#: includes/notifications/events.php:284
+msgid "High priority removed"
+msgstr ""
+
+#: includes/notifications/events.php:287
+msgid "Priority changed"
+msgstr ""
+
+#: includes/notifications/events.php:290
+msgid "Issue activity updated"
+msgstr ""
+
+#: includes/notifications/events.php:415
+msgid "Alpaca Issue Tracker User"
+msgstr ""
+
+#: includes/notifications/events.php:421
+msgid "This is a sample notification comment. It includes the full comment content exactly as the email will render it."
+msgstr ""
+
+#: includes/notifications/preferences.php:23
+msgid "Email"
+msgstr ""
+
+#: includes/notifications/preferences.php:24
+msgid "Sends updates to your email address."
+msgstr ""
+
+#: includes/notifications/preferences.php:33
+#: src/components/NotificationPreferences.jsx:304
+msgid "Email address"
+msgstr ""
+
+#: includes/notifications/preferences.php:34
+#: src/components/NotificationPreferences.jsx:315
+msgid "Uses your WordPress profile email unless you enter a different address here."
+msgstr ""
+
+#: includes/notifications/preferences.php:221
+#: src/components/NotificationPreferences.jsx:372
+msgid "Site timezone"
+msgstr ""
+
+#: includes/notifications/preferences.php:655
+msgid "Enter a valid notification email address or leave the override blank."
+msgstr ""
+
+#: includes/notifications/preferences.php:679
+msgid "Add a valid email address before enabling email notifications or the daily digest."
+msgstr ""
+
+#: includes/notifications/render.php:140
+msgid "View attachment"
+msgstr ""
+
+#: includes/notifications/render.php:147
+msgid "Attachments"
+msgstr ""
+
+#: includes/notifications/render.php:173
+msgid "Open Issue"
+msgstr ""
+
+#: includes/notifications/render.php:470
+#: src/components/BlockTemplateEditorScreen.jsx:444
+msgid "WordPress"
+msgstr ""
+
+#: includes/notifications/template.php:577
+msgid "The email template must contain at least one supported block."
+msgstr ""
+
+#: includes/notifications/template.php:579
+msgid "The email template must include the Full Comment Content placeholder block."
+msgstr ""
+
+#: includes/utilities/functions.php:245
+msgid "Statuses already exist."
+msgstr ""
+
+#: includes/utilities/functions.php:252
+msgid "Backlog"
+msgstr ""
+
+#: includes/utilities/functions.php:257
+#: src/components/RestoreManager.jsx:461
+msgid "Next"
+msgstr ""
+
+#: includes/utilities/functions.php:268
+msgid "Done"
+msgstr ""
+
+#. translators: %d: number of statuses created
+#: includes/utilities/functions.php:306
+#, php-format
+msgid "Successfully created %d default statuses."
+msgstr ""
+
+#: src/Activity.jsx:43
+msgid "Unknown date"
+msgstr ""
+
+#: src/Activity.jsx:263
+msgid "Could not load project activity."
+msgstr ""
+
+#: src/Activity.jsx:608
+msgid "No activity found yet."
+msgstr ""
+
+#: src/Board.jsx:1324
+msgid "Failed to restore default statuses."
+msgstr ""
+
+#: src/Board.jsx:1333
+msgid "An error occurred while restoring default statuses."
+msgstr ""
+
+#: src/Board.jsx:1765
+msgid "Clear column focus"
+msgstr ""
+
+#: src/Board.jsx:1774
+msgid "Oh no! All your project statuses have disappeared."
+msgstr ""
+
+#: src/Board.jsx:1781
+msgid "Without statuses, you cannot view or manage issues on the board. Click the button below to restore the default statuses (Backlog, Next, In Progress, Done)."
+msgstr ""
+
+#: src/Board.jsx:1793
+#: src/components/RestoreManager.jsx:423
+msgid "Restoring…"
+msgstr ""
+
+#: src/Board.jsx:1794
+msgid "Restore Default Statuses"
+msgstr ""
+
+#: src/components/BlockTemplateEditorScreen.jsx:12
+msgid "Loading template…"
+msgstr ""
+
+#: src/components/BlockTemplateEditorScreen.jsx:313
+msgid "The WordPress block editor could not be loaded for this screen."
+msgstr ""
+
+#: src/components/BlockTemplateEditorScreen.jsx:353
+msgid "Template"
+msgstr ""
+
+#: src/components/BlockTemplateEditorScreen.jsx:360
+msgid "Email subject"
+msgstr ""
+
+#: src/components/BlockTemplateEditorScreen.jsx:407
+msgid "Saving…"
+msgstr ""
+
+#: src/components/BlockTemplateEditorScreen.jsx:408
+msgid "Save Template"
+msgstr ""
+
+#: src/components/BlockTemplateEditorScreen.jsx:416
+msgid "Resetting…"
+msgstr ""
+
+#: src/components/BlockTemplateEditorScreen.jsx:417
+msgid "Reset to Default"
+msgstr ""
+
+#: src/components/BlockTemplateEditorScreen.jsx:425
+msgid "Sending Test…"
+msgstr ""
+
+#: src/components/BlockTemplateEditorScreen.jsx:426
+msgid "Send Test Email"
+msgstr ""
+
+#: src/components/BlockTemplateEditorScreen.jsx:433
+msgid "Live Preview"
+msgstr ""
+
+#: src/components/BlockTemplateEditorScreen.jsx:440
+msgid "From"
+msgstr ""
+
+#: src/components/BlockTemplateEditorScreen.jsx:448
+msgid "Subject"
+msgstr ""
+
+#: src/components/BoardFilterControl.jsx:67
+#: src/components/BoardFilterControl.jsx:80
+#: src/components/BoardFilterControl.jsx:320
+msgid "Label"
+msgstr ""
+
+#: src/components/BoardFilterControl.jsx:282
+msgid "Clear filter"
+msgstr ""
+
+#: src/components/BoardFilterControl.jsx:302
+msgid "No options found on board cards."
+msgstr ""
+
+#: src/components/BoardFilterControl.jsx:455
+msgid "Reset deadline filter"
+msgstr ""
+
+#: src/components/BoardFilterControl.jsx:475
+msgid "Deadline state"
+msgstr ""
+
+#: src/components/BoardFilterControl.jsx:478
+msgid "Show cards that are"
+msgstr ""
+
+#: src/components/BoardFilterControl.jsx:496
+msgid "Soon"
+msgstr ""
+
+#: src/components/BoardFilterControl.jsx:504
+msgid "Late"
+msgstr ""
+
+#: src/components/Comment.jsx:112
+#: src/components/CommentForm.jsx:94
+msgid "Uploading…"
+msgstr ""
+
+#: src/components/Comment.jsx:113
+#: src/components/CommentForm.jsx:95
+msgid "Attach Files"
+msgstr ""
+
+#: src/components/Comment.jsx:116
+#: src/components/Comment.jsx:130
+#: src/components/CommentForm.jsx:98
+#: src/components/CommentForm.jsx:112
+msgid "Commenting Tips"
+msgstr ""
+
+#: src/components/Comment.jsx:138
+#: src/components/CommentForm.jsx:120
+msgid "Type <kbd>@</kbd> and select a user to notify."
+msgstr ""
+
+#: src/components/Comment.jsx:145
+msgid "Type <kbd>#</kbd> and select an issue to link."
+msgstr ""
+
+#: src/components/Comment.jsx:152
+#: src/components/CommentForm.jsx:127
+msgid "Basic Markdown is supported: <code>**bold**</code>, <code>*italic*</code>, <code>`code`</code>, <code>- lists</code>, etc."
+msgstr ""
+
+#: src/components/Comment.jsx:159
+msgid "Use <kbd>Cmd/Ctrl+B</kbd> for bold, <kbd>Cmd/Ctrl+I</kbd> for italic, and <kbd>Cmd/Ctrl+K</kbd> to create a link."
+msgstr ""
+
+#: src/components/Comment.jsx:166
+#: src/components/CommentForm.jsx:134
+msgid "You can click <strong>Attach Files</strong> to upload an attachment, or simply drag and drop files into the comment area."
+msgstr ""
+
+#: src/components/Comment.jsx:323
+#: src/components/Container.jsx:526
+#: src/components/Issue.jsx:2136
+msgid "Options"
+msgstr ""
+
+#: src/components/Comment.jsx:342
+msgid "Edit"
+msgstr ""
+
+#: src/components/Comment.jsx:351
+#: src/components/Comment.jsx:1246
+#: src/components/Issue.jsx:2499
+#: src/components/Issue.jsx:2610
+#: src/components/issue/AttachmentRow.jsx:166
+#: src/components/settings/SettingsList.jsx:329
+#: src/components/StatusManager.jsx:702
+msgid "Delete"
+msgstr ""
+
+#: src/components/Comment.jsx:370
+#: src/components/Comment.jsx:1121
+#: src/components/CommentForm.jsx:475
+msgid "Pending comment attachment"
+msgstr ""
+
+#: src/components/Comment.jsx:377
+#: src/components/Comment.jsx:1249
+#: src/components/CommentForm.jsx:501
+#: src/components/Issue.jsx:2614
+#: src/components/issue/AttachmentRow.jsx:169
+#: src/components/MarkdownTextarea.jsx:878
+#: src/components/settings/SettingsList.jsx:332
+#: src/Modal.jsx:259
+#: src/Toolbar.jsx:341
+msgid "Cancel"
+msgstr ""
+
+#: src/components/Comment.jsx:384
+msgid "Save"
+msgstr ""
+
+#: src/components/Comment.jsx:399
+msgid "Edit comment…"
+msgstr ""
+
+#: src/components/Comment.jsx:550
+msgid "Could not load comments."
+msgstr ""
+
+#: src/components/Comment.jsx:583
+msgid "Please add a comment before submitting."
+msgstr ""
+
+#: src/components/Comment.jsx:700
+msgid "Failed to submit comment:"
+msgstr ""
+
+#: src/components/Comment.jsx:700
+#: src/components/Comment.jsx:852
+#: src/components/Comment.jsx:930
+msgid "Unknown error"
+msgstr ""
+
+#: src/components/Comment.jsx:753
+#: src/components/comment/TimelineEntry.jsx:227
+#: src/components/Issue.jsx:2103
+#: src/components/Issue.jsx:2107
+#: src/components/Issue.jsx:2109
+#: src/hooks/useUser.js:69
+#: src/utils/statusChange.js:89
+msgid "Unknown"
+msgstr ""
+
+#: src/components/Comment.jsx:794
+msgid "Failed to delete one or more attachments."
+msgstr ""
+
+#: src/components/Comment.jsx:852
+msgid "Failed to update comment:"
+msgstr ""
+
+#: src/components/Comment.jsx:930
+msgid "Failed to delete comment:"
+msgstr ""
+
+#: src/components/Comment.jsx:957
+#: src/components/Comment.jsx:971
+#: src/components/CommentForm.jsx:315
+#: src/components/CommentForm.jsx:332
+msgid "Failed to upload one or more attachments."
+msgstr ""
+
+#: src/components/Comment.jsx:1105
+msgid "Sort: ↑"
+msgstr ""
+
+#: src/components/Comment.jsx:1106
+msgid "Sort: ↓"
+msgstr ""
+
+#: src/components/Comment.jsx:1132
+#: src/components/CommentForm.jsx:455
+msgid "Submitting…"
+msgstr ""
+
+#: src/components/Comment.jsx:1133
+#: src/components/CommentForm.jsx:461
+msgid "Submit Comment"
+msgstr ""
+
+#: src/components/Comment.jsx:1144
+#: src/components/CommentForm.jsx:193
+msgid "Add a comment…"
+msgstr ""
+
+#: src/components/Comment.jsx:1158
+msgid "Loading comments…"
+msgstr ""
+
+#: src/components/Comment.jsx:1206
+msgid "Delete Comment?"
+msgstr ""
+
+#: src/components/Comment.jsx:1220
+msgid " and its attachment"
+msgstr ""
+
+#: src/components/Comment.jsx:1225
+msgid " and its attachments"
+msgstr ""
+
+#. translators: %1$s: attachment text suffix for comment deletion confirmation.
+#: src/components/Comment.jsx:1235
+#, js-format
+msgid "Are you sure you want to delete this comment%1$s?"
+msgid_plural "Are you sure you want to delete these comments%1$s?"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/components/comment/TimelineEntry.jsx:261
+msgid "another user"
+msgstr ""
+
+#. translators: Prefix before issue title in activity headers.
+#: src/components/comment/TimelineEntry.jsx:279
+#, js-format
+msgid "on %s"
+msgstr ""
+
+#: src/components/comment/TimelineEntry.jsx:421
+msgid "edited by"
+msgstr ""
+
+#: src/components/comment/TimelineEntry.jsx:434
+msgid "edited"
+msgstr ""
+
+#: src/components/comment/TimelineEntry.jsx:470
+msgid "Comment attachment"
+msgstr ""
+
+#: src/components/Container.jsx:143
+msgid "Add Issue In This Column"
+msgstr ""
+
+#: src/components/Container.jsx:153
+msgid "Expand Column"
+msgstr ""
+
+#: src/components/Container.jsx:154
+msgid "Collapse Column"
+msgstr ""
+
+#: src/components/Container.jsx:164
+msgid "Lift Priority Items"
+msgstr ""
+
+#: src/components/Container.jsx:230
+msgid "Move All To Next Column"
+msgstr ""
+
+#: src/components/Container.jsx:239
+msgid "Delete All"
+msgstr ""
+
+#: src/components/Container.jsx:627
+msgid "Moving…"
+msgstr ""
+
+#: src/components/Container.jsx:640
+msgid "No cards match the active filter."
+msgstr ""
+
+#: src/components/Container.jsx:650
+msgid "Drop items here"
+msgstr ""
+
+#: src/components/container/menu-controls/focusOnColumn.js:20
+msgid "Clear Column Focus"
+msgstr ""
+
+#: src/components/container/menu-controls/focusOnColumn.js:21
+msgid "Focus on Column"
+msgstr ""
+
+#: src/components/DailyDigestTemplateScreen.jsx:16
+#: src/components/NotificationTemplateScreen.jsx:63
+msgid "Site Icon"
+msgstr ""
+
+#: src/components/DailyDigestTemplateScreen.jsx:17
+#: src/components/NotificationTemplateScreen.jsx:64
+msgid "Insert the current site icon."
+msgstr ""
+
+#: src/components/DailyDigestTemplateScreen.jsx:23
+msgid "Render the locked deadline-watch digest section."
+msgstr ""
+
+#: src/components/DailyDigestTemplateScreen.jsx:32
+msgid "Render the locked followed-issues digest section."
+msgstr ""
+
+#: src/components/DailyDigestTemplateScreen.jsx:40
+msgid "New Items"
+msgstr ""
+
+#: src/components/DailyDigestTemplateScreen.jsx:41
+msgid "Render the locked new-items digest section."
+msgstr ""
+
+#: src/components/DailyDigestTemplateScreen.jsx:71
+msgid "Available placeholders include {{site_title}}, {{site_tagline}}, {{digest_day}}, {{issue_count}}, {{activity_count}}, and {{new_item_count}}."
+msgstr ""
+
+#: src/components/DailyDigestTemplateScreen.jsx:75
+msgid "Could not load the daily digest template."
+msgstr ""
+
+#: src/components/DailyDigestTemplateScreen.jsx:79
+msgid "Could not refresh the daily digest preview."
+msgstr ""
+
+#: src/components/DailyDigestTemplateScreen.jsx:83
+msgid "Could not save the daily digest template."
+msgstr ""
+
+#: src/components/DailyDigestTemplateScreen.jsx:87
+msgid "Could not reset the daily digest template."
+msgstr ""
+
+#: src/components/DailyDigestTemplateScreen.jsx:91
+msgid "Could not send the test digest email."
+msgstr ""
+
+#: src/components/DailyDigestTemplateScreen.jsx:95
+msgid "Daily digest template saved."
+msgstr ""
+
+#: src/components/DailyDigestTemplateScreen.jsx:99
+msgid "Daily digest template reset to default."
+msgstr ""
+
+#: src/components/DailyDigestTemplateScreen.jsx:103
+msgid "Test digest email sent successfully."
+msgstr ""
+
+#: src/components/DailyDigestTemplateScreen.jsx:107
+#: src/components/NotificationTemplateScreen.jsx:132
+msgid "Preview will appear here once the template loads."
+msgstr ""
+
+#: src/components/EmailTemplatesScreen.jsx:10
+msgid "Instant Emails"
+msgstr ""
+
+#: src/components/EmailTemplatesScreen.jsx:15
+msgid "Daily Digest"
+msgstr ""
+
+#: src/components/EmailTemplatesScreen.jsx:30
+msgid "Manage the templates used for outbound emails in the block editor areas below. Locked blocks are essential for the correct functioning of the templates. They can be moved, but should not be removed."
+msgstr ""
+
+#: src/components/EnableContextCaptureControl.jsx:14
+#: src/Modal.jsx:208
+msgid "Context Capture"
+msgstr ""
+
+#: src/components/EnableContextCaptureControl.jsx:20
+msgid "Enable reporting of issues with associated context"
+msgstr ""
+
+#: src/components/EnableTestLogsControl.jsx:17
+msgid "Debugging"
+msgstr ""
+
+#: src/components/EnableTestLogsControl.jsx:23
+msgid "Enable Browser Console Messages"
+msgstr ""
+
+#: src/components/InboxControl.jsx:305
+msgid "Could not load inbox updates."
+msgstr ""
+
+#: src/components/InboxControl.jsx:412
+#: src/components/InboxControl.jsx:453
+msgid "Could not update inbox state."
+msgstr ""
+
+#: src/components/InboxControl.jsx:484
+msgid "Could not mark inbox items as read."
+msgstr ""
+
+#: src/components/InboxControl.jsx:504
+msgid "No unread updates right now."
+msgstr ""
+
+#: src/components/InboxControl.jsx:505
+msgid "No inbox updates yet."
+msgstr ""
+
+#: src/components/InboxControl.jsx:522
+msgid "Untitled issue"
+msgstr ""
+
+#: src/components/InboxControl.jsx:525
+msgid "Mark Read"
+msgstr ""
+
+#: src/components/InboxControl.jsx:526
+msgid "Mark Unread"
+msgstr ""
+
+#: src/components/InboxControl.jsx:654
+msgid "Close inbox"
+msgstr ""
+
+#: src/components/InboxControl.jsx:678
+msgid "Inbox filter"
+msgstr ""
+
+#: src/components/InboxControl.jsx:683
+msgid "Unread"
+msgstr ""
+
+#: src/components/InboxControl.jsx:687
+msgid "All"
+msgstr ""
+
+#: src/components/InboxControl.jsx:697
+msgid "Mark All Read"
+msgstr ""
+
+#: src/components/InboxControl.jsx:717
+#: src/components/Issue.jsx:2246
+#: src/components/User.jsx:30
+#: src/DashboardWidget.jsx:41
+msgid "Loading…"
+msgstr ""
+
+#: src/components/InboxControl.jsx:718
+msgid "Load More"
+msgstr ""
+
+#: src/components/Issue.jsx:72
+#: src/Modal.jsx:234
+#: src/Toolbar.jsx:314
+msgid "High Priority"
+msgstr ""
+
+#: src/components/Issue.jsx:384
+msgid "Edit assignees"
+msgstr ""
+
+#: src/components/Issue.jsx:403
+msgid "Assign"
+msgstr ""
+
+#: src/components/Issue.jsx:740
+msgid "Failed to load statuses."
+msgstr ""
+
+#: src/components/Issue.jsx:751
+#: src/components/LabelsManager.jsx:99
+msgid "Failed to load labels."
+msgstr ""
+
+#: src/components/Issue.jsx:919
+msgid "Failed to update assignees."
+msgstr ""
+
+#: src/components/Issue.jsx:962
+msgid "Failed to update priority."
+msgstr ""
+
+#: src/components/Issue.jsx:1020
+msgid "Failed to update labels."
+msgstr ""
+
+#: src/components/Issue.jsx:1109
+msgid "Failed to progress issue status."
+msgstr ""
+
+#: src/components/Issue.jsx:1152
+msgid "Failed to update issue title."
+msgstr ""
+
+#: src/components/Issue.jsx:1296
+msgid "Issue created, but labels could not be saved."
+msgstr ""
+
+#: src/components/Issue.jsx:1365
+msgid "Failed to create issue comment."
+msgstr ""
+
+#: src/components/Issue.jsx:1417
+msgid "Comment could not be saved. Please try again."
+msgstr ""
+
+#: src/components/Issue.jsx:1421
+msgid "Issue created, but comment could not be saved."
+msgstr ""
+
+#: src/components/Issue.jsx:1516
+msgid "Failed to retry comment."
+msgstr ""
+
+#: src/components/Issue.jsx:1716
+msgid "Failed to update subissue title."
+msgstr ""
+
+#: src/components/Issue.jsx:1790
+msgid "Failed to update subissue completion."
+msgstr ""
+
+#: src/components/Issue.jsx:1875
+msgid "Failed to update subissue assignees."
+msgstr ""
+
+#: src/components/Issue.jsx:1980
+#: src/utils/issueCommentHandler.js:262
+#: src/utils/issueCommentHandler.js:575
+msgid "Unknown issue"
+msgstr ""
+
+#: src/components/Issue.jsx:1994
+msgid "Failed to promote subissue."
+msgstr ""
+
+#: src/components/Issue.jsx:2023
+msgid "You do not have permission to delete issues."
+msgstr ""
+
+#: src/components/Issue.jsx:2041
+msgid "Failed to delete subissue."
+msgstr ""
+
+#: src/components/Issue.jsx:2158
+msgid "Issue ID copied to clipboard."
+msgstr ""
+
+#: src/components/Issue.jsx:2162
+msgid "Failed to copy issue ID to clipboard."
+msgstr ""
+
+#: src/components/Issue.jsx:2169
+msgid "Copy Issue ID"
+msgstr ""
+
+#: src/components/Issue.jsx:2190
+msgid "Issue permalink copied to clipboard."
+msgstr ""
+
+#: src/components/Issue.jsx:2194
+msgid "Failed to copy issue permalink to clipboard."
+msgstr ""
+
+#: src/components/Issue.jsx:2204
+msgid "Copy Issue Permalink"
+msgstr ""
+
+#: src/components/Issue.jsx:2214
+msgid "Progress Issue to"
+msgstr ""
+
+#: src/components/Issue.jsx:2227
+msgid "Trash Issue"
+msgstr ""
+
+#: src/components/Issue.jsx:2240
+msgid "Retry"
+msgstr ""
+
+#: src/components/Issue.jsx:2263
+msgid "Enter a title to create issue…"
+msgstr ""
+
+#: src/components/Issue.jsx:2284
+msgid "Created by"
+msgstr ""
+
+#: src/components/Issue.jsx:2340
+msgid "Add a comment to the issue…"
+msgstr ""
+
+#: src/components/Issue.jsx:2351
+msgid "Retry Comment"
+msgstr ""
+
+#: src/components/Issue.jsx:2368
+msgid "Checklist"
+msgstr ""
+
+#: src/components/Issue.jsx:2380
+msgid "Add"
+msgstr ""
+
+#: src/components/Issue.jsx:2428
+msgid "Enter title…"
+msgstr ""
+
+#: src/components/Issue.jsx:2482
+msgid "Promote"
+msgstr ""
+
+#: src/components/Issue.jsx:2567
+msgid "Could not load issue details."
+msgstr ""
+
+#: src/components/Issue.jsx:2593
+msgid "Delete Issue?"
+msgstr ""
+
+#: src/components/Issue.jsx:2595
+msgid "Are you sure you want to trash this issue?"
+msgstr ""
+
+#: src/components/issue/AssigneeSelector.jsx:57
+msgid "Enter username(s)"
+msgstr ""
+
+#: src/components/issue/AttachmentRow.jsx:69
+msgid "File"
+msgstr ""
+
+#: src/components/issue/AttachmentRow.jsx:115
+msgid "Download attachment"
+msgstr ""
+
+#: src/components/issue/AttachmentRow.jsx:139
+#: src/components/issue/AttachmentRow.jsx:140
+msgid "Delete attachment"
+msgstr ""
+
+#: src/components/issue/AttachmentRow.jsx:148
+msgid "Delete attachment?"
+msgstr ""
+
+#: src/components/issue/AttachmentRow.jsx:153
+msgid "Are you sure you want to delete this attachment?"
+msgstr ""
+
+#: src/components/issue/DataTable.jsx:61
+msgid "Invalid data format"
+msgstr ""
+
+#: src/components/issue/DataTable.jsx:64
+msgid "Error parsing JSON data"
+msgstr ""
+
+#: src/components/issue/DeadlineControl.jsx:47
+msgid "Click to select a deadline"
+msgstr ""
+
+#: src/components/issue/DeadlineControl.jsx:73
+msgid "Clear deadline"
+msgstr ""
+
+#: src/components/issue/ErrorsTab.jsx:30
+msgid "No JavaScript errors were recorded for this issue."
+msgstr ""
+
+#: src/components/issue/ErrorsTab.jsx:89
+msgid "Stack Trace"
+msgstr ""
+
+#: src/components/issue/LabelsSelector.jsx:163
+msgid "Edit labels"
+msgstr ""
+
+#: src/components/issue/Lightbox.jsx:47
+msgid "Enlarged screenshot"
+msgstr ""
+
+#. translators: 1: formatted date/time. 2: UTC offset, e.g. +02:00.
+#: src/components/issue/ReportTab.jsx:33
+#: src/components/Time.jsx:43
+#, js-format
+msgid "%1$s (UTC%2$s)"
+msgstr ""
+
+#: src/components/issue/ReportTab.jsx:118
+msgid "Reported"
+msgstr ""
+
+#: src/components/issue/ReportTab.jsx:122
+#: src/components/issue/ReportTab.jsx:130
+#: src/components/issue/ReportTab.jsx:136
+#: src/components/issue/ReportTab.jsx:153
+msgid "N/A"
+msgstr ""
+
+#: src/components/issue/ReportTab.jsx:126
+msgid "Last edit"
+msgstr ""
+
+#: src/components/issue/ReportTab.jsx:134
+#: src/components/MarkdownTextarea.jsx:863
+msgid "URL"
+msgstr ""
+
+#: src/components/issue/ReportTab.jsx:140
+msgid "Viewport"
+msgstr ""
+
+#: src/components/ItemDatapointsManager.jsx:119
+msgid "Failed to save datapoint visibility settings."
+msgstr ""
+
+#: src/components/ItemDatapointsManager.jsx:135
+msgid "Item Datapoints"
+msgstr ""
+
+#: src/components/ItemDatapointsManager.jsx:139
+msgid "Choose which datapoints appear on issue cards."
+msgstr ""
+
+#: src/components/ItemDatapointsManager.jsx:159
+msgid "No item datapoints are currently registered."
+msgstr ""
+
+#: src/components/LabelsManager.jsx:341
+msgid "Failed to save label."
+msgstr ""
+
+#: src/components/LabelsManager.jsx:465
+msgid "Color picker unavailable."
+msgstr ""
+
+#: src/components/LabelsManager.jsx:486
+msgid "Create and maintain labels to categorize and filter your issues."
+msgstr ""
+
+#: src/components/LabelsManager.jsx:512
+#: src/components/LabelsManager.jsx:574
+msgid "Delete label"
+msgstr ""
+
+#: src/components/LabelsManager.jsx:536
+#: src/components/StatusManager.jsx:735
+msgid "Name"
+msgstr ""
+
+#: src/components/LabelsManager.jsx:540
+msgid "Label name"
+msgstr ""
+
+#: src/components/LabelsManager.jsx:600
+msgid "New Label"
+msgstr ""
+
+#: src/components/LabelsManager.jsx:609
+msgid "Delete Label?"
+msgstr ""
+
+#: src/components/LabelsManager.jsx:610
+msgid "Are you sure you want to delete the label"
+msgstr ""
+
+#: src/components/MarkdownTextarea.jsx:871
+msgid "Text"
+msgstr ""
+
+#: src/components/MarkdownTextarea.jsx:881
+msgid "Apply"
+msgstr ""
+
+#: src/components/NotificationPreferences.jsx:42
+msgid "Issues I created"
+msgstr ""
+
+#: src/components/NotificationPreferences.jsx:46
+msgid "Issues assigned to me"
+msgstr ""
+
+#: src/components/NotificationPreferences.jsx:50
+msgid "Issues I starred"
+msgstr ""
+
+#: src/components/NotificationPreferences.jsx:54
+msgid "Comments that mention me"
+msgstr ""
+
+#: src/components/NotificationPreferences.jsx:58
+msgid "Issues with these labels"
+msgstr ""
+
+#: src/components/NotificationPreferences.jsx:62
+msgid "Issues currently marked high priority"
+msgstr ""
+
+#: src/components/NotificationPreferences.jsx:66
+msgid "Whenever a new issue is created"
+msgstr ""
+
+#: src/components/NotificationPreferences.jsx:73
+msgid "Human comments"
+msgstr ""
+
+#: src/components/NotificationPreferences.jsx:77
+msgid "Status changes"
+msgstr ""
+
+#: src/components/NotificationPreferences.jsx:81
+msgid "Issue assignment changes"
+msgstr ""
+
+#: src/components/NotificationPreferences.jsx:85
+msgid "Due date changes"
+msgstr ""
+
+#: src/components/NotificationPreferences.jsx:89
+msgid "Checklist create/delete"
+msgstr ""
+
+#: src/components/NotificationPreferences.jsx:93
+msgid "Checklist assignment changes"
+msgstr ""
+
+#: src/components/NotificationPreferences.jsx:97
+msgid "Checklist completion changes"
+msgstr ""
+
+#: src/components/NotificationPreferences.jsx:101
+msgid "Checklist promotions"
+msgstr ""
+
+#: src/components/NotificationPreferences.jsx:105
+msgid "High-priority changes"
+msgstr ""
+
+#: src/components/NotificationPreferences.jsx:130
+msgid "Not configured."
+msgstr ""
+
+#: src/components/NotificationPreferences.jsx:199
+msgid "Preferences"
+msgstr ""
+
+#. translators: %s: notification channel label.
+#: src/components/NotificationPreferences.jsx:246
+#, js-format
+msgid "Enable %s notifications"
+msgstr ""
+
+#: src/components/NotificationPreferences.jsx:260
+msgid "Saving Preferences…"
+msgstr ""
+
+#: src/components/NotificationPreferences.jsx:261
+msgid "Save Preferences"
+msgstr ""
+
+#. translators: %s: active notification tab title.
+#: src/components/NotificationPreferences.jsx:267
+#, js-format
+msgid "Saving %s…"
+msgstr ""
+
+#. translators: %s: active notification tab title.
+#: src/components/NotificationPreferences.jsx:274
+#, js-format
+msgid "Save %s"
+msgstr ""
+
+#: src/components/NotificationPreferences.jsx:294
+msgid "Choose whether you want instant email updates, a daily summary, or both."
+msgstr ""
+
+#: src/components/NotificationPreferences.jsx:311
+msgid "Enter a valid email address or leave this blank to use your WordPress profile email."
+msgstr ""
+
+#: src/components/NotificationPreferences.jsx:324
+msgid "Send instant email updates"
+msgstr ""
+
+#: src/components/NotificationPreferences.jsx:336
+msgid "Send a daily summary at"
+msgstr ""
+
+#: src/components/NotificationPreferences.jsx:350
+msgid "Daily summary time"
+msgstr ""
+
+#. translators: %s: site timezone label.
+#: src/components/NotificationPreferences.jsx:367
+#, js-format
+msgid "Summaries of activity matching your preferences will be generated for you at this time every day, based on the site's timezone (%s)."
+msgstr ""
+
+#: src/components/NotificationPreferences.jsx:379
+msgid "Add a valid email address before enabling instant email updates or the daily summary."
+msgstr ""
+
+#: src/components/NotificationPreferences.jsx:505
+msgid "Could not load labels. Label notifications are unavailable until labels load."
+msgstr ""
+
+#: src/components/NotificationPreferences.jsx:515
+#: src/components/NotificationPreferences.jsx:1037
+msgid "Could not load notification preferences."
+msgstr ""
+
+#: src/components/NotificationPreferences.jsx:854
+msgid "Notification preferences saved."
+msgstr ""
+
+#: src/components/NotificationPreferences.jsx:860
+msgid "Could not save notification preferences."
+msgstr ""
+
+#: src/components/NotificationPreferences.jsx:905
+msgid "No labels are available yet."
+msgstr ""
+
+#: src/components/NotificationPreferences.jsx:939
+msgid "Configure how this delivery channel should behave."
+msgstr ""
+
+#: src/components/NotificationPreferences.jsx:1013
+msgid "This channel is not ready to be enabled yet."
+msgstr ""
+
+#: src/components/NotificationPreferences.jsx:1089
+msgid "Notify me about"
+msgstr ""
+
+#: src/components/NotificationPreferences.jsx:1115
+msgid "Activity types"
+msgstr ""
+
+#: src/components/notifications/MentionsTextarea.jsx:454
+#: src/components/notifications/MentionsTextarea.jsx:457
+msgid "Search issues"
+msgstr ""
+
+#: src/components/notifications/MentionsTextarea.jsx:463
+msgid "Type at least 3 characters to search issues."
+msgstr ""
+
+#: src/components/notifications/MentionsTextarea.jsx:474
+msgid "No matching issues found."
+msgstr ""
+
+#: src/components/notifications/MentionsTextarea.jsx:511
+msgid "No matching users found."
+msgstr ""
+
+#. translators: %d is the current user's unread inbox notification count.
+#: src/components/notifications/UnreadCountBadge.jsx:23
+#, js-format
+msgid "Project Board has %d unread notifications"
+msgstr ""
+
+#. translators: %d is the number of unread inbox notifications.
+#: src/components/notifications/UnreadCountBadge.jsx:42
+#, js-format
+msgid "%d unread notifications"
+msgstr ""
+
+#: src/components/NotificationTemplateScreen.jsx:16
+msgid "Issue Title"
+msgstr ""
+
+#: src/components/NotificationTemplateScreen.jsx:17
+msgid "Insert the issue title."
+msgstr ""
+
+#: src/components/NotificationTemplateScreen.jsx:21
+msgid "Performed By"
+msgstr ""
+
+#: src/components/NotificationTemplateScreen.jsx:22
+msgid "Insert the name of the person who performed the activity."
+msgstr ""
+
+#: src/components/NotificationTemplateScreen.jsx:29
+msgid "Event Label"
+msgstr ""
+
+#: src/components/NotificationTemplateScreen.jsx:30
+msgid "Insert the event label such as status change or comment."
+msgstr ""
+
+#: src/components/NotificationTemplateScreen.jsx:37
+msgid "Full Comment Content"
+msgstr ""
+
+#: src/components/NotificationTemplateScreen.jsx:38
+msgid "Insert the full issue comment, including attachment links."
+msgstr ""
+
+#: src/components/NotificationTemplateScreen.jsx:45
+msgid "Issue Link"
+msgstr ""
+
+#: src/components/NotificationTemplateScreen.jsx:46
+msgid "Insert a link to the issue on the board."
+msgstr ""
+
+#: src/components/NotificationTemplateScreen.jsx:53
+msgid "Site Title"
+msgstr ""
+
+#: src/components/NotificationTemplateScreen.jsx:54
+msgid "Insert the current site title."
+msgstr ""
+
+#: src/components/NotificationTemplateScreen.jsx:58
+msgid "Site Tagline"
+msgstr ""
+
+#: src/components/NotificationTemplateScreen.jsx:59
+msgid "Insert the current site tagline."
+msgstr ""
+
+#: src/components/NotificationTemplateScreen.jsx:68
+msgid "Event Time"
+msgstr ""
+
+#: src/components/NotificationTemplateScreen.jsx:69
+msgid "Insert the event timestamp."
+msgstr ""
+
+#: src/components/NotificationTemplateScreen.jsx:96
+msgid "Available placeholders include {{issue_title}}, {{performed_by}}, {{event_label}}, {{site_title}}, {{site_tagline}}, and {{event_time}}."
+msgstr ""
+
+#: src/components/NotificationTemplateScreen.jsx:100
+msgid "Could not load the notification email template."
+msgstr ""
+
+#: src/components/NotificationTemplateScreen.jsx:104
+msgid "Could not refresh the email preview."
+msgstr ""
+
+#: src/components/NotificationTemplateScreen.jsx:108
+msgid "Could not save the notification email template."
+msgstr ""
+
+#: src/components/NotificationTemplateScreen.jsx:112
+msgid "Could not reset the notification email template."
+msgstr ""
+
+#: src/components/NotificationTemplateScreen.jsx:116
+msgid "Could not send the test email."
+msgstr ""
+
+#: src/components/NotificationTemplateScreen.jsx:120
+msgid "Notification email template saved."
+msgstr ""
+
+#: src/components/NotificationTemplateScreen.jsx:124
+msgid "Notification email template reset to default."
+msgstr ""
+
+#: src/components/NotificationTemplateScreen.jsx:128
+msgid "Test email sent successfully."
+msgstr ""
+
+#: src/components/Presence.jsx:76
+msgid "Nobody else is viewing the board right now"
+msgstr ""
+
+#: src/components/Presence.jsx:87
+msgid "Currently viewing the board: "
+msgstr ""
+
+#: src/components/Presence.jsx:94
+msgid "User"
+msgstr ""
+
+#: src/components/RestoreManager.jsx:64
+#: src/components/RestoreManager.jsx:401
+msgid "-"
+msgstr ""
+
+#: src/components/RestoreManager.jsx:135
+msgid "Search failed. Please try again."
+msgstr ""
+
+#: src/components/RestoreManager.jsx:226
+msgid "Failed to restore issue."
+msgstr ""
+
+#. translators: %d: Number of deleted issues.
+#: src/components/RestoreManager.jsx:237
+#, js-format
+msgid "%d deleted issue"
+msgid_plural "%d deleted issues"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: 1: Current page number. 2: Total page count.
+#: src/components/RestoreManager.jsx:246
+#, js-format
+msgid "Page %1$d of %2$d"
+msgstr ""
+
+#. translators: %d: number of days until trashed items are deleted.
+#: src/components/RestoreManager.jsx:277
+#, js-format
+msgid "Deleted issues will be automatically removed from the database after %d days."
+msgstr ""
+
+#: src/components/RestoreManager.jsx:290
+#: src/components/RestoreManager.jsx:293
+msgid "Search deleted issues"
+msgstr ""
+
+#: src/components/RestoreManager.jsx:298
+#: src/components/Search.jsx:202
+#: src/components/Search.jsx:205
+msgid "Search"
+msgstr ""
+
+#: src/components/RestoreManager.jsx:317
+msgid "Title"
+msgstr ""
+
+#: src/components/RestoreManager.jsx:320
+msgid "Created"
+msgstr ""
+
+#: src/components/RestoreManager.jsx:321
+msgid "Last action"
+msgstr ""
+
+#: src/components/RestoreManager.jsx:322
+msgid "Actions"
+msgstr ""
+
+#: src/components/RestoreManager.jsx:332
+msgid "No deleted issues found."
+msgstr ""
+
+#: src/components/RestoreManager.jsx:341
+#: src/utils/issueCommentHandler.js:488
+#: src/utils/issueCommentHandler.js:513
+#: src/utils/issueCommentHandler.js:589
+#: src/utils/issueCommentHandler.js:635
+#: src/utils/issueCommentHandler.js:663
+msgid "Checklist item"
+msgstr ""
+
+#. translators: %s: Parent issue title.
+#: src/components/RestoreManager.jsx:348
+#, js-format
+msgid "Issue: %s"
+msgstr ""
+
+#: src/components/RestoreManager.jsx:424
+msgid "Restore"
+msgstr ""
+
+#: src/components/RestoreManager.jsx:445
+msgid "First"
+msgstr ""
+
+#: src/components/RestoreManager.jsx:453
+msgid "Previous"
+msgstr ""
+
+#: src/components/RestoreManager.jsx:469
+msgid "Last"
+msgstr ""
+
+#: src/components/settings/SettingsList.jsx:186
+msgid "Edit name"
+msgstr ""
+
+#: src/components/settings/SettingsList.jsx:325
+msgid "This cannot be undone."
+msgstr ""
+
+#: src/components/StarControl.jsx:32
+#: src/components/StarControl.jsx:37
+msgid "Remove from Watchlist"
+msgstr ""
+
+#: src/components/StarControl.jsx:33
+#: src/components/StarControl.jsx:38
+msgid "Add to Watchlist"
+msgstr ""
+
+#: src/components/StatusManager.jsx:456
+msgid "Error:"
+msgstr ""
+
+#: src/components/StatusManager.jsx:463
+msgid "Status Manager"
+msgstr ""
+
+#: src/components/StatusManager.jsx:466
+msgid "Create and organize statuses. Drag rows to control their order across the board."
+msgstr ""
+
+#: src/components/StatusManager.jsx:607
+msgid "New Status"
+msgstr ""
+
+#: src/components/StatusManager.jsx:613
+msgid "Delete Status?"
+msgstr ""
+
+#: src/components/StatusManager.jsx:614
+msgid "Are you sure you want to delete the status"
+msgstr ""
+
+#: src/components/StatusManager.jsx:711
+msgid "Drag to reorder"
+msgstr ""
+
+#: src/components/StatusManager.jsx:737
+msgid "Status name"
+msgstr ""
+
+#: src/components/Time.jsx:56
+msgid "just now"
+msgstr ""
+
+#: src/DashboardWidget.jsx:47
+msgid "Assigned to Me"
+msgstr ""
+
+#: src/DashboardWidget.jsx:52
+msgid "Latest"
+msgstr ""
+
+#: src/DashboardWidget.jsx:62
+msgid "Watchlist"
+msgstr ""
+
+#: src/DashboardWidget.jsx:149
+msgid "No issues found."
+msgstr ""
+
+#: src/datapoints/checklistProgressDatapoint.js:25
+#: src/datapoints/checklistProgressDatapoint.js:40
+msgid "Checklist Progress"
+msgstr ""
+
+#: src/datapoints/commentCountDatapoint.js:135
+#: src/datapoints/commentCountDatapoint.js:150
+msgid "Comments"
+msgstr ""
+
+#: src/datapoints/deadlineDatapoint.js:69
+#: src/datapoints/deadlineDatapoint.js:88
+msgid "Deadline"
+msgstr ""
+
+#: src/datapoints/lastCommentActivityDatapoint.js:24
+#: src/datapoints/lastCommentActivityDatapoint.js:47
+msgid "Last Activity"
+msgstr ""
+
+#: src/hooks/useIssueData.js:22
+#: src/hooks/useIssueData.js:45
+msgid "Failed to load issue details. Please try again."
+msgstr ""
+
+#: src/Modal.jsx:148
+#: src/Toolbar.jsx:220
+msgid "Your issue has been submitted successfully."
+msgstr ""
+
+#: src/Modal.jsx:170
+#: src/Toolbar.jsx:250
+msgid "There was an error submitting your issue. Please try again."
+msgstr ""
+
+#: src/Modal.jsx:205
+msgid "Issue Submitted"
+msgstr ""
+
+#: src/Modal.jsx:207
+msgid "Submission Failed"
+msgstr ""
+
+#: src/Modal.jsx:217
+#: src/Toolbar.jsx:296
+msgid "Close"
+msgstr ""
+
+#: src/Modal.jsx:223
+#: src/Toolbar.jsx:302
+msgid "Describe the problem"
+msgstr ""
+
+#: src/Modal.jsx:251
+#: src/Toolbar.jsx:333
+msgid "Submit"
+msgstr ""
+
+#: src/Settings.jsx:48
+msgid "Statuses"
+msgstr ""
+
+#: src/Settings.jsx:53
+msgid "Cards"
+msgstr ""
+
+#: src/Settings.jsx:63
+msgid "Deleted Items"
+msgstr ""
+
+#: src/Settings.jsx:70
+msgid "Settings"
+msgstr ""
+
+#: src/utils/attachmentUpload.js:28
+#: src/utils/attachmentUpload.js:33
+msgid "Failed to upload attachment."
+msgstr ""
+
+#: src/utils/attachmentUpload.js:89
+msgid "Missing attachment data."
+msgstr ""
+
+#: src/utils/issueCommentHandler.js:72
+msgid "Untitled subissue"
+msgstr ""
+
+#: src/utils/issueCommentHandler.js:285
+msgid "mentioned this issue on"
+msgstr ""
+
+#: src/utils/issueCommentHandler.js:352
+msgid "Status changed from"
+msgstr ""
+
+#: src/utils/issueCommentHandler.js:352
+msgid "to"
+msgstr ""
+
+#: src/utils/issueCommentHandler.js:355
+#: src/utils/issueCommentHandler.js:417
+#: src/utils/issueCommentHandler.js:429
+#: src/utils/issueCommentHandler.js:516
+#: src/utils/issueCommentHandler.js:547
+#: src/utils/issueCommentHandler.js:592
+#: src/utils/issueCommentHandler.js:598
+msgid "by"
+msgstr ""
+
+#: src/utils/issueCommentHandler.js:379
+#: src/utils/issueCommentHandler.js:544
+msgid "was"
+msgstr ""
+
+#: src/utils/issueCommentHandler.js:379
+msgid "this issue by"
+msgstr ""
+
+#: src/utils/issueCommentHandler.js:415
+msgid "Deadline set to"
+msgstr ""
+
+#: src/utils/issueCommentHandler.js:421
+msgid "Deadline removed by"
+msgstr ""
+
+#: src/utils/issueCommentHandler.js:427
+msgid "Deadline changed to"
+msgstr ""
+
+#: src/utils/issueCommentHandler.js:459
+msgid "Priority set to **High** by"
+msgstr ""
+
+#: src/utils/issueCommentHandler.js:464
+msgid "High priority removed by"
+msgstr ""
+
+#: src/utils/issueCommentHandler.js:488
+msgid "created by"
+msgstr ""
+
+#: src/utils/issueCommentHandler.js:513
+msgid "marked as"
+msgstr ""
+
+#: src/utils/issueCommentHandler.js:544
+msgid "checklist item"
+msgstr ""
+
+#: src/utils/issueCommentHandler.js:589
+msgid "was promoted to issue"
+msgstr ""
+
+#: src/utils/issueCommentHandler.js:595
+msgid "Issue created from checklist item"
+msgstr ""
+
+#: src/utils/issueCommentHandler.js:595
+msgid "on"
+msgstr ""
+
+#: src/utils/issueCommentHandler.js:635
+msgid "deleted by"
+msgstr ""
+
+#: src/utils/issueCommentHandler.js:663
+msgid "restored by"
+msgstr ""
+
+#: src/utils/issueCommentHandler.js:690
+msgid "Issue **deleted** by"
+msgstr ""
+
+#: src/utils/issueCommentHandler.js:714
+msgid "Issue **restored** by"
+msgstr ""
+
+#: src/utils/tabsConfig.js:13
+msgid "Timeline"
+msgstr ""
+
+#: src/utils/tabsConfig.js:20
+msgid "Report"
+msgstr ""
+
+#: src/utils/tabsConfig.js:32
+msgid "Queried Object"
+msgstr ""
+
+#: src/utils/tabsConfig.js:43
+msgid "Headers"
+msgstr ""
+
+#: src/utils/tabsConfig.js:54
+msgid "Errors"
+msgstr ""

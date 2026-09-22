@@ -1,0 +1,201 @@
+@use '../../abstracts' as *;
+
+/*
+* Checklists
+*/
+.wp-admin {
+  .alpaca-subissues {
+    padding: $space-3xs 0;
+  }
+
+  .alpaca-subissues-header {
+    display: flex;
+    align-items: center;
+    gap: $space-sm;
+  }
+
+  .alpaca-subissues-list {
+    list-style: none;
+    margin: 0 0 $space-xs 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  li.alpaca-subissues-item {
+    position: relative;
+    margin-bottom: 0;
+
+    &:last-child {
+      margin-bottom: $space-xs;
+    }
+
+    &.is-completed .alpaca-subissues-text-control textarea {
+      text-decoration: line-through;
+      color: $color-text-muted;
+    }
+  }
+
+  .alpaca-subissues-main {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto auto auto;
+    column-gap: $space-sm;
+    align-items: center;
+    width: 100%;
+
+    > .components-base-control {
+      margin-bottom: 0;
+      align-self: center;
+    }
+
+    > .components-checkbox-control {
+      display: inline-flex;
+      align-items: center;
+
+      .components-base-control__field {
+        margin: 0;
+      }
+
+      .components-h-stack,
+      .components-checkbox-control__input-container {
+        display: inline-flex;
+        align-items: center;
+      }
+    }
+  }
+
+  .alpaca-subissues-text-control {
+    min-width: 0;
+    width: 100%;
+
+    .components-base-control__field {
+      margin: 0;
+      min-width: 0;
+    }
+
+    textarea {
+      width: 100%;
+      border: 1px solid transparent;
+      box-shadow: none;
+      min-height: $size-control-sm;
+      line-height: $line-height-base;
+      text-align: start;
+      resize: none;
+      overflow: hidden;
+      word-break: normal;
+      overflow-wrap: break-word;
+      padding: 0;
+
+      &:focus {
+        border-color: $color-border;
+      }
+    }
+  }
+
+  .alpaca-subissues-main > .components-button {
+    width: $size-control-sm;
+    min-width: $size-control-sm;
+    padding: 0;
+    height: $size-control-sm;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+  }
+
+  .alpaca-subissues-assignee {
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+    justify-content: flex-end;
+    white-space: nowrap;
+
+    .components-button {
+      width: $size-control-sm;
+      min-width: $size-control-sm;
+    }
+  }
+
+  .alpaca-subissues-assignee-preview {
+    display: inline-flex;
+    align-items: center;
+    gap: $space-2xs;
+    margin-inline-end: $space-xs;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+
+    img {
+      width: $size-icon-lg;
+      height: $size-icon-lg;
+      border-radius: $radius-round;
+      display: block;
+    }
+  }
+
+  .alpaca-subissues-assignee-fallback {
+    color: $color-text-muted;
+    font-size: $font-size-md;
+    width: $size-icon-lg;
+    height: $size-icon-lg;
+  }
+
+  .alpaca-subissues-promote,
+  .alpaca-subissues-delete {
+    justify-self: end;
+  }
+
+  .alpaca-subissues-assignee-popover {
+    z-index: 999000020;
+
+    .components-popover__content {
+      min-width: 16.25rem;
+      max-width: $width-sidebar;
+      padding: $space-sm $space-sm 0 $space-sm;
+      overflow: visible;
+    }
+  }
+
+  .alpaca-subissues-assignee-popover-content {
+    .components-form-token-field {
+      margin-bottom: 0;
+    }
+
+    .components-form-token-field__help {
+      display: none !important;
+    }
+  }
+
+  .alpaca-icon-promote {
+    width: $size-icon-sm;
+    height: $size-icon-sm;
+    display: inline-block;
+    background-color: currentcolor;
+    mask-size: $size-icon-sm;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-image: url('../components/icons/svg/box-arrow-up-right.svg');
+  }
+
+  .alpaca-icon-assign {
+    width: $size-icon-sm;
+    height: $size-icon-sm;
+    display: inline-block;
+    background-color: currentcolor;
+    mask-size: $size-icon-sm;
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-image: url('../components/icons/svg/person-plus.svg');
+  }
+
+  .alpaca-subissues-block .components-checkbox-control__input[type='checkbox'],
+  .alpaca-subissues-block .components-checkbox-control__input-container {
+    border-radius: $space-3xs;
+  }
+
+  .alpaca-subissues-block .components-checkbox-control__input-container {
+    background: $color-surface-neutral;
+  }
+}

@@ -1,0 +1,39 @@
+/**
+ * Alpaca Issue Tracker styles for the lightweight wp-admin reporting bundle.
+ */
+@use './abstracts' as *;
+
+.wp-admin #wp-admin-bar-alpaca-report a svg {
+  width: $size-icon-sm;
+  height: $size-icon-sm;
+  vertical-align: text-top;
+  margin-inline-end: $space-2xs;
+}
+
+.alpaca-admin-menu-badge-mount {
+  margin-inline-start: $space-xs;
+}
+
+.wp-admin {
+  .alpaca-modal {
+    background: $color-white;
+    color: inherit;
+
+    .small-wrapper {
+      padding: $space-lg 0 $space-2xl;
+    }
+
+    small {
+      font-size: $font-size-xs;
+    }
+
+    p {
+      margin-top: 0;
+      margin-bottom: $space-2xl;
+    }
+
+    button {
+      margin-inline-end: $space-sm;
+    }
+  }
+}

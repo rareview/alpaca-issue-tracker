@@ -1,14 +1,16 @@
 import handleSnapdomCapture from './snapdomHandler.js';
+import { dataUrlToFile, uploadIssueAttachment } from './utils/attachmentUpload';
 import { useTestLogger } from './utils/testLogger.js';
+import { isTestLoggingEnabled } from './utils/testLogSetting.js';
+import { buildAlpacaRestUrl, getAlpacaRestNonce } from './utils/restApiRoot.js';
+import {
+  ensureAlpacaReportContext,
+  getAlpacaReportContext,
+} from './utils/reportContext.js';
 
-const {
-  Button,
-  Modal,
-  TextareaControl,
-  Spinner,
-  CheckboxControl,
-  ToggleControl,
-} = wp.components;
+const { __ } = wp.i18n;
+const { Button, Modal, TextareaControl, Spinner, ToggleControl } =
+  wp.components;
 const { doAction } = wp.hooks;
 const { useState, useRef, useEffect, useCallback } = wp.element;
 
@@ -17,21 +19,16 @@ const AlpacaModal = () => {
   const [status, setStatus] = useState('idle'); // idle, submitting, success, error
   const [message, setMessage] = useState('');
   const [feedback, setFeedback] = useState('');
-  const [includeContext, setIncludeContext] = useState(true);
   const [isHighPriority, setIsHighPriority] = useState(false);
 
   const textareaRef = useRef(null);
   const closeBtnRef = useRef(null);
 
-  const [enableTestLogs, setEnableTestLogs] = useState(false);
+  const [enableTestLogs, setEnableTestLogs] = useState(isTestLoggingEnabled);
 
   useEffect(() => {
-    wp.apiFetch({ path: '/wp/v2/settings' }).then((settings) => {
-      setEnableTestLogs(settings.alpaca_enable_test_logs === '1');
-    });
-
     const handleTestLogSettingChange = (value) => {
-      setEnableTestLogs(value);
+      setEnableTestLogs(Boolean(value));
     };
 
     wp.hooks.addAction(
@@ -52,7 +49,6 @@ const AlpacaModal = () => {
     setStatus('idle');
     setFeedback('');
     setFeedback('');
-    setIncludeContext(true); // reset to default each time modal opens
     setIsHighPriority(false);
     setOpen(true);
   }, []);
@@ -87,8 +83,9 @@ const AlpacaModal = () => {
     setMessage('');
 
     try {
-      const server = JSON.parse(atob(alpacaDataDump.env));
       setStatus('submitting');
+      const reportContext = await ensureAlpacaReportContext();
+      const server = JSON.parse(atob(reportContext.env));
 
       let screenshot = '';
       try {
@@ -101,23 +98,23 @@ const AlpacaModal = () => {
       const submitted = {
         userinput: {
           feedback,
-          includeContext,
+          includeContext: true, // Always include context
           isHighPriority,
         },
-        client: alpacaDataDump.device,
-        screenshot,
-        errors: alpacaDataDump.errors,
+        client: reportContext.device || getAlpacaReportContext().device,
+        screenshot: '',
+        errors: reportContext.errors || getAlpacaReportContext().errors || [],
       };
 
       const payload = { ...submitted, ...server };
 
-      const response = await fetch(wpApiSettings.root + 'alpaca/v1/submit', {
+      const response = await fetch(buildAlpacaRestUrl('/alpaca/v1/submit'), {
         method: 'POST',
         credentials: 'include',
         headers: new Headers({
           Accept: 'application/json',
           'Content-Type': 'application/json',
-          'X-WP-Nonce': wpApiSettings.nonce,
+          'X-WP-Nonce': getAlpacaRestNonce(),
         }),
         body: JSON.stringify(payload),
       });
@@ -128,49 +125,87 @@ const AlpacaModal = () => {
         throw new Error(responseData.message || `HTTP ${response.status}`);
       }
 
+      let screenshotUrl = '';
+      if (screenshot && responseData.issue?.id) {
+        try {
+          const screenshotFile = await dataUrlToFile(
+            screenshot,
+            'alpaca-screenshot.webp',
+          );
+          const uploaded = await uploadIssueAttachment(
+            screenshotFile,
+            responseData.issue.id,
+          );
+          screenshotUrl = uploaded.url || '';
+        } catch (uploadError) {
+          // eslint-disable-next-line no-console
+          console.warn('Screenshot upload failed:', uploadError);
+        }
+      }
+
       setStatus('success');
-      setMessage('Your issue has been submitted successfully.');
+      setMessage(
+        __(
+          'Your issue has been submitted successfully.',
+          'alpaca-issue-tracker',
+        ),
+      );
 
       doAction(
         'alpaca.issueSubmitted',
         responseData.issue,
         responseData.statusId,
+        isHighPriority,
+        {
+          feedback,
+          screenshotUrl,
+        },
       );
 
       setTimeout(closeModal, 1500);
     } catch (error) {
       console.error('Submission error:', error);
       setStatus('error');
-      setMessage('There was an error submitting your issue. Please try again.');
+      setMessage(
+        __(
+          'There was an error submitting your issue. Please try again.',
+          'alpaca-issue-tracker',
+        ),
+      );
     }
   };
 
+  useEffect(() => {
+    const adminBarLink = document.querySelector(
+      '#wp-admin-bar-alpaca-report .ab-item',
+    );
+
+    if (adminBarLink) {
+      const handleClick = (e) => {
+        e.preventDefault();
+        openModal();
+      };
+
+      adminBarLink.addEventListener('click', handleClick);
+
+      return () => {
+        adminBarLink.removeEventListener('click', handleClick);
+      };
+    }
+  }, [openModal]);
+
   return (
     <>
-      <button
-        className="ab-item"
-        onClick={(e) => {
-          e.preventDefault();
-          openModal();
-        }}
-        style={{
-          background: 'none',
-          border: 'none',
-          cursor: 'pointer',
-          padding: 0,
-        }}
-      >
-        Report An Issue
-      </button>
-
       {isOpen && (
         <Modal
           size="medium"
           className="alpaca-modal"
           title={(() => {
-            if (status === 'success') return 'Issue Submitted';
-            if (status === 'error') return 'Submission Failed';
-            return 'Report An Issue';
+            if (status === 'success')
+              return __('Issue Submitted', 'alpaca-issue-tracker');
+            if (status === 'error')
+              return __('Submission Failed', 'alpaca-issue-tracker');
+            return __('Context Capture', 'alpaca-issue-tracker');
           })()}
           onRequestClose={closeModal}
           isDismissible={false}
@@ -179,34 +214,28 @@ const AlpacaModal = () => {
             <>
               <p>{message}</p>
               <Button variant="primary" onClick={closeModal} ref={closeBtnRef}>
-                Close
+                {__('Close', 'alpaca-issue-tracker')}
               </Button>
             </>
           ) : (
             <>
               <TextareaControl
-                placeholder="Describe the problem"
+                placeholder={__('Describe the problem', 'alpaca-issue-tracker')}
                 id="alpaca-modal-textarea"
                 value={feedback}
                 onChange={(value) => setFeedback(value)}
                 disabled={status === 'submitting'}
                 ref={textareaRef}
+                __nextHasNoMarginBottom
               />
 
               <div className="small-wrapper">
                 <ToggleControl
-                  label="High Priority"
+                  label={__('High Priority', 'alpaca-issue-tracker')}
                   checked={isHighPriority}
                   onChange={setIsHighPriority}
                   disabled={status === 'submitting'}
-                />
-
-                <CheckboxControl
-                  id="alpaca-include-context"
-                  checked={includeContext}
-                  onChange={(val) => setIncludeContext(val)} // <-- update state
-                  label="Include context?"
-                  help="Always do this, unless you are sure it is not relevant"
+                  __nextHasNoMarginBottom
                 />
               </div>
 
@@ -216,14 +245,18 @@ const AlpacaModal = () => {
                   onClick={submitIssue}
                   disabled={status === 'submitting'}
                 >
-                  {status === 'submitting' ? <Spinner /> : 'Submit'}
+                  {status === 'submitting' ? (
+                    <Spinner />
+                  ) : (
+                    __('Submit', 'alpaca-issue-tracker')
+                  )}
                 </Button>
                 <Button
                   variant="secondary"
                   onClick={closeModal}
                   disabled={status === 'submitting'}
                 >
-                  Cancel
+                  {__('Cancel', 'alpaca-issue-tracker')}
                 </Button>
               </div>
             </>

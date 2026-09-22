@@ -1,0 +1,108 @@
+@use '../../abstracts' as *;
+
+/*
+* 3.2 - Containers (Columns)
+*/
+.wp-admin {
+  .alpaca-container {
+    margin-block: 0;
+    margin-inline: 1px $space-md;
+    background: $color-surface-subtle;
+    border-radius: $radius-sm;
+    display: flex;
+    overflow: hidden;
+
+    &:last-child {
+      margin-inline-end: 0;
+    }
+
+    .alpaca-container-header,
+    .alpaca-container-body {
+      padding-top: $space-xs;
+      padding-bottom: $space-xs;
+    }
+
+    .alpaca-container-header {
+      display: grid;
+      /* Reserve columns: title, item-count, controls */
+      grid-template-columns: auto 1fr $size-control-xl;
+      align-items: center;
+      gap: 0;
+
+      h2,
+      .alpaca-container-title-input input {
+        margin: 0;
+        font-size: $font-size-lg;
+        font-weight: $font-weight-semibold;
+        padding: 0;
+        border: none;
+        background: transparent;
+
+        /* Prevent the column title from wrapping; allow truncation with ellipsis. */
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        &:focus {
+          outline: none;
+          box-shadow: none;
+        }
+      }
+
+      .alpaca-container-title-input > div {
+        margin: -1px 0 0;
+        padding: 0;
+      }
+
+      .alpaca-item-count {
+        /* Place count in its own column and avoid wrapping. */
+        grid-column: 2;
+        display: inline-flex;
+        align-items: center;
+        margin: 0 $space-xs 0 $space-2xs;
+        padding: $space-3xs $space-2xs 0 $space-2xs;
+        font-size: $font-size-sm;
+        font-weight: $font-weight-normal;
+        opacity: 0.6;
+        white-space: nowrap;
+      }
+
+      .alpaca-container-controls {
+        padding: $space-3xs 0;
+        flex-direction: row;
+
+        .components-button:focus:not(:disabled) {
+          box-shadow: none;
+        }
+
+        button {
+          margin-inline-start: $space-3xs;
+          opacity: 0.2;
+          transition: opacity $duration-base ease-in-out;
+
+          &:hover {
+            opacity: 1;
+            cursor: pointer;
+          }
+        }
+      }
+    }
+
+    &.is-collapsed {
+      opacity: 0.5;
+
+      .alpaca-items {
+        display: none;
+      }
+
+      .alpaca-container-controls button {
+        opacity: 1;
+      }
+    }
+  }
+
+  .alpaca-items {
+    padding: 0 $space-3xs;
+  }
+}

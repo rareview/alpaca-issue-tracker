@@ -1,49 +1,83 @@
 <?php
 /**
- * Admin bar menu integration for Alpaca issues.
+ * Admin bar menu integration for Alpaca Issue Tracker issues.
  *
- * @package Alpaca
+ * @package AlpacaIssueTracker
  */
 
-add_action( 'admin_bar_menu', 'alpaca_add_admin_bar_menu', 500 );
+use AlpacaIssueTracker\Helpers;
+
+// Exit if accessed directly.
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+add_action( 'admin_bar_menu', 'alpaistr_add_admin_bar_menu', 500 );
 /**
- * Add Alpaca menu items to the WordPress admin bar.
+ * Determine whether the current admin screen should omit global report UI.
+ *
+ * The report bundle is intentionally not loaded on WordPress post editor
+ * screens because those screens are already asset-heavy.
+ *
+ * @param string $hook_suffix Optional admin page hook suffix.
+ * @return bool True when global report UI should be skipped.
+ */
+function alpaistr_should_skip_admin_report_screen( $hook_suffix = '' ) {
+	if ( ! is_admin() || ! function_exists( 'get_current_screen' ) ) {
+		return false;
+	}
+
+	$current_screen = get_current_screen();
+	if ( ! $current_screen ) {
+		return false;
+	}
+
+	$screen_base = isset( $current_screen->base ) ? $current_screen->base : '';
+
+	return 'post' === $screen_base
+		|| in_array( $hook_suffix, [ 'post-new.php', 'post.php' ], true );
+}
+
+/**
+ * Add Alpaca Issue Tracker menu items to the WordPress admin bar.
  *
  * @param WP_Admin_Bar $admin_bar The admin bar object.
+ * @return void
  */
-function alpaca_add_admin_bar_menu( $admin_bar ) {
+function alpaistr_add_admin_bar_menu( $admin_bar ) {
 	if ( ! is_admin() ) {
 		return;
 	}
 
-	$admin_bar->add_menu(
-		array(
-			'id'     => 'alpaca-menu',
-			'parent' => 'top-secondary',
-			'title'  => '<span class="ab-icon dashicons dashicons-warning"></span><span class="ab-label">Issues</span>',
-			'href'   => '#',
-			'meta'   => array( 'title' => 'Issues' ),
-		)
-	);
+	if ( ! Helpers::user_can( 'create_issue' ) ) {
+		return;
+	}
+
+	if ( function_exists( 'alpaistr_is_contextual_capture_enabled' ) && ! alpaistr_is_contextual_capture_enabled() ) {
+		return;
+	}
+
+	if ( alpaistr_should_skip_admin_report_screen() ) {
+		return;
+	}
+
+	// Hide the menu when on the project board page.
+	$current_screen = get_current_screen();
+	if ( $current_screen && 'toplevel_page_project-board' === $current_screen->id ) {
+		return;
+	}
 
 	/**
-	 * Placeholder menu item replaced by AlpacaModal.
+	 * Context Capture - top-level admin bar item with SVG icon.
 	 */
-	$admin_bar->add_menu(
-		array(
-			'parent' => 'alpaca-menu',
-			'title'  => '',
-			'id'     => 'alpaca-report',
-			'href'   => '#',
-		)
-	);
+	$icon_svg = alpaistr_get_icon( 'exclamation-circle-fill' );
 
 	$admin_bar->add_menu(
-		array(
-			'parent' => 'alpaca-menu',
-			'title'  => 'View Project Board',
-			'id'     => 'alpaca-board',
-			'href'   => admin_url( 'admin.php?page=alpaca-board' ),
-		)
+		[
+			'parent' => 'top-secondary',
+			'title'  => $icon_svg . esc_html__( 'Report An Issue', 'alpaca-issue-tracker' ),
+			'id'     => 'alpaca-report',
+			'href'   => '#',
+		]
 	);
 }

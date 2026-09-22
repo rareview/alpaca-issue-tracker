@@ -1,0 +1,197 @@
+@use '../abstracts' as *;
+
+/*
+ * Media Queries
+ */
+@media (width >= $breakpoint-board-desktop) {
+  .wp-admin {
+    #project-board {
+      .alpaca-wrap {
+        flex-direction: row;
+        padding: $space-xs 1px $space-4xl 0;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar {
+          width: 0;
+          height: 0;
+          display: none;
+        }
+
+        .alpaca-container {
+          flex-shrink: 0;
+        }
+      }
+
+      .alpaca-container {
+        height: 75vh;
+        display: flex;
+        flex: 1;
+        min-width: 15.625rem;
+        flex-direction: column;
+
+        &.is-collapsed {
+          flex: 0 0 $size-control-xl !important;
+          inline-size: $size-control-xl;
+          min-inline-size: $size-control-xl !important;
+
+          .alpaca-container-header {
+            height: 100%;
+            writing-mode: vertical-rl;
+            transform: rotate(180deg);
+
+            h2,
+            input {
+              height: 100%;
+            }
+
+            h2 {
+              margin: $space-xs 0;
+            }
+
+            input {
+              margin: $space-xs calc(-1 * 1px);
+            }
+          }
+        }
+
+        .alpaca-items {
+          overflow-y: auto;
+          padding: $space-md 1px;
+          margin-top: -$space-md;
+          height: calc(75vh - 4.0625rem);
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+
+          &::-webkit-scrollbar {
+            width: 0;
+            height: 0;
+            display: none;
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (width <= $breakpoint-board-mobile) {
+  .wp-admin {
+    #project-board-controls {
+      flex-direction: column;
+      align-items: stretch;
+      gap: $space-lg;
+      margin-block-end: 0;
+
+      > :first-child {
+        margin-inline-end: 0;
+      }
+
+      #project-board-controls-mount {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+        align-items: stretch;
+        gap: $space-sm;
+        inline-size: 100%;
+      }
+
+      #project-board-controls-mount > *,
+      .alpaca-board-filter-control,
+      .alpaca-inbox-control {
+        min-inline-size: 0;
+      }
+
+      .alpaca-board-control {
+        inline-size: 100%;
+        justify-content: flex-start;
+        min-inline-size: 0;
+      }
+
+      .alpaca-board-search.alpaca-board-control {
+        grid-column: 1 / -1;
+        inline-size: 100%;
+        flex: 1 1 auto;
+      }
+
+      .alpaca-board-search .components-search-control {
+        inline-size: 100%;
+      }
+    }
+
+    #project-board {
+      .alpaca-wrap {
+        flex-direction: column;
+      }
+
+      .alpaca-container {
+        margin: $space-2xl 0 0 0;
+        overflow-x: auto;
+        display: flex;
+        flex-direction: column;
+        height: auto;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar {
+          width: 0;
+          height: 0;
+          display: none;
+        }
+
+        .alpaca-items {
+          flex-direction: row;
+          display: flex;
+          gap: $space-gap-inline;
+          overflow-x: auto;
+          align-items: stretch;
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+
+          &::-webkit-scrollbar {
+            width: 0;
+            height: 0;
+            display: none;
+          }
+
+          .alpaca-item {
+            width: 12.5rem;
+            min-height: 100%;
+            flex-shrink: 0;
+            display: flex;
+
+            .alpaca-item-inner {
+              width: 100%;
+              height: 100%;
+              display: flex;
+              flex-direction: column;
+            }
+
+            .alpaca-item-controls .dashicons-star-empty:not(:disabled) {
+              opacity: 0.3;
+            }
+
+            .alpaca-item-assignees {
+              &[data-assignees='1'] {
+                .alpaca-user .alpaca-user-name {
+                  display: none;
+                  padding-inline-start: 0;
+                }
+              }
+            }
+          }
+        }
+
+        &.is-collapsed {
+          flex: 0 0 auto !important;
+          min-height: auto !important;
+
+          .alpaca-container-body {
+            display: none;
+            padding: 0;
+          }
+        }
+      }
+    }
+  }
+}

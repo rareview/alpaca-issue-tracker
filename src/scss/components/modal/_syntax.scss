@@ -1,0 +1,168 @@
+@use '../../abstracts' as *;
+
+/*
+* Syntax Highlighting
+*/
+.wp-admin {
+  :is(
+    .alpaca-data-table,
+    .alpaca-json-table,
+    .alpaca-report-tab,
+    .alpaca-errors-tab
+  ) {
+    &,
+    table,
+    pre,
+    code,
+    code[class*='language-'],
+    pre[class*='language-'] {
+      font-family: $font-family-code !important;
+      font-size: $font-size-sm !important;
+    }
+
+    &.alpaca-data-table,
+    table.alpaca-data-table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    th,
+    td {
+      padding: $space-md;
+      text-align: start;
+      vertical-align: top;
+      word-break: break-word;
+    }
+
+    th {
+      font-family: $font-family-base !important;
+      font-weight: $font-weight-bold;
+      width: 12.5rem;
+    }
+
+    td {
+      max-width: $width-content-md;
+      line-height: $line-height-code;
+    }
+
+    tr {
+      border-bottom: 1px solid $color-border;
+    }
+
+    pre,
+    code {
+      margin: 0 !important;
+      padding: 0 !important;
+      text-indent: 0 !important;
+      white-space: pre-wrap !important;
+      word-break: break-word !important;
+      font-family: inherit !important;
+      font-size: inherit !important;
+      width: 100% !important;
+      background: transparent !important;
+      background-color: transparent !important;
+      border: 0 !important;
+    }
+
+    pre code span {
+      display: inline !important;
+    }
+
+    pre[class*='language-'],
+    code[class*='language-'] {
+      padding: 0 !important;
+      margin: 0 !important;
+      border: 0 !important;
+      line-height: $line-height-code !important;
+      background: transparent !important;
+      background-color: transparent !important;
+      color: inherit !important;
+    }
+
+    :not(pre) > code[class*='language-'] {
+      padding: 0 !important;
+      background: transparent !important;
+      background-color: transparent !important;
+      border: 0 !important;
+    }
+
+    code.language-uri {
+      cursor: pointer !important;
+      user-select: text !important;
+      pointer-events: auto !important;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+
+    .token.operator {
+      background: none !important;
+    }
+
+    .token.comment,
+    .token.prolog,
+    .token.doctype,
+    .token.cdata {
+      color: $color-text-subtle;
+    }
+
+    .token.punctuation {
+      color: $color-text-muted;
+    }
+
+    .token.property,
+    .token.tag,
+    .token.boolean,
+    .token.number,
+    .token.constant,
+    .token.symbol,
+    .token.deleted {
+      color: $color-danger-dark;
+    }
+
+    .token.selector,
+    .token.attr-name,
+    .token.string,
+    .token.char,
+    .token.builtin,
+    .token.inserted {
+      color: $color-success-muted;
+    }
+
+    .token.operator,
+    .token.entity,
+    .token.url,
+    .language-css .token.string,
+    .style .token.string {
+      color: $color-warning;
+      background: transparent;
+    }
+
+    .token.atrule,
+    .token.attr-value,
+    .token.keyword {
+      color: $color-link-dark;
+    }
+
+    .token.function,
+    .token.class-name {
+      color: $color-link-emphasis;
+    }
+
+    .token.regex,
+    .token.important,
+    .token.variable {
+      color: $color-deadline-soon;
+    }
+
+    .token.important,
+    .token.bold {
+      font-weight: $font-weight-bold;
+    }
+
+    .token.italic {
+      font-style: italic;
+    }
+  }
+}

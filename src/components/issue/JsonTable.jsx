@@ -1,41 +1,26 @@
 const { memo } = wp.element;
+import PropTypes from 'prop-types';
+import DataTable from './DataTable';
 
+/**
+ * JsonTable component - wrapper around DataTable for backward compatibility.
+ *
+ * @param {Object}        root0      - Props object
+ * @param {Object|string} root0.data - Data to display (object or JSON string)
+ * @return {JSX.Element} JsonTable component
+ */
 const JsonTable = memo(({ data }) => {
-  if (!data) return null;
-
-  let parsedData;
-  try {
-    if (typeof data === 'string') {
-      if (data === 'null') return null;
-      parsedData = JSON.parse(data);
-    } else {
-      parsedData = data;
-    }
-
-    if (!parsedData || typeof parsedData !== 'object') {
-      console.error('JsonTable: Invalid data format', parsedData);
-      return <p>Invalid data format</p>;
-    }
-  } catch (e) {
-    console.error('JsonTable: Error parsing JSON', e, data);
-    return <p>Error parsing JSON data</p>;
-  }
-
   return (
-    <table
-      className="alpaca-json-table widefat striped"
-      style={{ borderCollapse: 'collapse', width: '100%' }}
-    >
-      <tbody>
-        {Object.entries(parsedData).map(([key, value]) => (
-          <tr key={key}>
-            <th>{key}</th>
-            <td>{String(value)}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <div className="alpaca-json-table alpaca-data-table-context">
+      <DataTable data={data} showSyntaxHighlighting={true} />
+    </div>
   );
 });
+
+JsonTable.propTypes = {
+  data: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
+};
+
+JsonTable.displayName = 'JsonTable';
 
 export default JsonTable;

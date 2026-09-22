@@ -1,0 +1,282 @@
+@use '../abstracts' as *;
+
+/*
+ * Bottom Toolbar & Report Form
+ */
+.alpaca-bottom-toolbar {
+  direction: inherit;
+  color: $color-toolbar-text;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-normal;
+  line-height: 2rem;
+  height: $size-control-md;
+  position: fixed;
+  width: 100%;
+  min-width: $width-content-md;
+  z-index: 99999;
+  background: $color-toolbar-bg;
+  outline: 1px solid transparent;
+  inset-block-end: 0;
+  inset-inline-start: 0;
+  inset-inline-end: auto;
+  display: flex;
+  flex-direction: row;
+  gap: $space-xl;
+  padding: 0;
+  transform: translateX(calc(-100% + $size-control-md));
+  transition: transform $duration-slow ease;
+  font-family: $font-family-base !important;
+
+  html[dir='rtl'] &,
+  .rtl & {
+    inset-inline-start: auto;
+    inset-inline-end: 0;
+    transform: translateX(calc(100% - $size-control-md));
+
+    &.expanded {
+      transform: translateX(0);
+    }
+  }
+
+  &.expanded {
+    transform: translateX(0);
+
+    .toggle-pointer {
+      transform: rotate(180deg);
+    }
+  }
+
+  html[dir='rtl'] &,
+  .rtl & {
+    .toggle-pointer {
+      transform: scaleX(-1);
+    }
+
+    &.expanded .toggle-pointer {
+      transform: rotate(180deg) scaleX(-1);
+    }
+  }
+
+  .alpaca-report-button,
+  .project-board-link {
+    background: none;
+    color: $color-toolbar-text-strong;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: $space-2xs;
+    padding: 0 $space-xl;
+    height: $size-control-md;
+    line-height: 2rem;
+    font-size: $font-size-sm;
+    cursor: pointer;
+    text-decoration: none;
+    font-family: $font-family-base !important;
+
+    .dashicons {
+      color: $color-toolbar-text-muted;
+      font-size: $font-size-xl;
+    }
+
+    &:hover,
+    &.form-visible {
+      color: $color-toolbar-accent;
+      background-color: $color-toolbar-bg-hover;
+
+      .dashicons {
+        color: $color-toolbar-accent;
+      }
+    }
+  }
+
+  .project-board-link {
+    gap: $space-sm;
+  }
+
+  .alpaca-toolbar-project-board-badge {
+    display: inline-flex;
+    align-items: center;
+    line-height: $line-height-reset;
+
+    .alpaca-inline-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: $size-icon-lg;
+      height: $size-icon-lg;
+      padding: 0 $space-xs;
+      border-radius: $radius-round;
+      background: $color-danger;
+      color: $color-white;
+      box-sizing: border-box;
+      font-size: $font-size-xs;
+      font-weight: $font-weight-bold;
+      line-height: $line-height-reset;
+    }
+
+    .screen-reader-text {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: calc(-1 * 1px);
+      border: 0;
+      padding: 0;
+      clip: rect(1px, 1px, 1px, 1px);
+      overflow: hidden;
+      word-wrap: normal !important;
+    }
+  }
+
+  .toggle-button {
+    margin-inline-start: auto;
+    background: none;
+    border: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: $size-control-md;
+    height: $size-control-md;
+    color: $color-toolbar-text-muted;
+    cursor: pointer;
+    padding: 0;
+
+    &:hover {
+      color: $color-toolbar-accent;
+    }
+
+    .toggle-pointer {
+      transition: transform $duration-slow ease;
+      display: inline-block;
+      transform-origin: center center;
+      font-size: $font-size-md;
+    }
+  }
+}
+
+.alpaca-report-form {
+  position: fixed;
+  z-index: 99998;
+  width: $width-report-form;
+  max-width: calc(100vw - $size-control-xl);
+  padding: $space-2xl;
+  background: $color-white;
+  border: 1px solid $color-border-control;
+  border-radius: $radius-sm $radius-sm 0 0;
+  inset-inline-start: 0;
+  box-shadow: 0 -0.25rem 1rem rgb(0 0 0 / 15%);
+  bottom: -31.25rem;
+  transition:
+    bottom $duration-slow ease,
+    opacity $duration-slow ease,
+    visibility $duration-none linear $duration-slow;
+  font-size: $font-size-sm;
+  font-family: $font-family-base;
+  visibility: hidden;
+  opacity: 0;
+  color: $color-black;
+
+  html[dir='rtl'] &,
+  .rtl & {
+    inset-inline-start: auto;
+    inset-inline-end: 0;
+  }
+
+  &.visible {
+    bottom: 1.9375rem;
+    visibility: visible;
+    opacity: 1;
+    transition:
+      bottom $duration-slow ease,
+      opacity $duration-slow ease,
+      visibility $duration-none;
+  }
+
+  .form-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: $space-2xl;
+    padding-bottom: $space-lg;
+    border-bottom: 1px solid $color-border;
+
+    h4 {
+      margin: 0;
+      font-size: $font-size-sm;
+      font-family: $font-family-base;
+      font-weight: $font-weight-semibold;
+      color: $color-text-primary;
+    }
+
+    .form-close {
+      background: transparent;
+      border: none;
+      width: $size-control-sm;
+      height: $size-control-sm;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border-radius: $radius-xs;
+      font-size: $font-size-xl;
+      color: $color-text-secondary;
+      padding: 0;
+      line-height: $line-height-reset;
+
+      &:hover {
+        background: $color-surface-neutral;
+        color: $color-text-primary;
+      }
+    }
+  }
+
+  .components-textarea-control {
+    margin-bottom: $space-2xl;
+
+    .components-textarea-control__input {
+      width: 100%;
+      max-width: 100%;
+      min-height: 6.25rem;
+      padding: $space-sm $space-lg;
+      border: 1px solid $color-text-muted;
+      border-radius: $radius-xs;
+      font-size: $font-size-sm;
+      background: $color-white;
+      color: $color-text-primary;
+      resize: vertical;
+      box-sizing: border-box;
+    }
+  }
+
+  .form-toggles {
+    margin-bottom: $space-2xl;
+
+    .components-base-control {
+      margin-bottom: $space-lg;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .components-base-control__field {
+        margin-bottom: 0;
+      }
+
+      .components-checkbox-control__label {
+        color: $color-text-primary;
+      }
+
+      .components-base-control__help {
+        font-size: $font-size-xs;
+        font-style: normal;
+        color: $color-text-muted;
+      }
+    }
+  }
+
+  .form-actions {
+    display: flex;
+    gap: $space-sm;
+    justify-content: flex-end;
+    margin-top: $space-2xl;
+  }
+}

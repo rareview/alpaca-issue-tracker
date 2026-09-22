@@ -1,0 +1,321 @@
+@use '../abstracts' as *;
+
+/*
+ * Settings
+ */
+.alpaca-settings {
+  hr {
+    margin: $space-6xl 0;
+  }
+
+  .alpaca-settings-table {
+    border: 1px solid $color-border;
+    border-radius: $radius-lg;
+    font-size: $font-size-sm;
+    max-width: $width-content-md;
+    overflow: hidden;
+    width: 100%;
+
+    .alpaca-settings-table-delete.components-button {
+      color: $color-danger-dark;
+    }
+
+    .alpaca-settings-list-body {
+      display: flex;
+      flex-direction: column;
+      min-height: 1px;
+    }
+
+    .alpaca-settings-list-row {
+      align-items: center;
+      background: $color-white;
+      display: grid;
+      gap: $space-md;
+      grid-template-columns: minmax(0, 1fr) auto;
+      padding: $space-xs $space-lg;
+      transition: background $duration-base;
+
+      &:not(:last-child) {
+        border-bottom: 1px solid $color-border;
+      }
+
+      .components-button,
+      .components-text-control__input {
+        height: $size-control-md;
+        min-height: $size-control-md;
+      }
+    }
+
+    .alpaca-settings-list-name {
+      min-width: 0;
+      width: 100%;
+    }
+
+    .alpaca-settings-list-name-editor {
+      max-width: 100%;
+      width: 100%;
+
+      &.components-button {
+        justify-content: space-between;
+        overflow: hidden;
+        text-align: start;
+      }
+
+      .components-text-control__input {
+        border-color: $color-border-subtle;
+      }
+    }
+
+    .alpaca-settings-list-actions,
+    .actions-cell {
+      justify-self: end;
+      white-space: nowrap;
+      width: auto;
+    }
+  }
+
+  .alpaca-settings-manager-intro {
+    margin: 0 0 $space-2xl;
+    color: $color-text-secondary;
+  }
+
+  #alpaca-settings-internal {
+    .components-input-control__container {
+      width: $width-report-form;
+      max-width: $width-report-form;
+    }
+
+    input[type='number'].small-text {
+      width: 4.0625rem;
+      padding-inline-end: 0;
+    }
+  }
+
+  .alpaca-labels-manager {
+    .alpaca-labels-list {
+      .alpaca-settings-list-row {
+        grid-template-columns: minmax(0, 1fr) 7rem $size-control-md;
+      }
+    }
+
+    .alpaca-label-name-input {
+      width: 100%;
+
+      .components-base-control__field {
+        margin-bottom: 0;
+      }
+
+      .components-input-control__container {
+        max-width: none;
+        min-height: $size-control-md;
+        width: 100%;
+      }
+
+      .components-input-control__backdrop {
+        border-color: $color-border-subtle;
+      }
+
+      .components-text-control__input {
+        border-color: $color-border-subtle;
+      }
+    }
+
+    .alpaca-label-color-button {
+      align-items: center;
+      display: inline-flex;
+      gap: $space-xs;
+      min-height: $size-control-md;
+      padding-block: 0;
+    }
+
+    .alpaca-label-color-cell {
+      justify-self: end;
+    }
+
+    .alpaca-label-delete-cell {
+      justify-self: end;
+      width: $size-control-md;
+    }
+
+    .alpaca-label-delete-slot {
+      display: inline-block;
+      height: $size-control-md;
+      width: $size-control-md;
+    }
+
+    .alpaca-label-color-fallback {
+      border: 1px solid $color-border;
+      border-radius: $radius-round;
+      display: inline-block;
+      height: $size-icon-xs;
+      width: $size-icon-xs;
+    }
+
+    .alpaca-label-color-popover {
+      padding: $space-md;
+      width: $width-board-search;
+    }
+
+    .alpaca-labels-actions {
+      align-items: center;
+      display: flex;
+      gap: $space-md;
+      margin-top: $space-2xl;
+    }
+  }
+
+  .alpaca-item-datapoints-manager {
+    .alpaca-item-datapoints-list {
+      .alpaca-settings-list-row {
+        grid-template-columns: minmax(0, 1fr) auto;
+      }
+    }
+
+    .alpaca-item-datapoints-name {
+      display: inline-block;
+      font-weight: $font-weight-medium;
+    }
+
+    .alpaca-item-datapoints-toggle-cell {
+      align-items: center;
+      display: inline-flex;
+      gap: $space-sm;
+      justify-content: flex-end;
+
+      .components-base-control {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  .alpaca-restore-manager {
+    .alpaca-restore-search {
+      margin: 0 0 $space-2xl;
+    }
+
+    .alpaca-restore-search-controls {
+      align-items: stretch;
+      display: inline-flex;
+      flex-wrap: nowrap;
+      gap: $space-sm;
+      justify-content: flex-start !important;
+      max-width: 100%;
+      width: fit-content;
+
+      .components-base-control {
+        margin-bottom: 0;
+      }
+
+      .components-input-control__container {
+        inline-size: min(40rem, 100%);
+      }
+
+      .components-button {
+        flex: 0 0 auto;
+        margin: 0;
+        margin-inline-start: 0 !important;
+      }
+    }
+
+    .alpaca-restore-table-wrap {
+      max-width: 100%;
+      overflow-x: auto;
+    }
+
+    .alpaca-restore-table {
+      min-width: 30rem;
+
+      td,
+      th {
+        vertical-align: middle;
+      }
+
+      .alpaca-restore-title-cell {
+        display: flex;
+        flex-direction: column;
+        gap: $space-2xs;
+      }
+
+      .alpaca-restore-type-cell {
+        inline-size: 10rem;
+        white-space: nowrap;
+      }
+
+      .alpaca-restore-item-type {
+        background: rgb(23 43 77 / 8%);
+        border-radius: $radius-pill;
+        color: $color-text-muted;
+        display: inline-flex;
+        font-size: $font-size-xs;
+        font-weight: 600;
+        line-height: $line-height-reset;
+        padding: $space-3xs $space-sm;
+        width: fit-content;
+      }
+
+      .alpaca-restore-title-text {
+        color: inherit;
+        font-weight: 600;
+      }
+
+      .alpaca-restore-title-text--completed {
+        color: $color-text-muted;
+        text-decoration: line-through;
+      }
+
+      .alpaca-restore-parent-issue {
+        color: $color-text-muted;
+        font-size: $font-size-xs;
+      }
+
+      .alpaca-restore-action {
+        /* Keep the restore button from resizing when text changes,
+           but use a tighter width and center the label. */
+        min-inline-size: 6.25rem;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
+    }
+
+    .alpaca-restore-labels {
+      display: flex;
+      flex-wrap: wrap;
+      gap: $space-xs;
+    }
+
+    .alpaca-restore-muted {
+      color: $color-text-muted;
+    }
+
+    .alpaca-restore-empty-cell {
+      color: $color-text-muted;
+      text-align: center;
+    }
+
+    .alpaca-restore-summary {
+      margin-block-start: 0;
+    }
+
+    .alpaca-restore-pagination {
+      align-items: center;
+      display: flex;
+      flex-wrap: wrap;
+      gap: $space-lg;
+      justify-content: space-between;
+      margin-block-start: $space-2xl;
+    }
+
+    .alpaca-restore-pagination-summary {
+      color: $color-text-muted;
+    }
+
+    .alpaca-restore-pagination-actions {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: $space-sm;
+    }
+  }
+}

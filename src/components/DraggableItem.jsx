@@ -1,173 +1,211 @@
 import PropTypes from 'prop-types';
 import Item from './Item';
+import { serializeElementAttributes } from '../utils/dragAttributes';
 
-const { useRef, useState } = wp.element;
-// const { Draggable: WPDraggable } = wp.components || {};
+const { forwardRef, useState, useEffect } = wp.element;
 
-/**
- * Draggable item wrapper component.
- *
- * @param {Object}          root0                - Props object
- * @param {number}          root0.id             - Item ID
- * @param {number}          root0.index          - Index in drag list
- * @param {string}          root0.content        - Item content text
- * @param {string}          root0.className      - CSS class name
- * @param {boolean}         root0.isDragDisabled - Whether dragging is disabled
- * @param {Function}        root0.onClick        - Click handler
- * @param {Array}           root0.assignees      - Array of assignees
- * @param {number}          root0.commentCount   - Comment count
- * @param {Object}          root0.meta           - Metadata object
- * @param {(number|string)} root0.containerId    - Container ID (number or string)
- * @return {JSX.Element}                          - Draggable item component
- */
-function DraggableItem({
-  id,
-  index,
-  containerId,
-  content,
-  className,
-  isDragDisabled = false,
-  onClick,
-  assignees = [],
-  commentCount,
-  meta,
-}) {
-  const elRef = useRef(null);
-  const [isDragging, setIsDragging] = useState(false);
-
-  const handleClick = (event) => {
-    if (onClick) {
-      onClick(event, id);
-    }
-  };
-
-  const handleDragStart = (e) => {
-    setIsDragging(true);
-
-    const payload = {
-      itemId: id,
-      sourceContainerId: containerId,
-      sourceIndex: index,
+const DraggableItem = forwardRef(
+  (
+    {
+      id,
+      index,
+      containerId,
       content,
-      assignees,
+      postDate,
+      className,
+      isDragDisabled = false,
+      onClick,
+      assignees = [],
+      labels = [],
       commentCount,
+      commentCountByAgent,
       meta,
+    },
+    ref,
+  ) => {
+    const [isDragging, setIsDragging] = useState(false);
+
+    const handleClick = (event) => {
+      if (onClick) {
+        onClick(event, id);
+      }
     };
 
-    try {
-      e.dataTransfer.setData('application/json', JSON.stringify(payload));
-    } catch (err) {
-      // ignore
-    }
+    const handleDragStart = (e) => {
+      setIsDragging(true);
 
-    // Fallback: store payload on window so dragover handlers can read it
-    try {
-      window.__alpacaDragState = payload;
-    } catch (err) {
-      // ignore
-    }
-
-    // Create a lightweight drag image clone so user sees a preview
-    if (elRef.current && e.dataTransfer && e.dataTransfer.setDragImage) {
-      const original = elRef.current;
-      const clone = original.cloneNode(true);
-      const rect = original.getBoundingClientRect();
-
-      // Recursively copy computed styles from original to clone so display:flex/grid
-      // and child element styles are preserved in the preview.
-      const copyComputedStylesRecursive = (src, dest) => {
-        try {
-          const cs = window.getComputedStyle(src);
-          for (let i = 0; i < cs.length; i++) {
-            const prop = cs[i];
-            dest.style.setProperty(
-              prop,
-              cs.getPropertyValue(prop),
-              cs.getPropertyPriority(prop),
-            );
-          }
-        } catch (err) {
-          // ignore copying styles on older browsers
-        }
-
-        const srcChildren = src.children || [];
-        const destChildren = dest.children || [];
-        for (
-          let i = 0;
-          i < srcChildren.length && i < destChildren.length;
-          i++
-        ) {
-          copyComputedStylesRecursive(srcChildren[i], destChildren[i]);
-        }
+      const payload = {
+        itemId: id,
+        sourceContainerId: containerId,
+        sourceIndex: index,
+        content,
+        postDate,
+        assignees,
+        labels,
+        commentCount,
+        commentCountByAgent,
+        meta,
       };
 
-      copyComputedStylesRecursive(original, clone);
-
-      clone.style.position = 'absolute';
-      clone.style.top = '-10000px';
-      clone.style.left = '-10000px';
-      // enforce size so width matches column width
-      clone.style.width = `${rect.width}px`;
-      clone.style.height = `${rect.height}px`;
-      clone.style.margin = '0';
-      clone.classList.add('alpaca-drag-clone');
-
-      document.body.appendChild(clone);
       try {
-        e.dataTransfer.setDragImage(clone, 10, 10);
+        // Capture classes/data-*/aria-* attributes from the source element so
+        // previews and placeholders can inherit the same markup/styling.
+        if (e.currentTarget) {
+          payload.elementDescriptor = serializeElementAttributes(
+            e.currentTarget,
+          );
+        }
+      } catch (err) {
+        // ignore serialization failures
+      }
+
+      try {
+        e.dataTransfer.setData('application/json', JSON.stringify(payload));
+        // Use browser detection from alpaistrDataDump if available, fallback to regex
+        const isSafari =
+          (typeof alpaistrDataDump !== 'undefined' &&
+            alpaistrDataDump.device?.browser?.name === 'Safari') ||
+          /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+        if (!isSafari) {
+          // 1. Capture exact dimensions of the original element to prevent wrapping
+          const rect = e.currentTarget.getBoundingClientRect();
+
+          // 2. Clone the element
+          const clone = e.currentTarget.cloneNode(true);
+          const cloneInnerCard = clone.querySelector('.alpaca-item-inner');
+
+          // Clone element and lock dimensions
+          clone.style.width = `${rect.width}px`;
+          clone.style.height = `${rect.height}px`;
+          clone.style.boxSizing = 'border-box';
+          clone.classList.add('alpaca-drag-clone');
+
+          // Detached drag images lose board-scoped mobile layout selectors,
+          // so preserve the resolved card height inline for narrow screens.
+          if (cloneInnerCard instanceof HTMLElement) {
+            cloneInnerCard.style.width = '100%';
+            cloneInnerCard.style.height = '100%';
+            cloneInnerCard.style.display = 'flex';
+            cloneInnerCard.style.flexDirection = 'column';
+          }
+
+          // Rotate clone
+          clone.style.transform = 'rotate(3deg)';
+          clone.style.transformOrigin = 'center center';
+          clone.style.boxShadow = '0 4px 8px rgba(0,0,0,0.1)';
+          clone.style.opacity = '1';
+
+          // Create wrapper to preserve rotation
+          const wrapper = document.createElement('div');
+          wrapper.style.position = 'absolute';
+          wrapper.style.top = '-9999px';
+          wrapper.style.left = '-9999px';
+          // Make wrapper large enough to hold the rotated clone without clipping
+          wrapper.style.width = `${rect.width + 40}px`;
+          wrapper.style.height = `${rect.height + 40}px`;
+
+          // Center the clone inside the wrapper
+          clone.style.position = 'absolute';
+          clone.style.top = '20px';
+          clone.style.left = '20px';
+          clone.style.margin = '0';
+
+          wrapper.appendChild(clone);
+          document.body.appendChild(wrapper);
+
+          // 6. Set the drag image
+          e.dataTransfer.setDragImage(
+            wrapper,
+            rect.width / 2 + 20,
+            rect.height / 2 + 20,
+          );
+
+          // 7. Cleanup
+          setTimeout(() => {
+            if (document.body.contains(wrapper)) {
+              document.body.removeChild(wrapper);
+            }
+          }, 0);
+        }
       } catch (err) {
         // ignore
       }
-      // remove the clone on next tick
-      setTimeout(() => {
-        try {
-          document.body.removeChild(clone);
-        } catch (err) {
-          // ignore
+
+      // Fallback: store payload on window so dragover handlers can read it
+      try {
+        window.__alpacaDragState = payload;
+      } catch (err) {
+        // ignore
+      }
+    };
+
+    const handleDragEnd = () => {
+      setIsDragging(false);
+      try {
+        if (typeof window !== 'undefined') {
+          delete window.__alpacaDragState;
         }
-      }, 0);
-    }
-  };
+      } catch (err) {
+        // ignore
+      }
+    };
 
-  const handleDragEnd = () => {
-    setIsDragging(false);
-  };
+    useEffect(() => {
+      const onGlobalDragEnd = () => {
+        setIsDragging(false);
+      };
+      window.addEventListener('dragend', onGlobalDragEnd);
+      return () => {
+        window.removeEventListener('dragend', onGlobalDragEnd);
+      };
+    }, []);
 
-  return (
-    <div
-      ref={elRef}
-      draggable={!isDragDisabled}
-      role="listitem"
-      aria-grabbed={isDragging}
-      onDragStart={handleDragStart}
-      onDragEnd={handleDragEnd}
-      data-index={index}
-      data-id={id}
-      className={`${className} ${isDragging ? 'dragging' : ''}`}
-    >
-      <Item
-        id={id}
-        content={content}
-        assignees={assignees}
-        commentCount={commentCount}
-        meta={meta}
-        className="alpaca-item-inner"
-        onClick={handleClick}
-      />
-    </div>
-  );
-}
+    return (
+      <div
+        ref={ref}
+        draggable={!isDragDisabled}
+        role="listitem"
+        aria-grabbed={isDragging}
+        onDragStart={handleDragStart}
+        onDragEnd={handleDragEnd}
+        data-index={index}
+        data-id={id}
+        /* distinct class for the source item being dragged */
+        className={`${className} ${isDragging ? 'alpaca-item-dragging' : ''}`}
+      >
+        <Item
+          id={id}
+          content={content}
+          postDate={postDate}
+          assignees={assignees}
+          labels={labels}
+          commentCount={commentCount}
+          commentCountByAgent={commentCountByAgent}
+          meta={meta}
+          className="alpaca-item-inner"
+          onClick={handleClick}
+        />
+      </div>
+    );
+  },
+);
+
+DraggableItem.displayName = 'DraggableItem';
 
 DraggableItem.propTypes = {
   id: PropTypes.number.isRequired,
   index: PropTypes.number.isRequired,
   containerId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   content: PropTypes.string.isRequired,
+  postDate: PropTypes.string,
   className: PropTypes.string,
   isDragDisabled: PropTypes.bool,
   onClick: PropTypes.func,
   assignees: PropTypes.array,
+  labels: PropTypes.array,
   commentCount: PropTypes.number,
+  commentCountByAgent: PropTypes.object,
   meta: PropTypes.object,
 };
 

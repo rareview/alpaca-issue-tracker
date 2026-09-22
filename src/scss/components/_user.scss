@@ -1,0 +1,10 @@
+@use '../abstracts' as *;
+
+.wp-admin .alpaca-user img {
+  aspect-ratio: 1;
+  border-radius: $radius-round;
+  border: 1px solid $color-border;
+  vertical-align: middle;
+  background: $color-white;
+  width: $size-control-lg;
+}
