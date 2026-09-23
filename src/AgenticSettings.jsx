@@ -1146,7 +1146,9 @@ const AgenticSettings = () => {
                       )}
                     </label>
                     <PatHelpPopover />
-                    <PatSecurityNotePopover />
+                    {!data.github_token_from_constant ? (
+                      <PatSecurityNotePopover />
+                    ) : null}
                   </th>
                   <td>
                     {data.github_token_from_constant ? (
