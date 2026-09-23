@@ -364,28 +364,29 @@ const areRequiredFinishSetupChecksComplete = (data) => {
 const getStepStates = (data) => {
   const enabled = !!data.enabled;
   const githubConfigured =
-    !!data.github_repo && !!data.github_token_set && !!data.ai_ready;
-  const workflowInstalled = !!data.workflow_installed;
+    !!data.github_repo && !!data.github_token_set;
+  const githubWorkflowInstalled = !!data.workflow_installed;
 
   const githubReady =
     enabled &&
     githubConfigured &&
-    workflowInstalled &&
+    githubWorkflowInstalled &&
     !!data.ai_target_branch;
+  // Connectors (or legacy API key when Connectors are unavailable).
+  const wordpressReady = githubReady && !!data.ai_ready;
 
   return {
     1: {
       done: githubReady,
       locked: !enabled,
     },
-    // Optional step: unlocked after GitHub is ready; does not block Finish Setup.
     2: {
-      done: githubReady,
+      done: wordpressReady,
       locked: !githubReady,
     },
     3: {
-      done: githubReady && areRequiredFinishSetupChecksComplete(data),
-      locked: !githubReady,
+      done: wordpressReady && areRequiredFinishSetupChecksComplete(data),
+      locked: !wordpressReady,
     },
   };
 };
@@ -811,6 +812,45 @@ const AgenticSettings = () => {
     };
   }, [focusedStep, data?.github_repo, data?.github_token_set]);
 
+  // After configuring Connectors in another tab, refresh AI readiness on return.
+  useEffect(() => {
+    if (2 !== focusedStep) {
+      return;
+    }
+
+    let cancelled = false;
+    const refreshWordpressAiStatus = () => {
+      wp.apiFetch({ path: `${REST_PATH}/settings` })
+        .then((payload) => {
+          if (cancelled || !payload) {
+            return;
+          }
+          setData((existing) =>
+            existing
+              ? {
+                  ...existing,
+                  /* eslint-disable camelcase -- REST payload field names */
+                  ai_ready: !!payload.ai_ready,
+                  wp_ai_available: !!payload.wp_ai_available,
+                  wp_ai_configured: !!payload.wp_ai_configured,
+                  ai_api_key_set: !!payload.ai_api_key_set,
+                  /* eslint-enable camelcase */
+                }
+              : existing,
+          );
+        })
+        .catch(() => {
+          // Optional refresh — leave the current AI status as-is.
+        });
+    };
+
+    window.addEventListener('focus', refreshWordpressAiStatus);
+    return () => {
+      cancelled = true;
+      window.removeEventListener('focus', refreshWordpressAiStatus);
+    };
+  }, [focusedStep]);
+
   const toggleChecklist = useCallback((key) => {
     setSetupCompletedStatus('idle');
     setForm((prev) => {
@@ -864,8 +904,14 @@ const AgenticSettings = () => {
   const canEdit = !!data.can_edit;
   const panelLocked = !allDone && !!stepStates[focusedStep]?.locked;
   const githubConfigured =
-    !!data.github_repo && !!data.github_token_set && !!data.ai_ready;
-  const workflowInstalled = !!data.workflow_installed;
+    !!data.github_repo && !!data.github_token_set;
+  const githubWorkflowInstalled = !!data.workflow_installed;
+  const wordpressConfigured = data.wp_ai_available
+    ? !!data.ai_ready
+    : !!data.ai_ready ||
+      !!data.ai_api_key_from_constant ||
+      !!data.ai_api_key_set ||
+      !!form.aiApiKey;
   const prUrl = data.workflow_pr_url || '';
   const secretsUrl = data.repo_secrets_url || '';
   const actionsUrl = data.repo_actions_url || '';
@@ -1325,7 +1371,7 @@ const AgenticSettings = () => {
                   )}
                 </p>
               )}
-              {githubConfigured && workflowInstalled && (
+              {githubConfigured && githubWorkflowInstalled && (
                 <>
                   {prUrl ? (
                     <>
@@ -1377,7 +1423,7 @@ const AgenticSettings = () => {
                   </div>
                 </>
               )}
-              {githubConfigured && !workflowInstalled && (
+              {githubConfigured && !githubWorkflowInstalled && (
                 <div>
                   <RepoInstallMessage
                     repo={data.github_repo}
@@ -1471,19 +1517,24 @@ const AgenticSettings = () => {
                       </a>
                     </p>
                   ) : (
-                    <p className="agentic-connectors-unconfigured">
-                      {__('No AI provider configured.', 'alpaca-issue-tracker')}{' '}
+                    <p className="agentic-connectors-connected">
+                      <span
+                        className="agentic-connectors-connected__icon"
+                        aria-hidden="true"
+                      >
+                        !
+                      </span>{' '}
+                      {__(
+                        'No AI provider configured via WordPress Connectors.',
+                        'alpaca-issue-tracker',
+                      )}{' '}
                       <a
                         href={data.connectors_admin_url}
                         target="_blank"
                         rel="noreferrer noopener"
                       >
-                        {__(
-                          'Set up in Settings → Connectors',
-                          'alpaca-issue-tracker',
-                        )}
+                        {__('Set up Connectors', 'alpaca-issue-tracker')}
                       </a>
-                      {__(' to continue.', 'alpaca-issue-tracker')}
                     </p>
                   )}
                 </div>
@@ -1644,7 +1695,12 @@ const AgenticSettings = () => {
                 <button
                   type="button"
                   className="button button-primary"
-                  disabled={saving || panelLocked || !canEdit}
+                  disabled={
+                    saving ||
+                    panelLocked ||
+                    !canEdit ||
+                    !wordpressConfigured
+                  }
                   onClick={() => saveSettings(3)}
                 >
                   {saving
@@ -1655,6 +1711,7 @@ const AgenticSettings = () => {
                 <button
                   type="button"
                   className="button button-primary"
+                  disabled={!wordpressConfigured}
                   onClick={() => setFocusedStep(3)}
                 >
                   {__('Continue', 'alpaca-issue-tracker')}
