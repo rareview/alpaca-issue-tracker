@@ -314,9 +314,14 @@ function alpaistr_agentic_draft_callback( WP_REST_Request $request ): WP_REST_Re
 	$issue_data = alpaistr_agentic_collect_issue_data( $post );
 	$settings   = alpaistr_agentic_get_settings();
 
-	// Although AI "magic" button is hidden if the settings are not fully completed, the REST endpoint is still callable (browser console, Postman, another script) by anyone with manage_options.
-	if ( empty( $settings['ai_api_key'] ) ) {
-		return new WP_Error( 'not_configured', esc_html__( 'AI API key is not configured. Visit Project Board → Fix With AI to set it up.', 'alpaca-issue-tracker' ), [ 'status' => 400 ] );
+	// todo: Although AI "magic" button is hidden if the settings are not fully completed, the REST endpoint is still callable (browser console, Postman, another script) by anyone with manage_options.
+	// AI can come from WP Connectors or a custom API key — same rules as alpaistr_agentic_call_ai() / ai_ready.
+	if ( ! Agentic::is_wp_ai_configured() && empty( $settings['ai_api_key'] ) ) {
+		return new WP_Error(
+			'not_configured',
+			esc_html__( 'No AI provider is configured. Set up an AI provider in Settings → Connectors, or add a custom API key in Project Board → Fix With AI.', 'alpaca-issue-tracker' ),
+			[ 'status' => 400 ]
+		);
 	}
 	if ( empty( $settings['github_repo'] ) ) {
 		return new WP_Error( 'not_configured', esc_html__( 'GitHub repository is not configured.', 'alpaca-issue-tracker' ), [ 'status' => 400 ] );
