@@ -1517,12 +1517,12 @@ const AgenticSettings = () => {
                       </a>
                     </p>
                   ) : (
-                    <p className="agentic-connectors-connected">
+                    <p className="agentic-connectors-connected agentic-connectors-unconfigured">
                       <span
-                        className="agentic-connectors-connected__icon"
+                        className="agentic-connectors-unconfigured__icon"
                         aria-hidden="true"
                       >
-                        !
+                        <WarningOutlineIcon />
                       </span>{' '}
                       {__(
                         'No AI provider configured via WordPress Connectors.',

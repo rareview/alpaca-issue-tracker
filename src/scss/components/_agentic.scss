@@ -969,6 +969,20 @@
   color: #b8920f;
 }
 
+.agentic-connectors-unconfigured__icon {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  color: $color-danger;
+  line-height: 1;
+}
+
+.agentic-connectors-unconfigured__icon .agentic-pat-help-icon {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
 .agentic-help-tip__tooltip {
   position: absolute;
   inset-block-end: calc(100% + 8px);
