@@ -3,6 +3,20 @@
 /*
  * Settings
  */
+.alpaca-screen-note {
+  margin: 0 0 $space-5xl;
+  font-size: $font-size-sm;
+  line-height: 1.5;
+}
+
+.alpaca-screen-note--warning {
+  color: #996800;
+}
+
+.alpaca-screen-note--info {
+  color: #2c6ecb;
+}
+
 .alpaca-settings {
   hr {
     margin: $space-6xl 0;
