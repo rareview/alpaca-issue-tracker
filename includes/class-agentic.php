@@ -342,7 +342,7 @@ class Agentic {
 			[
 				'restBase'       => esc_url_raw( rest_url( 'alpaca/v1/agentic' ) ),
 				'nonce'          => wp_create_nonce( 'wp_rest' ),
-				'setupCompleted' => $this->is_setup_completed(),
+				'setupCompleted' => self::is_setup_completed(),
 				'isAuthorized'   => self::current_user_can_use(), // Only administrators and users on the engineers allowlist may send issues to the AI agent.
 				'aiTargetBranch' => (string) ( $options['ai_target_branch'] ?? '' ),
 			]
@@ -391,7 +391,7 @@ class Agentic {
 	 * Check that the feature is enabled, credentials are set, workflow is installed,
 	 * and required Finish Setup checkboxes are confirmed.
 	 */
-	public function is_setup_completed(): bool {
+	public static function is_setup_completed(): bool {
 		$options = get_option( self::OPTION_KEY, [] );
 		if ( ! is_array( $options ) || empty( $options['enabled'] ) ) {
 			return false;

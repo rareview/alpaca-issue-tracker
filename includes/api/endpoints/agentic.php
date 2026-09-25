@@ -265,6 +265,23 @@ function alpaistr_agentic_can_use_permission_check(): bool|WP_Error {
 }
 
 /**
+ * Return 403 when Fix With AI is off or setup is not finished.
+ *
+ * @return true|WP_Error
+ */
+function alpaistr_agentic_require_setup_completed(): bool|WP_Error {
+	if ( Agentic::is_setup_completed() ) {
+		return true;
+	}
+
+	return new WP_Error(
+		'not_setup',
+		esc_html__( 'Fix With AI is not enabled or setup is not complete. Finish setup in Project Board → Fix With AI.', 'alpaca-issue-tracker' ),
+		[ 'status' => 403 ]
+	);
+}
+
+/**
  * Save Agentic settings from the React wizard.
  *
  * @param WP_REST_Request $request REST request.
@@ -304,6 +321,11 @@ function alpaistr_agentic_save_settings_callback( WP_REST_Request $request ): WP
  * @return WP_REST_Response|WP_Error
  */
 function alpaistr_agentic_draft_callback( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+	$setup = alpaistr_agentic_require_setup_completed();
+	if ( is_wp_error( $setup ) ) {
+		return $setup;
+	}
+
 	$issue_id = (int) $request->get_param( 'issue_id' );
 	$post     = get_post( $issue_id );
 
@@ -314,7 +336,6 @@ function alpaistr_agentic_draft_callback( WP_REST_Request $request ): WP_REST_Re
 	$issue_data = alpaistr_agentic_collect_issue_data( $post );
 	$settings   = alpaistr_agentic_get_settings();
 
-	// todo: Although AI "magic" button is hidden if the settings are not fully completed, the REST endpoint is still callable (browser console, Postman, another script) by anyone with manage_options.
 	// AI can come from WP Connectors or a custom API key — same rules as alpaistr_agentic_call_ai() / ai_ready.
 	if ( ! Agentic::is_wp_ai_configured() && empty( $settings['ai_api_key'] ) ) {
 		return new WP_Error(
@@ -1733,6 +1754,11 @@ function alpaistr_agentic_get_template_files( string $dir, string $base_path = '
  * @return WP_REST_Response|WP_Error
  */
 function alpaistr_agentic_create_callback( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+	$setup = alpaistr_agentic_require_setup_completed();
+	if ( is_wp_error( $setup ) ) {
+		return $setup;
+	}
+
 	$issue_id = (int) $request->get_param( 'issue_id' );
 	$post     = get_post( $issue_id );
 
@@ -1913,6 +1939,11 @@ function alpaistr_agentic_create_callback( WP_REST_Request $request ): WP_REST_R
  * @return WP_REST_Response|WP_Error
  */
 function alpaistr_agentic_request_change_callback( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+	$setup = alpaistr_agentic_require_setup_completed();
+	if ( is_wp_error( $setup ) ) {
+		return $setup;
+	}
+
 	$issue_id = (int) $request->get_param( 'issue_id' );
 	$post     = alpaistr_agentic_require_issue_post( $issue_id );
 	if ( is_wp_error( $post ) ) {
@@ -2644,6 +2675,11 @@ function alpaistr_agentic_start_over_status_callback( WP_REST_Request $request )
  * @return WP_REST_Response|WP_Error
  */
 function alpaistr_agentic_start_over_callback( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+	$setup = alpaistr_agentic_require_setup_completed();
+	if ( is_wp_error( $setup ) ) {
+		return $setup;
+	}
+
 	$issue_id = (int) $request->get_param( 'issue_id' );
 	$post     = alpaistr_agentic_require_issue_post( $issue_id );
 	if ( is_wp_error( $post ) ) {
