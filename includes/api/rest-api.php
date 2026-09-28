@@ -20,6 +20,7 @@ $alpaca_rest_api_modules = [
 	'endpoints/users-labels-watchlist.php',
 	'endpoints/notifications.php',
 	'endpoints/attachments.php',
+	'endpoints/agentic.php',
 	'proxy/image-proxy.php',
 	'filters/comment-filters.php',
 	'endpoints/presence.php',

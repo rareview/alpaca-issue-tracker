@@ -11,6 +11,7 @@ import useAutoExpandTextarea from '../hooks/useAutoExpandTextarea';
 import { processAssigneeChanges } from '../utils/assigneeUtils';
 import { splitTextForHighlight } from '../utils/searchHighlight';
 import {
+  fetchIssue,
   fetchStatuses,
   fetchLabels,
   fetchIssueCommentCount,
@@ -626,6 +627,8 @@ const AlpacaIssue = ({
   const snackbarTimersRef = useRef({});
   const snackbarCloseTimersRef = useRef({});
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [selectedIssueTab, setSelectedIssueTab] = useState('comments');
+  const [issueTabPanelMountKey, setIssueTabPanelMountKey] = useState(0);
 
   useAutoExpandTextarea(issueCommentRef, issueComment, isCreating);
 
@@ -753,6 +756,56 @@ const AlpacaIssue = ({
         ),
       );
   }, [showNotification]);
+
+  // After the Fix With AI activity/changes, refresh the AI Log tab content.
+  useEffect(() => {
+    if (!issueId || isCreating) {
+      return undefined;
+    }
+
+    const refreshAfterAgenticChange = async ({ issueId: changedId }) => {
+      if (String(changedId) !== String(issueId)) {
+        return;
+      }
+
+      try {
+        const [issueData, labels] = await Promise.all([
+          fetchIssue(issueId),
+          fetchLabels(),
+        ]);
+        setIssueDetails(issueData);
+        if (Array.isArray(labels)) {
+          setAllLabels(labels);
+        }
+        if (
+          typeof onLabelsChange === 'function' &&
+          Array.isArray(issueData?.taxonomies?.alpaca_label)
+        ) {
+          onLabelsChange(issueId, issueData.taxonomies.alpaca_label);
+        }
+      } catch (err) {
+        refetchData();
+      }
+    };
+
+    wp.hooks.addAction(
+      'alpaca.agentic.changed',
+      'alpaca/agentic-history',
+      refreshAfterAgenticChange,
+    );
+
+    return () => {
+      wp.hooks.removeAction('alpaca.agentic.changed', 'alpaca/agentic-history');
+    };
+  }, [issueId, isCreating, onLabelsChange, refetchData, setIssueDetails]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+    setSelectedIssueTab('comments');
+    setIssueTabPanelMountKey(0);
+  }, [issueId, isOpen]);
 
   const getAssigneeNamesFromIssue = useCallback(
     (details) => {
@@ -2052,6 +2105,51 @@ const AlpacaIssue = ({
   const stableUsers = useMemo(() => allUsers, [allUsers]);
   const stableAssignees = useMemo(() => assignees, [assignees]);
   const stableLabels = useMemo(() => allLabels, [allLabels]);
+
+  // issueTabs = which tabs to show for this issue.
+  // issueTabsKey = fingerprint of that set (e.g. "comments|agentic"), used as TabPanel's
+  // React key. After agentic workflow activity is recorded, AI Log may be added while the modal
+  // stays open; changing the key forces the tab bar to rebuild so the new tab appears.
+  // Without it, WordPress TabPanel can keep the old tab list and ignore the new tab.
+  const issueTabs = useMemo(() => getTabsConfig(issueDetails), [issueDetails]);
+  const issueTabsKey = useMemo(
+    () => issueTabs.map((tab) => tab.name).join('|'),
+    [issueTabs],
+  );
+
+  useEffect(() => {
+    if (!issueId || isCreating) {
+      return undefined;
+    }
+
+    const selectIssueTab = (tabName, targetIssueId) => {
+      if (targetIssueId && String(targetIssueId) !== String(issueId)) {
+        return;
+      }
+
+      const tabId = String(tabName || '').trim();
+      if (!tabId || !issueTabs.some((tab) => tab.name === tabId)) {
+        return;
+      }
+
+      setSelectedIssueTab(tabId);
+      setIssueTabPanelMountKey((key) => key + 1);
+    };
+
+    wp.hooks.addAction(
+      'alpaca.issue.selectTab',
+      'alpaca/issue-select-tab',
+      selectIssueTab,
+    );
+
+    return () => {
+      wp.hooks.removeAction(
+        'alpaca.issue.selectTab',
+        'alpaca/issue-select-tab',
+      );
+    };
+  }, [issueId, isCreating, issueTabs]);
+
   const stableSelectedLabelIds = useMemo(
     () => selectedLabelIds,
     [selectedLabelIds],
@@ -2519,16 +2617,19 @@ const AlpacaIssue = ({
                 </div>
               )}
 
-              {wp.hooks.applyFilters('alpaca.issue.abovetabs', null, {
-                issueId,
-                meta: issueDetails?.meta || {},
-              })}
+              {!isCreating &&
+                wp.hooks.applyFilters('alpaca.issue.abovetabs', null, {
+                  issueId,
+                  meta: issueDetails?.meta || {},
+                })}
 
               {!isCreating && (
                 <TabPanel
+                  key={`${issueTabsKey}-${issueTabPanelMountKey}`}
                   className="alpaca-issue-tabs"
-                  initialTabName="comments"
-                  tabs={getTabsConfig(issueDetails)}
+                  initialTabName={selectedIssueTab}
+                  onSelect={setSelectedIssueTab}
+                  tabs={issueTabs}
                 >
                   {(tab) => {
                     if (tab.name === 'errors') {

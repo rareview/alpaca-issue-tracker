@@ -7,6 +7,7 @@
   <file>./includes</file>
   <file>./lib</file>
   <file>./uninstall.php</file>
+  <file>./uninstall</file>
 
   <!-- Excluded paths -->
   <exclude-pattern>/vendor/</exclude-pattern>

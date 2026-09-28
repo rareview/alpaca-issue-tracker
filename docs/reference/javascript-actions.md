@@ -242,6 +242,18 @@ addAction(
 | ---------- | -------- | ---------------------------------------------------------------- |
 | `$payload` | `Object` | Payload containing `issueId`, `newCount`, and `newCountByAgent`. |
 
+### `alpaca.agentic.changed`
+
+**Type:** Action.
+
+**Purpose:** Fires after any Fix With AI mutating action (sent, start over, or a sent fix deleted), so the UI can re-fetch issue details (history, labels).
+
+**Parameters**
+
+| Parameter  | Type     | Description                                                                    |
+| ---------- | -------- | ------------------------------------------------------------------------------ |
+| `$payload` | `Object` | Payload containing `issueId` and `mutation` (`sent`, `deleted`, or `reverted`). `deleted` is per-fix removal from Alpaca; `reverted` is a start-over restore. |
+
 ### `alpaca.lastActivityChanged`
 
 **Type:** Action.

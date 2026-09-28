@@ -58,6 +58,16 @@ add_action(
 			'alpaistr_email_templates_page'
 		);
 
+		add_submenu_page(
+			'project-board',
+			esc_html__( 'Fix With AI', 'alpaca-issue-tracker' ),
+			esc_html__( 'Fix With AI', 'alpaca-issue-tracker' ),
+			// Visible to all staff, but the React screen renders a locked/read-only view for users who are not admins or on the engineers allowlist.
+			'edit_posts',
+			'alpaca-fix-with-ai',
+			'alpaistr_ai_issue_resolver_page'
+		);
+
 		$alpaca_docs_hook = add_submenu_page(
 			'project-board',
 			esc_html__( 'Documentation', 'alpaca-issue-tracker' ),
@@ -83,9 +93,9 @@ function alpaistr_settings_page() {
 	<div class="alpaca-settings wrap">
 	<h1><?php echo esc_html__( 'Configure', 'alpaca-issue-tracker' ); ?></h1>
 
-	<div class="notice notice-warning inline">
-		<p><?php echo esc_html__( 'Changes made on this screen will affect all users.', 'alpaca-issue-tracker' ); ?></p>
-	</div>
+	<p class="alpaca-screen-note alpaca-screen-note--warning">
+		<?php echo esc_html__( 'Changes made on this screen will affect all users.', 'alpaca-issue-tracker' ); ?>
+	</p>
 
 	<div id="alpaca-settings-internal"></div>
 
@@ -117,9 +127,9 @@ function alpaistr_notifications_page() {
 	<div class="alpaca-settings wrap alpaca-notifications-admin-page">
 		<h1><?php echo esc_html__( 'My Notifications', 'alpaca-issue-tracker' ); ?></h1>
 
-		<div class="notice notice-info inline">
-			<p><?php echo esc_html__( 'Changes made on this screen will only affect the current user.', 'alpaca-issue-tracker' ); ?></p>
-		</div>
+		<p class="alpaca-screen-note alpaca-screen-note--info">
+			<?php echo esc_html__( 'Changes made on this screen will only affect the current user.', 'alpaca-issue-tracker' ); ?>
+		</p>
 
 		<div id="alpaca-notifications-page"></div>
 	</div>
@@ -134,6 +144,17 @@ function alpaistr_email_templates_page() {
 	<div class="alpaca-settings wrap alpaca-email-templates-admin-page">
 		<h1><?php echo esc_html__( 'Email Templates', 'alpaca-issue-tracker' ); ?></h1>
 		<div id="alpaca-email-templates-page"></div>
+	</div>
+	<?php
+}
+
+/**
+ * Render the Fix With AI settings page mount point.
+ */
+function alpaistr_ai_issue_resolver_page() {
+	?>
+	<div class="wrap agentic-wizard-wrap">
+		<div id="alpaca-fix-with-ai-page"></div>
 	</div>
 	<?php
 }

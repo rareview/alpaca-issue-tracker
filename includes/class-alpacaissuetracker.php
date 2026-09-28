@@ -122,6 +122,12 @@ final class AlpacaIssueTracker {
 			require_once ALPAISTR_PLUGIN_DIR . 'includes/admin/dashboard-widget-data.php';
 		}
 
+		// Load Agentic settings.
+		require_once ALPAISTR_PLUGIN_DIR . 'includes/class-agentic.php';
+		if ( is_admin() ) {
+			( new Agentic\Agentic() )->register();
+		}
+
 		// Load REST API.
 		require_once ALPAISTR_PLUGIN_DIR . 'includes/api/rest-api.php';
 		require_once ALPAISTR_PLUGIN_DIR . 'includes/notifications/notifications.php';

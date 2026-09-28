@@ -3,6 +3,7 @@ import Commenting from '../Comment';
 import JsonTable from './JsonTable';
 import ReportTab from './ReportTab';
 import ErrorsTab from './ErrorsTab';
+import AgenticHistoryTab from './AgenticHistoryTab';
 
 const TabContent = memo(
   ({
@@ -57,6 +58,10 @@ const TabContent = memo(
               issueDetails.meta.alpaca_errors || issueDetails.meta.errors
             }
           />
+        );
+      case 'agentic':
+        return (
+          <AgenticHistoryTab issueId={issueId} issueDetails={issueDetails} />
         );
       default:
         return null;
