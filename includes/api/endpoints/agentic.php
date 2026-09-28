@@ -12,6 +12,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+require_once ALPAISTR_PLUGIN_DIR . 'uninstall/github-cleanup.php';
+
 /**
  * Post meta key for chronological Fix With AI activity history.
  *
@@ -1348,7 +1350,7 @@ function alpaistr_agentic_workflow_status_callback(): WP_REST_Response|WP_Error 
  *
  * Flow:
  *   1. Get default branch + latest commit SHA
- *   2. Create branch alpaca/ai-development
+ *   2. Create the config branch from alpaistr_agentic_get_config_branch_name()
  *   3. Commit each bundled template file (skip files that already exist)
  *   4. Open a pull request
  *   5. Save the PR URL to options for use in the setup checklist
@@ -1423,7 +1425,7 @@ function alpaistr_agentic_install_workflow_callback(): WP_REST_Response|WP_Error
 		return $latest_sha;
 	}
 
-	$branch_name     = 'alpaca/ai-development';
+	$branch_name     = alpaistr_agentic_get_config_branch_name();
 	$branch_response = wp_remote_post(
 		sprintf( 'https://api.github.com/repos/%s/%s/git/refs', rawurlencode( $repo_parts['owner'] ), rawurlencode( $repo_parts['name'] ) ),
 		[
@@ -1508,24 +1510,6 @@ function alpaistr_agentic_install_workflow_callback(): WP_REST_Response|WP_Error
 			alpaistr_agentic_format_github_file_commit_error( (int) $file_code, $gh_message, $github_path ),
 			[ 'status' => 502 ]
 		);
-	}
-
-	foreach (
-		[
-			'.github/workflows/apply-staging-fix-to-production.yml',
-			'.github/workflows/cherry-pick-fix.yml',
-		] as $stale_path
-	) {
-		$deleted_old = alpaistr_agentic_delete_github_file(
-			$token,
-			$repo_parts,
-			$stale_path,
-			$branch_name,
-			'Remove ' . basename( $stale_path ) . ' [alpaca-ai-development]'
-		);
-		if ( ! is_wp_error( $deleted_old ) && true === $deleted_old ) {
-			++$committed;
-		}
 	}
 
 	if ( 0 === $committed && 0 === $skipped ) {
@@ -1719,6 +1703,7 @@ function alpaistr_agentic_get_template_files( string $dir, string $base_path = '
 	}
 
 	// security/ stays plugin-local except agent.json, which is installed explicitly.
+	// Keep this skip list in sync with alpaistr_uninstall_collect_installed_github_paths().
 	$skip = [ '.', '..', 'index.php', '.DS_Store', 'draft-agent-ready-issue.md', 'security' ];
 
 	foreach ( $entries as $entry ) {
