@@ -12,14 +12,14 @@ We plan to introduce additional permission controls in future releases.
 
 ## Admin Screens
 
-| Screen           | Default capability                                |
-| ---------------- | -------------------------------------------------- |
-| Project Board    | `edit_posts`                                       |
-| Project Activity | `edit_posts`                                       |
-| Configure        | `manage_options`                                   |
-| My Notifications | `edit_posts`                                       |
-| Email Templates  | `manage_options`                                   |
-| Fix With AI        | `edit_posts` to view; `manage_options` to edit     |
+| Screen           | Default capability                             |
+| ---------------- | ---------------------------------------------- |
+| Project Board    | `edit_posts`                                   |
+| Project Activity | `edit_posts`                                   |
+| Configure        | `manage_options`                               |
+| My Notifications | `edit_posts`                                   |
+| Email Templates  | `manage_options`                               |
+| Fix With AI      | `edit_posts` to view; `manage_options` to edit |
 
 ## Issue Workflows
 
@@ -42,8 +42,11 @@ Issue deletion is restricted to `manage_options` by default.
 The Fix With AI feature is meant only for engineers with GitHub access who will review each auto-generated pull request, so access is more restricted than the rest of the board:
 
 - Administrators (`manage_options`) always have full access: they can configure the feature and use it.
+- Administrators can preview and remove unchanged plugin-provided GitHub setup files from the Fix With AI screen. The action requires an exact repository-name confirmation and does not run during uninstall.
 - Administrators can grant additional users Fix With AI access from the WP Setup step on the Fix With AI screen. Those users can use the feature (send issues to the AI agent) and view setup status, but cannot change settings or credentials.
 - Everyone else can see the Fix With AI menu item, but the screen shows a message that access is limited to administrators and granted users, and the "Fix With AI" action never appears for them.
+
+The bundled public GitHub issue template and structural screener apply `agent-candidate`, not `agent-ready`. A repository maintainer must review the issue and apply `agent-ready` before the agent trigger runs. Keep GitHub label permissions limited to trusted maintainers.
 
 ## Configuration Workflows
 

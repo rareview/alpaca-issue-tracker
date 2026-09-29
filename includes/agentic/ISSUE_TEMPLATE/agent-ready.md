@@ -1,8 +1,8 @@
 ---
-name: '🤖 Agent-Ready Task'
-about: Well-scoped issue for AI-assisted development
+name: '🤖 Agent Candidate Task'
+about: Well-scoped issue for human review before AI-assisted development
 title: ''
-labels: 'agent-ready'
+labels: 'agent-candidate'
 assignees: ''
 ---
 
