@@ -269,3 +269,33 @@ if ( ! class_exists( 'WP_REST_Request' ) ) {
 		}
 	}
 }
+
+// Minimal REST response stub for endpoint unit tests.
+if ( ! class_exists( 'WP_REST_Response' ) ) {
+	class WP_REST_Response { // phpcs:ignore
+		/**
+		 * Response payload.
+		 *
+		 * @var mixed
+		 */
+		private $data;
+
+		/**
+		 * Create a REST response stub.
+		 *
+		 * @param mixed $data Response payload.
+		 */
+		public function __construct( $data ) {
+			$this->data = $data;
+		}
+
+		/**
+		 * Read the response payload.
+		 *
+		 * @return mixed Response payload.
+		 */
+		public function get_data() {
+			return $this->data;
+		}
+	}
+}

@@ -29,6 +29,15 @@ class Agentic {
 	const OPTION_KEY = 'alpaistr_agentic_settings';
 
 	/**
+	 * Revision of the bundled GitHub workflows and templates.
+	 *
+	 * Increment when installed files change so existing sites request an update.
+	 *
+	 * @var int
+	 */
+	const WORKFLOW_REVISION = 2;
+
+	/**
 	 * Admin page slug.
 	 *
 	 * @var string
@@ -127,6 +136,15 @@ class Agentic {
 			$claude_app_confirmed = ! empty( $current_settings['claude_app_confirmed'] );
 		}
 
+		$setup_checklist = [];
+		if ( ! $repo_changed ) {
+			$setup_checklist = array_values(
+				array_unique(
+					array_map( 'absint', (array) ( $raw['setup_checklist'] ?? [] ) )
+				)
+			);
+		}
+
 		return [
 			'enabled'               => ! empty( $raw['enabled'] ),
 			'github_token'          => $github_token,
@@ -139,17 +157,40 @@ class Agentic {
 			'ai_api_key'            => $ai_api_key,
 			// Optional per-site notes appended to every AI-drafted GitHub issue.
 			'project_context'       => sanitize_textarea_field( $raw['project_context'] ?? ( $current_settings['project_context'] ?? '' ) ),
-			'setup_checklist'       => array_values(
-				array_unique(
-					array_map( 'absint', (array) ( $raw['setup_checklist'] ?? [] ) )
-				)
-			),
+			'setup_checklist'       => $setup_checklist,
 			'claude_app_confirmed'  => $claude_app_confirmed,
 			// User IDs allowed to use the Fix With AI feature besides administrators (who always have access).
 			'engineers'             => array_key_exists( 'engineers', $raw )
 				? array_values( array_unique( array_map( 'absint', (array) $raw['engineers'] ) ) )
 				: array_values( array_unique( array_map( 'absint', (array) ( $current_settings['engineers'] ?? [] ) ) ) ),
 		];
+	}
+
+	/**
+	 * Clear workflow markers when the repository or target branch changes.
+	 *
+	 * @param string $previous_repo   Previously configured repository.
+	 * @param string $current_repo    Newly configured repository.
+	 * @param string $previous_branch Previously configured AI target branch.
+	 * @param string $current_branch  Newly configured AI target branch.
+	 */
+	public static function clear_workflow_state_after_settings_change( string $previous_repo, string $current_repo, string $previous_branch, string $current_branch ): void {
+		if ( $previous_repo === $current_repo && $previous_branch === $current_branch ) {
+			return;
+		}
+
+		delete_option( 'alpaistr_agentic_workflow_pr_url' );
+		delete_option( 'alpaistr_agentic_workflow_revision' );
+		delete_transient( 'alpaistr_agentic_workflow_installed' );
+	}
+
+	/**
+	 * Whether the current bundled workflow revision has been installed or proposed.
+	 *
+	 * @return bool True when the stored revision matches the bundled revision.
+	 */
+	public static function is_workflow_revision_current(): bool {
+		return self::WORKFLOW_REVISION === (int) get_option( 'alpaistr_agentic_workflow_revision', 0 );
 	}
 
 	/**
@@ -244,8 +285,9 @@ class Agentic {
 			? ALPAISTR_AGENTIC_AI_API_KEY
 			: ( $options['ai_api_key'] ?? '' );
 		$github_repo                = $options['github_repo'] ?? '';
-		$pr_url                     = (string) get_option( 'alpaistr_agentic_workflow_pr_url', '' );
-		$workflow_installed         = ! empty( $pr_url ) || (bool) get_transient( 'alpaistr_agentic_workflow_installed' );
+		$revision_current           = self::is_workflow_revision_current();
+		$pr_url                     = $revision_current ? (string) get_option( 'alpaistr_agentic_workflow_pr_url', '' ) : '';
+		$workflow_installed         = $revision_current && ( ! empty( $pr_url ) || (bool) get_transient( 'alpaistr_agentic_workflow_installed' ) );
 		$is_admin                   = current_user_can( 'manage_options' );
 
 		return [
@@ -409,7 +451,8 @@ class Agentic {
 			return false;
 		}
 
-		$workflow_installed = get_transient( 'alpaistr_agentic_workflow_installed' ) || get_option( 'alpaistr_agentic_workflow_pr_url', '' );
+		$workflow_installed = self::is_workflow_revision_current()
+			&& ( get_transient( 'alpaistr_agentic_workflow_installed' ) || get_option( 'alpaistr_agentic_workflow_pr_url', '' ) );
 		if ( ! $workflow_installed ) {
 			return false;
 		}

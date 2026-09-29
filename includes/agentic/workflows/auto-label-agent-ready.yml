@@ -1,7 +1,7 @@
-# Automatically adds 'agent-ready' label to issues that have all required sections.
-# This helps identify issues that are properly scoped for agent execution.
+# Nominates structurally complete issues for human review.
+# Only a maintainer should apply 'agent-ready' to start execution.
 
-name: Auto-Label Agent-Ready Issues
+name: Auto-Label Agent Candidates
 
 on:
   issues:
@@ -21,7 +21,7 @@ jobs:
             const issue = context.payload.issue;
             const body = issue.body || '';
 
-            // Required sections for an agent-ready issue
+            // Required sections for an agent candidate.
             const requiredSections = [
               '## Summary',
               '## Context',
@@ -42,15 +42,16 @@ jobs:
 
             const currentLabels = issue.labels.map(l => l.name);
             const hasAgentReadyLabel = currentLabels.includes('agent-ready');
+            const hasCandidateLabel = currentLabels.includes('agent-candidate');
 
             if (hasAllSections && hasScopeBoundaries && hasAcceptanceCriteria) {
-              if (!hasAgentReadyLabel) {
-                console.log('Issue meets agent-ready criteria, adding label');
+              if (!hasAgentReadyLabel && !hasCandidateLabel) {
+                console.log('Issue meets candidate criteria, adding label');
                 await github.rest.issues.addLabels({
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   issue_number: issue.number,
-                  labels: ['agent-ready']
+                  labels: ['agent-candidate']
                 });
               }
             } else {

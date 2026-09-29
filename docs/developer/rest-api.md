@@ -277,6 +277,33 @@ Template update, preview, and test endpoints accept:
 }
 ```
 
+## Fix With AI Endpoints
+
+Fix With AI routes require an authenticated WordPress user. "Engineer" means an administrator or a user explicitly granted Fix With AI access. The setup and credential routes require `manage_options`. Cookie-authenticated writes use the usual WordPress REST nonce.
+
+| Method | Route                                          | Permission       | Purpose                                                  |
+| ------ | ---------------------------------------------- | ---------------- | -------------------------------------------------------- |
+| `POST` | `/wp-json/alpaca/v1/agentic/draft`             | Engineer         | Draft a GitHub issue from an Alpaca issue using AI.      |
+| `POST` | `/wp-json/alpaca/v1/agentic/create`            | Engineer         | Send an approved draft to GitHub.                        |
+| `GET`  | `/wp-json/alpaca/v1/agentic/branches`          | Engineer         | List branches in the configured GitHub repository.       |
+| `POST` | `/wp-json/alpaca/v1/agentic/request-change`    | Engineer         | Request changes to the current GitHub fix attempt.       |
+| `GET`  | `/wp-json/alpaca/v1/agentic/start-over-status` | Engineer         | Read remote fix/PR state for an issue.                   |
+| `POST` | `/wp-json/alpaca/v1/agentic/start-over`        | Engineer         | Close open GitHub work and reset a fix attempt.          |
+| `POST` | `/wp-json/alpaca/v1/agentic/delete-fix`        | Engineer         | Remove a local fix record without changing GitHub.       |
+| `POST` | `/wp-json/alpaca/v1/agentic/test-github`       | `manage_options` | Test the configured GitHub connection.                   |
+| `GET`  | `/wp-json/alpaca/v1/agentic/workflow-status`   | `manage_options` | Check whether bundled GitHub files match the repository. |
+| `POST` | `/wp-json/alpaca/v1/agentic/install-workflow`  | `manage_options` | Open a PR adding or updating bundled GitHub files.       |
+| `GET`  | `/wp-json/alpaca/v1/agentic/github-cleanup`    | `manage_options` | Preview unchanged GitHub setup files and manual items.   |
+| `POST` | `/wp-json/alpaca/v1/agentic/github-cleanup`    | `manage_options` | Remove unchanged setup files after repo confirmation.    |
+| `GET`  | `/wp-json/alpaca/v1/agentic/settings`          | Engineer         | Get secret-free setup status and settings.               |
+| `POST` | `/wp-json/alpaca/v1/agentic/settings`          | `manage_options` | Save setup settings.                                     |
+
+`draft` requires `issue_id`. `create` requires `issue_id`, `title`, and `body` and accepts an optional `labels` array. `request-change` requires `issue_id` and `notes`, with optional `force`. `start-over-status` and `start-over` require `issue_id`; `delete-fix` also requires `github_number`. Setup must be complete for AI draft/send operations.
+
+If GitHub creates an issue but applying the `agent-ready` label fails, `create` retains the GitHub issue number in local pending state and returns an error. Retrying the same issue and repository resumes that GitHub issue instead of creating a second one. A pending issue for another configured repository must be resolved against its original repository first. `start-over` does not finish clearing local state if closing GitHub work or resetting the branch fails. Installing workflows compares all bundled files and proposes updates to changed files in a pull request; it does not silently overwrite the repository default branch.
+
+The GitHub cleanup preview compares each installed file with the current bundled template on the repository default branch. Files with changed content are left for manual review. `POST /agentic/github-cleanup` requires `confirm_repo` to exactly match the preview's `owner/repo` value, rechecks the files, and returns `removed`, `errors`, and `manual` lists. GitHub branch protection can prevent deletion; the response reports each failure. The action does not remove GitHub branches, pull requests, secrets, issues, labels, or the `ALPACA_AI_TARGET_BRANCH` variable.
+
 ## Attachment Endpoints
 
 | Method | Route                                           | Permission                      | Purpose                                   |

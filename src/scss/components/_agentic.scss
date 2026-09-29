@@ -908,6 +908,43 @@
   margin-inline-end: 2px;
 }
 
+.agentic-cleanup {
+  margin-block-start: 24px;
+  padding: 20px;
+  border: 1px solid #dcdcde;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.agentic-cleanup h2 {
+  margin-block: 0 8px;
+  font-size: 16px;
+}
+
+.agentic-cleanup h3 {
+  margin-block: 16px 8px;
+  font-size: 14px;
+}
+
+.agentic-cleanup p {
+  margin-block: 0 12px;
+}
+
+.agentic-cleanup ul {
+  margin-block: 0 16px;
+  padding-inline-start: 20px;
+  list-style: disc;
+}
+
+.agentic-cleanup li {
+  margin-block-end: 6px;
+  overflow-wrap: anywhere;
+}
+
+.agentic-cleanup-preview {
+  margin-block-start: 18px;
+}
+
 .agentic-help-tip {
   position: relative;
   display: inline-flex;

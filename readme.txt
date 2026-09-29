@@ -92,7 +92,7 @@ Alpaca Issue Tracker's notification engine has been built with extensibility in 
 
 = Where is the data stored? =
 
-All data is stored in your WordPress database's core tables using custom post types and taxonomies. The base plugin uses no external services.
+Issue data is stored in your WordPress database's core tables using custom post types and taxonomies. The optional Fix With AI feature sends issue context to a configured AI provider and creates issues in the configured GitHub repository when an authorized user uses it.
 
 == Screenshots ==
 
@@ -190,7 +190,7 @@ The distributed plugin includes compiled JavaScript and CSS assets. The source f
 
 == Privacy Policy ==
 
-Alpaca Issue Tracker does not collect or transmit any data outside of your WordPress installation. All issue data, screenshots, and technical information are captured and stored locally in your WordPress database and/or filesystem.
+By default, issue data, screenshots, and technical information are stored in your WordPress database and/or filesystem. If an administrator enables Fix With AI, an authorized user's drafting request can send issue details, comments, screenshot URLs, captured technical context, and site environment details to the configured AI provider. Sending a draft to GitHub creates an issue in the configured repository. Review your AI provider and GitHub privacy settings before enabling this optional feature.
 
 == Credits ==
 
