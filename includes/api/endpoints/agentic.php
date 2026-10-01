@@ -5371,19 +5371,20 @@ function alpaistr_agentic_get_settings(): array {
 }
 
 /**
- * Classify a GitHub file without treating changed content as plugin-owned.
+ * Every GitHub path the plugin installs.
  *
- * @param string $encoded_content Base64 content from GitHub.
- * @param string $expected_content Current bundled file content.
- * @return string Safe or modified.
+ * Content is not compared. These paths exist only because the setup pull request
+ * created them, so a full removal takes them regardless of later edits.
+ *
+ * @return string[] Repository-relative paths.
  */
-function alpaistr_agentic_classify_cleanup_file( string $encoded_content, string $expected_content ): string {
-	$decoded = base64_decode( preg_replace( '/\s+/', '', $encoded_content ), true ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode -- GitHub contents API uses base64.
-	if ( false === $decoded || $decoded !== $expected_content ) {
-		return 'modified';
+function alpaistr_agentic_cleanup_paths(): array {
+	$paths = [];
+	foreach ( alpaistr_agentic_get_template_files( ALPAISTR_PLUGIN_DIR . 'includes/agentic/' ) as $relative_path => $local_path ) {
+		$paths[] = '.github/' . $relative_path;
 	}
 
-	return 'safe';
+	return array_values( array_unique( $paths ) );
 }
 
 /**
@@ -5403,7 +5404,47 @@ function alpaistr_agentic_cleanup_api_url( array $repo_parts, string $path ): st
 }
 
 /**
- * Preview only resources that can be safely identified as plugin-managed.
+ * Whether the plugin-created ALPACA_AI_TARGET_BRANCH Actions variable still exists.
+ *
+ * @param string                             $token      GitHub personal access token.
+ * @param array{owner: string, name: string} $repo_parts Parsed repository.
+ * @return bool True when GitHub still holds the variable.
+ */
+function alpaistr_agentic_ai_target_branch_variable_exists( string $token, array $repo_parts ): bool {
+	$response = wp_remote_get(
+		alpaistr_agentic_cleanup_api_url( $repo_parts, 'actions/variables/ALPACA_AI_TARGET_BRANCH' ),
+		[
+			'timeout' => 15,
+			'headers' => alpaistr_agentic_github_api_headers( $token ),
+		]
+	);
+
+	return ! is_wp_error( $response ) && 200 === wp_remote_retrieve_response_code( $response );
+}
+
+/**
+ * Whether the plugin-created setup branch still exists.
+ *
+ * @param string                             $token      GitHub personal access token.
+ * @param array{owner: string, name: string} $repo_parts Parsed repository.
+ * @param string                             $branch     Setup branch name.
+ * @return bool True when the branch ref is still present.
+ */
+function alpaistr_agentic_setup_branch_exists( string $token, array $repo_parts, string $branch ): bool {
+	// The ref keeps its literal slash; GitHub rejects an encoded one. The name is a plugin constant.
+	$response = wp_remote_get(
+		alpaistr_agentic_cleanup_api_url( $repo_parts, 'git/ref/heads/' . $branch ),
+		[
+			'timeout' => 15,
+			'headers' => alpaistr_agentic_github_api_headers( $token ),
+		]
+	);
+
+	return ! is_wp_error( $response ) && 200 === wp_remote_retrieve_response_code( $response );
+}
+
+/**
+ * Preview every plugin-created resource that a full removal will delete.
  *
  * @return array<string, mixed>|WP_Error Preview data or an API error.
  */
@@ -5441,8 +5482,7 @@ function alpaistr_agentic_github_cleanup_preview(): array|WP_Error {
 	}
 
 	$files = [];
-	foreach ( alpaistr_agentic_get_template_files( ALPAISTR_PLUGIN_DIR . 'includes/agentic/' ) as $relative_path => $local_path ) {
-		$path   = '.github/' . $relative_path;
+	foreach ( alpaistr_agentic_cleanup_paths() as $path ) {
 		$remote = alpaistr_agentic_get_github_file( $token, $repo_parts, $path, $branch );
 		if ( is_wp_error( $remote ) ) {
 			return $remote;
@@ -5451,24 +5491,20 @@ function alpaistr_agentic_github_cleanup_preview(): array|WP_Error {
 			continue;
 		}
 
-		$expected = file_get_contents( $local_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Bundled template file.
-		if ( false === $expected ) {
-			return new WP_Error( 'workflow_file_unreadable', __( 'Could not read a bundled workflow file.', 'alpaca-issue-tracker' ), [ 'status' => 500 ] );
-		}
-		$expected = str_replace( '__ALPACA_AI_TARGET_BRANCH__', (string) $settings['ai_target_branch'], $expected );
-		$files[]  = [
-			'path'   => $path,
-			'sha'    => (string) $remote['sha'],
-			'status' => alpaistr_agentic_classify_cleanup_file( (string) $remote['content'], $expected ),
+		$files[] = [
+			'path' => $path,
+			'sha'  => (string) $remote['sha'],
 		];
 	}
+
+	$setup_branch = alpaistr_agentic_get_config_branch_name();
 
 	return [
 		'repo'           => $repo_parts['owner'] . '/' . $repo_parts['name'],
 		'default_branch' => $branch,
 		'files'          => $files,
-		'variable'       => 'manual',
-		'setup_branch'   => alpaistr_agentic_get_config_branch_name(),
+		'variable'       => alpaistr_agentic_ai_target_branch_variable_exists( $token, $repo_parts ),
+		'setup_branch'   => alpaistr_agentic_setup_branch_exists( $token, $repo_parts, $setup_branch ) ? $setup_branch : '',
 		'setup_pr_url'   => (string) get_option( 'alpaistr_agentic_workflow_pr_url', '' ),
 	];
 }
@@ -5488,10 +5524,11 @@ function alpaistr_agentic_github_cleanup_preview_callback(): WP_REST_Response|WP
 }
 
 /**
- * Remove unchanged bundled files and the matching Actions variable on request.
+ * Remove every plugin-created file, the Actions variable, and the setup branch.
  *
- * Branches, pull requests, modified files, and repository secrets are left for
- * manual review because they can contain work owned by the repository.
+ * Repository secrets and existing issues, labels, and pull requests are left for
+ * manual review because they hold work owned by the repository. Deleting the setup
+ * branch closes the setup pull request, which GitHub never allows removing.
  *
  * @param WP_REST_Request $request REST request with the repository confirmation.
  * @return WP_REST_Response|WP_Error Per-resource result or validation error.
@@ -5511,19 +5548,18 @@ function alpaistr_agentic_github_cleanup_callback( WP_REST_Request $request ): W
 		return $repo_parts;
 	}
 
+	$token   = (string) $settings['github_token'];
+	$headers = alpaistr_agentic_github_api_headers( $token );
 	$removed = [];
 	$errors  = [];
-	foreach ( $preview['files'] as $file ) {
-		if ( 'safe' !== $file['status'] ) {
-			continue;
-		}
 
+	foreach ( $preview['files'] as $file ) {
 		$response = wp_remote_request(
 			alpaistr_agentic_cleanup_api_url( $repo_parts, 'contents/' . $file['path'] ),
 			[
 				'method'  => 'DELETE',
 				'timeout' => 30,
-				'headers' => alpaistr_agentic_github_api_headers( (string) $settings['github_token'] ),
+				'headers' => $headers,
 				'body'    => wp_json_encode(
 					[
 						'message' => 'Remove ' . $file['path'] . ' [alpaca-ai-development]',
@@ -5547,23 +5583,54 @@ function alpaistr_agentic_github_cleanup_callback( WP_REST_Request $request ): W
 		$removed[] = $file['path'];
 	}
 
-	if ( ! empty( $removed ) ) {
-		delete_option( 'alpaistr_agentic_workflow_revision' );
-		delete_transient( 'alpaistr_agentic_workflow_installed' );
+	// Delete the plugin-created Actions variable only; the branch name it stores is never touched.
+	if ( ! empty( $preview['variable'] ) ) {
+		$response = wp_remote_request(
+			alpaistr_agentic_cleanup_api_url( $repo_parts, 'actions/variables/ALPACA_AI_TARGET_BRANCH' ),
+			[
+				'method'  => 'DELETE',
+				'timeout' => 20,
+				'headers' => $headers,
+			]
+		);
+		if ( is_wp_error( $response ) ) {
+			$errors[] = 'ALPACA_AI_TARGET_BRANCH: ' . $response->get_error_message();
+		} elseif ( 204 !== wp_remote_retrieve_response_code( $response ) ) {
+			$errors[] = __( 'ALPACA_AI_TARGET_BRANCH: GitHub did not remove the Actions variable.', 'alpaca-issue-tracker' );
+		} else {
+			$removed[] = 'ALPACA_AI_TARGET_BRANCH';
+		}
 	}
 
-	$manual = [];
-	foreach ( $preview['files'] as $file ) {
-		if ( 'safe' !== $file['status'] ) {
-			$manual[] = $file['path'];
+	// Delete the setup branch; GitHub closes the setup pull request when the branch is gone.
+	if ( '' !== (string) $preview['setup_branch'] ) {
+		$response = wp_remote_request(
+			alpaistr_agentic_cleanup_api_url( $repo_parts, 'git/refs/heads/' . (string) $preview['setup_branch'] ),
+			[
+				'method'  => 'DELETE',
+				'timeout' => 20,
+				'headers' => $headers,
+			]
+		);
+		if ( is_wp_error( $response ) ) {
+			$errors[] = $preview['setup_branch'] . ': ' . $response->get_error_message();
+		} elseif ( 204 !== wp_remote_retrieve_response_code( $response ) ) {
+			$errors[] = __( 'Setup branch: GitHub did not remove the branch.', 'alpaca-issue-tracker' );
+		} else {
+			$removed[] = $preview['setup_branch'];
 		}
+	}
+
+	if ( ! empty( $removed ) ) {
+		delete_option( 'alpaistr_agentic_workflow_revision' );
+		delete_option( 'alpaistr_agentic_workflow_pr_url' );
+		delete_transient( 'alpaistr_agentic_workflow_installed' );
 	}
 
 	return rest_ensure_response(
 		[
 			'removed' => $removed,
 			'errors'  => $errors,
-			'manual'  => $manual,
 		]
 	);
 }

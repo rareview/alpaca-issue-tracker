@@ -15,14 +15,7 @@ const {
   createInterpolateElement,
 } = wp.element;
 const { __, sprintf } = wp.i18n;
-const {
-  Spinner,
-  FormTokenField,
-  Popover,
-  SlotFillProvider,
-  Button,
-  TextControl,
-} = wp.components;
+const { Spinner, FormTokenField, Popover, SlotFillProvider } = wp.components;
 
 const REST_PATH = '/alpaca/v1/agentic';
 
@@ -71,249 +64,6 @@ const emptyForm = () => ({
   // Site-wide notes appended to every AI-drafted GitHub issue.
   projectContext: '',
 });
-
-/**
- * Preview and explicitly remove unchanged GitHub setup resources.
- *
- * @param {Object}   props            Component props.
- * @param {string}   props.repo       Configured repository.
- * @param {Function} props.onComplete Called after any resource is removed.
- * @return {JSX.Element} Cleanup controls.
- */
-const GithubCleanup = ({ repo, onComplete }) => {
-  const [preview, setPreview] = useState(null);
-  const [confirmation, setConfirmation] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
-  const [result, setResult] = useState(null);
-
-  useEffect(() => {
-    setPreview(null);
-    setConfirmation('');
-    setResult(null);
-  }, [repo]);
-
-  const loadPreview = async () => {
-    setBusy(true);
-    setError('');
-    setResult(null);
-    try {
-      const response = await wp.apiFetch({
-        path: `${REST_PATH}/github-cleanup`,
-      });
-      setPreview(response);
-      setConfirmation('');
-    } catch (requestError) {
-      setError(
-        requestError?.message ||
-          __('Could not inspect GitHub setup.', 'alpaca-issue-tracker'),
-      );
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const removeSetup = async () => {
-    setBusy(true);
-    setError('');
-    try {
-      const response = await wp.apiFetch({
-        path: `${REST_PATH}/github-cleanup`,
-        method: 'POST',
-        /* eslint-disable camelcase -- REST API uses snake_case field names. */
-        data: { confirm_repo: confirmation },
-        /* eslint-enable camelcase */
-      });
-      setResult(response);
-      setPreview(null);
-      setConfirmation('');
-      if (response.removed?.length) {
-        onComplete();
-      }
-    } catch (requestError) {
-      setError(
-        requestError?.message ||
-          __('Could not remove GitHub setup.', 'alpaca-issue-tracker'),
-      );
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const safeFiles =
-    preview?.files?.filter((file) => 'safe' === file.status) || [];
-  const modifiedFiles =
-    preview?.files?.filter((file) => 'modified' === file.status) || [];
-  const canRemove = safeFiles.length > 0;
-
-  return (
-    <section
-      className="agentic-cleanup"
-      aria-labelledby="agentic-cleanup-title"
-    >
-      <h2 id="agentic-cleanup-title">
-        {__('Remove GitHub setup', 'alpaca-issue-tracker')}
-      </h2>
-      <p>
-        {__(
-          'Review resources in the configured repository before removing them. Uninstalling this plugin never changes GitHub.',
-          'alpaca-issue-tracker',
-        )}
-      </p>
-      {!preview ? (
-        <Button
-          variant="secondary"
-          isBusy={busy}
-          disabled={busy}
-          onClick={loadPreview}
-        >
-          {__('Review GitHub resources', 'alpaca-issue-tracker')}
-        </Button>
-      ) : (
-        <div className="agentic-cleanup-preview">
-          <p>
-            <strong>{preview.repo}</strong> · {preview.default_branch}
-          </p>
-          <h3>{__('Safe to remove', 'alpaca-issue-tracker')}</h3>
-          {canRemove ? (
-            <ul>
-              {safeFiles.map((file) => (
-                <li key={file.path}>
-                  <code>{file.path}</code>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>
-              {__(
-                'No unchanged plugin resources were found.',
-                'alpaca-issue-tracker',
-              )}
-            </p>
-          )}
-          <h3>{__('Leave for manual review', 'alpaca-issue-tracker')}</h3>
-          <ul>
-            {modifiedFiles.map((file) => (
-              <li key={file.path}>
-                <code>{file.path}</code>
-              </li>
-            ))}
-            <li>
-              <code>ALPACA_AI_TARGET_BRANCH</code>{' '}
-              {__('Actions variable', 'alpaca-issue-tracker')}
-            </li>
-            <li>
-              {__('Setup branch:', 'alpaca-issue-tracker')}{' '}
-              <code>{preview.setup_branch}</code>
-            </li>
-            {preview.setup_pr_url ? (
-              <li>
-                <a
-                  href={preview.setup_pr_url}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                >
-                  {__('Setup pull request', 'alpaca-issue-tracker')}
-                </a>
-              </li>
-            ) : null}
-            <li>
-              {__(
-                'Repository secrets and existing issues, labels, and pull requests',
-                'alpaca-issue-tracker',
-              )}
-            </li>
-          </ul>
-          {canRemove ? (
-            <>
-              <TextControl
-                label={__(
-                  'Type the repository name to confirm',
-                  'alpaca-issue-tracker',
-                )}
-                help={preview.repo}
-                value={confirmation}
-                onChange={setConfirmation}
-              />
-              <Button
-                variant="secondary"
-                isDestructive
-                isBusy={busy}
-                disabled={busy || confirmation !== preview.repo}
-                onClick={removeSetup}
-              >
-                {__('Remove unchanged resources', 'alpaca-issue-tracker')}
-              </Button>
-            </>
-          ) : null}
-        </div>
-      )}
-      {error ? (
-        <p className="agentic-result-error" role="alert">
-          {error}
-        </p>
-      ) : null}
-      {result ? (
-        <div role={result.errors?.length ? 'alert' : 'status'}>
-          <p>
-            {sprintf(
-              /* translators: %d: number of GitHub resources removed. */
-              __('Removed %d GitHub resources.', 'alpaca-issue-tracker'),
-              result.removed.length,
-            )}
-          </p>
-          {result.removed?.length ? (
-            <ul>
-              {result.removed.map((item) => (
-                <li key={item}>
-                  <code>{item}</code>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-          {result.errors?.length ? (
-            <>
-              <strong>{__('Could not remove', 'alpaca-issue-tracker')}</strong>
-              <ul>
-                {result.errors.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            </>
-          ) : null}
-          {result.manual?.length ? (
-            <>
-              <strong>
-                {__(
-                  'Modified files left for manual review',
-                  'alpaca-issue-tracker',
-                )}
-              </strong>
-              <ul>
-                {result.manual.map((item) => (
-                  <li key={item}>
-                    <code>{item}</code>
-                  </li>
-                ))}
-              </ul>
-            </>
-          ) : null}
-          <p>
-            {__(
-              'Also review the setup branch, pull requests, repository secrets, labels, issues, and Actions variable in GitHub.',
-              'alpaca-issue-tracker',
-            )}
-          </p>
-        </div>
-      ) : null}
-    </section>
-  );
-};
-
-GithubCleanup.propTypes = {
-  repo: PropTypes.string.isRequired,
-  onComplete: PropTypes.func.isRequired,
-};
 
 /**
  * @param {Object}  props         Component props.
@@ -1598,12 +1348,15 @@ const AgenticSettings = () => {
                     </th>
                     <td>
                       <a
-                        className="button"
+                        className="button button-primary agentic-external-button"
                         href={CLAUDE_APP_URL}
                         target="_blank"
                         rel="noreferrer noopener"
                       >
                         {__('Install on GitHub', 'alpaca-issue-tracker')}
+                        <span className="agentic-external-arrow" aria-hidden="true">
+                          ↗
+                        </span>
                       </a>
                     </td>
                   </tr>
@@ -2122,22 +1875,6 @@ const AgenticSettings = () => {
             'alpaca-issue-tracker',
           )}
         </p>
-        {data.is_admin && githubConfigured ? (
-          <GithubCleanup
-            repo={data.github_repo}
-            onComplete={() =>
-              setData((current) => {
-                /* eslint-disable camelcase -- REST API uses snake_case field names. */
-                const updated = {
-                  ...current,
-                  workflow_installed: false,
-                };
-                /* eslint-enable camelcase */
-                return updated;
-              })
-            }
-          />
-        ) : null}
       </div>
       <Popover.Slot />
     </SlotFillProvider>

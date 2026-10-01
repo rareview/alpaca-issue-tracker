@@ -293,8 +293,8 @@ Fix With AI routes require an authenticated WordPress user. "Engineer" means an 
 | `POST` | `/wp-json/alpaca/v1/agentic/test-github`       | `manage_options` | Test the configured GitHub connection.                   |
 | `GET`  | `/wp-json/alpaca/v1/agentic/workflow-status`   | `manage_options` | Check whether bundled GitHub files match the repository. |
 | `POST` | `/wp-json/alpaca/v1/agentic/install-workflow`  | `manage_options` | Open a PR adding or updating bundled GitHub files.       |
-| `GET`  | `/wp-json/alpaca/v1/agentic/github-cleanup`    | `manage_options` | Preview unchanged GitHub setup files and manual items.   |
-| `POST` | `/wp-json/alpaca/v1/agentic/github-cleanup`    | `manage_options` | Remove unchanged setup files after repo confirmation.    |
+| `GET`  | `/wp-json/alpaca/v1/agentic/github-cleanup`    | `manage_options` | Preview plugin-created GitHub setup resources.           |
+| `POST` | `/wp-json/alpaca/v1/agentic/github-cleanup`    | `manage_options` | Remove plugin-created setup resources after confirmation.|
 | `GET`  | `/wp-json/alpaca/v1/agentic/settings`          | Engineer         | Get secret-free setup status and settings.               |
 | `POST` | `/wp-json/alpaca/v1/agentic/settings`          | `manage_options` | Save setup settings.                                     |
 
@@ -302,7 +302,7 @@ Fix With AI routes require an authenticated WordPress user. "Engineer" means an 
 
 If GitHub creates an issue but applying the `agent-ready` label fails, `create` retains the GitHub issue number in local pending state and returns an error. Retrying the same issue and repository resumes that GitHub issue instead of creating a second one. A pending issue for another configured repository must be resolved against its original repository first. `start-over` does not finish clearing local state if closing GitHub work or resetting the branch fails. Installing workflows compares all bundled files and proposes updates to changed files in a pull request; it does not silently overwrite the repository default branch.
 
-The GitHub cleanup preview compares each installed file with the current bundled template on the repository default branch. Files with changed content are left for manual review. `POST /agentic/github-cleanup` requires `confirm_repo` to exactly match the preview's `owner/repo` value, rechecks the files, and returns `removed`, `errors`, and `manual` lists. GitHub branch protection can prevent deletion; the response reports each failure. The action does not remove GitHub branches, pull requests, secrets, issues, labels, or the `ALPACA_AI_TARGET_BRANCH` variable.
+The GitHub cleanup preview lists every bundled plugin path found on the repository default branch, plus whether the `ALPACA_AI_TARGET_BRANCH` Actions variable and the setup branch still exist. Content is not compared. `POST /agentic/github-cleanup` requires `confirm_repo` to exactly match the preview's `owner/repo` value, then deletes those files, the Actions variable, and the setup branch, and returns `removed` and `errors` lists. GitHub branch protection can prevent deletion; the response reports each failure. Repository secrets and existing issues, labels, and pull requests are left for manual removal. GitHub never deletes pull requests; removing the setup branch closes an open setup pull request.
 
 ## Attachment Endpoints
 

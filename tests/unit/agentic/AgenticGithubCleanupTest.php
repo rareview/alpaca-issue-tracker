@@ -5,11 +5,12 @@
  * @package AlpacaIssueTracker
  */
 
+use AlpacaIssueTracker\Agentic\Agentic;
 use Brain\Monkey;
 use Brain\Monkey\Functions;
 
 /**
- * Verify cleanup only selects unmodified plugin-managed files.
+ * Verify cleanup removes every plugin-created resource it finds.
  */
 class AgenticGithubCleanupTest extends \PHPUnit\Framework\TestCase {
 
@@ -49,11 +50,15 @@ class AgenticGithubCleanupTest extends \PHPUnit\Framework\TestCase {
 	}
 
 	/**
-	 * Matching content is removable, but customized content must be preserved.
+	 * Cleanup covers every bundled plugin path.
 	 */
-	public function test_only_matching_file_is_safe_to_remove(): void {
-		$this->assertSame( 'safe', alpaistr_agentic_classify_cleanup_file( base64_encode( 'expected' ), 'expected' ) );
-		$this->assertSame( 'modified', alpaistr_agentic_classify_cleanup_file( base64_encode( 'customized' ), 'expected' ) );
+	public function test_cleanup_paths_include_bundled_files(): void {
+		$paths = alpaistr_agentic_cleanup_paths();
+
+		$this->assertContains( '.github/LABELS.yml', $paths );
+		$this->assertContains( '.github/workflows/claude.yml', $paths );
+		$this->assertContains( '.github/alpaca/security/agent.json', $paths );
+		$this->assertSame( $paths, array_unique( $paths ) );
 	}
 
 	/**
@@ -99,9 +104,14 @@ class AgenticGithubCleanupTest extends \PHPUnit\Framework\TestCase {
 				if ( str_ends_with( $url, '/example/project' ) ) {
 					return [ 'response' => [ 'code' => 200 ], 'body' => '{"default_branch":"main"}' ];
 				}
+				if ( str_contains( $url, '/actions/variables/ALPACA_AI_TARGET_BRANCH' ) ) {
+					return [ 'response' => [ 'code' => 200 ], 'body' => '{"name":"ALPACA_AI_TARGET_BRANCH","value":"ai-work"}' ];
+				}
+				if ( str_contains( $url, '/git/ref/heads/' ) ) {
+					return [ 'response' => [ 'code' => 200 ], 'body' => '{"ref":"refs/heads/alpaca/ai-development"}' ];
+				}
 				if ( str_contains( $url, '/contents/.github/LABELS.yml' ) ) {
-					$content = file_get_contents( ALPAISTR_PLUGIN_DIR . 'includes/agentic/LABELS.yml' );
-					return [ 'response' => [ 'code' => 200 ], 'body' => json_encode( [ 'content' => base64_encode( $content ), 'sha' => 'safe-sha' ] ) ];
+					return [ 'response' => [ 'code' => 200 ], 'body' => json_encode( [ 'content' => base64_encode( 'anything' ), 'sha' => 'labels-sha' ] ) ];
 				}
 				if ( str_contains( $url, '/contents/.github/workflows/claude.yml' ) ) {
 					return [ 'response' => [ 'code' => 200 ], 'body' => json_encode( [ 'content' => base64_encode( 'customized' ), 'sha' => 'custom-sha' ] ) ];
@@ -112,16 +122,20 @@ class AgenticGithubCleanupTest extends \PHPUnit\Framework\TestCase {
 	}
 
 	/**
-	 * The preview identifies changed files without scheduling their removal.
+	 * Edited files stay on the removal list because the plugin created the path.
 	 */
-	public function test_preview_marks_modified_files_for_manual_review(): void {
+	public function test_preview_lists_every_plugin_file_regardless_of_content(): void {
 		$this->mock_github_preview();
 		$preview = alpaistr_agentic_github_cleanup_preview();
 
 		$this->assertSame( 'example/project', $preview['repo'] );
-		$this->assertSame( 'safe', $preview['files'][0]['status'] );
-		$this->assertSame( 'modified', $preview['files'][1]['status'] );
-		$this->assertSame( 'manual', $preview['variable'] );
+		$this->assertSame(
+			[ '.github/LABELS.yml', '.github/workflows/claude.yml' ],
+			array_column( $preview['files'], 'path' )
+		);
+		$this->assertArrayNotHasKey( 'status', $preview['files'][0] );
+		$this->assertTrue( $preview['variable'] );
+		$this->assertSame( 'alpaca/ai-development', $preview['setup_branch'] );
 	}
 
 	/**
@@ -138,18 +152,22 @@ class AgenticGithubCleanupTest extends \PHPUnit\Framework\TestCase {
 	}
 
 	/**
-	 * Cleanup deletes unchanged content by SHA and keeps customized files.
+	 * Cleanup deletes every file by SHA, plus the Actions variable and setup branch.
 	 */
-	public function test_cleanup_removes_only_unchanged_file(): void {
+	public function test_cleanup_removes_files_variable_and_setup_branch(): void {
 		$this->mock_github_preview();
 		Functions\when( 'wp_json_encode' )->alias( 'json_encode' );
-		Functions\expect( 'wp_remote_request' )->once()->withArgs(
-			static function ( string $url, array $args ): bool {
-				$body = json_decode( $args['body'], true );
-				return str_contains( $url, '/contents/.github/LABELS.yml' ) && 'DELETE' === $args['method'] && 'safe-sha' === $body['sha'];
+		$requested = [];
+		Functions\expect( 'wp_remote_request' )->times( 4 )->andReturnUsing(
+			static function ( string $url, array $args ) use ( &$requested ): array {
+				$requested[] = $url;
+				if ( str_contains( $url, '/contents/' ) ) {
+					return [ 'response' => [ 'code' => 200 ], 'body' => '{}' ];
+				}
+				return [ 'response' => [ 'code' => 204 ], 'body' => '' ];
 			}
-		)->andReturn( [ 'response' => [ 'code' => 200 ], 'body' => '{}' ] );
-		Functions\expect( 'delete_option' )->once()->with( 'alpaistr_agentic_workflow_revision' );
+		);
+		Functions\expect( 'delete_option' )->twice();
 		Functions\expect( 'delete_transient' )->once();
 		Functions\when( 'rest_ensure_response' )->alias(
 			static function ( array $data ): WP_REST_Response {
@@ -160,8 +178,18 @@ class AgenticGithubCleanupTest extends \PHPUnit\Framework\TestCase {
 		$result = alpaistr_agentic_github_cleanup_callback( new WP_REST_Request( [ 'confirm_repo' => 'example/project' ] ) );
 		$data   = $result->get_data();
 
-		$this->assertSame( [ '.github/LABELS.yml' ], $data['removed'] );
-		$this->assertSame( [ '.github/workflows/claude.yml' ], $data['manual'] );
+		$this->assertSame(
+			[
+				'.github/LABELS.yml',
+				'.github/workflows/claude.yml',
+				'ALPACA_AI_TARGET_BRANCH',
+				'alpaca/ai-development',
+			],
+			$data['removed']
+		);
+		$this->assertSame( [], $data['errors'] );
+		$this->assertStringContainsString( '/actions/variables/ALPACA_AI_TARGET_BRANCH', $requested[2] );
+		$this->assertStringContainsString( '/git/refs/heads/', $requested[3] );
 	}
 
 	/**
@@ -175,7 +203,7 @@ class AgenticGithubCleanupTest extends \PHPUnit\Framework\TestCase {
 				return $value;
 			}
 		);
-		Functions\expect( 'wp_remote_request' )->once()->andReturn( [ 'response' => [ 'code' => 403 ], 'body' => '{"message":"Protected branch"}' ] );
+		Functions\when( 'wp_remote_request' )->justReturn( [ 'response' => [ 'code' => 403 ], 'body' => '{"message":"Protected branch"}' ] );
 		Functions\expect( 'delete_option' )->never();
 		Functions\expect( 'delete_transient' )->never();
 		Functions\when( 'rest_ensure_response' )->alias(
@@ -188,7 +216,55 @@ class AgenticGithubCleanupTest extends \PHPUnit\Framework\TestCase {
 		$data   = $result->get_data();
 
 		$this->assertSame( [], $data['removed'] );
-		$this->assertCount( 1, $data['errors'] );
+		$this->assertCount( 4, $data['errors'] );
 		$this->assertStringContainsString( 'Protected branch', $data['errors'][0] );
+	}
+
+	/**
+	 * The plugins-page link needs a saved repository and token, not a setup pull request.
+	 */
+	public function test_github_cleanup_link_requires_saved_repository_and_token(): void {
+		Functions\when( 'current_user_can' )->justReturn( true );
+		Functions\when( 'get_option' )->alias(
+			static function ( string $key ) {
+				if ( Agentic::OPTION_KEY === $key ) {
+					return [
+						'github_repo'  => 'example/project',
+						'github_token' => 'token',
+					];
+				}
+				return '';
+			}
+		);
+
+		$this->assertTrue( Agentic::can_show_github_cleanup_link() );
+	}
+
+	/**
+	 * No repository means there is no GitHub setup to remove.
+	 */
+	public function test_github_cleanup_link_stays_hidden_without_repository(): void {
+		Functions\when( 'current_user_can' )->justReturn( true );
+		Functions\when( 'get_option' )->alias(
+			static function ( string $key ) {
+				if ( Agentic::OPTION_KEY === $key ) {
+					return [
+						'github_token' => 'token',
+					];
+				}
+				return '';
+			}
+		);
+
+		$this->assertFalse( Agentic::can_show_github_cleanup_link() );
+	}
+
+	/**
+	 * Cleanup is limited to administrators, matching the REST permission.
+	 */
+	public function test_github_cleanup_link_stays_hidden_without_manage_options(): void {
+		Functions\when( 'current_user_can' )->justReturn( false );
+
+		$this->assertFalse( Agentic::can_show_github_cleanup_link() );
 	}
 }
