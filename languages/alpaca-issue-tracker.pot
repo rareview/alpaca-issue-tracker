@@ -516,11 +516,6 @@ msgstr ""
 msgid "The pending GitHub issue record is incomplete. Review the issue before trying again."
 msgstr ""
 
-#. translators: 1: issue URL, 2: error message.
-#: includes/api/endpoints/agentic.php:1954
-msgid "Issue was created at %1$s but agent-ready could not be applied: %2$s"
-msgstr ""
-
 #: includes/api/endpoints/agentic.php:2019
 #: src/agentic.js:715
 msgid "Describe the changes you want."
@@ -1586,7 +1581,7 @@ msgid "Cancel"
 msgstr ""
 
 #: src/agentic.js:447
-msgid "AI is drafting the agent-ready issue…"
+msgid "AI is drafting the GitHub issue…"
 msgstr ""
 
 #: src/agentic.js:459
@@ -1634,7 +1629,7 @@ msgid "Regenerate"
 msgstr ""
 
 #: src/agentic.js:673
-msgid "Create an agent-ready issue on GitHub"
+msgid "Create the GitHub issue for the AI agent"
 msgstr ""
 
 #: src/agentic.js:760
@@ -2099,7 +2094,7 @@ msgid "Defined via ALPAISTR_AGENTIC_AI_API_KEY constant."
 msgstr ""
 
 #: src/AgenticSettings.jsx:1632
-msgid "Used to draft agent-ready issues from Alpaca cards."
+msgid "Used to draft GitHub issues from Alpaca cards."
 msgstr ""
 
 #: src/AgenticSettings.jsx:1651

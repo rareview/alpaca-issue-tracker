@@ -106,6 +106,7 @@ const PAT_PERMISSIONS = [
     label: __('Pull requests', 'alpaca-issue-tracker'),
     access: PAT_READ_WRITE,
   },
+  { label: __('Actions', 'alpaca-issue-tracker'), access: PAT_READ_WRITE },
   { label: __('Workflows', 'alpaca-issue-tracker'), access: PAT_READ_WRITE },
   { label: __('Metadata', 'alpaca-issue-tracker'), access: PAT_READ_ONLY },
 ];
@@ -1630,7 +1631,7 @@ const AgenticSettings = () => {
                                 {!data.ai_api_key_set ? (
                                   <p className="description">
                                     {__(
-                                      'Used to draft agent-ready issues from Alpaca cards.',
+                                      'Used to draft GitHub issues from Alpaca cards.',
                                       'alpaca-issue-tracker',
                                     )}
                                   </p>

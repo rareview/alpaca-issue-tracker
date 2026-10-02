@@ -1,5 +1,6 @@
 # Nominates structurally complete issues for human review.
-# Only a maintainer should apply 'agent-ready' to start execution.
+# Applies agent-candidate only.
+# Alpaca starts the agent with workflow_dispatch.
 
 name: Auto-Label Agent Candidates
 
@@ -41,11 +42,11 @@ jobs:
             const hasAcceptanceCriteria = /- \[[ x]\]/.test(body);
 
             const currentLabels = issue.labels.map(l => l.name);
-            const hasAgentReadyLabel = currentLabels.includes('agent-ready');
+            const hasAlpacaAiLabel = currentLabels.includes('alpaca-ai');
             const hasCandidateLabel = currentLabels.includes('agent-candidate');
 
             if (hasAllSections && hasScopeBoundaries && hasAcceptanceCriteria) {
-              if (!hasAgentReadyLabel && !hasCandidateLabel) {
+              if (!hasAlpacaAiLabel && !hasCandidateLabel) {
                 console.log('Issue meets candidate criteria, adding label');
                 await github.rest.issues.addLabels({
                   owner: context.repo.owner,
