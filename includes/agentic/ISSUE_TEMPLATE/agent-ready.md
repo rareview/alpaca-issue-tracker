@@ -81,7 +81,7 @@ assignees: ''
 
 ## Agent Readiness
 
-<!-- Verify before adding the agent-ready label -->
+<!-- Checklist for a well-scoped issue. -->
 
 - [ ] Scope is bounded (can be done in one PR)
 - [ ] Success criteria are measurable

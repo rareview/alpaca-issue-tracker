@@ -120,7 +120,7 @@ class AgenticWorkflowInstallTest extends \PHPUnit\Framework\TestCase {
 			'token',
 			[ 'owner' => 'example', 'name' => 'project' ],
 			'alpaca/ai-development',
-			'workflows/agent-ready-trigger.yml',
+			'workflows/agent-trigger.yml',
 			'new content'
 		);
 

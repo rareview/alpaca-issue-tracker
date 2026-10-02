@@ -1,19 +1,19 @@
 # Listens for slash commands on issue comments:
 #
 #   /approve-plan  — resumes implementation after a complexity:high planning phase
-#   /run-agent     — re-triggers the agent on any issue without touching labels
+#   /run-agent     — maintainer retry from a comment. Alpaca does not use this.
 #
 # Both commands require write or admin permission on the repo.
 #
 # The /approve-plan flow:
-#   1. agent-ready-trigger.yml fires, Claude commits a plan to docs/plans/
+#   1. Alpaca starts agent-trigger.yml with workflow_dispatch. Claude commits a plan to docs/plans/
 #   2. Claude posts a comment asking for /approve-plan
 #   3. This workflow fires, verifies the commenter, then runs implementation
 #
 # The /run-agent flow:
 #   1. User comments /run-agent on an issue
 #   2. This workflow fires, verifies the commenter
-#   3. Runs the same complexity-aware routing as agent-ready-trigger.yml
+#   3. Runs the same complexity-aware routing as agent-trigger.yml
 #
 # AI PRs target ALPACA_AI_TARGET_BRANCH (set by Alpaca when it installs these files).
 # Security policy lives at .github/alpaca/security/agent.json (installed by Alpaca).
@@ -169,9 +169,8 @@ jobs:
             If blocked or uncertain, comment on the issue asking for clarification.
 
   # ─────────────────────────────────────────────────────────────────────────────
-  # /run-agent — re-triggers the agent on any issue without touching labels.
-  # Useful when agent-ready is already present on the issue (GitHub only fires
-  # the 'labeled' event when the label is first added, not on subsequent edits).
+  # /run-agent — maintainer retry.
+  # Alpaca starts the agent with workflow_dispatch.
   # ─────────────────────────────────────────────────────────────────────────────
   handle-run-agent:
     if: |

@@ -46,7 +46,7 @@ The Fix With AI feature is meant only for engineers with GitHub access who will 
 - Administrators can grant additional users Fix With AI access from the WP Setup step on the Fix With AI screen. Those users can use the feature (send issues to the AI agent) and view setup status, but cannot change settings or credentials.
 - Everyone else can see the Fix With AI menu item, but the screen shows a message that access is limited to administrators and granted users, and the "Fix With AI" action never appears for them.
 
-The bundled public GitHub issue template and structural screener apply `agent-candidate`, not `agent-ready`. A repository maintainer must review the issue and apply `agent-ready` before the agent trigger runs. Keep GitHub label permissions limited to trusted maintainers.
+The bundled public GitHub issue template and structural screener apply `agent-candidate`. Alpaca starts the agent with `workflow_dispatch` when someone uses Fix With AI, and it marks those issues with `alpaca-ai`. Keep GitHub label permissions limited to trusted maintainers.
 
 ## Configuration Workflows
 
