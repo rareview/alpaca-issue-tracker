@@ -59,6 +59,19 @@ Use `wp.hooks.addAction()` from code that runs in the same WordPress admin conte
 | ---------- | ---------------- | ----------------- |
 | `$issueId` | `number\|string` | Updated issue ID. |
 
+### `alpaca.issue.selectTab`
+
+**Type:** Action.
+
+**Purpose:** Requests that an open issue modal show a specific tab. Fix With AI uses this to open the AI Log tab.
+
+**Parameters**
+
+| Parameter  | Type             | Description                         |
+| ---------- | ---------------- | ----------------------------------- |
+| `$tab`     | `string`         | Tab ID, such as `agentic`.          |
+| `$issueId` | `number\|string` | Issue ID whose modal should switch. |
+
 ### `alpaca.statusChanged`
 
 **Type:** Action.
@@ -250,9 +263,33 @@ addAction(
 
 **Parameters**
 
-| Parameter  | Type     | Description                                                                    |
-| ---------- | -------- | ------------------------------------------------------------------------------ |
+| Parameter  | Type     | Description                                                                                                                                                   |
+| ---------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `$payload` | `Object` | Payload containing `issueId` and `mutation` (`sent`, `deleted`, or `reverted`). `deleted` is per-fix removal from Alpaca; `reverted` is a start-over restore. |
+
+### `alpaca.agentic.status`
+
+**Type:** Action.
+
+**Purpose:** Shares refreshed GitHub pull request status with the AI Log tab for an issue.
+
+**Parameters**
+
+| Parameter  | Type     | Description                                    |
+| ---------- | -------- | ---------------------------------------------- |
+| `$payload` | `Object` | Contains `issueId` and a `pullRequests` array. |
+
+### `alpaca.agentic.focusCurrentSession`
+
+**Type:** Action.
+
+**Purpose:** Focuses the current Fix With AI session when the AI Log tab opens.
+
+**Parameters**
+
+| Parameter  | Type             | Description        |
+| ---------- | ---------------- | ------------------ |
+| `$issueId` | `number\|string` | Issue ID to focus. |
 
 ### `alpaca.lastActivityChanged`
 

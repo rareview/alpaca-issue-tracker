@@ -22,7 +22,11 @@ Attachments and screenshots are uploaded to the WordPress site and referenced fr
 
 ## External Services
 
-The base plugin does not transmit issue data to an external service by default. Data remains in the WordPress database and filesystem unless another plugin, custom integration, or hosting layer moves that data elsewhere.
+The plugin does not transmit issue data to an external service by default. Data remains in the WordPress database and filesystem unless an optional integration is enabled or another plugin or hosting layer moves it elsewhere.
+
+If an administrator enables Fix With AI, an authorized user's draft request sends issue details and context to the configured AI provider. This can include the title, content, comments, labels, screenshot URLs, captured browser/request details, and live site environment information such as WordPress, PHP, theme, and plugin versions. Sending an approved draft creates an issue in the configured GitHub repository. GitHub workflow installation also creates or updates files in that repository. The AI provider and GitHub then handle that information under their own privacy and retention terms.
+
+Uninstalling Alpaca Issue Tracker removes local Fix With AI settings but does not change GitHub. Before deactivating, an administrator can use **Remove GitHub Setup** on the Plugins screen to preview and remove plugin-created GitHub files, the `ALPACA_AI_TARGET_BRANCH` Actions variable, and the setup branch. That link appears only while a repository and token are saved. Repository secrets and existing issues, labels, and pull requests require manual removal in GitHub. The action reports any GitHub deletion failures.
 
 ## Access Control
 

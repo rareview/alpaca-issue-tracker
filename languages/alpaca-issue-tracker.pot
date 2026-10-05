@@ -9,7 +9,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2026-09-14T17:27:51+00:00\n"
+"POT-Creation-Date: 2026-10-05T14:03:21+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: alpaca-issue-tracker\n"
@@ -55,38 +55,49 @@ msgstr ""
 
 #: includes/admin/admin-screens.php:27
 #: includes/admin/admin-screens.php:28
-#: includes/admin/admin-screens.php:106
+#: includes/admin/admin-screens.php:116
 msgid "Project Activity"
 msgstr ""
 
 #: includes/admin/admin-screens.php:36
 #: includes/admin/admin-screens.php:37
-#: includes/admin/admin-screens.php:84
+#: includes/admin/admin-screens.php:94
 msgid "Configure"
 msgstr ""
 
 #: includes/admin/admin-screens.php:45
 #: includes/admin/admin-screens.php:46
-#: includes/admin/admin-screens.php:118
+#: includes/admin/admin-screens.php:128
 msgid "My Notifications"
 msgstr ""
 
 #: includes/admin/admin-screens.php:54
 #: includes/admin/admin-screens.php:55
-#: includes/admin/admin-screens.php:135
+#: includes/admin/admin-screens.php:145
 msgid "Email Templates"
 msgstr ""
 
 #: includes/admin/admin-screens.php:63
 #: includes/admin/admin-screens.php:64
+#: includes/api/endpoints/agentic.php:4253
+#: src/agentic.js:1236
+#: src/agentic.js:1352
+#: src/AgenticSettings.jsx:884
+#: src/AgenticSettings.jsx:1017
+#: src/components/issue/AgenticHistoryTab.jsx:53
+msgid "Fix With AI"
+msgstr ""
+
+#: includes/admin/admin-screens.php:73
+#: includes/admin/admin-screens.php:74
 msgid "Documentation"
 msgstr ""
 
-#: includes/admin/admin-screens.php:87
+#: includes/admin/admin-screens.php:97
 msgid "Changes made on this screen will affect all users."
 msgstr ""
 
-#: includes/admin/admin-screens.php:121
+#: includes/admin/admin-screens.php:131
 msgid "Changes made on this screen will only affect the current user."
 msgstr ""
 
@@ -230,7 +241,7 @@ msgstr ""
 
 #: includes/api/abilities.php:681
 #: includes/api/endpoints/issues.php:91
-#: src/components/Issue.jsx:1517
+#: src/components/Issue.jsx:1570
 msgid "Failed to create issue."
 msgstr ""
 
@@ -341,6 +352,494 @@ msgstr ""
 msgid "Failed to post comment."
 msgstr ""
 
+#: includes/api/endpoints/agentic.php:270
+#: includes/api/endpoints/agentic.php:293
+msgid "Authentication required."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:273
+msgid "Insufficient permissions."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:296
+msgid "Fix With AI is only available to administrators and users granted engineer access."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:313
+msgid "Fix With AI is not enabled or setup is not complete. Finish setup in Project Board → Fix With AI."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:330
+msgid "Invalid settings payload."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:371
+#: includes/api/endpoints/agentic.php:1769
+#: includes/api/endpoints/agentic.php:2615
+msgid "Alpaca issue not found."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:381
+msgid "No AI provider is configured. Set up an AI provider in Settings → Connectors, or add a custom API key in Project Board → Fix With AI."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:386
+#: includes/api/endpoints/agentic.php:1196
+#: includes/api/endpoints/agentic.php:1413
+msgid "GitHub repository is not configured."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:545
+#: includes/api/endpoints/agentic.php:1109
+msgid "No AI provider is configured. Set up an AI provider in Settings → Connectors, or add a custom API key in the Fix With AI settings."
+msgstr ""
+
+#. translators: %s: error message
+#: includes/api/endpoints/agentic.php:807
+#: includes/api/endpoints/agentic.php:971
+#: includes/api/endpoints/agentic.php:1098
+#, php-format
+msgid "AI request failed: %s"
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:912
+#: includes/api/endpoints/agentic.php:1011
+msgid "AI returned an unexpected format. Please try again."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:981
+msgid "Unknown AI error."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:1069
+msgid "Requested changes"
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:1192
+#: includes/api/endpoints/agentic.php:1410
+msgid "GitHub Personal Access Token is not configured."
+msgstr ""
+
+#. translators: %s: error message
+#: includes/api/endpoints/agentic.php:1223
+#: includes/api/endpoints/agentic.php:1882
+#: includes/api/endpoints/agentic.php:2332
+#, php-format
+msgid "GitHub request failed: %s"
+msgstr ""
+
+#. translators: %s: repository full name
+#: includes/api/endpoints/agentic.php:1252
+#, php-format
+msgid "Connected to %s."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:1257
+msgid "All permissions look good."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:1263
+msgid "Workflow installation needs Contents read/write (fine-grained PAT) or repo scope (classic PAT)."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:1269
+msgid "Workflow installation also needs the classic workflow scope (or fine-grained Workflows read/write) to commit files under .github/workflows/."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:1275
+msgid "Workflow installation also needs Pull requests read/write to open the install pull request."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:1416
+#: includes/api/endpoints/agentic.php:1786
+msgid "AI target branch is not configured."
+msgstr ""
+
+#. translators: %s: error message
+#: includes/api/endpoints/agentic.php:1437
+#, php-format
+msgid "Could not fetch repository information: %s"
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:1458
+msgid "No bundled workflow files were found."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:1499
+msgid "Could not create workflow branch."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:1510
+#: includes/api/endpoints/agentic.php:4913
+msgid "Could not read a bundled workflow file."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:1528
+msgid "No workflow files could be committed to the repository."
+msgstr ""
+
+#. translators: 1: head branch, 2: base branch
+#: includes/api/endpoints/agentic.php:1548
+#, php-format
+msgid "Branch \"%1$s\" has no commits ahead of \"%2$s\", so GitHub cannot open a pull request. The workflow files already appear to be on the default branch, or no new changes were committed."
+msgstr ""
+
+#. translators: %s: error message
+#: includes/api/endpoints/agentic.php:1620
+#, php-format
+msgid "Could not open pull request: %s"
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:1654
+#: includes/api/endpoints/agentic.php:1655
+#: src/AgenticSettings.jsx:787
+msgid "Could not open pull request."
+msgstr ""
+
+#. translators: 1: branch name, 2: compare URL
+#: includes/api/endpoints/agentic.php:1678
+#, php-format
+msgid "GitHub Actions files are on branch \"%1$s\" but no pull request could be opened. Your token may need Pull requests read/write. Open one manually: %2$s"
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:1777
+#: includes/api/endpoints/agentic.php:2136
+#: includes/api/endpoints/agentic.php:2632
+#: includes/api/endpoints/agentic.php:3080
+msgid "GitHub token or repository is not configured."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:1813
+msgid "A GitHub issue was already created in the previously configured repository. Restore that repository to finish sending it before creating another issue."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:1838
+msgid "Wait for the in-progress AI pull request to merge or be closed, or use Start over."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:1839
+msgid "The AI is still working on a GitHub issue. Wait for a pull request, or use Start over."
+msgstr ""
+
+#. translators: %s: URL of the GitHub issue that was created.
+#: includes/api/endpoints/agentic.php:1912
+#, php-format
+msgid "The issue was created at %s, but WordPress could not save its reference. Do not retry until you have checked the GitHub issue."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:1943
+msgid "The pending GitHub issue record is incomplete. Review the issue before trying again."
+msgstr ""
+
+#. translators: 1: issue URL, 2: error message.
+#: includes/api/endpoints/agentic.php:1956
+#, php-format
+msgid "Issue was created at %1$s, but the agent did not start: %2$s"
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:2021
+#: src/agentic.js:715
+msgid "Describe the changes you want."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:2036
+#: src/agentic.js:247
+msgid "These notes are not suitable for the GitHub agentic workflow. Request a change only sends follow-up instructions for bounded code changes in the connected repository."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:2066
+msgid "Send this issue with Fix With AI before requesting a change."
+msgstr ""
+
+#. translators: %s: GitHub pull request or comment URL.
+#: includes/api/endpoints/agentic.php:2204
+#, php-format
+msgid "Fix With AI: requested changes posted on the open pull request — [%1$s](%1$s)."
+msgstr ""
+
+#. translators: %s: GitHub issue or comment URL.
+#: includes/api/endpoints/agentic.php:2210
+#, php-format
+msgid "Fix With AI: requested changes posted on the GitHub issue — [%1$s](%1$s)."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:2240
+msgid "The original GitHub issue draft is missing."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:2306
+msgid "Could not post the requested changes to GitHub."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:2862
+msgid "That AI fix was not found on this issue."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:2980
+msgid "Could not check GitHub pull requests before starting over. Try again."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:2988
+msgid "GitHub returned an invalid pull request list. Try again."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:3105
+msgid "There is no active fix attempt to start over."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:3135
+msgid "Since outside changes were pushed to the AI target branch during this session, Start over cannot revert it to the state it had before the session."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:3137
+msgid "Alpaca does not have the starting commit for this session, so the AI target branch will be left as it is."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:3286
+#: includes/api/endpoints/agentic.php:3295
+#: includes/api/endpoints/agentic.php:4173
+msgid "Could not read commits from GitHub."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:3322
+#: includes/api/endpoints/agentic.php:3334
+msgid "Could not find the session start commit on the target branch."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:3380
+msgid "Start over is unavailable because the AI branch has commits that are not from this issue."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:3915
+msgid "The GitHub item to close is invalid."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:3931
+msgid "Could not verify the GitHub item before closing it. Try Start over again."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:3936
+msgid "GitHub returned an invalid item state. Try Start over again."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:3942
+msgid "GitHub returned an unknown item state. Try Start over again."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:3959
+msgid "Could not close the GitHub item. Try Start over again."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:3984
+msgid "Could not read the original branch snapshot."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:4022
+msgid "Could not create the restore commit."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:4126
+msgid "Could not open the start-over pull request."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:4196
+msgid "Could not reset the AI target branch because the snapshot is missing."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:4232
+msgid "Could not move the AI target branch back to the session start."
+msgstr ""
+
+#. translators: 1: GitHub issue URL, 2: target branch name.
+#: includes/api/endpoints/agentic.php:4487
+#, php-format
+msgid "Fix With AI: GitHub issue created — [%1$s](%1$s). Target branch: **%2$s**."
+msgstr ""
+
+#. translators: %s: GitHub issue URL.
+#: includes/api/endpoints/agentic.php:4493
+#, php-format
+msgid "Fix With AI: GitHub issue created — [%1$s](%1$s)."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:4518
+#: src/components/issue/AgenticHistoryTab.jsx:197
+msgid "Target branch was reset to before this attempt."
+msgstr ""
+
+#. translators: %s: error message from GitHub.
+#: includes/api/endpoints/agentic.php:4524
+#: includes/api/endpoints/agentic.php:4540
+#, php-format
+msgid "Target branch was not reset: %s"
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:4530
+msgid "Target branch was not reset because outside changes were pushed during this attempt."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:4534
+msgid "Target branch was not reset because Alpaca does not have the starting commit for this session."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:4545
+msgid "Target branch was not reset because it was already at the commit from before this attempt."
+msgstr ""
+
+#. translators: %s: branch reset outcome note.
+#: includes/api/endpoints/agentic.php:4558
+#, php-format
+msgid "Fix With AI: start over — this fix attempt ended. Open GitHub issues and pull requests were closed. %s"
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:4682
+msgid "Cannot apply labels to the GitHub issue."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:4714
+msgid "GitHub rejected the label update."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:4735
+msgid "Cannot start the agent without a GitHub issue number."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:4761
+msgid "Could not read the repository default branch, so the agent workflow was not started."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:4797
+msgid "The agent workflow on the default branch cannot be started yet. Merge the latest Fix With AI setup pull request, then try again."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:4804
+msgid "The GitHub token cannot start the agent. Set Actions to Read and write on the token, then try again."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:4811
+msgid "GitHub did not start the agent workflow."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:4837
+msgid "GitHub repository must be in owner/repo format (e.g. rareview/agentic-development-lab)."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:4884
+msgid "Could not read workflow files from GitHub."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:4889
+msgid "GitHub returned invalid workflow file data."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:5056
+msgid "Could not delete the old workflow file."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:5077
+msgid "GitHub Actions files are already on the default branch. No pull request is needed."
+msgstr ""
+
+#. translators: 1: file path, 2: GitHub error message
+#: includes/api/endpoints/agentic.php:5224
+#, php-format
+msgid "Could not commit \"%1$s\". GitHub requires Workflows read/write on fine-grained PATs (or workflow scope on classic PATs) to modify files under .github/workflows/. Update the token permissions and try again. GitHub says: %2$s"
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:5229
+msgid "Resource not accessible by personal access token"
+msgstr ""
+
+#. translators: 1: file path, 2: GitHub error message
+#: includes/api/endpoints/agentic.php:5236
+#, php-format
+msgid "Could not commit \"%1$s\". Check that your token has Contents read/write on this repository. GitHub says: %2$s"
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:5241
+msgid "Forbidden"
+msgstr ""
+
+#. translators: 1: file path, 2: GitHub error message
+#: includes/api/endpoints/agentic.php:5247
+#, php-format
+msgid "Could not commit \"%1$s\". GitHub says: %2$s"
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:5249
+#: includes/api/endpoints/agentic.php:5351
+#: includes/api/endpoints/agentic.php:5394
+msgid "GitHub returned an unexpected response."
+msgstr ""
+
+#. translators: %s: error message
+#: includes/api/endpoints/agentic.php:5313
+#, php-format
+msgid "Could not get the latest commit SHA: %s"
+msgstr ""
+
+#. translators: 1: branch name, 2: repository slug, 3: GitHub error message
+#: includes/api/endpoints/agentic.php:5356
+#, php-format
+msgid "Could not find branch \"%1$s\" on %2$s. The repository may have no commits yet (push an initial commit first), the default branch may have been renamed, or your token may lack Contents read access. GitHub says: %3$s"
+msgstr ""
+
+#. translators: 1: GitHub error message
+#: includes/api/endpoints/agentic.php:5369
+#, php-format
+msgid "Could not read the default branch. Workflow installation needs Contents read/write (fine-grained PAT) or repo + workflow scopes (classic PAT). If the org uses SSO, authorize the token for the org. GitHub says: %1$s"
+msgstr ""
+
+#. translators: 1: branch name, 2: GitHub error message
+#: includes/api/endpoints/agentic.php:5379
+#, php-format
+msgid "Could not get the latest commit SHA for branch \"%1$s\". GitHub says: %2$s"
+msgstr ""
+
+#. translators: 1: repository slug, 2: GitHub error message
+#: includes/api/endpoints/agentic.php:5400
+#, php-format
+msgid "Cannot access GitHub repository \"%1$s\". The repo slug may be wrong, or (most often for org repos) your token does not have access. Private org repositories return \"Not Found\" even when the repo exists. Fix: use a classic PAT with the repo scope (or a fine-grained PAT with Issues read/write on this repo), ensure your GitHub user is a member of the org, and authorize the token for SSO if the org requires it. GitHub says: %2$s"
+msgstr ""
+
+#. translators: 1: GitHub error message
+#: includes/api/endpoints/agentic.php:5412
+#, php-format
+msgid "GitHub rejected the request. Check your Personal Access Token has repo scope (classic) or Issues read/write on this repository (fine-grained), and authorize SSO for the org if required. GitHub says: %1$s"
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:5431
+msgid "One or more labels do not exist on the repository. Run the Setup Labels workflow or uncheck missing labels."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:5552
+msgid "Save a GitHub repository and token before reviewing cleanup."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:5571
+msgid "Could not read the GitHub repository for cleanup."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:5577
+msgid "GitHub did not return the default branch."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:5638
+msgid "Enter the exact owner/repository name to confirm cleanup."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:5675
+msgid "GitHub did not remove this file."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:5695
+msgid "ALPACA_AI_TARGET_BRANCH: GitHub did not remove the Actions variable."
+msgstr ""
+
+#: includes/api/endpoints/agentic.php:5714
+msgid "Setup branch: GitHub did not remove the branch."
+msgstr ""
+
 #: includes/api/endpoints/attachments.php:199
 msgid "Invalid issue."
 msgstr ""
@@ -438,7 +937,7 @@ msgid "Subissue title is required."
 msgstr ""
 
 #: includes/api/endpoints/issues.php:656
-#: src/components/Issue.jsx:1597
+#: src/components/Issue.jsx:1650
 msgid "Failed to create subissue."
 msgstr ""
 
@@ -620,7 +1119,12 @@ msgstr ""
 msgid "Alpaca Issue Tracker requires WordPress version %1$s or higher. You are running version %2$s."
 msgstr ""
 
-#: includes/class-alpacaissuetracker.php:328
+#: includes/class-agentic.php:121
+#: includes/class-agentic.php:187
+msgid "Remove GitHub Setup"
+msgstr ""
+
+#: includes/class-alpacaissuetracker.php:334
 msgid "Enable console messages for testing purposes."
 msgstr ""
 
@@ -628,7 +1132,7 @@ msgstr ""
 msgid "Enable the front-end controls for reporting issues with associated context."
 msgstr ""
 
-#: includes/class-alpacaissuetracker.php:352
+#: includes/class-alpacaissuetracker.php:358
 msgid "Visibility map for item datapoints on issue cards."
 msgstr ""
 
@@ -645,6 +1149,7 @@ msgid "Add Issue"
 msgstr ""
 
 #: includes/core/posttypes-and-taxonomies.php:67
+#: src/AgenticSettings.jsx:104
 msgid "Issues"
 msgstr ""
 
@@ -703,7 +1208,7 @@ msgstr ""
 
 #: includes/core/posttypes-and-taxonomies.php:106
 #: src/components/BoardFilterControl.jsx:328
-#: src/components/Issue.jsx:115
+#: src/components/Issue.jsx:116
 #: src/components/LabelsManager.jsx:483
 #: src/components/RestoreManager.jsx:319
 #: src/datapoints/labelsDatapoint.js:23
@@ -809,7 +1314,7 @@ msgstr ""
 
 #: includes/notifications/digest/render.php:206
 #: includes/notifications/digest/render.php:417
-#: src/components/Issue.jsx:68
+#: src/components/Issue.jsx:69
 #: src/datapoints/priorityDatapoint.js:24
 #: src/datapoints/priorityDatapoint.js:26
 #: src/datapoints/priorityDatapoint.js:38
@@ -831,14 +1336,14 @@ msgstr ""
 #: src/components/BoardFilterControl.jsx:226
 #: src/components/BoardFilterControl.jsx:417
 #: src/components/BoardFilterControl.jsx:440
-#: src/components/Issue.jsx:137
+#: src/components/Issue.jsx:138
 #: src/DashboardWidget.jsx:81
 msgid "Due Date"
 msgstr ""
 
 #: includes/notifications/digest/render.php:417
 #: src/components/BoardFilterControl.jsx:377
-#: src/components/Issue.jsx:91
+#: src/components/Issue.jsx:92
 #: src/DashboardWidget.jsx:82
 #: src/datapoints/assigneesDatapoint.js:19
 #: src/datapoints/assigneesDatapoint.js:45
@@ -1064,6 +1569,9 @@ msgid "Next"
 msgstr ""
 
 #: includes/utilities/functions.php:268
+#: src/agentic.js:502
+#: src/agentic.js:793
+#: src/agentic.js:999
 msgid "Done"
 msgstr ""
 
@@ -1083,6 +1591,662 @@ msgstr ""
 
 #: src/Activity.jsx:608
 msgid "No activity found yet."
+msgstr ""
+
+#: src/agentic.js:84
+msgid "Request failed."
+msgstr ""
+
+#: src/agentic.js:172
+msgid "Your notes will be posted on the open pull request. The AI will update that PR instead of opening a new one."
+msgstr ""
+
+#: src/agentic.js:178
+msgid "Your notes will be posted on the GitHub issue so the AI can include them before it opens a pull request."
+msgstr ""
+
+#: src/agentic.js:184
+msgid "The previous pull request was closed without merging. The AI will open a new pull request that includes these changes."
+msgstr ""
+
+#. translators: %s: AI target branch name.
+#: src/agentic.js:192
+#, js-format
+msgid "The AI will open a new pull request into %s, on top of the current code."
+msgstr ""
+
+#: src/agentic.js:253
+msgid "This request is not suitable for the GitHub agentic workflow. Fix With AI only handles bounded code changes in the connected repository."
+msgstr ""
+
+#: src/agentic.js:281
+msgid "Not suitable for the AI workflow"
+msgstr ""
+
+#: src/agentic.js:294
+msgid "Are you sure you want to continue?"
+msgstr ""
+
+#: src/agentic.js:314
+#: src/agentic.js:472
+#: src/agentic.js:635
+#: src/agentic.js:868
+#: src/agentic.js:1053
+#: src/components/Comment.jsx:377
+#: src/components/Comment.jsx:1249
+#: src/components/CommentForm.jsx:501
+#: src/components/Issue.jsx:2715
+#: src/components/issue/AttachmentRow.jsx:169
+#: src/components/MarkdownTextarea.jsx:878
+#: src/components/settings/SettingsList.jsx:332
+#: src/Modal.jsx:259
+#: src/Toolbar.jsx:341
+msgid "Cancel"
+msgstr ""
+
+#: src/agentic.js:447
+msgid "AI is drafting the GitHub issue…"
+msgstr ""
+
+#: src/agentic.js:459
+msgid "Something went wrong."
+msgstr ""
+
+#: src/agentic.js:467
+#: src/agentic.js:1317
+msgid "Try again"
+msgstr ""
+
+#: src/agentic.js:488
+msgid "Agent issue created on GitHub! "
+msgstr ""
+
+#: src/agentic.js:548
+msgid "This draft may contain content that looks like instructions for an AI agent rather than a genuine bug report. Review the title and body carefully before creating the GitHub issue."
+msgstr ""
+
+#: src/agentic.js:557
+msgid "Issue title"
+msgstr ""
+
+#: src/agentic.js:564
+msgid "Issue body"
+msgstr ""
+
+#. translators: %s: AI target branch name.
+#: src/agentic.js:577
+#, js-format
+msgid "The AI will open a pull request into %s."
+msgstr ""
+
+#: src/agentic.js:600
+msgid "Create a GitHub issue"
+msgstr ""
+
+#: src/agentic.js:612
+#: src/agentic.js:646
+msgid "Create anyway"
+msgstr ""
+
+#: src/agentic.js:627
+#: src/agentic.js:645
+msgid "Regenerate"
+msgstr ""
+
+#: src/agentic.js:673
+msgid "Create the GitHub issue for the AI agent"
+msgstr ""
+
+#: src/agentic.js:760
+msgid "Requested changes posted on GitHub! "
+msgstr ""
+
+#: src/agentic.js:761
+msgid "Follow-up issue created on GitHub! "
+msgstr ""
+
+#: src/agentic.js:827
+msgid "What still needs to change?"
+msgstr ""
+
+#: src/agentic.js:851
+#: src/agentic.js:890
+#: src/agentic.js:1256
+msgid "Request a change"
+msgstr ""
+
+#: src/agentic.js:863
+#: src/agentic.js:876
+msgid "Request anyway"
+msgstr ""
+
+#: src/agentic.js:925
+msgid "This fix attempt ended. You can send this issue to the AI again."
+msgstr ""
+
+#: src/agentic.js:931
+msgid "This fix attempt ended. The AI target branch was moved back to the commit from before the attempt."
+msgstr ""
+
+#. translators: %s: error message from GitHub.
+#: src/agentic.js:938
+#, js-format
+msgid "This fix attempt ended, but the AI target branch could not be reset: %s"
+msgstr ""
+
+#: src/agentic.js:945
+msgid "This fix attempt ended. The AI target branch was left as it is because outside changes were pushed during the attempt."
+msgstr ""
+
+#: src/agentic.js:964
+msgid "Since no outside changes were pushed to the AI target branch during this attempt, Start over will revert it to the state it had before the attempt."
+msgstr ""
+
+#: src/agentic.js:969
+msgid "Since outside changes were pushed to the AI target branch during this attempt, Start over cannot revert it to the state it had before the attempt."
+msgstr ""
+
+#: src/agentic.js:974
+msgid "The AI target branch is already at the commit from before this attempt, so it will be left as it is."
+msgstr ""
+
+#: src/agentic.js:1020
+msgid "This ends the current fix attempt and starts a new one. Alpaca will close any still-open GitHub issues and pull requests from this attempt."
+msgstr ""
+
+#: src/agentic.js:1048
+#: src/agentic.js:1063
+#: src/agentic.js:1278
+msgid "Start over"
+msgstr ""
+
+#. translators: %d: fix attempt number, starting at 1.
+#: src/agentic.js:1109
+#: src/components/issue/AgenticHistoryTab.jsx:316
+#: src/components/issue/AgenticHistoryTab.jsx:334
+#, js-format
+msgid "Fix attempt %d"
+msgstr ""
+
+#: src/agentic.js:1128
+msgid " in progress"
+msgstr ""
+
+#: src/agentic.js:1181
+msgid "Could not load GitHub pull request details for this issue."
+msgstr ""
+
+#: src/agentic.js:1296
+msgid "Alpaca is gathering information from GitHub…"
+msgstr ""
+
+#: src/AgenticSettings.jsx:26
+#: src/AgenticSettings.jsx:1144
+msgid "GitHub Setup"
+msgstr ""
+
+#: src/AgenticSettings.jsx:27
+#: src/AgenticSettings.jsx:1491
+msgid "WordPress Setup"
+msgstr ""
+
+#: src/AgenticSettings.jsx:28
+#: src/AgenticSettings.jsx:1745
+msgid "Finish Setup"
+msgstr ""
+
+#: src/AgenticSettings.jsx:32
+msgid "Examples of what to include:"
+msgstr ""
+
+#: src/AgenticSettings.jsx:33
+msgid "• What this site is built with (custom theme, WooCommerce, etc.)"
+msgstr ""
+
+#: src/AgenticSettings.jsx:37
+msgid "• Where the main code lives (e.g. wp-content/themes/my-theme)"
+msgstr ""
+
+#: src/AgenticSettings.jsx:41
+msgid "• Important plugins or tools the AI should know about"
+msgstr ""
+
+#: src/AgenticSettings.jsx:45
+msgid "• Anything unusual about environments or deploy targets"
+msgstr ""
+
+#: src/AgenticSettings.jsx:49
+msgid "• Team conventions or “don’t touch” areas"
+msgstr ""
+
+#: src/AgenticSettings.jsx:98
+msgid "Read & write"
+msgstr ""
+
+#: src/AgenticSettings.jsx:99
+msgid "Read-only"
+msgstr ""
+
+#: src/AgenticSettings.jsx:103
+msgid "Contents"
+msgstr ""
+
+#: src/AgenticSettings.jsx:106
+msgid "Pull requests"
+msgstr ""
+
+#: src/AgenticSettings.jsx:109
+#: src/components/RestoreManager.jsx:322
+msgid "Actions"
+msgstr ""
+
+#: src/AgenticSettings.jsx:110
+msgid "Workflows"
+msgstr ""
+
+#: src/AgenticSettings.jsx:111
+msgid "Metadata"
+msgstr ""
+
+#: src/AgenticSettings.jsx:203
+msgid "Required permissions"
+msgstr ""
+
+#: src/AgenticSettings.jsx:206
+msgid "Use a fine-grained PAT <strong>scoped to this repository only</strong>, with these permissions:"
+msgstr ""
+
+#: src/AgenticSettings.jsx:233
+msgid "Classic PAT instead? Enable the repo and workflow scopes."
+msgstr ""
+
+#: src/AgenticSettings.jsx:239
+msgid "Org uses SSO? Authorise the token for the org in GitHub settings."
+msgstr ""
+
+#: src/AgenticSettings.jsx:255
+msgid "Security note"
+msgstr ""
+
+#: src/AgenticSettings.jsx:260
+msgid "The GitHub token is stored in the WordPress options table. For production environments, it is safer to define it as a constant in wp-config.php:"
+msgstr ""
+
+#: src/AgenticSettings.jsx:428
+msgid "the default branch"
+msgstr ""
+
+#. translators: %s: GitHub repository slug (owner/repo).
+#: src/AgenticSettings.jsx:430
+#, js-format
+msgid "Add the required GitHub Actions files to the %s repository."
+msgstr ""
+
+#: src/AgenticSettings.jsx:440
+msgid "Where the files go"
+msgstr ""
+
+#. translators: %s: repository default branch.
+#: src/AgenticSettings.jsx:444
+#, js-format
+msgid "GitHub Actions files go to %s branch (the repository default)."
+msgstr ""
+
+#: src/AgenticSettings.jsx:505
+msgid "Start typing a username…"
+msgstr ""
+
+#: src/AgenticSettings.jsx:587
+#: src/AgenticSettings.jsx:899
+msgid "Failed to load settings."
+msgstr ""
+
+#: src/AgenticSettings.jsx:672
+#: src/AgenticSettings.jsx:699
+msgid "Could not save settings."
+msgstr ""
+
+#: src/AgenticSettings.jsx:721
+msgid "Validating credentials…"
+msgstr ""
+
+#: src/AgenticSettings.jsx:748
+msgid "Connected."
+msgstr ""
+
+#: src/AgenticSettings.jsx:754
+msgid "Connection failed."
+msgstr ""
+
+#: src/AgenticSettings.jsx:779
+msgid "GitHub Actions files were committed but the pull request could not be opened. Please open one manually from branch alpaca/ai-development."
+msgstr ""
+
+#: src/AgenticSettings.jsx:887
+msgid "Fix With AI is only available to administrators and users granted engineer access. Contact your site administrator if you need access."
+msgstr ""
+
+#: src/AgenticSettings.jsx:923
+msgid "Merge the pull request on GitHub: "
+msgstr ""
+
+#: src/AgenticSettings.jsx:929
+msgid "Merge the Alpaca AI Development pull request on GitHub"
+msgstr ""
+
+#: src/AgenticSettings.jsx:939
+msgid "Add "
+msgstr ""
+
+#: src/AgenticSettings.jsx:941
+#: src/AgenticSettings.jsx:994
+msgid " to "
+msgstr ""
+
+#: src/AgenticSettings.jsx:943
+#: src/AgenticSettings.jsx:996
+msgid "repository secrets"
+msgstr ""
+
+#: src/AgenticSettings.jsx:947
+msgid "Add CLAUDE_CODE_OAUTH_TOKEN to repository secrets"
+msgstr ""
+
+#: src/AgenticSettings.jsx:957
+msgid "Run "
+msgstr ""
+
+#: src/AgenticSettings.jsx:959
+msgid "Actions → Setup Labels → Run workflow"
+msgstr ""
+
+#: src/AgenticSettings.jsx:964
+msgid " once to create all labels"
+msgstr ""
+
+#: src/AgenticSettings.jsx:967
+msgid "Run Actions → Setup Labels → Run workflow once to create all labels"
+msgstr ""
+
+#: src/AgenticSettings.jsx:992
+msgid "(Optional) Add "
+msgstr ""
+
+#: src/AgenticSettings.jsx:998
+msgid " for automated code review"
+msgstr ""
+
+#: src/AgenticSettings.jsx:1001
+msgid "(Optional) Add ANTHROPIC_API_KEY to repository secrets for automated code review"
+msgstr ""
+
+#: src/AgenticSettings.jsx:1034
+msgid "Off"
+msgstr ""
+
+#: src/AgenticSettings.jsx:1037
+msgid "On"
+msgstr ""
+
+#: src/AgenticSettings.jsx:1041
+msgid "Enable Fix With AI"
+msgstr ""
+
+#: src/AgenticSettings.jsx:1050
+msgid "You're all set!"
+msgstr ""
+
+#: src/AgenticSettings.jsx:1057
+msgid "Fix With AI can only propose code changes within the boundaries of the GitHub repository referenced below."
+msgstr ""
+
+#: src/AgenticSettings.jsx:1063
+msgid "All Pull Requests must be thoroughly reviewed by a competent developer before being applied to your live site."
+msgstr ""
+
+#: src/AgenticSettings.jsx:1072
+msgid "You have Fix With AI access and can view setup status below. Only administrators can change these settings."
+msgstr ""
+
+#: src/AgenticSettings.jsx:1148
+#: src/AgenticSettings.jsx:1496
+#: src/AgenticSettings.jsx:1750
+msgid "Turn on Fix With AI above to unlock setup steps."
+msgstr ""
+
+#: src/AgenticSettings.jsx:1155
+msgid "Membership of the organisation with access to this repository is required."
+msgstr ""
+
+#: src/AgenticSettings.jsx:1166
+msgid "Repository (owner/repo)"
+msgstr ""
+
+#: src/AgenticSettings.jsx:1192
+msgid "Personal Access Token (PAT)"
+msgstr ""
+
+#: src/AgenticSettings.jsx:1214
+msgid "Defined via ALPAISTR_AGENTIC_GITHUB_TOKEN constant."
+msgstr ""
+
+#: src/AgenticSettings.jsx:1246
+msgid "Validating…"
+msgstr ""
+
+#: src/AgenticSettings.jsx:1247
+msgid "Validate credentials"
+msgstr ""
+
+#: src/AgenticSettings.jsx:1265
+#: src/AgenticSettings.jsx:1268
+msgid "AI target branch"
+msgstr ""
+
+#: src/AgenticSettings.jsx:1271
+msgid "The AI opens pull requests into this branch."
+msgstr ""
+
+#: src/AgenticSettings.jsx:1277
+msgid "Avoid a production branch, unless you are sure what you are doing."
+msgstr ""
+
+#: src/AgenticSettings.jsx:1297
+msgid "Validate credentials to load branches"
+msgstr ""
+
+#: src/AgenticSettings.jsx:1301
+msgid "Select a branch…"
+msgstr ""
+
+#: src/AgenticSettings.jsx:1317
+msgid "Are you sure? This looks like a production branch. Staging or development branches are generally preferable."
+msgstr ""
+
+#: src/AgenticSettings.jsx:1328
+msgid "Configure the Claude GitHub App"
+msgstr ""
+
+#: src/AgenticSettings.jsx:1334
+msgid "Claude GitHub App"
+msgstr ""
+
+#: src/AgenticSettings.jsx:1337
+msgid "Fix With AI runs Claude through the official Claude GitHub App. This step is required."
+msgstr ""
+
+#: src/AgenticSettings.jsx:1343
+msgid "Choose Configure, then select this repository."
+msgstr ""
+
+#: src/AgenticSettings.jsx:1357
+msgid "Install on GitHub"
+msgstr ""
+
+#: src/AgenticSettings.jsx:1377
+msgid "Save your repository and token above first."
+msgstr ""
+
+#: src/AgenticSettings.jsx:1393
+msgid "Pull request opened:"
+msgstr ""
+
+#: src/AgenticSettings.jsx:1410
+msgid "GitHub Actions files detected in your repository."
+msgstr ""
+
+#: src/AgenticSettings.jsx:1416
+msgid "GitHub Actions files are already in your repository. Continue to WordPress Setup."
+msgstr ""
+
+#: src/AgenticSettings.jsx:1430
+msgid "Continue to WordPress Setup"
+msgstr ""
+
+#: src/AgenticSettings.jsx:1452
+msgid "Opening pull request…"
+msgstr ""
+
+#: src/AgenticSettings.jsx:1453
+msgid "Open a PR & continue"
+msgstr ""
+
+#: src/AgenticSettings.jsx:1464
+msgid "This can take a while, please keep this page open."
+msgstr ""
+
+#: src/AgenticSettings.jsx:1500
+msgid "Complete GitHub Setup to unlock this step."
+msgstr ""
+
+#: src/AgenticSettings.jsx:1510
+msgid "WordPress Connectors"
+msgstr ""
+
+#: src/AgenticSettings.jsx:1521
+msgid "AI provider configured via WordPress Connectors."
+msgstr ""
+
+#: src/AgenticSettings.jsx:1530
+msgid "Manage Connectors"
+msgstr ""
+
+#: src/AgenticSettings.jsx:1541
+msgid "No AI provider configured via WordPress Connectors."
+msgstr ""
+
+#: src/AgenticSettings.jsx:1550
+msgid "Set up Connectors"
+msgstr ""
+
+#: src/AgenticSettings.jsx:1559
+msgid "Select the AI provider used to draft Alpaca issues for GitHub."
+msgstr ""
+
+#: src/AgenticSettings.jsx:1564
+msgid "More information"
+msgstr ""
+
+#: src/AgenticSettings.jsx:1565
+msgid "This is separate from the AI that resolves issues on GitHub — you can use the same key for both."
+msgstr ""
+
+#: src/AgenticSettings.jsx:1573
+msgid "AI provider settings"
+msgstr ""
+
+#: src/AgenticSettings.jsx:1580
+msgid "AI Provider"
+msgstr ""
+
+#: src/AgenticSettings.jsx:1599
+msgid "AI API Key"
+msgstr ""
+
+#: src/AgenticSettings.jsx:1614
+msgid "Defined via ALPAISTR_AGENTIC_AI_API_KEY constant."
+msgstr ""
+
+#: src/AgenticSettings.jsx:1633
+msgid "Used to draft GitHub issues from Alpaca cards."
+msgstr ""
+
+#: src/AgenticSettings.jsx:1652
+msgid "Users"
+msgstr ""
+
+#: src/AgenticSettings.jsx:1655
+msgid "Users added here can send Alpaca issues to the AI agent for resolving on GitHub (see disclaimer below)."
+msgstr ""
+
+#: src/AgenticSettings.jsx:1668
+msgid "Only administrators can manage who has access to Fix With AI."
+msgstr ""
+
+#: src/AgenticSettings.jsx:1678
+msgid "Project context"
+msgstr ""
+
+#: src/AgenticSettings.jsx:1682
+msgid "Optional site-wide notes included with every AI-drafted GitHub issue."
+msgstr ""
+
+#: src/AgenticSettings.jsx:1706
+#: src/AgenticSettings.jsx:1841
+msgid "Back"
+msgstr ""
+
+#: src/AgenticSettings.jsx:1718
+#: src/AgenticSettings.jsx:1850
+#: src/components/BlockTemplateEditorScreen.jsx:407
+msgid "Saving…"
+msgstr ""
+
+#: src/AgenticSettings.jsx:1719
+msgid "Save & continue"
+msgstr ""
+
+#: src/AgenticSettings.jsx:1728
+msgid "Continue"
+msgstr ""
+
+#: src/AgenticSettings.jsx:1754
+msgid "Complete the earlier steps to unlock this step."
+msgstr ""
+
+#: src/AgenticSettings.jsx:1761
+msgid "A few manual steps are needed to finish setup. Check them off here as you complete them."
+msgstr ""
+
+#. translators: %s: GitHub repository slug (owner/repo).
+#: src/AgenticSettings.jsx:1789
+#, js-format
+msgid "The <a>Claude GitHub App</a> is installed on %s."
+msgstr ""
+
+#: src/AgenticSettings.jsx:1795
+msgid "your repository"
+msgstr ""
+
+#: src/AgenticSettings.jsx:1851
+#: src/components/Comment.jsx:384
+msgid "Save"
+msgstr ""
+
+#: src/AgenticSettings.jsx:1855
+msgid "Saving final setup…"
+msgstr ""
+
+#: src/AgenticSettings.jsx:1860
+msgid "Final setup saved."
+msgstr ""
+
+#: src/AgenticSettings.jsx:1865
+msgid "Could not save final setup."
+msgstr ""
+
+#: src/AgenticSettings.jsx:1874
+msgid "Only intended for skilled engineers with GitHub access who can review the AI-generated pull requests."
 msgstr ""
 
 #: src/Board.jsx:1324
@@ -1128,10 +2292,6 @@ msgstr ""
 
 #: src/components/BlockTemplateEditorScreen.jsx:360
 msgid "Email subject"
-msgstr ""
-
-#: src/components/BlockTemplateEditorScreen.jsx:407
-msgid "Saving…"
 msgstr ""
 
 #: src/components/BlockTemplateEditorScreen.jsx:408
@@ -1242,7 +2402,7 @@ msgstr ""
 
 #: src/components/Comment.jsx:323
 #: src/components/Container.jsx:526
-#: src/components/Issue.jsx:2136
+#: src/components/Issue.jsx:2234
 msgid "Options"
 msgstr ""
 
@@ -1252,8 +2412,8 @@ msgstr ""
 
 #: src/components/Comment.jsx:351
 #: src/components/Comment.jsx:1246
-#: src/components/Issue.jsx:2499
-#: src/components/Issue.jsx:2610
+#: src/components/Issue.jsx:2597
+#: src/components/Issue.jsx:2711
 #: src/components/issue/AttachmentRow.jsx:166
 #: src/components/settings/SettingsList.jsx:329
 #: src/components/StatusManager.jsx:702
@@ -1264,22 +2424,6 @@ msgstr ""
 #: src/components/Comment.jsx:1121
 #: src/components/CommentForm.jsx:475
 msgid "Pending comment attachment"
-msgstr ""
-
-#: src/components/Comment.jsx:377
-#: src/components/Comment.jsx:1249
-#: src/components/CommentForm.jsx:501
-#: src/components/Issue.jsx:2614
-#: src/components/issue/AttachmentRow.jsx:169
-#: src/components/MarkdownTextarea.jsx:878
-#: src/components/settings/SettingsList.jsx:332
-#: src/Modal.jsx:259
-#: src/Toolbar.jsx:341
-msgid "Cancel"
-msgstr ""
-
-#: src/components/Comment.jsx:384
-msgid "Save"
 msgstr ""
 
 #: src/components/Comment.jsx:399
@@ -1306,9 +2450,9 @@ msgstr ""
 
 #: src/components/Comment.jsx:753
 #: src/components/comment/TimelineEntry.jsx:227
-#: src/components/Issue.jsx:2103
-#: src/components/Issue.jsx:2107
-#: src/components/Issue.jsx:2109
+#: src/components/Issue.jsx:2201
+#: src/components/Issue.jsx:2205
+#: src/components/Issue.jsx:2207
 #: src/hooks/useUser.js:69
 #: src/utils/statusChange.js:89
 msgid "Unknown"
@@ -1380,25 +2524,25 @@ msgid_plural "Are you sure you want to delete these comments%1$s?"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/components/comment/TimelineEntry.jsx:261
+#: src/components/comment/TimelineEntry.jsx:270
 msgid "another user"
 msgstr ""
 
 #. translators: Prefix before issue title in activity headers.
-#: src/components/comment/TimelineEntry.jsx:279
+#: src/components/comment/TimelineEntry.jsx:289
 #, js-format
 msgid "on %s"
 msgstr ""
 
-#: src/components/comment/TimelineEntry.jsx:421
+#: src/components/comment/TimelineEntry.jsx:431
 msgid "edited by"
 msgstr ""
 
-#: src/components/comment/TimelineEntry.jsx:434
+#: src/components/comment/TimelineEntry.jsx:444
 msgid "edited"
 msgstr ""
 
-#: src/components/comment/TimelineEntry.jsx:470
+#: src/components/comment/TimelineEntry.jsx:480
 msgid "Comment attachment"
 msgstr ""
 
@@ -1529,11 +2673,6 @@ msgstr ""
 msgid "Front-End Issue Capture"
 msgstr ""
 
-#: src/components/EnableContextCaptureControl.jsx:14
-#: src/Modal.jsx:208
-msgid "Context Capture"
-msgstr ""
-
 #: src/components/EnableContextCaptureControl.jsx:20
 msgid "Enable the front-end controls for reporting issues with associated context"
 msgstr ""
@@ -1548,6 +2687,85 @@ msgstr ""
 
 #: src/components/EnableTestLogsControl.jsx:23
 msgid "Enable Browser Console Messages"
+msgstr ""
+
+#: src/components/GithubCleanup.jsx:45
+msgid "Could not inspect GitHub setup."
+msgstr ""
+
+#: src/components/GithubCleanup.jsx:69
+msgid "Could not remove GitHub setup."
+msgstr ""
+
+#: src/components/GithubCleanup.jsx:87
+#: src/components/GithubCleanup.jsx:187
+msgid "Remove GitHub setup"
+msgstr ""
+
+#: src/components/GithubCleanup.jsx:91
+msgid "Uninstalling this plugin never changes GitHub. Review the repository configuration files before removing them."
+msgstr ""
+
+#: src/components/GithubCleanup.jsx:104
+msgid "Reviewing…"
+msgstr ""
+
+#: src/components/GithubCleanup.jsx:105
+msgid "Review GitHub resources"
+msgstr ""
+
+#: src/components/GithubCleanup.jsx:112
+msgid "Will be removed"
+msgstr ""
+
+#: src/components/GithubCleanup.jsx:123
+msgid "Actions variable (the branch itself is kept)"
+msgstr ""
+
+#: src/components/GithubCleanup.jsx:131
+msgid "Setup branch:"
+msgstr ""
+
+#: src/components/GithubCleanup.jsx:138
+msgid "No plugin resources were found in this repository."
+msgstr ""
+
+#: src/components/GithubCleanup.jsx:144
+msgid "Requires manual removal"
+msgstr ""
+
+#: src/components/GithubCleanup.jsx:147
+msgid "Repository secrets and existing issues, labels, and pull requests"
+msgstr ""
+
+#: src/components/GithubCleanup.jsx:159
+msgid "Setup pull request"
+msgstr ""
+
+#: src/components/GithubCleanup.jsx:161
+msgid "— GitHub cannot delete a pull request. Removing the setup branch closes it."
+msgstr ""
+
+#: src/components/GithubCleanup.jsx:171
+msgid "Type the repository name to confirm"
+msgstr ""
+
+#: src/components/GithubCleanup.jsx:186
+msgid "Removing…"
+msgstr ""
+
+#. translators: %d: number of GitHub resources removed.
+#: src/components/GithubCleanup.jsx:203
+#, js-format
+msgid "Removed %d GitHub resources."
+msgstr ""
+
+#: src/components/GithubCleanup.jsx:218
+msgid "Could not remove"
+msgstr ""
+
+#: src/components/GithubCleanup.jsx:227
+msgid "Also review repository secrets and existing issues, labels, and pull requests in GitHub."
 msgstr ""
 
 #: src/components/InboxControl.jsx:305
@@ -1604,7 +2822,7 @@ msgid "Mark All Read"
 msgstr ""
 
 #: src/components/InboxControl.jsx:717
-#: src/components/Issue.jsx:2246
+#: src/components/Issue.jsx:2344
 #: src/components/User.jsx:30
 #: src/DashboardWidget.jsx:41
 msgid "Loading…"
@@ -1614,177 +2832,275 @@ msgstr ""
 msgid "Load More"
 msgstr ""
 
-#: src/components/Issue.jsx:72
+#: src/components/Issue.jsx:73
 #: src/Modal.jsx:234
 #: src/Toolbar.jsx:314
 msgid "High Priority"
 msgstr ""
 
-#: src/components/Issue.jsx:384
+#: src/components/Issue.jsx:385
 msgid "Edit assignees"
 msgstr ""
 
-#: src/components/Issue.jsx:403
+#: src/components/Issue.jsx:404
 msgid "Assign"
 msgstr ""
 
-#: src/components/Issue.jsx:740
+#: src/components/Issue.jsx:743
 msgid "Failed to load statuses."
 msgstr ""
 
-#: src/components/Issue.jsx:751
+#: src/components/Issue.jsx:754
 #: src/components/LabelsManager.jsx:99
 msgid "Failed to load labels."
 msgstr ""
 
-#: src/components/Issue.jsx:919
+#: src/components/Issue.jsx:972
 msgid "Failed to update assignees."
 msgstr ""
 
-#: src/components/Issue.jsx:962
+#: src/components/Issue.jsx:1015
 msgid "Failed to update priority."
 msgstr ""
 
-#: src/components/Issue.jsx:1020
+#: src/components/Issue.jsx:1073
 msgid "Failed to update labels."
 msgstr ""
 
-#: src/components/Issue.jsx:1109
+#: src/components/Issue.jsx:1162
 msgid "Failed to progress issue status."
 msgstr ""
 
-#: src/components/Issue.jsx:1152
+#: src/components/Issue.jsx:1205
 msgid "Failed to update issue title."
 msgstr ""
 
-#: src/components/Issue.jsx:1296
+#: src/components/Issue.jsx:1349
 msgid "Issue created, but labels could not be saved."
 msgstr ""
 
-#: src/components/Issue.jsx:1365
+#: src/components/Issue.jsx:1418
 msgid "Failed to create issue comment."
 msgstr ""
 
-#: src/components/Issue.jsx:1417
+#: src/components/Issue.jsx:1470
 msgid "Comment could not be saved. Please try again."
 msgstr ""
 
-#: src/components/Issue.jsx:1421
+#: src/components/Issue.jsx:1474
 msgid "Issue created, but comment could not be saved."
 msgstr ""
 
-#: src/components/Issue.jsx:1516
+#: src/components/Issue.jsx:1569
 msgid "Failed to retry comment."
 msgstr ""
 
-#: src/components/Issue.jsx:1716
+#: src/components/Issue.jsx:1769
 msgid "Failed to update subissue title."
 msgstr ""
 
-#: src/components/Issue.jsx:1790
+#: src/components/Issue.jsx:1843
 msgid "Failed to update subissue completion."
 msgstr ""
 
-#: src/components/Issue.jsx:1875
+#: src/components/Issue.jsx:1928
 msgid "Failed to update subissue assignees."
 msgstr ""
 
-#: src/components/Issue.jsx:1980
+#: src/components/Issue.jsx:2033
 #: src/utils/issueCommentHandler.js:262
 #: src/utils/issueCommentHandler.js:575
 msgid "Unknown issue"
 msgstr ""
 
-#: src/components/Issue.jsx:1994
+#: src/components/Issue.jsx:2047
 msgid "Failed to promote subissue."
 msgstr ""
 
-#: src/components/Issue.jsx:2023
+#: src/components/Issue.jsx:2076
 msgid "You do not have permission to delete issues."
 msgstr ""
 
-#: src/components/Issue.jsx:2041
+#: src/components/Issue.jsx:2094
 msgid "Failed to delete subissue."
 msgstr ""
 
-#: src/components/Issue.jsx:2158
+#: src/components/Issue.jsx:2256
 msgid "Issue ID copied to clipboard."
 msgstr ""
 
-#: src/components/Issue.jsx:2162
+#: src/components/Issue.jsx:2260
 msgid "Failed to copy issue ID to clipboard."
 msgstr ""
 
-#: src/components/Issue.jsx:2169
+#: src/components/Issue.jsx:2267
 msgid "Copy Issue ID"
 msgstr ""
 
-#: src/components/Issue.jsx:2190
+#: src/components/Issue.jsx:2288
 msgid "Issue permalink copied to clipboard."
 msgstr ""
 
-#: src/components/Issue.jsx:2194
+#: src/components/Issue.jsx:2292
 msgid "Failed to copy issue permalink to clipboard."
 msgstr ""
 
-#: src/components/Issue.jsx:2204
+#: src/components/Issue.jsx:2302
 msgid "Copy Issue Permalink"
 msgstr ""
 
-#: src/components/Issue.jsx:2214
+#: src/components/Issue.jsx:2312
 msgid "Progress Issue to"
 msgstr ""
 
-#: src/components/Issue.jsx:2227
+#: src/components/Issue.jsx:2325
 msgid "Trash Issue"
 msgstr ""
 
-#: src/components/Issue.jsx:2240
+#: src/components/Issue.jsx:2338
 msgid "Retry"
 msgstr ""
 
-#: src/components/Issue.jsx:2263
+#: src/components/Issue.jsx:2361
 msgid "Enter a title to create issue…"
 msgstr ""
 
-#: src/components/Issue.jsx:2284
+#: src/components/Issue.jsx:2382
 msgid "Created by"
 msgstr ""
 
-#: src/components/Issue.jsx:2340
+#: src/components/Issue.jsx:2438
 msgid "Add a comment to the issue…"
 msgstr ""
 
-#: src/components/Issue.jsx:2351
+#: src/components/Issue.jsx:2449
 msgid "Retry Comment"
 msgstr ""
 
-#: src/components/Issue.jsx:2368
+#: src/components/Issue.jsx:2466
 msgid "Checklist"
 msgstr ""
 
-#: src/components/Issue.jsx:2380
+#: src/components/Issue.jsx:2478
 msgid "Add"
 msgstr ""
 
-#: src/components/Issue.jsx:2428
+#: src/components/Issue.jsx:2526
 msgid "Enter title…"
 msgstr ""
 
-#: src/components/Issue.jsx:2482
+#: src/components/Issue.jsx:2580
 msgid "Promote"
 msgstr ""
 
-#: src/components/Issue.jsx:2567
+#: src/components/Issue.jsx:2668
 msgid "Could not load issue details."
 msgstr ""
 
-#: src/components/Issue.jsx:2593
+#: src/components/Issue.jsx:2694
 msgid "Delete Issue?"
 msgstr ""
 
-#: src/components/Issue.jsx:2595
+#: src/components/Issue.jsx:2696
 msgid "Are you sure you want to trash this issue?"
+msgstr ""
+
+#: src/components/issue/AgenticHistoryTab.jsx:21
+msgid "Merged"
+msgstr ""
+
+#: src/components/issue/AgenticHistoryTab.jsx:24
+msgid "Open"
+msgstr ""
+
+#: src/components/issue/AgenticHistoryTab.jsx:27
+msgid "Closed without merging"
+msgstr ""
+
+#: src/components/issue/AgenticHistoryTab.jsx:29
+msgid "Waiting for pull request"
+msgstr ""
+
+#. translators: %d: follow-up request number, starting at 1.
+#: src/components/issue/AgenticHistoryTab.jsx:57
+#, js-format
+msgid "Request a change %d"
+msgstr ""
+
+#. translators: %d: GitHub pull request number.
+#: src/components/issue/AgenticHistoryTab.jsx:73
+#, js-format
+msgid "New commits on pull request #%d"
+msgstr ""
+
+#: src/components/issue/AgenticHistoryTab.jsx:76
+msgid "New commits on the open pull request"
+msgstr ""
+
+#. translators: %d: GitHub issue number.
+#: src/components/issue/AgenticHistoryTab.jsx:82
+#, js-format
+msgid "Requested a new pull request on issue #%d"
+msgstr ""
+
+#: src/components/issue/AgenticHistoryTab.jsx:85
+msgid "Requested a new pull request"
+msgstr ""
+
+#: src/components/issue/AgenticHistoryTab.jsx:87
+msgid "Requested a change on GitHub"
+msgstr ""
+
+#. translators: %d: GitHub pull request number.
+#: src/components/issue/AgenticHistoryTab.jsx:104
+#, js-format
+msgid "Pull request #%d"
+msgstr ""
+
+#. translators: %d: GitHub issue number.
+#: src/components/issue/AgenticHistoryTab.jsx:111
+#, js-format
+msgid "Issue #%d"
+msgstr ""
+
+#: src/components/issue/AgenticHistoryTab.jsx:201
+msgid "Target branch was not reset."
+msgstr ""
+
+#: src/components/issue/AgenticHistoryTab.jsx:207
+msgid "Started over"
+msgstr ""
+
+#: src/components/issue/AgenticHistoryTab.jsx:220
+msgid "Open GitHub issues and pull requests were closed."
+msgstr ""
+
+#. translators: %s: AI target branch name.
+#: src/components/issue/AgenticHistoryTab.jsx:265
+#, js-format
+msgid "Target branch changed: %s"
+msgstr ""
+
+#. translators: %s: AI target branch name.
+#: src/components/issue/AgenticHistoryTab.jsx:270
+#, js-format
+msgid "AI target branch: %s"
+msgstr ""
+
+#. translators: %d: fix attempt number, starting at 1.
+#: src/components/issue/AgenticHistoryTab.jsx:322
+#, js-format
+msgid "Fix attempt %d (current)"
+msgstr ""
+
+#. translators: %d: fix attempt number, starting at 1.
+#: src/components/issue/AgenticHistoryTab.jsx:328
+#, js-format
+msgid "Fix attempt %d (closed)"
+msgstr ""
+
+#: src/components/issue/AgenticHistoryTab.jsx:515
+msgid "No Fix With AI activity yet."
 msgstr ""
 
 #: src/components/issue/AssigneeSelector.jsx:57
@@ -2299,10 +3615,6 @@ msgstr ""
 msgid "Last action"
 msgstr ""
 
-#: src/components/RestoreManager.jsx:322
-msgid "Actions"
-msgstr ""
-
 #: src/components/RestoreManager.jsx:332
 msgid "No deleted issues found."
 msgstr ""
@@ -2451,6 +3763,10 @@ msgstr ""
 msgid "Submission Failed"
 msgstr ""
 
+#: src/Modal.jsx:208
+msgid "Context Capture"
+msgstr ""
+
 #: src/Modal.jsx:217
 #: src/Toolbar.jsx:296
 msgid "Close"
@@ -2586,22 +3902,26 @@ msgstr ""
 msgid "Issue **restored** by"
 msgstr ""
 
-#: src/utils/tabsConfig.js:13
+#: src/utils/tabsConfig.js:14
 msgid "Timeline"
 msgstr ""
 
-#: src/utils/tabsConfig.js:20
+#: src/utils/tabsConfig.js:21
 msgid "Report"
 msgstr ""
 
-#: src/utils/tabsConfig.js:32
+#: src/utils/tabsConfig.js:33
 msgid "Queried Object"
 msgstr ""
 
-#: src/utils/tabsConfig.js:43
+#: src/utils/tabsConfig.js:44
 msgid "Headers"
 msgstr ""
 
-#: src/utils/tabsConfig.js:54
+#: src/utils/tabsConfig.js:55
 msgid "Errors"
+msgstr ""
+
+#: src/utils/tabsConfig.js:65
+msgid "AI Log"
 msgstr ""
