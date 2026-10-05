@@ -6,8 +6,14 @@
 import PropTypes from 'prop-types';
 import useUserManagement from './hooks/useUserManagement';
 
-const { useState, useEffect, useCallback, useMemo, useRef, createInterpolateElement } =
-  wp.element;
+const {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  useRef,
+  createInterpolateElement,
+} = wp.element;
 const { __, sprintf } = wp.i18n;
 const { Spinner, FormTokenField, Popover, SlotFillProvider } = wp.components;
 
@@ -100,6 +106,7 @@ const PAT_PERMISSIONS = [
     label: __('Pull requests', 'alpaca-issue-tracker'),
     access: PAT_READ_WRITE,
   },
+  { label: __('Actions', 'alpaca-issue-tracker'), access: PAT_READ_WRITE },
   { label: __('Workflows', 'alpaca-issue-tracker'), access: PAT_READ_WRITE },
   { label: __('Metadata', 'alpaca-issue-tracker'), access: PAT_READ_ONLY },
 ];
@@ -193,9 +200,7 @@ InfoHelpPopover.propTypes = {
  * @return {JSX.Element} Help control.
  */
 const PatHelpPopover = () => (
-  <InfoHelpPopover
-    label={__('Required permissions', 'alpaca-issue-tracker')}
-  >
+  <InfoHelpPopover label={__('Required permissions', 'alpaca-issue-tracker')}>
     <p className="agentic-pat-help-popover__intro">
       {createInterpolateElement(
         __(
@@ -324,7 +329,9 @@ const STATIC_REQUIRED_SETUP_CHECKLIST_KEYS = [1, 2, 4];
  */
 const getRequiredSetupChecklistKeys = (data) => {
   const keys = [...STATIC_REQUIRED_SETUP_CHECKLIST_KEYS];
-  const branchProtection = Array.isArray(data?.setup_security?.branch_protection)
+  const branchProtection = Array.isArray(
+    data?.setup_security?.branch_protection,
+  )
     ? data.setup_security.branch_protection
     : [];
   for (const item of branchProtection) {
@@ -363,8 +370,7 @@ const areRequiredFinishSetupChecksComplete = (data) => {
  */
 const getStepStates = (data) => {
   const enabled = !!data.enabled;
-  const githubConfigured =
-    !!data.github_repo && !!data.github_token_set;
+  const githubConfigured = !!data.github_repo && !!data.github_token_set;
   const githubWorkflowInstalled = !!data.workflow_installed;
 
   const githubReady =
@@ -431,9 +437,7 @@ const RepoInstallMessage = ({ repo, defaultBranch }) => {
       {parts[0]}
       <strong>{repo}</strong>
       {parts[1] || ''}
-      <InfoHelpPopover
-        label={__('Where the files go', 'alpaca-issue-tracker')}
-      >
+      <InfoHelpPopover label={__('Where the files go', 'alpaca-issue-tracker')}>
         <p className="agentic-pat-help-popover__intro">
           {sprintf(
             /* translators: %s: repository default branch. */
@@ -788,11 +792,7 @@ const AgenticSettings = () => {
   }, [applySettings, saveSettings]);
 
   useEffect(() => {
-    if (
-      1 !== focusedStep ||
-      !data?.github_repo ||
-      !data?.github_token_set
-    ) {
+    if (1 !== focusedStep || !data?.github_repo || !data?.github_token_set) {
       return;
     }
 
@@ -903,8 +903,7 @@ const AgenticSettings = () => {
 
   const canEdit = !!data.can_edit;
   const panelLocked = !allDone && !!stepStates[focusedStep]?.locked;
-  const githubConfigured =
-    !!data.github_repo && !!data.github_token_set;
+  const githubConfigured = !!data.github_repo && !!data.github_token_set;
   const githubWorkflowInstalled = !!data.workflow_installed;
   const wordpressConfigured = data.wp_ai_available
     ? !!data.ai_ready
@@ -971,7 +970,7 @@ const AgenticSettings = () => {
         )
       ),
     },
-    ...((Array.isArray(data.setup_security?.branch_protection)
+    ...(Array.isArray(data.setup_security?.branch_protection)
       ? data.setup_security.branch_protection
       : []
     )
@@ -985,7 +984,7 @@ const AgenticSettings = () => {
       .map((item) => ({
         key: Number(item.key),
         node: item.label,
-      }))),
+      })),
     {
       key: 3,
       node: secretsUrl ? (
@@ -1009,860 +1008,876 @@ const AgenticSettings = () => {
 
   return (
     <SlotFillProvider>
-    <div
-      className={`agentic-wizard-inner${allDone ? ' agentic-wizard-all-done' : ''}`}
-      data-agentic-all-done={allDone ? '1' : undefined}
-    >
-      <div className="agentic-wizard-header">
-        <h1 className="wp-heading-inline agentic-wizard-title">
-          {__('Fix With AI', 'alpaca-issue-tracker')}
-        </h1>
-        <label
-          htmlFor="agentic-enable-toggle"
-          className={`agentic-toggle-label agentic-header-toggle${!canEdit ? ' agentic-fieldset-disabled' : ''}`}
-        >
-          <input
-            id="agentic-enable-toggle"
-            type="checkbox"
-            className="agentic-toggle-input"
-            checked={!!form.enabled}
-            disabled={!canEdit || saving}
-            onChange={(event) => saveEnabledToggle(event.target.checked)}
-          />
-          <span className="agentic-toggle-track" />
-          <span className="agentic-toggle-text" aria-hidden="true">
-            <span className="agentic-toggle-state agentic-toggle-state--off">
-              {__('Off', 'alpaca-issue-tracker')}
+      <div
+        className={`agentic-wizard-inner${allDone ? ' agentic-wizard-all-done' : ''}`}
+        data-agentic-all-done={allDone ? '1' : undefined}
+      >
+        <div className="agentic-wizard-header">
+          <h1 className="wp-heading-inline agentic-wizard-title">
+            {__('Fix With AI', 'alpaca-issue-tracker')}
+          </h1>
+          <label
+            htmlFor="agentic-enable-toggle"
+            className={`agentic-toggle-label agentic-header-toggle${!canEdit ? ' agentic-fieldset-disabled' : ''}`}
+          >
+            <input
+              id="agentic-enable-toggle"
+              type="checkbox"
+              className="agentic-toggle-input"
+              checked={!!form.enabled}
+              disabled={!canEdit || saving}
+              onChange={(event) => saveEnabledToggle(event.target.checked)}
+            />
+            <span className="agentic-toggle-track" />
+            <span className="agentic-toggle-text" aria-hidden="true">
+              <span className="agentic-toggle-state agentic-toggle-state--off">
+                {__('Off', 'alpaca-issue-tracker')}
+              </span>
+              <span className="agentic-toggle-state agentic-toggle-state--on">
+                {__('On', 'alpaca-issue-tracker')}
+              </span>
             </span>
-            <span className="agentic-toggle-state agentic-toggle-state--on">
-              {__('On', 'alpaca-issue-tracker')}
+            <span className="screen-reader-text">
+              {__('Enable Fix With AI', 'alpaca-issue-tracker')}
             </span>
-          </span>
-          <span className="screen-reader-text">
-            {__('Enable Fix With AI', 'alpaca-issue-tracker')}
-          </span>
-        </label>
-        {allDone ? (
-          <p className="agentic-all-done-status">
-            <span className="agentic-all-done-icon" aria-hidden="true">
-              ✓
-            </span>
-            <strong className="agentic-all-done-heading">
-              {__("You're all set!", 'alpaca-issue-tracker')}
-            </strong>
+          </label>
+          {allDone ? (
+            <p className="agentic-all-done-status">
+              <span className="agentic-all-done-icon" aria-hidden="true">
+                ✓
+              </span>
+              <strong className="agentic-all-done-heading">
+                {__("You're all set!", 'alpaca-issue-tracker')}
+              </strong>
+            </p>
+          ) : null}
+        </div>
+        <div className="agentic-advisory">
+          <p>
+            {__(
+              'Fix With AI can only propose code changes within the boundaries of the GitHub repository referenced below.',
+              'alpaca-issue-tracker',
+            )}
+          </p>
+          <p>
+            {__(
+              'All Pull Requests must be thoroughly reviewed by a competent developer before being applied to your live site.',
+              'alpaca-issue-tracker',
+            )}
+          </p>
+        </div>
+
+        {!canEdit && data.is_engineer ? (
+          <p className="agentic-status-text agentic-status-text--info">
+            {__(
+              'You have Fix With AI access and can view setup status below. Only administrators can change these settings.',
+              'alpaca-issue-tracker',
+            )}
           </p>
         ) : null}
-      </div>
-      <div className="agentic-advisory">
-        <p>
-          {__(
-            'Fix With AI can only propose code changes within the boundaries of the GitHub repository referenced below.',
-            'alpaca-issue-tracker',
-          )}
-        </p>
-        <p>
-          {__(
-            'All Pull Requests must be thoroughly reviewed by a competent developer before being applied to your live site.',
-            'alpaca-issue-tracker',
-          )}
-        </p>
-      </div>
 
-      {!canEdit && data.is_engineer ? (
-        <p className="agentic-status-text agentic-status-text--info">
-          {__(
-            'You have Fix With AI access and can view setup status below. Only administrators can change these settings.',
-            'alpaca-issue-tracker',
-          )}
-        </p>
-      ) : null}
+        {error ? (
+          <p className="agentic-status-text agentic-status-text--error">
+            {error}
+          </p>
+        ) : null}
 
-      {error ? (
-        <p className="agentic-status-text agentic-status-text--error">{error}</p>
-      ) : null}
-
-      <div
-        className={`agentic-step-indicators${allDone ? ' agentic-indicators-all-done' : ''}${!form.enabled ? ' agentic-indicators-disabled' : ''}`}
-        role="tablist"
-      >
-        {[1, 2, 3].map((num) => {
-          const state = stepStates[num] || { done: false, locked: true };
-          const isDone = allDone || state.done;
-          const isActive = num === focusedStep;
-          const isLocked = !allDone && state.locked;
-          const classes = ['agentic-step-indicator'];
-          if (isDone) {
-            classes.push('agentic-indicator-done');
-          }
-          if (isActive) {
-            classes.push('agentic-indicator-active');
-          }
-          if (isLocked) {
-            classes.push('agentic-indicator-locked');
-          }
-
-          return (
-            <button
-              key={num}
-              type="button"
-              className={classes.join(' ')}
-              role="tab"
-              aria-selected={isActive ? 'true' : 'false'}
-              aria-disabled={!form.enabled ? 'true' : 'false'}
-              onClick={() => {
-                if (!form.enabled) {
-                  return;
-                }
-                setFocusedStep(num);
-              }}
-            >
-              <span className="agentic-indicator-badge">
-                {isDone ? '✓' : String(num)}
-              </span>
-              <span className="agentic-indicator-label">
-                {STEP_LABELS[num]}
-              </span>
-            </button>
-          );
-        })}
-      </div>
-
-      <div
-        className={`agentic-wizard-panel ${panelLocked ? 'agentic-step-locked' : 'agentic-step-active'}`}
-      >
-        {1 === focusedStep ? (
-          <fieldset
-            disabled={panelLocked || !canEdit}
-            className={
-              panelLocked || !canEdit ? 'agentic-fieldset-disabled' : undefined
+        <div
+          className={`agentic-step-indicators${allDone ? ' agentic-indicators-all-done' : ''}${!form.enabled ? ' agentic-indicators-disabled' : ''}`}
+          role="tablist"
+        >
+          {[1, 2, 3].map((num) => {
+            const state = stepStates[num] || { done: false, locked: true };
+            const isDone = allDone || state.done;
+            const isActive = num === focusedStep;
+            const isLocked = !allDone && state.locked;
+            const classes = ['agentic-step-indicator'];
+            if (isDone) {
+              classes.push('agentic-indicator-done');
             }
-          >
-            <h2 className="agentic-panel-title">
-              {__('GitHub Setup', 'alpaca-issue-tracker')}
-            </h2>
-            {panelLocked ? (
-              <p className="agentic-locked-notice">
+            if (isActive) {
+              classes.push('agentic-indicator-active');
+            }
+            if (isLocked) {
+              classes.push('agentic-indicator-locked');
+            }
+
+            return (
+              <button
+                key={num}
+                type="button"
+                className={classes.join(' ')}
+                role="tab"
+                aria-selected={isActive ? 'true' : 'false'}
+                aria-disabled={!form.enabled ? 'true' : 'false'}
+                onClick={() => {
+                  if (!form.enabled) {
+                    return;
+                  }
+                  setFocusedStep(num);
+                }}
+              >
+                <span className="agentic-indicator-badge">
+                  {isDone ? '✓' : String(num)}
+                </span>
+                <span className="agentic-indicator-label">
+                  {STEP_LABELS[num]}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        <div
+          className={`agentic-wizard-panel ${panelLocked ? 'agentic-step-locked' : 'agentic-step-active'}`}
+        >
+          {1 === focusedStep ? (
+            <fieldset
+              disabled={panelLocked || !canEdit}
+              className={
+                panelLocked || !canEdit
+                  ? 'agentic-fieldset-disabled'
+                  : undefined
+              }
+            >
+              <h2 className="agentic-panel-title">
+                {__('GitHub Setup', 'alpaca-issue-tracker')}
+              </h2>
+              {panelLocked ? (
+                <p className="agentic-locked-notice">
+                  {__(
+                    'Turn on Fix With AI above to unlock setup steps.',
+                    'alpaca-issue-tracker',
+                  )}
+                </p>
+              ) : null}
+              <p>
                 {__(
-                  'Turn on Fix With AI above to unlock setup steps.',
+                  'Membership of the organisation with access to this repository is required.',
                   'alpaca-issue-tracker',
                 )}
               </p>
-            ) : null}
-            <p>
-              {__(
-                'Membership of the organisation with access to this repository is required.',
-                'alpaca-issue-tracker',
-              )}
-            </p>
 
-            <table className="form-table" role="presentation">
-              <tbody>
-                <tr>
-                  <th scope="row">
-                    <label htmlFor="agentic-github-repo">
-                      {__('Repository (owner/repo)', 'alpaca-issue-tracker')}
-                    </label>
-                  </th>
-                  <td>
-                    <input
-                      type="text"
-                      id="agentic-github-repo"
-                      className="regular-text"
-                      placeholder="owner/repo"
-                      value={form.githubRepo}
-                      onChange={(event) => {
-                        const nextRepo = event.target.value;
-                        // Changing repo clears branch and Claude App confirmation.
-                        updateForm({
-                          githubRepo: nextRepo,
-                          claudeAppConfirmed: false,
-                          aiTargetBranch: '',
-                          githubDefaultBranch: '',
-                        });
-                      }}
-                    />
-                  </td>
-                </tr>
-                <tr>
-                  <th scope="row">
-                    <label htmlFor="agentic-github-token">
-                      {__(
-                        'Personal Access Token (PAT)',
-                        'alpaca-issue-tracker',
+              <table className="form-table" role="presentation">
+                <tbody>
+                  <tr>
+                    <th scope="row">
+                      <label htmlFor="agentic-github-repo">
+                        {__('Repository (owner/repo)', 'alpaca-issue-tracker')}
+                      </label>
+                    </th>
+                    <td>
+                      <input
+                        type="text"
+                        id="agentic-github-repo"
+                        className="regular-text"
+                        placeholder="owner/repo"
+                        value={form.githubRepo}
+                        onChange={(event) => {
+                          const nextRepo = event.target.value;
+                          // Changing repo clears branch and Claude App confirmation.
+                          updateForm({
+                            githubRepo: nextRepo,
+                            claudeAppConfirmed: false,
+                            aiTargetBranch: '',
+                            githubDefaultBranch: '',
+                          });
+                        }}
+                      />
+                    </td>
+                  </tr>
+                  <tr>
+                    <th scope="row">
+                      <label htmlFor="agentic-github-token">
+                        {__(
+                          'Personal Access Token (PAT)',
+                          'alpaca-issue-tracker',
+                        )}
+                      </label>
+                      <PatHelpPopover />
+                      {!data.github_token_from_constant ? (
+                        <PatSecurityNotePopover />
+                      ) : null}
+                    </th>
+                    <td>
+                      {data.github_token_from_constant ? (
+                        <>
+                          <SavedSecretInput
+                            key={`github-token-${secretFieldsResetKey}`}
+                            id="agentic-github-token"
+                            value=""
+                            isSaved
+                            disabled
+                            onChange={() => {}}
+                          />
+                          <p className="description">
+                            {__(
+                              'Defined via ALPAISTR_AGENTIC_GITHUB_TOKEN constant.',
+                              'alpaca-issue-tracker',
+                            )}
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <SavedSecretInput
+                            key={`github-token-${secretFieldsResetKey}`}
+                            id="agentic-github-token"
+                            value={form.githubToken}
+                            isSaved={!!data.github_token_set}
+                            onChange={(nextToken) =>
+                              updateForm({ githubToken: nextToken })
+                            }
+                          />
+                        </>
                       )}
-                    </label>
-                    <PatHelpPopover />
-                    {!data.github_token_from_constant ? (
-                      <PatSecurityNotePopover />
-                    ) : null}
-                  </th>
-                  <td>
-                    {data.github_token_from_constant ? (
+                    </td>
+                  </tr>
+                  <tr>
+                    <th scope="row" />
+                    <td>
+                      <div className="agentic-step-actions">
+                        <button
+                          type="button"
+                          className="button button-primary"
+                          disabled={saving || testing || panelLocked}
+                          onClick={testGithubConnection}
+                        >
+                          {testing
+                            ? __('Validating…', 'alpaca-issue-tracker')
+                            : __(
+                                'Validate credentials',
+                                'alpaca-issue-tracker',
+                              )}
+                        </button>
+                        {testResult ? (
+                          <span
+                            className={`agentic-connection-result ${testResult.className}`}
+                          >
+                            {testResult.message}
+                          </span>
+                        ) : null}
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <th scope="row">
+                      <label htmlFor="agentic-ai-target-branch">
+                        {__('AI target branch', 'alpaca-issue-tracker')}
+                      </label>
+                      <InfoHelpPopover
+                        label={__('AI target branch', 'alpaca-issue-tracker')}
+                      >
+                        <p className="agentic-pat-help-popover__intro">
+                          {__(
+                            'The AI opens pull requests into this branch.',
+                            'alpaca-issue-tracker',
+                          )}
+                        </p>
+                        <p className="agentic-pat-help-popover__intro">
+                          {__(
+                            'Avoid a production branch, unless you are sure what you are doing.',
+                            'alpaca-issue-tracker',
+                          )}
+                        </p>
+                      </InfoHelpPopover>
+                    </th>
+                    <td>
+                      <select
+                        id="agentic-ai-target-branch"
+                        value={form.aiTargetBranch}
+                        disabled={
+                          0 === repoBranches.length && !form.aiTargetBranch
+                        }
+                        onChange={(event) =>
+                          updateForm({ aiTargetBranch: event.target.value })
+                        }
+                      >
+                        <option value="">
+                          {0 === repoBranches.length && !form.aiTargetBranch
+                            ? __(
+                                'Validate credentials to load branches',
+                                'alpaca-issue-tracker',
+                              )
+                            : __('Select a branch…', 'alpaca-issue-tracker')}
+                        </option>
+                        {(form.aiTargetBranch &&
+                        !repoBranches.includes(form.aiTargetBranch)
+                          ? [form.aiTargetBranch, ...repoBranches]
+                          : repoBranches
+                        ).map((branchName) => (
+                          <option key={branchName} value={branchName}>
+                            {branchName}
+                          </option>
+                        ))}
+                      </select>
+                      {PRODUCTION_BRANCH_NAMES.has(
+                        (form.aiTargetBranch || '').toLowerCase(),
+                      ) ? (
+                        <p className="description agentic-production-branch-warning">
+                          {__(
+                            'Are you sure? This looks like a production branch. Staging or development branches are generally preferable.',
+                            'alpaca-issue-tracker',
+                          )}
+                        </p>
+                      ) : null}
+                    </td>
+                  </tr>
+                  <tr>
+                    <th scope="row">
+                      <span>
+                        {__(
+                          'Configure the Claude GitHub App',
+                          'alpaca-issue-tracker',
+                        )}
+                      </span>
+                      <InfoHelpPopover
+                        label={__('Claude GitHub App', 'alpaca-issue-tracker')}
+                      >
+                        <p className="agentic-pat-help-popover__intro">
+                          {__(
+                            'Fix With AI runs Claude through the official Claude GitHub App. This step is required.',
+                            'alpaca-issue-tracker',
+                          )}
+                        </p>
+                        <p className="agentic-pat-help-popover__intro">
+                          {__(
+                            'Choose Configure, then select this repository.',
+                            'alpaca-issue-tracker',
+                          )}
+                        </p>
+                      </InfoHelpPopover>
+                    </th>
+                    <td>
+                      <a
+                        className="button button-primary agentic-external-button"
+                        href={CLAUDE_APP_URL}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                      >
+                        {__('Install on GitHub', 'alpaca-issue-tracker')}
+                        <span className="agentic-external-arrow" aria-hidden="true">
+                          ↗
+                        </span>
+                      </a>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+
+              <hr className="agentic-step-hr" />
+
+              <div
+                className={
+                  !githubConfigured ? 'agentic-section-disabled' : undefined
+                }
+                aria-disabled={!githubConfigured ? 'true' : undefined}
+              >
+                {!githubConfigured && (
+                  <p className="agentic-locked-notice">
+                    {__(
+                      'Save your repository and token above first.',
+                      'alpaca-issue-tracker',
+                    )}
+                  </p>
+                )}
+                {githubConfigured && githubWorkflowInstalled && (
+                  <>
+                    {prUrl ? (
                       <>
-                        <SavedSecretInput
-                          key={`github-token-${secretFieldsResetKey}`}
-                          id="agentic-github-token"
-                          value=""
-                          isSaved
-                          disabled
-                          onChange={() => {}}
+                        <RepoInstallMessage
+                          repo={data.github_repo}
+                          defaultBranch={form.githubDefaultBranch}
                         />
+                        <div className="agentic-workflow-installed">
+                          <span className="agentic-check-icon">✓</span>
+                          {__(
+                            'Pull request opened:',
+                            'alpaca-issue-tracker',
+                          )}{' '}
+                          <a
+                            href={prUrl}
+                            target="_blank"
+                            rel="noreferrer noopener"
+                          >
+                            {prUrl}
+                          </a>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="agentic-workflow-installed">
+                          <span className="agentic-check-icon">✓</span>
+                          {__(
+                            'GitHub Actions files detected in your repository.',
+                            'alpaca-issue-tracker',
+                          )}
+                        </div>
                         <p className="description">
                           {__(
-                            'Defined via ALPAISTR_AGENTIC_GITHUB_TOKEN constant.',
+                            'GitHub Actions files are already in your repository. Continue to WordPress Setup.',
                             'alpaca-issue-tracker',
                           )}
                         </p>
                       </>
-                    ) : (
-                      <>
-                        <SavedSecretInput
-                          key={`github-token-${secretFieldsResetKey}`}
-                          id="agentic-github-token"
-                          value={form.githubToken}
-                          isSaved={!!data.github_token_set}
-                          onChange={(nextToken) =>
-                            updateForm({ githubToken: nextToken })
-                          }
-                        />
-                      </>
                     )}
-                  </td>
-                </tr>
-                <tr>
-                  <th scope="row" />
-                  <td>
                     <div className="agentic-step-actions">
                       <button
                         type="button"
                         className="button button-primary"
-                        disabled={saving || testing || panelLocked}
-                        onClick={testGithubConnection}
+                        disabled={saving || !form.aiTargetBranch}
+                        onClick={() => saveSettings(2)}
                       >
-                        {testing
-                          ? __('Validating…', 'alpaca-issue-tracker')
-                          : __('Validate credentials', 'alpaca-issue-tracker')}
+                        {__(
+                          'Continue to WordPress Setup',
+                          'alpaca-issue-tracker',
+                        )}
                       </button>
-                      {testResult ? (
+                    </div>
+                  </>
+                )}
+                {githubConfigured && !githubWorkflowInstalled && (
+                  <div>
+                    <RepoInstallMessage
+                      repo={data.github_repo}
+                      defaultBranch={form.githubDefaultBranch}
+                    />
+                    <div className="agentic-step-actions">
+                      <button
+                        type="button"
+                        className="button agentic-install-btn"
+                        disabled={installing || !form.aiTargetBranch}
+                        onClick={handleInstall}
+                      >
+                        {installing
+                          ? __('Opening pull request…', 'alpaca-issue-tracker')
+                          : __('Open a PR & continue', 'alpaca-issue-tracker')}
+                      </button>
+                      {installing ? (
                         <span
-                          className={`agentic-connection-result ${testResult.className}`}
-                        >
-                          {testResult.message}
-                        </span>
+                          className="agentic-install-spinner"
+                          style={{ display: 'inline-block' }}
+                        />
                       ) : null}
                     </div>
-                  </td>
-                </tr>
-                <tr>
-                  <th scope="row">
-                    <label htmlFor="agentic-ai-target-branch">
-                      {__('AI target branch', 'alpaca-issue-tracker')}
-                    </label>
-                    <InfoHelpPopover
-                      label={__('AI target branch', 'alpaca-issue-tracker')}
-                    >
-                      <p className="agentic-pat-help-popover__intro">
+                    {installing ? (
+                      <p className="agentic-install-patience">
                         {__(
-                          'The AI opens pull requests into this branch.',
-                          'alpaca-issue-tracker',
-                        )}
-                      </p>
-                      <p className="agentic-pat-help-popover__intro">
-                        {__(
-                          'Avoid a production branch, unless you are sure what you are doing.',
-                          'alpaca-issue-tracker',
-                        )}
-                      </p>
-                    </InfoHelpPopover>
-                  </th>
-                  <td>
-                    <select
-                      id="agentic-ai-target-branch"
-                      value={form.aiTargetBranch}
-                      disabled={
-                        0 === repoBranches.length && !form.aiTargetBranch
-                      }
-                      onChange={(event) =>
-                        updateForm({ aiTargetBranch: event.target.value })
-                      }
-                    >
-                      <option value="">
-                        {0 === repoBranches.length && !form.aiTargetBranch
-                          ? __(
-                              'Validate credentials to load branches',
-                              'alpaca-issue-tracker',
-                            )
-                          : __('Select a branch…', 'alpaca-issue-tracker')}
-                      </option>
-                      {(form.aiTargetBranch &&
-                      !repoBranches.includes(form.aiTargetBranch)
-                        ? [form.aiTargetBranch, ...repoBranches]
-                        : repoBranches
-                      ).map((branchName) => (
-                        <option key={branchName} value={branchName}>
-                          {branchName}
-                        </option>
-                      ))}
-                    </select>
-                    {PRODUCTION_BRANCH_NAMES.has(
-                      (form.aiTargetBranch || '').toLowerCase(),
-                    ) ? (
-                      <p className="description agentic-production-branch-warning">
-                        {__(
-                          'Are you sure? This looks like a production branch. Staging or development branches are generally preferable.',
+                          'This can take a while, please keep this page open.',
                           'alpaca-issue-tracker',
                         )}
                       </p>
                     ) : null}
-                  </td>
-                </tr>
-                <tr>
-                  <th scope="row">
-                    <span>
-                      {__(
-                        'Configure the Claude GitHub App',
+                    {installError ? (
+                      <div className="agentic-install-error">
+                        {installError}
+                      </div>
+                    ) : null}
+                  </div>
+                )}
+              </div>
+            </fieldset>
+          ) : null}
+
+          {2 === focusedStep ? (
+            <fieldset
+              disabled={panelLocked || !canEdit}
+              className={
+                panelLocked || !canEdit
+                  ? 'agentic-fieldset-disabled'
+                  : undefined
+              }
+            >
+              <h2 className="agentic-panel-title">
+                {__('WordPress Setup', 'alpaca-issue-tracker')}
+              </h2>
+              {panelLocked ? (
+                <p className="agentic-locked-notice">
+                  {!form.enabled
+                    ? __(
+                        'Turn on Fix With AI above to unlock setup steps.',
+                        'alpaca-issue-tracker',
+                      )
+                    : __(
+                        'Complete GitHub Setup to unlock this step.',
                         'alpaca-issue-tracker',
                       )}
-                    </span>
-                    <InfoHelpPopover
-                      label={__('Claude GitHub App', 'alpaca-issue-tracker')}
-                    >
-                      <p className="agentic-pat-help-popover__intro">
-                        {__(
-                          'Fix With AI runs Claude through the official Claude GitHub App. This step is required.',
-                          'alpaca-issue-tracker',
-                        )}
-                      </p>
-                      <p className="agentic-pat-help-popover__intro">
-                        {__(
-                          'Choose Configure, then select this repository.',
-                          'alpaca-issue-tracker',
-                        )}
-                      </p>
-                    </InfoHelpPopover>
-                  </th>
-                  <td>
-                    <a
-                      className="button"
-                      href={CLAUDE_APP_URL}
-                      target="_blank"
-                      rel="noreferrer noopener"
-                    >
-                      {__('Install on GitHub', 'alpaca-issue-tracker')}
-                    </a>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-
-            <hr className="agentic-step-hr" />
-
-            <div
-              className={
-                !githubConfigured ? 'agentic-section-disabled' : undefined
-              }
-              aria-disabled={!githubConfigured ? 'true' : undefined}
-            >
-              {!githubConfigured && (
-                <p className="agentic-locked-notice">
-                  {__(
-                    'Save your repository and token above first.',
-                    'alpaca-issue-tracker',
-                  )}
                 </p>
-              )}
-              {githubConfigured && githubWorkflowInstalled && (
+              ) : null}
+
+              {data.wp_ai_available ? (
                 <>
-                  {prUrl ? (
-                    <>
-                      <RepoInstallMessage
-                        repo={data.github_repo}
-                        defaultBranch={form.githubDefaultBranch}
-                      />
-                      <div className="agentic-workflow-installed">
-                        <span className="agentic-check-icon">✓</span>
+                  <h3 className="agentic-panel-subtitle">
+                    {__('WordPress Connectors', 'alpaca-issue-tracker')}
+                  </h3>
+                  <div className="agentic-connectors-status">
+                    {data.wp_ai_configured ? (
+                      <p className="agentic-connectors-connected">
+                        <span
+                          className="agentic-connectors-connected__icon"
+                          aria-hidden="true"
+                        >
+                          ✓
+                        </span>{' '}
                         {__(
-                          'Pull request opened:',
+                          'AI provider configured via WordPress Connectors.',
                           'alpaca-issue-tracker',
                         )}{' '}
                         <a
-                          href={prUrl}
+                          href={data.connectors_admin_url}
                           target="_blank"
                           rel="noreferrer noopener"
                         >
-                          {prUrl}
+                          {__('Manage Connectors', 'alpaca-issue-tracker')}
                         </a>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="agentic-workflow-installed">
-                        <span className="agentic-check-icon">✓</span>
-                        {__(
-                          'GitHub Actions files detected in your repository.',
-                          'alpaca-issue-tracker',
-                        )}
-                      </div>
-                      <p className="description">
-                        {__(
-                          'GitHub Actions files are already in your repository. Continue to WordPress Setup.',
-                          'alpaca-issue-tracker',
-                        )}
                       </p>
-                    </>
-                  )}
-                  <div className="agentic-step-actions">
-                    <button
-                      type="button"
-                      className="button button-primary"
-                      disabled={saving || !form.aiTargetBranch}
-                      onClick={() => saveSettings(2)}
-                    >
-                      {__('Continue to WordPress Setup', 'alpaca-issue-tracker')}
-                    </button>
+                    ) : (
+                      <p className="agentic-connectors-connected agentic-connectors-unconfigured">
+                        <span
+                          className="agentic-connectors-unconfigured__icon"
+                          aria-hidden="true"
+                        >
+                          <WarningOutlineIcon />
+                        </span>{' '}
+                        {__(
+                          'No AI provider configured via WordPress Connectors.',
+                          'alpaca-issue-tracker',
+                        )}{' '}
+                        <a
+                          href={data.connectors_admin_url}
+                          target="_blank"
+                          rel="noreferrer noopener"
+                        >
+                          {__('Set up Connectors', 'alpaca-issue-tracker')}
+                        </a>
+                      </p>
+                    )}
                   </div>
                 </>
-              )}
-              {githubConfigured && !githubWorkflowInstalled && (
-                <div>
-                  <RepoInstallMessage
-                    repo={data.github_repo}
-                    defaultBranch={form.githubDefaultBranch}
-                  />
-                  <div className="agentic-step-actions">
-                    <button
-                      type="button"
-                      className="button agentic-install-btn"
-                      disabled={
-                        installing || !form.aiTargetBranch
-                      }
-                      onClick={handleInstall}
-                    >
-                      {installing
-                        ? __('Opening pull request…', 'alpaca-issue-tracker')
-                        : __('Open a PR & continue', 'alpaca-issue-tracker')}
-                    </button>
-                    {installing ? (
-                      <span
-                        className="agentic-install-spinner"
-                        style={{ display: 'inline-block' }}
-                      />
-                    ) : null}
-                  </div>
-                  {installing ? (
-                    <p className="agentic-install-patience">
-                      {__(
-                        'This can take a while, please keep this page open.',
+              ) : (
+                <>
+                  <p>
+                    {__(
+                      'Select the AI provider used to draft Alpaca issues for GitHub.',
+                      'alpaca-issue-tracker',
+                    )}{' '}
+                    <HelpTip
+                      label={__('More information', 'alpaca-issue-tracker')}
+                      tooltip={__(
+                        'This is separate from the AI that resolves issues on GitHub — you can use the same key for both.',
                         'alpaca-issue-tracker',
                       )}
-                    </p>
-                  ) : null}
-                  {installError ? (
-                    <div className="agentic-install-error">{installError}</div>
-                  ) : null}
-                </div>
-              )}
-            </div>
-          </fieldset>
-        ) : null}
-
-        {2 === focusedStep ? (
-          <fieldset
-            disabled={panelLocked || !canEdit}
-            className={
-              panelLocked || !canEdit ? 'agentic-fieldset-disabled' : undefined
-            }
-          >
-            <h2 className="agentic-panel-title">
-              {__('WordPress Setup', 'alpaca-issue-tracker')}
-            </h2>
-            {panelLocked ? (
-              <p className="agentic-locked-notice">
-                {!form.enabled
-                  ? __(
-                      'Turn on Fix With AI above to unlock setup steps.',
-                      'alpaca-issue-tracker',
-                    )
-                  : __(
-                      'Complete GitHub Setup to unlock this step.',
-                      'alpaca-issue-tracker',
-                    )}
-              </p>
-            ) : null}
-
-            {data.wp_ai_available ? (
-              <>
-                <h3 className="agentic-panel-subtitle">
-                  {__('WordPress Connectors', 'alpaca-issue-tracker')}
-                </h3>
-                <div className="agentic-connectors-status">
-                  {data.wp_ai_configured ? (
-                    <p className="agentic-connectors-connected">
-                      <span
-                        className="agentic-connectors-connected__icon"
-                        aria-hidden="true"
-                      >
-                        ✓
-                      </span>{' '}
-                      {__(
-                        'AI provider configured via WordPress Connectors.',
-                        'alpaca-issue-tracker',
-                      )}{' '}
-                      <a
-                        href={data.connectors_admin_url}
-                        target="_blank"
-                        rel="noreferrer noopener"
-                      >
-                        {__('Manage Connectors', 'alpaca-issue-tracker')}
-                      </a>
-                    </p>
-                  ) : (
-                    <p className="agentic-connectors-connected agentic-connectors-unconfigured">
-                      <span
-                        className="agentic-connectors-unconfigured__icon"
-                        aria-hidden="true"
-                      >
-                        <WarningOutlineIcon />
-                      </span>{' '}
-                      {__(
-                        'No AI provider configured via WordPress Connectors.',
-                        'alpaca-issue-tracker',
-                      )}{' '}
-                      <a
-                        href={data.connectors_admin_url}
-                        target="_blank"
-                        rel="noreferrer noopener"
-                      >
-                        {__('Set up Connectors', 'alpaca-issue-tracker')}
-                      </a>
-                    </p>
-                  )}
-                </div>
-              </>
-            ) : (
-              <>
-                <p>
-                  {__(
-                    'Select the AI provider used to draft Alpaca issues for GitHub.',
-                    'alpaca-issue-tracker',
-                  )}{' '}
-                  <HelpTip
-                    label={__('More information', 'alpaca-issue-tracker')}
-                    tooltip={__(
-                      'This is separate from the AI that resolves issues on GitHub — you can use the same key for both.',
-                      'alpaca-issue-tracker',
-                    )}
-                  />
-                </p>
-                <fieldset className="agentic-ai-provider-fields">
-                  <legend className="screen-reader-text">
-                    {__('AI provider settings', 'alpaca-issue-tracker')}
-                  </legend>
-                  <table className="form-table" role="presentation">
-                    <tbody>
-                      <tr>
-                        <th scope="row">
-                          <label htmlFor="agentic-ai-provider">
-                            {__('AI Provider', 'alpaca-issue-tracker')}
-                          </label>
-                        </th>
-                        <td>
-                          <select
-                            id="agentic-ai-provider"
-                            value={form.aiProvider || 'claude'}
-                            onChange={(event) =>
-                              updateForm({ aiProvider: event.target.value })
-                            }
-                          >
-                            <option value="claude">Claude (Anthropic)</option>
-                            <option value="openai">OpenAI / GPT-4o</option>
-                          </select>
-                        </td>
-                      </tr>
-                      <tr>
-                        <th scope="row">
-                          <label htmlFor="agentic-ai-api-key">
-                            {__('AI API Key', 'alpaca-issue-tracker')}
-                          </label>
-                        </th>
-                        <td>
-                          {data.ai_api_key_from_constant ? (
-                            <>
-                              <SavedSecretInput
-                                key={`ai-api-key-${secretFieldsResetKey}`}
-                                id="agentic-ai-api-key"
-                                value=""
-                                isSaved
-                                disabled
-                                onChange={() => {}}
-                              />
-                              <p className="description">
-                                {__(
-                                  'Defined via ALPAISTR_AGENTIC_AI_API_KEY constant.',
-                                  'alpaca-issue-tracker',
-                                )}
-                              </p>
-                            </>
-                          ) : (
-                            <>
-                              <SavedSecretInput
-                                key={`ai-api-key-${secretFieldsResetKey}`}
-                                id="agentic-ai-api-key"
-                                value={form.aiApiKey}
-                                isSaved={!!data.ai_api_key_set}
-                                onChange={(nextKey) =>
-                                  updateForm({ aiApiKey: nextKey })
-                                }
-                              />
-                              {!data.ai_api_key_set ? (
+                    />
+                  </p>
+                  <fieldset className="agentic-ai-provider-fields">
+                    <legend className="screen-reader-text">
+                      {__('AI provider settings', 'alpaca-issue-tracker')}
+                    </legend>
+                    <table className="form-table" role="presentation">
+                      <tbody>
+                        <tr>
+                          <th scope="row">
+                            <label htmlFor="agentic-ai-provider">
+                              {__('AI Provider', 'alpaca-issue-tracker')}
+                            </label>
+                          </th>
+                          <td>
+                            <select
+                              id="agentic-ai-provider"
+                              value={form.aiProvider || 'claude'}
+                              onChange={(event) =>
+                                updateForm({ aiProvider: event.target.value })
+                              }
+                            >
+                              <option value="claude">Claude (Anthropic)</option>
+                              <option value="openai">OpenAI / GPT-4o</option>
+                            </select>
+                          </td>
+                        </tr>
+                        <tr>
+                          <th scope="row">
+                            <label htmlFor="agentic-ai-api-key">
+                              {__('AI API Key', 'alpaca-issue-tracker')}
+                            </label>
+                          </th>
+                          <td>
+                            {data.ai_api_key_from_constant ? (
+                              <>
+                                <SavedSecretInput
+                                  key={`ai-api-key-${secretFieldsResetKey}`}
+                                  id="agentic-ai-api-key"
+                                  value=""
+                                  isSaved
+                                  disabled
+                                  onChange={() => {}}
+                                />
                                 <p className="description">
                                   {__(
-                                    'Used to draft agent-ready issues from Alpaca cards.',
+                                    'Defined via ALPAISTR_AGENTIC_AI_API_KEY constant.',
                                     'alpaca-issue-tracker',
                                   )}
                                 </p>
-                              ) : null}
-                            </>
-                          )}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </fieldset>
-              </>
-            )}
+                              </>
+                            ) : (
+                              <>
+                                <SavedSecretInput
+                                  key={`ai-api-key-${secretFieldsResetKey}`}
+                                  id="agentic-ai-api-key"
+                                  value={form.aiApiKey}
+                                  isSaved={!!data.ai_api_key_set}
+                                  onChange={(nextKey) =>
+                                    updateForm({ aiApiKey: nextKey })
+                                  }
+                                />
+                                {!data.ai_api_key_set ? (
+                                  <p className="description">
+                                    {__(
+                                      'Used to draft GitHub issues from Alpaca cards.',
+                                      'alpaca-issue-tracker',
+                                    )}
+                                  </p>
+                                ) : null}
+                              </>
+                            )}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </fieldset>
+                </>
+              )}
 
-            {data.is_admin ? (
-              <>
-                <h3 className="agentic-panel-subtitle">
-                  {__('Users', 'alpaca-issue-tracker')}
-                </h3>
-                <p className="description">
+              {data.is_admin ? (
+                <>
+                  <h3 className="agentic-panel-subtitle">
+                    {__('Users', 'alpaca-issue-tracker')}
+                  </h3>
+                  <p className="description">
+                    {__(
+                      'Users added here can send Alpaca issues to the AI agent for resolving on GitHub (see disclaimer below).',
+                      'alpaca-issue-tracker',
+                    )}
+                  </p>
+                  <EngineersField
+                    engineerIds={form.engineers}
+                    allUserObjects={allUserObjects}
+                    onChange={handleEngineersChange}
+                  />
+                </>
+              ) : (
+                <p>
                   {__(
-                    'Users added here can send Alpaca issues to the AI agent for resolving on GitHub (see disclaimer below).',
+                    'Only administrators can manage who has access to Fix With AI.',
                     'alpaca-issue-tracker',
                   )}
                 </p>
-                <EngineersField
-                  engineerIds={form.engineers}
-                  allUserObjects={allUserObjects}
-                  onChange={handleEngineersChange}
+              )}
+
+              <div className="agentic-project-context">
+                <h3 className="agentic-panel-subtitle">
+                  <label htmlFor="agentic-project-context">
+                    {__('Project context', 'alpaca-issue-tracker')}
+                  </label>
+                </h3>
+                <p className="description">
+                  {__(
+                    'Optional site-wide notes included with every AI-drafted GitHub issue.',
+                    'alpaca-issue-tracker',
+                  )}
+                </p>
+                <textarea
+                  id="agentic-project-context"
+                  className="large-text agentic-project-context__textarea"
+                  rows={8}
+                  value={form.projectContext}
+                  placeholder={PROJECT_CONTEXT_PLACEHOLDER}
+                  disabled={panelLocked || !canEdit}
+                  onChange={(event) =>
+                    updateForm({ projectContext: event.target.value })
+                  }
                 />
-              </>
-            ) : (
+              </div>
+
+              <div className="agentic-step-actions">
+                <button
+                  type="button"
+                  className="button button-secondary"
+                  onClick={() => setFocusedStep(1)}
+                >
+                  {__('Back', 'alpaca-issue-tracker')}
+                </button>
+                {data.is_admin ? (
+                  <button
+                    type="button"
+                    className="button button-primary"
+                    disabled={
+                      saving || panelLocked || !canEdit || !wordpressConfigured
+                    }
+                    onClick={() => saveSettings(3)}
+                  >
+                    {saving
+                      ? __('Saving…', 'alpaca-issue-tracker')
+                      : __('Save & continue', 'alpaca-issue-tracker')}
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="button button-primary"
+                    disabled={!wordpressConfigured}
+                    onClick={() => setFocusedStep(3)}
+                  >
+                    {__('Continue', 'alpaca-issue-tracker')}
+                  </button>
+                )}
+              </div>
+            </fieldset>
+          ) : null}
+
+          {3 === focusedStep ? (
+            <fieldset
+              disabled={panelLocked || !canEdit}
+              className={
+                panelLocked || !canEdit
+                  ? 'agentic-fieldset-disabled'
+                  : undefined
+              }
+            >
+              <h2 className="agentic-panel-title">
+                {__('Finish Setup', 'alpaca-issue-tracker')}
+              </h2>
+              {panelLocked ? (
+                <p className="agentic-locked-notice">
+                  {!form.enabled
+                    ? __(
+                        'Turn on Fix With AI above to unlock setup steps.',
+                        'alpaca-issue-tracker',
+                      )
+                    : __(
+                        'Complete the earlier steps to unlock this step.',
+                        'alpaca-issue-tracker',
+                      )}
+                </p>
+              ) : null}
               <p>
                 {__(
-                  'Only administrators can manage who has access to Fix With AI.',
+                  'A few manual steps are needed to finish setup. Check them off here as you complete them.',
                   'alpaca-issue-tracker',
                 )}
               </p>
-            )}
 
-            <div className="agentic-project-context">
-              <h3 className="agentic-panel-subtitle">
-                <label htmlFor="agentic-project-context">
-                  {__('Project context', 'alpaca-issue-tracker')}
-                </label>
-              </h3>
-              <p className="description">
-                {__(
-                  'Optional site-wide notes included with every AI-drafted GitHub issue.',
-                  'alpaca-issue-tracker',
-                )}
-              </p>
-              <textarea
-                id="agentic-project-context"
-                className="large-text agentic-project-context__textarea"
-                rows={8}
-                value={form.projectContext}
-                placeholder={PROJECT_CONTEXT_PLACEHOLDER}
-                disabled={panelLocked || !canEdit}
-                onChange={(event) =>
-                  updateForm({ projectContext: event.target.value })
-                }
-              />
-            </div>
+              <ul className="agentic-checklist">
+                <li
+                  className={`agentic-checklist-item${
+                    form.claudeAppConfirmed ? ' agentic-checklist-done' : ''
+                  }`}
+                >
+                  <div className="agentic-checklist-label">
+                    <input
+                      id="agentic-claude-app-confirmed"
+                      type="checkbox"
+                      checked={!!form.claudeAppConfirmed}
+                      onChange={(event) => {
+                        setSetupCompletedStatus('idle');
+                        updateForm({
+                          claudeAppConfirmed: event.target.checked,
+                        });
+                      }}
+                    />
+                    <label htmlFor="agentic-claude-app-confirmed">
+                      {createInterpolateElement(
+                        sprintf(
+                          /* translators: %s: GitHub repository slug (owner/repo). */
+                          __(
+                            'The <a>Claude GitHub App</a> is installed on %s.',
+                            'alpaca-issue-tracker',
+                          ),
+                          form.githubRepo ||
+                            data.github_repo ||
+                            __('your repository', 'alpaca-issue-tracker'),
+                        ),
+                        {
+                          a: (
+                            // Content comes from createInterpolateElement (<a>...</a>).
+                            // eslint-disable-next-line jsx-a11y/anchor-has-content
+                            <a
+                              href={CLAUDE_APP_URL}
+                              target="_blank"
+                              rel="noreferrer noopener"
+                              onClick={(event) => event.stopPropagation()}
+                            />
+                          ),
+                        },
+                      )}
+                    </label>
+                  </div>
+                </li>
+                {checklistItems.map((item) => {
+                  const checked = form.setupChecklist.includes(item.key);
+                  const inputId = `agentic-checklist-${item.key}`;
+                  return (
+                    <li
+                      key={item.key}
+                      className={`agentic-checklist-item${checked ? ' agentic-checklist-done' : ''}`}
+                    >
+                      <div className="agentic-checklist-label">
+                        <input
+                          id={inputId}
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => toggleChecklist(item.key)}
+                        />
+                        <label htmlFor={inputId}>{item.node}</label>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
 
-            <div className="agentic-step-actions">
-              <button
-                type="button"
-                className="button button-secondary"
-                onClick={() => setFocusedStep(1)}
-              >
-                {__('Back', 'alpaca-issue-tracker')}
-              </button>
-              {data.is_admin ? (
+              <div className="agentic-step-actions">
+                <button
+                  type="button"
+                  className="button button-secondary"
+                  onClick={() => setFocusedStep(2)}
+                >
+                  {__('Back', 'alpaca-issue-tracker')}
+                </button>
                 <button
                   type="button"
                   className="button button-primary"
-                  disabled={
-                    saving ||
-                    panelLocked ||
-                    !canEdit ||
-                    !wordpressConfigured
-                  }
-                  onClick={() => saveSettings(3)}
+                  disabled={saving || panelLocked || !finishSetupChecksComplete}
+                  onClick={saveFinishSetup}
                 >
                   {saving
                     ? __('Saving…', 'alpaca-issue-tracker')
-                    : __('Save & continue', 'alpaca-issue-tracker')}
+                    : __('Save', 'alpaca-issue-tracker')}
                 </button>
-              ) : (
-                <button
-                  type="button"
-                  className="button button-primary"
-                  disabled={!wordpressConfigured}
-                  onClick={() => setFocusedStep(3)}
-                >
-                  {__('Continue', 'alpaca-issue-tracker')}
-                </button>
-              )}
-            </div>
-          </fieldset>
-        ) : null}
+                {'saving' === setupCompletedStatus ? (
+                  <span className="agentic-branch-save-status agentic-result-pending">
+                    {__('Saving final setup…', 'alpaca-issue-tracker')}
+                  </span>
+                ) : null}
+                {'saved' === setupCompletedStatus ? (
+                  <span className="agentic-branch-save-status agentic-result-success">
+                    {__('Final setup saved.', 'alpaca-issue-tracker')}
+                  </span>
+                ) : null}
+                {'error' === setupCompletedStatus ? (
+                  <span className="agentic-branch-save-status agentic-result-error">
+                    {__('Could not save final setup.', 'alpaca-issue-tracker')}
+                  </span>
+                ) : null}
+              </div>
+            </fieldset>
+          ) : null}
+        </div>
 
-        {3 === focusedStep ? (
-          <fieldset
-            disabled={panelLocked || !canEdit}
-            className={
-              panelLocked || !canEdit ? 'agentic-fieldset-disabled' : undefined
-            }
-          >
-            <h2 className="agentic-panel-title">
-              {__('Finish Setup', 'alpaca-issue-tracker')}
-            </h2>
-            {panelLocked ? (
-              <p className="agentic-locked-notice">
-                {!form.enabled
-                  ? __(
-                      'Turn on Fix With AI above to unlock setup steps.',
-                      'alpaca-issue-tracker',
-                    )
-                  : __(
-                      'Complete the earlier steps to unlock this step.',
-                      'alpaca-issue-tracker',
-                    )}
-              </p>
-            ) : null}
-            <p>
-              {__(
-                'A few manual steps are needed to finish setup. Check them off here as you complete them.',
-                'alpaca-issue-tracker',
-              )}
-            </p>
-
-            <ul className="agentic-checklist">
-              <li
-                className={`agentic-checklist-item${
-                  form.claudeAppConfirmed ? ' agentic-checklist-done' : ''
-                }`}
-              >
-                <div className="agentic-checklist-label">
-                  <input
-                    id="agentic-claude-app-confirmed"
-                    type="checkbox"
-                    checked={!!form.claudeAppConfirmed}
-                    onChange={(event) => {
-                      setSetupCompletedStatus('idle');
-                      updateForm({ claudeAppConfirmed: event.target.checked });
-                    }}
-                  />
-                  <label htmlFor="agentic-claude-app-confirmed">
-                    {createInterpolateElement(
-                      sprintf(
-                        /* translators: %s: GitHub repository slug (owner/repo). */
-                        __(
-                          'The <a>Claude GitHub App</a> is installed on %s.',
-                          'alpaca-issue-tracker',
-                        ),
-                        form.githubRepo ||
-                          data.github_repo ||
-                          __('your repository', 'alpaca-issue-tracker'),
-                      ),
-                      {
-                        a: (
-                          // Content comes from createInterpolateElement (<a>...</a>).
-                          // eslint-disable-next-line jsx-a11y/anchor-has-content
-                          <a
-                            href={CLAUDE_APP_URL}
-                            target="_blank"
-                            rel="noreferrer noopener"
-                            onClick={(event) => event.stopPropagation()}
-                          />
-                        ),
-                      },
-                    )}
-                  </label>
-                </div>
-              </li>
-              {checklistItems.map((item) => {
-                const checked = form.setupChecklist.includes(item.key);
-                const inputId = `agentic-checklist-${item.key}`;
-                return (
-                  <li
-                    key={item.key}
-                    className={`agentic-checklist-item${checked ? ' agentic-checklist-done' : ''}`}
-                  >
-                    <div className="agentic-checklist-label">
-                      <input
-                        id={inputId}
-                        type="checkbox"
-                        checked={checked}
-                        onChange={() => toggleChecklist(item.key)}
-                      />
-                      <label htmlFor={inputId}>{item.node}</label>
-                    </div>
-                  </li>
-                );
-              })}
-            </ul>
-
-            <div className="agentic-step-actions">
-              <button
-                type="button"
-                className="button button-secondary"
-                onClick={() => setFocusedStep(2)}
-              >
-                {__('Back', 'alpaca-issue-tracker')}
-              </button>
-              <button
-                type="button"
-                className="button button-primary"
-                disabled={saving || panelLocked || !finishSetupChecksComplete}
-                onClick={saveFinishSetup}
-              >
-                {saving
-                  ? __('Saving…', 'alpaca-issue-tracker')
-                  : __('Save', 'alpaca-issue-tracker')}
-              </button>
-              {'saving' === setupCompletedStatus ? (
-                <span className="agentic-branch-save-status agentic-result-pending">
-                  {__('Saving final setup…', 'alpaca-issue-tracker')}
-                </span>
-              ) : null}
-              {'saved' === setupCompletedStatus ? (
-                <span className="agentic-branch-save-status agentic-result-success">
-                  {__('Final setup saved.', 'alpaca-issue-tracker')}
-                </span>
-              ) : null}
-              {'error' === setupCompletedStatus ? (
-                <span className="agentic-branch-save-status agentic-result-error">
-                  {__('Could not save final setup.', 'alpaca-issue-tracker')}
-                </span>
-              ) : null}
-            </div>
-          </fieldset>
-        ) : null}
+        <p className="agentic-wizard-footnote">
+          {__(
+            'Only intended for skilled engineers with GitHub access who can review the AI-generated pull requests.',
+            'alpaca-issue-tracker',
+          )}
+        </p>
       </div>
-
-      <p className="agentic-wizard-footnote">
-        {__(
-          'Only intended for skilled engineers with GitHub access who can review the AI-generated pull requests.',
-          'alpaca-issue-tracker',
-        )}
-      </p>
-    </div>
-    <Popover.Slot />
+      <Popover.Slot />
     </SlotFillProvider>
   );
 };

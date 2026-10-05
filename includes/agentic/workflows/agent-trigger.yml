@@ -1,5 +1,8 @@
-# Fires when an issue receives the 'agent-ready' label.
+# Starts the AI agent for one GitHub issue.
 # Routes to the AI agent configured in the AGENT_PROVIDER repository variable.
+#
+# Alpaca starts this workflow with workflow_dispatch after Fix With AI creates
+# the issue.
 #
 # Supported providers:
 #   claude        → Claude Code via anthropics/claude-code-action (default, fully supported)
@@ -15,17 +18,88 @@
 #
 # If AGENT_PROVIDER is not set, the workflow defaults to claude.
 
-name: Agent-Ready Auto-Trigger
+name: Alpaca AI Agent
 
 on:
-  issues:
-    types: [labeled]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'GitHub issue number to work on'
+        required: true
+        type: string
+
+# One run at a time per issue. The queued run checks for an existing branch and exits.
+concurrency:
+  group: alpaca-ai-${{ github.event.inputs.issue_number }}
+  cancel-in-progress: false
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   ALPACA_AI_TARGET_BRANCH: ${{ vars.ALPACA_AI_TARGET_BRANCH || '__ALPACA_AI_TARGET_BRANCH__' }}
 
 jobs:
+  # Loads the issue from the workflow_dispatch input.
+  resolve-issue:
+    runs-on: ubuntu-latest
+    outputs:
+      number: ${{ steps.issue.outputs.number }}
+      title: ${{ steps.issue.outputs.title }}
+      is_high: ${{ steps.issue.outputs.is_high }}
+      should_run: ${{ steps.issue.outputs.should_run }}
+    permissions:
+      contents: read
+      issues: read
+
+    steps:
+      - name: Load issue
+        id: issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Jobs are gated on should_run, so the other outputs can stay unset when we stop.
+            const skip = (reason) => {
+              console.log(reason);
+              core.setOutput('should_run', 'false');
+            };
+
+            const issueNumber = Number(context.payload.inputs?.issue_number || 0);
+            if (!issueNumber) {
+              skip('No issue number was provided.');
+              return;
+            }
+
+            const { data: issue } = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+            });
+
+            const labels = issue.labels.map(l => l.name);
+            core.setOutput('number', String(issue.number));
+            core.setOutput('title', issue.title || '');
+            core.setOutput('is_high', labels.includes('complexity:high') ? 'true' : 'false');
+
+            const heads = [`agent/fix-${issueNumber}`, `plan/issue-${issueNumber}`];
+            for (const head of heads) {
+              try {
+                await github.rest.git.getRef({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ref: `heads/${head}`,
+                });
+                skip(`Branch ${head} already exists, so this issue is already being worked on.`);
+                return;
+              } catch (error) {
+                const status = error.status || error.response?.status;
+                if (status !== 404) {
+                  throw error;
+                }
+              }
+            }
+
+            console.log(`Starting agent for issue #${issueNumber}: ${issue.title}`);
+            core.setOutput('should_run', 'true');
+
   # ─────────────────────────────────────────────────────────────────────────────
   # CLAUDE (default)
   # Uses Claude Code with complexity-aware execution.
@@ -34,8 +108,9 @@ jobs:
   # complexity:low/medium (or absent) → implement directly
   # ─────────────────────────────────────────────────────────────────────────────
   trigger-claude:
+    needs: resolve-issue
     if: |
-      github.event.label.name == 'agent-ready' &&
+      needs.resolve-issue.outputs.should_run == 'true' &&
       (vars.AGENT_PROVIDER == 'claude' || vars.AGENT_PROVIDER == '')
     runs-on: ubuntu-latest
     permissions:
@@ -68,21 +143,10 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
-      - name: Determine complexity
-        id: complexity
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const labels = context.payload.issue.labels.map(l => l.name);
-            const isHigh = labels.includes('complexity:high');
-            console.log('Issue labels:', labels.join(', '));
-            console.log('complexity:high:', isHigh);
-            core.setOutput('is_high', isHigh ? 'true' : 'false');
-
       # ── HIGH COMPLEXITY: plan first, then gate on /approve-plan ──────────────
       - name: Run Claude Code — Planning Phase (complexity:high)
         id: claude-plan
-        if: steps.complexity.outputs.is_high == 'true'
+        if: needs.resolve-issue.outputs.is_high == 'true'
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -93,15 +157,15 @@ jobs:
           prompt: |
             ${{ steps.security.outputs.policy }}
 
-            You are planning the implementation for issue #${{ github.event.issue.number }}.
+            You are planning the implementation for issue #${{ needs.resolve-issue.outputs.number }}.
 
-            Issue title: ${{ github.event.issue.title }}
+            Issue title: ${{ needs.resolve-issue.outputs.title }}
 
             This is a complexity:high issue. Your job is to PLAN, not implement.
 
             Instructions:
             1. Read the full issue body:
-               gh issue view ${{ github.event.issue.number }} --repo ${{ github.repository }}
+               gh issue view ${{ needs.resolve-issue.outputs.number }} --repo ${{ github.repository }}
             2. Read AGENTS.md for project-specific coding standards and file conventions
             3. Read the key files referenced in Technical Notes to understand existing patterns
             4. Write a structured implementation plan as a markdown file saved to:
@@ -110,7 +174,7 @@ jobs:
                key technical decisions, and implementation units (each with goal, files,
                approach, and test scenarios)
             5. Commit the plan file to a new branch named:
-               plan/issue-${{ github.event.issue.number }}
+               plan/issue-${{ needs.resolve-issue.outputs.number }}
                Branch off of `${{ env.ALPACA_AI_TARGET_BRANCH }}` (the PR target branch).
             6. After committing, post a comment on the issue with:
                - A link to the plan file (GitHub URL)
@@ -122,7 +186,7 @@ jobs:
       # ── LOW/MEDIUM COMPLEXITY: execute directly ──────────────────────────────
       - name: Run Claude Code — Direct Execution (complexity:low/medium)
         id: claude-work
-        if: steps.complexity.outputs.is_high == 'false'
+        if: needs.resolve-issue.outputs.is_high == 'false'
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -133,25 +197,25 @@ jobs:
           prompt: |
             ${{ steps.security.outputs.policy }}
 
-            You are implementing issue #${{ github.event.issue.number }}.
+            You are implementing issue #${{ needs.resolve-issue.outputs.number }}.
 
-            Issue title: ${{ github.event.issue.title }}
+            Issue title: ${{ needs.resolve-issue.outputs.title }}
 
             Target branch for the PR: `${{ env.ALPACA_AI_TARGET_BRANCH }}`
 
             Instructions:
             1. Read the full issue body carefully using the GitHub CLI:
-               gh issue view ${{ github.event.issue.number }} --repo ${{ github.repository }}
+               gh issue view ${{ needs.resolve-issue.outputs.number }} --repo ${{ github.repository }}
             2. Read AGENTS.md for project coding standards, file conventions, and architecture
             3. Implement the feature following the acceptance criteria exactly
             4. Stay within the defined scope — "Out of scope" is a hard boundary
             5. Follow the patterns referenced in Technical Notes (read the key files listed there)
             6. Create a branch, commit your changes, and open a PR:
                - Branch off of `${{ env.ALPACA_AI_TARGET_BRANCH }}`
-               - Branch name: agent/fix-${{ github.event.issue.number }}
+               - Branch name: agent/fix-${{ needs.resolve-issue.outputs.number }}
                - PR title should match the issue title
                - PR base must be `${{ env.ALPACA_AI_TARGET_BRANCH }}` (use `gh pr create --base ${{ env.ALPACA_AI_TARGET_BRANCH }}`)
-               - PR body: reference "Closes #${{ github.event.issue.number }}" and summarize what you did
+               - PR body: reference "Closes #${{ needs.resolve-issue.outputs.number }}" and summarize what you did
                - Use the template at .github/PULL_REQUEST_TEMPLATE/agent-generated.md
             7. Add the 'agent-generated' label to the PR
             8. After the PR is open, update the original issue's acceptance criteria:
@@ -169,7 +233,7 @@ jobs:
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: context.payload.issue.number,
+              issue_number: ${{ needs.resolve-issue.outputs.number }},
               body: [
                 '⚠️ **Agent setup incomplete**',
                 '',
@@ -185,8 +249,9 @@ jobs:
   # OPENAI CODEX (stub)
   # ─────────────────────────────────────────────────────────────────────────────
   trigger-openai-codex:
+    needs: resolve-issue
     if: |
-      github.event.label.name == 'agent-ready' &&
+      needs.resolve-issue.outputs.should_run == 'true' &&
       vars.AGENT_PROVIDER == 'openai-codex'
     runs-on: ubuntu-latest
     permissions:
@@ -201,8 +266,8 @@ jobs:
       - name: Run Codex
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          ISSUE_NUMBER: ${{ github.event.issue.number }}
-          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_NUMBER: ${{ needs.resolve-issue.outputs.number }}
+          ISSUE_TITLE: ${{ needs.resolve-issue.outputs.title }}
         run: |
           echo "OpenAI Codex provider stub — configure this step for your setup"
           echo "Issue #${ISSUE_NUMBER}: ${ISSUE_TITLE}"
@@ -211,28 +276,36 @@ jobs:
   # CUSTOM — repository_dispatch
   # ─────────────────────────────────────────────────────────────────────────────
   trigger-custom:
+    needs: resolve-issue
     if: |
-      github.event.label.name == 'agent-ready' &&
+      needs.resolve-issue.outputs.should_run == 'true' &&
       vars.AGENT_PROVIDER == 'custom'
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      issues: read
 
     steps:
-      - name: Dispatch agent-ready event
+      - name: Dispatch alpaca-agent event
         uses: actions/github-script@v7
         with:
           script: |
+            const { data: issue } = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: ${{ needs.resolve-issue.outputs.number }},
+            });
+
             await github.rest.repos.createDispatchEvent({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              event_type: 'agent-ready',
+              event_type: 'alpaca-agent',
               client_payload: {
-                issue_number: context.payload.issue.number,
-                issue_title: context.payload.issue.title,
-                issue_body: context.payload.issue.body,
-                issue_url: context.payload.issue.html_url,
-                labels: context.payload.issue.labels.map(l => l.name)
+                issue_number: issue.number,
+                issue_title: issue.title,
+                issue_body: issue.body,
+                issue_url: issue.html_url,
+                labels: issue.labels.map(l => l.name)
               }
             });
-            console.log(`Dispatched agent-ready event for issue #${context.payload.issue.number}`);
+            console.log(`Dispatched alpaca-agent event for issue #${issue.number}`);

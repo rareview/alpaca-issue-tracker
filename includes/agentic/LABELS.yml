@@ -1,6 +1,6 @@
 - color: 0E8A16
-  description: Issue is properly scoped for AI agent execution
-  name: agent-ready
+  description: Sent from Alpaca Fix With AI. This tag is only informational.
+  name: alpaca-ai
 - color: 1D76DB
   description: PR was created by an AI agent
   name: agent-generated

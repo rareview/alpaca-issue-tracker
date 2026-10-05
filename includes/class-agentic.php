@@ -4,12 +4,15 @@
  *
  * Option registration, board config localization, and client settings payload.
  * Admin UI mounts via React (src/AgenticSettings.jsx).
+ * Plugins-page removal modal: src/github-cleanup-modal.jsx.
  * GitHub workflow templates: includes/agentic/
  *
  * @package AlpacaIssueTracker
  */
 
 namespace AlpacaIssueTracker\Agentic;
+
+use AlpacaIssueTracker\Helpers;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -29,6 +32,15 @@ class Agentic {
 	const OPTION_KEY = 'alpaistr_agentic_settings';
 
 	/**
+	 * Revision of the bundled GitHub workflows and templates.
+	 *
+	 * This should be manually incremented for every GitHub workflow files change or update, so existing site request an update.
+	 *
+	 * @var int
+	 */
+	const WORKFLOW_REVISION = 2;
+
+	/**
 	 * Admin page slug.
 	 *
 	 * @var string
@@ -41,6 +53,140 @@ class Agentic {
 	public function register(): void {
 		add_action( 'admin_init', [ $this, 'register_settings' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'localize_board_config' ], 20 );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_github_cleanup_modal_assets' ] );
+
+		$plugin_basename = defined( 'ALPAISTR_PLUGIN_BASENAME' )
+			? ALPAISTR_PLUGIN_BASENAME
+			: plugin_basename( ALPAISTR_PLUGIN_DIR . 'alpacaissuetracker.php' );
+		add_filter(
+			'plugin_action_links_' . $plugin_basename,
+			[ $this, 'add_github_cleanup_plugin_action_link' ]
+		);
+		add_filter(
+			'network_admin_plugin_action_links_' . $plugin_basename,
+			[ $this, 'add_github_cleanup_plugin_action_link' ]
+		);
+	}
+
+	/**
+	 * Show the Cleanup GitHub Setup link if the current user can manage options, and if a repository and token are saved.
+	 *
+	 * @return array{repo: string}|null Link data, or null when the link should stay hidden.
+	 */
+	private static function github_cleanup_link_requirements(): ?array {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			return null;
+		}
+
+		$options = get_option( self::OPTION_KEY, [] );
+		if ( ! is_array( $options ) ) {
+			return null;
+		}
+
+		$repo  = trim( (string) ( $options['github_repo'] ?? '' ) );
+		$token = defined( 'ALPAISTR_AGENTIC_GITHUB_TOKEN' )
+			? trim( (string) ALPAISTR_AGENTIC_GITHUB_TOKEN )
+			: trim( (string) ( $options['github_token'] ?? '' ) );
+		if ( '' === $repo || '' === $token ) {
+			return null;
+		}
+
+		return [
+			'repo' => $repo,
+		];
+	}
+
+	/**
+	 * Whether the plugins page should offer GitHub setup removal.
+	 *
+	 * @return bool True when an administrator can still remove the saved setup.
+	 */
+	public static function can_show_github_cleanup_link(): bool {
+		return null !== self::github_cleanup_link_requirements();
+	}
+
+	/**
+	 * Add "Remove GitHub Setup" beside Deactivate.
+	 *
+	 * @param array<string, string> $actions Plugin row action links.
+	 * @return array<string, string> Updated action links.
+	 */
+	public function add_github_cleanup_plugin_action_link( array $actions ): array {
+		if ( ! self::can_show_github_cleanup_link() ) {
+			return $actions;
+		}
+
+		$link    = sprintf(
+			'<button type="button" class="button-link" id="alpaca-remove-github-setup">%s</button>',
+			esc_html__( 'Remove GitHub Setup', 'alpaca-issue-tracker' )
+		);
+		$updated = [];
+		$added   = false;
+		foreach ( $actions as $key => $markup ) {
+			$updated[ $key ] = $markup;
+			if ( 'deactivate' === $key ) {
+				$updated['alpaca_remove_github_setup'] = $link;
+				$added                                 = true;
+			}
+		}
+
+		if ( ! $added ) {
+			$updated['alpaca_remove_github_setup'] = $link;
+		}
+
+		return $updated;
+	}
+
+	/**
+	 * Load the cleanup modal on the plugins screen.
+	 *
+	 * @param string $hook_suffix Current admin page hook suffix.
+	 * @return void
+	 */
+	public function enqueue_github_cleanup_modal_assets( string $hook_suffix ): void {
+		if ( 'plugins.php' !== $hook_suffix ) {
+			return;
+		}
+
+		$requirements = self::github_cleanup_link_requirements();
+		if ( null === $requirements ) {
+			return;
+		}
+
+		$script_relative = 'dist/github-cleanup-modal.js';
+		$style_relative  = 'dist/github-cleanup-modal.css';
+		$script_path     = ALPAISTR_PLUGIN_DIR . $script_relative;
+		$style_path      = ALPAISTR_PLUGIN_DIR . $style_relative;
+		$script_version  = file_exists( $script_path ) ? (string) filemtime( $script_path ) : ALPAISTR_VERSION;
+		$style_version   = file_exists( $style_path ) ? (string) filemtime( $style_path ) : ALPAISTR_VERSION;
+		$script_handle   = 'alpaca-github-cleanup-modal';
+
+		wp_enqueue_script(
+			$script_handle,
+			Helpers::asset_url( $script_relative ),
+			[ 'wp-element', 'wp-components', 'wp-i18n', 'wp-api-fetch', 'wp-hooks' ],
+			$script_version,
+			true
+		);
+		wp_enqueue_style(
+			$script_handle,
+			Helpers::asset_url( $style_relative ),
+			[ 'wp-components' ],
+			$style_version
+		);
+		wp_set_script_translations(
+			$script_handle,
+			'alpaca-issue-tracker',
+			ALPAISTR_PLUGIN_DIR . 'languages'
+		);
+		wp_localize_script(
+			$script_handle,
+			'alpacaGithubCleanup',
+			[
+				'repo'  => $requirements['repo'],
+				'title' => __( 'Remove GitHub Setup', 'alpaca-issue-tracker' ),
+			]
+		);
 	}
 
 	/**
@@ -127,6 +273,15 @@ class Agentic {
 			$claude_app_confirmed = ! empty( $current_settings['claude_app_confirmed'] );
 		}
 
+		$setup_checklist = [];
+		if ( ! $repo_changed ) {
+			$setup_checklist = array_values(
+				array_unique(
+					array_map( 'absint', (array) ( $raw['setup_checklist'] ?? [] ) )
+				)
+			);
+		}
+
 		return [
 			'enabled'               => ! empty( $raw['enabled'] ),
 			'github_token'          => $github_token,
@@ -139,17 +294,42 @@ class Agentic {
 			'ai_api_key'            => $ai_api_key,
 			// Optional per-site notes appended to every AI-drafted GitHub issue.
 			'project_context'       => sanitize_textarea_field( $raw['project_context'] ?? ( $current_settings['project_context'] ?? '' ) ),
-			'setup_checklist'       => array_values(
-				array_unique(
-					array_map( 'absint', (array) ( $raw['setup_checklist'] ?? [] ) )
-				)
-			),
+			'setup_checklist'       => $setup_checklist,
 			'claude_app_confirmed'  => $claude_app_confirmed,
 			// User IDs allowed to use the Fix With AI feature besides administrators (who always have access).
 			'engineers'             => array_key_exists( 'engineers', $raw )
 				? array_values( array_unique( array_map( 'absint', (array) $raw['engineers'] ) ) )
 				: array_values( array_unique( array_map( 'absint', (array) ( $current_settings['engineers'] ?? [] ) ) ) ),
 		];
+	}
+
+	/**
+	 * Clear workflow markers when the repository or target branch changes.
+	 *
+	 * @param string $previous_repo   Previously configured repository.
+	 * @param string $current_repo    Newly configured repository.
+	 * @param string $previous_branch Previously configured AI target branch.
+	 * @param string $current_branch  Newly configured AI target branch.
+	 */
+	public static function clear_workflow_state_after_settings_change( string $previous_repo, string $current_repo, string $previous_branch, string $current_branch ): void {
+		if ( $previous_repo === $current_repo && $previous_branch === $current_branch ) {
+			return;
+		}
+
+		delete_option( 'alpaistr_agentic_workflow_pr_url' );
+		delete_option( 'alpaistr_agentic_workflow_revision' );
+		delete_transient( 'alpaistr_agentic_workflow_installed' );
+	}
+
+	/**
+	 * Whether the current bundled workflow revision has been installed or proposed.
+	 *
+	 * This stays set when the repository already contained the files and no pull request was opened.
+	 *
+	 * @return bool True when the stored revision matches the bundled revision.
+	 */
+	public static function is_workflow_revision_current(): bool {
+		return self::WORKFLOW_REVISION === (int) get_option( 'alpaistr_agentic_workflow_revision', 0 );
 	}
 
 	/**
@@ -244,8 +424,8 @@ class Agentic {
 			? ALPAISTR_AGENTIC_AI_API_KEY
 			: ( $options['ai_api_key'] ?? '' );
 		$github_repo                = $options['github_repo'] ?? '';
-		$pr_url                     = (string) get_option( 'alpaistr_agentic_workflow_pr_url', '' );
-		$workflow_installed         = ! empty( $pr_url ) || (bool) get_transient( 'alpaistr_agentic_workflow_installed' );
+		$revision_current           = self::is_workflow_revision_current();
+		$pr_url                     = $revision_current ? (string) get_option( 'alpaistr_agentic_workflow_pr_url', '' ) : '';
 		$is_admin                   = current_user_can( 'manage_options' );
 
 		return [
@@ -262,7 +442,7 @@ class Agentic {
 			'ai_api_key_set'             => '' !== (string) $ai_api_key,
 			'ai_api_key_from_constant'   => $ai_api_key_from_constant,
 			'workflow_pr_url'            => $pr_url,
-			'workflow_installed'         => (bool) $workflow_installed,
+			'workflow_installed'         => $revision_current,
 			'repo_actions_url'           => $github_repo ? 'https://github.com/' . $github_repo . '/actions' : '',
 			'repo_secrets_url'           => $github_repo ? 'https://github.com/' . $github_repo . '/settings/secrets/actions' : '',
 			// Access control: administrators can always edit; engineers get a read-only view.
@@ -409,8 +589,7 @@ class Agentic {
 			return false;
 		}
 
-		$workflow_installed = get_transient( 'alpaistr_agentic_workflow_installed' ) || get_option( 'alpaistr_agentic_workflow_pr_url', '' );
-		if ( ! $workflow_installed ) {
+		if ( ! self::is_workflow_revision_current() ) {
 			return false;
 		}
 
