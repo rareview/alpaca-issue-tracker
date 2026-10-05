@@ -343,7 +343,7 @@ final class AlpacaIssueTracker {
 			'alpaistr_enable_context_capture',
 			[
 				'type'              => 'string',
-				'description'       => esc_html__( 'Enable context capture, including the toolbar and data dump.', 'alpaca-issue-tracker' ),
+				'description'       => esc_html__( 'Enable the front-end controls for reporting issues with associated context.', 'alpaca-issue-tracker' ),
 				'sanitize_callback' => [ $this, 'sanitize_binary_setting' ],
 				'show_in_rest'      => true,
 				'default'           => '1',

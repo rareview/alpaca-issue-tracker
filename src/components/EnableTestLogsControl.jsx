@@ -13,7 +13,7 @@ const EnableTestLogsControl = () => {
   });
 
   return (
-    <tr>
+    <tr className="alpaca-debugging-setting">
       <th>{__('Debugging', 'alpaca-issue-tracker')}</th>
       <td>
         <CheckboxControl

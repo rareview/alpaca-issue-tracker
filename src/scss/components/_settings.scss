@@ -17,6 +17,19 @@
   color: #2c6ecb;
 }
 
+.alpaca-context-capture-setting .components-base-control__help {
+  font-size: 13px;
+}
+
+.form-table .alpaca-context-capture-setting > th {
+  padding-block-start: 15px;
+}
+
+.form-table .alpaca-debugging-setting > th {
+  padding-block-start: 19px;
+  padding-block-end: 16px;
+}
+
 .alpaca-settings {
   hr {
     margin: $space-6xl 0;
