@@ -52,7 +52,7 @@ import {
     'bug',
     'enhancement',
     'agent-candidate',
-    'agent-ready',
+    'alpaca-ai',
   ]);
 
   const GITHUB_ICON = el(
@@ -396,7 +396,7 @@ import {
         ...new Set([
           ...selectedLabels,
           'complexity:' + complexity,
-          'agent-ready',
+          'alpaca-ai',
         ]),
       ];
 
@@ -444,7 +444,7 @@ import {
         el(
           'p',
           null,
-          __('AI is drafting the agent-ready issue…', 'alpaca-issue-tracker'),
+          __('AI is drafting the GitHub issue…', 'alpaca-issue-tracker'),
         ),
       );
     }
@@ -670,7 +670,7 @@ import {
       Modal,
       {
         title: modalTitle(
-          __('Create an agent-ready issue on GitHub', 'alpaca-issue-tracker'),
+          __('Create the GitHub issue for the AI agent', 'alpaca-issue-tracker'),
         ),
         onRequestClose: onClose,
         className: 'agentic-export-modal',

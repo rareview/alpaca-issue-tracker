@@ -353,7 +353,7 @@ function alpaistr_agentic_save_settings_callback( WP_REST_Request $request ): WP
 }
 
 /**
- * Use AI to rewrite an Alpaca issue so it meets the GitHub agent-ready issue template requirements.
+ * Use AI to rewrite an Alpaca issue so it meets the GitHub issue template requirements.
  *
  * @param WP_REST_Request $request REST request.
  * @return WP_REST_Response|WP_Error
@@ -1569,7 +1569,7 @@ function alpaistr_agentic_install_workflow_callback(): WP_REST_Response|WP_Error
 				'',
 				'### What\'s included',
 				'',
-				'- `agent-ready-trigger.yml` — fires when `agent-ready` label is applied; routes to Claude or another provider',
+				'- `agent-trigger.yml` — Alpaca starts this with workflow_dispatch.',
 				'- `plan-approval-gate.yml` — handles `/approve-plan` and `/run-agent` commands',
 				'- `issue-screener.yml` — weekly structural screener for backlog issues',
 				'- `auto-label-agent-ready.yml` — nominates structurally complete issues as `agent-candidate` for human review',
@@ -1796,10 +1796,9 @@ function alpaistr_agentic_create_callback( WP_REST_Request $request ): WP_REST_R
 	);
 	$labels[] = 'target-branch:' . $ai_target_branch;
 
-	// agent-ready must be applied in a separate API call so GitHub fires the
-	// issues.labeled webhook and Agent-Ready Auto-Trigger runs immediately.
-	$apply_agent_ready = in_array( 'agent-ready', $labels, true );
-	$create_labels     = array_values( array_diff( $labels, [ 'agent-ready' ] ) );
+	// alpaca-ai is only informational. Alpaca starts the workflow with workflow_dispatch.
+	$apply_agent_ready = in_array( 'alpaca-ai', $labels, true );
+	$create_labels     = array_values( array_diff( $labels, [ 'alpaca-ai' ] ) );
 
 	$repo_parts = alpaistr_agentic_parse_github_repo( $repo );
 	if ( is_wp_error( $repo_parts ) ) {
@@ -1925,14 +1924,14 @@ function alpaistr_agentic_create_callback( WP_REST_Request $request ): WP_REST_R
 /**
  * Finish a GitHub issue created by the current or a previous request.
  *
- * The pending marker is kept until the label request succeeds, so a retry
- * cannot create a second GitHub issue after a partial failure.
+ * The pending marker is kept until the agent workflow has been started, so a
+ * retry cannot create a second GitHub issue.
  *
  * @param int                   $issue_id      Alpaca issue post ID.
  * @param string                $token         GitHub token.
  * @param array<string, string> $repo_parts    Parsed repository.
  * @param array<string, mixed>  $pending_issue Pending remote issue details.
- * @return WP_REST_Response|WP_Error Completion response or label error.
+ * @return WP_REST_Response|WP_Error Completion response or workflow start error.
  */
 function alpaistr_agentic_complete_pending_issue( int $issue_id, string $token, array $repo_parts, array $pending_issue ): WP_REST_Response|WP_Error {
 	$github_url    = (string) ( $pending_issue['url'] ?? '' );
@@ -1945,15 +1944,18 @@ function alpaistr_agentic_complete_pending_issue( int $issue_id, string $token, 
 	}
 
 	if ( ! empty( $pending_issue['apply_agent_ready'] ) ) {
-		$label_result = alpaistr_agentic_github_add_issue_labels( $token, $repo_parts, $github_number, [ 'agent-ready' ] );
-		if ( is_wp_error( $label_result ) ) {
+		// The alpaca-ai tag is only informational. Keep going when GitHub rejects it.
+		alpaistr_agentic_github_add_issue_labels( $token, $repo_parts, $github_number, [ 'alpaca-ai' ] );
+
+		$dispatch_result = alpaistr_agentic_dispatch_agent_ready_workflow( $token, $repo_parts, $github_number );
+		if ( is_wp_error( $dispatch_result ) ) {
 			return new WP_Error(
-				'github_label_error',
+				'github_dispatch_error',
 				sprintf(
 					/* translators: 1: issue URL, 2: error message. */
-					__( 'Issue was created at %1$s but agent-ready could not be applied: %2$s', 'alpaca-issue-tracker' ),
+					__( 'Issue was created at %1$s, but the agent did not start: %2$s', 'alpaca-issue-tracker' ),
 					$github_url,
-					$label_result->get_error_message()
+					$dispatch_result->get_error_message()
 				),
 				[ 'status' => 502 ]
 			);
@@ -2248,7 +2250,7 @@ function alpaistr_agentic_request_change_create_issue( int $issue_id, string $no
 
 	$complexity      = (string) ( $template['complexity'] ?? 'medium' );
 	$previous_labels = is_array( $template['labels'] ?? null ) ? $template['labels'] : [];
-	$allowed_labels  = [ 'bug', 'enhancement', 'agent-candidate', 'agent-ready' ];
+	$allowed_labels  = [ 'bug', 'enhancement', 'agent-candidate', 'alpaca-ai' ];
 	$labels          = array_values(
 		array_unique(
 			array_merge(
@@ -2260,7 +2262,7 @@ function alpaistr_agentic_request_change_create_issue( int $issue_id, string $no
 						}
 					)
 				),
-				[ 'complexity:' . $complexity, 'agent-ready' ]
+				[ 'complexity:' . $complexity, 'alpaca-ai' ]
 			)
 		)
 	);
@@ -2394,7 +2396,7 @@ function alpaistr_agentic_current_attempt_sent_drafts( int $issue_id ): array {
 }
 
 /**
- * Original agent-ready draft (full GitHub issue template).
+ * Original Fix With AI draft (full GitHub issue template).
  *
  * @param array<int, array<string, mixed>> $drafts Sent drafts, oldest first.
  * @return array<string, mixed>|null
@@ -2548,7 +2550,7 @@ function alpaistr_agentic_current_attempt_original_sent_index( array $history ):
 }
 
 /**
- * Original agent-ready template plus every follow-up request.
+ * Original Fix With AI template plus every follow-up request.
  *
  * @param string             $original_body Original GitHub issue body.
  * @param array<int, string> $notes         Follow-up notes, oldest first.
@@ -2884,7 +2886,7 @@ function alpaistr_agentic_working_branch_name( int $issue_number ): string {
  * Find the pull request opened by the AI agent for a given issue, preferring a merged one.
  *
  * The agent workflows create branches named `agent/fix-<number>` targeting the chosen
- * branch directly (see agent-ready-trigger.yml). Older PRs used `agent/issue-<number>`.
+ * branch directly (see agent-trigger.yml). Older PRs used `agent/issue-<number>`.
  * Filtering GitHub's pull list by those head branches and the base branch is precise --
  * unlike scanning PR bodies for a "Closes #N" keyword, which any unrelated PR mentioning
  * the issue number could also match.
@@ -4718,6 +4720,100 @@ function alpaistr_agentic_github_add_issue_labels( string $token, array $repo_pa
 }
 
 /**
+ * Start the Alpaca AI agent workflow for one issue.
+ *
+ * Workflow dispatch is the only start path.
+ * A 204 response means GitHub accepted the run.
+ *
+ * @param string                             $token        GitHub token.
+ * @param array{owner: string, name: string} $repo_parts   Parsed repository.
+ * @param int                                $issue_number GitHub issue number.
+ * @return true|WP_Error
+ */
+function alpaistr_agentic_dispatch_agent_ready_workflow( string $token, array $repo_parts, int $issue_number ): bool|WP_Error {
+	if ( $issue_number <= 0 ) {
+		return new WP_Error( 'invalid_issue', __( 'Cannot start the agent without a GitHub issue number.', 'alpaca-issue-tracker' ) );
+	}
+
+	$repo_response = wp_remote_get(
+		sprintf(
+			'https://api.github.com/repos/%s/%s',
+			rawurlencode( $repo_parts['owner'] ),
+			rawurlencode( $repo_parts['name'] )
+		),
+		[
+			'timeout' => 20,
+			'headers' => alpaistr_agentic_github_api_headers( $token ),
+		]
+	);
+
+	if ( is_wp_error( $repo_response ) ) {
+		return new WP_Error( 'github_request_failed', $repo_response->get_error_message() );
+	}
+
+	$repo_code = (int) wp_remote_retrieve_response_code( $repo_response );
+	$repo_data = json_decode( (string) wp_remote_retrieve_body( $repo_response ), true );
+	$branch    = is_array( $repo_data ) ? (string) ( $repo_data['default_branch'] ?? '' ) : '';
+
+	if ( 200 !== $repo_code || '' === $branch ) {
+		return new WP_Error(
+			'github_api_error',
+			__( 'Could not read the repository default branch, so the agent workflow was not started.', 'alpaca-issue-tracker' )
+		);
+	}
+
+	$response = wp_remote_post(
+		sprintf(
+			'https://api.github.com/repos/%s/%s/actions/workflows/agent-trigger.yml/dispatches',
+			rawurlencode( $repo_parts['owner'] ),
+			rawurlencode( $repo_parts['name'] )
+		),
+		[
+			'timeout' => 30,
+			'headers' => alpaistr_agentic_github_api_headers( $token ),
+			'body'    => wp_json_encode(
+				[
+					'ref'    => $branch,
+					'inputs' => [
+						'issue_number' => (string) $issue_number,
+					],
+				]
+			),
+		]
+	);
+
+	if ( is_wp_error( $response ) ) {
+		return new WP_Error( 'github_request_failed', $response->get_error_message() );
+	}
+
+	$code = (int) wp_remote_retrieve_response_code( $response );
+	if ( 204 === $code ) {
+		return true;
+	}
+
+	if ( in_array( $code, [ 404, 422 ], true ) ) {
+		return new WP_Error(
+			'github_dispatch_error',
+			__( 'The agent workflow on the default branch cannot be started yet. Merge the latest Fix With AI setup pull request, then try again.', 'alpaca-issue-tracker' )
+		);
+	}
+
+	if ( 403 === $code ) {
+		return new WP_Error(
+			'github_dispatch_error',
+			__( 'The GitHub token cannot start the agent. Set Actions to Read and write on the token, then try again.', 'alpaca-issue-tracker' )
+		);
+	}
+
+	$gh_data = json_decode( (string) wp_remote_retrieve_body( $response ), true );
+	$message = is_array( $gh_data ) && isset( $gh_data['message'] )
+		? (string) $gh_data['message']
+		: __( 'GitHub did not start the agent workflow.', 'alpaca-issue-tracker' );
+
+	return new WP_Error( 'github_dispatch_error', $message );
+}
+
+/**
  * Parse an owner/repo string (or GitHub URL) into owner and repository name.
  *
  * @param string $repo Raw repository setting value.
@@ -5371,19 +5467,20 @@ function alpaistr_agentic_get_settings(): array {
 }
 
 /**
- * Classify a GitHub file without treating changed content as plugin-owned.
+ * Every GitHub path the plugin installs.
  *
- * @param string $encoded_content Base64 content from GitHub.
- * @param string $expected_content Current bundled file content.
- * @return string Safe or modified.
+ * Content is not compared. These paths exist only because the setup pull request
+ * created them, so a full removal takes them regardless of later edits.
+ *
+ * @return string[] Repository-relative paths.
  */
-function alpaistr_agentic_classify_cleanup_file( string $encoded_content, string $expected_content ): string {
-	$decoded = base64_decode( preg_replace( '/\s+/', '', $encoded_content ), true ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode -- GitHub contents API uses base64.
-	if ( false === $decoded || $decoded !== $expected_content ) {
-		return 'modified';
+function alpaistr_agentic_cleanup_paths(): array {
+	$paths = [];
+	foreach ( alpaistr_agentic_get_template_files( ALPAISTR_PLUGIN_DIR . 'includes/agentic/' ) as $relative_path => $local_path ) {
+		$paths[] = '.github/' . $relative_path;
 	}
 
-	return 'safe';
+	return array_values( array_unique( $paths ) );
 }
 
 /**
@@ -5403,7 +5500,47 @@ function alpaistr_agentic_cleanup_api_url( array $repo_parts, string $path ): st
 }
 
 /**
- * Preview only resources that can be safely identified as plugin-managed.
+ * Whether the plugin-created ALPACA_AI_TARGET_BRANCH Actions variable still exists.
+ *
+ * @param string                             $token      GitHub personal access token.
+ * @param array{owner: string, name: string} $repo_parts Parsed repository.
+ * @return bool True when GitHub still holds the variable.
+ */
+function alpaistr_agentic_ai_target_branch_variable_exists( string $token, array $repo_parts ): bool {
+	$response = wp_remote_get(
+		alpaistr_agentic_cleanup_api_url( $repo_parts, 'actions/variables/ALPACA_AI_TARGET_BRANCH' ),
+		[
+			'timeout' => 15,
+			'headers' => alpaistr_agentic_github_api_headers( $token ),
+		]
+	);
+
+	return ! is_wp_error( $response ) && 200 === wp_remote_retrieve_response_code( $response );
+}
+
+/**
+ * Whether the plugin-created setup branch still exists.
+ *
+ * @param string                             $token      GitHub personal access token.
+ * @param array{owner: string, name: string} $repo_parts Parsed repository.
+ * @param string                             $branch     Setup branch name.
+ * @return bool True when the branch ref is still present.
+ */
+function alpaistr_agentic_setup_branch_exists( string $token, array $repo_parts, string $branch ): bool {
+	// The ref keeps its literal slash; GitHub rejects an encoded one. The name is a plugin constant.
+	$response = wp_remote_get(
+		alpaistr_agentic_cleanup_api_url( $repo_parts, 'git/ref/heads/' . $branch ),
+		[
+			'timeout' => 15,
+			'headers' => alpaistr_agentic_github_api_headers( $token ),
+		]
+	);
+
+	return ! is_wp_error( $response ) && 200 === wp_remote_retrieve_response_code( $response );
+}
+
+/**
+ * Preview every plugin-created resource that a full removal will delete.
  *
  * @return array<string, mixed>|WP_Error Preview data or an API error.
  */
@@ -5441,8 +5578,7 @@ function alpaistr_agentic_github_cleanup_preview(): array|WP_Error {
 	}
 
 	$files = [];
-	foreach ( alpaistr_agentic_get_template_files( ALPAISTR_PLUGIN_DIR . 'includes/agentic/' ) as $relative_path => $local_path ) {
-		$path   = '.github/' . $relative_path;
+	foreach ( alpaistr_agentic_cleanup_paths() as $path ) {
 		$remote = alpaistr_agentic_get_github_file( $token, $repo_parts, $path, $branch );
 		if ( is_wp_error( $remote ) ) {
 			return $remote;
@@ -5451,24 +5587,20 @@ function alpaistr_agentic_github_cleanup_preview(): array|WP_Error {
 			continue;
 		}
 
-		$expected = file_get_contents( $local_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Bundled template file.
-		if ( false === $expected ) {
-			return new WP_Error( 'workflow_file_unreadable', __( 'Could not read a bundled workflow file.', 'alpaca-issue-tracker' ), [ 'status' => 500 ] );
-		}
-		$expected = str_replace( '__ALPACA_AI_TARGET_BRANCH__', (string) $settings['ai_target_branch'], $expected );
-		$files[]  = [
-			'path'   => $path,
-			'sha'    => (string) $remote['sha'],
-			'status' => alpaistr_agentic_classify_cleanup_file( (string) $remote['content'], $expected ),
+		$files[] = [
+			'path' => $path,
+			'sha'  => (string) $remote['sha'],
 		];
 	}
+
+	$setup_branch = alpaistr_agentic_get_config_branch_name();
 
 	return [
 		'repo'           => $repo_parts['owner'] . '/' . $repo_parts['name'],
 		'default_branch' => $branch,
 		'files'          => $files,
-		'variable'       => 'manual',
-		'setup_branch'   => alpaistr_agentic_get_config_branch_name(),
+		'variable'       => alpaistr_agentic_ai_target_branch_variable_exists( $token, $repo_parts ),
+		'setup_branch'   => alpaistr_agentic_setup_branch_exists( $token, $repo_parts, $setup_branch ) ? $setup_branch : '',
 		'setup_pr_url'   => (string) get_option( 'alpaistr_agentic_workflow_pr_url', '' ),
 	];
 }
@@ -5488,10 +5620,11 @@ function alpaistr_agentic_github_cleanup_preview_callback(): WP_REST_Response|WP
 }
 
 /**
- * Remove unchanged bundled files and the matching Actions variable on request.
+ * Remove every plugin-created file, the Actions variable, and the setup branch.
  *
- * Branches, pull requests, modified files, and repository secrets are left for
- * manual review because they can contain work owned by the repository.
+ * Repository secrets and existing issues, labels, and pull requests are left for
+ * manual review because they hold work owned by the repository. Deleting the setup
+ * branch closes the setup pull request, which GitHub never allows removing.
  *
  * @param WP_REST_Request $request REST request with the repository confirmation.
  * @return WP_REST_Response|WP_Error Per-resource result or validation error.
@@ -5511,19 +5644,18 @@ function alpaistr_agentic_github_cleanup_callback( WP_REST_Request $request ): W
 		return $repo_parts;
 	}
 
+	$token   = (string) $settings['github_token'];
+	$headers = alpaistr_agentic_github_api_headers( $token );
 	$removed = [];
 	$errors  = [];
-	foreach ( $preview['files'] as $file ) {
-		if ( 'safe' !== $file['status'] ) {
-			continue;
-		}
 
+	foreach ( $preview['files'] as $file ) {
 		$response = wp_remote_request(
 			alpaistr_agentic_cleanup_api_url( $repo_parts, 'contents/' . $file['path'] ),
 			[
 				'method'  => 'DELETE',
 				'timeout' => 30,
-				'headers' => alpaistr_agentic_github_api_headers( (string) $settings['github_token'] ),
+				'headers' => $headers,
 				'body'    => wp_json_encode(
 					[
 						'message' => 'Remove ' . $file['path'] . ' [alpaca-ai-development]',
@@ -5547,23 +5679,54 @@ function alpaistr_agentic_github_cleanup_callback( WP_REST_Request $request ): W
 		$removed[] = $file['path'];
 	}
 
-	if ( ! empty( $removed ) ) {
-		delete_option( 'alpaistr_agentic_workflow_revision' );
-		delete_transient( 'alpaistr_agentic_workflow_installed' );
+	// Delete the plugin-created Actions variable only; the branch name it stores is never touched.
+	if ( ! empty( $preview['variable'] ) ) {
+		$response = wp_remote_request(
+			alpaistr_agentic_cleanup_api_url( $repo_parts, 'actions/variables/ALPACA_AI_TARGET_BRANCH' ),
+			[
+				'method'  => 'DELETE',
+				'timeout' => 20,
+				'headers' => $headers,
+			]
+		);
+		if ( is_wp_error( $response ) ) {
+			$errors[] = 'ALPACA_AI_TARGET_BRANCH: ' . $response->get_error_message();
+		} elseif ( 204 !== wp_remote_retrieve_response_code( $response ) ) {
+			$errors[] = __( 'ALPACA_AI_TARGET_BRANCH: GitHub did not remove the Actions variable.', 'alpaca-issue-tracker' );
+		} else {
+			$removed[] = 'ALPACA_AI_TARGET_BRANCH';
+		}
 	}
 
-	$manual = [];
-	foreach ( $preview['files'] as $file ) {
-		if ( 'safe' !== $file['status'] ) {
-			$manual[] = $file['path'];
+	// Delete the setup branch; GitHub closes the setup pull request when the branch is gone.
+	if ( '' !== (string) $preview['setup_branch'] ) {
+		$response = wp_remote_request(
+			alpaistr_agentic_cleanup_api_url( $repo_parts, 'git/refs/heads/' . (string) $preview['setup_branch'] ),
+			[
+				'method'  => 'DELETE',
+				'timeout' => 20,
+				'headers' => $headers,
+			]
+		);
+		if ( is_wp_error( $response ) ) {
+			$errors[] = $preview['setup_branch'] . ': ' . $response->get_error_message();
+		} elseif ( 204 !== wp_remote_retrieve_response_code( $response ) ) {
+			$errors[] = __( 'Setup branch: GitHub did not remove the branch.', 'alpaca-issue-tracker' );
+		} else {
+			$removed[] = $preview['setup_branch'];
 		}
+	}
+
+	if ( ! empty( $removed ) ) {
+		delete_option( 'alpaistr_agentic_workflow_revision' );
+		delete_option( 'alpaistr_agentic_workflow_pr_url' );
+		delete_transient( 'alpaistr_agentic_workflow_installed' );
 	}
 
 	return rest_ensure_response(
 		[
 			'removed' => $removed,
 			'errors'  => $errors,
-			'manual'  => $manual,
 		]
 	);
 }

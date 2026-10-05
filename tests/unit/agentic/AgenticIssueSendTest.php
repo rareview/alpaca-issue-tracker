@@ -49,35 +49,59 @@ class AgenticIssueSendTest extends \PHPUnit\Framework\TestCase {
 	}
 
 	/**
-	 * A failed label request must not discard the persisted remote issue.
+	 * A failed marker label must not stop the agent or keep the issue pending.
 	 */
-	public function test_label_failure_keeps_pending_issue_for_retry(): void {
+	public function test_label_failure_still_starts_the_agent(): void {
+		$existing_history = [
+			[
+				'type'          => 'sent',
+				'github_number' => 42,
+				'url'           => 'https://github.com/example/project/issues/42',
+			],
+		];
+
+		Functions\expect( 'wp_remote_get' )->once()->andReturn( [ 'code' => 200 ] );
 		Functions\expect( 'wp_remote_post' )
-			->once()
-			->withArgs(
-				static function ( string $url ): bool {
-					return str_contains( $url, '/issues/42/labels' );
+			->twice()
+			->andReturnUsing(
+				static function ( string $url ) {
+					if ( str_contains( $url, '/labels' ) ) {
+						return new WP_Error( 'network_error', 'Connection lost.' );
+					}
+
+					return [ 'code' => 204 ];
 				}
-			)
-			->andReturn( new WP_Error( 'network_error', 'Connection lost.' ) );
-		Functions\expect( 'delete_post_meta' )->never();
+			);
+		Functions\when( 'wp_remote_retrieve_response_code' )->alias(
+			static function ( $response ): int {
+				return (int) ( is_array( $response ) ? ( $response['code'] ?? 0 ) : 0 );
+			}
+		);
+		Functions\when( 'wp_remote_retrieve_body' )->justReturn( '{"default_branch":"main"}' );
+		Functions\when( 'get_post_meta' )->justReturn( $existing_history );
+		Functions\expect( 'delete_post_meta' )->once()->with( 7, ALPAISTR_AGENTIC_PENDING_ISSUE_META );
+		Functions\when( 'rest_ensure_response' )->alias(
+			static function ( array $data ): WP_REST_Response {
+				return new WP_REST_Response( $data );
+			}
+		);
 
 		$result = alpaistr_agentic_complete_pending_issue(
 			7,
 			'token',
 			[ 'owner' => 'example', 'name' => 'project' ],
 			[
-				'repo'               => 'example/project',
-				'url'                => 'https://github.com/example/project/issues/42',
-				'number'             => 42,
-				'target_branch'      => 'ai-work',
-				'draft'              => [ 'title' => 'Fix issue' ],
-				'apply_agent_ready'  => true,
+				'repo'              => 'example/project',
+				'url'               => 'https://github.com/example/project/issues/42',
+				'number'            => 42,
+				'target_branch'     => 'ai-work',
+				'draft'             => [ 'title' => 'Fix issue' ],
+				'apply_agent_ready' => true,
 			]
 		);
 
-		$this->assertInstanceOf( WP_Error::class, $result );
-		$this->assertSame( 'github_label_error', $result->get_error_code() );
+		$this->assertInstanceOf( WP_REST_Response::class, $result );
+		$this->assertSame( 42, $result->get_data()['github_number'] );
 	}
 
 	/**
@@ -92,9 +116,20 @@ class AgenticIssueSendTest extends \PHPUnit\Framework\TestCase {
 			],
 		];
 
-		Functions\expect( 'wp_remote_post' )->once()->andReturn( [ 'response' => [ 'code' => 200 ] ] );
-		Functions\when( 'wp_remote_retrieve_response_code' )->justReturn( 200 );
-		Functions\when( 'wp_remote_retrieve_body' )->justReturn( '[]' );
+		Functions\expect( 'wp_remote_get' )->once()->andReturn( [ 'code' => 200 ] );
+		Functions\expect( 'wp_remote_post' )
+			->twice()
+			->andReturnUsing(
+				static function ( string $url ): array {
+					return [ 'code' => str_contains( $url, '/dispatches' ) ? 204 : 200 ];
+				}
+			);
+		Functions\when( 'wp_remote_retrieve_response_code' )->alias(
+			static function ( $response ): int {
+				return (int) ( is_array( $response ) ? ( $response['code'] ?? 0 ) : 0 );
+			}
+		);
+		Functions\when( 'wp_remote_retrieve_body' )->justReturn( '{"default_branch":"main"}' );
 		Functions\when( 'get_post_meta' )->justReturn( $existing_history );
 		Functions\expect( 'update_post_meta' )->never();
 		Functions\expect( 'delete_post_meta' )->once()->with( 7, ALPAISTR_AGENTIC_PENDING_ISSUE_META );
@@ -121,5 +156,44 @@ class AgenticIssueSendTest extends \PHPUnit\Framework\TestCase {
 		$this->assertInstanceOf( WP_REST_Response::class, $result );
 		$this->assertSame( 42, $result->get_data()['github_number'] );
 		$this->assertSame( $existing_history, $result->get_data()['history'] );
+	}
+
+	/**
+	 * A failed workflow start must keep the GitHub issue so the next click can retry.
+	 */
+	public function test_dispatch_failure_keeps_pending_issue_for_retry(): void {
+		Functions\expect( 'wp_remote_get' )->once()->andReturn( [ 'code' => 200 ] );
+		Functions\expect( 'wp_remote_post' )
+			->twice()
+			->andReturnUsing(
+				static function ( string $url ): array {
+					return [ 'code' => str_contains( $url, '/dispatches' ) ? 422 : 200 ];
+				}
+			);
+		Functions\when( 'wp_remote_retrieve_response_code' )->alias(
+			static function ( $response ): int {
+				return (int) ( is_array( $response ) ? ( $response['code'] ?? 0 ) : 0 );
+			}
+		);
+		Functions\when( 'wp_remote_retrieve_body' )->justReturn( '{"default_branch":"main"}' );
+		Functions\expect( 'delete_post_meta' )->never();
+
+		$result = alpaistr_agentic_complete_pending_issue(
+			7,
+			'token',
+			[ 'owner' => 'example', 'name' => 'project' ],
+			[
+				'repo'              => 'example/project',
+				'url'               => 'https://github.com/example/project/issues/42',
+				'number'            => 42,
+				'target_branch'     => 'ai-work',
+				'draft'             => [ 'title' => 'Fix issue' ],
+				'apply_agent_ready' => true,
+			]
+		);
+
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 'github_dispatch_error', $result->get_error_code() );
+		$this->assertStringContainsString( 'setup pull request', $result->get_error_message() );
 	}
 }

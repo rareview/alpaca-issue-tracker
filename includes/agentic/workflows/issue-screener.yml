@@ -3,13 +3,13 @@
 #
 # This is the lightweight (no-LLM) screener. It scores issues structurally
 # using the rubric below and applies 'agent-candidate' to high-scoring issues.
-# A human must review candidates and apply 'agent-ready' to start execution.
+# A human reviews candidates.
 #
 # For the Claude-powered screener (richer analysis, draft templates in comments),
 # see .github/agents/issue-screener.agent.md and use it with Claude Code or
 # anthropics/claude-code-action.
 #
-# The screener NEVER applies 'agent-ready' — that decision belongs to a human.
+# The screener never applies 'alpaca-ai'. Alpaca applies that label when Fix With AI sends an issue.
 
 name: Issue Screener
 
@@ -42,7 +42,7 @@ jobs:
             const issues = allIssues.filter(issue => {
               if (issue.pull_request) return false;
               const labelNames = issue.labels.map(l => l.name);
-              return !labelNames.includes('agent-ready') && !labelNames.includes('agent-candidate');
+              return !labelNames.includes('alpaca-ai') && !labelNames.includes('agent-candidate');
             });
 
             if (issues.length === 0) {
@@ -163,9 +163,9 @@ jobs:
               const comment = [
                 '## Issue Screener — Candidate Report',
                 '',
-                '> **This is an automated structural assessment.** A human must review and apply',
-                '> the `agent-ready` label to start agent execution.',
-                '> The `agent-candidate` label has been applied to this issue.',
+                '> **This is an automated structural assessment.**',
+                '> The `agent-candidate` label has been applied.',
+                '> Alpaca starts the agent with workflow_dispatch.',
                 '',
                 '---',
                 '',
@@ -179,13 +179,13 @@ jobs:
                 '### What Would Improve This Issue',
                 '',
                 ...(score >= 7 ? [
-                  'This issue scores strongly. To promote to `agent-ready`:',
+                  'This issue scores strongly. Before sending it with Fix With AI:',
                   '',
                   '- [ ] Verify scope is bounded (one PR)',
                   '- [ ] Add "Out of scope" exclusions if missing',
                   '- [ ] Link to specific files or WP hooks to follow',
                 ] : [
-                  'To reach `agent-ready` status, consider:',
+                  'To make this a stronger candidate, consider:',
                   '',
                   ...(!signals.find(s => s.signal.includes('acceptance criteria')) ? ['- [ ] Add acceptance criteria checkboxes (specific, testable criteria)'] : []),
                   ...(!signals.find(s => s.signal.includes('file/class')) ? ['- [ ] Reference specific files, blocks, hooks, or PHP classes in the codebase'] : []),
