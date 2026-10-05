@@ -624,8 +624,8 @@ msgstr ""
 msgid "Enable console messages for testing purposes."
 msgstr ""
 
-#: includes/class-alpacaissuetracker.php:340
-msgid "Enable context capture, including the toolbar and data dump."
+#: includes/class-alpacaissuetracker.php:346
+msgid "Enable the front-end controls for reporting issues with associated context."
 msgstr ""
 
 #: includes/class-alpacaissuetracker.php:352
@@ -1526,12 +1526,20 @@ msgid "Manage the templates used for outbound emails in the block editor areas b
 msgstr ""
 
 #: src/components/EnableContextCaptureControl.jsx:14
+msgid "Front-End Issue Capture"
+msgstr ""
+
+#: src/components/EnableContextCaptureControl.jsx:14
 #: src/Modal.jsx:208
 msgid "Context Capture"
 msgstr ""
 
 #: src/components/EnableContextCaptureControl.jsx:20
-msgid "Enable reporting of issues with associated context"
+msgid "Enable the front-end controls for reporting issues with associated context"
+msgstr ""
+
+#: src/components/EnableContextCaptureControl.jsx:27
+msgid "Uncheck this option to use Alpaca as a back-end kanban board"
 msgstr ""
 
 #: src/components/EnableTestLogsControl.jsx:17

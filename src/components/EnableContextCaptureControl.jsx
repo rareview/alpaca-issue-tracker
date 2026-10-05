@@ -10,20 +10,24 @@ const EnableContextCaptureControl = () => {
   });
 
   return (
-    <tr>
-      <th>{__('Context Capture', 'alpaca-issue-tracker')}</th>
+    <tr className="alpaca-context-capture-setting">
+      <th>{__('Front-End Issue Capture', 'alpaca-issue-tracker')}</th>
       <td>
         <CheckboxControl
           __nextHasNoMarginBottom
           label={
             <InlineCheckboxLabel
               label={__(
-                'Enable reporting of issues with associated context',
+                'Enable the front-end controls for reporting issues with associated context',
                 'alpaca-issue-tracker',
               )}
               isBusy={isFetching || isSaving}
             />
           }
+          help={__(
+            'Uncheck this option to use Alpaca as a back-end kanban board',
+            'alpaca-issue-tracker',
+          )}
           checked={isEnabled}
           onChange={handleChange}
           disabled={isFetching || isSaving}

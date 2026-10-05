@@ -42,10 +42,10 @@ Restored issues will be returned to active board usage, with all associated meta
 
 The Settings tab includes site-wide controls such as:
 
-- Context capture.
+- Front-End Issue Capture.
 - Debugging messages.
 
-If you want to use Alpaca as a standard kanban board, without front-end issue reporting, you can uncheck the 'Context Capture' option. Issues can still be created directly on the Project Board screen.
+Front-End Issue Capture enables the controls for reporting issues with associated context. Uncheck this option to use Alpaca as a back-end kanban board without front-end issue reporting. Issues can still be created directly on the Project Board screen.
 
 ## Email Templates
 
