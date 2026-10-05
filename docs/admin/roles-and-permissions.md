@@ -42,7 +42,7 @@ Issue deletion is restricted to `manage_options` by default.
 The Fix With AI feature is meant only for engineers with GitHub access who will review each auto-generated pull request, so access is more restricted than the rest of the board:
 
 - Administrators (`manage_options`) always have full access: they can configure the feature and use it.
-- Administrators can preview and remove unchanged plugin-provided GitHub setup files from the Fix With AI screen. The action requires an exact repository-name confirmation and does not run during uninstall.
+- Administrators can use **Remove GitHub Setup** on the Plugins screen to preview and remove bundled GitHub setup files, including files edited after installation. The action requires an exact repository-name confirmation and does not run during uninstall.
 - Administrators can grant additional users Fix With AI access from the WP Setup step on the Fix With AI screen. Those users can use the feature (send issues to the AI agent) and view setup status, but cannot change settings or credentials.
 - Everyone else can see the Fix With AI menu item, but the screen shows a message that access is limited to administrators and granted users, and the "Fix With AI" action never appears for them.
 
