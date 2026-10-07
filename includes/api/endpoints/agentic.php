@@ -31,6 +31,16 @@ const ALPAISTR_AGENTIC_PENDING_ISSUE_META = 'alpaca_agentic_pending_issue';
 add_action( 'rest_api_init', 'alpaistr_register_agentic_endpoints' );
 
 /**
+ * The WordPress AI Client stops at 30 seconds. Drafting a GitHub issue often takes longer.
+ *
+ * @return float Timeout in seconds.
+ */
+function alpaistr_agentic_ai_request_timeout(): float {
+	return 120.0;
+}
+add_filter( 'wp_ai_client_default_request_timeout', 'alpaistr_agentic_ai_request_timeout' );
+
+/**
  * Register the Agentic REST routes.
  */
 function alpaistr_register_agentic_endpoints(): void {

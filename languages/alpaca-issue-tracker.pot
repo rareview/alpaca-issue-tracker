@@ -1645,7 +1645,7 @@ msgid "Cancel"
 msgstr ""
 
 #: src/agentic.js:447
-msgid "AI is drafting the GitHub issue…"
+msgid "AI is drafting the GitHub issue… This may take a minute or two."
 msgstr ""
 
 #: src/agentic.js:459
