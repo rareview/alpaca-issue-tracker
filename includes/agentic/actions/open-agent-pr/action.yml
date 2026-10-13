@@ -1,0 +1,136 @@
+name: Open the agent pull request
+description: >-
+  Push the branch Claude worked on and open the pull request.
+  workflow_dispatch runs Claude in agent mode, which does not open a pull request.
+
+inputs:
+  issue_number:
+    description: GitHub issue number
+    required: true
+  issue_title:
+    description: GitHub issue title, used as the commit and pull request title
+    required: true
+  base_branch:
+    description: Branch the pull request targets
+    required: true
+  head_branch:
+    description: Branch that receives the agent's commits
+    required: true
+  open_pull_request:
+    description: Open a pull request after pushing. Set to false for plan branches.
+    required: false
+    default: "true"
+  github_token:
+    description: Token with contents and pull request write access
+    required: true
+  execution_file:
+    description: Claude execution log. Used to report why a run changed nothing.
+    required: false
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - name: Push the branch and open the pull request
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github_token }}
+        ISSUE_NUMBER: ${{ inputs.issue_number }}
+        ISSUE_TITLE: ${{ inputs.issue_title }}
+        BASE: ${{ inputs.base_branch }}
+        BRANCH: ${{ inputs.head_branch }}
+        OPEN_PR: ${{ inputs.open_pull_request }}
+        EXECUTION_FILE: ${{ inputs.execution_file }}
+      run: |
+        set -euo pipefail
+
+        if [ -z "${ISSUE_TITLE}" ]; then
+          ISSUE_TITLE="Fix #${ISSUE_NUMBER}"
+        fi
+
+        # The Claude action puts its own token in the remote URL, then revokes
+        # that token before this step. Put the job token back before any push.
+        git remote set-url origin "https://github.com/${GITHUB_REPOSITORY}.git"
+        gh auth setup-git
+
+        git fetch origin "${BASE}"
+
+        if [ -n "$(git status --porcelain)" ]; then
+          git add -A
+          if ! git diff --cached --quiet; then
+            git -c user.name='claude[bot]' -c user.email='41898282+claude[bot]@users.noreply.github.com' \
+              commit --message="${ISSUE_TITLE}"
+          fi
+        fi
+
+        ahead="$(git rev-list --count "origin/${BASE}..HEAD")"
+        if [ "${ahead}" = "0" ]; then
+          while IFS= read -r candidate; do
+            if [ "$(git rev-list --count "origin/${BASE}..${candidate}")" != "0" ]; then
+              git checkout "${candidate}"
+              break
+            fi
+          done < <(git for-each-ref --format='%(refname:short)' refs/heads)
+          ahead="$(git rev-list --count "origin/${BASE}..HEAD")"
+        fi
+
+        run_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+        if [ "${ahead}" = "0" ]; then
+          if [ "${OPEN_PR}" = "true" ]; then
+            message="The agent finished without changing any files, so no pull request was opened."
+          else
+            message="The agent finished without committing a plan, so nothing was pushed."
+          fi
+
+          # The action hides Claude's messages in the job log. Its execution
+          # file still has the final result, so show that on the issue.
+          details=""
+          if [ -n "${EXECUTION_FILE}" ] && [ -s "${EXECUTION_FILE}" ]; then
+            result="$(jq -s '[.. | objects | select(.type? == "result")] | last' "${EXECUTION_FILE}" 2>/dev/null || true)"
+            if [ -n "${result}" ] && [ "${result}" != "null" ]; then
+              turns="$(printf '%s' "${result}" | jq -r '.num_turns // "?"')"
+              denials="$(printf '%s' "${result}" | jq -r '.permission_denials_count // 0')"
+              last_message="$(printf '%s' "${result}" | jq -r '(.result // "") | .[0:3000]' | sed 's/^/> /')"
+              details="$(printf 'Turns: %s. Permission denials: %s.\n\nClaude'"'"'s last message:\n\n%s\n' "${turns}" "${denials}" "${last_message}")"
+            fi
+          fi
+
+          gh issue comment "${ISSUE_NUMBER}" --body "$(printf '%s\n\n%s\n\nJob log: %s\n' "${message}" "${details}" "${run_url}")"
+          exit 1
+        fi
+
+        git push -u origin "HEAD:${BRANCH}"
+
+        if [ "${OPEN_PR}" != "true" ]; then
+          gh issue comment "${ISSUE_NUMBER}" --body "$(printf 'The plan is on branch `%s`. Reply `/approve-plan` to start implementation.\n' "${BRANCH}")"
+          exit 0
+        fi
+
+        owner="${GITHUB_REPOSITORY%%/*}"
+        existing="$(gh pr list --head "${owner}:${BRANCH}" --base "${BASE}" --state open --json url --jq '.[0].url')"
+        if [ -n "${existing}" ]; then
+          echo "Pull request already open: ${existing}"
+          exit 0
+        fi
+
+        body_file="$(mktemp)"
+        {
+          printf 'Closes #%s\n\n' "${ISSUE_NUMBER}"
+          if [ -s /tmp/alpaca-pr-body.md ]; then
+            cat /tmp/alpaca-pr-body.md
+          else
+            printf '%s\n' "${ISSUE_TITLE}"
+          fi
+        } > "${body_file}"
+
+        error_file="$(mktemp)"
+        if ! pr_url="$(gh pr create --base "${BASE}" --head "${BRANCH}" --title "${ISSUE_TITLE}" --body-file "${body_file}" 2>"${error_file}")"; then
+          # The branch is already pushed. The usual cause is the repository setting
+          # "Allow GitHub Actions to create and approve pull requests" being off.
+          compare_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/compare/${BASE}...${BRANCH}?expand=1"
+          gh issue comment "${ISSUE_NUMBER}" --body "$(printf 'The agent pushed branch `%s`, but the pull request could not be opened.\n\nOpen it here: %s\n\nGitHub said: `%s`\n\nTo fix this for next time, turn on **Settings → Actions → General → Allow GitHub Actions to create and approve pull requests**.\n\nJob log: %s\n' "${BRANCH}" "${compare_url}" "$(head -c 500 "${error_file}")" "${run_url}")"
+          cat "${error_file}" >&2
+          exit 1
+        fi
+        echo "Opened ${pr_url}"
+        gh pr edit "${pr_url}" --add-label agent-generated || true
