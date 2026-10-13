@@ -38,7 +38,7 @@ class Agentic {
 	 *
 	 * @var int
 	 */
-	const WORKFLOW_REVISION = 2;
+	const WORKFLOW_REVISION = 4;
 
 	/**
 	 * Admin page slug.

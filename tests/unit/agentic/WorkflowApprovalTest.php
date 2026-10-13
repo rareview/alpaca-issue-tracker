@@ -45,4 +45,19 @@ class WorkflowApprovalTest extends \PHPUnit\Framework\TestCase {
 		$this->assertStringNotContainsString( 'types: [labeled]', $workflow );
 		$this->assertStringNotContainsString( 'github.event.label', $workflow );
 	}
+
+	/**
+	 * workflow_dispatch agent mode does not open a pull request, so the workflow must.
+	 */
+	public function test_dispatch_workflow_opens_pull_request_after_the_agent(): void {
+		$workflow = file_get_contents( dirname( __DIR__, 3 ) . '/includes/agentic/workflows/agent-trigger.yml' );
+		$action   = file_get_contents( dirname( __DIR__, 3 ) . '/includes/agentic/actions/open-agent-pr/action.yml' );
+
+		$this->assertIsString( $workflow );
+		$this->assertIsString( $action );
+		$this->assertStringContainsString( 'uses: ./.github/actions/open-agent-pr', $workflow );
+		$this->assertStringContainsString( 'head_branch: agent/fix-${{ needs.resolve-issue.outputs.number }}', $workflow );
+		$this->assertStringContainsString( 'gh pr create --base', $action );
+		$this->assertStringContainsString( 'Closes #', $action );
+	}
 }

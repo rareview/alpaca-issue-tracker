@@ -132,7 +132,14 @@ jobs:
               core.setOutput('already_running', 'false');
             }
 
+      - name: Create the fix branch
+        if: |
+          steps.permission-check.outputs.allowed == 'true' &&
+          steps.pr-check.outputs.already_running == 'false'
+        run: git checkout -B "agent/fix-${{ github.event.issue.number }}"
+
       - name: Run Claude Code — Implementation
+        id: claude-work
         if: |
           steps.permission-check.outputs.allowed == 'true' &&
           steps.pr-check.outputs.already_running == 'false'
@@ -140,7 +147,10 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           settings: /tmp/claude-security-settings.json
-          claude_args: "--permission-mode bypassPermissions"
+          base_branch: ${{ env.ALPACA_AI_TARGET_BRANCH }}
+          claude_args: |
+            --permission-mode bypassPermissions
+            --allowedTools "Bash(git *),Bash(gh *)"
           additional_permissions: |
             actions: read
           prompt: |
@@ -159,14 +169,28 @@ jobs:
                (look for a file matching issue-${{ github.event.issue.number }} or check recently committed files)
             2. Read AGENTS.md for project-specific coding standards and file conventions
             3. Implement the feature per the approved plan
-            4. Open a PR using the template at .github/PULL_REQUEST_TEMPLATE/agent-generated.md
-               - Branch off of `${{ env.ALPACA_AI_TARGET_BRANCH }}`
-               - PR base must be `${{ env.ALPACA_AI_TARGET_BRANCH }}` (use `gh pr create --base ${{ env.ALPACA_AI_TARGET_BRANCH }}`)
-            5. Reference "Closes #${{ github.event.issue.number }}" in the PR body
-            6. Add the 'agent-generated' label to the PR
+            4. Commit your changes on the current branch.
+               It is already named agent/fix-${{ github.event.issue.number }}
+               and is based on `${{ env.ALPACA_AI_TARGET_BRANCH }}`.
+               Do not push, and do not open a pull request. This workflow does that
+               after you finish.
+            5. Write a short summary of what you changed to /tmp/alpaca-pr-body.md.
+               Do not commit that file.
 
             Stay within the issue's defined scope ("Out of scope" is a hard boundary).
             If blocked or uncertain, comment on the issue asking for clarification.
+
+      - name: Open the pull request
+        if: steps.claude-work.outcome == 'success'
+        uses: ./.github/actions/open-agent-pr
+        with:
+          issue_number: ${{ github.event.issue.number }}
+          issue_title: ${{ github.event.issue.title }}
+          base_branch: ${{ env.ALPACA_AI_TARGET_BRANCH }}
+          head_branch: agent/fix-${{ github.event.issue.number }}
+          open_pull_request: true
+          github_token: ${{ github.token }}
+          execution_file: ${{ steps.claude-work.outputs.execution_file }}
 
   # ─────────────────────────────────────────────────────────────────────────────
   # /run-agent — maintainer retry.
@@ -254,7 +278,14 @@ jobs:
             core.setOutput('is_high', isHigh ? 'true' : 'false');
 
       # ── HIGH COMPLEXITY: plan first ──────────────────────────────────────────
+      - name: Create the plan branch
+        if: |
+          steps.permission-check.outputs.allowed == 'true' &&
+          steps.complexity.outputs.is_high == 'true'
+        run: git checkout -B "plan/issue-${{ github.event.issue.number }}"
+
       - name: Run Claude Code — Planning Phase (complexity:high)
+        id: claude-plan
         if: |
           steps.permission-check.outputs.allowed == 'true' &&
           steps.complexity.outputs.is_high == 'true'
@@ -262,7 +293,10 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           settings: /tmp/claude-security-settings.json
-          claude_args: "--permission-mode bypassPermissions"
+          base_branch: ${{ env.ALPACA_AI_TARGET_BRANCH }}
+          claude_args: |
+            --permission-mode bypassPermissions
+            --allowedTools "Bash(git *),Bash(gh *)"
           additional_permissions: |
             actions: read
           prompt: |
@@ -284,18 +318,34 @@ jobs:
                The plan should include: problem frame, requirements, scope boundaries,
                key technical decisions, and implementation units (each with goal, files,
                approach, and test scenarios)
-            5. Commit the plan file to a new branch named:
-               plan/issue-${{ github.event.issue.number }}
-               Branch off of `${{ env.ALPACA_AI_TARGET_BRANCH }}` (the PR target branch).
-            6. After committing, post a comment on the issue with:
-               - A link to the plan file (GitHub URL)
-               - "Implementation plan is ready for review. Reply /approve-plan to begin
-                 implementation, or comment with feedback to revise the plan."
-            7. Do NOT write any application code
-            8. Do NOT open a pull request
+            5. Commit the plan file on the current branch.
+               It is already named plan/issue-${{ github.event.issue.number }}
+               and is based on `${{ env.ALPACA_AI_TARGET_BRANCH }}`.
+               Do not push. This workflow pushes the branch after you finish.
+            6. Do NOT write any application code
+            7. Do NOT open a pull request
+
+      - name: Push the plan branch
+        if: steps.claude-plan.outcome == 'success'
+        uses: ./.github/actions/open-agent-pr
+        with:
+          issue_number: ${{ github.event.issue.number }}
+          issue_title: ${{ github.event.issue.title }}
+          base_branch: ${{ env.ALPACA_AI_TARGET_BRANCH }}
+          head_branch: plan/issue-${{ github.event.issue.number }}
+          open_pull_request: false
+          github_token: ${{ github.token }}
+          execution_file: ${{ steps.claude-plan.outputs.execution_file }}
 
       # ── LOW/MEDIUM COMPLEXITY: execute directly ──────────────────────────────
+      - name: Create the fix branch
+        if: |
+          steps.permission-check.outputs.allowed == 'true' &&
+          steps.complexity.outputs.is_high == 'false'
+        run: git checkout -B "agent/fix-${{ github.event.issue.number }}"
+
       - name: Run Claude Code — Direct Execution (complexity:low/medium)
+        id: claude-work
         if: |
           steps.permission-check.outputs.allowed == 'true' &&
           steps.complexity.outputs.is_high == 'false'
@@ -303,7 +353,10 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           settings: /tmp/claude-security-settings.json
-          claude_args: "--permission-mode bypassPermissions"
+          base_branch: ${{ env.ALPACA_AI_TARGET_BRANCH }}
+          claude_args: |
+            --permission-mode bypassPermissions
+            --allowedTools "Bash(git *),Bash(gh *)"
           additional_permissions: |
             actions: read
           prompt: |
@@ -322,17 +375,28 @@ jobs:
             3. Implement the feature following the acceptance criteria exactly
             4. Stay within the defined scope — "Out of scope" is a hard boundary
             5. Follow the patterns referenced in Technical Notes (read the key files listed there)
-            6. Create a branch, commit your changes, and open a PR:
-               - Branch off of `${{ env.ALPACA_AI_TARGET_BRANCH }}`
-               - Branch name: agent/fix-${{ github.event.issue.number }}
-               - PR title should match the issue title
-               - PR base must be `${{ env.ALPACA_AI_TARGET_BRANCH }}` (use `gh pr create --base ${{ env.ALPACA_AI_TARGET_BRANCH }}`)
-               - PR body: reference "Closes #${{ github.event.issue.number }}" and summarize what you did
-               - Use the template at .github/PULL_REQUEST_TEMPLATE/agent-generated.md
-            7. Add the 'agent-generated' label to the PR
-            8. After the PR is open, update the original issue's acceptance criteria:
+            6. Commit your changes on the current branch.
+               It is already named agent/fix-${{ github.event.issue.number }}
+               and is based on `${{ env.ALPACA_AI_TARGET_BRANCH }}`.
+               Do not push, and do not open a pull request. This workflow does that
+               after you finish.
+            7. Write a short summary of what you changed to /tmp/alpaca-pr-body.md.
+               Do not commit that file.
+            8. Update the original issue's acceptance criteria:
                - Check off any criteria your implementation directly satisfies
                - Leave unchecked anything that requires manual testing, human review, or CI
 
             If you are blocked or unclear on something, post a comment on the issue
             asking for clarification rather than guessing.
+
+      - name: Open the pull request
+        if: steps.claude-work.outcome == 'success'
+        uses: ./.github/actions/open-agent-pr
+        with:
+          issue_number: ${{ github.event.issue.number }}
+          issue_title: ${{ github.event.issue.title }}
+          base_branch: ${{ env.ALPACA_AI_TARGET_BRANCH }}
+          head_branch: agent/fix-${{ github.event.issue.number }}
+          open_pull_request: true
+          github_token: ${{ github.token }}
+          execution_file: ${{ steps.claude-work.outputs.execution_file }}
