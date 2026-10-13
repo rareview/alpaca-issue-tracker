@@ -444,7 +444,10 @@ import {
         el(
           'p',
           null,
-          __('AI is drafting the GitHub issue…', 'alpaca-issue-tracker'),
+          __(
+            'AI is drafting the GitHub issue… This may take a minute or two.',
+            'alpaca-issue-tracker',
+          ),
         ),
       );
     }
