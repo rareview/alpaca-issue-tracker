@@ -145,7 +145,7 @@ const GithubCleanup = ({ repo, showTitle = true }) => {
           <ul>
             <li>
               {__(
-                'Repository secrets and existing issues, labels, and pull requests',
+                'Repository secrets ALPACA_GITHUB_TOKEN, CLAUDE_CODE_OAUTH_TOKEN, and ANTHROPIC_API_KEY, plus existing issues, labels, and pull requests',
                 'alpaca-issue-tracker',
               )}
             </li>
@@ -225,7 +225,7 @@ const GithubCleanup = ({ repo, showTitle = true }) => {
           ) : null}
           <p>
             {__(
-              'Also review repository secrets and existing issues, labels, and pull requests in GitHub.',
+              'Also remove repository secrets in GitHub if they exist: ALPACA_GITHUB_TOKEN, CLAUDE_CODE_OAUTH_TOKEN, and ANTHROPIC_API_KEY. Existing issues, labels, and pull requests stay in place.',
               'alpaca-issue-tracker',
             )}
           </p>

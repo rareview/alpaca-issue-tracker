@@ -108,6 +108,7 @@ const PAT_PERMISSIONS = [
   },
   { label: __('Actions', 'alpaca-issue-tracker'), access: PAT_READ_WRITE },
   { label: __('Workflows', 'alpaca-issue-tracker'), access: PAT_READ_WRITE },
+  { label: __('Secrets', 'alpaca-issue-tracker'), access: PAT_READ_WRITE },
   { label: __('Metadata', 'alpaca-issue-tracker'), access: PAT_READ_ONLY },
 ];
 

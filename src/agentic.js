@@ -1,7 +1,7 @@
 /**
  * Alpaca Fix With AI
  *
- * Injects Fix With AI / Request a change / Start over into the issue detail view.
+ * Injects Fix With AI / Request a change / Mark attempt as done / Start over into the issue detail view.
  *
  * Relies on globals loaded by Alpaca:
  *   wp.element   (React)
@@ -899,6 +899,118 @@ import {
   }
 
   /**
+   * Confirm marking the current fix attempt as done.
+   *
+   * This only ends the attempt in Alpaca. GitHub work and the target branch stay as they are.
+   *
+   * @param {Object}   props
+   * @param {number}   props.issueId Alpaca issue post ID.
+   * @param {Function} props.onClose Called when the modal should close.
+   */
+  function MarkAttemptDoneModal({ issueId, onClose }) {
+    const [phase, setPhase] = useState('confirm');
+    const [errorMsg, setErrorMsg] = useState('');
+
+    const confirmMarkAttemptDone = useCallback(async () => {
+      setPhase('working');
+      setErrorMsg('');
+
+      try {
+        await restPost('/mark-attempt-done', { issue_id: issueId });
+        setPhase('done');
+        notifyAgenticChange(issueId, 'completed');
+      } catch (err) {
+        setErrorMsg(err.message);
+        setPhase('confirm');
+      }
+    }, [issueId]);
+
+    let content;
+    if ('done' === phase) {
+      content = el(
+        Fragment,
+        null,
+        el(
+          Notice,
+          {
+            status: 'success',
+            isDismissible: false,
+          },
+          __(
+            'This fix attempt is done. GitHub issues and pull requests were left as they are. You can send this issue to the AI again.',
+            'alpaca-issue-tracker',
+          ),
+        ),
+        el(
+          'div',
+          { className: 'agentic-modal-actions' },
+          el(
+            Button,
+            { variant: 'primary', onClick: onClose },
+            __('Done', 'alpaca-issue-tracker'),
+          ),
+        ),
+      );
+    } else {
+      content = el(
+        Fragment,
+        null,
+        errorMsg &&
+          el(
+            Notice,
+            {
+              status: 'error',
+              isDismissible: true,
+              onRemove: () => setErrorMsg(''),
+            },
+            errorMsg,
+          ),
+        el(
+          'p',
+          null,
+          __(
+            'This marks the current fix attempt as done in Alpaca. GitHub stays as it is.',
+            'alpaca-issue-tracker',
+          ),
+        ),
+        el(
+          'div',
+          { className: 'agentic-modal-actions' },
+          'working' === phase
+            ? el(Spinner)
+            : el(
+                Fragment,
+                null,
+                el(
+                  Button,
+                  {
+                    variant: 'primary',
+                    onClick: confirmMarkAttemptDone,
+                  },
+                  __('Mark attempt as done', 'alpaca-issue-tracker'),
+                ),
+                el(
+                  Button,
+                  { variant: 'tertiary', onClick: onClose },
+                  __('Cancel', 'alpaca-issue-tracker'),
+                ),
+              ),
+        ),
+      );
+    }
+
+    return el(
+      Modal,
+      {
+        title: modalTitle(__('Mark attempt as done', 'alpaca-issue-tracker')),
+        onRequestClose: onClose,
+        className: 'agentic-export-modal',
+      },
+      content,
+    );
+  }
+
+  /**
    * Confirm Start over and end the current fixing session.
    *
    * @param {Object}   props
@@ -1072,17 +1184,39 @@ import {
   }
 
   /**
-   * Fix attempt number for the current fixing session.
+   * Fix attempt number for the status line.
    *
-   * @param {Object} meta Issue meta payload.
+   * @param {Object} meta  Issue meta payload.
+   * @param {string} state `progress` for the open attempt, `done` for the latest finished one.
    * @return {number} Attempt number, starting at 1.
    */
-  function readCurrentFixAttemptNumber(meta) {
+  function readFixAttemptNumber(meta, state) {
     const sessions = groupAgenticHistoryIntoSessions(
       readAgenticHistoryFromMeta(meta),
     );
+    if ('done' === state) {
+      const completed = sessions.find((session) => session.completed);
+      return completed?.number || 1;
+    }
     const current = sessions.find((session) => session.isCurrent);
     return current?.number || sessions[0]?.number || 1;
+  }
+
+  /**
+   * Newest fix attempt, when the user marked it done and has not sent again.
+   *
+   * @param {Object} meta Issue meta payload.
+   * @return {Object|null} Completed session, or null.
+   */
+  function readCompletedFixAttempt(meta) {
+    const sessions = groupAgenticHistoryIntoSessions(
+      readAgenticHistoryFromMeta(meta),
+    );
+    const newest = sessions[0];
+    if (!newest || !newest.completed) {
+      return null;
+    }
+    return newest;
   }
 
   /**
@@ -1103,15 +1237,20 @@ import {
    *
    * @param {Object} meta    Issue meta payload.
    * @param {number} issueId Alpaca issue post ID.
+   * @param {string} state   `progress` or `done`.
    * @return {Object} Element.
    */
-  function renderFixAttemptSummaryMessage(meta, issueId) {
-    const attemptNumber = readCurrentFixAttemptNumber(meta);
+  function renderFixAttemptSummaryMessage(meta, issueId, state) {
+    const attemptNumber = readFixAttemptNumber(meta, state);
     const attemptLabel = sprintf(
       /* translators: %d: fix attempt number, starting at 1. */
       __('Fix attempt %d', 'alpaca-issue-tracker'),
       attemptNumber,
     );
+    const statusLabel =
+      'done' === state
+        ? __(' done', 'alpaca-issue-tracker')
+        : __(' in progress', 'alpaca-issue-tracker');
 
     return el(
       'span',
@@ -1128,12 +1267,12 @@ import {
         },
         attemptLabel,
       ),
-      __(' in progress', 'alpaca-issue-tracker'),
+      statusLabel,
     );
   }
 
   /**
-   * Issue-header actions: first send, or Request a change + Start over.
+   * Issue-header actions: first send, or Request a change, Mark attempt as done, and Start over.
    *
    * @param {Object} props
    * @param {number} props.issueId Alpaca issue post ID.
@@ -1223,6 +1362,9 @@ import {
 
     const startOverAllowed = hasSent;
     const requestChangeAllowed = !!githubStatus?.request_change_allowed;
+    const markAttemptDoneAllowed =
+      hasSent && !!githubStatus?.mark_attempt_done_allowed;
+    const completedAttempt = hasSent ? null : readCompletedFixAttempt(meta);
     const checkingGithub =
       hasSent && (statusLoading || (!githubStatus && !statusError));
     const infoMessageId = 'agentic-abovetabs-info-' + issueId;
@@ -1281,6 +1423,25 @@ import {
       __('Start over', 'alpaca-issue-tracker'),
     );
 
+    const markAttemptDoneButton = markAttemptDoneAllowed
+      ? el(
+          Button,
+          {
+            variant: 'secondary',
+            className: 'agentic-agent-btn-secondary',
+            'aria-describedby': infoMessageId,
+            onClick: () =>
+              renderModal(
+                el(MarkAttemptDoneModal, {
+                  issueId,
+                  onClose: closeModal,
+                }),
+              ),
+          },
+          __('Mark attempt as done', 'alpaca-issue-tracker'),
+        )
+      : null;
+
     let info = null;
     let actions = null;
 
@@ -1327,22 +1488,28 @@ import {
         startOverButton,
       );
     } else {
-      info = hasSent
-        ? el(
-            'div',
-            {
-              className: 'agentic-abovetabs-info',
-              id: infoMessageId,
-              role: 'status',
-            },
-            renderFixAttemptSummaryMessage(meta, issueId),
-          )
-        : null;
+      info =
+        hasSent || completedAttempt
+          ? el(
+              'div',
+              {
+                className: 'agentic-abovetabs-info',
+                id: infoMessageId,
+                role: 'status',
+              },
+              renderFixAttemptSummaryMessage(
+                meta,
+                issueId,
+                hasSent ? 'progress' : 'done',
+              ),
+            )
+          : null;
       actions = el(
         'div',
         { className: 'agentic-abovetabs-actions' },
         hasSent ? requestChangeButton : fixWithAiButton,
         hasSent ? startOverButton : null,
+        hasSent ? markAttemptDoneButton : null,
       );
     }
 

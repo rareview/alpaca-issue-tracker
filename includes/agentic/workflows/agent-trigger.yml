@@ -12,6 +12,7 @@
 # Setup:
 #   1. Set AGENT_PROVIDER in Settings → Secrets and variables → Variables (defaults to claude)
 #   2. Add CLAUDE_CODE_OAUTH_TOKEN to Settings → Secrets
+#      Alpaca also stores ALPACA_GITHUB_TOKEN so pull request checks start on their own
 #   3. Run the Setup Labels workflow once to create all labels
 #   4. AI PRs target ALPACA_AI_TARGET_BRANCH (set by Alpaca when it installs these files)
 #   5. Security policy lives at .github/alpaca/security/agent.json (installed by Alpaca)
@@ -198,7 +199,7 @@ jobs:
           base_branch: ${{ env.ALPACA_AI_TARGET_BRANCH }}
           head_branch: plan/issue-${{ needs.resolve-issue.outputs.number }}
           open_pull_request: false
-          github_token: ${{ github.token }}
+          github_token: ${{ secrets.ALPACA_GITHUB_TOKEN || github.token }}
           execution_file: ${{ steps.claude-plan.outputs.execution_file }}
 
       # ── LOW/MEDIUM COMPLEXITY: execute directly ──────────────────────────────
@@ -258,7 +259,7 @@ jobs:
           base_branch: ${{ env.ALPACA_AI_TARGET_BRANCH }}
           head_branch: agent/fix-${{ needs.resolve-issue.outputs.number }}
           open_pull_request: true
-          github_token: ${{ github.token }}
+          github_token: ${{ secrets.ALPACA_GITHUB_TOKEN || github.token }}
           execution_file: ${{ steps.claude-work.outputs.execution_file }}
 
       - name: Check for missing CLAUDE_CODE_OAUTH_TOKEN
