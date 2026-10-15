@@ -1,0 +1,25 @@
+name: Sync Docs Site
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "docs/**"
+
+permissions:
+  contents: read
+
+jobs:
+  dispatch:
+    name: Trigger alpacadocs rebuild
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Dispatch docs-updated event
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.DOCS_SYNC_TOKEN }}
+          repository: rareview/alpacadocs
+          event-type: docs-updated
+          client-payload: '{"ref": "${{ github.sha }}"}'
