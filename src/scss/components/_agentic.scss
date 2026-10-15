@@ -300,19 +300,22 @@
 }
 
 .agentic-session--cancelled,
-.agentic-session--closed {
+.agentic-session--closed,
+.agentic-session--done {
   background: $color-surface-muted;
   border-color: $color-border-muted;
 }
 
 .agentic-session--cancelled .agentic-session__title,
-.agentic-session--closed .agentic-session__title {
+.agentic-session--closed .agentic-session__title,
+.agentic-session--done .agentic-session__title {
   color: $color-text-secondary;
   font-weight: $font-weight-medium;
 }
 
 .agentic-session--cancelled .agentic-session__meta,
-.agentic-session--closed .agentic-session__meta {
+.agentic-session--closed .agentic-session__meta,
+.agentic-session--done .agentic-session__meta {
   color: $color-text-muted;
 }
 
@@ -485,7 +488,8 @@
   color: $color-text-secondary;
 }
 
-.agentic-session-step--cancelled {
+.agentic-session-step--cancelled,
+.agentic-session-step--done {
   background: $color-surface-muted;
 }
 

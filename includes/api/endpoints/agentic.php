@@ -15,8 +15,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Post meta key for chronological Fix With AI activity history.
  *
- * Each activity record has a `type` (`sent`, `change_requested`, or
- * `reverted`), type-specific fields, and an `occurred_at` GMT ISO-8601
+ * Each activity record has a `type` (`sent`, `change_requested`,
+ * `reverted`, or `completed`), type-specific fields, and an `occurred_at` GMT ISO-8601
  * timestamp. Sent records also store `pr_url`, `pr_number`, and `pr_state`
  * once the linked GitHub pull request is discovered. Change-requested
  * records store a GitHub comment URL and a short AI title for the change
@@ -142,6 +142,25 @@ function alpaistr_register_agentic_endpoints(): void {
 		[
 			'methods'             => WP_REST_Server::READABLE,
 			'callback'            => 'alpaistr_agentic_start_over_status_callback',
+			'permission_callback' => 'alpaistr_agentic_can_use_permission_check',
+			'args'                => [
+				'issue_id' => [
+					'required'          => true,
+					'type'              => 'integer',
+					'minimum'           => 1,
+					'sanitize_callback' => 'absint',
+				],
+			],
+		]
+	);
+
+	// Ends the current fix attempt in Alpaca. Does not close GitHub work or move the branch.
+	register_rest_route(
+		'alpaca/v1',
+		'/agentic/mark-attempt-done',
+		[
+			'methods'             => WP_REST_Server::CREATABLE,
+			'callback'            => 'alpaistr_agentic_mark_attempt_done_callback',
 			'permission_callback' => 'alpaistr_agentic_can_use_permission_check',
 			'args'                => [
 				'issue_id' => [
@@ -2540,7 +2559,7 @@ function alpaistr_agentic_save_current_attempt_follow_up_notes( int $issue_id, a
 }
 
 /**
- * Index of the original sent entry after the latest start-over.
+ * Index of the original sent entry after the latest start-over or mark-as-done.
  *
  * @param array<int, array<string, mixed>> $history Full activity history.
  * @return int Index, or -1 when missing.
@@ -2548,7 +2567,7 @@ function alpaistr_agentic_save_current_attempt_follow_up_notes( int $issue_id, a
 function alpaistr_agentic_current_attempt_original_sent_index( array $history ): int {
 	$last_revert = -1;
 	foreach ( $history as $index => $entry ) {
-		if ( 'reverted' === ( $entry['type'] ?? '' ) ) {
+		if ( in_array( $entry['type'] ?? '', [ 'reverted', 'completed' ], true ) ) {
 			$last_revert = (int) $index;
 		}
 	}
@@ -2725,24 +2744,25 @@ function alpaistr_agentic_start_over_status_callback( WP_REST_Request $request )
 
 	return rest_ensure_response(
 		[
-			'allowed'                => (bool) $result['allowed'],
-			'reason'                 => (string) $result['reason'],
-			'request_change_allowed' => $has_sent,
-			'request_change_reason'  => $request_change_reason,
-			'request_change_mode'    => $request_change_mode,
-			'primary_action'         => $has_sent ? 'request_change' : 'fix',
-			'has_open_work'          => $has_open_work,
-			'has_merged_pr'          => $has_merged_pr,
-			'has_open_pr'            => $has_open_pr,
-			'waiting_on_issue'       => $waiting_on_issue,
-			'waiting_issue_number'   => $waiting_issue_number,
-			'pull_request'           => $pull_request,
-			'pull_requests'          => $pull_requests,
-			'can_reset_branch'       => ! empty( $result['can_reset_branch'] ),
-			'will_reset_branch'      => ! empty( $result['will_reset_branch'] ),
-			'has_outside_commits'    => ! empty( $result['has_outside_commits'] ),
-			'reset_blocked_reason'   => (string) ( $result['reset_blocked_reason'] ?? '' ),
-			'branch'                 => (string) ( $result['branch'] ?? '' ),
+			'allowed'                   => (bool) $result['allowed'],
+			'reason'                    => (string) $result['reason'],
+			'request_change_allowed'    => $has_sent,
+			'mark_attempt_done_allowed' => $has_sent && ! $has_open_work,
+			'request_change_reason'     => $request_change_reason,
+			'request_change_mode'       => $request_change_mode,
+			'primary_action'            => $has_sent ? 'request_change' : 'fix',
+			'has_open_work'             => $has_open_work,
+			'has_merged_pr'             => $has_merged_pr,
+			'has_open_pr'               => $has_open_pr,
+			'waiting_on_issue'          => $waiting_on_issue,
+			'waiting_issue_number'      => $waiting_issue_number,
+			'pull_request'              => $pull_request,
+			'pull_requests'             => $pull_requests,
+			'can_reset_branch'          => ! empty( $result['can_reset_branch'] ),
+			'will_reset_branch'         => ! empty( $result['will_reset_branch'] ),
+			'has_outside_commits'       => ! empty( $result['has_outside_commits'] ),
+			'reset_blocked_reason'      => (string) ( $result['reset_blocked_reason'] ?? '' ),
+			'branch'                    => (string) ( $result['branch'] ?? '' ),
 		]
 	);
 }
@@ -2848,6 +2868,70 @@ function alpaistr_agentic_start_over_callback( WP_REST_Request $request ): WP_RE
 			'reset_blocked_reason' => $reset_blocked_reason,
 			'has_outside_commits'  => $has_outside_commits,
 			'will_reset_branch'    => $will_reset,
+		]
+	);
+}
+
+/**
+ * Mark the current fix attempt as done in Alpaca.
+ *
+ * Does not close GitHub issues or pull requests, and does not move the AI
+ * target branch. Refuses while this attempt still has open GitHub work, so
+ * Request a change and Start over stay available until that work finishes.
+ *
+ * @param WP_REST_Request $request REST request.
+ * @return WP_REST_Response|WP_Error
+ */
+function alpaistr_agentic_mark_attempt_done_callback( WP_REST_Request $request ): WP_REST_Response|WP_Error {
+	$setup = alpaistr_agentic_require_setup_completed();
+	if ( is_wp_error( $setup ) ) {
+		return $setup;
+	}
+
+	$issue_id = (int) $request->get_param( 'issue_id' );
+	$post     = alpaistr_agentic_require_issue_post( $issue_id );
+	if ( is_wp_error( $post ) ) {
+		return $post;
+	}
+
+	$result = alpaistr_agentic_evaluate_start_over( $issue_id );
+	if ( is_wp_error( $result ) ) {
+		return $result;
+	}
+
+	if ( empty( $result['allowed'] ) ) {
+		return new WP_Error(
+			'mark_attempt_done_blocked',
+			__( 'There is no active fix attempt to mark as done.', 'alpaca-issue-tracker' ),
+			[ 'status' => 409 ]
+		);
+	}
+
+	if ( ! empty( $result['has_open_work'] ) ) {
+		return new WP_Error(
+			'mark_attempt_done_blocked',
+			__( 'This fix attempt still has open GitHub work. Wait for it to finish, or use Start over.', 'alpaca-issue-tracker' ),
+			[ 'status' => 409 ]
+		);
+	}
+
+	delete_post_meta( $issue_id, ALPAISTR_AGENTIC_START_SHA_META );
+	delete_post_meta( $issue_id, ALPAISTR_AGENTIC_START_BRANCH_META );
+
+	$history = alpaistr_agentic_append_history_entry(
+		$issue_id,
+		[
+			'type'        => 'completed',
+			'occurred_at' => gmdate( 'c' ),
+		]
+	);
+
+	alpaistr_agentic_insert_completed_activity_comment( $issue_id );
+
+	return rest_ensure_response(
+		[
+			'success' => true,
+			'history' => $history,
 		]
 	);
 }
@@ -4293,7 +4377,7 @@ function alpaistr_agentic_record_sent_activity( int $issue_id, string $github_ur
 /**
  * Append one entry to the chronological Fix With AI history and save it.
  *
- * Shared by the sent and reverted mutating actions so every step stays visible
+ * Shared by the sent, reverted, and completed mutating actions so every step stays visible
  * in the AI Log tab.
  *
  * @param int   $issue_id Alpaca issue post ID.
@@ -4325,14 +4409,14 @@ function alpaistr_agentic_get_activity_history( int $issue_id ): array {
 		array_filter(
 			$records,
 			static function ( $entry ): bool {
-				return is_array( $entry ) && in_array( $entry['type'] ?? '', [ 'sent', 'change_requested', 'reverted' ], true );
+				return is_array( $entry ) && in_array( $entry['type'] ?? '', [ 'sent', 'change_requested', 'reverted', 'completed' ], true );
 			}
 		)
 	);
 }
 
 /**
- * History entries after the latest start-over, oldest first.
+ * History entries after the latest start-over or mark-as-done, oldest first.
  *
  * @param int $issue_id Alpaca issue post ID.
  * @return array<int, array<string, mixed>> Current attempt entries.
@@ -4342,7 +4426,7 @@ function alpaistr_agentic_current_attempt_entries( int $issue_id ): array {
 	$last_revert = -1;
 
 	foreach ( $history as $index => $entry ) {
-		if ( 'reverted' === ( $entry['type'] ?? '' ) ) {
+		if ( in_array( $entry['type'] ?? '', [ 'reverted', 'completed' ], true ) ) {
 			$last_revert = (int) $index;
 		}
 	}
@@ -4436,7 +4520,7 @@ function alpaistr_agentic_build_draft_snapshot( string $title, string $body, arr
  * Insert a system activity comment on an Alpaca issue.
  *
  * Shared low-level helper for every Fix With AI mutating action (sent,
- * reverted) so each one leaves the same kind of audit trail.
+ * reverted, completed) so each one leaves the same kind of audit trail.
  * Skips notification dispatch so watchers are not spammed for automated activity notes.
  *
  * @param int    $issue_id Alpaca issue post ID.
@@ -4581,6 +4665,18 @@ function alpaistr_agentic_insert_reverted_activity_comment( int $issue_id, strin
 	);
 
 	return alpaistr_agentic_insert_activity_comment( $issue_id, $content, 'agentic-reverted' );
+}
+
+/**
+ * Insert a system activity comment recording that a fix attempt was marked done.
+ *
+ * @param int $issue_id Alpaca issue post ID.
+ * @return int Inserted comment ID, or 0 on failure.
+ */
+function alpaistr_agentic_insert_completed_activity_comment( int $issue_id ): int {
+	$content = __( 'Fix With AI: this fix attempt was marked as done. GitHub issues and pull requests were left as they are.', 'alpaca-issue-tracker' );
+
+	return alpaistr_agentic_insert_activity_comment( $issue_id, $content, 'agentic-completed' );
 }
 
 /**

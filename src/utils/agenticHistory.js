@@ -39,6 +39,13 @@ export function normalizeAgenticHistoryEntry(entry) {
   const type = String(entry.type || '').trim();
   const occurredAt = String(entry.occurred_at || '').trim();
 
+  if ('completed' === type) {
+    return {
+      type,
+      occurredAt,
+    };
+  }
+
   if ('reverted' === type) {
     return {
       type,
@@ -112,22 +119,32 @@ export function readAgenticHistoryFromMeta(meta) {
 }
 
 /**
- * History entries after the latest start-over, oldest first.
+ * Whether a history entry ends the current fix attempt.
+ *
+ * @param {string} type History entry type.
+ * @return {boolean} True for Start over and Mark attempt as done.
+ */
+function historyEntryEndsAttempt(type) {
+  return 'reverted' === type || 'completed' === type;
+}
+
+/**
+ * History entries after the latest start-over or mark-as-done, oldest first.
  *
  * @param {Object} meta Issue meta payload.
  * @return {Array<Object>} Current attempt entries.
  */
 function currentAttemptEntries(meta) {
   const history = readAgenticHistoryFromMeta(meta);
-  let lastRevert = -1;
+  let lastEnded = -1;
 
   for (let index = 0; index < history.length; index++) {
-    if ('reverted' === history[index].type) {
-      lastRevert = index;
+    if (historyEntryEndsAttempt(history[index].type)) {
+      lastEnded = index;
     }
   }
 
-  return history.slice(lastRevert + 1);
+  return history.slice(lastEnded + 1);
 }
 
 /**
@@ -143,8 +160,8 @@ export function hasAgenticHistory(meta) {
 /**
  * Whether the current attempt has been sent to GitHub at least once.
  *
- * Sent entries from before the latest Start over are ignored so the UI
- * can return to Fix With AI.
+ * Sent entries from before the latest Start over or Mark attempt as done
+ * are ignored so the UI can return to Fix With AI.
  *
  * @param {Object} meta Issue meta payload.
  * @return {boolean} True when a sent history entry exists for this attempt.
@@ -194,8 +211,8 @@ export function formatAgenticActivityDate(occurredAt) {
  * Split chronological history into fixing sessions.
  *
  * A session is one Fix With AI plus any Request a change sends or comments.
- * Start over closes that session and the next send begins a new one. Newest
- * session first.
+ * Start over or Mark attempt as done closes that session, and the next send
+ * begins a new one. Newest session first.
  *
  * @param {Array<Object>} history Oldest-first normalized history entries.
  * @return {Array<Object>} Sessions, newest first.
@@ -204,19 +221,19 @@ export function groupAgenticHistoryIntoSessions(history) {
   const groups = [];
   let sends = [];
 
-  const closeSession = (reverted) => {
-    if (!sends.length && !reverted) {
+  const closeSession = (ended) => {
+    if (!sends.length && !ended) {
       return;
     }
     groups.push({
       sends,
-      reverted: reverted || null,
+      ended: ended || null,
     });
     sends = [];
   };
 
   (Array.isArray(history) ? history : []).forEach((entry) => {
-    if ('reverted' === entry.type) {
+    if (historyEntryEndsAttempt(entry.type)) {
       closeSession(entry);
       return;
     }
@@ -230,9 +247,12 @@ export function groupAgenticHistoryIntoSessions(history) {
   return groups
     .map((group, index) => ({
       sends: group.sends,
-      reverted: group.reverted,
+      reverted:
+        group.ended && 'reverted' === group.ended.type ? group.ended : null,
+      completed:
+        group.ended && 'completed' === group.ended.type ? group.ended : null,
       number: index + 1,
-      isCurrent: index === total - 1 && !group.reverted,
+      isCurrent: index === total - 1 && !group.ended,
     }))
     .reverse();
 }

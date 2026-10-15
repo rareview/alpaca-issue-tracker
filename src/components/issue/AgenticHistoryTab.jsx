@@ -233,6 +233,45 @@ SessionCancelledStep.propTypes = {
 };
 
 /**
+ * Final timeline step when the user marks the attempt as done.
+ *
+ * @param {Object} props
+ * @param {Object} props.entry Normalized completed history entry.
+ * @return {JSX.Element} Done step.
+ */
+function SessionDoneStep({ entry }) {
+  return (
+    <div className="agentic-session-step agentic-session-step--done">
+      <div className="agentic-session-step__header">
+        <span className="agentic-session-step__action">
+          {__('Marked as done', 'alpaca-issue-tracker')}
+        </span>
+        {entry.occurredAt ? (
+          <Time
+            value={entry.occurredAt}
+            isGmt
+            type="absolute"
+            className="agentic-session-step__date"
+          />
+        ) : null}
+      </div>
+      <div className="agentic-session-step__links">
+        <span>
+          {__(
+            'GitHub issues and pull requests were left as they are.',
+            'alpaca-issue-tracker',
+          )}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+SessionDoneStep.propTypes = {
+  entry: PropTypes.object.isRequired,
+};
+
+/**
  * AI target branch used by a session, ignoring agent working branches.
  *
  * @param {Object} session Grouped fixing session.
@@ -296,7 +335,7 @@ function sessionPullRequestsWereClosed(session) {
 }
 
 /**
- * One fixing session: Fix With AI, follow-up requests, and optional start over.
+ * One fixing session: Fix With AI, follow-up requests, and an optional ending step.
  *
  * @param {Object}  props
  * @param {Object}  props.session    Grouped fixing session.
@@ -314,6 +353,12 @@ function FixingSessionCard({ session, focusPulse = false }) {
     title = sprintf(
       /* translators: %d: fix attempt number, starting at 1. */
       __('Fix attempt %d', 'alpaca-issue-tracker'),
+      session.number,
+    );
+  } else if (session.completed) {
+    title = sprintf(
+      /* translators: %d: fix attempt number, starting at 1. */
+      __('Fix attempt %d (done)', 'alpaca-issue-tracker'),
       session.number,
     );
   } else if (session.isCurrent) {
@@ -342,7 +387,8 @@ function FixingSessionCard({ session, focusPulse = false }) {
       ? 'agentic-session--current'
       : '',
     session.reverted ? 'agentic-session--cancelled' : '',
-    !session.reverted && pullRequestsWereClosed
+    session.completed ? 'agentic-session--done' : '',
+    !session.reverted && !session.completed && pullRequestsWereClosed
       ? 'agentic-session--closed'
       : '',
     focusPulse ? 'agentic-session--focus-pulse' : '',
@@ -383,6 +429,9 @@ function FixingSessionCard({ session, focusPulse = false }) {
         ))}
         {session.reverted ? (
           <SessionCancelledStep entry={session.reverted} />
+        ) : null}
+        {session.completed ? (
+          <SessionDoneStep entry={session.completed} />
         ) : null}
       </div>
     </section>
@@ -486,6 +535,9 @@ const AgenticHistoryTab = ({ issueId, issueDetails }) => {
     ),
   );
 
+  const highlightedSessionNumber =
+    sessions.find((session) => session.isCurrent)?.number ??
+    (sessions[0]?.completed ? sessions[0].number : null);
   const chronologicalSessions = [...sessions].reverse();
   const logItems = [];
   let lastTargetBranch = '';
@@ -536,7 +588,8 @@ const AgenticHistoryTab = ({ issueId, issueDetails }) => {
               key={item.key}
               session={item.session}
               focusPulse={
-                item.session.isCurrent && focusCurrentSession
+                focusCurrentSession &&
+                item.session.number === highlightedSessionNumber
               }
             />
           );
