@@ -969,7 +969,7 @@ import {
           'p',
           null,
           __(
-            'This marks the current fix attempt as done in Alpaca. GitHub issues and pull requests stay open or merged as they are, and the AI target branch is not changed.',
+            'This marks the current fix attempt as done in Alpaca. GitHub stays as it is.',
             'alpaca-issue-tracker',
           ),
         ),
@@ -1508,8 +1508,8 @@ import {
         'div',
         { className: 'agentic-abovetabs-actions' },
         hasSent ? requestChangeButton : fixWithAiButton,
-        hasSent ? markAttemptDoneButton : null,
         hasSent ? startOverButton : null,
+        hasSent ? markAttemptDoneButton : null,
       );
     }
 
