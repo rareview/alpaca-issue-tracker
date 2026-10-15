@@ -60,4 +60,20 @@ class WorkflowApprovalTest extends \PHPUnit\Framework\TestCase {
 		$this->assertStringContainsString( 'gh pr create --base', $action );
 		$this->assertStringContainsString( 'Closes #', $action );
 	}
+
+	/**
+	 * Agent pull requests must use a user token so lint and other checks start on their own.
+	 */
+	public function test_agent_pull_requests_use_a_user_token(): void {
+		$workflows = [
+			file_get_contents( dirname( __DIR__, 3 ) . '/includes/agentic/workflows/agent-trigger.yml' ),
+			file_get_contents( dirname( __DIR__, 3 ) . '/includes/agentic/workflows/plan-approval-gate.yml' ),
+		];
+
+		foreach ( $workflows as $workflow ) {
+			$this->assertIsString( $workflow );
+			$this->assertStringContainsString( 'secrets.ALPACA_GITHUB_TOKEN || github.token', $workflow );
+			$this->assertStringNotContainsString( 'github_token: ${{ github.token }}', $workflow );
+		}
+	}
 }

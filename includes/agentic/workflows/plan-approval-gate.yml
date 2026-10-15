@@ -189,7 +189,7 @@ jobs:
           base_branch: ${{ env.ALPACA_AI_TARGET_BRANCH }}
           head_branch: agent/fix-${{ github.event.issue.number }}
           open_pull_request: true
-          github_token: ${{ github.token }}
+          github_token: ${{ secrets.ALPACA_GITHUB_TOKEN || github.token }}
           execution_file: ${{ steps.claude-work.outputs.execution_file }}
 
   # ─────────────────────────────────────────────────────────────────────────────
@@ -334,7 +334,7 @@ jobs:
           base_branch: ${{ env.ALPACA_AI_TARGET_BRANCH }}
           head_branch: plan/issue-${{ github.event.issue.number }}
           open_pull_request: false
-          github_token: ${{ github.token }}
+          github_token: ${{ secrets.ALPACA_GITHUB_TOKEN || github.token }}
           execution_file: ${{ steps.claude-plan.outputs.execution_file }}
 
       # ── LOW/MEDIUM COMPLEXITY: execute directly ──────────────────────────────
@@ -398,5 +398,5 @@ jobs:
           base_branch: ${{ env.ALPACA_AI_TARGET_BRANCH }}
           head_branch: agent/fix-${{ github.event.issue.number }}
           open_pull_request: true
-          github_token: ${{ github.token }}
+          github_token: ${{ secrets.ALPACA_GITHUB_TOKEN || github.token }}
           execution_file: ${{ steps.claude-work.outputs.execution_file }}

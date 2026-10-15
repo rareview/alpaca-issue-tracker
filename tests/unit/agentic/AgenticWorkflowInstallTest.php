@@ -126,4 +126,102 @@ class AgenticWorkflowInstallTest extends \PHPUnit\Framework\TestCase {
 
 		$this->assertSame( 'committed', $result );
 	}
+
+	/**
+	 * The Actions secret must be the same token, sealed for GitHub.
+	 */
+	public function test_actions_token_secret_stores_the_sealed_token(): void {
+		if ( ! function_exists( 'sodium_crypto_box_keypair' ) ) {
+			$this->markTestSkipped( 'The sodium extension is required.' );
+		}
+
+		$keypair    = sodium_crypto_box_keypair();
+		$public_key = sodium_crypto_box_publickey( $keypair );
+		$captured   = null;
+
+		Functions\when( 'wp_remote_get' )->justReturn(
+			[
+				'response' => [ 'code' => 200 ],
+				'body'     => json_encode(
+					[
+						'key_id' => 'key-1',
+						'key'    => base64_encode( $public_key ),
+					]
+				),
+			]
+		);
+		Functions\when( 'wp_remote_retrieve_response_code' )->alias(
+			static function ( array $response ): int {
+				return (int) $response['response']['code'];
+			}
+		);
+		Functions\when( 'wp_remote_retrieve_body' )->alias(
+			static function ( array $response ): string {
+				return (string) $response['body'];
+			}
+		);
+		Functions\when( 'wp_json_encode' )->alias( 'json_encode' );
+		Functions\expect( 'wp_remote_request' )->once()->andReturnUsing(
+			static function ( string $url, array $args ) use ( &$captured ): array {
+				$captured = [
+					'url'  => $url,
+					'body' => json_decode( $args['body'], true ),
+				];
+				return [ 'response' => [ 'code' => 201 ], 'body' => '' ];
+			}
+		);
+
+		$result = alpaistr_agentic_sync_actions_token_secret(
+			'ghp_test',
+			[
+				'owner' => 'example',
+				'name'  => 'project',
+			]
+		);
+
+		$this->assertTrue( $result );
+		$this->assertIsArray( $captured );
+		$this->assertStringContainsString( '/actions/secrets/ALPACA_GITHUB_TOKEN', $captured['url'] );
+		$this->assertSame( 'key-1', $captured['body']['key_id'] );
+		$opened = sodium_crypto_box_seal_open( base64_decode( $captured['body']['encrypted_value'] ), $keypair );
+		$this->assertSame( 'ghp_test', $opened );
+	}
+
+	/**
+	 * A token without Secrets permission must not look like a successful install step.
+	 */
+	public function test_actions_token_secret_reports_github_rejection(): void {
+		if ( ! function_exists( 'sodium_crypto_box_seal' ) ) {
+			$this->markTestSkipped( 'The sodium extension is required.' );
+		}
+
+		Functions\when( 'wp_remote_get' )->justReturn(
+			[
+				'response' => [ 'code' => 403 ],
+				'body'     => '{"message":"Resource not accessible by integration"}',
+			]
+		);
+		Functions\when( 'wp_remote_retrieve_response_code' )->alias(
+			static function ( array $response ): int {
+				return (int) $response['response']['code'];
+			}
+		);
+		Functions\when( 'wp_remote_retrieve_body' )->alias(
+			static function ( array $response ): string {
+				return (string) $response['body'];
+			}
+		);
+
+		$result = alpaistr_agentic_sync_actions_token_secret(
+			'ghp_test',
+			[
+				'owner' => 'example',
+				'name'  => 'project',
+			]
+		);
+
+		$this->assertInstanceOf( WP_Error::class, $result );
+		$this->assertSame( 'github_api_error', $result->get_error_code() );
+		$this->assertStringContainsString( 'Resource not accessible by integration', $result->get_error_message() );
+	}
 }

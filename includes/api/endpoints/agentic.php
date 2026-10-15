@@ -348,14 +348,18 @@ function alpaistr_agentic_save_settings_callback( WP_REST_Request $request ): WP
 	update_option( Agentic::OPTION_KEY, $clean ); // Save the settings.
 	Agentic::clear_workflow_state_after_settings_change( $previous_repo, (string) $clean['github_repo'], $previous_branch, (string) $clean['ai_target_branch'] );
 
-	// Send the selected AI target branch to the GitHub.
-	$token            = (string) ( $clean['github_token'] ?? '' );
+	// Send the selected AI target branch and the token GitHub Actions uses to open pull requests.
+	$stored           = alpaistr_agentic_get_settings();
+	$token            = (string) ( $stored['github_token'] ?? '' );
 	$repo             = (string) ( $clean['github_repo'] ?? '' );
 	$ai_target_branch = (string) ( $clean['ai_target_branch'] ?? '' );
-	if ( '' !== $token && '' !== $repo && '' !== $ai_target_branch ) {
+	if ( '' !== $token && '' !== $repo ) {
 		$repo_parts = alpaistr_agentic_parse_github_repo( $repo );
 		if ( ! is_wp_error( $repo_parts ) ) {
-			alpaistr_agentic_sync_ai_target_branch_variable( $token, $repo_parts, $ai_target_branch );
+			if ( '' !== $ai_target_branch ) {
+				alpaistr_agentic_sync_ai_target_branch_variable( $token, $repo_parts, $ai_target_branch );
+			}
+			alpaistr_agentic_sync_actions_token_secret( $token, $repo_parts );
 		}
 	}
 
@@ -1472,6 +1476,11 @@ function alpaistr_agentic_install_workflow_callback(): WP_REST_Response|WP_Error
 		alpaistr_agentic_sync_ai_target_branch_variable( $token, $repo_parts, $ai_target_branch );
 	}
 
+	$secret_result = alpaistr_agentic_sync_actions_token_secret( $token, $repo_parts );
+	if ( is_wp_error( $secret_result ) ) {
+		return $secret_result;
+	}
+
 	$installed = alpaistr_agentic_workflow_files_match( $token, $repo_parts, $default_branch, $files, $ai_target_branch );
 	if ( is_wp_error( $installed ) ) {
 		return $installed;
@@ -1594,6 +1603,8 @@ function alpaistr_agentic_install_workflow_callback(): WP_REST_Response|WP_Error
 				'',
 				'1. Install the [Claude GitHub App](https://github.com/apps/claude) on this repository — without it every agent run fails',
 				'2. Add `CLAUDE_CODE_OAUTH_TOKEN` to **Settings → Secrets and variables → Secrets**',
+				'   Alpaca saves your GitHub token as `ALPACA_GITHUB_TOKEN` and uses it to create a pull request, 
+				    so lint and other pull request checks start automatically.',
 				'3. Optionally add `ANTHROPIC_API_KEY` for automated code review',
 				'4. Run **Actions → Setup Labels → Run workflow** to create all labels',
 				'5. Enable branch protection on the AI target branch and production branch (require review, disable force-push)',
@@ -4676,6 +4687,131 @@ function alpaistr_agentic_sync_ai_target_branch_variable( string $token, array $
 			),
 		]
 	);
+}
+
+/**
+ * Store the personal GitHub token as the ALPACA_GITHUB_TOKEN Actions secret.
+ *
+ * This is so lint and other checks can start automatically, which requires pull
+ * request to be open with a personal access token instead of the default GITHUB_TOKEN.
+ *
+ * @param string                             $token      GitHub personal access token.
+ * @param array{owner: string, name: string} $repo_parts Parsed repository.
+ * @return true|WP_Error
+ */
+function alpaistr_agentic_sync_actions_token_secret( string $token, array $repo_parts ): bool|WP_Error {
+	if ( ! function_exists( 'sodium_crypto_box_seal' ) ) {
+		return new WP_Error(
+			'secret_encryption_unavailable',
+			__( 'PHP sodium is required to store the GitHub token that starts pull request checks.', 'alpaca-issue-tracker' ),
+			[ 'status' => 500 ]
+		);
+	}
+
+	$headers      = alpaistr_agentic_github_api_headers( $token );
+	$key_response = wp_remote_get(
+		sprintf(
+			'https://api.github.com/repos/%s/%s/actions/secrets/public-key',
+			rawurlencode( $repo_parts['owner'] ),
+			rawurlencode( $repo_parts['name'] )
+		),
+		[
+			'timeout' => 15,
+			'headers' => $headers,
+		]
+	);
+
+	if ( is_wp_error( $key_response ) ) {
+		return new WP_Error(
+			'github_api_error',
+			sprintf(
+				/* translators: %s: error message */
+				__( 'Could not save the ALPACA_GITHUB_TOKEN Actions secret: %s', 'alpaca-issue-tracker' ),
+				$key_response->get_error_message()
+			),
+			[ 'status' => 502 ]
+		);
+	}
+
+	$key_code = (int) wp_remote_retrieve_response_code( $key_response );
+	$key_data = json_decode( wp_remote_retrieve_body( $key_response ), true );
+	if ( 200 !== $key_code || ! is_array( $key_data ) || empty( $key_data['key'] ) || empty( $key_data['key_id'] ) ) {
+		$github_message = is_array( $key_data ) ? (string) ( $key_data['message'] ?? '' ) : '';
+		if ( '' === $github_message ) {
+			$github_message = __( 'GitHub did not return a secrets public key.', 'alpaca-issue-tracker' );
+		}
+
+		return new WP_Error(
+			'github_api_error',
+			sprintf(
+				/* translators: %s: GitHub error message */
+				__( 'Could not save the ALPACA_GITHUB_TOKEN Actions secret, so pull request checks would wait for a manual approval. Give this token permission to manage Actions secrets, then try again. GitHub says: %s', 'alpaca-issue-tracker' ),
+				$github_message
+			),
+			[ 'status' => 502 ]
+		);
+	}
+
+	$public_key = base64_decode( (string) $key_data['key'], true ); // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_decode -- GitHub secrets public key is base64.
+	if ( ! is_string( $public_key ) || SODIUM_CRYPTO_BOX_PUBLICKEYBYTES !== strlen( $public_key ) ) {
+		return new WP_Error(
+			'github_api_error',
+			__( 'GitHub returned an unusable secrets public key.', 'alpaca-issue-tracker' ),
+			[ 'status' => 502 ]
+		);
+	}
+
+	$put_response = wp_remote_request(
+		sprintf(
+			'https://api.github.com/repos/%s/%s/actions/secrets/ALPACA_GITHUB_TOKEN',
+			rawurlencode( $repo_parts['owner'] ),
+			rawurlencode( $repo_parts['name'] )
+		),
+		[
+			'method'  => 'PUT',
+			'timeout' => 15,
+			'headers' => $headers,
+			'body'    => wp_json_encode(
+				[
+					'encrypted_value' => base64_encode( sodium_crypto_box_seal( $token, $public_key ) ), // phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- GitHub Actions secrets must be a sealed box.
+					'key_id'          => (string) $key_data['key_id'],
+				]
+			),
+		]
+	);
+
+	if ( is_wp_error( $put_response ) ) {
+		return new WP_Error(
+			'github_api_error',
+			sprintf(
+				/* translators: %s: error message */
+				__( 'Could not save the ALPACA_GITHUB_TOKEN Actions secret: %s', 'alpaca-issue-tracker' ),
+				$put_response->get_error_message()
+			),
+			[ 'status' => 502 ]
+		);
+	}
+
+	$put_code = (int) wp_remote_retrieve_response_code( $put_response );
+	if ( ! in_array( $put_code, [ 201, 204 ], true ) ) {
+		$put_data       = json_decode( wp_remote_retrieve_body( $put_response ), true );
+		$github_message = is_array( $put_data ) ? (string) ( $put_data['message'] ?? '' ) : '';
+		if ( '' === $github_message ) {
+			$github_message = __( 'GitHub did not save the secret.', 'alpaca-issue-tracker' );
+		}
+
+		return new WP_Error(
+			'github_api_error',
+			sprintf(
+				/* translators: %s: GitHub error message */
+				__( 'Could not save the ALPACA_GITHUB_TOKEN Actions secret. Give this token permission to manage Actions secrets, then try again. GitHub says: %s', 'alpaca-issue-tracker' ),
+				$github_message
+			),
+			[ 'status' => 502 ]
+		);
+	}
+
+	return true;
 }
 
 /**

@@ -21,7 +21,10 @@ inputs:
     required: false
     default: "true"
   github_token:
-    description: Token with contents and pull request write access
+    description: >-
+      Token with contents and pull request write access.
+      A personal access token or GitHub App token starts pull request checks
+      on its own. The default GITHUB_TOKEN leaves them waiting for approval.
     required: true
   execution_file:
     description: Claude execution log. Used to report why a run changed nothing.
