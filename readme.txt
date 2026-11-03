@@ -1,6 +1,6 @@
-=== Alpaca Issue Tracker ===
+=== Alpaca Issue Tracker - contextualised bug reports and kanban boards inside wp-admin ===
 Contributors: rareview, s1m0nd, pratikbarvaliya, tahireu, georgestephanis
-Tags: issue tracker, bug tracker, project management, kanban, development
+Tags: issue tracker, project management, kanban, agentic development
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 8.0
@@ -18,6 +18,7 @@ Alpaca Issue Tracker is a powerful yet simple issue tracking system that lives i
 
 * **Kanban Board Interface** - Drag-and-drop issues between and within fully customizable status columns
 * **Automatic Context Capture** - Browser info, page context, and technical details are saved with each bug report submitted from the front end
+* **Fix With AI** - Ask Claude to draft pull requests in your GitHub repository
 * **Built for WordPress** - Uses native WordPress components, post types, taxonomies and database tables
 * **Extensibility** - Developers can add custom functions and integrations via conventional WordPress actions & filters
 * **Respects User Permissions** - Integrates with WordPress user roles and capabilities
@@ -43,6 +44,7 @@ Alpaca Issue Tracker is a powerful yet simple issue tracking system that lives i
 Clients don't have the time or knowledge to provide detailed technical reports when they spot a problem. But developers can't do their job without that detail. Alpaca Issue Tracker solves this by automatically capturing all the technical context WordPress already knows about each page request.
 
 When a user reports an issue via the Alpaca Issue Tracker front-end toolbar, the plugin silently captures:
+
 - A screenshot of what the user can see
 - Browser and device information
 - Current page URL and template
@@ -115,6 +117,7 @@ Alpaca Issue Tracker includes runtime copies or bundled output from the followin
 * PrismJS - MIT license - https://prismjs.com/
 * PropTypes - MIT license - https://github.com/facebook/prop-types
 * SnapDOM - MIT license - https://github.com/zumerlab/snapdom
+* Agentic Deployment Template - MIT license - https://github.com/whyisjake/agentic-deployment-template
 
 == Recommended Plugins ==
 
