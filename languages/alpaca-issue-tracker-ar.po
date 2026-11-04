@@ -1,0 +1,2310 @@
+# Copyright (C) 2026 Rareview®
+# This file is distributed under the GPL v2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Alpaca Issue Tracker 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/alpaca-issue-"
+"tracker\n"
+"Last-Translator: \n"
+"Language-Team: Arabic\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-05-06T14:31:53+00:00\n"
+"PO-Revision-Date: 2026-06-11 22:22+0000\n"
+"X-Generator: Loco https://localise.biz/\n"
+"X-Domain: alpaca-issue-tracker\n"
+"Language: ar\n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100 >= 3 "
+"&& n%100<=10 ? 3 : n%100 >= 11 && n%100<=99 ? 4 : 5;\n"
+"X-Loco-Version: 2.8.5; wp-7.0; php-8.2.29"
+
+#. Plugin Name of the plugin
+#: alpacaissuetracker.php
+msgid "Alpaca Issue Tracker"
+msgstr "تتبع المشكلات من Alpaca"
+
+#. Plugin URI of the plugin
+#: alpacaissuetracker.php
+msgid "https://github.com/rareview/alpaca"
+msgstr "https://github.com/rareview/alpaca"
+
+#. Description of the plugin
+#: alpacaissuetracker.php
+msgid ""
+"Bug reporting and Trello-esque kanban project management inside WordPress. "
+"No subscriptions, no new accounts, no artificial limitations."
+msgstr ""
+"الإبلاغ عن الأخطاء وإدارة المشاريع باستخدام لوحة Kanban على غرار Trello داخل "
+"ووردبريس. لا توجد اشتراكات، ولا حسابات جديدة، ولا قيود مصطنعة."
+
+#. Author of the plugin
+#: alpacaissuetracker.php
+msgid "Rareview®"
+msgstr "Rareview®"
+
+#. Author URI of the plugin
+#: alpacaissuetracker.php
+msgid "https://rareview.com/"
+msgstr "https://rareview.com/"
+
+#: includes/admin/admin-bar.php:73 src/Modal.jsx:204 src/Toolbar.jsx:248
+#: src/Toolbar.jsx:264
+msgid "Report An Issue"
+msgstr "الإبلاغ عن مشكلة"
+
+#: includes/admin/admin-screens.php:17 includes/admin/admin-screens.php:18
+#: includes/core/board.php:20 src/Toolbar.jsx:252
+msgid "Project Board"
+msgstr "لوحة المشاريع"
+
+#: includes/admin/admin-screens.php:28 includes/admin/admin-screens.php:29
+#: includes/admin/admin-screens.php:94
+msgid "Project Activity"
+msgstr "نشاط المشروع"
+
+#: includes/admin/admin-screens.php:37 includes/admin/admin-screens.php:38
+#: includes/admin/admin-screens.php:72
+msgid "Configure"
+msgstr "تكوين"
+
+#: includes/admin/admin-screens.php:46 includes/admin/admin-screens.php:47
+#: includes/admin/admin-screens.php:106
+msgid "My Notifications"
+msgstr "إشعاراتي"
+
+#: includes/admin/admin-screens.php:55 includes/admin/admin-screens.php:56
+#: includes/admin/admin-screens.php:123
+msgid "Email Templates"
+msgstr "قوالب البريد الإلكتروني"
+
+#: includes/admin/admin-screens.php:75
+msgid "Changes made on this screen will affect all users."
+msgstr "التغييرات التي تم إجراؤها على هذا الشاشة ستؤثر على جميع المستخدمين.‎"
+
+#: includes/admin/admin-screens.php:109
+msgid "Changes made on this screen will only affect the current user."
+msgstr ""
+"التغييرات التي تم إجراؤها على هذا الشاشة ستؤثر فقط على المستخدم الحالي.‎"
+
+#: includes/admin/dashboard-widget.php:19
+msgid "Project Issues"
+msgstr "مشكلات المشروع"
+
+#: includes/api/endpoints/attachments.php:197
+msgid "Invalid issue."
+msgstr "مشكلة غير صالحة."
+
+#: includes/api/endpoints/attachments.php:321 src/utils/attachmentUpload.js:12
+msgid "Missing attachment file."
+msgstr "الملف المرفق مفقود."
+
+#: includes/api/endpoints/attachments.php:334
+msgid "This file type is not allowed."
+msgstr "هذا نوع الملف غير مسموح به."
+
+#: includes/api/endpoints/attachments.php:347
+msgid "Failed to prepare upload directory."
+msgstr "فشل في تهيئة دليل التحميل"
+
+#: includes/api/endpoints/attachments.php:467
+msgid "Missing attachment URL."
+msgstr "عنوان مرفق مفقود."
+
+#: includes/api/endpoints/attachments.php:480
+msgid "Comment was not found."
+msgstr "لم يتم العثور على التعليق.‎"
+
+#: includes/api/endpoints/attachments.php:488
+msgid "Comment does not match this issue."
+msgstr "التعليق لا يتطابق مع هذه المشكلة."
+
+#: includes/api/endpoints/attachments.php:496
+msgid "Attachment does not belong to this comment."
+msgstr "الملف المرفق لا ينتمي إلى هذا التعليق."
+
+#: includes/api/endpoints/attachments.php:506
+msgid "Comment ID is required to delete this attachment."
+msgstr "رقم المعرف مطلوب لحذف هذا الملحق.‎"
+
+#: includes/api/endpoints/attachments.php:521
+msgid "You are not allowed to delete this attachment."
+msgstr "ليس مسموحًا لك بحذف هذا المرفق."
+
+#: includes/api/endpoints/attachments.php:534
+msgid "Attachment URL is not valid."
+msgstr "عنوان الارتباط غير صالح."
+
+#: includes/api/endpoints/attachments.php:549
+#: includes/api/endpoints/attachments.php:560
+msgid "Attachment path is not valid."
+msgstr "مسار المرفق غير صالح."
+
+#: includes/api/endpoints/attachments.php:568
+msgid "Attachment not found."
+msgstr "الملف غير موجود."
+
+#: includes/api/endpoints/attachments.php:580 src/components/Comment.jsx:58
+#: src/components/Comment.jsx:932 src/components/Comment.jsx:975
+#: src/components/CommentForm.jsx:42 src/components/CommentForm.jsx:397
+#: src/utils/attachmentUpload.js:73
+msgid "Failed to delete attachment."
+msgstr "فشل حذف الملحق.‎"
+
+#: includes/api/endpoints/attachments.php:589
+msgid "Attachment deleted."
+msgstr "تم حذف المرفق.‎"
+
+#: includes/api/endpoints/board.php:76
+msgid "Invalid data format. Expected an array of columns."
+msgstr "تنسيق البيانات غير صالح. تم توقع مصفوفة من الأعمدة.‎"
+
+#: includes/api/endpoints/board.php:98
+msgid "Board order saved successfully."
+msgstr "تم حفظ طلب الشراء بنجاح.‎"
+
+#: includes/api/endpoints/issues.php:48
+msgid "Invalid request body."
+msgstr "طلب غير صالح.‎"
+
+#: includes/api/endpoints/issues.php:65
+msgid "Feedback is required."
+msgstr "التعليقات مطلوبة.‎"
+
+#: includes/api/endpoints/issues.php:89 src/components/Issue.jsx:1374
+msgid "Failed to create issue."
+msgstr "فشل إنشاء المشكلة.‎"
+
+#: includes/api/endpoints/issues.php:244
+msgid "Issue submitted successfully."
+msgstr "تم إرسال المشكلة بنجاح."
+
+#: includes/api/endpoints/issues.php:296 includes/api/endpoints/issues.php:711
+#: includes/api/endpoints/issues.php:1236
+#: includes/api/endpoints/issues.php:1373
+#: includes/api/endpoints/users-labels-watchlist.php:514 src/Board.jsx:347
+msgid "Issue not found."
+msgstr "لم يتم العثور على المشكلة.‎"
+
+#: includes/api/endpoints/issues.php:317
+msgid "Invalid parent issue."
+msgstr "مشكلة رئيسية غير صالحة."
+
+#: includes/api/endpoints/issues.php:328
+msgid "An issue cannot be its own parent."
+msgstr "لا يمكن أن يكون هناك مشكلة كوالد لنفسها. "
+
+#: includes/api/endpoints/issues.php:341 includes/api/endpoints/issues.php:610
+msgid "Parent issue not found."
+msgstr "المشكلة الأصلية غير موجودة."
+
+#: includes/api/endpoints/issues.php:353
+msgid "Invalid parent hierarchy."
+msgstr "هيكل أولي غير صالح."
+
+#: includes/api/endpoints/issues.php:369
+msgid "Failed to update the issue."
+msgstr "فشل تحديث المشكلة."
+
+#: includes/api/endpoints/issues.php:414
+msgid "Failed to update issue taxonomy terms."
+msgstr "فشل تحديث مصطلحات تصنيف المشكلة."
+
+#: includes/api/endpoints/issues.php:469
+msgid "Issue updated successfully."
+msgstr "تم تحديث المشكلة بنجاح.‎"
+
+#: includes/api/endpoints/issues.php:621
+msgid "Subissue title is required."
+msgstr "عنوان المشكلة الفرعي مطلوب. (عنوان المشكلة الفرعي مطلوب.)"
+
+#: includes/api/endpoints/issues.php:644 src/components/Issue.jsx:1451
+msgid "Failed to create subissue."
+msgstr "فشل إنشاء مشكلة فرعية"
+
+#: includes/api/endpoints/issues.php:661
+msgid "Subissue created successfully."
+msgstr "تم إنشاء المشكلة الفرعية بنجاح.‎"
+
+#: includes/api/endpoints/issues.php:788
+msgid "Issue data retrieved successfully."
+msgstr "تم استرجاع بيانات المشكلة بنجاح.‎"
+
+#: includes/api/endpoints/issues.php:930 src/components/RestoreManager.jsx:46
+msgid "(Untitled issue)"
+msgstr "(مشكلة غير مسماة)"
+
+#: includes/api/endpoints/issues.php:1247
+msgid "Issue is not in trash."
+msgstr "المشكلة ليست في سلة المهملات.‎"
+
+#: includes/api/endpoints/issues.php:1268
+msgid ""
+"Checklist items cannot be restored while their parent issue is still deleted."
+msgstr ""
+"لا يمكن استعادة عناصر قائمة المراجعة أثناء وجود المشكلة الأصلية محذوفة. "
+
+#: includes/api/endpoints/issues.php:1282
+#: includes/api/endpoints/issues.php:1301
+msgid "Failed to restore the issue."
+msgstr "فشل استعادة المشكلة."
+
+#: includes/api/endpoints/issues.php:1311
+msgid "Issue restored successfully."
+msgstr "تم استعادة المشكلة بنجاح.‎"
+
+#: includes/api/endpoints/issues.php:1386
+msgid "Failed to trash the issue."
+msgstr "فشل حذف المشكلة."
+
+#: includes/api/endpoints/issues.php:1396
+msgid "Issue trashed successfully."
+msgstr "تم حذف المشكلة بنجاح.‎"
+
+#: includes/api/endpoints/notifications.php:465
+msgid "Test digest email could not be sent."
+msgstr "لا يمكن إرسال رسالة البريد الإلكتروني الترويجية. "
+
+#. translators: %s: test email address.
+#: includes/api/endpoints/notifications.php:467
+#, php-format
+msgid "Test digest email sent to %s."
+msgstr "رسالة البريد الإلكتروني التجميعي تم إرسالها إلى %s."
+
+#: includes/api/endpoints/notifications.php:481
+msgid "Test email could not be sent."
+msgstr "فشل إرسال البريد الإلكتروني."
+
+#. translators: %s: test email address.
+#: includes/api/endpoints/notifications.php:483
+#, php-format
+msgid "Test email sent to %s."
+msgstr "تم إرسال رسالة بريد إلكتروني تجريبية إلى %s.‎"
+
+#: includes/api/endpoints/notifications.php:538
+msgid "Could not determine the current user."
+msgstr "لم يتم تحديد المستخدم الحالي"
+
+#: includes/api/endpoints/notifications.php:546
+msgid "Your WordPress profile does not have a valid email address."
+msgstr "ملف تعريف WordPress الخاص بك لا يحتوي على عنوان بريد إلكتروني صالح."
+
+#: includes/api/endpoints/options-statuses.php:124
+msgid "Status not found."
+msgstr "الحالة غير موجودة.‎"
+
+#: includes/api/endpoints/options-statuses.php:148
+msgid "Failed to update status name and slug."
+msgstr "فشل تحديث اسم الحالة والـ slug.‎"
+
+#: includes/api/endpoints/options-statuses.php:163
+msgid "Status updated successfully."
+msgstr "تم تحديث الحالة بنجاح.‎"
+
+#: includes/api/endpoints/users-labels-watchlist.php:158
+msgid "Label not found."
+msgstr "العنصر غير موجود.‎"
+
+#: includes/api/endpoints/users-labels-watchlist.php:174
+msgid "Label name is required."
+msgstr "يجب تحديد اسم التسمية.‎"
+
+#: includes/api/endpoints/users-labels-watchlist.php:246
+msgid "Failed to create label."
+msgstr "فشل إنشاء التسمية.‎"
+
+#: includes/api/endpoints/users-labels-watchlist.php:264
+msgid "Label created, but could not be loaded."
+msgstr "تم إنشاء الملصق، ولكن لم يتم تحميله.‎"
+
+#: includes/api/endpoints/users-labels-watchlist.php:316
+msgid "Failed to update label."
+msgstr "فشل تحديث التسمية.‎"
+
+#: includes/api/endpoints/users-labels-watchlist.php:338
+msgid "Failed to load updated label."
+msgstr "فشل تحميل التسمية المحدثة.‎"
+
+#: includes/api/endpoints/users-labels-watchlist.php:374
+#: src/components/LabelsManager.jsx:395
+msgid "Failed to delete label."
+msgstr "فشل حذف الوسم.‎"
+
+#: includes/api/endpoints/users-labels-watchlist.php:466
+msgid "User not found."
+msgstr "المستخدم غير موجود."
+
+#: includes/api/endpoints/users-labels-watchlist.php:492
+#: includes/api/endpoints/users-labels-watchlist.php:526
+msgid "Could not update watchlist."
+msgstr "تعذر تحديث قائمة المراقبة.‎"
+
+#: includes/api/proxy/image-proxy.php:81
+msgid "Invalid proxy authentication token."
+msgstr "رمز المصادقة للوكيل غير صالح."
+
+#: includes/api/proxy/image-proxy.php:163
+msgid "Invalid URL."
+msgstr "عنوان غير صالح."
+
+#: includes/api/proxy/image-proxy.php:172
+msgid "Only HTTP and HTTPS URLs are allowed."
+msgstr "يسمح فقط بعنوان HTTP و HTTPS.‎"
+
+#: includes/api/proxy/image-proxy.php:181
+msgid "Invalid host."
+msgstr "المضيف غير صالح."
+
+#: includes/api/proxy/image-proxy.php:191
+#: includes/api/proxy/image-proxy.php:211
+msgid "URL not allowed."
+msgstr "عنوان URL غير مسموح به.‎"
+
+#: includes/api/proxy/image-proxy.php:203
+msgid "Unable to resolve host."
+msgstr "تعذر حل المضيف.‎"
+
+#: includes/api/proxy/image-proxy.php:285
+msgid "Failed to fetch image."
+msgstr "فشل في جلب الصورة.‎"
+
+#: includes/api/proxy/image-proxy.php:302
+msgid "Unsupported image type."
+msgstr "نوع صورة غير مدعوم.‎"
+
+#. translators: 1: Required PHP version, 2: Current PHP version
+#: includes/class-activator.php:53
+#, php-format
+msgid ""
+"Alpaca Issue Tracker requires PHP version %1$s or higher. You are running "
+"version %2$s."
+msgstr ""
+"يتطلب نظام تتبع المشكلات الخاص بـ Alpaca إصدار PHP %1$ أو أعلى. الإصدار الذي "
+"تستخدمه هو %2$."
+
+#: includes/class-activator.php:57 includes/class-activator.php:73
+msgid "Plugin Activation Error"
+msgstr "خطأ في تفعيل الإضافة"
+
+#. translators: 1: Required WP version, 2: Current WP version
+#: includes/class-activator.php:69
+#, php-format
+msgid ""
+"Alpaca Issue Tracker requires WordPress version %1$s or higher. You are "
+"running version %2$s."
+msgstr ""
+"يتطلب نظام تتبع المشكلات الخاص بـ Alpaca إصدار WordPress ‎%1$s أو أعلى. "
+"الإصدار الذي تستخدمه هو ‎%2$s.‎"
+
+#: includes/class-alpacaissuetracker.php:328
+msgid "Enable console messages for testing purposes."
+msgstr "تمكين رسائل وحدة التحكم لأغراض الاختبار.‎"
+
+#: includes/class-alpacaissuetracker.php:339
+msgid "Visibility map for item datapoints on issue cards."
+msgstr "خريطة رؤية لنقاط بيانات العنصر على بطاقات المشكلات.‎"
+
+#: includes/class-helpers.php:125
+msgid "You are not allowed to access this endpoint."
+msgstr "ليس مسموحًا لك بالوصول إلى هذا الطرفية.‎"
+
+#: includes/class-helpers.php:138
+msgid "Invalid nonce."
+msgstr "رقم غير صالح"
+
+#: includes/core/board.php:21
+msgid "Add Issue"
+msgstr "إضافة مشكلة"
+
+#: includes/core/posttypes-and-taxonomies.php:65
+msgid "Issues"
+msgstr "مشكلات"
+
+#: includes/core/posttypes-and-taxonomies.php:67
+#: includes/core/posttypes-and-taxonomies.php:68
+#: includes/notifications/digest/render.php:409 src/Activity.jsx:615
+#: src/components/RestoreManager.jsx:319 src/DashboardWidget.jsx:79
+#: src/utils/issueCommentHandler.js:514
+msgid "Issue"
+msgstr "مشكلة"
+
+#: includes/core/posttypes-and-taxonomies.php:69
+msgid "All Issues"
+msgstr "جميع المشكلات"
+
+#: includes/core/posttypes-and-taxonomies.php:70
+msgid "Edit Issue"
+msgstr "تحرير المشكلة"
+
+#: includes/core/posttypes-and-taxonomies.php:71
+msgid "View Issue"
+msgstr "عرض المشكلة"
+
+#: includes/core/posttypes-and-taxonomies.php:72
+msgid "View Issues"
+msgstr "عرض المشكلات"
+
+#: includes/core/posttypes-and-taxonomies.php:81
+msgid "Browser"
+msgstr "متصفح"
+
+#: includes/core/posttypes-and-taxonomies.php:82
+msgid "PHP Template"
+msgstr "قالب PHP"
+
+#: includes/core/posttypes-and-taxonomies.php:83
+#: src/components/RestoreManager.jsx:295
+msgid "Type"
+msgstr "اكتب"
+
+#: includes/core/posttypes-and-taxonomies.php:88
+#: src/components/BoardFilterControl.jsx:99
+#: src/components/BoardFilterControl.jsx:121
+#: src/components/BoardFilterControl.jsx:364
+#: src/components/BoardFilterControl.jsx:398
+msgid "Assignee"
+msgstr "المسؤول"
+
+#: includes/core/posttypes-and-taxonomies.php:95
+#: includes/notifications/digest/render.php:409 src/DashboardWidget.jsx:83
+msgid "Status"
+msgstr "الحالة"
+
+#: includes/core/posttypes-and-taxonomies.php:104
+#: src/components/BoardFilterControl.jsx:323 src/components/Issue.jsx:110
+#: src/components/LabelsManager.jsx:467 src/components/RestoreManager.jsx:296
+#: src/datapoints/labelsDatapoint.js:21 src/datapoints/labelsDatapoint.js:44
+#: src/Settings.jsx:56
+msgid "Labels"
+msgstr "ملصقات"
+
+#: includes/core/posttypes-and-taxonomies.php:114
+msgid "Watching"
+msgstr "مشاهدة"
+
+#: includes/notifications/digest/payload.php:298
+#: includes/notifications/digest/render.php:104
+#: src/datapoints/deadlineDatapoint.js:57
+msgid "Tomorrow"
+msgstr "غدًا"
+
+#: includes/notifications/digest/payload.php:300
+#: src/components/BoardFilterControl.jsx:495
+#: src/datapoints/deadlineDatapoint.js:59
+msgid "Today"
+msgstr "اليوم"
+
+#: includes/notifications/digest/payload.php:302
+#: src/datapoints/deadlineDatapoint.js:61
+msgid "Yesterday"
+msgstr "أمس"
+
+#: includes/notifications/digest/payload.php:682
+#: includes/notifications/digest/render.php:86
+msgid "Due soon"
+msgstr "سيتم قريبًا"
+
+#: includes/notifications/digest/payload.php:686 src/DashboardWidget.jsx:57
+msgid "Overdue"
+msgstr "متأخر"
+
+#: includes/notifications/digest/payload.php:689
+msgid "Due today"
+msgstr "يجب إنجازه اليوم"
+
+#: includes/notifications/digest/render.php:64
+msgid ""
+"This is a sample comment shown inside the daily digest. It is intentionally "
+"longer so the excerpt rendering can be previewed."
+msgstr ""
+"هذا تعليق نموذجي يتم عرضه داخل الملخص اليومي. إنه طويل عن عمد حتى يمكن "
+"معاينة عرض المقتطفات. "
+
+#: includes/notifications/digest/render.php:69
+msgid "Sample User"
+msgstr "مثال مستخدم"
+
+#: includes/notifications/digest/render.php:81
+msgid "Launch homepage refresh"
+msgstr "إطلاق تحديث الصفحة الرئيسية"
+
+#: includes/notifications/digest/render.php:88
+#: includes/notifications/digest/render.php:118
+#: includes/utilities/functions.php:252
+msgid "In Progress"
+msgstr "قيد التنفيذ"
+
+#: includes/notifications/digest/render.php:91
+#: includes/notifications/digest/render.php:95
+#: includes/notifications/digest/render.php:144
+msgid "Sam"
+msgstr "سام"
+
+#: includes/notifications/digest/render.php:98
+#: includes/notifications/digest/render.php:102
+#: includes/notifications/digest/render.php:128
+#: includes/notifications/digest/render.php:132
+#: includes/notifications/digest/render.php:168
+#: includes/notifications/digest/render.php:172
+msgid "Design"
+msgstr "تصميم"
+
+#: includes/notifications/digest/render.php:114
+#: includes/notifications/events.php:437
+msgid "Sample issue title"
+msgstr "عنوان المشكلة النموذجي"
+
+#: includes/notifications/digest/render.php:121
+#: includes/notifications/digest/render.php:125
+msgid "Alex"
+msgstr "ألكس"
+
+#: includes/notifications/digest/render.php:143
+#: includes/notifications/events.php:218
+msgid "Status changed"
+msgstr "الحالة تغيرت"
+
+#: includes/notifications/digest/render.php:159
+msgid "Review new design request"
+msgstr "مراجعة طلب التصميم الجديد"
+
+#: includes/notifications/digest/render.php:163
+#: src/components/InboxControl.jsx:602 src/components/InboxControl.jsx:624
+#: src/components/InboxControl.jsx:639 src/components/InboxControl.jsx:643
+msgid "Inbox"
+msgstr "البريد الوارد"
+
+#: includes/notifications/digest/render.php:204
+#: includes/notifications/digest/render.php:409 src/components/Issue.jsx:64
+#: src/datapoints/priorityDatapoint.js:24
+#: src/datapoints/priorityDatapoint.js:26
+#: src/datapoints/priorityDatapoint.js:38
+msgid "Priority"
+msgstr "الأولوية"
+
+#. translators: 1: event label, 2: actor name.
+#: includes/notifications/digest/render.php:341
+#, php-format
+msgid "%1$s by %2$s"
+msgstr "%1$s بواسطة %2$s"
+
+#: includes/notifications/digest/render.php:374
+#: includes/notifications/digest/render.php:380
+msgid "No followed issues are overdue or due in the next two days."
+msgstr ""
+"لا توجد مشكلات متابعة متأخرة أو بسبب استحقاقها في غضون اليومين المقبلين.‎"
+
+#: includes/notifications/digest/render.php:409
+#: src/components/BoardFilterControl.jsx:224
+#: src/components/BoardFilterControl.jsx:412
+#: src/components/BoardFilterControl.jsx:435 src/components/Issue.jsx:131
+#: src/DashboardWidget.jsx:81
+msgid "Due Date"
+msgstr "تاريخ الاستحقاق"
+
+#: includes/notifications/digest/render.php:409
+#: src/components/BoardFilterControl.jsx:372 src/components/Issue.jsx:87
+#: src/DashboardWidget.jsx:82 src/datapoints/assigneesDatapoint.js:19
+#: src/datapoints/assigneesDatapoint.js:45
+msgid "Assignees"
+msgstr "المسؤولون"
+
+#. translators: %d: additional item count.
+#: includes/notifications/digest/render.php:440
+#: includes/notifications/digest/render.php:475
+#, php-format
+msgid "+%d more"
+msgstr "+%d المزيد"
+
+#: includes/notifications/digest/render.php:456
+msgid "No followed issues had activity in the last 24 hours."
+msgstr "لم يكن هناك أي مشكلات تم متابعتها نشطة خلال آخر 24 ساعة. "
+
+#: includes/notifications/digest/render.php:538
+#: src/components/DailyDigestTemplateScreen.jsx:22
+msgid "Issues Falling Due"
+msgstr "المشاكل المتأخرة"
+
+#: includes/notifications/digest/render.php:544
+#: src/components/DailyDigestTemplateScreen.jsx:31
+msgid "My Issues"
+msgstr "مشاكلي"
+
+#: includes/notifications/digest/render.php:551
+msgid "New Issues"
+msgstr "المشاكل الجديدة"
+
+#: includes/notifications/digest/schedule.php:245
+msgid "Every fifteen minutes"
+msgstr "كل خمس عشرة دقائق"
+
+#: includes/notifications/digest/template.php:83
+msgid "You are receiving this summary because you opted into the daily digest."
+msgstr "أنت تتلقى هذا الملخص لأنك اخترت الاشتراك في التقرير اليومي.‎"
+
+#: includes/notifications/digest/template.php:107
+msgid "Daily Summary for {{digest_day}}"
+msgstr "ملخص يومي لـ {{digest_day}}"
+
+#: includes/notifications/digest/template.php:119
+#: includes/notifications/template.php:75
+#: includes/notifications/template.php:110
+msgid "Manage notifications"
+msgstr "إدارة الإشعارات"
+
+#: includes/notifications/digest/template.php:261
+msgid "The daily digest template must contain at least one supported block."
+msgstr ""
+"يجب أن يحتوي قالب الملخص اليومي على وحدة (block) واحدة على الأقل مدعومة.‎"
+
+#: includes/notifications/digest/template.php:263
+msgid ""
+"The daily digest template must include the locked digest section blocks."
+msgstr "يجب أن يتضمن قالب الملخص اليومي كتل قسم الملخص المحظور.‎"
+
+#: includes/notifications/events.php:212
+msgid "Issue added"
+msgstr "تم إضافة مشكلة"
+
+#: includes/notifications/events.php:215 includes/notifications/events.php:434
+#: src/components/InboxControl.jsx:84
+msgid "Comment added"
+msgstr "تمت إضافة تعليق"
+
+#: includes/notifications/events.php:222
+msgid "Issue assigned"
+msgstr "تم تعيين المشكلة"
+
+#: includes/notifications/events.php:226
+msgid "Issue unassigned"
+msgstr "غير مُعيّن"
+
+#: includes/notifications/events.php:229
+msgid "Issue assignment changed"
+msgstr "تم تغيير تعيين المشكلة"
+
+#: includes/notifications/events.php:233
+msgid "Due date set"
+msgstr "تاريخ الاستحقاق محدد"
+
+#: includes/notifications/events.php:237
+msgid "Due date removed"
+msgstr "تاريخ الاستحقاق تمت إزالته"
+
+#: includes/notifications/events.php:240
+msgid "Due date changed"
+msgstr "تاريخ الاستحقاق تم تغييره"
+
+#: includes/notifications/events.php:244
+msgid "Checklist item created"
+msgstr "تم إنشاء عنصر قائمة"
+
+#: includes/notifications/events.php:248
+msgid "Checklist item deleted"
+msgstr "تم حذف عنصر القائمة"
+
+#: includes/notifications/events.php:251
+msgid "Checklist updated"
+msgstr "تم تحديث القائمة"
+
+#: includes/notifications/events.php:255
+msgid "Checklist item assigned"
+msgstr "العنصر في قائمة المهام تم تعيينه"
+
+#: includes/notifications/events.php:259
+msgid "Checklist item unassigned"
+msgstr "عنصر قائمة غير مُعيّن"
+
+#: includes/notifications/events.php:262
+msgid "Checklist assignment changed"
+msgstr "تغيير مهمة القائمة"
+
+#: includes/notifications/events.php:266
+msgid "Checklist item completed"
+msgstr "تمت إضافة عنصر إلى قائمة المهام"
+
+#: includes/notifications/events.php:270
+msgid "Checklist item reopened"
+msgstr "إعادة فتح عنصر قائمة المهام"
+
+#: includes/notifications/events.php:273
+msgid "Checklist completion changed"
+msgstr "تغيير إكمال القائمة"
+
+#: includes/notifications/events.php:276
+msgid "Checklist item promoted"
+msgstr "تم الترويج للعنصر في القائمة"
+
+#: includes/notifications/events.php:280
+msgid "High priority enabled"
+msgstr "تم تمكين الأولوية العالية"
+
+#: includes/notifications/events.php:284
+msgid "High priority removed"
+msgstr "تمت إزالة الأولوية العالية"
+
+#: includes/notifications/events.php:287
+msgid "Priority changed"
+msgstr "تم تغيير الأولوية"
+
+#: includes/notifications/events.php:290
+msgid "Issue activity updated"
+msgstr "نشاط الموضوع تم تحديثه"
+
+#: includes/notifications/events.php:377 includes/notifications/inbox.php:390
+#: includes/notifications/inbox.php:415 src/components/InboxControl.jsx:164
+#: src/utils/issueCommentHandler.js:53
+msgid "Unknown user"
+msgstr "مستخدم غير معروف"
+
+#: includes/notifications/events.php:415
+msgid "Alpaca Issue Tracker User"
+msgstr "مستخدم نظام تتبع المشكلات الخاص بـ Alpaca"
+
+#: includes/notifications/events.php:421
+msgid ""
+"This is a sample notification comment. It includes the full comment content "
+"exactly as the email will render it."
+msgstr ""
+"هذه رسالة إعلام نموذجية. وهي تتضمن محتوى التعليق بالكامل كما سيتم عرضه في "
+"البريد الإلكتروني. "
+
+#: includes/notifications/preferences.php:23
+msgid "Email"
+msgstr "البريد الإلكتروني"
+
+#: includes/notifications/preferences.php:24
+msgid "Sends updates to your email address."
+msgstr "يرسل التحديثات إلى عنوان بريدك الإلكتروني.‎"
+
+#: includes/notifications/preferences.php:33
+#: src/components/NotificationPreferences.jsx:328
+msgid "Email address"
+msgstr "عنوان البريد الإلكتروني"
+
+#: includes/notifications/preferences.php:34
+#: src/components/NotificationPreferences.jsx:339
+msgid ""
+"Uses your WordPress profile email unless you enter a different address here."
+msgstr ""
+"يستخدم عنوان بريدك الإلكتروني في موقع WordPress ما لم تحدد عنوانًا مختلفًا "
+"هنا.‎"
+
+#: includes/notifications/preferences.php:221
+#: src/components/NotificationPreferences.jsx:395
+msgid "Site timezone"
+msgstr "وقت الموقع"
+
+#: includes/notifications/preferences.php:655
+msgid "Enter a valid notification email address or leave the override blank."
+msgstr "أدخل عنوان بريد إلكتروني صالح أو اترك الحقل فارغًا.‎"
+
+#: includes/notifications/preferences.php:679
+msgid ""
+"Add a valid email address before enabling email notifications or the daily "
+"digest."
+msgstr ""
+"أضف عنوان بريد إلكتروني صالح قبل تمكين الإشعارات عبر البريد الإلكتروني أو "
+"الملخص اليومي.‎"
+
+#: includes/notifications/render.php:140
+msgid "View attachment"
+msgstr "عرض المرفق"
+
+#: includes/notifications/render.php:147
+msgid "Attachments"
+msgstr "المرفقات"
+
+#: includes/notifications/render.php:173
+msgid "Open Issue"
+msgstr "فتح مشكلة"
+
+#: includes/notifications/render.php:470
+#: src/components/BlockTemplateEditorScreen.jsx:444
+msgid "WordPress"
+msgstr "ورد برس"
+
+#: includes/notifications/template.php:577
+msgid "The email template must contain at least one supported block."
+msgstr "يجب أن يحتوي قالب البريد الإلكتروني على وحدة واحدة على الأقل مدعومة.‎"
+
+#: includes/notifications/template.php:579
+msgid ""
+"The email template must include the Full Comment Content placeholder block."
+msgstr "يجب أن يتضمن قالب البريد الإلكتروني كتلة العنصر الكامل للمحتوى.‎"
+
+#: includes/utilities/functions.php:234
+msgid "Statuses already exist."
+msgstr "الحالات موجودة بالفعل."
+
+#: includes/utilities/functions.php:241
+msgid "Backlog"
+msgstr "قائمة الانتظار"
+
+#: includes/utilities/functions.php:246 src/components/RestoreManager.jsx:429
+msgid "Next"
+msgstr "التالي"
+
+#: includes/utilities/functions.php:257
+msgid "Done"
+msgstr "تم"
+
+#. translators: %d: number of statuses created
+#: includes/utilities/functions.php:295
+#, php-format
+msgid "Successfully created %d default statuses."
+msgstr "تم إنشاء %d حالة افتراضية بنجاح.‎"
+
+#: src/Activity.jsx:42
+msgid "Unknown date"
+msgstr "تاريخ غير معروف"
+
+#: src/Activity.jsx:259
+msgid "Could not load project activity."
+msgstr "فشل تحميل نشاط المشروع.‎"
+
+#: src/Activity.jsx:575
+msgid "No activity found yet."
+msgstr "لم يتم العثور على أي نشاط حتى الآن."
+
+#: src/Board.jsx:1303
+msgid "Failed to restore default statuses."
+msgstr "فشل في استعادة الحالات الافتراضية."
+
+#: src/Board.jsx:1312
+msgid "An error occurred while restoring default statuses."
+msgstr "حدث خطأ أثناء استعادة الحالات الافتراضية."
+
+#: src/Board.jsx:1727
+msgid "Clear column focus"
+msgstr "إزالة التركيز على العمود"
+
+#: src/Board.jsx:1736
+msgid "Oh no! All your project statuses have disappeared."
+msgstr "يا للأسف! اختفت جميع حالة المشاريع الخاصة بك.‎"
+
+#: src/Board.jsx:1743
+msgid ""
+"Without statuses, you cannot view or manage issues on the board. Click the "
+"button below to restore the default statuses (Backlog, Next, In Progress, "
+"Done)."
+msgstr ""
+"بدون الحالات، لا يمكنك عرض أو إدارة المشكلات على اللوحة. انقر فوق الزر أدناه "
+"لاستعادة الحالات الافتراضية (قائمة انتظار، التالي، قيد التنفيذ، مكتمل)."
+
+#: src/Board.jsx:1755 src/components/RestoreManager.jsx:400
+msgid "Restoring…"
+msgstr "الاستعادة قيد التقدم…"
+
+#: src/Board.jsx:1756
+msgid "Restore Default Statuses"
+msgstr "استعادة الحالات الافتراضية"
+
+#: src/components/BlockTemplateEditorScreen.jsx:12
+msgid "Loading template…"
+msgstr "تحميل القالب…"
+
+#: src/components/BlockTemplateEditorScreen.jsx:313
+msgid "The WordPress block editor could not be loaded for this screen."
+msgstr "لا يمكن تحميل محرر WordPress هذا للشاشة.‎"
+
+#: src/components/BlockTemplateEditorScreen.jsx:353
+msgid "Template"
+msgstr "قالب"
+
+#: src/components/BlockTemplateEditorScreen.jsx:360
+msgid "Email subject"
+msgstr "الموضوع"
+
+#: src/components/BlockTemplateEditorScreen.jsx:407
+msgid "Saving…"
+msgstr "جاري الحفظ…"
+
+#: src/components/BlockTemplateEditorScreen.jsx:408
+msgid "Save Template"
+msgstr "حفظ القالب"
+
+#: src/components/BlockTemplateEditorScreen.jsx:416
+msgid "Resetting…"
+msgstr "إعادة تعيين…"
+
+#: src/components/BlockTemplateEditorScreen.jsx:417
+msgid "Reset to Default"
+msgstr "إعادة تعيين إلى الوضع الافتراضي"
+
+#: src/components/BlockTemplateEditorScreen.jsx:425
+msgid "Sending Test…"
+msgstr "إرسال اختبار…"
+
+#: src/components/BlockTemplateEditorScreen.jsx:426
+msgid "Send Test Email"
+msgstr "إرسال بريد إلكتروني تجريبي"
+
+#: src/components/BlockTemplateEditorScreen.jsx:433
+msgid "Live Preview"
+msgstr " معاينة مباشرة"
+
+#: src/components/BlockTemplateEditorScreen.jsx:440
+msgid "From"
+msgstr "من"
+
+#: src/components/BlockTemplateEditorScreen.jsx:448
+msgid "Subject"
+msgstr "الموضوع"
+
+#: src/components/BoardFilterControl.jsx:66
+#: src/components/BoardFilterControl.jsx:79
+#: src/components/BoardFilterControl.jsx:315
+msgid "Label"
+msgstr "الوسم"
+
+#: src/components/BoardFilterControl.jsx:280
+msgid "Clear filter"
+msgstr "مسح الفلتر"
+
+#: src/components/BoardFilterControl.jsx:300
+msgid "No options found on board cards."
+msgstr "لم يتم العثور على خيارات على بطاقات اللوحة.‎"
+
+#: src/components/BoardFilterControl.jsx:450
+msgid "Reset deadline filter"
+msgstr "إعادة تعيين مرشح الموعد النهائي"
+
+#: src/components/BoardFilterControl.jsx:470
+msgid "Deadline state"
+msgstr "حالة الموعد النهائي"
+
+#: src/components/BoardFilterControl.jsx:473
+msgid "Show cards that are"
+msgstr "عرض البطاقات التي هي"
+
+#: src/components/BoardFilterControl.jsx:491
+msgid "Soon"
+msgstr "قريباً"
+
+#: src/components/BoardFilterControl.jsx:499
+msgid "Late"
+msgstr "لاحق"
+
+#: src/components/Comment.jsx:108 src/components/CommentForm.jsx:92
+msgid "Uploading…"
+msgstr "جاري التحميل…"
+
+#: src/components/Comment.jsx:109 src/components/CommentForm.jsx:93
+msgid "Attach Files"
+msgstr "إرفاق ملفات"
+
+#: src/components/Comment.jsx:112 src/components/Comment.jsx:126
+#: src/components/CommentForm.jsx:96 src/components/CommentForm.jsx:110
+msgid "Commenting Tips"
+msgstr "نصائح للتعليق"
+
+#: src/components/Comment.jsx:134 src/components/CommentForm.jsx:118
+msgid "Type <kbd>@</kbd> and select a user to notify."
+msgstr "أدخل <kbd>&</kbd> واختر المستخدم لإخطاره.‎"
+
+#: src/components/Comment.jsx:141 src/components/CommentForm.jsx:125
+msgid ""
+"Basic Markdown is supported: <code>**bold**</code>, <code>*italic*</code>, "
+"<code>`code`</code>, <code>- lists</code>, etc."
+msgstr ""
+"دعم أساسي لـ Markdown: `<code **bold**</code>, <code *italic*</code>, <code "
+"`code`</code>, <code - lists</code>, إلخ."
+
+#: src/components/Comment.jsx:148 src/components/CommentForm.jsx:132
+msgid ""
+"You can click <strong>Attach Files</strong> to upload an attachment, or "
+"simply drag and drop files into the comment area."
+msgstr ""
+"يمكنك النقر على <strong>إرفاق الملفات</strong> لتحميل ملف، أو ببساطة سحب "
+"وإفلات الملفات في منطقة التعليق. "
+
+#: src/components/Comment.jsx:304 src/components/Container.jsx:523
+#: src/components/Issue.jsx:1979
+msgid "Options"
+msgstr "خيارات"
+
+#: src/components/Comment.jsx:323
+msgid "Edit"
+msgstr "تحرير"
+
+#: src/components/Comment.jsx:332 src/components/Comment.jsx:1124
+#: src/components/Issue.jsx:2299 src/components/Issue.jsx:2404
+#: src/components/issue/AttachmentRow.jsx:164
+#: src/components/StatusManager.jsx:552 src/components/StatusManager.jsx:667
+msgid "Delete"
+msgstr "حذف"
+
+#: src/components/Comment.jsx:349 src/components/Comment.jsx:1019
+#: src/components/CommentForm.jsx:466
+msgid "Pending comment attachment"
+msgstr "تعليق مرفق قيد الانتظار"
+
+#: src/components/Comment.jsx:353 src/components/Comment.jsx:1126
+#: src/components/CommentForm.jsx:489 src/components/Issue.jsx:2408
+#: src/components/issue/AttachmentRow.jsx:167
+#: src/components/StatusManager.jsx:555 src/Modal.jsx:255 src/Toolbar.jsx:315
+msgid "Cancel"
+msgstr "إلغاء"
+
+#: src/components/Comment.jsx:360
+msgid "Save"
+msgstr "حفظ"
+
+#: src/components/Comment.jsx:369
+msgid "Edit comment…"
+msgstr "تحرير التعليق…"
+
+#: src/components/Comment.jsx:509
+msgid "Could not load comments."
+msgstr "تعذر تحميل التعليقات.‎"
+
+#: src/components/Comment.jsx:540
+msgid "Please add a comment before submitting."
+msgstr "الرجاء إضافة تعليق قبل الإرسال.‎"
+
+#: src/components/Comment.jsx:638
+msgid "Failed to submit comment:"
+msgstr "فشل في إرسال التعليق:‎"
+
+#: src/components/Comment.jsx:638 src/components/Comment.jsx:758
+#: src/components/Comment.jsx:834
+msgid "Unknown error"
+msgstr "خطأ غير معروف"
+
+#: src/components/Comment.jsx:681 src/components/comment/TimelineEntry.jsx:222
+#: src/components/Issue.jsx:1946 src/components/Issue.jsx:1950
+#: src/components/Issue.jsx:1952 src/hooks/useUser.js:71
+#: src/utils/statusChange.js:89
+msgid "Unknown"
+msgstr "غير معروف"
+
+#: src/components/Comment.jsx:722
+msgid "Failed to delete one or more attachments."
+msgstr "فشل حذف أحد المرفقات أو أكثر.‎"
+
+#: src/components/Comment.jsx:758
+msgid "Failed to update comment:"
+msgstr "فشل تحديث التعليق:‎"
+
+#: src/components/Comment.jsx:834
+msgid "Failed to delete comment:"
+msgstr "فشل حذف التعليق:‎"
+
+#: src/components/Comment.jsx:861 src/components/Comment.jsx:872
+#: src/components/CommentForm.jsx:312 src/components/CommentForm.jsx:326
+msgid "Failed to upload one or more attachments."
+msgstr "فشل في تحميل أحد المرفقات أو كلها.‎"
+
+#: src/components/Comment.jsx:1003
+msgid "Sort: ↑"
+msgstr "فرز: ↑"
+
+#: src/components/Comment.jsx:1004
+msgid "Sort: ↓"
+msgstr "فرز: ↓"
+
+#: src/components/Comment.jsx:1027 src/components/CommentForm.jsx:446
+msgid "Submitting…"
+msgstr "قيد الإرسال…"
+
+#: src/components/Comment.jsx:1028 src/components/CommentForm.jsx:452
+msgid "Submit Comment"
+msgstr "إرسال تعليق"
+
+#: src/components/Comment.jsx:1033 src/components/CommentForm.jsx:191
+msgid "Add a comment…"
+msgstr "أضف تعليق…"
+
+#: src/components/Comment.jsx:1044
+msgid "Loading comments…"
+msgstr "تحميل التعليقات…"
+
+#: src/components/Comment.jsx:1090
+msgid "Delete Comment?"
+msgstr "حذف التعليق؟"
+
+#: src/components/Comment.jsx:1104
+msgid " and its attachment"
+msgstr " و ملفه المرفق"
+
+#: src/components/Comment.jsx:1106
+msgid " and its attachments"
+msgstr " و ملفاته المرفقة"
+
+#. translators: %1$s: attachment text suffix for comment deletion confirmation.
+#: src/components/Comment.jsx:1113
+#, js-format
+msgid "Are you sure you want to delete this comment%1$s?"
+msgid_plural "Are you sure you want to delete these comments%1$s?"
+msgstr[0] "هل أنت متأكد من أنك تريد حذف هذا التعليق؟"
+msgstr[1] "هل أنت متأكد من أنك تريد حذف هذه التعليقات%1$s؟"
+msgstr[2] ""
+msgstr[3] ""
+msgstr[4] ""
+msgstr[5] ""
+
+#: src/components/comment/TimelineEntry.jsx:255
+msgid "another user"
+msgstr "مستخدم آخر"
+
+#. translators: Prefix before issue title in activity headers.
+#: src/components/comment/TimelineEntry.jsx:273
+#, js-format
+msgid "on %s"
+msgstr "على %s"
+
+#: src/components/comment/TimelineEntry.jsx:376
+msgid "edited by"
+msgstr "تم التحرير بواسطة"
+
+#: src/components/comment/TimelineEntry.jsx:389
+msgid "edited"
+msgstr "تم التعديل"
+
+#: src/components/comment/TimelineEntry.jsx:424
+msgid "Comment attachment"
+msgstr "ملف مرفق التعليق"
+
+#: src/components/CommentForm.jsx:450
+msgid "Create Issue"
+msgstr "إنشاء مشكلة"
+
+#: src/components/Container.jsx:141
+msgid "Rename"
+msgstr "إعادة تسمية"
+
+#: src/components/Container.jsx:150
+msgid "Expand Column"
+msgstr "توسيع العمود"
+
+#: src/components/Container.jsx:151
+msgid "Collapse Column"
+msgstr "طي العمود"
+
+#: src/components/Container.jsx:161
+msgid "Lift Priority Items"
+msgstr "أولويات العناصر الهامة"
+
+#: src/components/Container.jsx:227
+msgid "Move All To Next Column"
+msgstr "انقل الكل إلى العمود التالي"
+
+#: src/components/Container.jsx:236
+msgid "Delete All"
+msgstr "حذف الكل"
+
+#: src/components/Container.jsx:624
+msgid "Moving…"
+msgstr "قيد التحريك…"
+
+#: src/components/Container.jsx:637
+msgid "No cards match the active filter."
+msgstr "لا توجد بطاقات تطابق المرشح النشط.‎"
+
+#: src/components/Container.jsx:644
+msgid "Drop items here"
+msgstr "اسحب العناصر هنا"
+
+#: src/components/container/menu-controls/focusOnColumn.js:20
+msgid "Clear Column Focus"
+msgstr "التركيز على العمود"
+
+#: src/components/container/menu-controls/focusOnColumn.js:21
+msgid "Focus on Column"
+msgstr "التركيز على العمود"
+
+#: src/components/DailyDigestTemplateScreen.jsx:16
+#: src/components/NotificationTemplateScreen.jsx:60
+msgid "Site Icon"
+msgstr "رمز الموقع"
+
+#: src/components/DailyDigestTemplateScreen.jsx:17
+#: src/components/NotificationTemplateScreen.jsx:61
+msgid "Insert the current site icon."
+msgstr "أدخل أيقونة الموقع الحالية.‎"
+
+#: src/components/DailyDigestTemplateScreen.jsx:23
+msgid "Render the locked deadline-watch digest section."
+msgstr "عرض قسم ملخص المواعيد النهائية المحجوبة. "
+
+#: src/components/DailyDigestTemplateScreen.jsx:32
+msgid "Render the locked followed-issues digest section."
+msgstr "عرض قسم ملخص المشكلات المحظورة التي يتابعها المستخدم. "
+
+#: src/components/DailyDigestTemplateScreen.jsx:40
+msgid "New Items"
+msgstr "عناصر جديدة"
+
+#: src/components/DailyDigestTemplateScreen.jsx:41
+msgid "Render the locked new-items digest section."
+msgstr ""
+"عرض قسم الملخص الجديد المحمي. (Render the locked new-items digest section.)"
+
+#: src/components/DailyDigestTemplateScreen.jsx:68
+msgid ""
+"Available placeholders include {{site_title}}, {{site_tagline}}, "
+"{{digest_day}}, {{issue_count}}, {{activity_count}}, and {{new_item_count}}."
+msgstr ""
+"تشمل العناصر التالية: {{site_title}}، {{site_tagline}}، {{digest_day}}، "
+"{{issue_count}}، {{activity_count}}، و {{new_item_count}}."
+
+#: src/components/DailyDigestTemplateScreen.jsx:72
+msgid "Could not load the daily digest template."
+msgstr "تعذر تحميل قالب الملخص اليومي.‎"
+
+#: src/components/DailyDigestTemplateScreen.jsx:73
+msgid "Could not refresh the daily digest preview."
+msgstr "تعذر تحديث معاينة الملخص اليومي."
+
+#: src/components/DailyDigestTemplateScreen.jsx:77
+msgid "Could not save the daily digest template."
+msgstr "لم يتم حفظ قالب الملخص اليومي.‎"
+
+#: src/components/DailyDigestTemplateScreen.jsx:78
+msgid "Could not reset the daily digest template."
+msgstr "لم يتم إعادة تعيين قالب الملخص اليومي.‎"
+
+#: src/components/DailyDigestTemplateScreen.jsx:82
+msgid "Could not send the test digest email."
+msgstr "لم يتم إرسال رسالة البريد الإلكتروني التجريبية"
+
+#: src/components/DailyDigestTemplateScreen.jsx:83
+msgid "Daily digest template saved."
+msgstr "تم حفظ قالب الملخص اليومي.‎"
+
+#: src/components/DailyDigestTemplateScreen.jsx:84
+msgid "Daily digest template reset to default."
+msgstr "إعادة تعيين قالب الملخص اليومي إلى الإعدادات الافتراضية.‎"
+
+#: src/components/DailyDigestTemplateScreen.jsx:88
+msgid "Test digest email sent successfully."
+msgstr "تم إرسال رسالة البريد الإلكتروني التوضيحية بنجاح.‎"
+
+#: src/components/DailyDigestTemplateScreen.jsx:89
+#: src/components/NotificationTemplateScreen.jsx:117
+msgid "Preview will appear here once the template loads."
+msgstr "سيظهر معاينة هنا بمجرد تحميل القالب.‎"
+
+#: src/components/EmailTemplatesScreen.jsx:10
+msgid "Instant Emails"
+msgstr "رسائل فورية"
+
+#: src/components/EmailTemplatesScreen.jsx:15
+msgid "Daily Digest"
+msgstr "ملخص يومي"
+
+#: src/components/EmailTemplatesScreen.jsx:30
+msgid ""
+"Manage the templates used for outbound emails in the block editor areas "
+"below. Locked blocks are essential for the correct functioning of the "
+"templates. They can be moved, but should not be removed."
+msgstr ""
+"إدارة القوالب المستخدمة للرسائل البريدية الصادرة في مناطق محرر الكتلة أدناه. "
+"الكتل المقفلة ضرورية لعمل القوالب بشكل صحيح. يمكن نقلها، ولكن يجب عدم "
+"إزالتها. "
+
+#: src/components/EnableTestLogsControl.jsx:39
+msgid "Debugging"
+msgstr "تصحيح الأخطاء"
+
+#: src/components/EnableTestLogsControl.jsx:43
+msgid "Enable Browser Console Messages"
+msgstr "تمكين رسائل وحدة تحكم المتصفح"
+
+#: src/components/InboxControl.jsx:302
+msgid "Could not load inbox updates."
+msgstr "لم يتم تحميل تحديثات البريد الوارد.‎"
+
+#: src/components/InboxControl.jsx:409 src/components/InboxControl.jsx:450
+msgid "Could not update inbox state."
+msgstr "تعذر تحديث حالة البريد الوارد."
+
+#: src/components/InboxControl.jsx:481
+msgid "Could not mark inbox items as read."
+msgstr "تعذر وضع عناصر البريد الوارد في وضع القراءة.‎"
+
+#: src/components/InboxControl.jsx:501
+msgid "No unread updates right now."
+msgstr "لا توجد تحديثات غير مقروءة في الوقت الحالي."
+
+#: src/components/InboxControl.jsx:502
+msgid "No inbox updates yet."
+msgstr "لم يتم تسجيل أي تحديثات في صندوق الوارد بعد.‎"
+
+#: src/components/InboxControl.jsx:519
+msgid "Untitled issue"
+msgstr "مشكلة غير مسماة"
+
+#: src/components/InboxControl.jsx:522
+msgid "Mark Read"
+msgstr "تمت القراءة"
+
+#: src/components/InboxControl.jsx:523
+msgid "Mark Unread"
+msgstr "وضع علامة على الرسالة كغير مقروءة"
+
+#: src/components/InboxControl.jsx:651
+msgid "Close inbox"
+msgstr "إغلاق صندوق الوارد"
+
+#: src/components/InboxControl.jsx:675
+msgid "Inbox filter"
+msgstr "فلتر صندوق الوارد"
+
+#: src/components/InboxControl.jsx:680
+msgid "Unread"
+msgstr "غير مقروء"
+
+#: src/components/InboxControl.jsx:684
+msgid "All"
+msgstr "كل"
+
+#: src/components/InboxControl.jsx:694
+msgid "Mark All Read"
+msgstr "ضع علامة على الكل كمقروء"
+
+#: src/components/InboxControl.jsx:714 src/components/Issue.jsx:2057
+#: src/components/User.jsx:28 src/DashboardWidget.jsx:41
+msgid "Loading…"
+msgstr "جاري التحميل…"
+
+#: src/components/InboxControl.jsx:715
+msgid "Load More"
+msgstr "تحميل المزيد"
+
+#: src/components/Issue.jsx:68 src/Modal.jsx:230 src/Toolbar.jsx:292
+msgid "High Priority"
+msgstr "أولوية عالية"
+
+#: src/components/Issue.jsx:378
+msgid "Edit assignees"
+msgstr "تحرير المستلمين"
+
+#: src/components/Issue.jsx:397
+msgid "Assign"
+msgstr "تعيين"
+
+#: src/components/Issue.jsx:688
+msgid "Failed to load statuses."
+msgstr "فشل في تحميل الحالات.‎"
+
+#: src/components/Issue.jsx:696 src/components/LabelsManager.jsx:104
+msgid "Failed to load labels."
+msgstr "فشل تحميل التسميات.‎"
+
+#: src/components/Issue.jsx:847
+msgid "Failed to update assignees."
+msgstr "فشل تحديث المسؤولين"
+
+#: src/components/Issue.jsx:887
+msgid "Failed to update priority."
+msgstr "فشل تحديث الأولوية.‎"
+
+#: src/components/Issue.jsx:942
+msgid "Failed to update labels."
+msgstr "فشل تحديث التسميات.‎"
+
+#: src/components/Issue.jsx:1029
+msgid "Failed to progress issue status."
+msgstr "فشل في التقدم بحالة المشكلة."
+
+#: src/components/Issue.jsx:1071
+msgid "Failed to update issue title."
+msgstr "فشل تحديث عنوان المشكلة."
+
+#: src/components/Issue.jsx:1209
+msgid "Issue created, but labels could not be saved."
+msgstr "تم إنشاء المشكلة، ولكن لم يتم حفظ العلامات.‎"
+
+#: src/components/Issue.jsx:1274
+msgid "Failed to create issue comment."
+msgstr "فشل إنشاء تعليق للمشكلة.‎"
+
+#: src/components/Issue.jsx:1309
+msgid "Comment could not be saved. Please try again."
+msgstr "لم يتم حفظ التعليق. يرجى المحاولة مرة أخرى."
+
+#: src/components/Issue.jsx:1310
+msgid "Issue created, but comment could not be saved."
+msgstr "تم إنشاء المشكلة، ولكن لم يتم حفظ التعليق.‎"
+
+#: src/components/Issue.jsx:1373
+msgid "Failed to retry comment."
+msgstr "فشل إعادة المحاولة."
+
+#: src/components/Issue.jsx:1568
+msgid "Failed to update subissue title."
+msgstr "فشل تحديث عنوان المشكلة الفرعية."
+
+#: src/components/Issue.jsx:1642
+msgid "Failed to update subissue completion."
+msgstr "فشل تحديث إكمال الموضوع الفرعي"
+
+#: src/components/Issue.jsx:1727
+msgid "Failed to update subissue assignees."
+msgstr "فشل تحديث مُنَظِّم المشكلة الفرعية"
+
+#: src/components/Issue.jsx:1832 src/utils/issueCommentHandler.js:507
+msgid "Unknown issue"
+msgstr "مشكلة غير معروفة"
+
+#: src/components/Issue.jsx:1845
+msgid "Failed to promote subissue."
+msgstr "فشل في الترويج للمشكلة الفرعية"
+
+#: src/components/Issue.jsx:1872
+msgid "You do not have permission to delete issues."
+msgstr "ليس لديك إذن لحذف المشكلات.‎"
+
+#: src/components/Issue.jsx:1886
+msgid "Failed to delete subissue."
+msgstr "فشل حذف الموضوع الفرعي."
+
+#: src/components/Issue.jsx:2015
+msgid "Copy Issue ID"
+msgstr "نسخ معرف المشكلة"
+
+#: src/components/Issue.jsx:2028
+msgid "Progress Issue to"
+msgstr "مسألة التقدم إلى"
+
+#: src/components/Issue.jsx:2041
+msgid "Trash Issue"
+msgstr "مشكلة القمامة"
+
+#: src/components/Issue.jsx:2053
+msgid "Retry"
+msgstr "محاولة أخرى"
+
+#: src/components/Issue.jsx:2073
+msgid "Enter a title to create issue…"
+msgstr "أدخل عنوانًا لإنشاء المشكلة…"
+
+#: src/components/Issue.jsx:2091
+msgid "Created by"
+msgstr "تم إنشاؤه بواسطة"
+
+#: src/components/Issue.jsx:2147
+msgid "Add a comment to the issue…"
+msgstr "أضف تعليقًا للمشكلة…"
+
+#: src/components/Issue.jsx:2154
+msgid "Retry Comment"
+msgstr "إعادة النشر"
+
+#: src/components/Issue.jsx:2171
+msgid "Checklist"
+msgstr "قائمة مرجعية"
+
+#: src/components/Issue.jsx:2183
+msgid "Add"
+msgstr "إضافة"
+
+#: src/components/Issue.jsx:2231
+msgid "Enter title…"
+msgstr "أدخل العنوان…"
+
+#: src/components/Issue.jsx:2282
+msgid "Promote"
+msgstr "الترويج"
+
+#: src/components/Issue.jsx:2366
+msgid "Could not load issue details."
+msgstr "تعذر تحميل تفاصيل المشكلة."
+
+#: src/components/Issue.jsx:2392
+msgid "Delete Issue?"
+msgstr "حذف المشكلة؟"
+
+#: src/components/Issue.jsx:2393
+msgid "Are you sure you want to trash this issue?"
+msgstr "هل أنت متأكد من أنك تريد حذف هذه المشكلة؟"
+
+#: src/components/issue/AssigneeSelector.jsx:57
+msgid "Enter username(s)"
+msgstr "أدخل اسم المستخدم (أسماء المستخدم)‎"
+
+#: src/components/issue/AttachmentRow.jsx:67
+msgid "File"
+msgstr "ملف"
+
+#: src/components/issue/AttachmentRow.jsx:113
+msgid "Download attachment"
+msgstr "تنزيل المرفق"
+
+#: src/components/issue/AttachmentRow.jsx:137
+#: src/components/issue/AttachmentRow.jsx:138
+msgid "Delete attachment"
+msgstr "حذف المرفق"
+
+#: src/components/issue/AttachmentRow.jsx:146
+msgid "Delete attachment?"
+msgstr "حذف المرفق؟"
+
+#: src/components/issue/AttachmentRow.jsx:151
+msgid "Are you sure you want to delete this attachment?"
+msgstr "هل أنت متأكد من أنك تريد حذف هذا المرفق؟"
+
+#: src/components/issue/DataTable.jsx:61
+msgid "Invalid data format"
+msgstr "تنسيق بيانات غير صالح"
+
+#: src/components/issue/DataTable.jsx:64
+msgid "Error parsing JSON data"
+msgstr "خطأ في تحليل بيانات JSON"
+
+#: src/components/issue/DeadlineControl.jsx:47
+msgid "Click to select a deadline"
+msgstr "انقر لتحديد موعد نهائي"
+
+#: src/components/issue/DeadlineControl.jsx:73
+msgid "Clear deadline"
+msgstr "تاريخ التسليم"
+
+#: src/components/issue/ErrorsTab.jsx:30
+msgid "No JavaScript errors were recorded for this issue."
+msgstr "لم يتم تسجيل أي أخطاء في JavaScript لهذه المشكلة. "
+
+#: src/components/issue/ErrorsTab.jsx:86
+msgid "Stack Trace"
+msgstr "تتبع الخطأ"
+
+#: src/components/issue/LabelsSelector.jsx:162
+msgid "Edit labels"
+msgstr "تحرير التسميات"
+
+#: src/components/issue/Lightbox.jsx:47
+msgid "Enlarged screenshot"
+msgstr "لقطة شاشة مُوسَّعة"
+
+#. translators: 1: formatted date/time. 2: UTC offset, e.g. +02:00.
+#: src/components/issue/ReportTab.jsx:32 src/components/Time.jsx:43
+#, js-format
+msgid "%1$s (UTC%2$s)"
+msgstr "%1$s (توقيت جرينتش%2$s)"
+
+#: src/components/issue/ReportTab.jsx:101
+msgid "Reported"
+msgstr "تم الإبلاغ عنه"
+
+#: src/components/issue/ReportTab.jsx:105
+#: src/components/issue/ReportTab.jsx:113
+#: src/components/issue/ReportTab.jsx:119
+#: src/components/issue/ReportTab.jsx:136
+msgid "N/A"
+msgstr "غير متوفر"
+
+#: src/components/issue/ReportTab.jsx:109
+msgid "Last edit"
+msgstr "آخر تعديل"
+
+#: src/components/issue/ReportTab.jsx:117
+msgid "URL"
+msgstr "عنوان URL"
+
+#: src/components/issue/ReportTab.jsx:136
+msgid "Viewport"
+msgstr "Viewport"
+
+#: src/components/ItemDatapointsManager.jsx:119
+msgid "Failed to save datapoint visibility settings."
+msgstr "فشل حفظ إعدادات رؤية البيانات.‎"
+
+#: src/components/ItemDatapointsManager.jsx:131
+msgid "Item Datapoints"
+msgstr "نقاط البيانات"
+
+#: src/components/ItemDatapointsManager.jsx:134
+msgid "Choose which datapoints appear on issue cards."
+msgstr "اختر نقاط البيانات التي تظهر على بطاقات المشكلات.‎"
+
+#: src/components/ItemDatapointsManager.jsx:150
+msgid "No item datapoints are currently registered."
+msgstr "لا توجد نقاط بيانات مسجلة حاليًا."
+
+#: src/components/LabelsManager.jsx:346
+msgid "Failed to save label."
+msgstr "فشل حفظ التسمية.‎"
+
+#: src/components/LabelsManager.jsx:457
+msgid "Color picker unavailable."
+msgstr "غير متاح اختيار الألوان.‎"
+
+#: src/components/LabelsManager.jsx:469
+msgid "Create and maintain labels to categorize and filter your issues."
+msgstr "إنشاء وصيانة التصنيفات لتصنيف وتصفية المشكلات الخاصة بك.‎"
+
+#: src/components/LabelsManager.jsx:491
+msgid "Name"
+msgstr "اسم"
+
+#: src/components/LabelsManager.jsx:495 src/components/LabelsManager.jsx:540
+msgid "Label name"
+msgstr "اسم التسمية"
+
+#: src/components/LabelsManager.jsx:515 src/components/LabelsManager.jsx:559
+msgid "Delete label"
+msgstr "حذف التسمية"
+
+#: src/components/LabelsManager.jsx:577
+msgid "New Label"
+msgstr "وصف جديد"
+
+#: src/components/EnableContextCaptureControl.jsx:14
+msgid "Context Capture"
+msgstr "التقاط السياق"
+
+#: src/components/EnableContextCaptureControl.jsx:21
+msgid "Enable reporting of issues with associated context"
+msgstr "تمكين الإبلاغ عن المشكلات مع السياق المرتبط"
+
+#: src/components/NotificationPreferences.jsx:42
+msgid "Issues I created"
+msgstr "المشاكل التي أنشأتها"
+
+#: src/components/NotificationPreferences.jsx:46
+msgid "Issues assigned to me"
+msgstr "المشاكل المخصصة لي"
+
+#: src/components/NotificationPreferences.jsx:50
+msgid "Issues I starred"
+msgstr "المشاكل التي قمت بالتبني"
+
+#: src/components/NotificationPreferences.jsx:54
+msgid "Comments that mention me"
+msgstr "التعليقات التي تذكرني"
+
+#: src/components/NotificationPreferences.jsx:58
+msgid "Issues with these labels"
+msgstr "مشاكل مع هذه التسميات"
+
+#: src/components/NotificationPreferences.jsx:62
+msgid "Issues currently marked high priority"
+msgstr "المشاكل التي تم تحديدها حاليًا على أنها ذات أولوية عالية"
+
+#: src/components/NotificationPreferences.jsx:66
+msgid "Whenever a new issue is created"
+msgstr "عند إنشاء مشكلة جديدة"
+
+#: src/components/NotificationPreferences.jsx:98
+msgid "Human comments"
+msgstr "تعليقات المستخدمين"
+
+#: src/components/NotificationPreferences.jsx:102
+msgid "Status changes"
+msgstr "تغييرات الحالة"
+
+#: src/components/NotificationPreferences.jsx:106
+msgid "Issue assignment changes"
+msgstr "تغييرات في تعيين المشكلات"
+
+#: src/components/NotificationPreferences.jsx:110
+msgid "Due date changes"
+msgstr "تغييرات الموعد النهائي"
+
+#: src/components/NotificationPreferences.jsx:114
+msgid "Checklist create/delete"
+msgstr "إنشاء/حذف قائمة"
+
+#: src/components/NotificationPreferences.jsx:118
+msgid "Checklist assignment changes"
+msgstr "تغييرات في تعيين المهام"
+
+#: src/components/NotificationPreferences.jsx:122
+msgid "Checklist completion changes"
+msgstr "تغييرات إكمال القوائم المرجعية"
+
+#: src/components/NotificationPreferences.jsx:126
+msgid "Checklist promotions"
+msgstr "عروض التسويق"
+
+#: src/components/NotificationPreferences.jsx:130
+msgid "High-priority changes"
+msgstr "تغييرات ذات الأولوية القصوى"
+
+#: src/components/NotificationPreferences.jsx:154
+msgid "Not configured."
+msgstr "غير مُكوّن"
+
+#: src/components/NotificationPreferences.jsx:223
+msgid "Preferences"
+msgstr "التفضيلات"
+
+#. translators: %s: notification channel label.
+#: src/components/NotificationPreferences.jsx:270
+#, js-format
+msgid "Enable %s notifications"
+msgstr "تمكين الإشعارات"
+
+#: src/components/NotificationPreferences.jsx:284
+msgid "Saving Preferences…"
+msgstr "حفظ الإعدادات…"
+
+#: src/components/NotificationPreferences.jsx:285
+msgid "Save Preferences"
+msgstr "حفظ الإعدادات"
+
+#. translators: %s: active notification tab title.
+#: src/components/NotificationPreferences.jsx:291
+#, js-format
+msgid "Saving %s…"
+msgstr "جاري الحفظ…"
+
+#. translators: %s: active notification tab title.
+#: src/components/NotificationPreferences.jsx:298
+#, js-format
+msgid "Save %s"
+msgstr "حفظ %s"
+
+#: src/components/NotificationPreferences.jsx:318
+msgid ""
+"Choose whether you want instant email updates, a daily summary, or both."
+msgstr ""
+"اختر ما إذا كنت تريد تحديثات بريد إلكتروني فورية أو ملخصًا يوميًا أو كلاهما.‎"
+
+#: src/components/NotificationPreferences.jsx:335
+msgid ""
+"Enter a valid email address or leave this blank to use your WordPress "
+"profile email."
+msgstr ""
+"أدخل عنوان بريد إلكتروني صالح أو اترك هذا الحقل فارغًا لاستخدام عنوان البريد "
+"الإلكتروني الخاص بك في ملف تعريف WordPress. الرجاء ملاحظة أن عنوان البريد "
+"الإلكتروني يجب أن يكون بتنسيق صحيح. إذا تركت هذا الحقل فارغًا، فسيتم استخدام "
+"عنوان البريد الإلكتروني الافتراضي. "
+
+#: src/components/NotificationPreferences.jsx:348
+msgid "Send instant email updates"
+msgstr "إرسال تحديثات البريد الإلكتروني الفورية"
+
+#: src/components/NotificationPreferences.jsx:360
+msgid "Send a daily summary at"
+msgstr "أرسل ملخصًا يوميًا عن"
+
+#: src/components/NotificationPreferences.jsx:374
+msgid "Daily summary time"
+msgstr "وقت الملخص اليومي"
+
+#. translators: %s: site timezone label.
+#: src/components/NotificationPreferences.jsx:391
+#, js-format
+msgid ""
+"Summaries of activity matching your preferences will be generated for you at "
+"this time every day, based on the site's timezone (%s)."
+msgstr ""
+"سيتم إنشاء ملخصات للأنشطة التي تتطابق مع تفضيلاتك في هذا الوقت كل يوم، بناءً "
+"على المنطقة الزمنية للموقع (%s)."
+
+#: src/components/NotificationPreferences.jsx:402
+msgid ""
+"Add a valid email address before enabling instant email updates or the daily "
+"summary."
+msgstr ""
+"أضف عنوان بريد إلكتروني صالح قبل تمكين التحديثات الفورية عبر البريد "
+"الإلكتروني أو الملخص اليومي.‎"
+
+#: src/components/NotificationPreferences.jsx:528
+msgid ""
+"Could not load labels. Label notifications are unavailable until labels load."
+msgstr "تعذر تحميل التسميات. لن تكون إشعارات التسميات متاحة حتى يتم تحميلها."
+
+#: src/components/NotificationPreferences.jsx:538
+#: src/components/NotificationPreferences.jsx:1045
+msgid "Could not load notification preferences."
+msgstr "فشل تحميل تفضيلات الإشعارات.‎"
+
+#: src/components/NotificationPreferences.jsx:873
+msgid "Notification preferences saved."
+msgstr "تم حفظ تفضيلات الإشعارات.‎"
+
+#: src/components/NotificationPreferences.jsx:878
+msgid "Could not save notification preferences."
+msgstr "لم يتم حفظ تفضيلات الإشعارات."
+
+#: src/components/NotificationPreferences.jsx:920
+msgid "No labels are available yet."
+msgstr "لا توجد أي تسميات متاحة بعد.‎"
+
+#: src/components/NotificationPreferences.jsx:954
+msgid "Configure how this delivery channel should behave."
+msgstr "تكوين كيفية تصرف هذا قناة التسليم.‎"
+
+#: src/components/NotificationPreferences.jsx:1025
+msgid "This channel is not ready to be enabled yet."
+msgstr "هذا القناة غير جاهز للتمكين بعد.‎"
+
+#: src/components/NotificationPreferences.jsx:1094
+msgid "Notify me about"
+msgstr "أخبرني بـ"
+
+#: src/components/NotificationPreferences.jsx:1120
+msgid "Activity types"
+msgstr "أنواع الأنشطة"
+
+#: src/components/notifications/MentionsTextarea.jsx:284
+msgid "No matching users found."
+msgstr "لم يتم العثور على مستخدمين مطابقين.‎"
+
+#. translators: %d is the current user's unread inbox notification count.
+#: src/components/notifications/UnreadCountBadge.jsx:23
+#, js-format
+msgid "Project Board has %d unread notifications"
+msgstr "لوحة المشاريع لديها %d إشعارات غير مقروءة"
+
+#. translators: %d is the number of unread inbox notifications.
+#: src/components/notifications/UnreadCountBadge.jsx:42
+#, js-format
+msgid "%d unread notifications"
+msgstr "%d إشعارات غير مقروءة"
+
+#: src/components/NotificationTemplateScreen.jsx:16
+msgid "Issue Title"
+msgstr "عنوان المشكلة"
+
+#: src/components/NotificationTemplateScreen.jsx:17
+msgid "Insert the issue title."
+msgstr "أدخل عنوان المشكلة.‎"
+
+#: src/components/NotificationTemplateScreen.jsx:21
+msgid "Performed By"
+msgstr "قام بالتنفيذ"
+
+#: src/components/NotificationTemplateScreen.jsx:22
+msgid "Insert the name of the person who performed the activity."
+msgstr "أدخل اسم الشخص الذي قام بالنشاط.‎"
+
+#: src/components/NotificationTemplateScreen.jsx:29
+msgid "Event Label"
+msgstr "عنوان الحدث"
+
+#: src/components/NotificationTemplateScreen.jsx:30
+msgid "Insert the event label such as status change or comment."
+msgstr "أدخل تسمية الحدث مثل تغيير الحالة أو التعليق.‎"
+
+#: src/components/NotificationTemplateScreen.jsx:37
+msgid "Full Comment Content"
+msgstr "محتوى التعليق الكامل"
+
+#: src/components/NotificationTemplateScreen.jsx:38
+msgid "Insert the full issue comment, including attachment links."
+msgstr "أدخل التعليق الكامل للمشكلة، بما في ذلك روابط المرفقات.‎"
+
+#: src/components/NotificationTemplateScreen.jsx:45
+msgid "Issue Link"
+msgstr "رابط المشكلة"
+
+#: src/components/NotificationTemplateScreen.jsx:46
+msgid "Insert a link to the issue on the board."
+msgstr "أدخل رابطًا للمشكلة على اللوحة.‎"
+
+#: src/components/NotificationTemplateScreen.jsx:50
+msgid "Site Title"
+msgstr "عنوان الموقع"
+
+#: src/components/NotificationTemplateScreen.jsx:51
+msgid "Insert the current site title."
+msgstr "أدخل عنوان الموقع الحالي. (أدخل عنوان الموقع الحالي.)"
+
+#: src/components/NotificationTemplateScreen.jsx:55
+msgid "Site Tagline"
+msgstr "شعار الموقع"
+
+#: src/components/NotificationTemplateScreen.jsx:56
+msgid "Insert the current site tagline."
+msgstr "أدخل شعار الموقع الحالي.‎"
+
+#: src/components/NotificationTemplateScreen.jsx:65
+msgid "Event Time"
+msgstr "وقت الحدث"
+
+#: src/components/NotificationTemplateScreen.jsx:66
+msgid "Insert the event timestamp."
+msgstr "أدخل ختم الوقت للحدث.‎"
+
+#: src/components/NotificationTemplateScreen.jsx:93
+msgid ""
+"Available placeholders include {{issue_title}}, {{performed_by}}, "
+"{{event_label}}, {{site_title}}, {{site_tagline}}, and {{event_time}}."
+msgstr ""
+"تشمل العناصر التالية: {{issue_title}}، {{performed_by}}، {{event_label}}، "
+"{{site_title}}، {{site_tagline}} و {{event_time}}."
+
+#: src/components/NotificationTemplateScreen.jsx:97
+msgid "Could not load the notification email template."
+msgstr "فشل تحميل قالب رسالة البريد الإلكتروني"
+
+#: src/components/NotificationTemplateScreen.jsx:101
+msgid "Could not refresh the email preview."
+msgstr "تعذر تحديث معاينة البريد الإلكتروني."
+
+#: src/components/NotificationTemplateScreen.jsx:102
+msgid "Could not save the notification email template."
+msgstr "لم يتم حفظ قالب رسالة البريد الإلكتروني للإشعارات.‎"
+
+#: src/components/NotificationTemplateScreen.jsx:106
+msgid "Could not reset the notification email template."
+msgstr "لم يتم إعادة تعيين قالب رسالة البريد الإلكتروني للإشعارات.‎"
+
+#: src/components/NotificationTemplateScreen.jsx:110
+msgid "Could not send the test email."
+msgstr "لم يتم إرسال رسالة البريد الإلكتروني التجريبية.‎"
+
+#: src/components/NotificationTemplateScreen.jsx:111
+msgid "Notification email template saved."
+msgstr "تم حفظ قالب رسالة البريد الإلكتروني للإشعار.‎"
+
+#: src/components/NotificationTemplateScreen.jsx:112
+msgid "Notification email template reset to default."
+msgstr ""
+"نموذج رسالة البريد الإلكتروني لإشعار إعادة تعيينه إلى الإعدادات الافتراضية."
+
+#: src/components/NotificationTemplateScreen.jsx:116
+msgid "Test email sent successfully."
+msgstr "تم إرسال البريد الإلكتروني بنجاح.‎"
+
+#: src/components/Presence.jsx:76
+msgid "Nobody else is viewing the board right now"
+msgstr "لا يوجد مستخدمون آخرون يشاهدون اللوحة الآن"
+
+#: src/components/Presence.jsx:84
+msgid "Currently viewing the board: "
+msgstr "عرض اللوحة الحالية: "
+
+#: src/components/Presence.jsx:91
+msgid "User"
+msgstr "المستخدم"
+
+#: src/components/RestoreManager.jsx:66 src/components/RestoreManager.jsx:378
+msgid "-"
+msgstr "-"
+
+#: src/components/RestoreManager.jsx:137
+msgid "Search failed. Please try again."
+msgstr "فشل البحث. يرجى المحاولة مرة أخرى."
+
+#: src/components/RestoreManager.jsx:228
+msgid "Failed to restore issue."
+msgstr "فشل استعادة المشكلة."
+
+#. translators: %d: Number of deleted issues.
+#: src/components/RestoreManager.jsx:239
+#, js-format
+msgid "%d deleted issue"
+msgid_plural "%d deleted issues"
+msgstr[0] "تم حذف المشكلة"
+msgstr[1] "تم حذف %d مشكلة"
+msgstr[2] ""
+msgstr[3] ""
+msgstr[4] ""
+msgstr[5] ""
+
+#. translators: 1: Current page number. 2: Total page count.
+#: src/components/RestoreManager.jsx:248
+#, js-format
+msgid "Page %1$d of %2$d"
+msgstr "الصفحة %1$d من %2$d"
+
+#. translators: %d: number of days until trashed items are deleted.
+#: src/components/RestoreManager.jsx:275
+#, js-format
+msgid ""
+"Deleted issues will be automatically removed from the database after %d days."
+msgstr "سيتم حذف المشكلات المحذوفة تلقائيًا من قاعدة البيانات بعد %d أيام.‎"
+
+#: src/components/RestoreManager.jsx:267 src/components/RestoreManager.jsx:270
+msgid "Search deleted issues"
+msgstr "بحث عن المشكلات المحذوفة"
+
+#: src/components/RestoreManager.jsx:275 src/components/Search.jsx:531
+#: src/components/Search.jsx:534
+msgid "Search"
+msgstr "بحث"
+
+#: src/components/RestoreManager.jsx:294
+msgid "Title"
+msgstr "العنوان"
+
+#: src/components/RestoreManager.jsx:297
+msgid "Created"
+msgstr "تم إنشاؤه"
+
+#: src/components/RestoreManager.jsx:298
+msgid "Last action"
+msgstr "آخر عملية"
+
+#: src/components/RestoreManager.jsx:299
+msgid "Actions"
+msgstr "الإجراءات"
+
+#: src/components/RestoreManager.jsx:309
+msgid "No deleted issues found."
+msgstr "لم يتم العثور على مشكلات محذوفة.‎"
+
+#: src/components/RestoreManager.jsx:318 src/utils/issueCommentHandler.js:421
+#: src/utils/issueCommentHandler.js:446 src/utils/issueCommentHandler.js:522
+#: src/utils/issueCommentHandler.js:568 src/utils/issueCommentHandler.js:596
+msgid "Checklist item"
+msgstr "عنصر قائمة"
+
+#. translators: %s: Parent issue title.
+#: src/components/RestoreManager.jsx:325
+#, js-format
+msgid "Issue: %s"
+msgstr "المشكلة: %s"
+
+#: src/components/RestoreManager.jsx:401
+msgid "Restore"
+msgstr "استعادة"
+
+#: src/components/RestoreManager.jsx:422
+msgid "Previous"
+msgstr "السابق"
+
+#: src/components/StarControl.jsx:32 src/components/StarControl.jsx:37
+msgid "Remove from Watchlist"
+msgstr "إزالة من القائمة المراقبة"
+
+#: src/components/StarControl.jsx:33 src/components/StarControl.jsx:38
+msgid "Add to Watchlist"
+msgstr "إضافة إلى قائمة المراقبة"
+
+#: src/components/StatusManager.jsx:370
+msgid "Enter the name for the new status:"
+msgstr "أدخل الاسم للصفحة الجديدة:‎"
+
+#: src/components/StatusManager.jsx:397
+msgid "Error:"
+msgstr "خطأ:‎"
+
+#: src/components/StatusManager.jsx:403
+msgid "Status Manager"
+msgstr "مدير الحالة"
+
+#: src/components/StatusManager.jsx:405
+msgid ""
+"Create and organize statuses. Drag rows to control their order across the "
+"board."
+msgstr "إنشاء وتنظيم الحالات. اسحب الصفوف للتحكم في ترتيبها على لوحة التحكم.‎"
+
+#: src/components/StatusManager.jsx:534
+msgid "New Status"
+msgstr "الحالة الجديدة"
+
+#: src/components/StatusManager.jsx:540
+msgid "Delete Status?"
+msgstr "حذف الحالة؟"
+
+#: src/components/StatusManager.jsx:545
+msgid "Are you sure you want to delete the status"
+msgstr "هل أنت متأكد من أنك تريد حذف الحالة؟"
+
+#: src/components/StatusManager.jsx:548
+msgid "This cannot be undone."
+msgstr "لا يمكن التراجع عن هذا.‎"
+
+#: src/components/StatusManager.jsx:636
+msgid "Drag to reorder"
+msgstr "اسحب لإعادة الترتيب"
+
+#: src/components/Time.jsx:56
+msgid "just now"
+msgstr "الآن"
+
+#: src/DashboardWidget.jsx:47
+msgid "Assigned to Me"
+msgstr "تم تعيينه لي"
+
+#: src/DashboardWidget.jsx:52
+msgid "Latest"
+msgstr "أحدث"
+
+#: src/DashboardWidget.jsx:62
+msgid "Watchlist"
+msgstr "قائمة المراقبة"
+
+#: src/DashboardWidget.jsx:149
+msgid "No issues found."
+msgstr "لم يتم العثور على أي مشاكل.‎"
+
+#: src/datapoints/checklistProgressDatapoint.js:25
+#: src/datapoints/checklistProgressDatapoint.js:40
+msgid "Checklist Progress"
+msgstr "تقدم قائمة المهام"
+
+#: src/datapoints/commentCountDatapoint.js:135
+#: src/datapoints/commentCountDatapoint.js:150
+msgid "Comments"
+msgstr "تعليقات"
+
+#: src/datapoints/deadlineDatapoint.js:69
+#: src/datapoints/deadlineDatapoint.js:88
+msgid "Deadline"
+msgstr "الموعد النهائي"
+
+#: src/datapoints/lastCommentActivityDatapoint.js:24
+#: src/datapoints/lastCommentActivityDatapoint.js:47
+msgid "Last Activity"
+msgstr "آخر نشاط"
+
+#: src/hooks/useIssueData.js:22 src/hooks/useIssueData.js:42
+msgid "Failed to load issue details. Please try again."
+msgstr "فشل تحميل تفاصيل المشكلة. يرجى المحاولة مرة أخرى."
+
+#: src/Modal.jsx:150 src/Toolbar.jsx:197
+msgid "Your issue has been submitted successfully."
+msgstr "تم استلام مشكلتك بنجاح.‎"
+
+#: src/Modal.jsx:168 src/Toolbar.jsx:215
+msgid "There was an error submitting your issue. Please try again."
+msgstr "حدث خطأ أثناء إرسال المشكلة الخاصة بك. يرجى المحاولة مرة أخرى.‎"
+
+#: src/Modal.jsx:202
+msgid "Issue Submitted"
+msgstr "تم تقديم المشكلة"
+
+#: src/Modal.jsx:203
+msgid "Submission Failed"
+msgstr "فشل الإرسال"
+
+#: src/Modal.jsx:213 src/Toolbar.jsx:274
+msgid "Close"
+msgstr "إغلاق"
+
+#: src/Modal.jsx:219 src/Toolbar.jsx:280
+msgid "Describe the problem"
+msgstr "وصف المشكلة"
+
+#: src/Modal.jsx:247 src/Toolbar.jsx:308
+msgid "Submit"
+msgstr "إرسال"
+
+#: src/Settings.jsx:46
+msgid "Statuses"
+msgstr "الحالات"
+
+#: src/Settings.jsx:51
+msgid "Cards"
+msgstr "بطاقات"
+
+#: src/Settings.jsx:61
+msgid "Deleted Items"
+msgstr "العناصر المحذوفة"
+
+#: src/Settings.jsx:68
+msgid "Settings"
+msgstr "الإعدادات"
+
+#: src/utils/attachmentUpload.js:27 src/utils/attachmentUpload.js:32
+msgid "Failed to upload attachment."
+msgstr "فشل تحميل الملحق.‎"
+
+#: src/utils/attachmentUpload.js:87
+msgid "Missing attachment data."
+msgstr "بيانات المرفق مفقودة.‎"
+
+#: src/utils/issueCommentHandler.js:67
+msgid "Untitled subissue"
+msgstr "الموضوع الفرعي"
+
+#: src/utils/issueCommentHandler.js:285
+msgid "Status changed from"
+msgstr "الحالة تغيرت إلى"
+
+#: src/utils/issueCommentHandler.js:285
+msgid "to"
+msgstr "إلى"
+
+#: src/utils/issueCommentHandler.js:288 src/utils/issueCommentHandler.js:350
+#: src/utils/issueCommentHandler.js:362 src/utils/issueCommentHandler.js:449
+#: src/utils/issueCommentHandler.js:480 src/utils/issueCommentHandler.js:525
+#: src/utils/issueCommentHandler.js:531
+msgid "by"
+msgstr "بواسطة"
+
+#: src/utils/issueCommentHandler.js:312 src/utils/issueCommentHandler.js:477
+msgid "was"
+msgstr "كان"
+
+#: src/utils/issueCommentHandler.js:312
+msgid "this issue by"
+msgstr "هذه المشكلة بواسطة"
+
+#: src/utils/issueCommentHandler.js:348
+msgid "Deadline set to"
+msgstr "الموعد النهائي هو"
+
+#: src/utils/issueCommentHandler.js:354
+msgid "Deadline removed by"
+msgstr "تمت إزالة الموعد النهائي بواسطة"
+
+#: src/utils/issueCommentHandler.js:360
+msgid "Deadline changed to"
+msgstr "الموعد النهائي تم تغييره إلى"
+
+#: src/utils/issueCommentHandler.js:392
+msgid "Priority set to **High** by"
+msgstr "الأولوية محددة على أنها **عالية** بواسطة"
+
+#: src/utils/issueCommentHandler.js:397
+msgid "High priority removed by"
+msgstr "تم إزالة الأولوية العالية بواسطة"
+
+#: src/utils/issueCommentHandler.js:421
+msgid "created by"
+msgstr "تم إنشاؤه بواسطة"
+
+#: src/utils/issueCommentHandler.js:446
+msgid "marked as"
+msgstr "تم وضع علامة"
+
+#: src/utils/issueCommentHandler.js:477
+msgid "checklist item"
+msgstr "عنصر قائمة"
+
+#: src/utils/issueCommentHandler.js:522
+msgid "was promoted to issue"
+msgstr "تم ترقيته إلى إصدار"
+
+#: src/utils/issueCommentHandler.js:528
+msgid "Issue created from checklist item"
+msgstr "تم إنشاء المشكلة من عنصر قائمة الفحص"
+
+#: src/utils/issueCommentHandler.js:528
+msgid "on"
+msgstr "على"
+
+#: src/utils/issueCommentHandler.js:568
+msgid "deleted by"
+msgstr "تم الحذف بواسطة"
+
+#: src/utils/issueCommentHandler.js:596
+msgid "restored by"
+msgstr "تم استعادته بواسطة"
+
+#: src/utils/issueCommentHandler.js:623
+msgid "Issue **deleted** by"
+msgstr "تم **حذف** بواسطة"
+
+#: src/utils/issueCommentHandler.js:647
+msgid "Issue **restored** by"
+msgstr "تم **استعادة** بواسطة"
+
+#: src/utils/tabsConfig.js:13
+msgid "Timeline"
+msgstr "الجدول الزمني"
+
+#: src/utils/tabsConfig.js:17
+msgid "Report"
+msgstr "تقرير"
+
+#: src/utils/tabsConfig.js:26
+msgid "Queried Object"
+msgstr "الكائن المطلوب الاستعلام عنه"
+
+#: src/utils/tabsConfig.js:37
+msgid "Headers"
+msgstr "العناوين"
+
+#: src/utils/tabsConfig.js:48
+msgid "Errors"
+msgstr "أخطاء"
