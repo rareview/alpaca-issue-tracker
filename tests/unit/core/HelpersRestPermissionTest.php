@@ -29,6 +29,8 @@ class HelpersRestPermissionTest extends \PHPUnit\Framework\TestCase {
 		Functions\when( '__' )->returnArg();
 		Functions\when( 'esc_html__' )->returnArg();
 		Functions\when( 'current_user_can' )->justReturn( true );
+		Functions\when( 'get_option' )->justReturn( [] );
+		Functions\when( 'wp_roles' )->justReturn( (object) [ 'roles' => [] ] );
 		Functions\when( 'sanitize_key' )->returnArg();
 	}
 
