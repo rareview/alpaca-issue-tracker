@@ -3,7 +3,14 @@ const { __ } = wp.i18n;
 const { memo, useCallback, useMemo } = wp.element;
 
 const AssigneeSelector = memo(
-  ({ assignees, allUsers, allUserObjects, onChange, isLoading }) => {
+  ({
+    assignees,
+    allUsers,
+    allUserObjects,
+    onChange,
+    isLoading,
+    isDisabled,
+  }) => {
     const usersBySuggestion = useMemo(() => {
       const map = new Map();
 
@@ -58,7 +65,7 @@ const AssigneeSelector = memo(
           value={assignees}
           suggestions={allUsers}
           onChange={onChange}
-          disabled={isLoading}
+          disabled={isLoading || isDisabled}
           __nextHasNoMarginBottom
           __next40pxDefaultSize
           __experimentalRenderItem={renderSuggestionItem}
@@ -69,6 +76,7 @@ const AssigneeSelector = memo(
   // Only re-render if these props actually change
   (prev, next) =>
     prev.isLoading === next.isLoading &&
+    prev.isDisabled === next.isDisabled &&
     prev.assignees.join(',') === next.assignees.join(',') &&
     prev.allUsers.join(',') === next.allUsers.join(',') &&
     prev.allUserObjects === next.allUserObjects,

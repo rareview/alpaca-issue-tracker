@@ -32,6 +32,8 @@ import PropTypes from 'prop-types';
  * @param {Function} root0.onMoveAllToNext    - Callback to move all items to next container
  * @param {Function} root0.onDeleteAll        - Callback to delete all items
  * @param {boolean}  root0.canDeleteIssues    - Whether current user can delete issues
+ * @param {boolean}  root0.canDragIssues      - Whether current user can drag issues
+ * @param {boolean}  root0.canMoveAllToNext   - Whether items can move to the next container
  * @param {boolean}  root0.isLastContainer    - Whether this is the last container
  * @param {boolean}  root0.isHidden           - Whether container is hidden
  * @param {string}   root0.focusedContainerId - Focused container identifier
@@ -54,6 +56,8 @@ function Container({
   onMoveAllToNext,
   onDeleteAll,
   canDeleteIssues,
+  canDragIssues,
+  canMoveAllToNext,
   isLastContainer,
   isHidden,
   focusedContainerId,
@@ -138,15 +142,15 @@ function Container({
   };
 
   const menuControls = [
-    {
-      icon: 'plus',
-      title: __('Add Issue In This Column', 'alpaca-issue-tracker'),
-      onClick: () => {
-        if (onAddIssue) {
-          onAddIssue(id);
-        }
-      },
-    },
+    ...(onAddIssue
+      ? [
+          {
+            icon: 'plus',
+            title: __('Add Issue In This Column', 'alpaca-issue-tracker'),
+            onClick: () => onAddIssue(id),
+          },
+        ]
+      : []),
     {
       icon: isHidden ? 'visibility' : 'hidden',
       title: isHidden
@@ -219,7 +223,7 @@ function Container({
     },
   ];
 
-  if (!isLastContainer) {
+  if (!isLastContainer && canMoveAllToNext) {
     menuControls.push({
       icon: (
         <span
@@ -681,6 +685,7 @@ function Container({
                     commentCountByAgent={item.commentCountByAgent}
                     meta={item.meta}
                     onClick={onItemClick}
+                    isDragDisabled={!canDragIssues}
                   />
                 );
               });
@@ -716,6 +721,7 @@ function Container({
                       commentCountByAgent={item.commentCountByAgent}
                       meta={item.meta}
                       onClick={onItemClick}
+                      isDragDisabled={!canDragIssues}
                     />,
                   );
                 }
@@ -754,6 +760,7 @@ function Container({
                     commentCountByAgent={item.commentCountByAgent}
                     meta={item.meta}
                     onClick={onItemClick}
+                    isDragDisabled={!canDragIssues}
                   />,
                 );
               }
@@ -788,6 +795,8 @@ Container.propTypes = {
   onMoveAllToNext: PropTypes.func.isRequired,
   onDeleteAll: PropTypes.func.isRequired,
   canDeleteIssues: PropTypes.bool,
+  canDragIssues: PropTypes.bool,
+  canMoveAllToNext: PropTypes.bool,
   isLastContainer: PropTypes.bool.isRequired,
   isHidden: PropTypes.bool.isRequired,
   focusedContainerId: PropTypes.string,
@@ -802,6 +811,8 @@ Container.propTypes = {
 
 Container.defaultProps = {
   canDeleteIssues: false,
+  canDragIssues: false,
+  canMoveAllToNext: false,
 };
 
 export default Container;

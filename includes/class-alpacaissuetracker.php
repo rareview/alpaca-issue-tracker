@@ -328,6 +328,30 @@ final class AlpacaIssueTracker {
 	public function register_settings() {
 		register_setting(
 			'alpaistr_options',
+			'alpaistr_permissions',
+			[
+				'type'              => 'object',
+				'description'       => esc_html__( 'Minimum roles required for Alpaca actions.', 'alpaca-issue-tracker' ),
+				'sanitize_callback' => [ Helpers::class, 'sanitize_permissions' ],
+				'show_in_rest'      => [
+					'schema' => [
+						'type'                 => 'object',
+						'properties'           => array_fill_keys(
+							array_keys( Helpers::get_permission_defaults() ),
+							[
+								'type' => 'string',
+								'enum' => [ 'subscriber', 'contributor', 'author', 'editor', 'administrator' ],
+							]
+						),
+						'additionalProperties' => false,
+					],
+				],
+				'default'           => Helpers::get_permission_defaults(),
+			]
+		);
+
+		register_setting(
+			'alpaistr_options',
 			'alpaistr_enable_test_logs',
 			[
 				'type'              => 'string',

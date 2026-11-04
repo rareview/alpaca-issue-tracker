@@ -303,6 +303,7 @@ const Comment = memo(
       lastEditedByUserId !== currentUserId;
     const canEditComment =
       isEditable &&
+      Boolean(window.alpaistrSettings?.canEditComment) &&
       (userCanManageOptions || (isCommentAuthor && !isLockedByDifferentEditor));
     const canDeleteComment = userCanManageOptions;
     const canManageComment = canEditComment || canDeleteComment;
@@ -484,6 +485,10 @@ const Commenting = ({
     typeof window !== 'undefined'
       ? window.alpaistrSettings?.canManageOptions
       : false;
+  const canAddComment =
+    window.alpaistrSettings?.canAddComment === true ||
+    window.alpaistrSettings?.canAddComment === 1 ||
+    window.alpaistrSettings?.canAddComment === '1';
   const userCanManageOptions = Boolean(
     localizedCanManageOptions === true ||
       localizedCanManageOptions === 1 ||
@@ -1108,50 +1113,52 @@ const Commenting = ({
       </div>
 
       <div id="alpaca-comments">
-        <div className="alpaca-comment-form" data-source="human">
-          <div className="alpaca-timeline-content">
-            <AttachmentControls
-              attachments={pendingAttachments}
-              onDrop={handlePendingAttachmentDrop}
-              onUpload={handleAttachmentUpload}
-              onRemove={removePendingAttachment}
-              onClick={setLightboxSrc}
-              isSubmitting={isSubmitting}
-              isProcessing={isProcessingAttachments}
-              pendingAltText={__(
-                'Pending comment attachment',
-                'alpaca-issue-tracker',
-              )}
-              actions={
-                <Button
-                  isPrimary
-                  onClick={handleCommentSubmit}
-                  disabled={isSubmitting || isProcessingAttachments}
-                >
-                  {isSubmitting
-                    ? __('Submitting…', 'alpaca-issue-tracker')
-                    : __('Submit Comment', 'alpaca-issue-tracker')}
-                </Button>
-              }
-            >
-              <MarkdownTextarea
-                value={newComment}
-                textareaRef={newCommentRef}
-                onChange={setNewComment}
-                disabled={isSubmitting}
+        {canAddComment && (
+          <div className="alpaca-comment-form" data-source="human">
+            <div className="alpaca-timeline-content">
+              <AttachmentControls
+                attachments={pendingAttachments}
+                onDrop={handlePendingAttachmentDrop}
+                onUpload={handleAttachmentUpload}
+                onRemove={removePendingAttachment}
+                onClick={setLightboxSrc}
+                isSubmitting={isSubmitting}
+                isProcessing={isProcessingAttachments}
+                pendingAltText={__(
+                  'Pending comment attachment',
+                  'alpaca-issue-tracker',
+                )}
+                actions={
+                  <Button
+                    isPrimary
+                    onClick={handleCommentSubmit}
+                    disabled={isSubmitting || isProcessingAttachments}
+                  >
+                    {isSubmitting
+                      ? __('Submitting…', 'alpaca-issue-tracker')
+                      : __('Submit Comment', 'alpaca-issue-tracker')}
+                  </Button>
+                }
               >
-                <MentionsTextarea
-                  placeholder={__('Add a comment…', 'alpaca-issue-tracker')}
+                <MarkdownTextarea
                   value={newComment}
-                  onChange={setNewComment}
                   textareaRef={newCommentRef}
+                  onChange={setNewComment}
                   disabled={isSubmitting}
-                  searchScopeIssueIds={searchScopeIssueIds}
-                />
-              </MarkdownTextarea>
-            </AttachmentControls>
+                >
+                  <MentionsTextarea
+                    placeholder={__('Add a comment…', 'alpaca-issue-tracker')}
+                    value={newComment}
+                    onChange={setNewComment}
+                    textareaRef={newCommentRef}
+                    disabled={isSubmitting}
+                    searchScopeIssueIds={searchScopeIssueIds}
+                  />
+                </MarkdownTextarea>
+              </AttachmentControls>
+            </div>
           </div>
-        </div>
+        )}
 
         {isLoadingComments && (
           <p className="alpaca-loading">

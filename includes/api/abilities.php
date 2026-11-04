@@ -282,7 +282,7 @@ function alpaistr_register_abilities() {
 			'description'         => __( 'Posts a new comment on a specific issue.', 'alpaca-issue-tracker' ),
 			'category'            => 'alpaca',
 			'execute_callback'    => 'alpaistr_ability_add_comment',
-			'permission_callback' => 'alpaistr_ability_permission_create',
+			'permission_callback' => 'alpaistr_ability_permission_add_comment',
 			'input_schema'        => [
 				'type'       => 'object',
 				'properties' => [
@@ -412,12 +412,34 @@ function alpaistr_ability_permission_create() {
 /**
  * Permission callback: Update permission checks.
  *
- * Checks if the current user has capability to update issues.
+ * Checks if the current user can perform the requested issue update.
+ *
+ * @param array $input Ability input values.
+ * @return bool True if authorized, false otherwise.
+ */
+function alpaistr_ability_permission_update( $input = [] ) {
+	if ( ! is_array( $input ) || ! isset( $input['status_id'] ) ) {
+		return Helpers::user_can( 'edit_issue' );
+	}
+
+	$status_action = Helpers::get_status_change_permission_action( (int) $input['status_id'] );
+	if ( ! Helpers::user_can( $status_action ) ) {
+		return false;
+	}
+
+	$editable_fields = [ 'title', 'content', 'is_high_priority', 'parent_id', 'assignees' ];
+	$has_edit_fields = ! empty( array_intersect( $editable_fields, array_keys( $input ) ) );
+
+	return ! $has_edit_fields || Helpers::user_can( 'edit_issue' );
+}
+
+/**
+ * Permission callback: Add comment checks.
  *
  * @return bool True if authorized, false otherwise.
  */
-function alpaistr_ability_permission_update() {
-	return Helpers::user_can( 'update_issue' );
+function alpaistr_ability_permission_add_comment() {
+	return Helpers::user_can( 'add_comment' );
 }
 
 /**

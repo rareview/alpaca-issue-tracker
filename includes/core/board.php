@@ -17,10 +17,20 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Render the project board admin page.
  */
 function alpaistr_project_board_page() {
+	if ( ! Helpers::user_can( 'view_board' ) ) {
+		wp_die(
+			esc_html__( 'You are not allowed to view the Project Board.', 'alpaca-issue-tracker' ),
+			esc_html__( 'Access denied', 'alpaca-issue-tracker' ),
+			[ 'response' => 403 ]
+		);
+	}
+
 	?>
 	<div class="wrap">
         <h1 class="wp-heading-inline"><?php echo esc_html__( 'Project Board', 'alpaca-issue-tracker' ); ?></h1>
-        <a id="alpaca-add-issue" href="#" class="page-title-action aria-button-if-js" role="button" aria-expanded="false"><?php echo esc_html__( 'Add Issue', 'alpaca-issue-tracker' ); ?></a>
+        <?php if ( Helpers::user_can( 'create_issue' ) ) : ?>
+            <a id="alpaca-add-issue" href="#" class="page-title-action aria-button-if-js" role="button" aria-expanded="false"><?php echo esc_html__( 'Add Issue', 'alpaca-issue-tracker' ); ?></a>
+        <?php endif; ?>
         
         <hr class="wp-header-end">
 

@@ -4,6 +4,7 @@ import EnableContextCaptureControl from './components/EnableContextCaptureContro
 import LabelsManager from './components/LabelsManager';
 import RestoreManager from './components/RestoreManager';
 import ItemDatapointsManager from './components/ItemDatapointsManager';
+import PermissionsManager from './components/PermissionsManager';
 const { useState, useEffect, useCallback, useMemo, useRef } = wp.element;
 const { __ } = wp.i18n;
 const { applyFilters } = wp.hooks;
@@ -43,6 +44,11 @@ const SETTINGS_TAB_RENDER_DELAY_MS = 100;
  */
 
 const SETTINGS_BASE_TABS = [
+  {
+    name: 'permissions',
+    title: __('Permissions', 'alpaca-issue-tracker'),
+    className: 'alpaca-settings-tab--permissions',
+  },
   {
     name: 'statuses',
     title: __('Statuses', 'alpaca-issue-tracker'),
@@ -264,6 +270,14 @@ const AlpacaSettings = () => {
           const tabContext = {
             statuses: currentStatuses,
           };
+
+          if ('permissions' === tab.name) {
+            return (
+              <div className="alpaca-settings-tab-content">
+                <PermissionsManager />
+              </div>
+            );
+          }
 
           if ('statuses' === tab.name) {
             return renderStatusesTab(

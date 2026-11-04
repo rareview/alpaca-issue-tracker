@@ -37,11 +37,12 @@ const getTokenValue = (token) => {
  * @param {Array}    root0.labels      Available labels.
  * @param {Array}    root0.selectedIds Selected label term IDs.
  * @param {Function} root0.onChange    Called with updated selected IDs.
- * @param {boolean}  root0.isLoading   Whether selector is disabled.
+ * @param {boolean}  root0.isLoading   Whether selector is loading.
+ * @param {boolean}  root0.isDisabled  Whether selector is disabled.
  * @return {JSX.Element} Label selector dropdown.
  */
 const LabelsSelector = memo(
-  ({ labels, selectedIds, onChange, isLoading }) => {
+  ({ labels, selectedIds, onChange, isLoading, isDisabled }) => {
     const selectorRef = useRef(null);
 
     const labelsByName = useMemo(() => {
@@ -164,7 +165,7 @@ const LabelsSelector = memo(
           value={selectedTokens}
           suggestions={suggestions}
           onChange={handleChange}
-          disabled={isLoading}
+          disabled={isLoading || isDisabled}
           __nextHasNoMarginBottom
           __next40pxDefaultSize
           __experimentalExpandOnFocus
@@ -176,6 +177,7 @@ const LabelsSelector = memo(
   },
   (prev, next) =>
     prev.isLoading === next.isLoading &&
+    prev.isDisabled === next.isDisabled &&
     prev.labels === next.labels &&
     prev.selectedIds.join(',') === next.selectedIds.join(','),
 );
@@ -191,6 +193,7 @@ LabelsSelector.propTypes = {
   selectedIds: PropTypes.arrayOf(PropTypes.number),
   onChange: PropTypes.func,
   isLoading: PropTypes.bool,
+  isDisabled: PropTypes.bool,
 };
 
 LabelsSelector.defaultProps = {
@@ -198,6 +201,7 @@ LabelsSelector.defaultProps = {
   selectedIds: [],
   onChange: () => {},
   isLoading: false,
+  isDisabled: false,
 };
 
 export default LabelsSelector;

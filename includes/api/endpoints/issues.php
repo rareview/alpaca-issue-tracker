@@ -246,6 +246,54 @@ function alpaistr_issue_callback( WP_REST_Request $req ) {
 /*
  * Issue: update endpoint.
  */
+/**
+ * Check permissions for issue edits and status changes.
+ *
+ * Status-only updates use the status threshold, with the final-status
+ * threshold replacing the general one for the highest-scored status.
+ *
+ * @param WP_REST_Request $request REST request object.
+ * @return true|WP_Error True when allowed, otherwise a REST error or false.
+ */
+function alpaistr_validate_issue_update_permission( WP_REST_Request $request ) {
+	$nonce_check = Helpers::validate_rest_nonce_permission( $request );
+	if ( true !== $nonce_check ) {
+		return $nonce_check;
+	}
+
+	$data = $request->get_json_params();
+	if ( ! is_array( $data ) ) {
+		return Helpers::user_can( 'edit_issue' );
+	}
+
+	$taxonomies = isset( $data['taxonomies'] ) && is_array( $data['taxonomies'] )
+		? $data['taxonomies']
+		: [];
+	if ( ! array_key_exists( 'alpaca_status', $taxonomies ) ) {
+		return Helpers::user_can( 'edit_issue' );
+	}
+
+	$status_ids = alpaistr_to_int_ids( $taxonomies['alpaca_status'] );
+	$action     = Helpers::get_status_change_permission_action( $status_ids );
+
+	foreach ( $data as $key => $value ) {
+		if ( 'taxonomies' !== $key ) {
+			if ( ! Helpers::user_can( 'edit_issue' ) ) {
+				return false;
+			}
+			break;
+		}
+	}
+
+	foreach ( $taxonomies as $taxonomy => $terms ) {
+		if ( 'alpaca_status' !== $taxonomy && ! Helpers::user_can( 'edit_issue' ) ) {
+			return false;
+		}
+	}
+
+	return Helpers::user_can( $action );
+}
+
 add_action( 'rest_api_init', 'alpaistr_update_issue' );
 /**
  * Register the issue UPDATE endpoint.
@@ -258,7 +306,7 @@ function alpaistr_update_issue() {
 			'methods'             => 'POST',
 			'callback'            => 'alpaistr_update_issue_callback',
 			'permission_callback' => function ( WP_REST_Request $request ) {
-				return Helpers::validate_rest_nonce_permission( $request, 'update_issue' );
+				return alpaistr_validate_issue_update_permission( $request );
 			},
 			'args'                => [
 				'id' => [
@@ -577,9 +625,9 @@ function alpaistr_register_subissue_endpoint() {
 		[
 			'methods'             => 'POST',
 			'callback'            => 'alpaistr_create_subissue_callback',
-			// Require authentication and a valid nonce for browser-originated calls.
+			// Require issue-edit permission and a valid nonce for browser-originated calls.
 			'permission_callback' => function ( WP_REST_Request $request ) {
-				return Helpers::validate_rest_nonce_permission( $request, 'create_issue' );
+				return Helpers::validate_rest_nonce_permission( $request, 'edit_issue' );
 			},
 			'args'                => [
 				'parent_id' => [

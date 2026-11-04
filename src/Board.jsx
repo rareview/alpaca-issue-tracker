@@ -23,6 +23,14 @@ import { updateIssue } from './services/issueApi';
  */
 export function AlpacaBoard() {
   const canDeleteIssues = Boolean(window.alpaistrSettings?.canDeleteIssues);
+  const canCreateIssue = Boolean(window.alpaistrSettings?.canCreateIssue);
+  const canChangeIssueStatus = Boolean(
+    window.alpaistrSettings?.canChangeIssueStatus,
+  );
+  const canChangeFinalIssueStatus = Boolean(
+    window.alpaistrSettings?.canChangeFinalIssueStatus,
+  );
+  const canDragIssues = canChangeIssueStatus;
   const [containers, setContainers] = useState(() => {
     if (typeof window.alpaistrBoardData !== 'undefined') {
       return transformDataForBoard(window.alpaistrBoardData);
@@ -47,6 +55,16 @@ export function AlpacaBoard() {
   const [activeSearchFilter, setActiveSearchFilter] = useState(null);
   const [focusedContainerId, setFocusedContainerId] = useState(null);
   const [isBoardDraggingItem, setIsBoardDraggingItem] = useState(false);
+
+  const canChangeStatusTo = (statusId) => {
+    const finalStatusId = containers[containers.length - 1]?.id;
+
+    if (String(statusId) === String(finalStatusId)) {
+      return canChangeFinalIssueStatus;
+    }
+
+    return canChangeIssueStatus;
+  };
 
   // Pre-built Set for O(1) lookups inside itemMatchesBoardFilter.
   const searchIdsSet = useMemo(
@@ -337,16 +355,13 @@ export function AlpacaBoard() {
   }, []);
 
   /**
-   * Show an issue not found snackbar.
+   * Show a snackbar message.
    *
-   * @param {string} issueSlug The unresolved issue identifier.
+   * @param {string} message Message to display.
    */
-  const showIssueNotFoundMessage = useCallback((issueSlug) => {
-    setSelectedItem(null);
+  const showSnackbarMessage = useCallback((message) => {
     setSnackbarClosing(false);
-    setSnackbarMessage(
-      __('Issue not found.', 'alpaca-issue-tracker') + ` (${issueSlug})`,
-    );
+    setSnackbarMessage(message);
     if (snackbarTimerRef.current) {
       clearTimeout(snackbarTimerRef.current);
     }
@@ -364,6 +379,21 @@ export function AlpacaBoard() {
       snackbarTimerRef.current = null;
     }, 4000);
   }, []);
+
+  /**
+   * Show an issue not found snackbar.
+   *
+   * @param {string} issueSlug The unresolved issue identifier.
+   */
+  const showIssueNotFoundMessage = useCallback(
+    (issueSlug) => {
+      setSelectedItem(null);
+      showSnackbarMessage(
+        __('Issue not found.', 'alpaca-issue-tracker') + ` (${issueSlug})`,
+      );
+    },
+    [showSnackbarMessage],
+  );
 
   /**
    * Find an issue in containers by slug or ID.
@@ -1057,6 +1087,11 @@ export function AlpacaBoard() {
 
     const sourceContainer = containersCopy[sourceIndex];
     const nextContainer = containersCopy[sourceIndex + 1];
+
+    if (!canChangeStatusTo(nextContainer.id)) {
+      return;
+    }
+
     const itemsToMove = [...sourceContainer.items];
 
     if (itemsToMove.length === 0) {
@@ -1425,9 +1460,16 @@ export function AlpacaBoard() {
     closeModal();
   };
 
-  const handleAddIssueInColumn = useCallback((containerId) => {
-    setSelectedItem({ isCreating: true, initialStatusId: containerId });
-  }, []);
+  const handleAddIssueInColumn = useCallback(
+    (containerId) => {
+      if (!canCreateIssue) {
+        return;
+      }
+
+      setSelectedItem({ isCreating: true, initialStatusId: containerId });
+    },
+    [canCreateIssue],
+  );
 
   useEffect(() => {
     if (!selectedItem && triggerRef.current) {
@@ -1630,6 +1672,27 @@ export function AlpacaBoard() {
 
     if (!sourceContainer || !destinationContainer) return;
 
+    if (
+      sourceContainer.id !== destinationContainer.id &&
+      !canChangeStatusTo(destinationContainer.id)
+    ) {
+      const finalContainer = containers[containers.length - 1];
+
+      if (
+        finalContainer &&
+        String(destinationContainer.id) === String(finalContainer.id)
+      ) {
+        showSnackbarMessage(
+          __(
+            'You are not permitted to send issues to the final column.',
+            'alpaca-issue-tracker',
+          ),
+        );
+      }
+
+      return;
+    }
+
     if (sourceContainer.id === destinationContainer.id) {
       setContainers((prev) => {
         const container = prev.find((c) => c.id === sourceContainerId);
@@ -1717,17 +1780,25 @@ export function AlpacaBoard() {
     });
   }, []);
 
-  const handleBoardDragStartCapture = useCallback((event) => {
-    const dragTarget = event.target;
+  const handleBoardDragStartCapture = useCallback(
+    (event) => {
+      if (!canDragIssues) {
+        event.preventDefault();
+        return;
+      }
 
-    if (!(dragTarget instanceof Element)) {
-      return;
-    }
+      const dragTarget = event.target;
 
-    if (dragTarget.closest('.alpaca-item')) {
-      setIsBoardDraggingItem(true);
-    }
-  }, []);
+      if (!(dragTarget instanceof Element)) {
+        return;
+      }
+
+      if (dragTarget.closest('.alpaca-item')) {
+        setIsBoardDraggingItem(true);
+      }
+    },
+    [canDragIssues],
+  );
 
   const handleBoardDragStopCapture = useCallback(() => {
     setIsBoardDraggingItem(false);
@@ -1814,6 +1885,8 @@ export function AlpacaBoard() {
                 onMoveAllToNext={moveAllItemsToNextContainer}
                 onDeleteAll={handleDeleteAll}
                 canDeleteIssues={canDeleteIssues}
+                canDragIssues={canDragIssues}
+                canMoveAllToNext={canChangeStatusTo(containers[index + 1]?.id)}
                 isLastContainer={index === containers.length - 1}
                 isHidden={hiddenContainerIds.includes(container.id)}
                 focusedContainerId={focusedContainerId}
@@ -1823,7 +1896,7 @@ export function AlpacaBoard() {
                 onRename={handleRenameContainer}
                 onItemDrop={handleItemDrop}
                 onBulkItemReorder={handleBulkItemReorder}
-                onAddIssue={handleAddIssueInColumn}
+                onAddIssue={canCreateIssue ? handleAddIssueInColumn : undefined}
               />
             ))}
           </div>
