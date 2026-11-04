@@ -55,6 +55,18 @@
       }
     }
 
+    &:not(.oldestfirst):not(:has(.alpaca-comment-form)) {
+      .alpaca-comments-timeline::before {
+        top: calc($space-3xl - $space-2xs);
+      }
+    }
+
+    &.oldestfirst:not(:has(.alpaca-comment-form)) {
+      .alpaca-comments-timeline::before {
+        bottom: $size-control-lg;
+      }
+    }
+
     .components-textarea-control__input {
       line-height: $line-height-code;
       margin-top: 0;

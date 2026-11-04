@@ -258,7 +258,12 @@ function alpaistr_register_comment_attachment_endpoint() {
 			'methods'             => WP_REST_Server::CREATABLE,
 			'callback'            => 'alpaistr_upload_comment_attachment',
 			'permission_callback' => function ( WP_REST_Request $request ) {
-				return Helpers::validate_rest_nonce_permission( $request, 'register_comment_meta' );
+				$nonce_check = Helpers::validate_rest_nonce_permission( $request );
+				if ( true !== $nonce_check ) {
+					return $nonce_check;
+				}
+
+				return Helpers::user_can( 'add_comment' ) || Helpers::user_can( 'edit_comment' );
 			},
 			'args'                => [
 				'issue_id' => [
@@ -277,7 +282,12 @@ function alpaistr_register_comment_attachment_endpoint() {
 			'methods'             => WP_REST_Server::CREATABLE,
 			'callback'            => 'alpaistr_delete_comment_attachment',
 			'permission_callback' => function ( WP_REST_Request $request ) {
-				return Helpers::validate_rest_nonce_permission( $request, 'register_comment_meta' );
+				$nonce_check = Helpers::validate_rest_nonce_permission( $request );
+				if ( true !== $nonce_check ) {
+					return $nonce_check;
+				}
+
+				return Helpers::user_can( 'add_comment' ) || Helpers::user_can( 'edit_comment' );
 			},
 			'args'                => [
 				'issue_id'   => [

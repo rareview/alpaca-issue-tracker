@@ -255,6 +255,24 @@ class Register {
 	}
 
 	/**
+	 * Get translated role options for the Permissions settings tab.
+	 *
+	 * @return array<int, array<string, string>> Role options in WordPress order.
+	 */
+	private function get_permission_role_options() {
+		$options = [];
+
+		foreach ( wp_roles()->get_names() as $role_slug => $role_name ) {
+			$options[] = [
+				'label' => translate_user_role( $role_name ),
+				'value' => $role_slug,
+			];
+		}
+
+		return $options;
+	}
+
+	/**
 	 * Enqueue shared third-party assets used by Alpaca Issue Tracker bundles.
 	 *
 	 * @return void
@@ -301,14 +319,21 @@ class Register {
 	 */
 	private function localize_script_settings( $script_handle, $include_admin_url = false, $extra_settings = [] ) {
 		$settings = [
-			'canManageOptions'         => current_user_can( 'manage_options' ),
-			'canDeleteIssues'          => Helpers::user_can( 'delete_issue' ),
-			'canViewNotificationInbox' => Helpers::user_can( 'notification_inbox' ),
-			'contextualCaptureEnabled' => $this->is_contextual_capture_enabled(),
-			'defaultLabelColor'        => Helpers::DEFAULT_LABEL_COLOR,
-			'enableTestLogs'           => '1' === (string) get_option( 'alpaistr_enable_test_logs', '0' ),
-			'snapdomProxy'             => $this->get_snapdom_proxy_setting(),
-			'itemDatapointVisibility'  => $this->get_item_datapoint_visibility_setting(),
+			'canManageOptions'          => current_user_can( 'manage_options' ),
+			'canDeleteIssues'           => Helpers::user_can( 'delete_issue' ),
+			'canViewBoard'              => Helpers::user_can( 'view_board' ),
+			'canCreateIssue'            => Helpers::user_can( 'create_issue' ),
+			'canEditIssue'              => Helpers::user_can( 'edit_issue' ),
+			'canAddComment'             => Helpers::user_can( 'add_comment' ),
+			'canEditComment'            => Helpers::user_can( 'edit_comment' ),
+			'canChangeIssueStatus'      => Helpers::user_can( 'change_issue_status' ),
+			'canChangeFinalIssueStatus' => Helpers::user_can( 'change_final_issue_status' ),
+			'canViewNotificationInbox'  => Helpers::user_can( 'notification_inbox' ),
+			'contextualCaptureEnabled'  => $this->is_contextual_capture_enabled(),
+			'defaultLabelColor'         => Helpers::DEFAULT_LABEL_COLOR,
+			'enableTestLogs'            => '1' === (string) get_option( 'alpaistr_enable_test_logs', '0' ),
+			'snapdomProxy'              => $this->get_snapdom_proxy_setting(),
+			'itemDatapointVisibility'   => $this->get_item_datapoint_visibility_setting(),
 		];
 
 		if ( $include_admin_url ) {
@@ -459,7 +484,8 @@ class Register {
 
 			$extra = [];
 			if ( 'project-board_page_alpaca-settings' === $hook_suffix ) {
-				$extra['emptyTrashDays'] = defined( 'EMPTY_TRASH_DAYS' ) ? (int) EMPTY_TRASH_DAYS : null;
+				$extra['emptyTrashDays']  = defined( 'EMPTY_TRASH_DAYS' ) ? (int) EMPTY_TRASH_DAYS : null;
+				$extra['permissionRoles'] = $this->get_permission_role_options();
 			}
 
 			$this->enqueue_shared_assets( array_values( array_unique( $script_dependencies ) ), true, true, $extra );

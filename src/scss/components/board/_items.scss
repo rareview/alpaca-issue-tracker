@@ -20,6 +20,10 @@
       cursor: grabbing;
     }
 
+    &.is-drag-disabled:active {
+      cursor: pointer;
+    }
+
     .alpaca-item-inner {
       margin: 0;
     }

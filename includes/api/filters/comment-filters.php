@@ -8,7 +8,6 @@
 use AlpacaIssueTracker\Helpers;
 use function AlpacaIssueTracker\hide_type;
 use function AlpacaIssueTracker\should_allow_rest_override;
-use function AlpacaIssueTracker\user_can_view_type;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -38,7 +37,7 @@ add_filter(
 );
 
 /**
- * Allow authorized Alpaca Issue Tracker users to view hidden issue comments.
+	 * Allow users who can view the board to view hidden issue comments.
  *
  * @param bool   $can_view Whether the current user can view the hidden type.
  * @param string $type     Hidden comment type.
@@ -51,9 +50,7 @@ add_filter(
 			return $can_view;
 		}
 
-		return $can_view
-			|| Helpers::user_can( 'watchlist' )
-			|| Helpers::user_can( 'create_issue' );
+		return Helpers::user_can( 'view_board' );
 	},
 	10,
 	2
@@ -107,7 +104,7 @@ add_filter(
 	'rest_endpoints',
 	function ( $endpoints ) {
 		$can_view_issuecomment = static function () {
-			return user_can_view_type( 'issuecomment' );
+			return Helpers::user_can( 'view_board' ) || should_allow_rest_override( 'issuecomment' );
 		};
 
 		if ( empty( $endpoints['/wp/v2/comments'] ) ) {
@@ -118,9 +115,9 @@ add_filter(
 
 		foreach ( $collection_routes as $idx => $route ) {
 			$methods            = isset( $route['methods'] ) ? $route['methods'] : '';
-			$methods_normalized = is_array( $methods ) ? $methods : explode( ',', (string) $methods );
+			$methods_normalized = is_array( $methods ) ? $methods : array_map( 'trim', explode( ',', (string) $methods ) );
 
-			// Only patch collection-level routes (POST for create, GET for list).
+			// Patch collection-level routes for Alpaca issue comments only.
 			if ( in_array( 'POST', $methods_normalized, true ) || in_array( 'GET', $methods_normalized, true ) ) {
 				$original = $route['permission_callback'] ?? null;
 
@@ -137,8 +134,11 @@ add_filter(
 							return false;
 						}
 
-						// Allow listing/creating issue comments for Contributors by default.
-						if ( $can_view_issuecomment() ) {
+						if ( 'POST' === $request->get_method() ) {
+							return Helpers::user_can( 'add_comment' );
+						}
+
+						if ( 'GET' === $request->get_method() && $can_view_issuecomment() ) {
 							return true;
 						}
 					}
@@ -156,9 +156,11 @@ add_filter(
 		if ( ! empty( $endpoints['/wp/v2/comments/(?P<id>[\\d]+)'] ) ) {
 			foreach ( $endpoints['/wp/v2/comments/(?P<id>[\\d]+)'] as $idx => $route ) {
 				$methods            = isset( $route['methods'] ) ? $route['methods'] : '';
-				$methods_normalized = is_array( $methods ) ? $methods : explode( ',', (string) $methods );
+				$methods_normalized = is_array( $methods ) ? $methods : array_map( 'trim', explode( ',', (string) $methods ) );
 
-				if ( ! in_array( 'GET', $methods_normalized, true ) ) {
+				$editable_methods = [ 'POST', 'PUT', 'PATCH' ];
+				$can_edit_route   = ! empty( array_intersect( $editable_methods, $methods_normalized ) );
+				if ( ! in_array( 'GET', $methods_normalized, true ) && ! $can_edit_route ) {
 					continue;
 				}
 
@@ -175,7 +177,15 @@ add_filter(
 							&& 'issuecomment' === $comment->comment_type
 							&& alpaistr_is_issue_comment_target_post( $comment->comment_post_ID )
 						) {
-							return should_allow_rest_override( 'issuecomment' );
+							if ( in_array( $request->get_method(), [ 'POST', 'PUT', 'PATCH' ], true ) ) {
+								$current_user_id   = get_current_user_id();
+								$is_comment_author = $current_user_id > 0 && (int) $comment->user_id === $current_user_id;
+
+								return Helpers::user_can( 'edit_comment' )
+									&& ( $is_comment_author || current_user_can( 'manage_options' ) );
+							}
+
+							return should_allow_rest_override( 'issuecomment' ) || Helpers::user_can( 'view_board' );
 						}
 
 						if ( is_callable( $original ) ) {
@@ -220,9 +230,9 @@ add_filter(
 			return $result;
 		}
 
-		// If the user can create an issue, let them create the comment without manual status assignment.
+		// If the user can add a comment, let them create it without manual status assignment.
 		// This prevents the controller from checking for 'moderate_comments' capability.
-		if ( Helpers::user_can( 'create_issue' ) ) {
+		if ( Helpers::user_can( 'add_comment' ) ) {
 			// Disable flood control for automated system comments.
 			remove_action( 'check_comment_flood', 'check_comment_flood_db' );
 
@@ -257,7 +267,7 @@ add_filter(
 
 			if (
 				alpaistr_is_issue_comment_target_post( $post_id )
-				&& Helpers::user_can( 'create_issue' )
+				&& Helpers::user_can( 'add_comment' )
 			) {
 				return 1;
 			}

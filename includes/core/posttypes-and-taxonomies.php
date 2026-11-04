@@ -30,6 +30,79 @@ function alpaistr_register_taxonomy( $slug, $customargs = [] ) {
 }
 
 /**
+ * Apply Alpaca permissions to native REST issue creation and updates.
+ *
+ * @param array $endpoints Registered REST endpoints.
+ * @return array Filtered REST endpoints.
+ */
+function alpaistr_filter_issue_rest_permissions( $endpoints ) {
+	$collection_route = '/wp/v2/alpaca_issue';
+	if ( ! empty( $endpoints[ $collection_route ] ) ) {
+		foreach ( $endpoints[ $collection_route ] as $index => $route ) {
+			$methods = isset( $route['methods'] ) && is_array( $route['methods'] )
+				? $route['methods']
+				: array_map( 'trim', explode( ',', (string) ( $route['methods'] ?? '' ) ) );
+
+			if ( ! in_array( 'POST', $methods, true ) ) {
+				continue;
+			}
+
+			$original = $route['permission_callback'] ?? null;
+			$endpoints[ $collection_route ][ $index ]['permission_callback'] = static function ( $request ) use ( $original ) {
+				if ( 'POST' !== $request->get_method() ) {
+					return is_callable( $original ) ? call_user_func( $original, $request ) : false;
+				}
+
+				return Helpers::validate_rest_nonce_permission( $request, 'create_issue' );
+			};
+		}
+	}
+
+	$item_route = '/wp/v2/alpaca_issue/(?P<id>[\\d]+)';
+	if ( ! empty( $endpoints[ $item_route ] ) ) {
+		foreach ( $endpoints[ $item_route ] as $index => $route ) {
+			$methods = isset( $route['methods'] ) && is_array( $route['methods'] )
+				? $route['methods']
+				: array_map( 'trim', explode( ',', (string) ( $route['methods'] ?? '' ) ) );
+
+			if ( empty( array_intersect( [ 'POST', 'PUT', 'PATCH' ], $methods ) ) ) {
+				continue;
+			}
+
+			$original = $route['permission_callback'] ?? null;
+			$endpoints[ $item_route ][ $index ]['permission_callback'] = static function ( $request ) use ( $original ) {
+				if ( ! in_array( $request->get_method(), [ 'POST', 'PUT', 'PATCH' ], true ) ) {
+					return is_callable( $original ) ? call_user_func( $original, $request ) : false;
+				}
+
+				$nonce_check = Helpers::validate_rest_nonce_permission( $request );
+				if ( true !== $nonce_check ) {
+					return $nonce_check;
+				}
+
+				$data = $request->get_json_params();
+				if ( ! is_array( $data ) || ! array_key_exists( 'alpaca_status', $data ) ) {
+					return Helpers::user_can( 'edit_issue' );
+				}
+
+				$status_ids = alpaistr_to_int_ids( $data['alpaca_status'] );
+				$action     = Helpers::get_status_change_permission_action( $status_ids );
+				$other_data = array_diff( array_keys( $data ), [ 'alpaca_status' ] );
+
+				if ( ! empty( $other_data ) && ! Helpers::user_can( 'edit_issue' ) ) {
+					return false;
+				}
+
+				return Helpers::user_can( $action );
+			};
+		}
+	}
+
+	return $endpoints;
+}
+add_filter( 'rest_endpoints', 'alpaistr_filter_issue_rest_permissions', 20 );
+
+/**
  * Register custom post types and taxonomies for Alpaca.
  */
 function alpaistr_register_cpts_and_taxonomies() {
@@ -121,7 +194,7 @@ function alpaistr_register_cpts_and_taxonomies() {
 	add_filter( 'rest_comment_query', 'alpaistr_rest_comment_query', 10, 2 );
 	add_filter( 'comments_open', 'alpaistr_comments_open', 10, 2 );
 
-	// Allow Contributors to comment on and delete alpaca_issue posts.
+	// Allow authorized commenters to interact with alpaca_issue posts.
 	add_filter(
 		'map_meta_cap',
 		function ( $caps, $cap, $user_id, $args ) {
@@ -129,7 +202,7 @@ function alpaistr_register_cpts_and_taxonomies() {
 			if ( 'edit_post' === $cap && ! empty( $args[0] ) ) {
 				$post = get_post( $args[0] );
 
-				if ( $post && 'alpaca_issue' === $post->post_type && Helpers::user_can( 'create_issue' ) ) {
+				if ( $post && 'alpaca_issue' === $post->post_type && Helpers::user_can( 'add_comment' ) ) {
 					return [ 'exist' ];
 				}
 			}

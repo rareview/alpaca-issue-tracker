@@ -32,6 +32,11 @@ const DraggableItem = forwardRef(
     };
 
     const handleDragStart = (e) => {
+      if (isDragDisabled) {
+        e.preventDefault();
+        return;
+      }
+
       setIsDragging(true);
 
       const payload = {
@@ -172,7 +177,9 @@ const DraggableItem = forwardRef(
         data-index={index}
         data-id={id}
         /* distinct class for the source item being dragged */
-        className={`${className} ${isDragging ? 'alpaca-item-dragging' : ''}`}
+        className={`${className} ${isDragging ? 'alpaca-item-dragging' : ''} ${
+          isDragDisabled ? 'is-drag-disabled' : ''
+        }`}
       >
         <Item
           id={id}

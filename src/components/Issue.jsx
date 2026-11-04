@@ -63,7 +63,7 @@ const { decodeEntities } = wp.htmlEntities;
 
 // ----- Memoized rows -----
 const PriorityRow = memo(
-  ({ isHighPriority, onChange, isLoading }) => (
+  ({ isHighPriority, onChange, isLoading, isDisabled }) => (
     <div id="priority" className="alpaca-details-grid__item">
       <div className="alpaca-details-grid__label">
         {__('Priority', 'alpaca-issue-tracker')}
@@ -73,7 +73,7 @@ const PriorityRow = memo(
           label={__('High Priority', 'alpaca-issue-tracker')}
           checked={isHighPriority}
           onChange={onChange}
-          disabled={isLoading}
+          disabled={isLoading || isDisabled}
           __nextHasNoMarginBottom
           className="alpaca-priority-toggle"
         />
@@ -82,11 +82,19 @@ const PriorityRow = memo(
   ),
   (prev, next) =>
     prev.isLoading === next.isLoading &&
+    prev.isDisabled === next.isDisabled &&
     prev.isHighPriority === next.isHighPriority,
 );
 
 const AssigneeRow = memo(
-  ({ assignees, allUsers, allUserObjects, onChange, isLoading }) => (
+  ({
+    assignees,
+    allUsers,
+    allUserObjects,
+    onChange,
+    isLoading,
+    isDisabled,
+  }) => (
     <div id="assignees" className="alpaca-details-grid__item">
       <div className="alpaca-details-grid__label">
         {__('Assignees', 'alpaca-issue-tracker')}
@@ -98,19 +106,21 @@ const AssigneeRow = memo(
           allUserObjects={allUserObjects}
           onChange={onChange}
           isLoading={isLoading}
+          isDisabled={isDisabled}
         />
       </div>
     </div>
   ),
   (prev, next) =>
     prev.isLoading === next.isLoading &&
+    prev.isDisabled === next.isDisabled &&
     prev.assignees.join(',') === next.assignees.join(',') &&
     prev.allUsers.join(',') === next.allUsers.join(',') &&
     prev.allUserObjects === next.allUserObjects,
 );
 
 const LabelsRow = memo(
-  ({ labels, selectedIds, onChange, isLoading }) => (
+  ({ labels, selectedIds, onChange, isLoading, isDisabled }) => (
     <div id="labels" className="alpaca-details-grid__item">
       <div className="alpaca-details-grid__label">
         {__('Labels', 'alpaca-issue-tracker')}
@@ -121,18 +131,20 @@ const LabelsRow = memo(
           selectedIds={selectedIds}
           onChange={onChange}
           isLoading={isLoading}
+          isDisabled={isDisabled}
         />
       </div>
     </div>
   ),
   (prev, next) =>
     prev.isLoading === next.isLoading &&
+    prev.isDisabled === next.isDisabled &&
     prev.labels === next.labels &&
     prev.selectedIds.join(',') === next.selectedIds.join(','),
 );
 
 const DeadlineRow = memo(
-  ({ deadline, onChange, onClear, isLoading }) => (
+  ({ deadline, onChange, onClear, isLoading, isDisabled }) => (
     <div id="deadline" className="alpaca-details-grid__item">
       <div className="alpaca-details-grid__label">
         {__('Due Date', 'alpaca-issue-tracker')}
@@ -143,12 +155,15 @@ const DeadlineRow = memo(
           onChange={onChange}
           onClear={onClear}
           isLoading={isLoading}
+          isDisabled={isDisabled}
         />
       </div>
     </div>
   ),
   (prev, next) =>
-    prev.isLoading === next.isLoading && prev.deadline === next.deadline,
+    prev.isLoading === next.isLoading &&
+    prev.isDisabled === next.isDisabled &&
+    prev.deadline === next.deadline,
 );
 
 const EditableTitle = memo(
@@ -594,6 +609,13 @@ const AlpacaIssue = ({
   onIssueCreated,
   onLabelsChange,
 }) => {
+  const canChangeIssueStatus = Boolean(
+    window.alpaistrSettings?.canChangeIssueStatus,
+  );
+  const canChangeFinalIssueStatus = Boolean(
+    window.alpaistrSettings?.canChangeFinalIssueStatus,
+  );
+
   const {
     issueDetails,
     setIssueDetails,
@@ -2171,6 +2193,20 @@ const AlpacaIssue = ({
     [loadingStates.labels],
   );
   const currentStatus = issueDetails?.taxonomies?.alpaca_status?.[0];
+  const nextStatusIsFinal = useMemo(() => {
+    if (!currentStatus || !allStatuses.length) {
+      return false;
+    }
+
+    const currentIndex = allStatuses.findIndex(
+      (status) => status.term_id === currentStatus.term_id,
+    );
+
+    return currentIndex === allStatuses.length - 2;
+  }, [currentStatus, allStatuses]);
+  const canProgressToNextStatus = nextStatusIsFinal
+    ? canChangeFinalIssueStatus
+    : canChangeIssueStatus;
   const isLastStatus = useMemo(() => {
     if (!currentStatus || !allStatuses.length) return true;
     return (
@@ -2219,6 +2255,14 @@ const AlpacaIssue = ({
   }, [isOpen]);
 
   if (!isOpen) return null;
+
+  const canEditIssue = isCreating
+    ? Boolean(window.alpaistrSettings?.canCreateIssue)
+    : Boolean(window.alpaistrSettings?.canEditIssue);
+  const canAddComment =
+    window.alpaistrSettings?.canAddComment === true ||
+    window.alpaistrSettings?.canAddComment === 1 ||
+    window.alpaistrSettings?.canAddComment === '1';
 
   return (
     <>
@@ -2301,7 +2345,7 @@ const AlpacaIssue = ({
                   >
                     {__('Copy Issue Permalink', 'alpaca-issue-tracker')}
                   </MenuItem>
-                  {!isLastStatus && (
+                  {!isLastStatus && canProgressToNextStatus && (
                     <MenuItem
                       icon={isRTL ? 'arrow-left-alt' : 'arrow-right-alt'}
                       iconPosition="left"
@@ -2352,7 +2396,9 @@ const AlpacaIssue = ({
                   isEditing={isEditingTitle}
                   title={editedTitle}
                   highlightQuery={activeSearchQuery}
-                  onEditStart={() => setIsEditingTitle(true)}
+                  onEditStart={
+                    canEditIssue ? () => setIsEditingTitle(true) : undefined
+                  }
                   onChange={setEditedTitle}
                   onSave={handleTitleSave}
                   onCancel={handleTitleCancel}
@@ -2404,6 +2450,7 @@ const AlpacaIssue = ({
                   isHighPriority={isHighPriority}
                   onChange={handlePriorityChange}
                   isLoading={loadingStates.priority}
+                  isDisabled={!canEditIssue}
                 />
 
                 <DeadlineRow
@@ -2411,6 +2458,7 @@ const AlpacaIssue = ({
                   onChange={handleDeadlineChange}
                   onClear={handleDeadlineClear}
                   isLoading={loadingStates.deadline}
+                  isDisabled={!canEditIssue}
                 />
 
                 <AssigneeRow
@@ -2419,6 +2467,7 @@ const AlpacaIssue = ({
                   allUserObjects={allUserObjects}
                   onChange={handleAssigneeChange}
                   isLoading={stableIsLoading}
+                  isDisabled={!canEditIssue}
                 />
 
                 <LabelsRow
@@ -2426,10 +2475,11 @@ const AlpacaIssue = ({
                   selectedIds={stableSelectedLabelIds}
                   onChange={handleLabelChange}
                   isLoading={stableIsLabelLoading}
+                  isDisabled={!canEditIssue}
                 />
               </div>
 
-              {isCreating && (
+              {isCreating && canAddComment && (
                 <div className="alpaca-issue-comment-section">
                   <CommentForm
                     value={issueComment}
@@ -2473,7 +2523,7 @@ const AlpacaIssue = ({
                       className="alpaca-subissues-add-button alpaca-subissues-add-inline"
                       onMouseDown={(event) => event.preventDefault()}
                       onClick={handleAddSubissueDraft}
-                      disabled={isSubissueAddDisabled}
+                      disabled={!canEditIssue || isSubissueAddDisabled}
                     >
                       {__('Add', 'alpaca-issue-tracker')}
                     </Button>
@@ -2518,7 +2568,9 @@ const AlpacaIssue = ({
                                     )
                                   }
                                   disabled={
-                                    subissue.isDraft || isCompleteLoading
+                                    !canEditIssue ||
+                                    subissue.isDraft ||
+                                    isCompleteLoading
                                   }
                                 />
                                 <SubissueTitleField
@@ -2557,7 +2609,7 @@ const AlpacaIssue = ({
                                       handleSubissueTitleCancel(subissue.id);
                                     }
                                   }}
-                                  disabled={isSaveLoading}
+                                  disabled={!canEditIssue || isSaveLoading}
                                 />
                                 <SubissueAssigneeControl
                                   assignees={subissueAssignees}
@@ -2570,7 +2622,7 @@ const AlpacaIssue = ({
                                     )
                                   }
                                   isDraft={subissue.isDraft}
-                                  isLoading={isAssigneeLoading}
+                                  isLoading={!canEditIssue || isAssigneeLoading}
                                 />
                                 <Button
                                   className="alpaca-subissues-promote"
@@ -2587,7 +2639,9 @@ const AlpacaIssue = ({
                                     handleSubissuePromote(subissue.id)
                                   }
                                   disabled={
-                                    subissue.isDraft || isPromoteLoading
+                                    !canEditIssue ||
+                                    subissue.isDraft ||
+                                    isPromoteLoading
                                   }
                                 />
                                 {(subissue.isDraft || canDeleteIssues) && (

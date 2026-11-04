@@ -16,7 +16,7 @@ add_action(
 		add_menu_page(
 			esc_html__( 'Project Board', 'alpaca-issue-tracker' ),
 			esc_html__( 'Project Board', 'alpaca-issue-tracker' ),
-			'edit_posts',
+			'read',
 			'project-board',
 			'alpaistr_project_board_page',
 			'dashicons-schedule'
