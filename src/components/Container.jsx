@@ -609,7 +609,9 @@ function Container({
                 >
                   {dragOverItem.content ? (
                     <DraggableItem
-                      id={-1}
+                      /* Use the real item ID so card filters (e.g. featured
+                         images keyed by issue ID) resolve on the preview. */
+                      id={dragOverItem.itemId}
                       index={-1}
                       containerId={id}
                       content={dragOverItem.content}
