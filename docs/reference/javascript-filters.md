@@ -220,6 +220,42 @@ addFilter(
 );
 ```
 
+### `alpaca.item.card.media`
+
+**Type:** Filter.
+
+**Purpose:** Adds media components as direct children of an issue card, before its body.
+
+**Parameters**
+
+| Parameter    | Type              | Description                                                               |
+| ------------ | ----------------- | ------------------------------------------------------------------------- |
+| `$media`     | `ReactNode\|null` | Current card media markup.                                                |
+| `$itemProps` | `Object`          | Card fields including ID, content, metadata, assignees, labels, and counts. |
+
+**Example**
+
+```jsx
+const { addFilter } = wp.hooks;
+const { createElement, Fragment } = wp.element;
+const { CardMedia } = wp.components;
+
+addFilter('alpaca.item.card.media', 'my-plugin/card-media', (media, item) =>
+  item?.meta?.heroImage
+    ? createElement(
+        Fragment,
+        null,
+        media,
+        createElement(
+          CardMedia,
+          null,
+          createElement('img', { src: item.meta.heroImage, alt: '' }),
+        ),
+      )
+    : media,
+);
+```
+
 ### `alpaca.item.datapoints`
 
 **Type:** Filter.

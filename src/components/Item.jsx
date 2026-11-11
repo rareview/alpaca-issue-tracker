@@ -75,6 +75,22 @@ const Item = forwardRef(
 
     const watchedClass = watched ? 'is-watched item-highlight' : '';
 
+    const cardMedia = wp.hooks.applyFilters(
+      'alpaca.item.card.media',
+      null,
+      {
+        id,
+        content,
+        meta,
+        postDate,
+        assignees,
+        labels,
+        commentCount,
+        commentCountByAgent,
+        watched,
+      },
+    );
+
     const handleWatchToggle = (event) => {
       event.stopPropagation();
       toggleWatch(id);
@@ -148,6 +164,7 @@ const Item = forwardRef(
         {...props}
         onClick={onClick}
       >
+        {cardMedia}
         <CardBody size="xSmall">
           <div className="alpaca-item-layout">
             <div className="alpaca-item-main">
