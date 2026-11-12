@@ -624,11 +624,24 @@ const AlpacaIssue = ({
   const [issueComment, setIssueComment] = useState('');
   const [createdIssueRetry, setCreatedIssueRetry] = useState(null);
   const issueCommentRef = useRef(null);
+  const issueCreationCallbacksRef = useRef(new Set());
   const snackbarTimersRef = useRef({});
   const snackbarCloseTimersRef = useRef({});
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [selectedIssueTab, setSelectedIssueTab] = useState('comments');
   const [issueTabPanelMountKey, setIssueTabPanelMountKey] = useState(0);
+
+  const registerAfterIssueCreated = useCallback((callback) => {
+    if (typeof callback !== 'function') {
+      throw new TypeError('Issue creation callback must be a function.');
+    }
+
+    issueCreationCallbacksRef.current.add(callback);
+
+    return () => {
+      issueCreationCallbacksRef.current.delete(callback);
+    };
+  }, []);
 
   useAutoExpandTextarea(issueCommentRef, issueComment, isCreating);
 
@@ -1370,6 +1383,32 @@ const AlpacaIssue = ({
           isHighPriority: createdIssueIsHighPriority,
         };
 
+        try {
+          const createdIssue = {
+            id: newIssueId,
+            issue: response.issue,
+            statusId: response.statusId,
+          };
+
+          for (const callback of issueCreationCallbacksRef.current) {
+            await callback(createdIssue);
+          }
+        } catch (err) {
+          setCreatedIssueRetry({
+            ...retryState,
+            retryReason: 'details',
+          });
+          console.error('Failed to save additional issue details:', err);
+          showNotification(
+            __(
+              'The issue was created, but additional details could not be saved. Retry to finish.',
+              'alpaca-issue-tracker',
+            ),
+            'error',
+          );
+          return false;
+        }
+
         if (normalizedCommentText || normalizedAttachments.length > 0) {
           const uploadedAttachments = [];
 
@@ -1463,7 +1502,10 @@ const AlpacaIssue = ({
               uploadedAttachments,
               newIssueId,
             );
-            setCreatedIssueRetry(retryState);
+            setCreatedIssueRetry({
+              ...retryState,
+              retryReason: 'comment',
+            });
             console.error('Failed to create issue comment:', err);
             showNotification(
               retryIssue
@@ -2170,6 +2212,16 @@ const AlpacaIssue = ({
     () => loadingStates.labels,
     [loadingStates.labels],
   );
+  let retrySubmitButtonText;
+
+  if (createdIssueRetry) {
+    if (createdIssueRetry.retryReason === 'details') {
+      retrySubmitButtonText = __('Retry Save', 'alpaca-issue-tracker');
+    } else {
+      retrySubmitButtonText = __('Retry Comment', 'alpaca-issue-tracker');
+    }
+  }
+
   const currentStatus = issueDetails?.taxonomies?.alpaca_status?.[0];
   const isLastStatus = useMemo(() => {
     if (!currentStatus || !allStatuses.length) return true;
@@ -2429,6 +2481,13 @@ const AlpacaIssue = ({
                 />
               </div>
 
+              {wp.hooks.applyFilters('alpaca.issue.belowmeta', null, {
+                issueId,
+                meta: issueDetails?.meta || {},
+                isCreating,
+                registerAfterCreate: registerAfterIssueCreated,
+              })}
+
               {isCreating && (
                 <div className="alpaca-issue-comment-section">
                   <CommentForm
@@ -2444,11 +2503,7 @@ const AlpacaIssue = ({
                     onSubmit={handleCreateIssue}
                     dataSource="create"
                     searchScopeIssueIds={searchScopeIssueIds}
-                    submitButtonText={
-                      createdIssueRetry
-                        ? __('Retry Comment', 'alpaca-issue-tracker')
-                        : undefined
-                    }
+                    submitButtonText={retrySubmitButtonText}
                     submitButtonDisabled={
                       loadingStates.title ||
                       (!createdIssueRetry &&

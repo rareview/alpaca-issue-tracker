@@ -228,9 +228,9 @@ addFilter(
 
 **Parameters**
 
-| Parameter    | Type              | Description                                                               |
-| ------------ | ----------------- | ------------------------------------------------------------------------- |
-| `$media`     | `ReactNode\|null` | Current card media markup.                                                |
+| Parameter    | Type              | Description                                                                 |
+| ------------ | ----------------- | --------------------------------------------------------------------------- |
+| `$media`     | `ReactNode\|null` | Current card media markup.                                                  |
 | `$itemProps` | `Object`          | Card fields including ID, content, metadata, assignees, labels, and counts. |
 
 **Example**
@@ -351,6 +351,21 @@ addFilter('alpaca.item.datapoints', 'my-plugin/item-marker', (content, item) =>
 | `$content` | `ReactNode\|null` | Existing content. Alpaca passes `null` before custom filters run. |
 | `$context` | `Object`          | Context with the current `issueId` and `meta` payload.            |
 
+### `alpaca.issue.belowmeta`
+
+**Type:** Filter.
+
+**Purpose:** Inserts content below the issue metadata fields, including while creating an issue.
+
+**Parameters**
+
+| Parameter  | Type              | Description                                                              |
+| ---------- | ----------------- | ------------------------------------------------------------------------ |
+| `$content` | `ReactNode\|null` | Existing content. Alpaca passes `null` before custom filters run.        |
+| `$context` | `Object`          | Context with `issueId`, `meta`, `isCreating`, and `registerAfterCreate`. |
+
+`registerAfterCreate` accepts a callback that receives `{ id, issue, statusId }`. Alpaca awaits registered callbacks after creating the issue and before completing submission. If a callback rejects, the editor stays open and offers a retry without creating a duplicate issue.
+
 ## Comments, Search, And Reporting
 
 ### `alpaca.commentingTips`
@@ -387,11 +402,11 @@ addFilter('alpaca.commentingTips', 'my-plugin/comment-tip', (tips) => [
 
 **Parameters**
 
-| Parameter               | Type            | Description                            |
-| ----------------------- | --------------- | -------------------------------------- |
+| Parameter               | Type            | Description                                          |
+| ----------------------- | --------------- | ---------------------------------------------------- |
 | `$isEditable`           | `boolean`       | Alpaca Issue Tracker's default editability decision. |
-| `$comment`              | `Object`        | Comment payload.                       |
-| `$defaultEditableTypes` | `Array<string>` | Default editable agent types.          |
+| `$comment`              | `Object`        | Comment payload.                                     |
+| `$defaultEditableTypes` | `Array<string>` | Default editable agent types.                        |
 
 ### `alpaca.commentObject`
 
@@ -588,10 +603,10 @@ The board application exposes selected REST helpers on `window.alpaca.services` 
 
 **Parameters**
 
-| Parameter | Type               | Description        |
-| --------- | ------------------ | ------------------ |
-| `$id`     | `number`\|`string` | Issue ID.          |
-| `$data`   | `Object`           | Update payload.    |
+| Parameter | Type               | Description     |
+| --------- | ------------------ | --------------- |
+| `$id`     | `number`\|`string` | Issue ID.       |
+| `$data`   | `Object`           | Update payload. |
 
 ### `window.alpaca.services.issueApi.fetchStatuses()`
 

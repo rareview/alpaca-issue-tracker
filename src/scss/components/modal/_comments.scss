@@ -407,6 +407,43 @@
     }
   }
 
+  .alpaca-comment-form[data-source='create'] {
+    .alpaca-comment-dropzone .components-drop-zone::after {
+      content: none;
+    }
+
+    .alpaca-comment-dropzone .components-drop-zone__content {
+      display: none;
+    }
+
+    .alpaca-comment-dropzone
+      .components-drop-zone.is-active:not(.is-dragging-over-element) {
+      opacity: 0;
+    }
+
+    .alpaca-comment-dropzone__message {
+      position: absolute;
+      z-index: 1;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: $space-md;
+      color: $color-text-muted;
+      font-size: $font-size-sm;
+      letter-spacing: $letter-spacing-meta;
+      text-align: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity $duration-base ease-in-out;
+    }
+
+    .components-drop-zone.is-dragging-over-element
+      ~ .alpaca-comment-dropzone__message {
+      opacity: 1;
+    }
+  }
+
   .alpaca-comment-form,
   .alpaca-timeline-item {
     position: relative;
