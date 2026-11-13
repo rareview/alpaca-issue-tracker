@@ -191,10 +191,10 @@ addFilter(
 
 **Parameters**
 
-| Parameter    | Type            | Description                                                             |
-| ------------ | --------------- | ----------------------------------------------------------------------- |
-| `$controls`  | `Array<Object>` | Current card control descriptors or renderable elements.                |
-| `$itemProps` | `Object`        | Card state including item fields, watchlist state, and `onWatchToggle`. |
+| Parameter    | Type            | Description                                                            |
+| ------------ | --------------- | ---------------------------------------------------------------------- |
+| `$controls`  | `Array<Object>` | Current card control descriptors or renderable elements.               |
+| `$itemProps` | `Object`        | Card state including slug, item fields, watchlist state, and callback. |
 
 **Example**
 
@@ -220,6 +220,42 @@ addFilter(
 );
 ```
 
+### `alpaca.item.card.media`
+
+**Type:** Filter.
+
+**Purpose:** Adds media components as direct children of an issue card, before its body.
+
+**Parameters**
+
+| Parameter    | Type              | Description                                                    |
+| ------------ | ----------------- | -------------------------------------------------------------- |
+| `$media`     | `ReactNode\|null` | Current card media markup.                                     |
+| `$itemProps` | `Object`          | Card fields including slug, ID, content, metadata, and counts. |
+
+**Example**
+
+```jsx
+const { addFilter } = wp.hooks;
+const { createElement, Fragment } = wp.element;
+const { CardMedia } = wp.components;
+
+addFilter('alpaca.item.card.media', 'my-plugin/card-media', (media, item) =>
+  item?.meta?.heroImage
+    ? createElement(
+        Fragment,
+        null,
+        media,
+        createElement(
+          CardMedia,
+          null,
+          createElement('img', { src: item.meta.heroImage, alt: '' }),
+        ),
+      )
+    : media,
+);
+```
+
 ### `alpaca.item.datapoints`
 
 **Type:** Filter.
@@ -228,10 +264,10 @@ addFilter(
 
 **Parameters**
 
-| Parameter    | Type              | Description                                                             |
-| ------------ | ----------------- | ----------------------------------------------------------------------- |
-| `$content`   | `ReactNode\|null` | Current datapoint markup.                                               |
-| `$itemProps` | `Object`          | Item fields including IDs, meta, assignees, labels, and comment counts. |
+| Parameter    | Type              | Description                                                      |
+| ------------ | ----------------- | ---------------------------------------------------------------- |
+| `$content`   | `ReactNode\|null` | Current datapoint markup.                                        |
+| `$itemProps` | `Object`          | Item fields including slug, ID, metadata, assignees, and counts. |
 
 **Example**
 
@@ -259,10 +295,10 @@ addFilter('alpaca.item.datapoints', 'my-plugin/item-marker', (content, item) =>
 
 **Parameters**
 
-| Parameter     | Type     | Description                                                  |
-| ------------- | -------- | ------------------------------------------------------------ |
-| `$attributes` | `Object` | Existing attribute map.                                      |
-| `$item`       | `Object` | Card data including assignees, labels, counts, and metadata. |
+| Parameter     | Type     | Description                                                |
+| ------------- | -------- | ---------------------------------------------------------- |
+| `$attributes` | `Object` | Existing attribute map.                                    |
+| `$item`       | `Object` | Card data including slug, assignees, labels, and metadata. |
 
 ### `alpaca.item.commentCount.agentType`
 
@@ -275,7 +311,7 @@ addFilter('alpaca.item.datapoints', 'my-plugin/item-marker', (content, item) =>
 | Parameter     | Type                  | Description                                                                      |
 | ------------- | --------------------- | -------------------------------------------------------------------------------- |
 | `$agentTypes` | `Array<string>\|null` | Requested comment agent types. Returning `null` leaves the base count unchanged. |
-| `$itemProps`  | `Object`              | Item fields passed to the datapoint resolver.                                    |
+| `$itemProps`  | `Object`              | Item fields passed to the resolver, including slug.                              |
 
 ### `alpaca.item.commentCount`
 
@@ -285,10 +321,10 @@ addFilter('alpaca.item.datapoints', 'my-plugin/item-marker', (content, item) =>
 
 **Parameters**
 
-| Parameter  | Type     | Description                                                                    |
-| ---------- | -------- | ------------------------------------------------------------------------------ |
-| `$count`   | `number` | Comment count after Alpaca resolves any requested agent type filtering.        |
-| `$context` | `Object` | Item fields plus `requestedCommentAgentType` and `requestedCommentAgentTypes`. |
+| Parameter  | Type     | Description                                                             |
+| ---------- | -------- | ----------------------------------------------------------------------- |
+| `$count`   | `number` | Comment count after Alpaca resolves any requested agent type filtering. |
+| `$context` | `Object` | Item fields, slug, and requested agent types.                           |
 
 ### `alpaca.label_color_options`
 
@@ -314,6 +350,21 @@ addFilter('alpaca.item.datapoints', 'my-plugin/item-marker', (content, item) =>
 | ---------- | ----------------- | ----------------------------------------------------------------- |
 | `$content` | `ReactNode\|null` | Existing content. Alpaca passes `null` before custom filters run. |
 | `$context` | `Object`          | Context with the current `issueId` and `meta` payload.            |
+
+### `alpaca.issue.belowmeta`
+
+**Type:** Filter.
+
+**Purpose:** Inserts content below the issue metadata fields, including while creating an issue.
+
+**Parameters**
+
+| Parameter  | Type              | Description                                                              |
+| ---------- | ----------------- | ------------------------------------------------------------------------ |
+| `$content` | `ReactNode\|null` | Existing content. Alpaca passes `null` before custom filters run.        |
+| `$context` | `Object`          | Context with `issueId`, `meta`, `isCreating`, and `registerAfterCreate`. |
+
+`registerAfterCreate` accepts a callback that receives `{ id, issue, statusId }`. Alpaca awaits registered callbacks after creating the issue and before completing submission. If a callback rejects, the editor stays open and offers a retry without creating a duplicate issue.
 
 ## Comments, Search, And Reporting
 
@@ -351,11 +402,11 @@ addFilter('alpaca.commentingTips', 'my-plugin/comment-tip', (tips) => [
 
 **Parameters**
 
-| Parameter               | Type            | Description                            |
-| ----------------------- | --------------- | -------------------------------------- |
+| Parameter               | Type            | Description                                          |
+| ----------------------- | --------------- | ---------------------------------------------------- |
 | `$isEditable`           | `boolean`       | Alpaca Issue Tracker's default editability decision. |
-| `$comment`              | `Object`        | Comment payload.                       |
-| `$defaultEditableTypes` | `Array<string>` | Default editable agent types.          |
+| `$comment`              | `Object`        | Comment payload.                                     |
+| `$defaultEditableTypes` | `Array<string>` | Default editable agent types.                        |
 
 ### `alpaca.commentObject`
 
@@ -552,10 +603,10 @@ The board application exposes selected REST helpers on `window.alpaca.services` 
 
 **Parameters**
 
-| Parameter | Type               | Description        |
-| --------- | ------------------ | ------------------ |
-| `$id`     | `number`\|`string` | Issue ID.          |
-| `$data`   | `Object`           | Update payload.    |
+| Parameter | Type               | Description     |
+| --------- | ------------------ | --------------- |
+| `$id`     | `number`\|`string` | Issue ID.       |
+| `$data`   | `Object`           | Update payload. |
 
 ### `window.alpaca.services.issueApi.fetchStatuses()`
 

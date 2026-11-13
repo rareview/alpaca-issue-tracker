@@ -8,6 +8,7 @@ const DraggableItem = forwardRef(
   (
     {
       id,
+      slug,
       index,
       containerId,
       content,
@@ -36,6 +37,7 @@ const DraggableItem = forwardRef(
 
       const payload = {
         itemId: id,
+        slug,
         sourceContainerId: containerId,
         sourceIndex: index,
         content,
@@ -176,6 +178,7 @@ const DraggableItem = forwardRef(
       >
         <Item
           id={id}
+          slug={slug}
           content={content}
           postDate={postDate}
           assignees={assignees}
@@ -195,6 +198,7 @@ DraggableItem.displayName = 'DraggableItem';
 
 DraggableItem.propTypes = {
   id: PropTypes.number.isRequired,
+  slug: PropTypes.string,
   index: PropTypes.number.isRequired,
   containerId: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   content: PropTypes.string.isRequired,

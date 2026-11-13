@@ -609,7 +609,10 @@ function Container({
                 >
                   {dragOverItem.content ? (
                     <DraggableItem
-                      id={-1}
+                      /* Use the real item ID so card filters (e.g. featured
+                         images keyed by issue ID) resolve on the preview. */
+                      id={dragOverItem.itemId}
+                      slug={dragOverItem.slug}
                       index={-1}
                       containerId={id}
                       content={dragOverItem.content}
@@ -671,6 +674,7 @@ function Container({
                     } ${isGlobalSourceHidden ? 'is-source-hidden' : ''}`}
                     key={item.id}
                     id={item.id}
+                    slug={item.slug}
                     index={actualIndex}
                     containerId={id}
                     content={item.content}
@@ -706,6 +710,7 @@ function Container({
                       } ${isSource ? 'is-source-hidden' : ''}`}
                       key={item.id}
                       id={item.id}
+                      slug={item.slug}
                       index={actualIndex}
                       containerId={id}
                       content={item.content}
@@ -744,6 +749,7 @@ function Container({
                     } ${isSource ? 'is-source-hidden' : ''}`}
                     key={item.id}
                     id={item.id}
+                    slug={item.slug}
                     index={i}
                     containerId={id}
                     content={item.content}
@@ -773,6 +779,7 @@ Container.propTypes = {
   items: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.number.isRequired,
+      slug: PropTypes.string,
       content: PropTypes.string,
       postDate: PropTypes.string,
       assignees: PropTypes.array,

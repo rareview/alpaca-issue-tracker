@@ -57,6 +57,7 @@ const AttachmentControls = ({
   isProcessing,
   actions,
   pendingAltText,
+  dropzoneHint,
 }) => {
   const [showHelp, setShowHelp] = useState(false);
 
@@ -65,6 +66,14 @@ const AttachmentControls = ({
       <div className="alpaca-comment-dropzone">
         {children}
         <DropZone onFilesDrop={onDrop} />
+        {dropzoneHint && (
+          <span
+            className="alpaca-comment-dropzone__message"
+            aria-hidden="true"
+          >
+            {dropzoneHint}
+          </span>
+        )}
       </div>
       {attachments.length > 0 && (
         <div className="alpaca-attachments-wrapper alpaca-comment-attachments alpaca-comment-attachments--pending">
@@ -184,6 +193,7 @@ AttachmentControls.propTypes = {
   isProcessing: PropTypes.bool.isRequired,
   actions: PropTypes.node.isRequired,
   pendingAltText: PropTypes.string.isRequired,
+  dropzoneHint: PropTypes.string,
 };
 
 const CommentForm = memo(
@@ -476,6 +486,14 @@ const CommentForm = memo(
               'Pending comment attachment',
               'alpaca-issue-tracker',
             )}
+            dropzoneHint={
+              dataSource === 'create'
+                ? __(
+                    'Drop images here to attach them only to this comment.',
+                    'alpaca-issue-tracker',
+                  )
+                : null
+            }
             actions={
               <>
                 <Button

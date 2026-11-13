@@ -16,6 +16,7 @@ import '../utils/itemDatapoints';
  *
  * @param {Object}   root0                     - Props object
  * @param {number}   root0.id                  - Item ID
+ * @param {string}   root0.slug                - Item slug.
  * @param {string|*} root0.content             - Item content text or inline markup
  * @param {Array}    root0.assignees           - Array of assignees
  * @param {Array}    root0.labels              - Array of labels
@@ -34,6 +35,7 @@ const Item = forwardRef(
   (
     {
       id,
+      slug,
       content,
       assignees = [],
       labels = [],
@@ -62,6 +64,7 @@ const Item = forwardRef(
       {},
       {
         id,
+        slug,
         content,
         meta,
         postDate,
@@ -75,6 +78,23 @@ const Item = forwardRef(
 
     const watchedClass = watched ? 'is-watched item-highlight' : '';
 
+    const cardMedia = wp.hooks.applyFilters(
+      'alpaca.item.card.media',
+      null,
+      {
+        id,
+        slug,
+        content,
+        meta,
+        postDate,
+        assignees,
+        labels,
+        commentCount,
+        commentCountByAgent,
+        watched,
+      },
+    );
+
     const handleWatchToggle = (event) => {
       event.stopPropagation();
       toggleWatch(id);
@@ -87,6 +107,7 @@ const Item = forwardRef(
       [],
       {
         id,
+        slug,
         content,
         meta,
         postDate,
@@ -148,6 +169,7 @@ const Item = forwardRef(
         {...props}
         onClick={onClick}
       >
+        {cardMedia}
         <CardBody size="xSmall">
           <div className="alpaca-item-layout">
             <div className="alpaca-item-main">
@@ -157,6 +179,7 @@ const Item = forwardRef(
               <div className="alpaca-item-datapoints">
                 {wp.hooks.applyFilters('alpaca.item.datapoints', null, {
                   id,
+                  slug,
                   title: content,
                   content,
                   meta,
@@ -178,6 +201,7 @@ const Item = forwardRef(
 
 Item.propTypes = {
   id: PropTypes.number.isRequired,
+  slug: PropTypes.string,
   content: PropTypes.oneOfType([PropTypes.string, PropTypes.node]).isRequired,
   assignees: PropTypes.arrayOf(PropTypes.object),
   labels: PropTypes.arrayOf(PropTypes.object),
