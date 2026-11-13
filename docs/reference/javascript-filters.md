@@ -191,10 +191,10 @@ addFilter(
 
 **Parameters**
 
-| Parameter    | Type            | Description                                                             |
-| ------------ | --------------- | ----------------------------------------------------------------------- |
-| `$controls`  | `Array<Object>` | Current card control descriptors or renderable elements.                |
-| `$itemProps` | `Object`        | Card state including item fields, watchlist state, and `onWatchToggle`. |
+| Parameter    | Type            | Description                                                            |
+| ------------ | --------------- | ---------------------------------------------------------------------- |
+| `$controls`  | `Array<Object>` | Current card control descriptors or renderable elements.               |
+| `$itemProps` | `Object`        | Card state including slug, item fields, watchlist state, and callback. |
 
 **Example**
 
@@ -228,10 +228,10 @@ addFilter(
 
 **Parameters**
 
-| Parameter    | Type              | Description                                                                 |
-| ------------ | ----------------- | --------------------------------------------------------------------------- |
-| `$media`     | `ReactNode\|null` | Current card media markup.                                                  |
-| `$itemProps` | `Object`          | Card fields including ID, content, metadata, assignees, labels, and counts. |
+| Parameter    | Type              | Description                                                    |
+| ------------ | ----------------- | -------------------------------------------------------------- |
+| `$media`     | `ReactNode\|null` | Current card media markup.                                     |
+| `$itemProps` | `Object`          | Card fields including slug, ID, content, metadata, and counts. |
 
 **Example**
 
@@ -264,10 +264,10 @@ addFilter('alpaca.item.card.media', 'my-plugin/card-media', (media, item) =>
 
 **Parameters**
 
-| Parameter    | Type              | Description                                                             |
-| ------------ | ----------------- | ----------------------------------------------------------------------- |
-| `$content`   | `ReactNode\|null` | Current datapoint markup.                                               |
-| `$itemProps` | `Object`          | Item fields including IDs, meta, assignees, labels, and comment counts. |
+| Parameter    | Type              | Description                                                      |
+| ------------ | ----------------- | ---------------------------------------------------------------- |
+| `$content`   | `ReactNode\|null` | Current datapoint markup.                                        |
+| `$itemProps` | `Object`          | Item fields including slug, ID, metadata, assignees, and counts. |
 
 **Example**
 
@@ -295,10 +295,10 @@ addFilter('alpaca.item.datapoints', 'my-plugin/item-marker', (content, item) =>
 
 **Parameters**
 
-| Parameter     | Type     | Description                                                  |
-| ------------- | -------- | ------------------------------------------------------------ |
-| `$attributes` | `Object` | Existing attribute map.                                      |
-| `$item`       | `Object` | Card data including assignees, labels, counts, and metadata. |
+| Parameter     | Type     | Description                                                |
+| ------------- | -------- | ---------------------------------------------------------- |
+| `$attributes` | `Object` | Existing attribute map.                                    |
+| `$item`       | `Object` | Card data including slug, assignees, labels, and metadata. |
 
 ### `alpaca.item.commentCount.agentType`
 
@@ -311,7 +311,7 @@ addFilter('alpaca.item.datapoints', 'my-plugin/item-marker', (content, item) =>
 | Parameter     | Type                  | Description                                                                      |
 | ------------- | --------------------- | -------------------------------------------------------------------------------- |
 | `$agentTypes` | `Array<string>\|null` | Requested comment agent types. Returning `null` leaves the base count unchanged. |
-| `$itemProps`  | `Object`              | Item fields passed to the datapoint resolver.                                    |
+| `$itemProps`  | `Object`              | Item fields passed to the resolver, including slug.                              |
 
 ### `alpaca.item.commentCount`
 
@@ -321,10 +321,10 @@ addFilter('alpaca.item.datapoints', 'my-plugin/item-marker', (content, item) =>
 
 **Parameters**
 
-| Parameter  | Type     | Description                                                                    |
-| ---------- | -------- | ------------------------------------------------------------------------------ |
-| `$count`   | `number` | Comment count after Alpaca resolves any requested agent type filtering.        |
-| `$context` | `Object` | Item fields plus `requestedCommentAgentType` and `requestedCommentAgentTypes`. |
+| Parameter  | Type     | Description                                                             |
+| ---------- | -------- | ----------------------------------------------------------------------- |
+| `$count`   | `number` | Comment count after Alpaca resolves any requested agent type filtering. |
+| `$context` | `Object` | Item fields, slug, and requested agent types.                           |
 
 ### `alpaca.label_color_options`
 

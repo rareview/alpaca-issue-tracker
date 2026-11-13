@@ -16,6 +16,7 @@ import '../utils/itemDatapoints';
  *
  * @param {Object}   root0                     - Props object
  * @param {number}   root0.id                  - Item ID
+ * @param {string}   root0.slug                - Item slug.
  * @param {string|*} root0.content             - Item content text or inline markup
  * @param {Array}    root0.assignees           - Array of assignees
  * @param {Array}    root0.labels              - Array of labels
@@ -34,6 +35,7 @@ const Item = forwardRef(
   (
     {
       id,
+      slug,
       content,
       assignees = [],
       labels = [],
@@ -62,6 +64,7 @@ const Item = forwardRef(
       {},
       {
         id,
+        slug,
         content,
         meta,
         postDate,
@@ -80,6 +83,7 @@ const Item = forwardRef(
       null,
       {
         id,
+        slug,
         content,
         meta,
         postDate,
@@ -103,6 +107,7 @@ const Item = forwardRef(
       [],
       {
         id,
+        slug,
         content,
         meta,
         postDate,
@@ -174,6 +179,7 @@ const Item = forwardRef(
               <div className="alpaca-item-datapoints">
                 {wp.hooks.applyFilters('alpaca.item.datapoints', null, {
                   id,
+                  slug,
                   title: content,
                   content,
                   meta,
@@ -195,6 +201,7 @@ const Item = forwardRef(
 
 Item.propTypes = {
   id: PropTypes.number.isRequired,
+  slug: PropTypes.string,
   content: PropTypes.oneOfType([PropTypes.string, PropTypes.node]).isRequired,
   assignees: PropTypes.arrayOf(PropTypes.object),
   labels: PropTypes.arrayOf(PropTypes.object),
