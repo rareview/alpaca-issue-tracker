@@ -625,6 +625,7 @@ const AlpacaIssue = ({
   const [createdIssueRetry, setCreatedIssueRetry] = useState(null);
   const issueCommentRef = useRef(null);
   const issueCreationCallbacksRef = useRef(new Set());
+  const pendingSubissueSavesRef = useRef(new Map());
   const snackbarTimersRef = useRef({});
   const snackbarCloseTimersRef = useRef({});
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -1651,6 +1652,17 @@ const AlpacaIssue = ({
         return null;
       }
 
+      if (pendingSubissueSavesRef.current.has(subissueId)) {
+        if (addNewDraftAfterSave) {
+          pendingSubissueSavesRef.current.set(subissueId, true);
+        }
+        return null;
+      }
+
+      pendingSubissueSavesRef.current.set(
+        subissueId,
+        addNewDraftAfterSave,
+      );
       setLoading(`subissue-${subissueId}`, true);
       try {
         const response = await createSubissue({
@@ -1659,6 +1671,8 @@ const AlpacaIssue = ({
           content: trimmedTitle,
         });
         const createdSubissue = normalizeSubissue(response?.subissue || {});
+        const shouldAddNewDraft =
+          pendingSubissueSavesRef.current.get(subissueId);
 
         setSubissues((prev) => {
           const updated = prev.map((item) =>
@@ -1671,7 +1685,7 @@ const AlpacaIssue = ({
               : item,
           );
 
-          if (addNewDraftAfterSave) {
+          if (shouldAddNewDraft) {
             updated.push(createDraftSubissue());
           }
 
@@ -1694,6 +1708,7 @@ const AlpacaIssue = ({
         );
         return null;
       } finally {
+        pendingSubissueSavesRef.current.delete(subissueId);
         setLoading(`subissue-${subissueId}`, false);
       }
     },
